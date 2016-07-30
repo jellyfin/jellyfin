@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -24,7 +24,7 @@
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
+                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -44,6 +44,25 @@
                 context.savedQueryKey = libraryBrowser.getSavedQueryKey('musicalbums');
             }
             return context.savedQueryKey;
+        }
+
+        function onViewStyleChange() {
+
+            var viewStyle = self.getCurrentViewStyle();
+
+            var itemsContainer = tabContent.querySelector('.itemsContainer');
+
+            if (viewStyle == "List") {
+
+                itemsContainer.classList.add('vertical-list');
+                itemsContainer.classList.remove('vertical-wrap');
+            }
+            else {
+
+                itemsContainer.classList.remove('vertical-list');
+                itemsContainer.classList.add('vertical-wrap');
+            }
+            itemsContainer.innerHTML = '';
         }
 
         function reloadItems(page) {
@@ -83,7 +102,7 @@
                 }
                 else if (viewStyle == "PosterCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "square",
                         context: 'music',
@@ -97,7 +116,7 @@
                 else {
 
                     // Poster
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "square",
                         context: 'music',
@@ -237,6 +256,7 @@
                 getPageData(tabContent).view = viewStyle;
                 libraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
                 getQuery(tabContent).StartIndex = 0;
+                onViewStyleChange();
                 reloadItems(tabContent);
             });
         }
@@ -246,6 +266,7 @@
         };
 
         initPage(tabContent);
+        onViewStyleChange();
 
         self.renderTab = function () {
 

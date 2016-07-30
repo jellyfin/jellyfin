@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'cardStyle'], function ($) {
 
     function deletePlugin(page, uniqueid, name) {
 
@@ -43,7 +43,7 @@
             configPageUrl :
             null;
 
-        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard bottomPaddedCard'>";
+        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard bottomPaddedCard scalableCard'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
@@ -83,8 +83,8 @@
 
         html += '<div class="cardFooter">';
 
-        html += '<div class="cardText" style="text-align:right; float:right;padding-top:5px;">';
-        html += '<button type="button" is="paper-icon-button-light" class="btnCardMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+        html += '<div style="text-align:right; float:right;padding-top:5px;">';
+        html += '<button type="button" is="paper-icon-button-light" class="btnCardMenu autoSize"><i class="md-icon">more_vert</i></button>';
         html += "</div>";
 
         html += "<div class='cardText'>";
@@ -149,7 +149,7 @@
             $('.installedPlugins', page).html(html);
         } else {
 
-            var elem = $('.installedPlugins', page).html(html);
+            var elem = $('.installedPlugins', page).addClass('itemsContainer').addClass('vertical-wrap').html(html);
 
             $('.noConfigPluginCard', elem).on('click', function () {
                 showNoConfigurationMessage();

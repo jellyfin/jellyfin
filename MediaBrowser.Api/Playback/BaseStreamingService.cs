@@ -1788,6 +1788,19 @@ namespace MediaBrowser.Api.Playback
             {
                 state.OutputAudioCodec = "copy";
             }
+            else
+            {
+                // If the user doesn't have access to transcoding, then force stream copy, regardless of whether it will be compatible or not
+                var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+                if (!string.IsNullOrWhiteSpace(auth.UserId))
+                {
+                    var user = UserManager.GetUserById(auth.UserId);
+                    if (!user.Policy.EnableAudioPlaybackTranscoding)
+                    {
+                        state.OutputAudioCodec = "copy";
+                    }
+                }
+            }
         }
 
         private void AttachMediaSourceInfo(StreamState state,

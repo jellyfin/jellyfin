@@ -120,7 +120,7 @@
             itemSelectionPanel = document.createElement('div');
             itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent,.cardBox').appendChild(itemSelectionPanel);
+            (item.querySelector('.cardBox') || item.querySelector('.cardContent')).appendChild(itemSelectionPanel);
 
             var cssClass = 'chkItemSelect';
             if (isChecked && !browser.firefox) {

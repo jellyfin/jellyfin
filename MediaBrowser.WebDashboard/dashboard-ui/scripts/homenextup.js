@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'emby-itemscontainer'], function (categorysyncbuttons) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
     function getNextUpPromise() {
 
@@ -25,7 +25,7 @@
 
             var html = '';
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: true,

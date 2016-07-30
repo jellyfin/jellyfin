@@ -163,11 +163,12 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         });
     }
 
-    function showPlayMenu(card, target) {
+    function getItemInfoFromCard(card) {
 
-        var item = {
+        return {
             Type: card.getAttribute('data-type'),
             Id: card.getAttribute('data-id'),
+            CollectionType: card.getAttribute('data-collectiontype'),
             ChannelId: card.getAttribute('data-channelid'),
             SeriesId: card.getAttribute('data-seriesid'),
             ServerId: card.getAttribute('data-serverid'),
@@ -177,6 +178,11 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                 PlaybackPositionTicks: parseInt(card.getAttribute('data-positionticks') || '0')
             }
         };
+    }
+
+    function showPlayMenu(card, target) {
+
+        var item = getItemInfoFromCard(card);
 
         require(['playMenu'], function (playMenu) {
 
@@ -199,17 +205,13 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             id = card.getAttribute('data-id');
         }
 
-        var serverId = card.getAttribute('data-serverid');
-        var type = card.getAttribute('data-type');
-        var isfolder = card.getAttribute('data-isfolder') == 'true';
+        var item = getItemInfoFromCard(card);
+
+        var serverId = item.ServerId;
+        var type = item.Type;
 
         if (action == 'link') {
-            showItem({
-                Id: id,
-                Type: type,
-                IsFolder: isfolder,
-                ServerId: serverId
-            });
+            showItem(item);
         }
 
         else if (action == 'instantmix') {

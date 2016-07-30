@@ -34,8 +34,8 @@
 
     function updateEncoder(form) {
 
-        return ApiClient.getSystemInfo().then(function(systemInfo) {
-            
+        return ApiClient.getSystemInfo().then(function (systemInfo) {
+
             if (systemInfo.EncoderLocationType == "External") {
                 return;
             }
@@ -118,8 +118,10 @@
 
         if (this.value == 'Custom') {
             page.querySelector('.fldEncoderPath').classList.remove('hide');
+            page.querySelector('.txtEncoderPath').setAttribute('required', 'required');
         } else {
             page.querySelector('.fldEncoderPath').classList.add('hide');
+            page.querySelector('.txtEncoderPath').removeAttribute('required');
         }
     }
 

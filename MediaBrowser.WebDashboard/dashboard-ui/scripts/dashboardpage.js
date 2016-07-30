@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'cardStyle'], function (datetime, $) {
 
     function renderNoHealthAlertsMessage(page) {
 
@@ -309,7 +309,7 @@
 
                 var nowPlayingItem = session.NowPlayingItem;
 
-                var className = nowPlayingItem ? 'card activeSession' : 'card activeSession';
+                var className = nowPlayingItem ? 'scalableCard card activeSession' : 'scalableCard card activeSession';
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                     className += ' transcodingSession';
@@ -317,7 +317,7 @@
 
                 html += '<div class="' + className + '" id="' + rowId + '">';
 
-                html += '<div class="cardBox" style="box-shadow:0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);margin:4px;">';
+                html += '<div class="cardBox visualCardBox">';
                 html += '<div class="cardScalable">';
 
                 html += '<div class="cardPadder"></div>';

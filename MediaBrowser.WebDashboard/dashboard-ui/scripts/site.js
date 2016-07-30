@@ -1429,6 +1429,11 @@ var AppInfo = {};
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
+        define("cardStyle", ['css!' + embyWebComponentsBowerPath + "/cardbuilder/card"], returnFirstDependency);
+        define("cardBuilder", [embyWebComponentsBowerPath + "/cardbuilder/cardbuilder"], returnFirstDependency);
+        define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);
+        define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
+
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
@@ -2492,7 +2497,8 @@ var AppInfo = {};
             path: '/playlists.html',
             dependencies: [],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/playlists'
         });
 
         defineRoute({
@@ -2783,8 +2789,6 @@ var AppInfo = {};
         }
 
         deps.push('scripts/librarymenu');
-
-        deps.push('css!css/card.css');
 
         console.log('onAppReady - loading dependencies');
 

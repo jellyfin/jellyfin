@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'cardStyle'], function ($) {
 
     // The base query options
     var query = {
@@ -119,11 +119,15 @@
                 return 0;
             });
 
+            html += '<div class="itemsContainer vertical-wrap">';
             var limit = screen.availWidth >= 1920 ? 15 : 12;
             for (i = 0, length = Math.min(topPlugins.length, limit) ; i < length; i++) {
                 html += getPluginHtml(topPlugins[i], options, installedPlugins);
             }
+            html += '</div>';
         }
+
+        var hasOpenTag = false;
 
         for (i = 0, length = availablePlugins.length; i < length; i++) {
 
@@ -135,12 +139,16 @@
 
                 if (options.showCategory !== false) {
                     if (currentCategory) {
+                        hasOpenTag = false;
+                        html += '</div>';
                         html += '<br/>';
                         html += '<br/>';
                         html += '<br/>';
                     }
 
                     html += '<div class="detailSectionHeader">' + category + '</div>';
+                    html += '<div class="itemsContainer vertical-wrap">';
+                    hasOpenTag = true;
                 }
 
                 currentCategory = category;
@@ -148,6 +156,10 @@
 
             html += getPluginHtml(plugin, options, installedPlugins);
 
+        }
+
+        if (hasOpenTag) {
+            html += '</div>';
         }
 
         if (!availablePlugins.length && options.noItemsElement) {
@@ -169,7 +181,7 @@
         }
         var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-        html += "<div class='card backdropCard bottomPaddedCard'>";
+        html += "<div class='card backdropCard bottomPaddedCard scalableCard'>";
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';

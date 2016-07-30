@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
@@ -919,10 +918,7 @@ namespace MediaBrowser.Controller.Entities
                 catch
                 {
                     // Already logged at lower levels
-                    return new QueryResult<BaseItem>
-                    {
-
-                    };
+                    return new QueryResult<BaseItem>();
                 }
             }
 

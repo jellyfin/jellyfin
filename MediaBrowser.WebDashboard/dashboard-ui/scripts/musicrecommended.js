@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
 
     function itemsPerRow() {
 
@@ -34,7 +34,7 @@
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
-            elem.innerHTML = libraryBrowser.getPosterViewHtml({
+            elem.innerHTML = cardBuilder.getCardsHtml({
                 items: items,
                 showUnplayedIndicator: false,
                 showLatestItemsPopup: false,
@@ -80,13 +80,13 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -126,13 +126,13 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
                 overlayMoreButton: true
@@ -169,7 +169,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -255,8 +255,10 @@
             for (var i = 0, length = containers.length; i < length; i++) {
                 if (enableScrollX()) {
                     containers[i].classList.add('hiddenScrollX');
+                    containers[i].classList.remove('vertical-wrap');
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
+                    containers[i].classList.add('vertical-wrap');
                 }
             }
         };

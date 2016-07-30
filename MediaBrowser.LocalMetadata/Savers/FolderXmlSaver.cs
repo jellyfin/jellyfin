@@ -79,7 +79,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             var xmlFilePath = GetSavePath(item);
 
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string> { }, _config, _fileSystem);
+            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>(), _config, _fileSystem);
         }
 
         /// <summary>

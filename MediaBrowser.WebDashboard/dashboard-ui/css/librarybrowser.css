@@ -907,80 +907,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1.2;
 }
 
-.itemProgress {
-    vertical-align: top;
-    font-size: 19px;
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-/* All HTML5 progress enabled browsers */
-.itemProgressBar {
-    /* Turns off styling - not usually needed, but good to know. */
-    appearance: none;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    /* gets rid of default border in Firefox and Opera. */
-    border: 0;
-    margin: 0;
-    height: 14px;
-    border: 0 solid #222;
-    border-radius: 0;
-    width: 50px;
-    margin-right: 5px;
-}
-
-/* Undo these to original */
-.listItem .itemProgressBar {
-    width: auto;
-    margin: 0;
-    height: .56vh;
-}
-
-/* Polyfill */
-.itemProgressBar[role]:after {
-    background-image: none; /* removes default background from polyfill */
-}
-
-/*
- * Background of the progress bar background
- */
-
-/* Firefox and Polyfill */
-.itemProgressBar {
-    background: #000 !important; /* !important only needed in polyfill */
-}
-
-    /* Chrome */
-    .itemProgressBar::-webkit-progress-bar {
-        background: #000;
-    }
-
-.pare
-/*
- * Background of the progress bar value
- */
-/* Firefox */
-.itemProgressBar::-moz-progress-bar {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
-/* Chrome */
-.itemProgressBar::-webkit-progress-value {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
-/* Polyfill */
-.itemProgressBar[aria-valuenow]:before {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
 .recordingProgressBar::-moz-progress-bar {
     background-color: #cc3333;
 }
@@ -993,12 +919,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: #cc3333;
 }
 
-.tileItem .itemProgressBar {
-    top: 2px;
-    width: 40px;
-    margin-right: 1em;
-}
-
 .timelineHeader {
     margin-bottom: .25em;
     line-height: 1.25em;
@@ -1007,7 +927,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsContainer {
     margin: 0 auto;
-    line-height: 0;
 }
 
 .alphabetPicker {

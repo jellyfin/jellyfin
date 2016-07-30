@@ -13,7 +13,7 @@
                     StartIndex: 0,
                     Limit: 200
                 },
-                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('List', 'List')
+                view: LibraryBrowser.getSavedView(key) || 'List'
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();

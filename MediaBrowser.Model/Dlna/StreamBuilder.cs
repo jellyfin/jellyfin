@@ -600,18 +600,22 @@ namespace MediaBrowser.Model.Dlna
             {
                 defaultBitrate = 192000;
             }
+            if (!string.IsNullOrEmpty(targetAudioCodec) && audioStream != null && StringHelper.EqualsIgnoreCase(audioStream.Codec, targetAudioCodec))
+            {
+                defaultBitrate = audioStream.BitRate ?? defaultBitrate;
+            }
 
             if (targetAudioChannels.HasValue)
             {
-                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 2000000)
+                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1500000)
                 {
                     if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
                     {
-                        defaultBitrate = 448000;
+                        defaultBitrate = Math.Max(448000, defaultBitrate);
                     }
                     else
                     {
-                        defaultBitrate = 320000;
+                        defaultBitrate = Math.Max(320000, defaultBitrate);
                     }
                 }
             }
