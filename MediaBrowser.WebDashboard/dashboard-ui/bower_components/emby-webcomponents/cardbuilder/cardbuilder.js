@@ -620,6 +620,23 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        var numRandomColors = 5;
+        function getDefaultColorIndex(str) {
+
+            if (str) {
+                var character = String(str.substr(str.length - 1).charCodeAt());
+                var sum = 0;
+                for (var i = 0; i < character.length; i++) {
+                    sum += parseInt(character.charAt(i));
+                }
+                var index = String(sum).substr(-1);
+
+                return index % numRandomColors;
+            } else {
+                return getRandomInt(1, numRandomColors);
+            }
+        }
+
         function getCardTextLines(lines, cssClass, forceLines) {
 
             var html = '';
@@ -977,7 +994,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (!imgUrl) {
-                cardImageContainerClass += ' defaultCardColor' + getRandomInt(1, 5);
+                cardImageContainerClass += ' defaultCardColor' + getDefaultColorIndex(item.Name);
             }
 
             var separateCardBox = scalable;

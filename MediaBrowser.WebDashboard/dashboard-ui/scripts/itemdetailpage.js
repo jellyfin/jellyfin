@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom) {
 
     var currentItem;
 
@@ -373,9 +373,9 @@
                 section.classList.add('hide');
             }
 
-            var html = LibraryBrowser.getPosterViewHtml({
+            var html = cardBuilder.getCardsHtml({
                 items: result.Items,
-                shape: "detailPage169",
+                shape: getThumbShape(false),
                 showTitle: true,
                 displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                 overlayText: true,
@@ -775,16 +775,26 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts && screen.availWidth <= 1000;
     }
 
-    function getPortraitShape() {
-        return enableScrollX() ? 'overflowPortrait' : 'detailPagePortrait';
+    function getPortraitShape(scrollX) {
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowPortrait' : 'portrait';
     }
 
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'detailPageSquare';
+    function getSquareShape(scrollX) {
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowSquare' : 'square';
     }
 
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'detailPage169';
+    function getThumbShape(scrollX) {
+
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowBackdrop' : 'backdrop';
     }
 
     function renderMoreFromItems(page, item) {
@@ -822,12 +832,12 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
             var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -892,9 +902,9 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -1085,7 +1095,7 @@
 
                 scrollX = enableScrollX();
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: getPortraitShape(),
                     showTitle: true,
@@ -1096,9 +1106,9 @@
             }
             else if (item.Type == "Season") {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
-                    shape: "detailPage169",
+                    shape: getThumbShape(false),
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                     playFromHere: true,
@@ -1109,7 +1119,7 @@
                 });
             }
             else if (item.Type == "GameSystem") {
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "auto",
                     showTitle: true,
@@ -1120,14 +1130,16 @@
             }
 
             var elem = page.querySelector('.childrenItemsContainer');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-
             if (scrollX) {
                 elem.classList.add('hiddenScrollX');
+                elem.classList.remove('vertical-wrap');
             } else {
                 elem.classList.remove('hiddenScrollX');
+                elem.classList.add('vertical-wrap');
             }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (item.Type == "BoxSet") {
 
@@ -1321,11 +1333,11 @@
         html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
-        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer">';
+        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer vertical-wrap">';
 
-        var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
+        var shape = type.type == 'MusicAlbum' ? getSquareShape(false) : getPortraitShape(false);
 
-        html += LibraryBrowser.getPosterViewHtml({
+        html += cardBuilder.getCardsHtml({
             items: items,
             shape: shape,
             showTitle: true,
@@ -1577,13 +1589,11 @@
 
         var chapters = item.Chapters || [];
 
-        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
-
         if (enableScrollX()) {
             html += '<div class="hiddenScrollX itemsContainer">';
             limit = null;
         } else {
-            html += '<div class="itemsContainer">';
+            html += '<div class="itemsContainer vertical-wrap">';
         }
 
         for (var i = 0, length = chapters.length; i < length; i++) {
@@ -1597,7 +1607,7 @@
 
             var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
-            html += '<a class="card ' + getThumbShape() + 'Card" href="#"' + onclick + '>';
+            html += '<a class="card ' + getThumbShape() + 'Card scalableCard" href="#"' + onclick + '>';
 
             html += '<div class="cardBox">';
             html += '<div class="cardScalable">';
@@ -1607,7 +1617,7 @@
             if (chapter.ImageTag) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWidth,
+                    maxWidth: 400,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -1621,7 +1631,7 @@
             html += '<div class="cardContent">';
             html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
 
-            html += '<div class="cardFooter">';
+            html += '<div class="innerCardFooter">';
             html += '<div class="cardText">' + chapterName + '</div>';
             html += '<div class="cardText">';
             html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
@@ -1819,8 +1829,6 @@
 
         var html = '';
 
-        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
-
         for (var i = 0, length = items.length; i < length; i++) {
 
             if (limit && i >= limit) {
@@ -1829,7 +1837,7 @@
 
             var item = items[i];
 
-            var cssClass = "card detailPage169Card";
+            var cssClass = "card backdropCard scalableCard";
 
             var href = "itemdetails.html?id=" + item.Id;
 
@@ -1847,7 +1855,7 @@
             if (imageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWidth,
+                    maxWidth: 400,
                     tag: imageTags.Primary,
                     type: "primary"
                 });
@@ -1861,7 +1869,7 @@
             html += '<div class="cardContent">';
             html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
 
-            html += '<div class="cardFooter">';
+            html += '<div class="innerCardFooter">';
             html += '<div class="cardText">' + item.Name + '</div>';
             html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {

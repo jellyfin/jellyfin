@@ -1,4 +1,4 @@
-﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom, imageLoader) {
+﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom) {
 
     function fadeInRight(elem) {
 
