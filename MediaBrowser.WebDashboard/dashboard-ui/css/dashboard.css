@@ -27,6 +27,10 @@ paper-input + .fieldDescription {
     background-color: #fff;
 }
 
+.ui-body-a .cardFooter .cardText + .cardText {
+    opacity: .8;
+}
+
 @media all and (min-width: 800px) {
 
     .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {
