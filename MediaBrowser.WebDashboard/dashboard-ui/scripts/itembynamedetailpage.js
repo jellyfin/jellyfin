@@ -109,7 +109,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -124,7 +124,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayPlayButton: true
@@ -139,7 +139,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -154,7 +154,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayPlayButton: true
@@ -169,7 +169,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -184,7 +184,7 @@
                     ArtistIds: "",
                     Limit: 8
                 }, {
-                    shape: "detailPageSquare",
+                    shape: "square",
                     playFromHere: true,
                     showTitle: true,
                     showParentTitle: true,
@@ -201,7 +201,7 @@
                     ArtistIds: "",
                     Limit: 6
                 }, {
-                    shape: "detailPage169",
+                    shape: "backdrop",
                     showTitle: true,
                     showParentTitle: true,
                     centerText: true,
