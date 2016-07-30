@@ -977,7 +977,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (!imgUrl) {
-                cardImageContainerClass += ' emptyCardImageContainer defaultCardColor' + getRandomInt(1, 5);
+                cardImageContainerClass += ' defaultCardColor' + getRandomInt(1, 5);
             }
 
             var separateCardBox = scalable;

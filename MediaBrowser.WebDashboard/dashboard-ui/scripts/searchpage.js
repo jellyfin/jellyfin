@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter) {
+﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'cardBuilder', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter, cardBuilder) {
 
     function loadSuggestions(page) {
 
@@ -112,7 +112,7 @@
                 return i;
             });
 
-            var html = libraryBrowser.getPosterViewHtml({
+            var html = cardBuilder.getCardsHtml({
                 items: hints,
                 shape: "auto",
                 lazy: true,

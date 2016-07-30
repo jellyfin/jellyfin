@@ -24,7 +24,7 @@
 }
 
     .verticalItemsContainer .card {
-        contain: layout style;
+        contain: strict;
     }
 
 .card, .card:focus {
@@ -279,10 +279,6 @@ button.cardContent {
         background-color: rgba(0,0,0,.9) !important;
         transition: background-color .5s ease-out;
     }
-
-.emptyCardImageContainer {
-    font-size: 90%;
-}
 
 .defaultCardColor1 {
     background-color: #009688;
