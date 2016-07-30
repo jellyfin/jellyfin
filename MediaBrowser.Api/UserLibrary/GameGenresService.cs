@@ -4,11 +4,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Api.UserLibrary

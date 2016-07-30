@@ -1,7 +1,5 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Model.Logging;
 using System;
-using System.Diagnostics;
 
 namespace MediaBrowser.Server.Startup.Common.Browser
 {
