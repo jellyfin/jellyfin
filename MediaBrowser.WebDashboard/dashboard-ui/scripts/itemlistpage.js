@@ -25,7 +25,7 @@
                 pageData.query.Filters = "";
                 pageData.query.NameStartsWithOrGreater = '';
                 var key = getSavedQueryKey();
-                pageData.view = libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster');
+                pageData.view = libraryBrowser.getSavedView(key) || 'Poster';
 
                 pageData.query.ParentId = params.parentId || null;
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);

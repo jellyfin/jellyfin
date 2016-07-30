@@ -47,12 +47,6 @@
                 return 100;
             },
 
-            getDefaultItemsView: function (view, mobileView) {
-
-                return browserInfo.mobile ? mobileView : view;
-
-            },
-
             getSavedQueryKey: function (modifier) {
 
                 return window.location.href.split('#')[0] + (modifier || '');
@@ -567,40 +561,6 @@
                 return "itemdetails.html?id=" + id;
             },
 
-            getImageUrl: function (item, type, index, options) {
-
-                options = options || {};
-                options.type = type;
-                options.index = index;
-
-                if (type == 'Backdrop') {
-                    options.tag = item.BackdropImageTags[index];
-                } else if (type == 'Screenshot') {
-                    options.tag = item.ScreenshotImageTags[index];
-                } else if (type == 'Primary') {
-                    options.tag = item.PrimaryImageTag || item.ImageTags[type];
-                } else {
-                    options.tag = item.ImageTags[type];
-                }
-
-                // For search hints
-                return ApiClient.getScaledImageUrl(item.Id || item.ItemId, options);
-
-            },
-
-            getTextActionButton: function (item, text) {
-
-                if (!text) {
-                    text = itemHelper.getDisplayName(item);
-                }
-
-                var html = '<button data-id="' + item.Id + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-channelid="' + item.ChannelId + '" data-isfolder="' + item.IsFolder + '" type="button" class="itemAction textActionButton" data-action="link">';
-                html += text;
-                html += '</button>';
-
-                return html;
-            },
-
             getListItemInfo: function (elem) {
 
                 var elemWithAttributes = elem;
@@ -640,85 +600,6 @@
                 }
 
                 return date;
-            },
-
-            getOfflineIndicatorHtml: function (item) {
-
-                if (item.LocationType == "Offline") {
-                    return '<div class="posterRibbon offlinePosterRibbon">' + Globalize.translate('HeaderOffline') + '</div>';
-                }
-
-                if (item.Type == 'Episode') {
-                    try {
-
-                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
-
-                        if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
-                            return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
-                        }
-                    } catch (err) {
-
-                    }
-
-                    return '<div class="posterRibbon missingPosterRibbon">' + Globalize.translate('HeaderMissing') + '</div>';
-                }
-
-                return '';
-            },
-
-            getGroupCountIndicator: function (item) {
-
-                if (item.ChildCount) {
-                    return '<div class="playedIndicator">' + item.ChildCount + '</div>';
-                }
-
-                return '';
-            },
-
-            getSyncIndicator: function (item) {
-
-                if (item.SyncStatus == 'Synced') {
-
-                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
-                }
-
-                var syncPercent = item.SyncPercent;
-                if (syncPercent) {
-                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
-                }
-
-                if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
-
-                    return '<div class="syncIndicator"><i class="md-icon">sync</i></div>';
-                }
-
-                return '';
-            },
-
-            metroColors: ["#6FBD45", "#4BB3DD", "#4164A5", "#E12026", "#800080", "#E1B222", "#008040", "#0094FF", "#FF00C7", "#FF870F", "#7F0037"],
-
-            getRandomMetroColor: function () {
-
-                var index = Math.floor(Math.random() * (LibraryBrowser.metroColors.length - 1));
-
-                return LibraryBrowser.metroColors[index];
-            },
-
-            getMetroColor: function (str) {
-
-                if (str) {
-                    var character = String(str.substr(0, 1).charCodeAt());
-                    var sum = 0;
-                    for (var i = 0; i < character.length; i++) {
-                        sum += parseInt(character.charAt(i));
-                    }
-                    var index = String(sum).substr(-1);
-
-                    return LibraryBrowser.metroColors[index];
-                } else {
-                    return LibraryBrowser.getRandomMetroColor();
-                }
-
             },
 
             renderName: function (item, nameElem, linkToElement, context) {
@@ -776,38 +657,6 @@
                     parentNameElem.innerHTML = html.join(' - ');
                 } else {
                     parentNameElem.classList.add('hide');
-                }
-            },
-
-            renderLinks: function (linksElem, item) {
-
-                var links = [];
-
-                if (item.HomePageUrl) {
-                    links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">' + Globalize.translate('ButtonWebsite') + '</a>');
-                }
-
-                if (item.ExternalUrls) {
-
-                    for (var i = 0, length = item.ExternalUrls.length; i < length; i++) {
-
-                        var url = item.ExternalUrls[i];
-
-                        links.push('<a class="textlink" href="' + url.Url + '" target="_blank">' + url.Name + '</a>');
-                    }
-                }
-
-                if (links.length) {
-
-                    var html = links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
-
-                    html = Globalize.translate('ValueLinks', html);
-
-                    linksElem.innerHTML = html;
-                    linksElem.classList.remove('hide');
-
-                } else {
-                    linksElem.classList.add('hide');
                 }
             },
 
@@ -1210,129 +1059,6 @@
                     }
                 };
                 ImageLoader.lazyImage(img, url);
-            },
-
-            refreshDetailImageUserData: function (elem, item) {
-
-                var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
-
-                var detailImageProgressContainer = elem.querySelector('.detailImageProgressContainer');
-
-                detailImageProgressContainer.innerHTML = progressHtml || '';
-            },
-
-            renderOverview: function (elems, item) {
-
-                for (var i = 0, length = elems.length; i < length; i++) {
-                    var elem = elems[i];
-                    var overview = item.Overview || '';
-
-                    if (overview) {
-                        elem.innerHTML = overview;
-
-                        elem.classList.remove('empty');
-
-                        var anchors = elem.querySelectorAll('a');
-                        for (var j = 0, length2 = anchors.length; j < length2; j++) {
-                            anchors[j].setAttribute("target", "_blank");
-                        }
-
-                    } else {
-                        elem.innerHTML = '';
-
-                        elem.classList.add('empty');
-                    }
-                }
-            },
-
-            renderStudios: function (elem, item, isStatic) {
-
-                if (item.Studios && item.Studios.length && item.Type != "Series") {
-
-                    var html = '';
-
-                    for (var i = 0, length = item.Studios.length; i < length; i++) {
-
-                        if (i > 0) {
-                            html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
-                        }
-
-                        if (isStatic) {
-                            html += item.Studios[i].Name;
-                        } else {
-                            html += '<a class="textlink" href="itemdetails.html?id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
-                        }
-                    }
-
-                    var translationKey = item.Studios.length > 1 ? "ValueStudios" : "ValueStudio";
-
-                    html = Globalize.translate(translationKey, html);
-
-                    elem.innerHTML = html;
-                    elem.classList.remove('hide');
-
-                } else {
-                    elem.classList.add('hide');
-                }
-            },
-
-            renderGenres: function (elem, item, limit, isStatic) {
-
-                var html = '';
-
-                var genres = item.Genres || [];
-
-                for (var i = 0, length = genres.length; i < length; i++) {
-
-                    if (limit && i >= limit) {
-                        break;
-                    }
-
-                    if (i > 0) {
-                        html += '<span>&nbsp;&nbsp;/&nbsp;&nbsp;</span>';
-                    }
-
-                    var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
-
-                    if (item.MediaType == "Game") {
-                        param = "gamegenre";
-                    }
-
-                    if (isStatic) {
-                        html += genres[i];
-                    } else {
-                        html += '<a class="textlink" href="itemdetails.html?' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
-                    }
-                }
-
-                elem.innerHTML = html;
-            },
-
-            renderPremiereDate: function (elem, item) {
-                if (item.PremiereDate) {
-                    try {
-
-                        var date = datetime.parseISO8601Date(item.PremiereDate, true);
-
-                        var translationKey = new Date().getTime() > date.getTime() ? "ValuePremiered" : "ValuePremieres";
-
-                        elem.show().html(Globalize.translate(translationKey, date.toLocaleDateString()));
-
-                    } catch (err) {
-                        elem.hide();
-                    }
-                } else {
-                    elem.hide();
-                }
-            },
-
-            renderAwardSummary: function (elem, item) {
-                if (item.AwardSummary) {
-                    elem.classList.remove('hide');
-                    elem.innerHTML = Globalize.translate('ValueAwards', item.AwardSummary);
-                } else {
-                    elem.classList.add('hide');
-                }
             },
 
             renderDetailPageBackdrop: function (page, item) {

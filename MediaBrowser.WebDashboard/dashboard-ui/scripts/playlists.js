@@ -18,7 +18,7 @@
                         StartIndex: 0,
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
+                    view: LibraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = LibraryMenu.getTopParentId();

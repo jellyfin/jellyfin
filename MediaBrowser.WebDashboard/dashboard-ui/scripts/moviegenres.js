@@ -19,7 +19,7 @@
                         Fields: "DateCreated,SyncInfo,ItemCounts,PrimaryImageAspectRatio",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
+                    view: libraryBrowser.getSavedView(key) || 'Thumb'
                 };
 
                 pageData.query.ParentId = params.topParentId;

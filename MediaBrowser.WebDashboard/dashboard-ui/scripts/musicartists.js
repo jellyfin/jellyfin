@@ -22,7 +22,7 @@
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
+                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = params.topParentId;

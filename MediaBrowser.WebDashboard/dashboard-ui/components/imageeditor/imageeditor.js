@@ -61,6 +61,27 @@
         });
     }
 
+    function getImageUrl(item, type, index, options) {
+
+        options = options || {};
+        options.type = type;
+        options.index = index;
+
+        if (type == 'Backdrop') {
+            options.tag = item.BackdropImageTags[index];
+        } else if (type == 'Screenshot') {
+            options.tag = item.ScreenshotImageTags[index];
+        } else if (type == 'Primary') {
+            options.tag = item.PrimaryImageTag || item.ImageTags[type];
+        } else {
+            options.tag = item.ImageTags[type];
+        }
+
+        // For search hints
+        return ApiClient.getScaledImageUrl(item.Id || item.ItemId, options);
+
+    }
+
     function renderImages(page, item, images, imageProviders, elem) {
 
         var html = '';
@@ -74,7 +95,7 @@
 
             var height = 150;
 
-            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center bottom;background-size:contain;" class="lazy" data-src="' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '"></div>';
+            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center bottom;background-size:contain;" class="lazy" data-src="' + getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '"></div>';
 
             html += '<div class="editorTileFooter">';
 

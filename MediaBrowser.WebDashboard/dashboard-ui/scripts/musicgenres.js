@@ -19,7 +19,7 @@
                         Fields: "DateCreated,SyncInfo,ItemCounts",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
+                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = params.topParentId;

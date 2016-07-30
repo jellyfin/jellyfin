@@ -1,4 +1,4 @@
-﻿define(['datetime', 'userdataButtons', 'paper-icon-button-light'], function (datetime, userdataButtons) {
+﻿define(['datetime', 'userdataButtons', 'itemHelper', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper) {
 
     var currentPlayer;
 
@@ -505,13 +505,26 @@
         }
     }
 
+    function getTextActionButton(item, text) {
+
+        if (!text) {
+            text = itemHelper.getDisplayName(item);
+        }
+
+        var html = '<button data-id="' + item.Id + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-channelid="' + item.ChannelId + '" data-isfolder="' + item.IsFolder + '" type="button" class="itemAction textActionButton" data-action="link">';
+        html += text;
+        html += '</button>';
+
+        return html;
+    }
+
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
         nowPlayingTextElement.innerHTML = MediaController.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
 
             if (nowPlayingName.item) {
-                return '<div>' + LibraryBrowser.getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
+                return '<div>' + getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
             }
 
             return '<div>' + nowPlayingName.text + '</div>';
