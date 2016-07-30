@@ -29,6 +29,10 @@
     flex-wrap: wrap;
 }
 
+    .vertical-wrap.centered {
+        justify-content: center;
+    }
+
     .vertical-wrap .card {
         contain: strict;
     }
