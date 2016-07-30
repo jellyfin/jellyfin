@@ -997,10 +997,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecordingGroup request)
         {
-            var result = await _liveTvManager.GetRecordingGroups(new RecordingGroupQuery
-            {
-
-            }, CancellationToken.None).ConfigureAwait(false);
+            var result = await _liveTvManager.GetRecordingGroups(new RecordingGroupQuery(), CancellationToken.None).ConfigureAwait(false);
 
             var group = result.Items.FirstOrDefault(i => string.Equals(i.Id, request.Id, StringComparison.OrdinalIgnoreCase));
 

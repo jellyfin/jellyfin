@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using System.Linq;
