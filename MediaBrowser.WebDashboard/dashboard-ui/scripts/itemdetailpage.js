@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators) {
 
     var currentItem;
 
@@ -329,11 +329,9 @@
 
     function refreshDetailImageUserData(elem, item) {
 
-        var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
-
         var detailImageProgressContainer = elem.querySelector('.detailImageProgressContainer');
 
-        detailImageProgressContainer.innerHTML = progressHtml || '';
+        detailImageProgressContainer.innerHTML = indicators.getProgressBarHtml(item);
     }
 
     function refreshImage(page, item, user) {

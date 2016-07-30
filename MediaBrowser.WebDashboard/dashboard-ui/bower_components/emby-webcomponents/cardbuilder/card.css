@@ -6,7 +6,6 @@
     padding: 0;
     display: block;
     color: inherit !important;
-    box-shadow: none !important;
     outline: none !important;
     cursor: pointer;
     contain: style;
@@ -75,7 +74,6 @@ button.card {
     padding: 0 !important;
     margin: 0;
     transition: none !important;
-    border-radius: 0 !important;
     border: 3px solid transparent;
     /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
     overflow: hidden;
@@ -174,6 +172,10 @@ button.cardContent {
     bottom: 0;
 }
 
+.round .cardContent {
+    overflow: visible;
+}
+
 .scalableCard .cardImageContainer {
     height: 100%;
 }
@@ -199,18 +201,20 @@ button.cardContent {
         opacity: .6;
     }
 
-.visualCardBox .cardScalable {
-    background-color: #222326;
-}
-
-.visualCardBox .cardFooter {
+/*.visualCardBox {
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}*/
+
+.visualCardBox .cardScalable, .visualCardBox .cardFooter {
+    background-color: #222326;
+}
+
+.visualCardBox .cardFooter {
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
-    background-color: #222326;
 }
 
 .innerCardFooter {
@@ -267,8 +271,6 @@ button.cardContent {
     height: 12vh;
     font-size: 12vh;
     color: #fff;
-    position: relative;
-    top: -8%;
 }
 
 .card .indicators {
