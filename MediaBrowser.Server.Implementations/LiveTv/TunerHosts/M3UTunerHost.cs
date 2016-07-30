@@ -141,7 +141,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                 return new List<MediaSourceInfo> { mediaSource };
             }
-            return new List<MediaSourceInfo> { };
+            return new List<MediaSourceInfo>();
         }
 
         protected override Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
