@@ -37,6 +37,10 @@
         contain: strict;
     }
 
+.layout-tv .vertical-wrap .card {
+    contain: layout style;
+}
+
 .card, .card:focus {
     font-weight: inherit !important;
 }

@@ -2497,7 +2497,8 @@ var AppInfo = {};
             path: '/playlists.html',
             dependencies: [],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/playlists'
         });
 
         defineRoute({
