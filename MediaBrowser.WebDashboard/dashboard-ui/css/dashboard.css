@@ -23,6 +23,10 @@ paper-input + .fieldDescription {
     margin-bottom: 30px !important;
 }
 
+.ui-body-a .visualCardBox .cardScalable, .ui-body-a .visualCardBox .cardFooter {
+    background-color: #fff;
+}
+
 @media all and (min-width: 800px) {
 
     .type-interior > .ui-content, .type-interior > .ui-panel-content-wrap > .ui-content {

@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light', 'cardStyle'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -85,7 +85,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard bottomPaddedCard";
+        var cssClass = "card squareCard scalableCard";
 
         if (user.Policy.IsDisabled) {
             cssClass += ' grayscale';
@@ -135,7 +135,7 @@
 
         html += '<div class="cardFooter">';
 
-        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+        html += '<div style="text-align:right; float:right;padding:0;">';
         html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
         html += "</div>";
 
