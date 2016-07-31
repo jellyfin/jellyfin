@@ -450,7 +450,7 @@
             page.querySelector('#castCollapsible').classList.add('hide');
         } else {
             page.querySelector('#castCollapsible').classList.remove('hide');
-            renderCast(page, item, context, enableScrollX() ? null : 6);
+            renderCast(page, item, context, enableScrollX() ? null : 12);
         }
 
         if (item.PartCount && item.PartCount > 1) {
@@ -1583,82 +1583,40 @@
     }
 
     function renderScenes(page, item, user, limit, isStatic) {
-        var html = '';
 
         var chapters = item.Chapters || [];
+        var scenesContent = page.querySelector('#scenesContent');
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX itemsContainer">';
+            scenesContent.classList.add('smoothScrollX');
             limit = null;
         } else {
-            html += '<div class="itemsContainer vertical-wrap">';
+            scenesContent.classList.add('vertical-wrap');
         }
 
-        for (var i = 0, length = chapters.length; i < length; i++) {
+        var limitExceeded = limit && chapters.length > limit;
 
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var chapter = chapters[i];
-            var chapterName = chapter.Name || "Chapter " + i;
-
-            var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
-
-            html += '<a class="card ' + getThumbShape() + 'Card scalableCard" href="#"' + onclick + '>';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imgUrl;
-
-            if (chapter.ImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: 400,
-                    tag: chapter.ImageTag,
-                    type: "Chapter",
-                    index: i
-                });
-            } else {
-                imgUrl = "css/images/items/list/chapter.png";
-            }
-
-            html += '<div class="cardPadder"></div>';
-
-            html += '<div class="cardContent">';
-            html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
-
-            html += '<div class="innerCardFooter">';
-            html += '<div class="cardText">' + chapterName + '</div>';
-            html += '<div class="cardText">';
-            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
-            html += '</div>';
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</div>';
-
-            // cardScalable
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</a>';
+        if (limitExceeded) {
+            chapters = chapters.slice(0);
+            chapters.length = Math.min(limit, chapters.length);
         }
 
-        html += '</div>';
+        require(['chaptercardbuilder'], function (chaptercardbuilder) {
 
-        if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;"><button is="emby-button" type="button" class="raised more moreScenes">' + Globalize.translate('ButtonMore') + '</button></p>';
+            chaptercardbuilder.buildChapterCards(item, chapters, {
+                itemsContainer: scenesContent,
+                coverImage: true,
+                width: 400,
+                backdropShape: getThumbShape(),
+                squareShape: getSquareShape()
+            });
+        });
+
+        if (limitExceeded) {
+            page.querySelector('.moreScenes').classList.remove('hide');
+        } else {
+            page.querySelector('.moreScenes').classList.add('hide');
         }
-
-        var scenesContent = page.querySelector('#scenesContent');
-        scenesContent.innerHTML = html;
-        ImageLoader.lazyChildren(scenesContent);
     }
 
     function renderMediaSources(page, item) {
@@ -1913,232 +1871,39 @@
 
     function renderCast(page, item, context, limit, isStatic) {
 
-        if (enableScrollX()) {
-            renderHorizontalCast(page, item, context, isStatic);
-            return;
-        }
-
-        var html = '';
-
-        var casts = item.People || [];
-
-        for (var i = 0, length = casts.length; i < length; i++) {
-
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var cast = casts[i];
-            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
-            html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
-
-            var imgUrl;
-            var lazy = true;
-
-            if (cast.PrimaryImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    maxWidth: 100,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary",
-                    minScale: 2
-                });
-
-            } else {
-
-                imgUrl = "css/images/items/list/person.png";
-                lazy = false;
-            }
-
-            if (lazy) {
-                html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
-            } else {
-                html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            }
-
-            html += '<div class="tileContent">';
-
-            html += '<p>' + cast.Name + '</p>';
-
-            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            if (role == "GuestStar") {
-                role = Globalize.translate('ValueGuestStar');
-            }
-
-            role = role || "";
-
-            var maxlength = 40;
-
-            if (role.length > maxlength) {
-                role = role.substring(0, maxlength - 3) + '...';
-            }
-
-            html += '<p>' + role + '</p>';
-
-            html += '</div>';
-
-            html += '</a>';
-        }
-
-        if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><button is="emby-button" type="button" class="raised more morePeople">' + Globalize.translate('ButtonMore') + '</button></p>';
-        }
-
+        var people = item.People || [];
         var castContent = page.querySelector('#castContent');
-        castContent.innerHTML = html;
-        ImageLoader.lazyChildren(castContent);
-    }
-
-    function renderHorizontalCast(page, item, context, isStatic) {
-
-        var html = '';
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX itemsContainer">';
+            castContent.classList.add('smoothScrollX');
+            limit = 32;
         } else {
-            html += '<div class="itemsContainer">';
+            castContent.classList.add('vertical-wrap');
         }
 
-        var casts = item.People || [];
+        var limitExceeded = limit && people.length > limit;
 
-        casts = casts.filter(function (c) {
+        if (limitExceeded) {
+            people = people.slice(0);
+            people.length = Math.min(limit, people.length);
+        }
 
-            return c.PrimaryImageTag;
+        require(['peoplecardbuilder'], function (peoplecardbuilder) {
+
+            peoplecardbuilder.buildPeopleCards(people, {
+                itemsContainer: castContent,
+                coverImage: true,
+                serverId: item.ServerId,
+                width: 160,
+                shape: getPortraitShape()
+            });
         });
 
-        if (!casts.length) {
-            casts = item.People || [];
+        if (limitExceeded && !enableScrollX()) {
+            page.querySelector('.morePeople').classList.remove('hide');
+        } else {
+            page.querySelector('.morePeople').classList.add('hide');
         }
-
-        for (var i = 0, length = casts.length; i < length; i++) {
-
-            var cast = casts[i];
-            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
-
-            html += '<div class="card ' + getPortraitShape() + 'Card">';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imgUrl;
-            var lazy = true;
-
-            if (cast.PrimaryImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    maxWidth: 100,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary",
-                    minScale: 2
-                });
-
-            } else {
-
-                imgUrl = "css/images/items/list/person.png";
-                lazy = false;
-            }
-
-            html += '<div class="cardPadder"></div>';
-
-            html += '<a class="cardContent" href="' + href + '">';
-            if (lazy) {
-                html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '"></div>';
-            } else {
-                html += '<div class="cardImage coveredCardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            }
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</a>';
-
-            // cardScalable
-            html += '</div>';
-
-            html += '<div class="cardFooter outerCardFooter">';
-            html += '<div class="cardText">' + cast.Name + '</div>';
-            html += '<div class="cardText">';
-
-            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            if (role == "GuestStar") {
-                role = Globalize.translate('ValueGuestStar');
-            }
-
-            role = role || "";
-
-            var maxlength = 40;
-
-            if (role.length > maxlength) {
-                role = role.substring(0, maxlength - 3) + '...';
-            }
-
-            html += role;
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</div>';
-
-            //html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
-
-            //var imgUrl;
-            //var lazy = true;
-
-            //if (cast.PrimaryImageTag) {
-
-            //    imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-            //        width: 100,
-            //        tag: cast.PrimaryImageTag,
-            //        type: "primary",
-            //        minScale: 2
-            //    });
-
-            //} else {
-
-            //    imgUrl = "css/images/items/list/person.png";
-            //    lazy = false;
-            //}
-
-            //if (lazy) {
-            //    html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
-            //} else {
-            //    html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            //}
-
-            //html += '<div class="tileContent">';
-
-            //html += '<p>' + cast.Name + '</p>';
-
-            //var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            //if (role == "GuestStar") {
-            //    role = Globalize.translate('ValueGuestStar');
-            //}
-
-            //role = role || "";
-
-            //var maxlength = 40;
-
-            //if (role.length > maxlength) {
-            //    role = role.substring(0, maxlength - 3) + '...';
-            //}
-
-            //html += '<p>' + role + '</p>';
-
-            //html += '</div>';
-
-            //html += '</a>';
-        }
-
-        html += '</div>';
-
-        var castContent = page.querySelector('#castContent');
-        castContent.innerHTML = html;
-        ImageLoader.lazyChildren(castContent);
     }
 
     function play(startPosition) {

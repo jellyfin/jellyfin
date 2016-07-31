@@ -1,4 +1,4 @@
-define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLoader, itemShortcuts) {
+define(['datetime', 'imageLoader', 'connectionManager'], function (datetime, imageLoader, connectionManager) {
 
     function buildChapterCardsHtml(item, chapters, options) {
 
@@ -9,12 +9,12 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
             return i.Type == 'Video';
         })[0] || {};
 
-        var shape = 'backdropCard';
+        var shape = (options.backdropShape || 'backdrop') + 'Card';
 
         if (videoStream.Width && videoStream.Height) {
 
             if ((videoStream.Width / videoStream.Height) <= 1.34) {
-                shape = 'squareCard';
+                shape = (options.squareShape || 'square') + 'Card';
             }
         }
 
@@ -27,6 +27,8 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
         var html = '';
         var itemsInRow = 0;
 
+        var apiClient = connectionManager.getApiClient(item.ServerId);
+
         for (var i = 0, length = chapters.length; i < length; i++) {
 
             if (options.rows && itemsInRow == 0) {
@@ -35,7 +37,7 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
 
             var chapter = chapters[i];
 
-            html += buildChapterCard(item, chapter, options, className);
+            html += buildChapterCard(item, apiClient, chapter, i, options, className);
             itemsInRow++;
 
             if (options.rows && itemsInRow >= options.rows) {
@@ -47,9 +49,25 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
         return html;
     }
 
-    function buildChapterCard(item, chapter, options, className) {
+    function getImgUrl(item, chapter, index, maxWidth, apiClient) {
 
-        var imgUrl = chapter.images ? chapter.images.primary : '';
+        if (chapter.ImageTag) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+
+                maxWidth: maxWidth,
+                tag: chapter.ImageTag,
+                type: "Chapter",
+                index: index
+            });
+        }
+
+        return null;
+    }
+
+    function buildChapterCard(item, apiClient, chapter, index, options, className) {
+
+        var imgUrl = getImgUrl(item, chapter, index, options.width || 400, apiClient);
 
         var cardImageContainerClass = 'cardImageContainer';
         if (options.coverImage) {
@@ -84,12 +102,12 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
 
     function buildChapterCards(item, chapters, options) {
 
-        // Abort if the container has been disposed
-        if (!document.body.contains(options.parentContainer)) {
-            return;
-        }
-
         if (options.parentContainer) {
+            // Abort if the container has been disposed
+            if (!document.body.contains(options.parentContainer)) {
+                return;
+            }
+
             if (chapters.length) {
                 options.parentContainer.classList.remove('hide');
             } else {
@@ -103,9 +121,6 @@ define(['datetime', 'imageLoader', 'itemShortcuts'], function (datetime, imageLo
         options.itemsContainer.innerHTML = html;
 
         imageLoader.lazyChildren(options.itemsContainer);
-
-        itemShortcuts.off(options.itemsContainer);
-        itemShortcuts.on(options.itemsContainer);
     }
 
     return {

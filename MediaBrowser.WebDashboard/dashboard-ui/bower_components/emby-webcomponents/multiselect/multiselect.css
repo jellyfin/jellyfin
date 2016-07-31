@@ -34,3 +34,7 @@
     top: 0 !important;
     border-radius: 0 !important;
 }
+
+.withMultiSelect {
+    position: relative;
+}
