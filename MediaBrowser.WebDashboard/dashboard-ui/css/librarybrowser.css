@@ -1054,4 +1054,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemDetailPage .scalableCard.backdropCard, .itemDetailPage .scalableCard.smallBackdropCard {
         width: 33.3333333333333333% !important;
     }
+
+    .itemDetailPage .personCard.portraitCard {
+        width: 16.666666666666666666666666666667% !important;
+    }
 }

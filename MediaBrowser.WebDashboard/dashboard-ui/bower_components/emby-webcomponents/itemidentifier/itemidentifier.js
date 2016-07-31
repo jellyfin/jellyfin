@@ -1,11 +1,16 @@
-﻿define(['dialogHelper', 'loading', 'cardBuilder', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, cardBuilder) {
+﻿define(['dialogHelper', 'loading', 'cardBuilder', 'connectionManager', 'require', 'globalize', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, cardBuilder, connectionManager, require, globalize) {
 
     var currentItem;
     var currentItemType;
+    var currentServerId;
     var currentResolve;
     var currentReject;
     var hasChanges = false;
     var currentSearchResult;
+
+    function getApiClient() {
+        return connectionManager.getApiClient(currentServerId);
+    }
 
     function searchForIdentificationResults(page) {
 
@@ -44,7 +49,7 @@
 
         if (!hasId && !lookupInfo.Name) {
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessagePleaseEnterNameOrId'));
+                toast(globalize.translate('MessagePleaseEnterNameOrId'));
             });
             return;
         }
@@ -60,9 +65,11 @@
 
         loading.show();
 
-        ApiClient.ajax({
+        var apiClient = getApiClient();
+
+        apiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/" + currentItemType),
+            url: apiClient.getUrl("Items/RemoteSearch/" + currentItemType),
             data: JSON.stringify(lookupInfo),
             contentType: "application/json",
             dataType: 'json'
@@ -203,7 +210,9 @@
     }
 
     function getSearchImageDisplayUrl(url, provider) {
-        return ApiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
+        var apiClient = getApiClient();
+
+        return apiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
     }
 
     function submitIdentficationResult(page) {
@@ -214,9 +223,11 @@
             ReplaceAllImages: page.querySelector('#chkIdentifyReplaceImages').checked
         };
 
-        ApiClient.ajax({
+        var apiClient = getApiClient();
+
+        apiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
+            url: apiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
             data: JSON.stringify(currentSearchResult),
             contentType: "application/json"
 
@@ -251,7 +262,7 @@
 
                 html += '<div class="inputContainer">';
 
-                var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+                var idLabel = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
                 var value = providerIds[idInfo.Key] || '';
 
@@ -274,7 +285,7 @@
 
             page.querySelector('.identifyProviderIds').innerHTML = html;
 
-            page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
+            page.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('HeaderIdentify');
         });
     }
 
@@ -282,13 +293,11 @@
 
         loading.show();
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
+        require(['text!./itemidentifier.template.html'], function (template) {
 
-        xhr.onload = function (e) {
+            var apiClient = getApiClient();
 
-            var template = this.response;
-            ApiClient.getItem(ApiClient.getCurrentUserId(), itemId).then(function (item) {
+            apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
                 currentItemType = currentItem.Type;
@@ -302,7 +311,7 @@
                 dlg.classList.add('background-theme-b');
 
                 var html = '';
-                html += Globalize.translateDocument(template);
+                html += globalize.translateDocument(template);
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
@@ -336,9 +345,7 @@
                 showIdentificationForm(dlg, item);
                 loading.hide();
             });
-        }
-
-        xhr.send();
+        });
     }
 
     function onDialogClosed() {
@@ -356,13 +363,8 @@
         currentItem = null;
         currentItemType = itemType;
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
-
-        xhr.onload = function (e) {
-
-            var template = this.response;
-
+        require(['text!./itemidentifier.template.html'], function (template) {
+            
             var dlg = dialogHelper.createDialog({
                 size: 'medium'
             });
@@ -371,7 +373,7 @@
             dlg.classList.add('background-theme-a');
 
             var html = '';
-            html += Globalize.translateDocument(template);
+            html += globalize.translateDocument(template);
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
@@ -401,9 +403,7 @@
             dlg.classList.add('identifyDialog');
 
             showIdentificationFormFindNew(dlg, itemName, itemYear, itemType);
-        }
-
-        xhr.send();
+        });
     }
 
     function showIdentificationFormFindNew(dlg, itemName, itemYear, itemType) {
@@ -421,24 +421,28 @@
             dlg.querySelector('#txtLookupYear').value = itemYear;
         }
 
-        dlg.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderSearch');
+        dlg.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('HeaderSearch');
     }
 
     return {
-        show: function (itemId) {
+        show: function (itemId, serverId) {
 
             return new Promise(function (resolve, reject) {
 
                 currentResolve = resolve;
                 currentReject = reject;
+                currentServerId = serverId;
                 hasChanges = false;
 
                 showEditor(itemId);
             });
         },
 
-        showFindNew: function (itemName, itemYear, itemType) {
+        showFindNew: function (itemName, itemYear, itemType, serverId) {
+
             return new Promise(function (resolve, reject) {
+
+                currentServerId = serverId;
 
                 hasChanges = false;
                 showEditorFindNew(itemName, itemYear, itemType, resolve);

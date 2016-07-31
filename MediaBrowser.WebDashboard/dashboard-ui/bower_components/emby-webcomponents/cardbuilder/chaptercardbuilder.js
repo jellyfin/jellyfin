@@ -1,4 +1,4 @@
-define(['datetime', 'imageLoader', 'itemShortcuts', 'connectionManager'], function (datetime, imageLoader, itemShortcuts, connectionManager) {
+define(['datetime', 'imageLoader', 'connectionManager'], function (datetime, imageLoader, connectionManager) {
 
     function buildChapterCardsHtml(item, chapters, options) {
 
@@ -9,12 +9,12 @@ define(['datetime', 'imageLoader', 'itemShortcuts', 'connectionManager'], functi
             return i.Type == 'Video';
         })[0] || {};
 
-        var shape = 'backdropCard';
+        var shape = (options.backdropShape || 'backdrop') + 'Card';
 
         if (videoStream.Width && videoStream.Height) {
 
             if ((videoStream.Width / videoStream.Height) <= 1.34) {
-                shape = 'squareCard';
+                shape = (options.squareShape || 'square') + 'Card';
             }
         }
 
@@ -121,9 +121,6 @@ define(['datetime', 'imageLoader', 'itemShortcuts', 'connectionManager'], functi
         options.itemsContainer.innerHTML = html;
 
         imageLoader.lazyChildren(options.itemsContainer);
-
-        itemShortcuts.off(options.itemsContainer);
-        itemShortcuts.on(options.itemsContainer);
     }
 
     return {
