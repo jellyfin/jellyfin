@@ -245,6 +245,6 @@
   "ValueMinutes": "{0} min",
   "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
   "PleaseEnterNameOrId": "Please enter a name or an external Id.",
-  "MessageItemSaved": "Item saved."
-
+  "MessageItemSaved": "Item saved.",
+  "SearchResults": "Search Results"
 }

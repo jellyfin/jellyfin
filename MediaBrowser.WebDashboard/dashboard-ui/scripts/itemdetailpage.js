@@ -2090,14 +2090,6 @@
             elems[i].addEventListener('click', onMoreCommandsClick);
         }
 
-        var childrenItemsContainer = view.querySelector('.childrenItemsContainer');
-        childrenItemsContainer.addEventListener('playallfromhere', function (e) {
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
-        });
-        childrenItemsContainer.addEventListener('queueallfromhere', function (e) {
-            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, e.detail.index);
-        });
-
         view.addEventListener('click', function (e) {
 
             if (dom.parentWithClass(e.target, 'moreScenes')) {
@@ -2123,10 +2115,20 @@
             renderChildren(view, currentItem);
         });
 
+        function editImages() {
+            return new Promise(function (resolve, reject) {
+
+                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+                    ImageEditor.show(currentItem.Id).then(resolve, reject);
+                });
+            });
+        }
+
         view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
             var itemDetailGalleryLink = dom.parentWithClass(e.target, 'itemDetailGalleryLink');
             if (itemDetailGalleryLink) {
-                LibraryBrowser.editImages(currentItem.Id).then(function () {
+                editImages().then(function () {
                     reload(view, params);
                 });
             }

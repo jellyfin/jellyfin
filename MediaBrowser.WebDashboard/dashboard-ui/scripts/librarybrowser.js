@@ -354,37 +354,6 @@
                 }
             },
 
-            getDateParamValue: function (date) {
-
-                function formatDigit(i) {
-                    return i < 10 ? "0" + i : i;
-                }
-
-                var d = date;
-
-                return "" + d.getFullYear() + formatDigit(d.getMonth() + 1) + formatDigit(d.getDate()) + formatDigit(d.getHours()) + formatDigit(d.getMinutes()) + formatDigit(d.getSeconds());
-            },
-
-            playAllFromHere: function (fn, index) {
-
-                fn(index, 100, "MediaSources,Chapters").then(function (result) {
-
-                    MediaController.play({
-                        items: result.Items
-                    });
-                });
-            },
-
-            queueAllFromHere: function (query, index) {
-
-                fn(index, 100, "MediaSources,Chapters").then(function (result) {
-
-                    MediaController.queue({
-                        items: result.Items
-                    });
-                });
-            },
-
             getArtistLinksHtml: function (artists, cssClass) {
 
                 var html = [];
@@ -407,17 +376,6 @@
 
                 Dashboard.loadExternalPlayer().then(function () {
                     ExternalPlayer.showMenu(id);
-                });
-            },
-
-            editImages: function (itemId) {
-
-                return new Promise(function (resolve, reject) {
-
-                    require(['components/imageeditor/imageeditor'], function (ImageEditor) {
-
-                        ImageEditor.show(itemId).then(resolve, reject);
-                    });
                 });
             },
 
