@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'cardBuilder', 'connectionManager', 'require', 'globalize', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading, cardBuilder, connectionManager, require, globalize) {
+﻿define(['dialogHelper', 'loading', 'cardBuilder', 'connectionManager', 'require', 'globalize', 'scrollHelper', 'layoutManager', 'focusManager', 'emby-input', 'emby-checkbox', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'cardStyle'], function (dialogHelper, loading, cardBuilder, connectionManager, require, globalize, scrollHelper, layoutManager, focusManager) {
 
     var currentItem;
     var currentItemType;
@@ -49,7 +49,7 @@
 
         if (!hasId && !lookupInfo.Name) {
             require(['toast'], function (toast) {
-                toast(globalize.translate('MessagePleaseEnterNameOrId'));
+                toast(globalize.translate('sharedcomponents#PleaseEnterNameOrId'));
             });
             return;
         }
@@ -83,8 +83,10 @@
 
     function showIdentificationSearchResults(page, results) {
 
+        var identificationSearchResults = page.querySelector('.identificationSearchResults');
+
         page.querySelector('.popupIdentifyForm').classList.add('hide');
-        page.querySelector('.identificationSearchResults').classList.remove('hide');
+        identificationSearchResults.classList.remove('hide');
         page.querySelector('.identifyOptionsForm').classList.add('hide');
 
         var html = '';
@@ -117,6 +119,8 @@
 
             searchImages[i].addEventListener('click', onSearchImageClick);
         }
+
+        focusManager.autoFocus(identificationSearchResults);
     }
 
     function finishFindNewDialog(dlg, identifyResult) {
@@ -129,9 +133,11 @@
 
     function showIdentifyOptions(page, identifyResult) {
 
+        var identifyOptionsForm = page.querySelector('.identifyOptionsForm');
+
         page.querySelector('.popupIdentifyForm').classList.add('hide');
         page.querySelector('.identificationSearchResults').classList.add('hide');
-        page.querySelector('.identifyOptionsForm').classList.remove('hide');
+        identifyOptionsForm.classList.remove('hide');
         page.querySelector('#chkIdentifyReplaceImages').checked = true;
 
         currentSearchResult = identifyResult;
@@ -152,10 +158,12 @@
         if (identifyResult.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(identifyResult.ImageUrl, identifyResult.SearchProviderName);
 
-            resultHtml = '<img src="' + displayUrl + '" style="max-height:160px;" /><br/>' + resultHtml;
+            resultHtml = '<div style="display:flex;align-items:center;"><img src="' + displayUrl + '" style="max-height:240px;" /><div style="margin-left:1em;">' + resultHtml + '</div>';
         }
 
         page.querySelector('.selectedSearchResult').innerHTML = resultHtml;
+
+        focusManager.focus(identifyOptionsForm.querySelector('.btnSubmit'));
     }
 
     function getSearchResultHtml(result, index) {
@@ -173,12 +181,12 @@
             cssClass += " portraitCard";
         }
 
-        html += '<div class="' + cssClass + '">';
+        html += '<button type="button" class="' + cssClass + '">';
         html += '<div class="cardBox">';
         html += '<div class="cardScalable">';
         html += '<div class="cardPadder"></div>';
 
-        html += '<a class="cardContent searchImage" href="#" data-index="' + index + '">';
+        html += '<div class="cardContent searchImage" data-index="' + index + '">';
 
         if (result.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
@@ -188,7 +196,7 @@
 
             html += '<div class="cardImageContainer coveredImage ' + cardBuilder.getDefaultColorClass(result.Name) + '"><div class="cardText cardCenteredText">' + result.Name + '</div></div>';
         }
-        html += '</a>';
+        html += '</div>';
         html += '</div>';
 
         html += '<div class="cardFooter outerCardFooter">';
@@ -205,7 +213,7 @@
         }
         html += '</div>';
         html += '</div>';
-        html += '</div>';
+        html += '</button>';
         return html;
     }
 
@@ -248,7 +256,9 @@
 
     function showIdentificationForm(page, item) {
 
-        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
+        var apiClient = getApiClient();
+
+        apiClient.getJSON(apiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
 
             var html = '';
 
@@ -262,7 +272,7 @@
 
                 html += '<div class="inputContainer">';
 
-                var idLabel = globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+                var idLabel = globalize.translate('sharedcomponents#LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
                 var value = providerIds[idInfo.Key] || '';
 
@@ -285,7 +295,7 @@
 
             page.querySelector('.identifyProviderIds').innerHTML = html;
 
-            page.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('HeaderIdentify');
+            page.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Identify');
         });
     }
 
@@ -302,22 +312,33 @@
                 currentItem = item;
                 currentItemType = currentItem.Type;
 
-                var dlg = dialogHelper.createDialog({
+                var dialogOptions = {
                     size: 'medium',
-                    removeOnClose: true
-                });
+                    removeOnClose: true,
+                    scrollY: false
+                };
 
-                dlg.classList.add('ui-body-b');
-                dlg.classList.add('background-theme-b');
+                if (layoutManager.tv) {
+                    dialogOptions.size = 'fullscreen';
+                }
+
+                var dlg = dialogHelper.createDialog(dialogOptions);
+
+                dlg.classList.add('formDialog');
+                dlg.classList.add('recordingDialog');
 
                 var html = '';
-                html += globalize.translateDocument(template);
+                html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
                 dlg.addEventListener('close', onDialogClosed);
+
+                if (layoutManager.tv) {
+                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                }
 
                 dialogHelper.open(dlg);
 
@@ -364,19 +385,31 @@
         currentItemType = itemType;
 
         require(['text!./itemidentifier.template.html'], function (template) {
-            
-            var dlg = dialogHelper.createDialog({
-                size: 'medium'
-            });
 
-            dlg.classList.add('ui-body-a');
-            dlg.classList.add('background-theme-a');
+            var dialogOptions = {
+                size: 'medium',
+                removeOnClose: true,
+                scrollY: false
+            };
+
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            }
+
+            var dlg = dialogHelper.createDialog(dialogOptions);
+
+            dlg.classList.add('formDialog');
+            dlg.classList.add('recordingDialog');
 
             var html = '';
-            html += globalize.translateDocument(template);
+            html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+            }
 
             dialogHelper.open(dlg);
 
@@ -421,7 +454,7 @@
             dlg.querySelector('#txtLookupYear').value = itemYear;
         }
 
-        dlg.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('HeaderSearch');
+        dlg.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Search');
     }
 
     return {
