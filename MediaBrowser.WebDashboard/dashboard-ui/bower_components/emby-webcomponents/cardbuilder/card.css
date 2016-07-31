@@ -347,10 +347,6 @@ button.cardImageContainer {
     background-color: #F57F17;
 }
 
-.scalableCard.personCard {
-    width: 14.285714285714285714285714285714%;
-}
-
 .scalableCard.backdropCard {
     width: 100%;
 }
@@ -578,4 +574,8 @@ button.cardImageContainer {
 
 .layout-tv .scalableCard.portraitCard {
     width: 16.66666666666666667%;
+}
+
+.layout-tv .scalableCard.personCard {
+    width: 14.285714285714285714285714285714%;
 }

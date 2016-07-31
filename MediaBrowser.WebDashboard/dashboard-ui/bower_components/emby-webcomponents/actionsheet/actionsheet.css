@@ -50,11 +50,6 @@ button.actionSheetMenuItem {
     display: inline-block;
 }
 
-.layout-tv button.actionSheetMenuItem {
-    padding-top: .16em;
-    padding-bottom: .16em;
-}
-
 .actionSheetItemIcon {
     margin-right: 1.5em !important;
 }
@@ -68,7 +63,7 @@ button.actionSheetMenuItem {
 }
 
 .layout-tv .actionSheetScroller {
-    max-height: 60%;
+    max-height: 64%;
     max-width: 60%;
     width: auto;
 }
