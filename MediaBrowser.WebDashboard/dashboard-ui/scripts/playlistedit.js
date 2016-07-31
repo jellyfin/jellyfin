@@ -69,6 +69,8 @@
             });
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
+            elem.classList.add('vertical-list');
+            elem.classList.remove('vertical-wrap');
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);
