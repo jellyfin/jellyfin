@@ -997,6 +997,13 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
+            if (browserInfo.msie && !browserInfo.mobile) {
+
+                if (navigator.userAgent.indexOf('Windows NT 6.1;') != -1 || !mediaSource.RunTimeTicks) {
+                    alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
+                }
+            }
+
             // TODO: remove dependency on nowplayingbar
             requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'emby-slider'], function () {
 

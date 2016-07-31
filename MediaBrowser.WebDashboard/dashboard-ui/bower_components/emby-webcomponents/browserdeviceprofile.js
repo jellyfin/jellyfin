@@ -286,6 +286,11 @@ define(['browser'], function (browser) {
             hlsVideoAudioCodecs.push('mp3');
         }
 
+        if (isEdgeUniversal()) {
+            videoAudioCodecs.push('dca');
+            videoAudioCodecs.push('truehd');
+        }
+
         if (canPlayH264()) {
             profile.DirectPlayProfiles.push({
                 Container: 'mp4,m4v',

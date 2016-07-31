@@ -4,6 +4,12 @@ define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackMana
 
     function notify() {
         lastInputTime = new Date().getTime();
+
+        handleCommand('unknown');
+    }
+
+    function notifyMouseMove() {
+        lastInputTime = new Date().getTime();
     }
 
     function idleTime() {
@@ -47,7 +53,7 @@ define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackMana
 
     function handleCommand(name, options) {
 
-        notify();
+        lastInputTime = new Date().getTime();
 
         var sourceElement = (options ? options.sourceElement : null);
 
@@ -231,6 +237,7 @@ define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackMana
         trigger: handleCommand,
         handle: handleCommand,
         notify: notify,
+        notifyMouseMove: notifyMouseMove,
         idleTime: idleTime,
         on: on,
         off: off

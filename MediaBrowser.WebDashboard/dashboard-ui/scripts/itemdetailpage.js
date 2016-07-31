@@ -1074,6 +1074,7 @@
             var html = '';
 
             var scrollX = false;
+            var isList = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -1087,7 +1088,7 @@
                     action: 'playallfromhere',
                     lazy: true
                 });
-
+                isList = true;
             }
             else if (item.Type == "Series") {
 
@@ -1131,9 +1132,17 @@
             if (scrollX) {
                 elem.classList.add('hiddenScrollX');
                 elem.classList.remove('vertical-wrap');
+                elem.classList.remove('vertical-list');
             } else {
                 elem.classList.remove('hiddenScrollX');
-                elem.classList.add('vertical-wrap');
+
+                if (isList) {
+                    elem.classList.add('vertical-list');
+                    elem.classList.remove('vertical-wrap');
+                } else {
+                    elem.classList.add('vertical-wrap');
+                    elem.classList.remove('vertical-list');
+                }
             }
 
             elem.innerHTML = html;

@@ -1,4 +1,4 @@
-define(['datetime', 'imageLoader', 'connectionManager'], function (datetime, imageLoader, connectionManager) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], function (datetime, imageLoader, connectionManager, itemShortcuts) {
 
     function buildChapterCardsHtml(item, chapters, options) {
 
@@ -121,6 +121,9 @@ define(['datetime', 'imageLoader', 'connectionManager'], function (datetime, ima
         options.itemsContainer.innerHTML = html;
 
         imageLoader.lazyChildren(options.itemsContainer);
+
+        itemShortcuts.off(options.itemsContainer);
+        itemShortcuts.on(options.itemsContainer);
     }
 
     return {
