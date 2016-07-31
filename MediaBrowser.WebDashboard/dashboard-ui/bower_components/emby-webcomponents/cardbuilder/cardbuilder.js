@@ -1007,10 +1007,34 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 cardImageContainerClass += " " + cardBoxClass;
             }
 
+            var overlayButtons = '';
+            if (!layoutManager.tv) {
+
+                var overlayPlayButton = options.overlayPlayButton;
+
+                if (overlayPlayButton == null && !options.overlayMoreButton) {
+                    overlayPlayButton = item.MediaType == 'Video';
+                }
+
+                if (overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
+                }
+                if (options.overlayMoreButton) {
+
+                    var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">' + moreIcon + '</i></button>';
+                }
+            }
+
+            if (options.showChildCountIndicator && item.ChildCount) {
+                className += ' groupedCard';
+            }
+
             // cardBox can be it's own separate element if an outer footer is ever needed
-            var cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+            var cardImageContainerOpen;
             var cardImageContainerClose = '';
-            var cardBoxClose = '</div>';
+            var cardBoxClose = '';
             var cardContentClose = '';
             var cardScalableClose = '';
 
@@ -1024,10 +1048,22 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     cardContentOpen = '<button type="button" class="clearButton cardContent itemAction" data-action="' + action + '">';
                     cardContentClose = '</button>';
                 }
+                cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
                 cardImageContainerOpen = '<div class="' + cardBoxClass + '"><div class="cardScalable"><div class="cardPadder"></div>' + cardContentOpen + cardImageContainerOpen;
                 cardBoxClose = '</div>';
                 cardScalableClose = '</div>';
                 cardImageContainerClose = '</div>';
+            } else {
+
+                if (overlayButtons && !separateCardBox) {
+                    cardImageContainerOpen = imgUrl ? ('<button type="button" data-action="' + action + '" class="itemAction ' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<button type="button" data-action="' + action + '" class="itemAction ' + cardImageContainerClass + '">');
+                    cardImageContainerClose = '</button>';
+
+                    className += ' forceRelative';
+                } else {
+                    cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+                    cardImageContainerClose = '</div>';
+                }
             }
 
             var indicatorsHtml = '';
@@ -1082,26 +1118,18 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 progressHtml = '';
             }
 
+            var mediaSourceCount = item.MediaSourceCount || 1;
+            if (mediaSourceCount > 1) {
+                innerCardFooter += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
+            }
+
             var outerCardFooter = '';
             if (!options.overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter' : 'cardFooter transparent';
                 outerCardFooter = getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, true);
             }
 
-            var overlayButtons = '';
-            if (!layoutManager.tv && scalable) {
-                if (options.overlayPlayButton && !item.IsPlaceHolder && (item.LocationType != 'Virtual' || !item.MediaType || item.Type == 'Program') && item.Type != 'Person' && item.PlayAccess == 'Full') {
-                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
-                }
-                if (options.overlayMoreButton) {
-
-                    var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
-
-                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="menu" onclick="return false;"><i class="md-icon">' + moreIcon + '</i></button>';
-                }
-            }
-
-            var tagName = layoutManager.tv || !scalable ? 'button' : 'div';
+            var tagName = (layoutManager.tv || !scalable) && !overlayButtons ? 'button' : 'div';
 
             var prefix = (item.SortName || item.Name || '')[0];
 
@@ -1139,7 +1167,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             return '\
 <' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + ' data-prefix="' + prefix + '" class="' + className + '"> \
-' + cardImageContainerOpen + cardImageContainerClose + innerCardFooter + cardContentClose + overlayButtons + cardScalableClose + outerCardFooter + cardBoxClose + '\
+' + cardImageContainerOpen + innerCardFooter + cardImageContainerClose + cardContentClose + overlayButtons + cardScalableClose + outerCardFooter + cardBoxClose + '\
 </' + tagName + '>';
         }
 

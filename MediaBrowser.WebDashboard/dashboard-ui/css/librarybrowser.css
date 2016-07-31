@@ -884,23 +884,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-size: 180%;
 }
 
-.mediaSourceIndicator {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 22px;
-    height: 19px;
-    padding-top: 3px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(51, 136, 204);
-    background: rgba(51, 136, 204, .9);
-    line-height: 1.2;
-}
-
 .recordingProgressBar::-moz-progress-bar {
     background-color: #cc3333;
 }

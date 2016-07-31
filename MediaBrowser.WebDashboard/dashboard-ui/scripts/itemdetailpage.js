@@ -1583,82 +1583,38 @@
     }
 
     function renderScenes(page, item, user, limit, isStatic) {
-        var html = '';
 
         var chapters = item.Chapters || [];
+        var scenesContent = page.querySelector('#scenesContent');
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX itemsContainer">';
+            scenesContent.classList.add('smoothScrollX');
             limit = null;
         } else {
-            html += '<div class="itemsContainer vertical-wrap">';
+            scenesContent.classList.add('vertical-wrap');
         }
 
-        for (var i = 0, length = chapters.length; i < length; i++) {
+        var limitExceeded = limit && chapters.length > limit;
 
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var chapter = chapters[i];
-            var chapterName = chapter.Name || "Chapter " + i;
-
-            var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
-
-            html += '<a class="card ' + getThumbShape() + 'Card scalableCard" href="#"' + onclick + '>';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imgUrl;
-
-            if (chapter.ImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: 400,
-                    tag: chapter.ImageTag,
-                    type: "Chapter",
-                    index: i
-                });
-            } else {
-                imgUrl = "css/images/items/list/chapter.png";
-            }
-
-            html += '<div class="cardPadder"></div>';
-
-            html += '<div class="cardContent">';
-            html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
-
-            html += '<div class="innerCardFooter">';
-            html += '<div class="cardText">' + chapterName + '</div>';
-            html += '<div class="cardText">';
-            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
-            html += '</div>';
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</div>';
-
-            // cardScalable
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</a>';
+        if (limitExceeded) {
+            chapters = chapters.slice(0);
+            chapters.length = Math.min(limit, chapters.length);
         }
 
-        html += '</div>';
+        require(['chaptercardbuilder'], function (chaptercardbuilder) {
 
-        if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;"><button is="emby-button" type="button" class="raised more moreScenes">' + Globalize.translate('ButtonMore') + '</button></p>';
+            chaptercardbuilder.buildChapterCards(item, chapters, {
+                itemsContainer: scenesContent,
+                coverImage: true,
+                width: 400
+            });
+        });
+
+        if (limitExceeded) {
+            page.querySelector('.moreScenes').classList.remove('hide');
+        } else {
+            page.querySelector('.moreScenes').classList.add('hide');
         }
-
-        var scenesContent = page.querySelector('#scenesContent');
-        scenesContent.innerHTML = html;
-        ImageLoader.lazyChildren(scenesContent);
     }
 
     function renderMediaSources(page, item) {

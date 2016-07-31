@@ -150,6 +150,22 @@ button.cardContent {
     transition: filter, -webkit-filter 600ms ease-out !important;
 }
 
+.mediaSourceIndicator {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    top: .3em;
+    left: .3em;
+    text-align: center;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: #fff;
+    background: rgb(51, 136, 204);
+}
+
 .cardImageContainer {
     background-size: contain;
     background-repeat: no-repeat;
@@ -161,6 +177,20 @@ button.cardContent {
     justify-content: center;
     position: relative;
     background-clip: content-box !important;
+}
+
+button.cardImageContainer {
+    border: 0;
+    padding: 0;
+    background-color: transparent;
+    box-sizing: content-box;
+    outline: none !important;
+    cursor: pointer;
+}
+
+/* Used by non-scalable cards */
+.forceRelative {
+    position: relative;
 }
 
 .cardContent {
