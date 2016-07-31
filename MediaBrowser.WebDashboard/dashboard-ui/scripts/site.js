@@ -1856,7 +1856,6 @@ var AppInfo = {};
 
         define("livetvcss", ['css!css/livetv.css']);
         define("detailtablecss", ['css!css/detailtable.css']);
-        define("tileitemcss", ['css!css/tileitem.css']);
 
         define("buttonenabled", ["legacy/buttonenabled"]);
 
@@ -2204,7 +2203,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/itemdetails.html',
-            dependencies: ['emby-button', 'tileitemcss', 'scripts/livetvcomponents', 'paper-icon-button-light', 'emby-itemscontainer'],
+            dependencies: ['emby-button', 'scripts/livetvcomponents', 'paper-icon-button-light', 'emby-itemscontainer'],
             controller: 'scripts/itemdetailpage',
             autoFocus: false,
             transition: 'fade'

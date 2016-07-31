@@ -121,7 +121,9 @@
             searchImages[i].addEventListener('click', onSearchImageClick);
         }
 
-        focusManager.autoFocus(identificationSearchResults);
+        if (layoutManager.tv) {
+            focusManager.autoFocus(identificationSearchResults);
+        }
     }
 
     function finishFindNewDialog(dlg, identifyResult) {
