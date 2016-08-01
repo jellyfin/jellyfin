@@ -47,9 +47,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="mpeg2video" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="mpeg2video" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Photo">
@@ -68,16 +68,19 @@
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>

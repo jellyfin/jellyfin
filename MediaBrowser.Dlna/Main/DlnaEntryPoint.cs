@@ -80,6 +80,8 @@ namespace MediaBrowser.Dlna.Main
 
         public void Run()
         {
+            ((DlnaManager)_dlnaManager).InitProfiles();
+
             ReloadComponents();
 
             _config.ConfigurationUpdated += _config_ConfigurationUpdated;
@@ -240,9 +242,9 @@ namespace MediaBrowser.Dlna.Main
 
                 var services = new List<string>
                 {
-                    "upnp:rootdevice", 
-                    "urn:schemas-upnp-org:device:MediaServer:1", 
-                    "urn:schemas-upnp-org:service:ContentDirectory:1", 
+                    "upnp:rootdevice",
+                    "urn:schemas-upnp-org:device:MediaServer:1",
+                    "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1",
                     "uuid:" + udn
