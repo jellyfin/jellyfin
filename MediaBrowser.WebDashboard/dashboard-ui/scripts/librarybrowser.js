@@ -113,6 +113,10 @@
 
                 function allowSwipeOn(elem) {
 
+                    if (dom.parentWithTag(elem, 'input')) {
+                        return false;
+                    }
+
                     if (elem.classList) {
                         return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
                     }

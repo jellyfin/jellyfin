@@ -179,6 +179,8 @@
             showTargetName = !hasLocalSync();
         }
 
+        var hasOpenSection = false;
+
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
@@ -188,9 +190,11 @@
                 if (targetName != lastTargetName) {
 
                     if (lastTargetName) {
+                        html += '</div>';
                         html += '<br/>';
                         html += '<br/>';
                         html += '<br/>';
+                        hasOpenSection = false;
                     }
 
                     lastTargetName = targetName;
@@ -200,10 +204,16 @@
                     html += '<div>' + targetName + '</div>';
 
                     html += '</div>';
+                    html += '<div class="itemsContainer vertical-wrap">';
+                    hasOpenSection = true;
                 }
             }
 
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
+        }
+
+        if (hasOpenSection) {
+            html += '</div>';
         }
 
         var elem = $('.syncActivity', page).html(html).lazyChildren();

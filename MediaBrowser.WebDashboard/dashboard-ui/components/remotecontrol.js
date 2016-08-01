@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
