@@ -199,10 +199,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             // int.TryParse is local aware, so it can be probamatic, force us culture
                             if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
                             {
-                                if ((item.ParentIndexNumber ?? 0) == 0)
-                                {
-                                    item.AirsBeforeSeasonNumber = rval;
-                                }
+                                item.AirsBeforeSeasonNumber = rval;
                             }
                         }
 
@@ -220,10 +217,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             // int.TryParse is local aware, so it can be probamatic, force us culture
                             if (int.TryParse(val, NumberStyles.Integer, UsCulture, out rval))
                             {
-                                if ((item.ParentIndexNumber ?? 0) == 0)
-                                {
-                                    item.AirsBeforeEpisodeNumber = rval;
-                                }
+                                item.AirsBeforeEpisodeNumber = rval;
                             }
                         }
 
