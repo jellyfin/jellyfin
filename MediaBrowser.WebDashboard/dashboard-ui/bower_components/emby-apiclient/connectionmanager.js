@@ -215,7 +215,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.5911';
+        var minServerVersion = '3.0.5930';
         self.minServerVersion = function (val) {
 
             if (val) {
@@ -1352,6 +1352,8 @@
 
                         if (result && result.Status) {
                             reject({ errorCode: result.Status });
+                        } else {
+                            reject();
                         }
 
                     }, reject);

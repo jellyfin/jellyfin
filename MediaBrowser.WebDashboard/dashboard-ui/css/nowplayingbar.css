@@ -56,19 +56,27 @@
     bottom: 0;
     left: 0;
     right: 0;
+    top : 100%;
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
     background-color: #1C1C1F;
     text-align: center;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);
+    will-change: transform;
+    contain: layout style;
+    height: 100%;
+    transform: translateY(-70px);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
     display: none !important;
+}
+
+.nowPlayingBarTop {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
@@ -100,7 +108,7 @@
         vertical-align: bottom;
     }
 
-    .nowPlayingBar, .nowPlayingImage img {
+     .nowPlayingImage img {
         height: 70px;
     }
 
