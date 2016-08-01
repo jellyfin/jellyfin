@@ -69,7 +69,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             } else {
                 imageFetcher.loadImage(elem, source);
             }
-            elem.setAttribute("data-src", '');
+            elem.removeAttribute("data-src");
         }
     }
 

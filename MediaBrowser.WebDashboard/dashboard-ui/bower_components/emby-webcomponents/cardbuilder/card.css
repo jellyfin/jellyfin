@@ -179,6 +179,10 @@ button.cardContent {
     background-clip: content-box !important;
 }
 
+.chapterCardImageContainer {
+    background-color: #000;
+}
+
 button.cardImageContainer {
     border: 0;
     padding: 0;

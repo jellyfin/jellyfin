@@ -69,12 +69,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
 
         var imgUrl = getImgUrl(item, chapter, index, options.width || 400, apiClient);
 
-        var cardImageContainerClass = 'cardImageContainer';
+        var cardImageContainerClass = 'cardImageContainer chapterCardImageContainer';
         if (options.coverImage) {
             cardImageContainerClass += ' coveredImage';
         }
         var dataAttributes = ' data-action="play" data-isfolder="' + item.IsFolder + '" data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-positionticks="' + chapter.StartPositionTicks + '"';
         var cardImageContainer = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+
+        if (!imgUrl) {
+            cardImageContainer += '<i class="md-icon cardImageIcon">local_movies</i>';
+        }
 
         var nameHtml = '';
         nameHtml += '<div class="cardText">' + chapter.Name + '</div>';
