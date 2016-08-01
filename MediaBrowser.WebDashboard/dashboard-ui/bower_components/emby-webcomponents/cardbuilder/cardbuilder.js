@@ -102,7 +102,6 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
         }
 
-        var shapes = ['square', 'portrait', 'banner', 'smallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'];
         function getImageWidth(shape) {
 
             var screenWidth = window.innerWidth;
@@ -334,7 +333,6 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 var itemsInRow = 0;
                 var hasOpenRow = false;
-                var hasOpenSection = false;
 
                 html += renderItems.map(function (renderItem) {
 
@@ -624,7 +622,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
         function getDefaultColorIndex(str) {
 
             if (str) {
-                var character = String(str.substr(str.length - 1).charCodeAt());
+                var charIndex = Math.floor(str.length / 2);
+                var character = String(str.substr(charIndex, 1).charCodeAt());
                 var sum = 0;
                 for (var i = 0; i < character.length; i++) {
                     sum += parseInt(character.charAt(i));

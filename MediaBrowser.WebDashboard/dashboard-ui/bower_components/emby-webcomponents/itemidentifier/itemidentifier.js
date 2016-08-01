@@ -186,7 +186,7 @@
         }
 
         html += '<button type="button" class="' + cssClass + '">';
-        html += '<div class="cardBox">';
+        html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
         html += '<div class="cardPadder"></div>';
 
@@ -203,7 +203,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="cardFooter outerCardFooter">';
+        html += '<div class="cardFooter">';
         html += '<div class="cardText cardTextCentered">' + result.Name + '</div>';
 
         html += '<div class="cardText cardTextCentered">';

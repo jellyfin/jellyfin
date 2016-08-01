@@ -1522,7 +1522,7 @@
             page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
             var html = listView.getListViewHtml({
-                items: result.Items,
+                items: items,
                 sortBy: query.SortBy
             });
 

@@ -660,3 +660,12 @@ progress {
 .ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #555;
 }
+
+
+.ui-body-a .visualCardBox .cardScalable, .ui-body-a .visualCardBox .cardFooter {
+    background-color: #fff;
+}
+
+.ui-body-a .cardFooter .cardText + .cardText {
+    opacity: .8;
+}

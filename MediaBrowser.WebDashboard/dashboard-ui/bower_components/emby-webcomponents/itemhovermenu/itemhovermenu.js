@@ -32,9 +32,9 @@
 
         requestAnimationFrame(function () {
             var keyframes = [
-              { transform: 'translateY(0)', offset: 0 },
+              { transform: 'none', offset: 0 },
               { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 180, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 140, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
                 elem.classList.add('hide');
@@ -58,8 +58,8 @@
 
             var keyframes = [
               { transform: 'translateY(100%)', offset: 0 },
-              { transform: 'translateY(0)', offset: 1 }];
-            var timing = { duration: 200, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+              { transform: 'none', offset: 1 }];
+            var timing = { duration: 180, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
     }

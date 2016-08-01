@@ -61,6 +61,10 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager'], function (imageLoa
         }
         var cardImageContainer = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
 
+        if (!imgUrl) {
+            cardImageContainer += '<i class="md-icon cardImageIcon">person</i>';
+        }
+
         var nameHtml = '';
         nameHtml += '<div class="cardText">' + person.Name + '</div>';
 
