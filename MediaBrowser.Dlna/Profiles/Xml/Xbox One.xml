@@ -46,9 +46,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
-    <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
@@ -67,6 +67,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="5120000" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="Video" codec="h264">
       <Conditions>
@@ -77,6 +78,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
         <ProfileCondition condition="EqualsAny" property="VideoProfile" value="high|main|baseline|constrained baseline" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
       <Conditions>
@@ -87,23 +89,27 @@
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="Video">
       <Conditions>
         <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3,wmav2,wmapro">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="aac">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
         <ProfileCondition condition="Equals" property="AudioProfile" value="lc" isRequired="false" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
