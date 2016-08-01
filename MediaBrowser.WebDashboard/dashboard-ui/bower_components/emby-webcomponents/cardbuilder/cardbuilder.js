@@ -999,7 +999,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             var overlayButtons = '';
-            if (layoutManager.mobile) {
+            if (!layoutManager.tv) {
 
                 var overlayPlayButton = options.overlayPlayButton;
 

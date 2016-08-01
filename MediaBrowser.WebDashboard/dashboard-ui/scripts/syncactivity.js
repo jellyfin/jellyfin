@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light', 'cardStyle'], function ($) {
 
     function cancelJob(page, id) {
 
@@ -60,7 +60,7 @@
 
         var html = '';
 
-        html += "<div class='card squareCard' data-id='" + job.Id + "' data-status='" + job.Status + "'>";
+        html += "<div class='card squareCard scalableCard' data-id='" + job.Id + "' data-status='" + job.Status + "'>";
 
         html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable">';

@@ -2862,7 +2862,7 @@ var AppInfo = {};
                     navigator.serviceWorker.register('serviceworker.js');
                 }
 
-                if (window.Notification || navigator.serviceWorker) {
+                if (window.Notification) {
                     postInitDependencies.push('bower_components/emby-webcomponents/notifications/notifications');
                 }
             }
