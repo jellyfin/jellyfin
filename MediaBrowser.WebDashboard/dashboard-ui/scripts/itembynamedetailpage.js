@@ -299,7 +299,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,SyncInfo",
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,BasicSyncInfo",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0,
             CollapseBoxSetItems: false

@@ -17,7 +17,7 @@
             var query = {
 
                 Limit: 24,
-                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
                 EnableImageTypes: "Primary,Backdrop,Thumb"
@@ -72,7 +72,7 @@
                 Filters: "IsResumable",
                 Limit: limit,
                 Recursive: true,
-                Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,BasicSyncInfo",
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,

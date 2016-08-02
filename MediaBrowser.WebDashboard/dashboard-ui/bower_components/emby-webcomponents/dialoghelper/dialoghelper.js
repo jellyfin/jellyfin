@@ -98,7 +98,7 @@
 
         dlg.addEventListener('close', onDialogClosed);
 
-        var center = !dlg.classList.contains('fixedSize');
+        var center = !dlg.classList.contains('dialog-fixedSize');
         if (center) {
             dlg.classList.add('centeredDialog');
         }
@@ -184,7 +184,7 @@
 
         // Doing this immediately causes the opacity to jump immediately without animating
         setTimeout(function () {
-            backdrop.classList.add('opened');
+            backdrop.classList.add('dialogBackdropOpened');
         }, 0);
 
         backdrop.addEventListener('click', function () {
@@ -363,7 +363,7 @@
         if (backdrop) {
             dlg.backdrop = null;
 
-            backdrop.classList.remove('opened');
+            backdrop.classList.remove('dialogBackdropOpened');
 
             setTimeout(function () {
                 backdrop.parentNode.removeChild(backdrop);
@@ -382,16 +382,10 @@
 
         options = options || {};
 
-        var dlg = document.createElement('dialog');
-
         // If there's no native dialog support, use a plain div
         // Also not working well in samsung tizen browser, content inside not clickable
-        if (!dlg.showModal || browser.tv) {
-            dlg = document.createElement('div');
-        } else {
-            // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
-            dlg = document.createElement('div');
-        }
+        // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
+        var dlg = document.createElement('div');
 
         dlg.classList.add('focuscontainer');
         dlg.classList.add('hide');
@@ -474,8 +468,8 @@
         }
 
         if (options.size) {
-            dlg.classList.add('fixedSize');
-            dlg.classList.add(options.size);
+            dlg.classList.add('dialog-fixedSize');
+            dlg.classList.add('dialog-' + options.size);
         }
 
         return dlg;

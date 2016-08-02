@@ -12,36 +12,36 @@
     contain: style;
 }
 
-    .dialog.fixedSize {
-        position: fixed !important;
-        top: 0 !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        max-height: none !important;
-        max-width: none !important;
-        width: auto;
-    }
+.dialog-fixedSize {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    max-width: none !important;
+    width: auto;
+}
 
-    .dialog.centeredDialog {
-        top: 50%;
-        left: 50%;
-        max-width: 70%;
-        max-height: 84%;
-    }
+.centeredDialog {
+    top: 50%;
+    left: 50%;
+    max-width: 70%;
+    max-height: 84%;
+}
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
-    .dialog.medium {
+    .dialog-medium {
         top: 10% !important;
         bottom: 10% !important;
         left: 10% !important;
         right: 10% !important;
     }
 
-    .dialog.small {
+    .dialog-small {
         top: 10% !important;
         bottom: 10% !important;
         left: 20% !important;
@@ -51,7 +51,7 @@
 
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
-    .dialog.fullscreen-border {
+    .dialog-fullscreen-border {
         top: 5% !important;
         bottom: 5% !important;
         left: 5% !important;
@@ -68,32 +68,6 @@
     padding: 0 24px;
 }
 
-.dialog .buttons {
-    position: relative;
-    padding: 0;
-    margin: 1em;
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    -ms-flex-direction: row;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-    -ms-flex-pack: end;
-    -webkit-justify-content: flex-end;
-    justify-content: flex-end;
-}
-
-    .dialog .buttons button {
-        color: #52B54B;
-        padding: 0.35em 1em;
-        margin: 0;
-    }
-
-        .dialog .buttons button:focus {
-            color: #fff;
-            background-color: #52B54B;
-        }
-
 .dialogBackdrop {
     background-color: #000;
     opacity: 0;
@@ -107,20 +81,6 @@
     transition: opacity ease-out 0.2s;
 }
 
-    .dialogBackdrop.opened {
-        opacity: .6;
-    }
-
-.dialog::backdrop {
-    opacity: 0;
-    background-color: #000;
-    transition: opacity ease-out 0.2s;
-}
-
-.mouseIdle .dialog::backdrop {
-    cursor: none !important;
-}
-
-.dialog.opened::backdrop {
+.dialogBackdropOpened {
     opacity: .6;
 }

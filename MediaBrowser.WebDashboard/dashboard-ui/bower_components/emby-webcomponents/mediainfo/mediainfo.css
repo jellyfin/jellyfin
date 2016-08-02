@@ -2,7 +2,7 @@
     margin: 0 1em 0 0;
 }
 
-i.mediaInfoItem {
+.mediaInfoIconItem {
     width: auto;
     height: auto;
     font-size: 1.6em;
@@ -22,14 +22,14 @@ i.mediaInfoItem {
     padding-bottom: 0;
 }
 
-    .starRatingContainer i {
-        color: #CB272A;
-        width: auto !important;
-        height: auto !important;
-        font-size: 1.4em;
-    }
+.starIcon {
+    color: #CB272A;
+    width: auto !important;
+    height: auto !important;
+    font-size: 1.4em;
+}
 
-.mediaInfoItem.criticRating {
+.mediaInfoCriticRating {
     padding-left: 1.5em;
     background-position: left center;
     background-repeat: no-repeat;
@@ -39,15 +39,15 @@ i.mediaInfoItem {
     align-items: center;
 }
 
-.mediaInfoItem.criticRatingFresh {
+.mediaInfoCriticRatingFresh {
     background-image: url(fresh.png);
 }
 
-.mediaInfoItem.criticRatingRotten {
+.mediaInfoCriticRatingRotten {
     background-image: url(rotten.png);
 }
 
-.mediaInfoItem.timerIcon {
+.mediaInfoTimerIcon {
     color: #CB272A;
 }
 

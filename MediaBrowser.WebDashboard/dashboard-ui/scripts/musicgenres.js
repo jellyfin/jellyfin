@@ -16,7 +16,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Audio,MusicAlbum",
                         Recursive: true,
-                        Fields: "DateCreated,SyncInfo,ItemCounts",
+                        Fields: "DateCreated,ItemCounts",
                         StartIndex: 0
                     },
                     view: libraryBrowser.getSavedView(key) || 'PosterCard'

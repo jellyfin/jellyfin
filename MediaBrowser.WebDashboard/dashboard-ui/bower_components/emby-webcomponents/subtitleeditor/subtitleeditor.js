@@ -422,7 +422,7 @@
             dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
             document.body.appendChild(dlg);
 
-            dlg.querySelector('.originalFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
+            dlg.querySelector('.originalSubtitleFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
 
             dlg.querySelector('.subtitleSearchForm').addEventListener('submit', onSearchSubmit);
 

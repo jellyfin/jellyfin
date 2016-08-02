@@ -13,7 +13,7 @@
                 query: {
                     SortBy: "IsFolder,SortName",
                     SortOrder: "Ascending",
-                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio,SortName",
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary",
                     StartIndex: 0,

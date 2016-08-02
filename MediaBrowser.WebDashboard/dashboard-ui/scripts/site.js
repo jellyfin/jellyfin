@@ -1382,13 +1382,17 @@ var AppInfo = {};
 
         paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
 
+        if ((window.chrome && window.chrome.sockets) || Dashboard.isRunningInCordova()) {
+            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery-chrome";
+        } else {
+            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
+        }
+
         if (Dashboard.isRunningInCordova()) {
             paths.sharingMenu = "cordova/sharingwidget";
-            paths.serverdiscovery = "cordova/serverdiscovery";
             paths.wakeonlan = "cordova/wakeonlan";
             paths.actionsheet = "cordova/actionsheet";
         } else {
-            paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
             define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);

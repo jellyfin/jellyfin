@@ -14,7 +14,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Playlist",
                         Recursive: true,
-                        Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete",
                         StartIndex: 0,
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },

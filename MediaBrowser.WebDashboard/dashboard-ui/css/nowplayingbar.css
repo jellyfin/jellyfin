@@ -56,19 +56,27 @@
     bottom: 0;
     left: 0;
     right: 0;
+    top : 100%;
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
     background-color: #1C1C1F;
     text-align: center;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);
+    will-change: transform;
+    contain: layout style;
+    height: 100%;
+    transform: translateY(-64px);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
     display: none !important;
+}
+
+.nowPlayingBarTop {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
@@ -79,15 +87,15 @@
 }
 
     .mediaButton i {
-        height: 40px;
-        width: 40px;
-        font-size: 40px;
+        height: auto;
+        width: auto;
+        font-size: 36px;
     }
 
     .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
-        height: 28px;
-        width: 28px;
-        font-size: 28px;
+        height: auto;
+        width: auto;
+        font-size: 24px;
     }
 
 .nowPlayingImage {
@@ -100,13 +108,13 @@
         vertical-align: bottom;
     }
 
-    .nowPlayingBar, .nowPlayingImage img {
-        height: 70px;
+     .nowPlayingImage img {
+        height: 64px;
     }
 
         .nowPlayingBar .nowPlayingImage {
-            width: 70px;
-            height: 70px;
+            width: 64px;
+            height: 64px;
             background-position: center center;
             background-repeat: no-repeat;
             background-size: contain;
@@ -160,7 +168,7 @@
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
-    margin-top: 7px;
+    margin-top: 6px;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
     position: absolute;
@@ -171,7 +179,7 @@
 
 .nowPlayingBarPositionContainer {
     position: absolute !important;
-    left: 70px;
+    left: 64px;
     top: -8px;
     right: 0;
     z-index: 1;

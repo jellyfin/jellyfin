@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -399,7 +399,7 @@
             //    SortOrder: "Ascending",
             //    IncludeItemTypes: "Audio",
             //    Recursive: true,
-            //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
+            //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount",
             //    StartIndex: 0,
             //    ImageTypeLimit: 1,
             //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",

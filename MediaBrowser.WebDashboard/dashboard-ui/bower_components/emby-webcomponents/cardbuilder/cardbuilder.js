@@ -150,14 +150,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 options.rows = options.rows[options.shape];
             }
 
-            if (options.shape == 'backdrop') {
-                options.width = options.width || 500;
-            }
-            else if (options.shape == 'portrait') {
-                options.width = options.width || 243;
-            }
-            else if (options.shape == 'square') {
-                options.width = options.width || 243;
+            if (layoutManager.tv) {
+                if (options.shape == 'backdrop') {
+                    options.width = options.width || 500;
+                }
+                else if (options.shape == 'portrait') {
+                    options.width = options.width || 243;
+                }
+                else if (options.shape == 'square') {
+                    options.width = options.width || 243;
+                }
             }
 
             options.width = options.width || getImageWidth(options.shape);
@@ -498,7 +500,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 height = width && primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
 
-                imgUrl = apiClient.getImageUrl(item.Id, {
+                imgUrl = apiClient.getScaledImageUrl(item.Id, {
                     type: "Primary",
                     maxHeight: height,
                     maxWidth: width,
@@ -520,7 +522,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 height = width && primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
 
-                imgUrl = apiClient.getImageUrl(item.Id || item.ItemId, {
+                imgUrl = apiClient.getScaledImageUrl(item.Id || item.ItemId, {
                     type: "Primary",
                     maxHeight: height,
                     maxWidth: width,
@@ -540,7 +542,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
             else if (item.ParentPrimaryImageTag) {
 
-                imgUrl = apiClient.getImageUrl(item.ParentPrimaryImageItemId, {
+                imgUrl = apiClient.getScaledImageUrl(item.ParentPrimaryImageItemId, {
                     type: "Primary",
                     maxWidth: width,
                     tag: item.ParentPrimaryImageTag
@@ -1078,9 +1080,14 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var forceName = imgInfo.forceName;
 
             var showTitle = options.showTitle == 'auto' ? true : (options.showTitle || item.Type == 'PhotoAlbum' || item.Type == 'Folder');
+            var overlayText = options.overlayText;
 
             if (forceName && !options.cardLayout) {
-                showTitle = false;
+                showTitle = imgUrl;
+                
+                if (overlayText == null) {
+                    overlayText = true;
+                }
             }
 
             if (!imgUrl) {
@@ -1095,14 +1102,14 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var footerOverlayed = false;
 
-            if (options.overlayText) {
+            if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
                 innerCardFooter += getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, false);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
-                innerCardFooter += '<div class="innerCardFooter fullInnerCardFooter">';
+                innerCardFooter += '<div class="innerCardFooter fullInnerCardFooter innerCardFooterClear">';
                 innerCardFooter += progressHtml;
                 innerCardFooter += '</div>';
 
@@ -1115,7 +1122,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             var outerCardFooter = '';
-            if (!options.overlayText && !footerOverlayed) {
+            if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter' : 'cardFooter transparent';
                 outerCardFooter = getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, true);
             }

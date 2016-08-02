@@ -39,7 +39,7 @@
                         SortBy: "SortName",
                         SortOrder: "Ascending",
                         Recursive: params.recursive !== 'false',
-                        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,SortName,BasicSyncInfo",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,

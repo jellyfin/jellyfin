@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
 
-                FillSyncInfo(dto, item, syncJobItems, options, user);
+                FillSyncInfo(dto, item, options, user, syncJobItems);
 
                 list.Add(dto);
             }
@@ -253,14 +253,16 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     var item = tuple.Item1;
 
-                    FillSyncInfo(tuple.Item2, item, syncProgress, options, user);
+                    FillSyncInfo(tuple.Item2, item, options, user, syncProgress);
                 }
             }
         }
 
         private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, DtoOptions options, User user, SyncedItemProgress[] syncProgress)
         {
-            if (options.Fields.Contains(ItemFields.SyncInfo))
+            var hasFullSyncInfo = options.Fields.Contains(ItemFields.SyncInfo);
+
+            if (hasFullSyncInfo || options.Fields.Contains(ItemFields.BasicSyncInfo))
             {
                 var userCanSync = user != null && user.Policy.EnableSync;
                 dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
@@ -271,39 +273,17 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.HasSyncJob = syncProgress.Any(i => i.Status != SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
                 dto.IsSynced = syncProgress.Any(i => i.Status == SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
 
-                if (dto.IsSynced.Value)
+                if (hasFullSyncInfo)
                 {
-                    dto.SyncStatus = SyncJobItemStatus.Synced;
-                }
+                    if (dto.IsSynced.Value)
+                    {
+                        dto.SyncStatus = SyncJobItemStatus.Synced;
+                    }
 
-                else if (dto.HasSyncJob.Value)
-                {
-                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
-                }
-            }
-        }
-
-        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, SyncedItemProgress[] syncProgress, DtoOptions options, User user)
-        {
-            if (options.Fields.Contains(ItemFields.SyncInfo))
-            {
-                var userCanSync = user != null && user.Policy.EnableSync;
-                dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
-            }
-
-            if (dto.SupportsSync ?? false)
-            {
-                dto.HasSyncJob = syncProgress.Any(i => i.Status != SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
-                dto.IsSynced = syncProgress.Any(i => i.Status == SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
-
-                if (dto.IsSynced.Value)
-                {
-                    dto.SyncStatus = SyncJobItemStatus.Synced;
-                }
-
-                else if (dto.HasSyncJob.Value)
-                {
-                    dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
+                    else if (dto.HasSyncJob.Value)
+                    {
+                        dto.SyncStatus = syncProgress.Where(i => string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase)).Select(i => i.Status).Max();
+                    }
                 }
             }
         }
