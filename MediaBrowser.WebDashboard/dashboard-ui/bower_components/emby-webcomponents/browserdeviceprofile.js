@@ -307,6 +307,15 @@ define(['browser'], function (browser) {
                 VideoCodec: 'h264',
                 AudioCodec: videoAudioCodecs.join(',')
             });
+
+            if (isEdgeUniversal()) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'mkv',
+                    Type: 'Video',
+                    VideoCodec: 'vc1',
+                    AudioCodec: videoAudioCodecs.join(',')
+                });
+            }
         }
 
         // These are formats we can't test for but some devices will support

@@ -18,7 +18,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Episode",
                         Recursive: true,
-                        Fields: "PrimaryImageAspectRatio,MediaSourceCount,UserData,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,MediaSourceCount,UserData",
                         IsMissing: false,
                         IsVirtualUnaired: false,
                         ImageTypeLimit: 1,

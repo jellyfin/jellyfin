@@ -83,6 +83,13 @@ button.card {
     will-change: transform;
 }
 
+@media all and (min-width: 600px) {
+
+    .layout-desktop .card .cardBox, .layout-mobile .card .cardBox {
+        margin: 3px;
+    }
+}
+
 button.cardContent {
     display: block;
 }
@@ -177,10 +184,16 @@ button.cardContent {
     justify-content: center;
     position: relative;
     background-clip: content-box !important;
+    border-radius: 2px;
+}
+
+.visualCardBox .cardImageContainer {
+    border-radius: 0;
 }
 
 .chapterCardImageContainer {
     background-color: #000;
+    border-radius: 0;
 }
 
 button.cardImageContainer {
@@ -262,12 +275,16 @@ button.cardImageContainer {
     max-width: 100%;
 }
 
+.innerCardFooterClear {
+    background-color: transparent;
+}
+
 .fullInnerCardFooter {
     right: 0;
 }
 
 .cardText {
-    padding: .35em .35em;
+    padding: .35em .5em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

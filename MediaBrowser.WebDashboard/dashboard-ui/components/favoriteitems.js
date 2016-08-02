@@ -38,7 +38,7 @@
             SortOrder: "Ascending",
             Filters: "IsFavorite",
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual",
             EnableTotalRecordCount: false

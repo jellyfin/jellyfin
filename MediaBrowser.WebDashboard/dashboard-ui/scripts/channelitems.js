@@ -11,7 +11,7 @@
                 query: {
                     SortBy: "",
                     SortOrder: "Ascending",
-                    Fields: "PrimaryImageAspectRatio,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio",
                     StartIndex: 0,
                     Limit: LibraryBrowser.getDefaultPageSize()
                 }

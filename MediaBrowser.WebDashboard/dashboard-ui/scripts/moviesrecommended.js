@@ -18,7 +18,7 @@
 
             IncludeItemTypes: "Movie",
             Limit: 18,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -49,7 +49,7 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             CollapseBoxSetItems: false,
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -131,7 +131,7 @@
             userId: userId,
             categoryLimit: 6,
             ItemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 5)),
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });

@@ -14,7 +14,7 @@
                     query: {
                         SortBy: "IsFolder,SortName",
                         SortOrder: "Ascending",
-                        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+                        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,

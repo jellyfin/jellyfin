@@ -646,6 +646,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
             dtoOptions.Fields.Remove(ItemFields.Settings);
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
 
             syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
 

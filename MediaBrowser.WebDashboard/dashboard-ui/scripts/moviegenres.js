@@ -16,7 +16,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Movie",
                         Recursive: true,
-                        Fields: "DateCreated,SyncInfo,ItemCounts,PrimaryImageAspectRatio",
+                        Fields: "DateCreated,ItemCounts,PrimaryImageAspectRatio",
                         StartIndex: 0
                     },
                     view: libraryBrowser.getSavedView(key) || 'Thumb'
@@ -62,7 +62,7 @@
                         itemsContainer: elem,
                         shape: "backdrop",
                         preferThumb: true,
-                        showTitle: false,
+                        showTitle: true,
                         scalable: true,
                         showItemCounts: true,
                         centerText: true,
@@ -75,7 +75,7 @@
                         itemsContainer: elem,
                         shape: "backdrop",
                         preferThumb: true,
-                        showTitle: false,
+                        showTitle: true,
                         scalable: true,
                         showItemCounts: true,
                         centerText: true,
@@ -86,7 +86,7 @@
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
                         shape: "auto",
-                        showTitle: false,
+                        showTitle: true,
                         scalable: true,
                         showItemCounts: true,
                         centerText: true,
@@ -97,7 +97,7 @@
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
                         shape: "auto",
-                        showTitle: false,
+                        showTitle: true,
                         scalable: true,
                         showItemCounts: true,
                         centerText: true,

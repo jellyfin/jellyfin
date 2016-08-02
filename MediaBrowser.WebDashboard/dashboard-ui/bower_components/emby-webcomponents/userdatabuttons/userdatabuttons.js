@@ -1,21 +1,29 @@
 define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize) {
 
-    function getUserDataButtonHtml(method, itemId, iconCssClass, icon, tooltip, style) {
+    function getUserDataButtonHtml(method, itemId, buttonCssClass, iconCssClass, icon, tooltip, style) {
 
         if (style == 'fab-mini') {
             style = 'fab';
-            iconCssClass = iconCssClass ? (iconCssClass + ' mini') : 'mini';
+            buttonCssClass = buttonCssClass ? (buttonCssClass + ' mini') : 'mini';
         }
 
         var is = style == 'fab' ? 'emby-button' : 'paper-icon-button-light';
         var className = style == 'fab' ? 'autoSize fab' : 'autoSize';
 
-        if (iconCssClass) {
-            className += ' ' + iconCssClass;
+        if (buttonCssClass) {
+            className += ' ' + buttonCssClass;
         }
 
+        if (iconCssClass) {
+            iconCssClass += ' ';
+        } else {
+            iconCssClass = '';
+        }
+
+        iconCssClass += 'md-icon';
+
         return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" class="' + className + '" onclick="UserDataButtons.' + method + '(this);return false;">\
-                <i class="md-icon">' + icon + '</i>\
+                <i class="'+ iconCssClass + '">' + icon + '</i>\
             </button>';
     }
 
@@ -45,15 +53,17 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
             btnCssClass += " " + cssClass;
         }
 
+        var iconCssClass = options.iconCssClass;
+
         if (includePlayed !== false) {
             var tooltipPlayed = globalize.translate('sharedcomponents#MarkPlayed');
 
             if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
                 if (item.Type != 'TvChannel') {
                     if (userData.Played) {
-                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass + ' btnUserDataOn', 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass + ' btnUserDataOn', iconCssClass, 'check', tooltipPlayed, style);
                     } else {
-                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass, 'check', tooltipPlayed, style);
+                        html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass, iconCssClass, 'check', tooltipPlayed, style);
                     }
                 }
             }
@@ -78,9 +88,9 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
         var tooltipFavorite = globalize.translate('sharedcomponents#Favorite');
         if (userData.IsFavorite) {
 
-            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData btnUserDataOn', 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData btnUserDataOn', iconCssClass, 'favorite', tooltipFavorite, style);
         } else {
-            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData', 'favorite', tooltipFavorite, style);
+            html += getUserDataButtonHtml('markFavorite', itemId, btnCssClass + ' btnUserData', iconCssClass, 'favorite', tooltipFavorite, style);
         }
 
         return html;

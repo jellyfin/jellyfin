@@ -75,7 +75,7 @@
         return html;
     }
 
-    var translateY = '-70px';
+    var translateY = '-64px';
     function slideDown(elem) {
 
         if (elem.classList.contains('hide')) {

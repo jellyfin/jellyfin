@@ -66,7 +66,7 @@
     will-change: transform;
     contain: layout style;
     height: 100%;
-    transform: translateY(-70px);
+    transform: translateY(-64px);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
@@ -87,15 +87,15 @@
 }
 
     .mediaButton i {
-        height: 40px;
-        width: 40px;
-        font-size: 40px;
+        height: auto;
+        width: auto;
+        font-size: 36px;
     }
 
     .mediaButton.remoteControlButton i, .mediaButton.muteButton i, .mediaButton.unmuteButton i, .mediaButton.castButton i, .mediaButton.infoButton i {
-        height: 28px;
-        width: 28px;
-        font-size: 28px;
+        height: auto;
+        width: auto;
+        font-size: 24px;
     }
 
 .nowPlayingImage {
@@ -109,12 +109,12 @@
     }
 
      .nowPlayingImage img {
-        height: 70px;
+        height: 64px;
     }
 
         .nowPlayingBar .nowPlayingImage {
-            width: 70px;
-            height: 70px;
+            width: 64px;
+            height: 64px;
             background-position: center center;
             background-repeat: no-repeat;
             background-size: contain;
@@ -168,7 +168,7 @@
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
-    margin-top: 7px;
+    margin-top: 6px;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
     position: absolute;
@@ -179,7 +179,7 @@
 
 .nowPlayingBarPositionContainer {
     position: absolute !important;
-    left: 70px;
+    left: 64px;
     top: -8px;
     right: 0;
     z-index: 1;

@@ -8,7 +8,7 @@
         if (!pageData) {
             pageData = data[key] = {
                 query: {
-                    Fields: "PrimaryImageAspectRatio,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio",
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
                     Limit: 200

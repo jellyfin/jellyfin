@@ -5,7 +5,7 @@
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb"

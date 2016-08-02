@@ -873,7 +873,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: 8,
-            fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
+            fields: "PrimaryImageAspectRatio,UserData,CanDelete"
         };
 
         if (item.Type == 'MusicAlbum' && item.AlbumArtists && item.AlbumArtists.length) {
@@ -1554,7 +1554,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "DateCreated,SyncInfo,CanDelete",
+            Fields: "DateCreated,CanDelete",
             Albums: item.Name
 
         }).then(function (result) {
