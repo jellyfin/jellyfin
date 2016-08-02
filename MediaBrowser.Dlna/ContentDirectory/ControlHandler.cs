@@ -602,7 +602,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 id = id.Substring(paramsIndex + paramsSrch.Length);
 
                 var parts = id.Split(';');
-                id = parts[24];
+                id = parts[23];
             }
 
             if (id.StartsWith("folder_", StringComparison.OrdinalIgnoreCase))
