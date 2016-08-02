@@ -1187,6 +1187,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
             await GetRecordings(new RecordingQuery(), dtoOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
