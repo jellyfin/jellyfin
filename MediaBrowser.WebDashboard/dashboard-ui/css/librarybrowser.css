@@ -847,43 +847,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: rgba(248, 58, 34, .8);
 }
 
-.syncIndicator {
-    display: block;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: #fff;
-    line-height: 19px;
-    background-color: #52B54B;
-}
-
-.seriesTimerIndicator {
-    color: #cc3333;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 200%;
-}
-
-.playedIndicator + .syncIndicator, .countIndicator + .syncIndicator {
-    top: 32px;
-}
-
-.card .playedIndicator, .card .countIndicator {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
-
-.syncIndicator i {
-    font-size: 180%;
-}
-
 .recordingProgressBar::-moz-progress-bar {
     background-color: #cc3333;
 }

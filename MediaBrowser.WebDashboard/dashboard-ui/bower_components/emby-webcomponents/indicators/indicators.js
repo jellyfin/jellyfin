@@ -89,12 +89,23 @@ define(['css!./indicators.css', 'material-icons'], function () {
     }
 
     function getTimerIndicator(item) {
-        
+
         if (item.SeriesTimerId) {
             return '<i class="md-icon timerIndicator indicator">fiber_smart_record</i>';
         }
         if (item.TimerId) {
             return '<i class="md-icon timerIndicator indicator">fiber_manual_record</i>';
+        }
+
+        return '';
+    }
+
+    function getSyncIndicator(item) {
+
+        if (item.SyncPercent == 100) {
+            return '<i class="md-icon indicator syncIndicator fullSyncIndicator">file_download</i>';
+        } else if (item.SyncPercent != null) {
+            return '<i class="md-icon indicator syncIndicator emptySyncIndicator">file_download</i>';
         }
 
         return '';
@@ -106,6 +117,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
         getChildCountIndicatorHtml: getChildCountIndicatorHtml,
         enableProgressIndicator: enableProgressIndicator,
         getTimerIndicator: getTimerIndicator,
-        enablePlayedIndicator: enablePlayedIndicator
+        enablePlayedIndicator: enablePlayedIndicator,
+        getSyncIndicator: getSyncIndicator
     };
 });

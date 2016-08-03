@@ -12,6 +12,16 @@
     background-color: #52B54B;
 }
 
+.indicator {
+    border-radius: 500px;
+    display: -ms-flex;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
 .timerIndicator {
     color: #CB272A;
 }
@@ -48,11 +58,26 @@
     height: 28px;
 }
 
-    .playedIndicatorIcon {
-        width: 22px;
-        height: 22px;
-        font-size: 22px;
-    }
+.syncIndicator {
+    color: #fff;
+    border-radius: 500px;
+    padding: 3px;
+}
+
+.emptySyncIndicator {
+    background: #ccc;
+    color: #333;
+}
+
+.fullSyncIndicator {
+    background: #cc3333;
+}
+
+.playedIndicatorIcon, .syncIndicator {
+    width: 22px;
+    height: 22px;
+    font-size: 22px;
+}
 
 .layout-tv .countIndicator, .layout-tv .playedIndicator {
     width: 3.8vh;
