@@ -115,7 +115,7 @@
             }
         }
 
-        var searchImages = elem.querySelectorAll('.searchImage');
+        var searchImages = elem.querySelectorAll('.card');
         for (i = 0, length = searchImages.length; i < length; i++) {
 
             searchImages[i].addEventListener('click', onSearchImageClick);
@@ -185,12 +185,12 @@
             cssClass += " portraitCard";
         }
 
-        html += '<button type="button" class="' + cssClass + '">';
+        html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
         html += '<div class="cardPadder"></div>';
 
-        html += '<div class="cardContent searchImage" data-index="' + index + '">';
+        html += '<div class="cardContent searchImage">';
 
         if (result.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);

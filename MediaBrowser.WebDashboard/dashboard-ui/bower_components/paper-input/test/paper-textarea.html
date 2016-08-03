@@ -125,6 +125,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var inputContent = Polymer.dom(container.root).querySelector('.input-content');
         assert.isTrue(inputContent.classList.contains('label-is-floating'), 'label is floating');
       });
+
+      test('label does not receive pointer events', function() {
+        var input = fixture('always-float-label');
+        var label = Polymer.dom(input.root).querySelector('label');
+        assert.equal(getComputedStyle(label).pointerEvents, 'none');
+      });
     });
 
     suite('focus/blur events', function() {

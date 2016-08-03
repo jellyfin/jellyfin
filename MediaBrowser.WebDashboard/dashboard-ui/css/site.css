@@ -653,11 +653,11 @@ progress {
     color: #555;
 }
 
-    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
+    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabelFocused, .ui-body-a .selectLabelFocused {
         color: green;
     }
 
-.ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .selectLabelUnfocused, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #555;
 }
 

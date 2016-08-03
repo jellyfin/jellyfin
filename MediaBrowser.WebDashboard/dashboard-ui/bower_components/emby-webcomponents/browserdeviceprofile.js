@@ -288,7 +288,7 @@ define(['browser'], function (browser) {
 
         if (isEdgeUniversal()) {
             videoAudioCodecs.push('dca');
-            videoAudioCodecs.push('truehd');
+            //videoAudioCodecs.push('truehd');
         }
 
         if (canPlayH264()) {
