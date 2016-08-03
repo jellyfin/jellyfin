@@ -372,16 +372,16 @@
                     var position = session.PlayState.PositionTicks || 0;
                     var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
-                    html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" value="' + value + '"></progress>';
+                    html += '<progress class="playbackProgress" min="0" max="100" value="' + value + '"></progress>';
                 } else {
-                    html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" style="display:none;"></progress>';
+                    html += '<progress class="playbackProgress" min="0" max="100" style="display:none;"></progress>';
                 }
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
 
-                    html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" value="' + session.TranscodingInfo.CompletionPercentage.toFixed(1) + '"></progress>';
+                    html += '<progress class="transcodingProgress" min="0" max="100" value="' + session.TranscodingInfo.CompletionPercentage.toFixed(1) + '"></progress>';
                 } else {
-                    html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" style="display:none;"></progress>';
+                    html += '<progress class="transcodingProgress" min="0" max="100" style="display:none;"></progress>';
                 }
 
                 html += '</div>';
