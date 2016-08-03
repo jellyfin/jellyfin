@@ -10,6 +10,7 @@
     cursor: pointer;
     contain: style;
     flex-shrink: 0;
+    font-weight: inherit !important;
 }
 
 .itemsContainer {
@@ -40,10 +41,6 @@
     contain: layout style;
 }
 
-.card, .card:focus {
-    font-weight: inherit !important;
-}
-
 button.card {
     border: 0 !important;
     font-size: inherit !important;
@@ -70,7 +67,7 @@ button.card {
     padding-bottom: 18.5%;
 }
 
-.card .cardBox {
+.cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none !important;
@@ -79,7 +76,7 @@ button.card {
     overflow: hidden;
 }
 
-.layout-tv .card .cardBox {
+.layout-tv .cardBox {
     will-change: transform;
 }
 
@@ -88,10 +85,6 @@ button.card {
     .layout-desktop .card .cardBox, .layout-mobile .card .cardBox {
         margin: 3px;
     }
-}
-
-button.cardContent {
-    display: block;
 }
 
 .round .cardBox {
@@ -105,6 +98,7 @@ button.cardContent {
 .card:focus {
     position: relative !important;
     z-index: 10 !important;
+    font-weight: inherit !important;
 }
 
     .card:focus .cardBox {
@@ -139,11 +133,6 @@ button.cardContent {
     padding: 5px 0 2px;
     margin: 0 !important;
 }
-
-/*.card[focused]:not(.noScale) .cardBox, .card:focus:not(.noScale) .cardBox {
-    animation:SHW .2s;
-    animation-fill-mode: both;
-}*/
 
 .dimunselected .card .cardImageContainer {
     -webkit-filter: brightness(50%);
@@ -217,6 +206,8 @@ button.cardImageContainer {
     left: 0;
     right: 0;
     bottom: 0;
+    /* Needed in case this is a button */
+    display: block;
 }
 
 .round .cardContent {

@@ -36,20 +36,18 @@
 
     EmbyInputPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embyinput') == 'true') {
+        if (this.classList.contains('emby-input')) {
             return;
         }
 
-        this.setAttribute('data-embyinput', 'true');
+        this.classList.add('emby-input');
 
         var parentNode = this.parentNode;
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
 
-        if (!supportsFloatingLabel || this.type == 'date') {
-            label.classList.add('nofloat');
-        }
+        var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date';
 
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
@@ -60,19 +58,24 @@
 
         function onChange() {
             if (this.value) {
-                label.classList.remove('blank');
+                label.classList.remove('inputLabel-float');
             } else {
-                label.classList.add('blank');
+
+                if (instanceSupportsFloat) {
+                    label.classList.add('inputLabel-float');
+                }
             }
         }
 
         this.addEventListener('focus', function () {
             onChange.call(this);
-            label.classList.add('focused');
+            label.classList.add('inputLabelFocused');
+            label.classList.remove('inputLabelUnfocused');
         });
         this.addEventListener('blur', function () {
             onChange.call(this);
-            label.classList.remove('focused');
+            label.classList.remove('inputLabelFocused');
+            label.classList.add('inputLabelUnfocused');
         });
 
         this.addEventListener('change', onChange);

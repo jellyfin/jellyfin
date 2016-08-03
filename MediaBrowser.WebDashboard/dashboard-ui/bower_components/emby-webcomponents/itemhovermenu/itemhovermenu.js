@@ -164,7 +164,17 @@
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
 
-            var appendTo = dom.parentWithClass(elem, 'cardContent') || elem;
+            var appendTo = elem.querySelector('div.cardContent') || elem.querySelector('.cardScalable') || elem.querySelector('.cardBox');
+
+            //if (appendTo && appendTo.tagName == 'BUTTON') {
+            //    appendTo = dom.parentWithClass(elem, 'cardScalable');
+            //}
+
+            if (!appendTo) {
+                appendTo = elem;
+            }
+
+            appendTo.classList.add('withHoverMenu');
             appendTo.appendChild(innerElem);
         }
 
@@ -201,7 +211,7 @@
     function onHoverIn(e) {
 
         var elem = e.target;
-        var card = dom.parentWithClass(elem, 'cardImageContainer');
+        var card = dom.parentWithClass(elem, 'cardBox');
 
         if (!card) {
             return;
