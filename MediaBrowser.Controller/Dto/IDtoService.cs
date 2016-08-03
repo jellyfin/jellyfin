@@ -4,6 +4,8 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Sync;
+using MediaBrowser.Model.Sync;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -89,11 +91,8 @@ namespace MediaBrowser.Controller.Dto
         /// <summary>
         /// Gets the item by name dto.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="taggedItems">The tagged items.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null);
+        BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, Dictionary<string, SyncedItemProgress> syncProgress, User user = null);
+
+        Dictionary<string, SyncedItemProgress> GetSyncedItemProgress(DtoOptions options);
     }
 }
