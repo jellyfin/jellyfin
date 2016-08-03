@@ -1124,7 +1124,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
 
-        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
+        public Dictionary<string, SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
             return _repo.GetSyncedItemProgresses(query);
         }
