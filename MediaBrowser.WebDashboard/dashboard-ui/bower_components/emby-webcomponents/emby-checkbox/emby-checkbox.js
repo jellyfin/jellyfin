@@ -31,7 +31,15 @@
         labelElement.classList.add('mdl-js-ripple-effect');
 
         var labelTextElement = labelElement.querySelector('span');
-        labelElement.insertAdjacentHTML('beforeend', '<span class="mdl-checkbox__focus-helper"></span><span class="checkboxOutline"><span class="mdl-checkbox__tick-outline"></span></span>');
+
+        var outlineClass = 'checkboxOutline';
+
+        var customClass = this.getAttribute('data-outlineclass');
+        if (customClass) {
+            outlineClass += ' ' + customClass;
+        }
+
+        labelElement.insertAdjacentHTML('beforeend', '<span class="mdl-checkbox__focus-helper"></span><span class="' + outlineClass + '"><span class="mdl-checkbox__tick-outline"></span></span>');
 
         labelTextElement.classList.add('checkboxLabel');
 

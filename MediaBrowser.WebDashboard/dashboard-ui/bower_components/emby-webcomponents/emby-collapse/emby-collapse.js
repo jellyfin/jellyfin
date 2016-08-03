@@ -62,11 +62,11 @@
 
     EmbyButtonPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycollapse') == 'true') {
+        if (this.classList.contains('emby-collapse')) {
             return;
         }
 
-        this.setAttribute('data-embycollapse', 'true');
+        this.classList.add('emby-collapse');
 
         var collapseContent = this.querySelector('.collapseContent');
         if (collapseContent) {

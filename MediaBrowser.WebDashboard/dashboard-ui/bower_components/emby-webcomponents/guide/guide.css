@@ -67,19 +67,19 @@
     height: 2px;
 }
 
-.sportsProgramInfo .programAccent {
+.sportsAccent {
     background-color: #0A7C33;
 }
 
-.newsProgramInfo .programAccent {
+.newsAccent {
     background-color: #523378;
 }
 
-.movieProgramInfo .programAccent {
+.movieAccent {
     background-color: #A43913;
 }
 
-.childProgramInfo .programAccent {
+.childAccent {
     background-color: #0B487D;
 }
 
@@ -245,7 +245,7 @@
 
 @media all and (max-width: 1200px) {
 
-    .channelHeaderCell.withImage .guideChannelNumber {
+    .guideChannelNumberWithImage {
         display: none;
     }
 }
@@ -367,7 +367,7 @@
     color: #bbb;
 }
 
-.programCell i {
+.programIcon {
     margin-left: auto;
     margin-right: .5em;
     height: 3.5vh;
@@ -377,7 +377,7 @@
     flex-shrink: 0;
 }
 
-    .programCell i + i {
+    .programIcon + .programIcon {
         margin-left: .25em;
     }
 

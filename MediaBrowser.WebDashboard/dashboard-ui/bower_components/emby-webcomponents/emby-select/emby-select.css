@@ -1,4 +1,4 @@
-[is="emby-select"] {
+.emby-select {
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
@@ -25,7 +25,7 @@
     appearance: none;
 }
 
-    [is="emby-select"] option {
+    .emby-select option {
         color: initial;
     }
 
@@ -64,7 +64,7 @@
     transform-origin: center center;
 }
 
-[is="emby-select"]:focus + .emby-select-selectionbar {
+.emby-select:focus + .emby-select-selectionbar {
     background-color: #52B54B;
     transform: none;
 }

@@ -341,18 +341,27 @@
                 html += '</div>';
 
                 if (program.IsHD && options.showHdIcon) {
-                    html += '<i class="guideHdIcon md-icon">hd</i>';
+                    html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
                 }
 
                 if (program.SeriesTimerId) {
-                    html += '<i class="seriesTimerIcon md-icon">fiber_smart_record</i>';
+                    html += '<i class="seriesTimerIcon md-icon programIcon">fiber_smart_record</i>';
                 }
                 else if (program.TimerId) {
-                    html += '<i class="timerIcon md-icon">fiber_manual_record</i>';
+                    html += '<i class="timerIcon md-icon programIcon">fiber_manual_record</i>';
                 }
 
                 if (addAccent) {
-                    html += '<div class="programAccent"></div>';
+
+                    if (program.IsKids) {
+                        html += '<div class="programAccent childAccent"></div>';
+                    } else if (program.IsSports) {
+                        html += '<div class="programAccent sportsAccent"></div>';
+                    } else if (program.IsNews) {
+                        html += '<div class="programAccent newsAccent"></div>';
+                    } else if (program.IsMovie) {
+                        html += '<div class="programAccent movieAccent"></div>';
+                    }
                 }
 
                 html += '</button>';
@@ -413,13 +422,15 @@
                 }
 
                 var cssClass = 'channelHeaderCell clearButton itemAction lazy';
-                if (hasChannelImage) {
-                    cssClass += ' withImage';
-                }
 
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
-                html += '<div class="guideChannelNumber">' + channel.Number + '</div>';
+                cssClass = 'guideChannelNumber';
+                if (hasChannelImage) {
+                    cssClass += ' guideChannelNumberWithImage';
+                }
+
+                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
 
                 if (!hasChannelImage) {
                     html += '<div class="guideChannelName">' + channel.Name + '</div>';

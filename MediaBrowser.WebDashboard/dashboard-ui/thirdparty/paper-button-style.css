@@ -157,7 +157,7 @@ button[is="emby-button"].notext {
     background-color: #e57373 !important;
 }
 
-.ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabel, .ui-body-b .textareaLabel {
+.ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused, .ui-body-b .textareaLabelUnfocused {
     color: #ccc;
 }
 

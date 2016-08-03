@@ -6,9 +6,6 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 
 .mdl-slider {
     width: 100%;
-}
-
-.mdl-slider {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;

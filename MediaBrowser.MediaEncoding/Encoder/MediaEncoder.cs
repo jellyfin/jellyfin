@@ -500,7 +500,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     RedirectStandardOutput = true,
                     //RedirectStandardError = true,
-                    RedirectStandardInput = true,
+                    RedirectStandardInput = false,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
                     probeSizeArgument, inputPath).Trim(),
@@ -514,7 +514,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -630,7 +630,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     //RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    RedirectStandardInput = true,
+                    RedirectStandardInput = false,
                     FileName = FFMpegPath,
                     Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
 
@@ -644,7 +644,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
             var idetFoundInterlaced = false;
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 try
                 {
@@ -898,14 +898,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     FileName = FFMpegPath,
                     Arguments = args,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-                    RedirectStandardInput = true
+                    ErrorDialog = false
                 }
             };
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -1010,7 +1009,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion = false;
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, true))
             {
                 try
                 {
@@ -1118,13 +1117,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _logger.Info("Killing ffmpeg process");
 
-                try
+                if (process.IsRedirectingStdin)
                 {
-                    process.Process.StandardInput.WriteLine("q");
-                }
-                catch (Exception)
-                {
-                    _logger.Error("Error sending q command to process");
+                    try
+                    {
+                        process.Process.StandardInput.WriteLine("q");
+                    }
+                    catch (Exception)
+                    {
+                        _logger.Error("Error sending q command to process");
+                    }
                 }
 
                 try
@@ -1201,13 +1203,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             public int? ExitCode;
             private readonly MediaEncoder _mediaEncoder;
             private readonly ILogger _logger;
+            public bool IsRedirectingStdin { get; private set; }
 
-            public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger)
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger, bool isRedirectingStdin)
             {
                 Process = process;
                 _mediaEncoder = mediaEncoder;
                 _logger = logger;
                 Process.Exited += Process_Exited;
+                IsRedirectingStdin = isRedirectingStdin;
             }
 
             void Process_Exited(object sender, EventArgs e)
@@ -1220,7 +1224,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     ExitCode = process.ExitCode;
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 
@@ -1229,11 +1233,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
+                DisposeProcess(process);
+            }
+
+            private void DisposeProcess(Process process)
+            {
                 try
                 {
                     process.Dispose();
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
             }
@@ -1249,7 +1258,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         if (Process != null)
                         {
                             Process.Exited -= Process_Exited;
-                            Process.Dispose();
+                            DisposeProcess(Process);
                         }
                     }
 

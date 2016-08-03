@@ -105,6 +105,12 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
         function getImageWidth(shape) {
 
             var screenWidth = window.innerWidth;
+
+            if (!browser.mobile && !browser.tv) {
+                var roundScreenTo = 100;
+                screenWidth = Math.ceil(screenWidth / roundScreenTo) * roundScreenTo;
+            }
+
             var imagesPerRow = getPostersPerRow(shape, screenWidth);
 
             var shapeWidth = screenWidth / imagesPerRow;
@@ -1061,6 +1067,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var indicatorsHtml = '';
 
+            indicatorsHtml += indicators.getSyncIndicator(item);
             indicatorsHtml += indicators.getTimerIndicator(item);
 
             if (options.showGroupCount) {

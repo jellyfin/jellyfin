@@ -41,6 +41,10 @@
     font-size: 30px !important;
 }
 
+.withHoverMenu {
+    overflow: hidden;
+}
+
 @media all and (max-width: 1200px) {
 
     .cardOverlayInner {

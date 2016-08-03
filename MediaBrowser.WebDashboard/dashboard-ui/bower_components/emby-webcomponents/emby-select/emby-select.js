@@ -140,31 +140,33 @@
 
     EmbySelectPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embyselect') != 'true') {
-            this.setAttribute('data-embyselect', 'true');
-
-            var label = this.ownerDocument.createElement('label');
-            label.innerHTML = this.getAttribute('label') || '';
-            label.classList.add('selectLabel');
-            label.classList.add('selectLabelUnfocused');
-            label.htmlFor = this.id;
-            this.parentNode.insertBefore(label, this);
-
-            var div = document.createElement('div');
-            div.classList.add('emby-select-selectionbar');
-            this.parentNode.insertBefore(div, this.nextSibling);
-
-            var arrowContainer = document.createElement('div');
-            arrowContainer.classList.add('selectArrowContainer');
-            arrowContainer.innerHTML = '<div style="visibility:hidden;">0</div>';
-            this.parentNode.appendChild(arrowContainer);
-
-            var arrow = document.createElement('i');
-            arrow.classList.add('md-icon');
-            arrow.classList.add('selectArrow');
-            arrow.innerHTML = '&#xE313;';
-            arrowContainer.appendChild(arrow);
+        if (this.classList.contains('emby-select')) {
+            return;
         }
+
+        this.classList.add('emby-select');
+
+        var label = this.ownerDocument.createElement('label');
+        label.innerHTML = this.getAttribute('label') || '';
+        label.classList.add('selectLabel');
+        label.classList.add('selectLabelUnfocused');
+        label.htmlFor = this.id;
+        this.parentNode.insertBefore(label, this);
+
+        var div = document.createElement('div');
+        div.classList.add('emby-select-selectionbar');
+        this.parentNode.insertBefore(div, this.nextSibling);
+
+        var arrowContainer = document.createElement('div');
+        arrowContainer.classList.add('selectArrowContainer');
+        arrowContainer.innerHTML = '<div style="visibility:hidden;">0</div>';
+        this.parentNode.appendChild(arrowContainer);
+
+        var arrow = document.createElement('i');
+        arrow.classList.add('md-icon');
+        arrow.classList.add('selectArrow');
+        arrow.innerHTML = '&#xE313;';
+        arrowContainer.appendChild(arrow);
     };
 
     document.registerElement('emby-select', {

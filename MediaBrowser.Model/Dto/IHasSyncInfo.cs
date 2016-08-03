@@ -7,6 +7,7 @@ namespace MediaBrowser.Model.Dto
         string Id { get; }
         bool? SupportsSync { get; set; }
         bool? HasSyncJob { get; set; }
+        double? SyncPercent { get; set; }
         bool? IsSynced { get; set; }
         SyncJobItemStatus? SyncStatus { get; set; }
     }

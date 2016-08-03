@@ -649,15 +649,15 @@ progress {
     background-color: #fff;
 }
 
-.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
+.ui-body-a .inputLabelUnfocused, .ui-body-a .textareaLabel {
     color: #555;
 }
 
-    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
+    .ui-body-a .inputLabelFocused, .ui-body-a .textareaLabelFocused, .ui-body-a .selectLabelFocused {
         color: green;
     }
 
-.ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .selectLabelUnfocused, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #555;
 }
 
