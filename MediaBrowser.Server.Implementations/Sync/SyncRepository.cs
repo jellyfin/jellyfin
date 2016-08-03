@@ -605,7 +605,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = "select ItemId,Progress,Status from SyncJobItems";
+                    cmd.CommandText = "select ItemId,Status,Progress from SyncJobItems";
 
                     var whereClauses = new List<string>();
 
