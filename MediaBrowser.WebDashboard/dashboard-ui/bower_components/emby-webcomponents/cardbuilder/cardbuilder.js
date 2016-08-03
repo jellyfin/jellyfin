@@ -426,6 +426,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
         function getCardImageUrl(item, apiClient, options) {
 
+            var imageItem = item.ProgramInfo || item;
+            item = imageItem;
+
             var width = options.width;
             var height = null;
             var primaryImageAspectRatio = imageLoader.getPrimaryImageAspectRatio([item]);
