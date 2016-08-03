@@ -87,7 +87,7 @@ interpolation/decomposition.
 
 |                        | web-animations | web-animations-next | web-animations-next-lite |
 |------------------------|:--------------:|:-------------------:|:------------------------:|
-|Size (gzipped)          | 12.5kb         | 14kb                | 10.5kb                   |
+|Size (gzipped)          | 15KB           | 18KB                | 15KB                     |
 |Element.animate         | ✔             | ✔                  | ✔                       |
 |Timing input (easings, duration, fillMode, etc.) for animation effects| ✔ | ✔ | ✔             | 
 |Playback control        | ✔             | ✔                  | ✔                       |

@@ -1,3 +1,27 @@
+### 2.2.2 - *August 3 2016*
+
+  * [Fixed handling of keyframes with overlapping offsets.](https://github.com/web-animations/web-animations-next/pull/470)
+
+  * [Throw TypeError on invalid keyframe input.](https://github.com/web-animations/web-animations-next/pull/471)
+
+  * [Fixed display and other animation properties being animated.](https://github.com/web-animations/web-animations-next/pull/474)
+
+  * [Throw InvalidStateError when calling play() on reversed infinite animation.](https://github.com/web-animations/web-animations-next/pull/475)
+
+  * [Fixed infinite loop in cubic-bezier timing function.](https://github.com/web-animations/web-animations-next/pull/476)
+
+  * [Fixed idle animations not becoming paused when seeked.](https://github.com/web-animations/web-animations-next/pull/479)
+
+  * [Fixed pause() not rewinding idl animations.](https://github.com/web-animations/web-animations-next/pull/480)
+
+  * [Extended cubic-bezier timing function domain from [0, 1] to (-Infinity, Infinity).](https://github.com/web-animations/web-animations-next/pull/481)
+
+  * [Fixed timing model to handle corner cases involving Infinity and 0 correctly.](https://github.com/web-animations/web-animations-next/pull/482)
+
+  * [Fixed source files missing from npm package.](https://github.com/web-animations/web-animations-next/pull/483)
+
+  * [Improved performance of starting and updating individual animations.](https://github.com/web-animations/web-animations-next/pull/485)
+
 ### 2.2.1 - *April 28 2016*
   * [Deprecated invalid timing inputs](https://github.com/web-animations/web-animations-next/pull/437) as they will soon throw [TypeErrors](https://github.com/web-animations/web-animations-next/pull/426) in native browsers.
 

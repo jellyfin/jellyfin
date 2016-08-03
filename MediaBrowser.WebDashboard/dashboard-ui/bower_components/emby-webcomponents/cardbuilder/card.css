@@ -67,7 +67,7 @@ button.card {
     padding-bottom: 18.5%;
 }
 
-.cardBox {
+.card .cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none !important;
@@ -316,8 +316,8 @@ button.cardImageContainer {
 }
 
 .card .indicators {
-    right: .5vh;
-    top: .5vh;
+    right: 2%;
+    top: 3%;
     position: absolute;
     display: flex;
     align-items: center;
