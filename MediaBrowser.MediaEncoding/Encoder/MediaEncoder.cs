@@ -1203,7 +1203,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             public int? ExitCode;
             private readonly MediaEncoder _mediaEncoder;
             private readonly ILogger _logger;
-            public bool IsRedirectingStdin { get; set; }
+            public bool IsRedirectingStdin { get; private set; }
 
             public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger, bool isRedirectingStdin)
             {
@@ -1224,7 +1224,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     ExitCode = process.ExitCode;
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 
@@ -1233,11 +1233,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
+                DisposeProcess(process);
+            }
+
+            private void DisposeProcess(Process process)
+            {
                 try
                 {
                     process.Dispose();
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
             }
@@ -1253,7 +1258,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         if (Process != null)
                         {
                             Process.Exited -= Process_Exited;
-                            Process.Dispose();
+                            DisposeProcess(Process);
                         }
                     }
 
