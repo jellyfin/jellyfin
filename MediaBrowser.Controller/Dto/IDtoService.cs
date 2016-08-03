@@ -1,11 +1,9 @@
-﻿using System;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Sync;
-using MediaBrowser.Model.Sync;
 
 namespace MediaBrowser.Controller.Dto
 {
@@ -44,14 +42,6 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="owner">The owner.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
-
-        /// <summary>
-        /// Fills the synchronize information.
-        /// </summary>
-        /// <param name="tuples">The tuples.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="user">The user.</param>
-        void FillSyncInfo(IEnumerable<Tuple<BaseItem, BaseItemDto>> tuples, DtoOptions options, User user);
 
         /// <summary>
         /// Gets the base item dto.

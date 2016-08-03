@@ -16,17 +16,25 @@
 }
 
 .alphaPickerButton {
+    background: transparent;
+    border: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
     min-width: initial;
     margin: 0;
-    padding: .1em .4em !important;
+    padding: .1em .4em;
     width: auto;
     border-radius: .1em;
     font-weight: normal;
-    opacity: .7;
+    opacity: .6;
 }
 
 .alphaPicker-vertical .alphaPickerButton {
-    padding: .2em .4em !important;
+    padding: .2em .4em;
 }
 
 .alphaPickerButtonIcon {

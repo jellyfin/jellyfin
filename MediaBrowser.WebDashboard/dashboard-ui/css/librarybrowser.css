@@ -918,7 +918,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-height: 700px) {
 
-    .alphabetPicker-vertical .alphaPickerButton {
+    .alphaPicker-vertical .alphaPickerButton {
         padding-top: 1px !important;
         padding-bottom: 1px !important;
     }
@@ -926,7 +926,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-height: 600px) {
 
-    .alphabetPicker-vertical .alphaPickerButton {
+    .alphaPicker-vertical .alphaPickerButton {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
     }

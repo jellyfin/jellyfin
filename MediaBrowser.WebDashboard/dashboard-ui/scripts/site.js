@@ -1657,6 +1657,9 @@ var AppInfo = {};
                 },
                 shuffle: function (item) {
                     return MediaController.shuffle(item);
+                },
+                pause: function () {
+                    return MediaController.pause();
                 }
             };
         });
