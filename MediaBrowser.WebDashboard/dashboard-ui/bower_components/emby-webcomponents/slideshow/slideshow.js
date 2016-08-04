@@ -71,7 +71,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         var tabIndex = canFocus ? '' : ' tabindex="-1"';
         autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon">' + icon + '</i></button>';
+        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon slideshowButtonIcon">' + icon + '</i></button>';
     }
 
     return function (options) {
@@ -246,7 +246,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
             var html = '';
             html += '<div class="swiper-slide" data-original="' + item.originalImage + '" data-itemid="' + item.Id + '" data-serverid="' + item.ServerId + '">';
-            html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy">';
+            html += '<img data-src="' + item.imageUrl + '" class="swiper-lazy swiper-slide-img">';
             if (item.title || item.subtitle) {
                 html += '<div class="slideText">';
                 html += '<div class="slideTextInner">';
@@ -547,7 +547,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 newCardImageContainer.className = cardImageContainer.className;
 
                 if (options.cover) {
-                    newCardImageContainer.classList.add('cover');
+                    newCardImageContainer.classList.add('slideshowImage-cover');
                 }
 
                 newCardImageContainer.style.backgroundImage = "url('" + imgUrl + "')";

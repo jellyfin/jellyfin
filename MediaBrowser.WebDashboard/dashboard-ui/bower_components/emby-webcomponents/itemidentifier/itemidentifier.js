@@ -88,7 +88,7 @@
         page.querySelector('.popupIdentifyForm').classList.add('hide');
         identificationSearchResults.classList.remove('hide');
         page.querySelector('.identifyOptionsForm').classList.add('hide');
-        page.querySelector('.dialogContentInner').classList.remove('centeredContent');
+        page.querySelector('.dialogContentInner').classList.remove('dialog-content-centered');
 
         var html = '';
         var i, length;
@@ -142,7 +142,7 @@
         page.querySelector('.identificationSearchResults').classList.add('hide');
         identifyOptionsForm.classList.remove('hide');
         page.querySelector('#chkIdentifyReplaceImages').checked = true;
-        page.querySelector('.dialogContentInner').classList.add('centeredContent');
+        page.querySelector('.dialogContentInner').classList.add('dialog-content-centered');
 
         currentSearchResult = identifyResult;
 

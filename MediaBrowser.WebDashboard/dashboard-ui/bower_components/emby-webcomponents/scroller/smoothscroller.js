@@ -161,10 +161,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // no scrolling supported
             options.enableNativeScroll = false;
         }
-        else if (browser.edge && !browser.xboxOne) {
-            // no scrolling supported
-            options.enableNativeScroll = false;
-        }
         else if (isSmoothScrollSupported && browser.firefox) {
             // native smooth scroll
             options.enableNativeScroll = true;
@@ -174,8 +170,15 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (layoutManager.mobile ||
-           layoutManager.desktop ||
+        else if (layoutManager.mobile) {
+
+            options.enableNativeScroll = true;
+        }
+        else if (browser.edge && !browser.xboxOne) {
+            // no scrolling supported
+            options.enableNativeScroll = false;
+        }
+        else if (layoutManager.desktop ||
            !browser.animate) {
 
             options.enableNativeScroll = true;

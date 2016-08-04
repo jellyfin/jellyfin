@@ -75,6 +75,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-checkbox checked class="red">Checkbox</paper-checkbox>
       </template>
     </demo-snippet>
+
+    <h4>Demo of an element with bindings</h4>
+    <demo-snippet class="centered-demo small-text">
+      <template is="dom-bind">
+        <paper-checkbox checked="[[active]]">One-Way Binding</paper-checkbox>
+        <paper-checkbox checked="{{active}}">Two-Way Binding</paper-checkbox>
+      </template>
+    </demo-snippet>
   </div>
 </body>
 </html>
