@@ -21,8 +21,8 @@
     display: flex;
 }
 
-div.checkboxContainer {
-    display: block;
+.checkboxContainer-withDescription {
+    flex-direction: column;
 }
 
 .mdl-checkbox__input {
