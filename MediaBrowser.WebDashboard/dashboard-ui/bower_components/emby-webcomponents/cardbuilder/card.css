@@ -67,13 +67,11 @@ button.card {
     padding-bottom: 18.5%;
 }
 
-.cardBox {
+.card .cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none !important;
     border: 3px solid transparent;
-    /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
-    overflow: hidden;
 }
 
 .layout-tv .cardBox {
@@ -239,13 +237,6 @@ button.cardImageContainer {
         opacity: .6;
     }
 
-/*.visualCardBox {
-    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}*/
-
 .visualCardBox .cardScalable, .visualCardBox .cardFooter {
     background-color: #222326;
 }
@@ -253,6 +244,10 @@ button.cardImageContainer {
 .visualCardBox .cardFooter {
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .innerCardFooter {
@@ -316,8 +311,8 @@ button.cardImageContainer {
 }
 
 .card .indicators {
-    right: .5vh;
-    top: .5vh;
+    right: 2%;
+    top: 3%;
     position: absolute;
     display: flex;
     align-items: center;

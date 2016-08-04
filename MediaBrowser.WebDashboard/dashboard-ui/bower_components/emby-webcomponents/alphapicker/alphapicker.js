@@ -1,4 +1,4 @@
-define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
+define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
 
     var selectedButtonClass = 'alphaPickerButton-selected';
 
@@ -13,7 +13,7 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
     }
 
     function getLetterButton(l) {
-        return '<button data-value="' + l + '" class="clearButton alphaPickerButton">' + l + '</button>';
+        return '<button data-value="' + l + '" class="alphaPickerButton">' + l + '</button>';
     }
 
     function render(element, options) {
