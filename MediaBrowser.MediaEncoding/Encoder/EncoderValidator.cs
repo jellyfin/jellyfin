@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder

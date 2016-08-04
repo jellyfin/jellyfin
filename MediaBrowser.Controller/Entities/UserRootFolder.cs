@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Serialization;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
 using System;
@@ -8,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities
 {

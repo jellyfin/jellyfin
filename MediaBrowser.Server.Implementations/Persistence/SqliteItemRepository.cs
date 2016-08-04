@@ -3776,6 +3776,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("Name like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
+            if (query.SourceTypes.Length == 1)
+            {
+                whereClauses.Add("(select sourcetype from typedbaseitems where guid=ItemId) = @SourceTypes");
+                cmd.Parameters.Add(cmd, "@SourceTypes", DbType.String).Value = query.SourceTypes[0].ToString();
+            }
 
             return whereClauses;
         }

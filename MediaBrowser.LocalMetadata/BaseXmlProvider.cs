@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

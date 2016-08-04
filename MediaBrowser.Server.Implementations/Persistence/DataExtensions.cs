@@ -4,7 +4,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
