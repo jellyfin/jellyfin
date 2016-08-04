@@ -2605,13 +2605,6 @@ namespace MediaBrowser.Server.Implementations.Library
             return ItemRepository.GetPeopleNames(query);
         }
 
-        public List<PersonInfo> GetAllPeople()
-        {
-            return GetPeople(new InternalPeopleQuery())
-                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-        }
-
         public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
             if (!item.SupportsPeople)

@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var isFirstRefresh = GetLastRefreshDate(item) == default(DateTime);
+            var isFirstRefresh = item.DateLastRefreshed == default(DateTime);
 
             var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
@@ -191,11 +191,6 @@ namespace MediaBrowser.Providers.Manager
             lookupInfo.ProviderIds = result.ProviderIds;
             lookupInfo.Name = result.Name;
             lookupInfo.Year = result.ProductionYear;
-        }
-
-        private DateTime GetLastRefreshDate(IHasMetadata item)
-        {
-            return item.DateLastRefreshed;
         }
 
         protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
@@ -652,7 +647,6 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        refreshResult.Failures++;
                         Logger.Debug("{0} returned no metadata for {1}", providerName, logName);
                     }
                 }
