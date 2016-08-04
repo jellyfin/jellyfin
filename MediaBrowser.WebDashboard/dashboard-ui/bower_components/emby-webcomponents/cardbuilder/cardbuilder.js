@@ -975,7 +975,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            return counts.join(' • ');
+            return counts.join(', ');
         }
 
         function buildCard(index, item, apiClient, options, className) {
@@ -1014,7 +1014,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 var overlayPlayButton = options.overlayPlayButton;
 
-                if (overlayPlayButton == null && !options.overlayMoreButton) {
+                if (overlayPlayButton == null && !options.overlayMoreButton && !options.cardLayout) {
                     overlayPlayButton = item.MediaType == 'Video';
                 }
 

@@ -354,6 +354,10 @@ button.cardImageContainer {
     background-color: #F57F17;
 }
 
+.scalableCard.bannerCard {
+    width: 100%;
+}
+
 .scalableCard.backdropCard {
     width: 100%;
 }
