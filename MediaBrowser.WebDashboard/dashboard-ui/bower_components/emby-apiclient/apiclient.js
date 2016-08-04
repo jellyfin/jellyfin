@@ -3056,7 +3056,13 @@
 
             var url = self.getUrl("Search/Hints", options);
 
-            return self.getJSON(url);
+            return self.getJSON(url).then(function (result) {
+                var serverId = self.serverId();
+                result.SearchHints.forEach(function (i) {
+                    i.ServerId = serverId;
+                });
+                return result;
+            });
         };
 
         /**
