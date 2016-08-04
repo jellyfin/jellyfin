@@ -156,9 +156,9 @@
             return;
         }
 
-        require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+        require(['itemIdentifier'], function (itemIdentifier) {
 
-            itemidentifier.showFindNew(extractedName, extractedYear, 'Series').then(function (newItem) {
+            itemIdentifier.showFindNew(extractedName, extractedYear, 'Series', ApiClient.serverId()).then(function (newItem) {
 
                 if (newItem != null) {
                     currentNewItem = newItem;

@@ -39,8 +39,8 @@
     <DirectPlayProfile container="jpeg,jpg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mpeg" type="Video" videoCodec="mpeg2video" audioCodec="mp2" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" />
+    <TranscodingProfile container="mpeg" type="Video" videoCodec="mpeg2video" audioCodec="mp2" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
@@ -51,11 +51,13 @@
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="8192000" isRequired="true" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
     <CodecProfile type="Audio" codec="mp2">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
       </Conditions>
+      <ApplyConditions />
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles />

@@ -6,9 +6,6 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 
 .mdl-slider {
     width: 100%;
-}
-
-.mdl-slider {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -94,8 +91,10 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 }
 
 .layout-tv .mdl-slider::-webkit-slider-thumb {
-    width: 2vh;
-    height: 2vh;
+    width: 12px;
+    height: 12px;
+    position: relative;
+    top: 1px;
 }
 
 .mdl-slider::-moz-range-thumb {
@@ -145,21 +144,6 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
 
 .mdl-slider[disabled]::-ms-thumb {
     background: gray;
-}
-
-.layout-tv .mdl-slider::-ms-thumb {
-    width: 2vh;
-    height: 2vh;
-}
-
-.layout-tv .mdl-slider::-webkit-slider-thumb {
-    width: 0;
-    height: 0;
-}
-
-.layout-tv .mdl-slider:hover::-webkit-slider-thumb {
-    width: 16px;
-    height: 16px;
 }
 
 .mdl-slider.is-lowest-value::-webkit-slider-thumb {
@@ -329,11 +313,9 @@ _:-ms-input-placeholder, :root .mdl-slider.mdl-slider {
     position: absolute;
     top: -3.7em;
     left: 0;
-    padding: .75em;
-    background: #3367d6;
+    padding: .5em 1em;
+    background: #282828;
     color: #fff;
-    border-radius: 1000px;
-    font-size: 90%;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,11 +1,16 @@
-﻿define(['dialogHelper', 'loading', 'emby-input', 'emby-checkbox', 'paper-icon-button-light'], function (dialogHelper, loading) {
+﻿define(['dialogHelper', 'loading', 'cardBuilder', 'connectionManager', 'require', 'globalize', 'scrollHelper', 'layoutManager', 'focusManager', 'emby-input', 'emby-checkbox', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'cardStyle'], function (dialogHelper, loading, cardBuilder, connectionManager, require, globalize, scrollHelper, layoutManager, focusManager) {
 
     var currentItem;
     var currentItemType;
+    var currentServerId;
     var currentResolve;
     var currentReject;
     var hasChanges = false;
     var currentSearchResult;
+
+    function getApiClient() {
+        return connectionManager.getApiClient(currentServerId);
+    }
 
     function searchForIdentificationResults(page) {
 
@@ -44,7 +49,7 @@
 
         if (!hasId && !lookupInfo.Name) {
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessagePleaseEnterNameOrId'));
+                toast(globalize.translate('sharedcomponents#PleaseEnterNameOrId'));
             });
             return;
         }
@@ -60,9 +65,11 @@
 
         loading.show();
 
-        ApiClient.ajax({
+        var apiClient = getApiClient();
+
+        apiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/" + currentItemType),
+            url: apiClient.getUrl("Items/RemoteSearch/" + currentItemType),
             data: JSON.stringify(lookupInfo),
             contentType: "application/json",
             dataType: 'json'
@@ -76,9 +83,12 @@
 
     function showIdentificationSearchResults(page, results) {
 
+        var identificationSearchResults = page.querySelector('.identificationSearchResults');
+
         page.querySelector('.popupIdentifyForm').classList.add('hide');
-        page.querySelector('.identificationSearchResults').classList.remove('hide');
+        identificationSearchResults.classList.remove('hide');
         page.querySelector('.identifyOptionsForm').classList.add('hide');
+        page.querySelector('.dialogContentInner').classList.remove('centeredContent');
 
         var html = '';
         var i, length;
@@ -105,10 +115,14 @@
             }
         }
 
-        var searchImages = elem.querySelectorAll('.searchImage');
+        var searchImages = elem.querySelectorAll('.card');
         for (i = 0, length = searchImages.length; i < length; i++) {
 
             searchImages[i].addEventListener('click', onSearchImageClick);
+        }
+
+        if (layoutManager.tv) {
+            focusManager.autoFocus(identificationSearchResults);
         }
     }
 
@@ -122,10 +136,13 @@
 
     function showIdentifyOptions(page, identifyResult) {
 
+        var identifyOptionsForm = page.querySelector('.identifyOptionsForm');
+
         page.querySelector('.popupIdentifyForm').classList.add('hide');
         page.querySelector('.identificationSearchResults').classList.add('hide');
-        page.querySelector('.identifyOptionsForm').classList.remove('hide');
+        identifyOptionsForm.classList.remove('hide');
         page.querySelector('#chkIdentifyReplaceImages').checked = true;
+        page.querySelector('.dialogContentInner').classList.add('centeredContent');
 
         currentSearchResult = identifyResult;
 
@@ -145,16 +162,18 @@
         if (identifyResult.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(identifyResult.ImageUrl, identifyResult.SearchProviderName);
 
-            resultHtml = '<img src="' + displayUrl + '" style="max-height:160px;" /><br/>' + resultHtml;
+            resultHtml = '<div style="display:flex;align-items:center;"><img src="' + displayUrl + '" style="max-height:240px;" /><div style="margin-left:1em;">' + resultHtml + '</div>';
         }
 
         page.querySelector('.selectedSearchResult').innerHTML = resultHtml;
+
+        focusManager.focus(identifyOptionsForm.querySelector('.btnSubmit'));
     }
 
     function getSearchResultHtml(result, index) {
 
         var html = '';
-        var cssClass = "card";
+        var cssClass = "card scalableCard";
 
         if (currentItemType == "Episode") {
             cssClass += " backdropCard";
@@ -166,25 +185,25 @@
             cssClass += " portraitCard";
         }
 
-        html += '<div class="' + cssClass + '">';
-        html += '<div class="cardBox">';
+        html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
+        html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
         html += '<div class="cardPadder"></div>';
 
-        html += '<a class="cardContent searchImage" href="#" data-index="' + index + '">';
+        html += '<div class="cardContent searchImage">';
 
         if (result.ImageUrl) {
             var displayUrl = getSearchImageDisplayUrl(result.ImageUrl, result.SearchProviderName);
 
-            html += '<div class="cardImage" style="background-image:url(\'' + displayUrl + '\');"></div>';
+            html += '<div class="cardImageContainer coveredImage" style="background-image:url(\'' + displayUrl + '\');"></div>';
         } else {
 
-            html += '<div class="cardImage iconCardImage"><i class="md-icon">search</i></div>';
+            html += '<div class="cardImageContainer coveredImage ' + cardBuilder.getDefaultColorClass(result.Name) + '"><div class="cardText cardCenteredText">' + result.Name + '</div></div>';
         }
-        html += '</a>';
+        html += '</div>';
         html += '</div>';
 
-        html += '<div class="cardFooter outerCardFooter">';
+        html += '<div class="cardFooter">';
         html += '<div class="cardText cardTextCentered">' + result.Name + '</div>';
 
         html += '<div class="cardText cardTextCentered">';
@@ -198,12 +217,14 @@
         }
         html += '</div>';
         html += '</div>';
-        html += '</div>';
+        html += '</button>';
         return html;
     }
 
     function getSearchImageDisplayUrl(url, provider) {
-        return ApiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
+        var apiClient = getApiClient();
+
+        return apiClient.getUrl("Items/RemoteSearch/Image", { imageUrl: url, ProviderName: provider });
     }
 
     function submitIdentficationResult(page) {
@@ -214,9 +235,11 @@
             ReplaceAllImages: page.querySelector('#chkIdentifyReplaceImages').checked
         };
 
-        ApiClient.ajax({
+        var apiClient = getApiClient();
+
+        apiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
+            url: apiClient.getUrl("Items/RemoteSearch/Apply/" + currentItem.Id, options),
             data: JSON.stringify(currentSearchResult),
             contentType: "application/json"
 
@@ -237,7 +260,9 @@
 
     function showIdentificationForm(page, item) {
 
-        ApiClient.getJSON(ApiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
+        var apiClient = getApiClient();
+
+        apiClient.getJSON(apiClient.getUrl("Items/" + item.Id + "/ExternalIdInfos")).then(function (idList) {
 
             var html = '';
 
@@ -251,7 +276,7 @@
 
                 html += '<div class="inputContainer">';
 
-                var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
+                var idLabel = globalize.translate('sharedcomponents#LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
                 var value = providerIds[idInfo.Key] || '';
 
@@ -274,7 +299,7 @@
 
             page.querySelector('.identifyProviderIds').innerHTML = html;
 
-            page.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderIdentify');
+            page.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Identify');
         });
     }
 
@@ -282,33 +307,42 @@
 
         loading.show();
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
+        require(['text!./itemidentifier.template.html'], function (template) {
 
-        xhr.onload = function (e) {
+            var apiClient = getApiClient();
 
-            var template = this.response;
-            ApiClient.getItem(ApiClient.getCurrentUserId(), itemId).then(function (item) {
+            apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
 
                 currentItem = item;
                 currentItemType = currentItem.Type;
 
-                var dlg = dialogHelper.createDialog({
+                var dialogOptions = {
                     size: 'medium',
-                    removeOnClose: true
-                });
+                    removeOnClose: true,
+                    scrollY: false
+                };
 
-                dlg.classList.add('ui-body-b');
-                dlg.classList.add('background-theme-b');
+                if (layoutManager.tv) {
+                    dialogOptions.size = 'fullscreen';
+                }
+
+                var dlg = dialogHelper.createDialog(dialogOptions);
+
+                dlg.classList.add('formDialog');
+                dlg.classList.add('recordingDialog');
 
                 var html = '';
-                html += Globalize.translateDocument(template);
+                html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
                 dlg.addEventListener('close', onDialogClosed);
+
+                if (layoutManager.tv) {
+                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                }
 
                 dialogHelper.open(dlg);
 
@@ -336,9 +370,7 @@
                 showIdentificationForm(dlg, item);
                 loading.hide();
             });
-        }
-
-        xhr.send();
+        });
     }
 
     function onDialogClosed() {
@@ -356,25 +388,32 @@
         currentItem = null;
         currentItemType = itemType;
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'components/itemidentifier/itemidentifier.template.html', true);
+        require(['text!./itemidentifier.template.html'], function (template) {
 
-        xhr.onload = function (e) {
+            var dialogOptions = {
+                size: 'medium',
+                removeOnClose: true,
+                scrollY: false
+            };
 
-            var template = this.response;
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            }
 
-            var dlg = dialogHelper.createDialog({
-                size: 'medium'
-            });
+            var dlg = dialogHelper.createDialog(dialogOptions);
 
-            dlg.classList.add('ui-body-a');
-            dlg.classList.add('background-theme-a');
+            dlg.classList.add('formDialog');
+            dlg.classList.add('recordingDialog');
 
             var html = '';
-            html += Globalize.translateDocument(template);
+            html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
             document.body.appendChild(dlg);
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+            }
 
             dialogHelper.open(dlg);
 
@@ -401,9 +440,7 @@
             dlg.classList.add('identifyDialog');
 
             showIdentificationFormFindNew(dlg, itemName, itemYear, itemType);
-        }
-
-        xhr.send();
+        });
     }
 
     function showIdentificationFormFindNew(dlg, itemName, itemYear, itemType) {
@@ -421,24 +458,28 @@
             dlg.querySelector('#txtLookupYear').value = itemYear;
         }
 
-        dlg.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('HeaderSearch');
+        dlg.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Search');
     }
 
     return {
-        show: function (itemId) {
+        show: function (itemId, serverId) {
 
             return new Promise(function (resolve, reject) {
 
                 currentResolve = resolve;
                 currentReject = reject;
+                currentServerId = serverId;
                 hasChanges = false;
 
                 showEditor(itemId);
             });
         },
 
-        showFindNew: function (itemName, itemYear, itemType) {
+        showFindNew: function (itemName, itemYear, itemType, serverId) {
+
             return new Promise(function (resolve, reject) {
+
+                currentServerId = serverId;
 
                 hasChanges = false;
                 showEditorFindNew(itemName, itemYear, itemType, resolve);

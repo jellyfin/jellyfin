@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Persistence

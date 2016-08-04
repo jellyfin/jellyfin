@@ -1,7 +1,9 @@
-define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
+define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
+
+    var selectedButtonClass = 'alphaPickerButton-selected';
 
     function focus() {
-        var selected = this.querySelector('.selected');
+        var selected = this.querySelector('.' + selectedButtonClass);
 
         if (selected) {
             focusManager.focus(selected);
@@ -11,7 +13,7 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
     }
 
     function getLetterButton(l) {
-        return '<button data-value="' + l + '" class="clearButton alphaPickerButton">' + l + '</button>';
+        return '<button data-value="' + l + '" class="alphaPickerButton">' + l + '</button>';
     }
 
     function render(element, options) {
@@ -26,7 +28,7 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
         if (options.mode == 'keyboard') {
             // space_bar icon
             html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon">&#xE256;</i>\
+                <i class="md-icon alphaPickerButtonIcon">&#xE256;</i>\
             </button>';
         } else {
             letters = ['#'];
@@ -39,7 +41,7 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
         if (options.mode == 'keyboard') {
             // backspace icon
             html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon">&#xE14A;</i>\
+                <i class="md-icon alphaPickerButtonIcon">&#xE14A;</i>\
             </button>';
             html += '</div>';
 
@@ -223,22 +225,22 @@ define(['focusManager', 'css!./style.css', 'clearButtonStyle', 'paper-icon-butto
                     currentValue = value;
 
                     if (options.mode != 'keyboard') {
-                        selected = element.querySelector('.selected');
+                        selected = element.querySelector('.' + selectedButtonClass);
                         btn = element.querySelector('.alphaPickerButton[data-value=\'' + value + '\']');
 
                         if (btn && btn != selected) {
-                            btn.classList.add('selected');
+                            btn.classList.add(selectedButtonClass);
                         }
                         if (selected && selected != btn) {
-                            selected.classList.remove('selected');
+                            selected.classList.remove(selectedButtonClass);
                         }
                     }
                 } else {
                     currentValue = value;
 
-                    selected = element.querySelector('.selected');
+                    selected = element.querySelector('.' + selectedButtonClass);
                     if (selected) {
-                        selected.classList.remove('selected');
+                        selected.classList.remove(selectedButtonClass);
                     }
                 }
             }

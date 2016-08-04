@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-icon-button-light'], function ($) {
+﻿define(['jQuery', 'paper-icon-button-light', 'cardStyle'], function ($) {
 
     function cancelJob(page, id) {
 
@@ -60,7 +60,7 @@
 
         var html = '';
 
-        html += "<div class='card squareCard' data-id='" + job.Id + "' data-status='" + job.Status + "'>";
+        html += "<div class='card squareCard scalableCard' data-id='" + job.Id + "' data-status='" + job.Status + "'>";
 
         html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable">';
@@ -179,6 +179,8 @@
             showTargetName = !hasLocalSync();
         }
 
+        var hasOpenSection = false;
+
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
@@ -188,9 +190,11 @@
                 if (targetName != lastTargetName) {
 
                     if (lastTargetName) {
+                        html += '</div>';
                         html += '<br/>';
                         html += '<br/>';
                         html += '<br/>';
+                        hasOpenSection = false;
                     }
 
                     lastTargetName = targetName;
@@ -200,10 +204,16 @@
                     html += '<div>' + targetName + '</div>';
 
                     html += '</div>';
+                    html += '<div class="itemsContainer vertical-wrap">';
+                    hasOpenSection = true;
                 }
             }
 
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
+        }
+
+        if (hasOpenSection) {
+            html += '</div>';
         }
 
         var elem = $('.syncActivity', page).html(html).lazyChildren();

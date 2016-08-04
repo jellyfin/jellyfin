@@ -23,7 +23,7 @@
 
         var icon = button.querySelector('i');
         //icon.innerHTML = 'expand_less';
-        icon.classList.add('expanded');
+        icon.classList.add('emby-collapse-expandIconExpanded');
     }
 
     function slideUpToHide(button, elem) {
@@ -44,7 +44,7 @@
 
         var icon = button.querySelector('i');
         //icon.innerHTML = 'expand_more';
-        icon.classList.remove('expanded');
+        icon.classList.remove('emby-collapse-expandIconExpanded');
     }
 
     function onButtonClick(e) {
@@ -62,11 +62,11 @@
 
     EmbyButtonPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycollapse') == 'true') {
+        if (this.classList.contains('emby-collapse')) {
             return;
         }
 
-        this.setAttribute('data-embycollapse', 'true');
+        this.classList.add('emby-collapse');
 
         var collapseContent = this.querySelector('.collapseContent');
         if (collapseContent) {

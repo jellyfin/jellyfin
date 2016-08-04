@@ -1,0 +1,26 @@
+
+.dialogButtons {
+    position: relative;
+    padding: 0 !important;
+    margin: 1em;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-pack: end;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+}
+
+.dialogButton {
+    color: #52B54B;
+    padding: 0.35em 1em;
+    margin: 0;
+}
+
+    .dialogButton:focus {
+        color: #fff;
+        background-color: #52B54B;
+    }

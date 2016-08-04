@@ -107,13 +107,42 @@
         var dlg = dialogHelper.createDialog(dialogOptions);
 
         if (!layoutManager.tv) {
-            dlg.classList.add('extraSpacing');
+            dlg.classList.add('actionsheet-extraSpacing');
         }
 
         dlg.classList.add('actionSheet');
 
         var html = '';
-        html += '<div class="actionSheetContent">';
+
+        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
+        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
+
+        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
+        if (options.items.length > 20) {
+            var minWidth = window.innerWidth >= 300 ? 240 : 200;
+            style += "min-width:" + minWidth + "px;";
+        }
+
+        var i, length, option;
+        var renderIcon = false;
+        for (i = 0, length = options.items.length; i < length; i++) {
+
+            option = options.items[i];
+            option.icon = option.selected ? 'check' : null;
+
+            if (option.icon) {
+                renderIcon = true;
+            }
+        }
+
+        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
+        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
+
+        if (center) {
+            html += '<div class="actionSheetContent actionSheetContent-centered">';
+        } else {
+            html += '<div class="actionSheetContent">';
+        }
 
         if (options.title) {
 
@@ -133,34 +162,7 @@
             html += '</p>';
         }
 
-        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
-        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
-
-        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
-        if (options.items.length > 20) {
-            var minWidth = window.innerWidth >= 300 ? 240 : 200;
-            style += "min-width:" + minWidth + "px;";
-        }
         html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
-
-        var i, length, option;
-        var renderIcon = false;
-        for (i = 0, length = options.items.length; i < length; i++) {
-
-            option = options.items[i];
-            option.icon = option.selected ? 'check' : null;
-
-            if (option.icon) {
-                renderIcon = true;
-            }
-        }
-
-        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
-        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
-
-        if (center) {
-            dlg.classList.add('centered');
-        }
 
         var itemTagName = 'button';
 

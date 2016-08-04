@@ -16,7 +16,10 @@
             selectedElements = [];
             var elems = document.querySelectorAll('.itemSelectionPanel');
             for (var i = 0, length = elems.length; i < length; i++) {
-                elems[i].parentNode.removeChild(elems[i]);
+
+                var parent = elems[i].parentNode;
+                parent.removeChild(elems[i]);
+                parent.classList.remove('withMultiSelect');
             }
         }
     }
@@ -75,7 +78,7 @@
 
     function updateItemSelection(chkItemSelect, selected) {
 
-        var id = dom.parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
+        var id = dom.parentWithAttribute(chkItemSelect, 'data-id').getAttribute('data-id');
 
         if (selected) {
 
@@ -120,7 +123,9 @@
             itemSelectionPanel = document.createElement('div');
             itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent,.cardBox').appendChild(itemSelectionPanel);
+            var parent = item.querySelector('.cardBox') || item.querySelector('.cardContent');
+            parent.classList.add('withMultiSelect');
+            parent.appendChild(itemSelectionPanel);
 
             var cssClass = 'chkItemSelect';
             if (isChecked && !browser.firefox) {
@@ -129,7 +134,7 @@
                 cssClass += ' checkedInitial';
             }
             var checkedAttribute = isChecked ? ' checked' : '';
-            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>';
+            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" data-outlineclass="multiSelectCheckboxOutline" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>';
             var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
             chkItemSelect.addEventListener('change', onSelectionChange);
         }

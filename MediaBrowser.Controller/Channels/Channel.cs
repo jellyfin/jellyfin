@@ -57,10 +57,7 @@ namespace MediaBrowser.Controller.Channels
             catch
             {
                 // Already logged at lower levels
-                return new QueryResult<BaseItem>
-                {
-
-                };
+                return new QueryResult<BaseItem>();
             }
         }
 

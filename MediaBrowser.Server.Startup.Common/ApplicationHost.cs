@@ -362,9 +362,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPreInitMigrations()
         {
-            var migrations = new List<IVersionMigration>
-            {
-            };
+            var migrations = new List<IVersionMigration>();
 
             foreach (var task in migrations)
             {

@@ -14,18 +14,7 @@
     padding: .5em;
     color: #fff;
     text-align: left;
-
 }
-
-    .cardOverlayInner button:last-child {
-        margin-right: 0 !important;
-    }
-
-    .cardOverlayInner p {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 
 .cardOverlayMediaInfo {
     display: flex;
@@ -41,16 +30,20 @@
     flex-wrap: wrap;
 }
 
-    .cardOverlayButtons .fab {
-        background-color: #282828;
-        margin-right: .25em;
-    }
+.cardOverlayFab {
+    background-color: #282828 !important;
+    margin-right: .25em !important;
+}
 
-        .cardOverlayButtons .fab i.md-icon {
-            width: auto !important;
-            height: auto !important;
-            font-size: 20px !important;
-        }
+.cardOverlayFab-md-icon {
+    width: auto !important;
+    height: auto !important;
+    font-size: 30px !important;
+}
+
+.withHoverMenu {
+    overflow: hidden;
+}
 
 @media all and (max-width: 1200px) {
 

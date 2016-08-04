@@ -29,6 +29,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             DbFilePath = Path.Combine(appPaths.DataPath, "sync14.db");
         }
 
+        private class SyncSummary
+        {
+            public Dictionary<string, int> Items { get; set; }
+
+            public SyncSummary()
+            {
+                Items = new Dictionary<string, int>();
+            }
+        }
+
+
         public async Task Initialize()
         {
             using (var connection = await CreateConnection().ConfigureAwait(false))
@@ -41,7 +52,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT, ItemDateModifiedTicks BIGINT)",
                                 "create index if not exists idx_SyncJobItems1 on SyncJobItems(Id)",
-                                "create index if not exists idx_SyncJobItems2 on SyncJobItems(TargetId)",
+
+                                "drop index if exists idx_SyncJobItems2",
+                                "drop index if exists idx_SyncJobItems3",
+                                "create index if not exists idx_SyncJobItems4 on SyncJobItems(TargetId,ItemId,Status,Progress,DateCreated)",
 
                                 "pragma shrink_memory"
                                };
@@ -583,9 +597,74 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
+        public Dictionary<string, SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
-            return GetJobItemReader(query, "select ItemId,Status from SyncJobItems", GetSyncedItemProgress);
+            var result = new Dictionary<string, SyncedItemProgress>();
+
+            using (var connection = CreateConnection(true).Result)
+            {
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "select ItemId,Status,Progress from SyncJobItems";
+
+                    var whereClauses = new List<string>();
+
+                    if (!string.IsNullOrWhiteSpace(query.TargetId))
+                    {
+                        whereClauses.Add("TargetId=@TargetId");
+                        cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                    }
+
+                    if (query.Statuses.Length > 0)
+                    {
+                        var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+
+                        whereClauses.Add(string.Format("Status in ({0})", statuses));
+                    }
+
+                    if (whereClauses.Count > 0)
+                    {
+                        cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                    }
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                    {
+                        while (reader.Read())
+                        {
+                            var itemId = reader.GetString(0);
+
+                            if (!reader.IsDBNull(1))
+                            {
+                                var status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(1), true);
+
+                                if (status == SyncJobItemStatus.Synced)
+                                {
+                                    result[itemId] = new SyncedItemProgress
+                                    {
+                                        Status = SyncJobItemStatus.Synced
+                                    };
+                                }
+                                else
+                                {
+                                    SyncedItemProgress currentStatus;
+                                    double progress = reader.IsDBNull(2) ? 0.0 : reader.GetDouble(2);
+
+                                    if (!result.TryGetValue(itemId, out currentStatus) || (currentStatus.Status != SyncJobItemStatus.Synced && progress >= currentStatus.Progress))
+                                    {
+                                        result[itemId] = new SyncedItemProgress
+                                        {
+                                            Status = status,
+                                            Progress = progress
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
         }
 
         public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
@@ -794,20 +873,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return info;
-        }
-
-        private SyncedItemProgress GetSyncedItemProgress(IDataReader reader)
-        {
-            var item = new SyncedItemProgress();
-
-            item.ItemId = reader.GetString(0);
-
-            if (!reader.IsDBNull(1))
-            {
-                item.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(1), true);
-            }
-
-            return item;
         }
     }
 }

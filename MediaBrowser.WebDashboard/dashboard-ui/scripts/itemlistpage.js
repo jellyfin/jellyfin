@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (libraryBrowser, alphaPicker, listView) {
+﻿define(['libraryBrowser', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, alphaPicker, listView, cardBuilder) {
 
     return function (view, params) {
 
@@ -14,7 +14,7 @@
                     query: {
                         SortBy: "IsFolder,SortName",
                         SortOrder: "Ascending",
-                        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+                        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,
@@ -25,7 +25,7 @@
                 pageData.query.Filters = "";
                 pageData.query.NameStartsWithOrGreater = '';
                 var key = getSavedQueryKey();
-                pageData.view = libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster');
+                pageData.view = libraryBrowser.getSavedView(key) || 'Poster';
 
                 pageData.query.ParentId = params.parentId || null;
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
@@ -43,6 +43,25 @@
                 view.savedQueryKey = libraryBrowser.getSavedQueryKey('itemsv1');
             }
             return view.savedQueryKey;
+        }
+
+        function onViewStyleChange() {
+
+            var viewStyle = getPageData(view).view;
+
+            var itemsContainer = view.querySelector('#items');
+
+            if (viewStyle == "List") {
+
+                itemsContainer.classList.add('vertical-list');
+                itemsContainer.classList.remove('vertical-wrap');
+            }
+            else {
+
+                itemsContainer.classList.remove('vertical-list');
+                itemsContainer.classList.add('vertical-wrap');
+            }
+            itemsContainer.innerHTML = '';
         }
 
         function reloadItems() {
@@ -101,7 +120,7 @@
                     posterOptions.showTitle = true;
                     posterOptions.preferBackdrop = true;
 
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 }
                 else if (viewStyle == "PosterCard") {
 
@@ -110,7 +129,7 @@
                     posterOptions.cardLayout = true;
                     posterOptions.centerText = false;
 
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 }
                 else if (viewStyle == "List") {
 
@@ -123,14 +142,14 @@
 
                     posterOptions.preferThumb = true;
                     posterOptions.shape = "backdrop";
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 } else {
 
                     // Poster
                     posterOptions.showTitle = context == 'photos' ? 'auto' : true;
                     posterOptions.overlayText = context == 'photos';
 
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 }
 
                 if (currentItem.CollectionType == 'boxsets') {
@@ -273,8 +292,11 @@
             var layout = e.detail.viewStyle;
             getPageData().view = layout;
             libraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
+            onViewStyleChange();
             reloadItems(view);
         });
+
+        onViewStyleChange();
 
         view.querySelector('.btnFilter').addEventListener('click', function () {
             showFilterMenu();

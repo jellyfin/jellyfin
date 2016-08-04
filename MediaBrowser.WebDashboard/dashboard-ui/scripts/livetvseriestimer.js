@@ -129,19 +129,6 @@
 
     }
 
-    function renderRecordings(page, result) {
-
-        $('.recordingsTab', page).html(LibraryBrowser.getPosterViewHtml({
-
-            items: result.Items,
-            shape: "detailPageSquare",
-            showTitle: true,
-            centerText: true,
-            coverImage: true
-
-        }));
-    }
-
     function renderSchedule(page, result) {
 
         var timers = result.Items;
@@ -169,17 +156,6 @@
         ApiClient.getLiveTvSeriesTimer(id).then(function (result) {
 
             renderTimer(page, result);
-
-        });
-
-        ApiClient.getLiveTvRecordings({
-
-            userId: Dashboard.getCurrentUserId(),
-            seriesTimerId: id
-
-        }).then(function (recordingResult) {
-
-            renderRecordings(page, recordingResult);
 
         });
 

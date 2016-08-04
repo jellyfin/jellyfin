@@ -1,14 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons) {
-
-    function getView() {
-
-        return 'Poster';
-    }
-
-    function getResumeView() {
-
-        return 'Thumb';
-    }
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -28,7 +18,7 @@
 
             IncludeItemTypes: "Movie",
             Limit: 18,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -37,39 +27,13 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
-            var view = getView();
-            var html = '';
-
-            if (view == 'PosterCard') {
-
-                html += libraryBrowser.getPosterViewHtml({
-                    items: items,
-                    lazy: true,
-                    shape: getPortraitShape(),
-                    overlayText: false,
-                    showTitle: true,
-                    showYear: true,
-                    cardLayout: true,
-                    showDetailsMenu: true
-
-                });
-
-            } else if (view == 'Poster') {
-
-                html += libraryBrowser.getPosterViewHtml({
-                    items: items,
-                    shape: getPortraitShape(),
-                    centerText: true,
-                    lazy: true,
-                    overlayText: false,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true
-                });
-            }
-
-            var recentlyAddedItems = page.querySelector('#recentlyAddedItems');
-            recentlyAddedItems.innerHTML = html;
-            ImageLoader.lazyChildren(recentlyAddedItems);
+            var container = page.querySelector('#recentlyAddedItems');
+            cardBuilder.buildCards(items, {
+                itemsContainer: container,
+                shape: getPortraitShape(),
+                scalable: true,
+                overlayPlayButton: true
+            });
         });
     }
 
@@ -85,7 +49,7 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             CollapseBoxSetItems: false,
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -101,40 +65,14 @@
                 page.querySelector('#resumableSection').classList.add('hide');
             }
 
-            var view = getResumeView();
-            var html = '';
-
-            if (view == 'ThumbCard') {
-
-                html += libraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    preferThumb: true,
-                    shape: getThumbShape(),
-                    showTitle: true,
-                    showYear: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showDetailsMenu: true
-
-                });
-
-            } else if (view == 'Thumb') {
-
-                html += libraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    preferThumb: true,
-                    shape: getThumbShape(),
-                    overlayText: true,
-                    showTitle: false,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true
-                });
-            }
-
-            var resumableItems = page.querySelector('#resumableItems');
-            resumableItems.innerHTML = html;
-            ImageLoader.lazyChildren(resumableItems);
+            var container = page.querySelector('#resumableItems');
+            cardBuilder.buildCards(result.Items, {
+                itemsContainer: container,
+                preferThumb: true,
+                shape: getThumbShape(),
+                scalable: true,
+                overlayPlayButton: true
+            });
 
         });
     }
@@ -167,38 +105,17 @@
         html += '<h1 class="listHeader">' + title + '</h1>';
 
         if (enableScrollX()) {
-            html += '<div is="emby-itemscontainer" class="hiddenScrollX">';
+            html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
         } else {
-            html += '<div is="emby-itemscontainer">';
+            html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
         }
 
-        var view = getView();
+        html += cardBuilder.getCardsHtml(recommendation.Items, {
+            shape: getPortraitShape(),
+            scalable: true,
+            overlayPlayButton: true
+        });
 
-        if (view == 'PosterCard') {
-
-            html += libraryBrowser.getPosterViewHtml({
-                items: recommendation.Items,
-                lazy: true,
-                shape: getPortraitShape(),
-                overlayText: false,
-                showTitle: true,
-                showYear: true,
-                cardLayout: true,
-                showDetailsMenu: true
-
-            });
-
-        } else if (view == 'Poster') {
-
-            html += libraryBrowser.getPosterViewHtml({
-                items: recommendation.Items,
-                shape: getPortraitShape(),
-                centerText: true,
-                lazy: true,
-                showDetailsMenu: true,
-                overlayPlayButton: true
-            });
-        }
         html += '</div>';
         html += '</div>';
 
@@ -214,7 +131,7 @@
             userId: userId,
             categoryLimit: 6,
             ItemLimit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 6 : 5)),
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         });
@@ -244,8 +161,10 @@
         for (var i = 0, length = containers.length; i < length; i++) {
             if (enableScrollX()) {
                 containers[i].classList.add('hiddenScrollX');
+                containers[i].classList.remove('vertical-wrap');
             } else {
                 containers[i].classList.remove('hiddenScrollX');
+                containers[i].classList.add('vertical-wrap');
             }
         }
     }

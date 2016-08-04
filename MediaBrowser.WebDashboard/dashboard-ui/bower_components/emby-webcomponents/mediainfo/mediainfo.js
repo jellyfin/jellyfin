@@ -42,12 +42,12 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
 
         if (item.SeriesTimerId) {
             miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem timerIcon">&#xE062;</i>'
+                html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
             });
         }
         else if (item.TimerId) {
             miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem timerIcon">&#xE061;</i>'
+                html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE061;</i>'
             });
         }
 
@@ -248,15 +248,15 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
         html += getStarIconsHtml(item);
 
         if (item.HasSubtitles && options.subtitles !== false) {
-            html += '<i class="md-icon mediaInfoItem closedCaptionIcon">&#xE01C;</i>';
+            html += '<i class="md-icon mediaInfoItem closedCaptionIcon mediaInfoIconItem">&#xE01C;</i>';
         }
 
         if (item.CriticRating && options.criticRating !== false) {
 
             if (item.CriticRating >= 60) {
-                html += '<div class="mediaInfoItem criticRating criticRatingFresh">' + item.CriticRating + '</div>';
+                html += '<div class="mediaInfoItem mediaInfoCriticRating mediaInfoCriticRatingFresh">' + item.CriticRating + '</div>';
             } else {
-                html += '<div class="mediaInfoItem criticRating criticRatingRotten">' + item.CriticRating + '</div>';
+                html += '<div class="mediaInfoItem mediaInfoCriticRating mediaInfoCriticRatingRotten">' + item.CriticRating + '</div>';
             }
         }
 
@@ -325,7 +325,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
         if (rating) {
             html += '<div class="starRatingContainer mediaInfoItem">';
 
-            html += '<i class="md-icon">&#xE838;</i>';
+            html += '<i class="md-icon starIcon">&#xE838;</i>';
             html += rating;
             html += '</div>';
         }

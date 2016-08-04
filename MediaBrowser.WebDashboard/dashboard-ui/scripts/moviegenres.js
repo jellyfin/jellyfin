@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -16,10 +16,10 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Movie",
                         Recursive: true,
-                        Fields: "DateCreated,SyncInfo,ItemCounts",
+                        Fields: "DateCreated,ItemCounts,PrimaryImageAspectRatio",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
+                    view: libraryBrowser.getSavedView(key) || 'Thumb'
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -55,58 +55,55 @@
                 var html = '';
 
                 var viewStyle = self.getCurrentViewStyle();
+                var elem = context.querySelector('#items');
 
                 if (viewStyle == "Thumb") {
-                    html = libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
+                    cardBuilder.buildCards(result.Items, {
+                        itemsContainer: elem,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'movies',
+                        showTitle: true,
+                        scalable: true,
                         showItemCounts: true,
                         centerText: true,
-                        lazy: true,
                         overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
+                    cardBuilder.buildCards(result.Items, {
+                        itemsContainer: elem,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'movies',
-                        showItemCounts: true,
-                        cardLayout: true,
                         showTitle: true,
-                        lazy: true
+                        scalable: true,
+                        showItemCounts: true,
+                        centerText: true,
+                        cardLayout: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
-                    html = libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "portrait",
-                        context: 'movies',
+                    cardBuilder.buildCards(result.Items, {
+                        itemsContainer: elem,
+                        shape: "auto",
+                        showTitle: true,
+                        scalable: true,
                         showItemCounts: true,
-                        lazy: true,
-                        cardLayout: true,
-                        showTitle: true
+                        centerText: true,
+                        cardLayout: true
                     });
                 }
                 else if (viewStyle == "Poster") {
-                    html = libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "portrait",
-                        context: 'movies',
-                        centerText: true,
+                    cardBuilder.buildCards(result.Items, {
+                        itemsContainer: elem,
+                        shape: "auto",
+                        showTitle: true,
+                        scalable: true,
                         showItemCounts: true,
-                        lazy: true,
+                        centerText: true,
                         overlayMoreButton: true
                     });
                 }
-
-                var elem = context.querySelector('#items');
-                elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 

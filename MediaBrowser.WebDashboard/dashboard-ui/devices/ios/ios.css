@@ -23,16 +23,8 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-attachment: initial;
 }
 
-.background-theme-b, .dialog.background-theme-b {
+.background-theme-b .backgroundContainer:not(.withBackdrop), .dialog.background-theme-b {
     background: #181818;
-}
-
-.backgroundContainer {
-    background-color: rgba(28,28,28,.92) !important;
-}
-
-.homeTopViews .defaultBackground .cardImage {
-    background-color: #303030;
 }
 
 .viewMenuBar {
@@ -116,7 +108,7 @@ h1, h1 a {
     margin-top: 0;
 }
 
-.cardImage {
+.cardImageContainer {
     border-radius: 10px;
 }
 

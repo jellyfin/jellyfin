@@ -21,7 +21,7 @@
     vertical-align: middle;
     border: 0;
     vertical-align: middle;
-    border-radius: 3px;
+    border-radius: 2px;
     /* These are getting an outline in opera tv browsers, which run chrome 30 */
     outline: none !important;
     position: relative;
@@ -47,7 +47,7 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        color: #fff !important;
+        color: #fff;
         margin: 0;
     }
 

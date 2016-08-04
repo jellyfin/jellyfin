@@ -2,6 +2,7 @@
   "LabelExit": "Exit",
   "LabelVisitCommunity": "Visit Community",
   "LabelGithub": "Github",
+  "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
   "LabelSwagger": "Swagger",
   "LabelStandard": "Standard",
   "LabelApiDocumentation": "Api Documentation",
@@ -1720,7 +1721,7 @@
   "StatusSuccess": "Success",
   "MessageFileWillBeDeleted": "The following file will be deleted:",
   "MessageSureYouWishToProceed": "Are you sure you wish to proceed?",
-  "MessageDuplicatesWillBeDeleted": "In addition the following dupliates will be deleted:",
+  "MessageDuplicatesWillBeDeleted": "In addition the following duplicates will be deleted:",
   "MessageFollowingFileWillBeMovedFrom": "The following file will be moved from:",
   "MessageDestinationTo": "to:",
   "HeaderSelectWatchFolder": "Select Watch Folder",
@@ -2360,5 +2361,6 @@
   "OptionUseMyCustomVersion": "Use a custom version",
   "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
   "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
-  "MoreFromValue": "More from {0}"
+  "MoreFromValue": "More from {0}",
+  "OptionSaveMetadataAsHiddenHelp": "Changing this will apply to new metadata saved going forward. Existing metadata files will be updated the next time they are saved by Emby Server."
 }

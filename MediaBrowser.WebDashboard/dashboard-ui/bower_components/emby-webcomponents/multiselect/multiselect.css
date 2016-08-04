@@ -30,7 +30,11 @@
     padding-top: 1px;
 }
 
-.itemSelectionPanel .checkboxOutline {
+.multiSelectCheckboxOutline {
     top: 0 !important;
     border-radius: 0 !important;
+}
+
+.withMultiSelect {
+    position: relative;
 }

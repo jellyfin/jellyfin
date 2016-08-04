@@ -242,10 +242,6 @@ paper-textarea.mono textarea {
     font-family: monospace !important;
 }
 
-.ui-body-a .paperCheckboxFieldDescription {
-    color: #333;
-}
-
 .ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
     background-color: #52B54B;
     border-color: #52B54B;
@@ -758,6 +754,14 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     width: 50%;
 }
 
+    .activeSession .cardBox {
+        -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 0 !important;
+    }
+
     .activeSession .cardPadder {
         padding-bottom: 56.25%;
     }
@@ -843,21 +847,12 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     color: #fff;
     position: absolute;
     right: 10px;
-    bottom: 39px;
-}
-
-.sessionTranscodingFramerate {
-    position: absolute;
-    left: 10px;
     bottom: 19px;
-    color: #fff;
 }
 
 .sessionNowPlayingStreamInfo {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 19px;
+    white-space: nowrap;
+    font-size: 90%;
 }
 
 .activeSession .transcodingProgress {
@@ -871,29 +866,73 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     position: absolute;
 }
 
+/* All HTML5 progress enabled browsers */
+.transcodingProgress, .playbackProgress {
+    /* Turns off styling - not usually needed, but good to know. */
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    /* gets rid of default border in Firefox and Opera. */
+    border: 0;
+    margin: 0;
+    height: 14px;
+    border: 0 solid #222;
+    border-radius: 0;
+    width: 50px;
+    margin-right: 5px;
+    background: #000 !important; /* !important only needed in polyfill */
+}
+
+    /* Chrome */
+    .playbackProgress::-webkit-progress-bar, .transcodingProgress::-webkit-progress-bar {
+        background: #000;
+    }
+
+
 .transcodingSession .playbackProgress {
     bottom: 5px;
 }
 
 /* Firefox */
 .transcodingProgress::-moz-progress-bar {
-    border-radius: 5px;
+    border-radius: 0;
     background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Chrome */
 .transcodingProgress::-webkit-progress-value {
-    border-radius: 5px;
+    border-radius: 0;
     background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(221, 73, 25)), color-stop(1, rgb(221, 73, 25)) ) !important;
     background-image: -webkit-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
 }
 
 /* Polyfill */
 .transcodingProgress[aria-valuenow]:before {
-    border-radius: 5px;
+    border-radius: 0;
     background-image: -moz-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
     background-image: -ms-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
     background-image: -o-linear-gradient( center bottom, rgb(221, 73, 25) 37%, rgb(221, 73, 25) 69% ) !important;
+}
+
+/* Firefox */
+.playbackProgress::-moz-progress-bar {
+    border-radius: 0;
+    background-image: none;
+    background-color: #52B54B;
+}
+
+/* Chrome */
+.playbackProgress::-webkit-progress-value {
+    border-radius: 0;
+    background-image: none;
+    background-color: #52B54B;
+}
+
+/* Polyfill */
+.playbackProgress[aria-valuenow]:before {
+    border-radius: 0;
+    background-image: none;
+    background-color: #52B54B;
 }
 
 @media all and (max-width: 550px) {

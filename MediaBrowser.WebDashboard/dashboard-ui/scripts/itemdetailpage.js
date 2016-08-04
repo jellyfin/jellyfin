@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators) {
 
     var currentItem;
 
@@ -290,14 +290,53 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function renderLinks(linksElem, item) {
+
+        var links = [];
+
+        if (item.HomePageUrl) {
+            links.push('<a class="textlink" href="' + item.HomePageUrl + '" target="_blank">' + Globalize.translate('ButtonWebsite') + '</a>');
+        }
+
+        if (item.ExternalUrls) {
+
+            for (var i = 0, length = item.ExternalUrls.length; i < length; i++) {
+
+                var url = item.ExternalUrls[i];
+
+                links.push('<a class="textlink" href="' + url.Url + '" target="_blank">' + url.Name + '</a>');
+            }
+        }
+
+        if (links.length) {
+
+            var html = links.join('&nbsp;&nbsp;/&nbsp;&nbsp;');
+
+            html = Globalize.translate('ValueLinks', html);
+
+            linksElem.innerHTML = html;
+            linksElem.classList.remove('hide');
+
+        } else {
+            linksElem.classList.add('hide');
+        }
+    }
+
     function renderImage(page, item, user) {
 
         LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, user.Policy.IsAdministrator && item.MediaType != 'Photo');
     }
 
+    function refreshDetailImageUserData(elem, item) {
+
+        var detailImageProgressContainer = elem.querySelector('.detailImageProgressContainer');
+
+        detailImageProgressContainer.innerHTML = indicators.getProgressBarHtml(item);
+    }
+
     function refreshImage(page, item, user) {
 
-        LibraryBrowser.refreshDetailImageUserData(page.querySelector('.detailImageContainer'), item);
+        refreshDetailImageUserData(page.querySelector('.detailImageContainer'), item);
     }
 
     function setPeopleHeader(page, item) {
@@ -332,9 +371,9 @@
                 section.classList.add('hide');
             }
 
-            var html = LibraryBrowser.getPosterViewHtml({
+            var html = cardBuilder.getCardsHtml({
                 items: result.Items,
-                shape: "detailPage169",
+                shape: getThumbShape(false),
                 showTitle: true,
                 displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                 overlayText: true,
@@ -411,7 +450,7 @@
             page.querySelector('#castCollapsible').classList.add('hide');
         } else {
             page.querySelector('#castCollapsible').classList.remove('hide');
-            renderCast(page, item, context, enableScrollX() ? null : 6);
+            renderCast(page, item, context, enableScrollX() ? null : 12);
         }
 
         if (item.PartCount && item.PartCount > 1) {
@@ -439,6 +478,30 @@
         }
     }
 
+    function renderOverview(elems, item) {
+
+        for (var i = 0, length = elems.length; i < length; i++) {
+            var elem = elems[i];
+            var overview = item.Overview || '';
+
+            if (overview) {
+                elem.innerHTML = overview;
+
+                elem.classList.remove('empty');
+
+                var anchors = elem.querySelectorAll('a');
+                for (var j = 0, length2 = anchors.length; j < length2; j++) {
+                    anchors[j].setAttribute("target", "_blank");
+                }
+
+            } else {
+                elem.innerHTML = '';
+
+                elem.classList.add('empty');
+            }
+        }
+    }
+
     function renderDetails(page, item, context, isStatic) {
 
         renderSimilarItems(page, item, context);
@@ -463,16 +526,16 @@
         var seasonOnBottom = screen.availHeight < 800 || screen.availWidth < 600;
 
         if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom)) {
-            LibraryBrowser.renderOverview([bottomOverview], item);
+            renderOverview([bottomOverview], item);
             topOverview.classList.add('hide');
             bottomOverview.classList.remove('hide');
         } else {
-            LibraryBrowser.renderOverview([topOverview], item);
+            renderOverview([topOverview], item);
             topOverview.classList.remove('hide');
             bottomOverview.classList.add('hide');
         }
 
-        LibraryBrowser.renderAwardSummary(page.querySelector('#awardSummary'), item);
+        renderAwardSummary(page.querySelector('#awardSummary'), item);
 
         var i, length;
         var itemMiscInfo = page.querySelectorAll('.itemMiscInfo');
@@ -483,12 +546,12 @@
         }
         var itemGenres = page.querySelectorAll('.itemGenres');
         for (i = 0, length = itemGenres.length; i < length; i++) {
-            LibraryBrowser.renderGenres(itemGenres[i], item, null, isStatic);
+            renderGenres(itemGenres[i], item, null, isStatic);
         }
 
-        LibraryBrowser.renderStudios(page.querySelector('.itemStudios'), item, isStatic);
+        renderStudios(page.querySelector('.itemStudios'), item, isStatic);
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
+        renderLinks(page.querySelector('.itemExternalLinks'), item);
 
         page.querySelector('.criticRatingScore').innerHTML = (item.CriticRating || '0') + '%';
 
@@ -710,16 +773,26 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts && screen.availWidth <= 1000;
     }
 
-    function getPortraitShape() {
-        return enableScrollX() ? 'overflowPortrait' : 'detailPagePortrait';
+    function getPortraitShape(scrollX) {
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowPortrait' : 'portrait';
     }
 
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'detailPageSquare';
+    function getSquareShape(scrollX) {
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowSquare' : 'square';
     }
 
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'detailPage169';
+    function getThumbShape(scrollX) {
+
+        if (scrollX == null) {
+            scrollX = enableScrollX();
+        }
+        return scrollX ? 'overflowBackdrop' : 'backdrop';
     }
 
     function renderMoreFromItems(page, item) {
@@ -757,12 +830,12 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
             var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -800,7 +873,7 @@
         var options = {
             userId: Dashboard.getCurrentUserId(),
             limit: 8,
-            fields: "PrimaryImageAspectRatio,UserData,SyncInfo,CanDelete"
+            fields: "PrimaryImageAspectRatio,UserData,CanDelete"
         };
 
         if (item.Type == 'MusicAlbum' && item.AlbumArtists && item.AlbumArtists.length) {
@@ -827,9 +900,9 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
@@ -1001,6 +1074,7 @@
             var html = '';
 
             var scrollX = false;
+            var isList = false;
 
             if (item.Type == "MusicAlbum") {
 
@@ -1014,13 +1088,13 @@
                     action: 'playallfromhere',
                     lazy: true
                 });
-
+                isList = true;
             }
             else if (item.Type == "Series") {
 
                 scrollX = enableScrollX();
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: getPortraitShape(),
                     showTitle: true,
@@ -1031,9 +1105,9 @@
             }
             else if (item.Type == "Season") {
 
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
-                    shape: "detailPage169",
+                    shape: getThumbShape(false),
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                     playFromHere: true,
@@ -1044,7 +1118,7 @@
                 });
             }
             else if (item.Type == "GameSystem") {
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "auto",
                     showTitle: true,
@@ -1055,14 +1129,24 @@
             }
 
             var elem = page.querySelector('.childrenItemsContainer');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-
             if (scrollX) {
                 elem.classList.add('hiddenScrollX');
+                elem.classList.remove('vertical-wrap');
+                elem.classList.remove('vertical-list');
             } else {
                 elem.classList.remove('hiddenScrollX');
+
+                if (isList) {
+                    elem.classList.add('vertical-list');
+                    elem.classList.remove('vertical-wrap');
+                } else {
+                    elem.classList.add('vertical-wrap');
+                    elem.classList.remove('vertical-list');
+                }
             }
+
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (item.Type == "BoxSet") {
 
@@ -1128,6 +1212,78 @@
         });
     }
 
+    function renderStudios(elem, item, isStatic) {
+
+        if (item.Studios && item.Studios.length && item.Type != "Series") {
+
+            var html = '';
+
+            for (var i = 0, length = item.Studios.length; i < length; i++) {
+
+                if (i > 0) {
+                    html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
+                }
+
+                if (isStatic) {
+                    html += item.Studios[i].Name;
+                } else {
+                    html += '<a class="textlink" href="itemdetails.html?id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                }
+            }
+
+            var translationKey = item.Studios.length > 1 ? "ValueStudios" : "ValueStudio";
+
+            html = Globalize.translate(translationKey, html);
+
+            elem.innerHTML = html;
+            elem.classList.remove('hide');
+
+        } else {
+            elem.classList.add('hide');
+        }
+    }
+
+    function renderGenres(elem, item, limit, isStatic) {
+
+        var html = '';
+
+        var genres = item.Genres || [];
+
+        for (var i = 0, length = genres.length; i < length; i++) {
+
+            if (limit && i >= limit) {
+                break;
+            }
+
+            if (i > 0) {
+                html += '<span>&nbsp;&nbsp;/&nbsp;&nbsp;</span>';
+            }
+
+            var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
+
+            if (item.MediaType == "Game") {
+                param = "gamegenre";
+            }
+
+            if (isStatic) {
+                html += genres[i];
+            } else {
+                html += '<a class="textlink" href="itemdetails.html?' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+            }
+        }
+
+        elem.innerHTML = html;
+    }
+
+    function renderAwardSummary(elem, item) {
+        if (item.AwardSummary) {
+            elem.classList.remove('hide');
+            elem.innerHTML = Globalize.translate('ValueAwards', item.AwardSummary);
+        } else {
+            elem.classList.add('hide');
+        }
+    }
+
     function renderCollectionItems(page, parentItem, types, items) {
 
         // First empty out existing content
@@ -1184,11 +1340,11 @@
         html += '<button class="btnAddToCollection autoSize" type="button" is="paper-icon-button-light" style="margin-left:1em;"><i class="md-icon" icon="add">add</i></button>';
         html += '</div>';
 
-        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer">';
+        html += '<div is="emby-itemscontainer" class="detailSectionContent itemsContainer vertical-wrap">';
 
-        var shape = type.type == 'MusicAlbum' ? 'detailPageSquare' : 'detailPagePortrait';
+        var shape = type.type == 'MusicAlbum' ? getSquareShape(false) : getPortraitShape(false);
 
-        html += LibraryBrowser.getPosterViewHtml({
+        html += cardBuilder.getCardsHtml({
             items: items,
             shape: shape,
             showTitle: true,
@@ -1366,7 +1522,7 @@
             page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
             var html = listView.getListViewHtml({
-                items: result.Items,
+                items: items,
                 sortBy: query.SortBy
             });
 
@@ -1398,7 +1554,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "MusicVideo",
             Recursive: true,
-            Fields: "DateCreated,SyncInfo,CanDelete",
+            Fields: "DateCreated,CanDelete",
             Albums: item.Name
 
         }).then(function (result) {
@@ -1436,84 +1592,40 @@
     }
 
     function renderScenes(page, item, user, limit, isStatic) {
-        var html = '';
 
         var chapters = item.Chapters || [];
-
-        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
+        var scenesContent = page.querySelector('#scenesContent');
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX itemsContainer">';
+            scenesContent.classList.add('smoothScrollX');
             limit = null;
         } else {
-            html += '<div class="itemsContainer">';
+            scenesContent.classList.add('vertical-wrap');
         }
 
-        for (var i = 0, length = chapters.length; i < length; i++) {
+        var limitExceeded = limit && chapters.length > limit;
 
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var chapter = chapters[i];
-            var chapterName = chapter.Name || "Chapter " + i;
-
-            var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
-
-            html += '<a class="card ' + getThumbShape() + 'Card" href="#"' + onclick + '>';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imgUrl;
-
-            if (chapter.ImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWidth,
-                    tag: chapter.ImageTag,
-                    type: "Chapter",
-                    index: i
-                });
-            } else {
-                imgUrl = "css/images/items/list/chapter.png";
-            }
-
-            html += '<div class="cardPadder"></div>';
-
-            html += '<div class="cardContent">';
-            html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
-
-            html += '<div class="cardFooter">';
-            html += '<div class="cardText">' + chapterName + '</div>';
-            html += '<div class="cardText">';
-            html += datetime.getDisplayRunningTime(chapter.StartPositionTicks);
-            html += '</div>';
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</div>';
-
-            // cardScalable
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</a>';
+        if (limitExceeded) {
+            chapters = chapters.slice(0);
+            chapters.length = Math.min(limit, chapters.length);
         }
 
-        html += '</div>';
+        require(['chaptercardbuilder'], function (chaptercardbuilder) {
 
-        if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;"><button is="emby-button" type="button" class="raised more moreScenes">' + Globalize.translate('ButtonMore') + '</button></p>';
+            chaptercardbuilder.buildChapterCards(item, chapters, {
+                itemsContainer: scenesContent,
+                coverImage: true,
+                width: 400,
+                backdropShape: getThumbShape(),
+                squareShape: getSquareShape()
+            });
+        });
+
+        if (limitExceeded) {
+            page.querySelector('.moreScenes').classList.remove('hide');
+        } else {
+            page.querySelector('.moreScenes').classList.add('hide');
         }
-
-        var scenesContent = page.querySelector('#scenesContent');
-        scenesContent.innerHTML = html;
-        ImageLoader.lazyChildren(scenesContent);
     }
 
     function renderMediaSources(page, item) {
@@ -1608,11 +1720,11 @@
             }
 
             if (stream.BitRate && stream.Codec != "mjpeg") {
-                attributes.push(createAttribute(Globalize.translate('MediaInfoBitrate'), (parseInt(stream.BitRate / 1024)) + ' kbps'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoBitrate'), (parseInt(stream.BitRate / 1000)) + ' kbps'));
             }
 
             if (stream.SampleRate) {
-                attributes.push(createAttribute(Globalize.translate('MediaInfoSampleRate'), stream.SampleRate + ' khz'));
+                attributes.push(createAttribute(Globalize.translate('MediaInfoSampleRate'), stream.SampleRate + ' Hz'));
             }
 
             if (stream.BitDepth) {
@@ -1682,8 +1794,6 @@
 
         var html = '';
 
-        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
-
         for (var i = 0, length = items.length; i < length; i++) {
 
             if (limit && i >= limit) {
@@ -1692,7 +1802,7 @@
 
             var item = items[i];
 
-            var cssClass = "card detailPage169Card";
+            var cssClass = "card backdropCard scalableCard";
 
             var href = "itemdetails.html?id=" + item.Id;
 
@@ -1710,7 +1820,7 @@
             if (imageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWidth,
+                    maxWidth: 400,
                     tag: imageTags.Primary,
                     type: "primary"
                 });
@@ -1724,7 +1834,7 @@
             html += '<div class="cardContent">';
             html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
 
-            html += '<div class="cardFooter">';
+            html += '<div class="innerCardFooter">';
             html += '<div class="cardText">' + item.Name + '</div>';
             html += '<div class="cardText">';
             if (item.RunTimeTicks != "") {
@@ -1770,232 +1880,39 @@
 
     function renderCast(page, item, context, limit, isStatic) {
 
-        if (enableScrollX()) {
-            renderHorizontalCast(page, item, context, isStatic);
-            return;
-        }
-
-        var html = '';
-
-        var casts = item.People || [];
-
-        for (var i = 0, length = casts.length; i < length; i++) {
-
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var cast = casts[i];
-            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
-            html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
-
-            var imgUrl;
-            var lazy = true;
-
-            if (cast.PrimaryImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    maxWidth: 100,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary",
-                    minScale: 2
-                });
-
-            } else {
-
-                imgUrl = "css/images/items/list/person.png";
-                lazy = false;
-            }
-
-            if (lazy) {
-                html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
-            } else {
-                html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            }
-
-            html += '<div class="tileContent">';
-
-            html += '<p>' + cast.Name + '</p>';
-
-            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            if (role == "GuestStar") {
-                role = Globalize.translate('ValueGuestStar');
-            }
-
-            role = role || "";
-
-            var maxlength = 40;
-
-            if (role.length > maxlength) {
-                role = role.substring(0, maxlength - 3) + '...';
-            }
-
-            html += '<p>' + role + '</p>';
-
-            html += '</div>';
-
-            html += '</a>';
-        }
-
-        if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><button is="emby-button" type="button" class="raised more morePeople">' + Globalize.translate('ButtonMore') + '</button></p>';
-        }
-
+        var people = item.People || [];
         var castContent = page.querySelector('#castContent');
-        castContent.innerHTML = html;
-        ImageLoader.lazyChildren(castContent);
-    }
-
-    function renderHorizontalCast(page, item, context, isStatic) {
-
-        var html = '';
 
         if (enableScrollX()) {
-            html += '<div class="hiddenScrollX itemsContainer">';
+            castContent.classList.add('smoothScrollX');
+            limit = 32;
         } else {
-            html += '<div class="itemsContainer">';
+            castContent.classList.add('vertical-wrap');
         }
 
-        var casts = item.People || [];
+        var limitExceeded = limit && people.length > limit;
 
-        casts = casts.filter(function (c) {
+        if (limitExceeded) {
+            people = people.slice(0);
+            people.length = Math.min(limit, people.length);
+        }
 
-            return c.PrimaryImageTag;
+        require(['peoplecardbuilder'], function (peoplecardbuilder) {
+
+            peoplecardbuilder.buildPeopleCards(people, {
+                itemsContainer: castContent,
+                coverImage: true,
+                serverId: item.ServerId,
+                width: 160,
+                shape: getPortraitShape()
+            });
         });
 
-        if (!casts.length) {
-            casts = item.People || [];
+        if (limitExceeded && !enableScrollX()) {
+            page.querySelector('.morePeople').classList.remove('hide');
+        } else {
+            page.querySelector('.morePeople').classList.add('hide');
         }
-
-        for (var i = 0, length = casts.length; i < length; i++) {
-
-            var cast = casts[i];
-            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
-
-            html += '<div class="card ' + getPortraitShape() + 'Card">';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imgUrl;
-            var lazy = true;
-
-            if (cast.PrimaryImageTag) {
-
-                imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                    maxWidth: 100,
-                    tag: cast.PrimaryImageTag,
-                    type: "primary",
-                    minScale: 2
-                });
-
-            } else {
-
-                imgUrl = "css/images/items/list/person.png";
-                lazy = false;
-            }
-
-            html += '<div class="cardPadder"></div>';
-
-            html += '<a class="cardContent" href="' + href + '">';
-            if (lazy) {
-                html += '<div class="cardImage coveredCardImage lazy" data-src="' + imgUrl + '"></div>';
-            } else {
-                html += '<div class="cardImage coveredCardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            }
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</a>';
-
-            // cardScalable
-            html += '</div>';
-
-            html += '<div class="cardFooter outerCardFooter">';
-            html += '<div class="cardText">' + cast.Name + '</div>';
-            html += '<div class="cardText">';
-
-            var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            if (role == "GuestStar") {
-                role = Globalize.translate('ValueGuestStar');
-            }
-
-            role = role || "";
-
-            var maxlength = 40;
-
-            if (role.length > maxlength) {
-                role = role.substring(0, maxlength - 3) + '...';
-            }
-
-            html += role;
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</div>';
-
-            //html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
-
-            //var imgUrl;
-            //var lazy = true;
-
-            //if (cast.PrimaryImageTag) {
-
-            //    imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-            //        width: 100,
-            //        tag: cast.PrimaryImageTag,
-            //        type: "primary",
-            //        minScale: 2
-            //    });
-
-            //} else {
-
-            //    imgUrl = "css/images/items/list/person.png";
-            //    lazy = false;
-            //}
-
-            //if (lazy) {
-            //    html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
-            //} else {
-            //    html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            //}
-
-            //html += '<div class="tileContent">';
-
-            //html += '<p>' + cast.Name + '</p>';
-
-            //var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-            //if (role == "GuestStar") {
-            //    role = Globalize.translate('ValueGuestStar');
-            //}
-
-            //role = role || "";
-
-            //var maxlength = 40;
-
-            //if (role.length > maxlength) {
-            //    role = role.substring(0, maxlength - 3) + '...';
-            //}
-
-            //html += '<p>' + role + '</p>';
-
-            //html += '</div>';
-
-            //html += '</a>';
-        }
-
-        html += '</div>';
-
-        var castContent = page.querySelector('#castContent');
-        castContent.innerHTML = html;
-        ImageLoader.lazyChildren(castContent);
     }
 
     function play(startPosition) {
@@ -2182,14 +2099,6 @@
             elems[i].addEventListener('click', onMoreCommandsClick);
         }
 
-        var childrenItemsContainer = view.querySelector('.childrenItemsContainer');
-        childrenItemsContainer.addEventListener('playallfromhere', function (e) {
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, e.detail.index);
-        });
-        childrenItemsContainer.addEventListener('queueallfromhere', function (e) {
-            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, e.detail.index);
-        });
-
         view.addEventListener('click', function (e) {
 
             if (dom.parentWithClass(e.target, 'moreScenes')) {
@@ -2215,10 +2124,20 @@
             renderChildren(view, currentItem);
         });
 
+        function editImages() {
+            return new Promise(function (resolve, reject) {
+
+                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+
+                    ImageEditor.show(currentItem.Id).then(resolve, reject);
+                });
+            });
+        }
+
         view.querySelector('.detailImageContainer').addEventListener('click', function (e) {
             var itemDetailGalleryLink = dom.parentWithClass(e.target, 'itemDetailGalleryLink');
             if (itemDetailGalleryLink) {
-                LibraryBrowser.editImages(currentItem.Id).then(function () {
+                editImages().then(function () {
                     reload(view, params);
                 });
             }

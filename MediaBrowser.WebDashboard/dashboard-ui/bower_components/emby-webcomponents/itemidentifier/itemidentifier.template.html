@@ -1,0 +1,51 @@
+﻿<div class="dialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="dialogHeaderTitle">
+        ${Identify}
+    </div>
+</div>
+
+<div class="dialogContent smoothScrollY">
+    <div class="dialogContentInner centeredContent">
+        <form class="popupIdentifyForm" style="margin:auto;">
+
+            <p>${HeaderIdentifyItemHelp}</p>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtLookupName" class="identifyField" data-lookup="Name" label="${LabelName}" />
+            </div>
+            <div class="fldLookupYear inputContainer">
+                <input is="emby-input" type="number" id="txtLookupYear" class="identifyField" data-lookup="Year" pattern="[0-9]*" min="1800" label="${LabelYear}" />
+            </div>
+
+            <div class="identifyProviderIds">
+            </div>
+
+            <p>
+                <button is="emby-button" type="submit" class="raised submit block">
+                    <i class="md-icon">search</i>
+                    <span>${Search}</span>
+                </button>
+            </p>
+        </form>
+        <div class="identificationSearchResults hide">
+
+            <h1>${SearchResults}</h1>
+            <div class="identificationSearchResultList itemsContainer vertical-wrap"></div>
+        </div>
+
+        <form class="identifyOptionsForm hide" style="margin:auto;">
+
+            <br />
+            <div class="selectedSearchResult"></div>
+            <br />
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkIdentifyReplaceImages" />
+                <span>${ReplaceExistingImages}</span>
+            </label>
+            <button is="emby-button" type="submit" class="raised submit block btnSubmit">
+                <i class="md-icon">check</i>
+                <span>${ButtonOk}</span>
+            </button>
+        </form>
+    </div>
+</div>

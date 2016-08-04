@@ -1,4 +1,4 @@
-﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
+﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder) {
 
     function getUpcomingPromise(context, params) {
 
@@ -7,7 +7,7 @@
         var query = {
 
             Limit: 40,
-            Fields: "AirTime,UserData,SyncInfo",
+            Fields: "AirTime,UserData",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -104,10 +104,10 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
-            html += libraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),

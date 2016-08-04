@@ -163,8 +163,8 @@ define(['dom'], function (dom) {
 
         var offset = getOffset(elem, windowData);
 
-        var posY = offset.top - windowData.pageXOffset;
-        var posX = offset.left - windowData.pageYOffset;
+        var posY = offset.top - windowData.pageYOffset;
+        var posX = offset.left - windowData.pageXOffset;
 
         var width = elem.offsetWidth;
         var height = elem.offsetHeight;

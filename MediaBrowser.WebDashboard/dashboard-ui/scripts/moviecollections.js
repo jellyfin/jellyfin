@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -18,13 +18,13 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "BoxSet",
                         Recursive: true,
-                        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,SortName",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                    view: libraryBrowser.getSavedView(key) || 'Poster'
                 };
 
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
@@ -43,6 +43,25 @@
                 context.savedQueryKey = libraryBrowser.getSavedQueryKey('movies');
             }
             return context.savedQueryKey;
+        }
+
+        function onViewStyleChange() {
+
+            var viewStyle = self.getCurrentViewStyle();
+
+            var itemsContainer = tabContent.querySelector('.itemsContainer');
+
+            if (viewStyle == "List") {
+
+                itemsContainer.classList.add('vertical-list');
+                itemsContainer.classList.remove('vertical-wrap');
+            }
+            else {
+
+                itemsContainer.classList.remove('vertical-list');
+                itemsContainer.classList.add('vertical-wrap');
+            }
+            itemsContainer.innerHTML = '';
         }
 
         function reloadItems(page) {
@@ -74,7 +93,7 @@
 
                 if (viewStyle == "Thumb") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -85,7 +104,7 @@
                 }
                 else if (viewStyle == "ThumbCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -98,7 +117,7 @@
                 }
                 else if (viewStyle == "Banner") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "banner",
                         preferBanner: true,
@@ -116,7 +135,7 @@
                 }
                 else if (viewStyle == "PosterCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "auto",
                         context: 'movies',
@@ -130,7 +149,7 @@
                 else {
 
                     // Poster
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "auto",
                         context: 'movies',
@@ -246,6 +265,7 @@
                 getPageData(tabContent).view = viewStyle;
                 libraryBrowser.saveViewSetting(getSavedQueryKey(tabContent), viewStyle);
                 getQuery(tabContent).StartIndex = 0;
+                onViewStyleChange();
                 reloadItems(tabContent);
             });
 
@@ -269,6 +289,7 @@
         };
 
         initPage(tabContent);
+        onViewStyleChange();
 
         self.renderTab = function () {
 

@@ -28,8 +28,12 @@
         padding-top: .5em;
     }
 
+.formDialog .dialogContentInner {
+    padding-bottom: 20vh;
+}
+
 .layout-tv .formDialog .dialogContentInner {
-    padding-bottom: 50vh;
+    padding-bottom: 40vh;
 }
 
 .formDialog .centeredContent {

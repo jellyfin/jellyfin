@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -99,7 +99,7 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
-        var html = libraryBrowser.getPosterViewHtml({
+        var html = cardBuilder.getCardsHtml({
             items: items,
             shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
@@ -130,8 +130,10 @@
             for (var i = 0, length = containers.length; i < length; i++) {
                 if (enableScrollX()) {
                     containers[i].classList.add('hiddenScrollX');
+                    containers[i].classList.remove('vertical-wrap');
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
+                    containers[i].classList.add('vertical-wrap');
                 }
             }
         };

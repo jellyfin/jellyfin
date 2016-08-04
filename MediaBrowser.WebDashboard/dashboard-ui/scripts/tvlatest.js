@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'components/groupedcards'], function (categorysyncbuttons, groupedcards) {
+﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder'], function (categorysyncbuttons, groupedcards, cardBuilder) {
 
     function getView() {
 
@@ -17,7 +17,7 @@
 
             IncludeItemTypes: "Episode",
             Limit: 30,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb"
@@ -35,7 +35,7 @@
 
             if (view == 'ThumbCard') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: "backdrop",
                     preferThumb: true,
@@ -51,7 +51,7 @@
 
             } else if (view == 'Thumb') {
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: "backdrop",
                     preferThumb: true,

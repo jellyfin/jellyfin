@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'cardStyle'], function (datetime, $) {
 
     function renderNoHealthAlertsMessage(page) {
 
@@ -309,7 +309,7 @@
 
                 var nowPlayingItem = session.NowPlayingItem;
 
-                var className = nowPlayingItem ? 'card activeSession' : 'card activeSession';
+                var className = nowPlayingItem ? 'scalableCard card activeSession' : 'scalableCard card activeSession';
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                     className += ' transcodingSession';
@@ -317,7 +317,7 @@
 
                 html += '<div class="' + className + '" id="' + rowId + '">';
 
-                html += '<div class="cardBox" style="box-shadow:0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);margin:4px;">';
+                html += '<div class="cardBox visualCardBox">';
                 html += '<div class="cardScalable">';
 
                 html += '<div class="cardPadder"></div>';
@@ -352,8 +352,6 @@
 
                 html += '<div class="sessionNowPlayingTime">' + DashboardPage.getSessionNowPlayingTime(session) + '</div>';
 
-                html += '<div class="sessionNowPlayingStreamInfo">' + DashboardPage.getSessionNowPlayingStreamInfo(session) + '</div>';
-
                 //if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
 
                 //    html += '<div class="sessionTranscodingFramerate">' + session.TranscodingInfo.Framerate + ' fps</div>';
@@ -372,16 +370,16 @@
                     var position = session.PlayState.PositionTicks || 0;
                     var value = (100 * position) / nowPlayingItem.RunTimeTicks;
 
-                    html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" value="' + value + '"></progress>';
+                    html += '<progress class="playbackProgress" min="0" max="100" value="' + value + '"></progress>';
                 } else {
-                    html += '<progress class="itemProgressBar playbackProgress" min="0" max="100" style="display:none;"></progress>';
+                    html += '<progress class="playbackProgress" min="0" max="100" style="display:none;"></progress>';
                 }
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
 
-                    html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" value="' + session.TranscodingInfo.CompletionPercentage.toFixed(1) + '"></progress>';
+                    html += '<progress class="transcodingProgress" min="0" max="100" value="' + session.TranscodingInfo.CompletionPercentage.toFixed(1) + '"></progress>';
                 } else {
-                    html += '<progress class="itemProgressBar transcodingProgress" min="0" max="100" style="display:none;"></progress>';
+                    html += '<progress class="transcodingProgress" min="0" max="100" style="display:none;"></progress>';
                 }
 
                 html += '</div>';
@@ -391,8 +389,13 @@
                 // cardScalable
                 html += '</div>';
 
-                html += '<div style="padding:1em;border-top:1px solid #eee;background:#fff;text-align:center;text-transform:uppercase;display:flex;align-items:center;justify-content:center;">';
+                html += '<div style="padding:1em;border-top:1px solid #eee;background:#fff;text-align:center;">';
 
+                html += '<div class="sessionNowPlayingStreamInfo" style="padding:0 0 1em;">';
+                html += DashboardPage.getSessionNowPlayingStreamInfo(session);
+                html += '</div>';
+
+                html += '<div style="display:flex;align-items:center;justify-content:center;text-transform:uppercase;">';
                 var userImage = DashboardPage.getUserImage(session);
                 if (userImage) {
                     html += '<img style="border-radius:50px;margin-right:.5em;" src="' + userImage + '" />';
@@ -402,6 +405,7 @@
 
                 html += '<div class="sessionUserName">';
                 html += DashboardPage.getUsersHtml(session) || '&nbsp;';
+                html += '</div>';
                 html += '</div>';
                 html += '</div>';
 
@@ -422,8 +426,11 @@
             var html = '';
 
             //html += '<div>';
-
+            var showTranscodingInfo = false;
             if (session.TranscodingInfo && session.TranscodingInfo.IsAudioDirect && session.TranscodingInfo.IsVideoDirect) {
+                html += Globalize.translate('LabelPlayMethodDirectStream');
+            }
+            else if (session.TranscodingInfo && session.TranscodingInfo.IsVideoDirect) {
                 html += Globalize.translate('LabelPlayMethodDirectStream');
             }
             else if (session.PlayState.PlayMethod == 'Transcode') {
@@ -431,8 +438,9 @@
 
                 if (session.TranscodingInfo && session.TranscodingInfo.Framerate) {
 
-                    html += ' - ' + session.TranscodingInfo.Framerate + ' fps';
+                    html += ' (' + session.TranscodingInfo.Framerate + ' fps' + ')';
                 }
+                showTranscodingInfo = true;
             }
             else if (session.PlayState.PlayMethod == 'DirectStream') {
                 html += Globalize.translate('LabelPlayMethodDirectPlay');
@@ -443,41 +451,42 @@
 
             //html += '</div>';
 
-            //if (session.TranscodingInfo) {
+            if (showTranscodingInfo) {
 
-            //    html += '<br/>';
+                var line = [];
 
-            //    var line = [];
+                if (session.TranscodingInfo.Bitrate) {
 
-            //    if (session.TranscodingInfo.Container) {
+                    if (session.TranscodingInfo.Bitrate > 1000000) {
+                        line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
+                    } else {
+                        line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
+                    }
+                }
+                if (session.TranscodingInfo.Container) {
 
-            //        line.push(session.TranscodingInfo.Container);
-            //    }
-            //    if (session.TranscodingInfo.Bitrate) {
+                    line.push(session.TranscodingInfo.Container);
+                }
 
-            //        if (session.TranscodingInfo.Bitrate > 1000000) {
-            //            line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
-            //        } else {
-            //            line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
-            //        }
-            //    }
-            //    if (line.length) {
+                if (session.TranscodingInfo.VideoCodec) {
 
-            //        html += '<div>' + line.join(' ') + '</div>';
-            //    }
+                    //line.push(Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec));
+                    line.push(session.TranscodingInfo.VideoCodec);
+                }
+                if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
 
-            //    if (session.TranscodingInfo.VideoCodec) {
+                    //line.push(Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec));
+                    line.push(session.TranscodingInfo.AudioCodec);
+                }
 
-            //        html += '<div>' + Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec) + '</div>';
-            //    }
-            //    if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
+                if (line.length) {
 
-            //        html += '<div>' + Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec) + '</div>';
-            //    }
+                    html += ' - ' + line.join(' ');
+                }
 
-            //}
+            }
 
-            return html;
+            return html || '&nbsp;';
         },
 
         getSessionNowPlayingTime: function (session) {

@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -24,7 +24,7 @@
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('Poster', 'Poster')
+                    view: libraryBrowser.getSavedView(key) || 'Poster'
                 };
 
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
@@ -74,7 +74,7 @@
 
                 if (viewStyle == "Thumb") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -85,7 +85,7 @@
                 }
                 else if (viewStyle == "ThumbCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -98,7 +98,7 @@
                 }
                 else if (viewStyle == "Banner") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "banner",
                         preferBanner: true,
@@ -116,7 +116,7 @@
                 }
                 else if (viewStyle == "PosterCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
                         context: 'movies',
@@ -129,7 +129,7 @@
                 else {
 
                     // Poster
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
                         context: 'movies',

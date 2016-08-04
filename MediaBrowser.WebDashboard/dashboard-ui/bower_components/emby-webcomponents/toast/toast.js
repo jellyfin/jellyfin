@@ -11,7 +11,7 @@ define(['css!./toast'], function () {
 
         setTimeout(function () {
 
-            elem.classList.remove('visible');
+            elem.classList.remove('toastVisible');
             remove(elem);
 
         }, 3300);
@@ -32,7 +32,7 @@ define(['css!./toast'], function () {
         document.body.appendChild(elem);
 
         setTimeout(function () {
-            elem.classList.add('visible');
+            elem.classList.add('toastVisible');
 
             animateRemove(elem);
 

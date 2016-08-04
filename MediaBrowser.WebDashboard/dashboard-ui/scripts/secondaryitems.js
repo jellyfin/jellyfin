@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'listView', 'emby-itemscontainer'], function (libraryBrowser, listView) {
+﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder) {
 
     return function (view, params) {
 
@@ -39,7 +39,7 @@
                         SortBy: "SortName",
                         SortOrder: "Ascending",
                         Recursive: params.recursive !== 'false',
-                        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,SortName,BasicSyncInfo",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,
@@ -104,6 +104,24 @@
             }
         }
 
+        function onViewStyleChange(parentItem) {
+            
+            var query = getQuery(parentItem);
+
+            var itemsContainer = view.querySelector('#items');
+
+            if (query.IncludeItemTypes == "Audio") {
+
+                itemsContainer.classList.add('vertical-list');
+                itemsContainer.classList.remove('vertical-wrap');
+
+            } else {
+
+                itemsContainer.classList.remove('vertical-list');
+                itemsContainer.classList.add('vertical-wrap');
+            }
+        }
+
         function reloadItems(parentItem) {
 
             Dashboard.showLoadingMsg();
@@ -125,16 +143,19 @@
 
                 view.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
+                var itemsContainer = view.querySelector('#items');
+
                 if (query.IncludeItemTypes == "Audio") {
 
-                    html = '<div style="max-width:1000px;margin:auto;">' + listView.getListViewHtml({
+                    html = listView.getListViewHtml({
                         items: result.Items,
                         playFromHere: true,
                         action: 'playallfromhere',
                         smallIcon: true
-                    }) + '</div>';
+                    });
 
                 } else {
+
                     var posterOptions = {
                         items: result.Items,
                         shape: "auto",
@@ -160,12 +181,11 @@
                     }
 
                     // Poster
-                    html = libraryBrowser.getPosterViewHtml(posterOptions);
+                    html = cardBuilder.getCardsHtml(posterOptions);
                 }
 
-                var elem = view.querySelector('#items');
-                elem.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(elem);
+                itemsContainer.innerHTML = html + pagingHtml;
+                ImageLoader.lazyChildren(itemsContainer);
 
                 var i, length;
                 var elems;
@@ -201,11 +221,13 @@
                 ApiClient.getItem(Dashboard.getCurrentUserId(), params.parentId).then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
+                    onViewStyleChange(parent);
                     reloadItems(parent);
                 });
             }
 
             else {
+                onViewStyleChange();
                 reloadItems();
             }
         });

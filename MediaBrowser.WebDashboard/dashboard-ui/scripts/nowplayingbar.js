@@ -1,4 +1,4 @@
-﻿define(['datetime', 'userdataButtons', 'paper-icon-button-light'], function (datetime, userdataButtons) {
+﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser) {
 
     var currentPlayer;
 
@@ -24,6 +24,7 @@
 
         html += '<div class="nowPlayingBar hide">';
 
+        html += '<div class="nowPlayingBarTop">';
         html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
         html += '<input type="range" is="emby-slider" pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"/>';
         html += '</div>';
@@ -67,23 +68,14 @@
         html += '<button is="paper-icon-button-light" class="playlistButton mediaButton autoSize"><i class="md-icon">queue_music</i></button>';
 
         html += '</div>';
+        html += '</div>';
 
         html += '</div>';
 
         return html;
     }
 
-    var height;
-
-    function getHeight(elem) {
-
-        if (!height) {
-            height = elem.offsetHeight;
-        }
-
-        return height + 'px';
-    }
-
+    var translateY = '-64px';
     function slideDown(elem) {
 
         if (elem.classList.contains('hide')) {
@@ -94,15 +86,15 @@
             elem.classList.add('hide');
         };
 
-        if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browser.animate || browser.mobile) {
             onfinish();
             return;
         }
 
         requestAnimationFrame(function () {
             var keyframes = [
-              { height: getHeight(elem), offset: 0 },
-              { height: '0', display: 'none', offset: 1 }];
+              { transform: 'translateY(' + translateY + ')', offset: 0 },
+              { transform: 'none', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
             elem.animate(keyframes, timing).onfinish = onfinish;
         });
@@ -116,15 +108,37 @@
 
         elem.classList.remove('hide');
 
-        if (!browserInfo.animate || browserInfo.mobile) {
+        if (!browser.animate || browser.mobile) {
             return;
         }
 
         requestAnimationFrame(function () {
 
             var keyframes = [
-              { height: '0', offset: 0 },
-              { height: getHeight(elem), offset: 1 }];
+              { transform: 'none', offset: 0 },
+              { transform: 'translateY(' + translateY + ')', offset: 1 }];
+            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
+            elem.animate(keyframes, timing);
+        });
+    }
+
+    function slideUpToFullScreen(elem) {
+
+        if (!elem.classList.contains('hide')) {
+            return;
+        }
+
+        elem.classList.remove('hide');
+
+        if (!browser.animate || browser.mobile) {
+            return;
+        }
+
+        requestAnimationFrame(function () {
+
+            var keyframes = [
+              { transform: 'none', offset: 0 },
+              { transform: 'translateY(-100%)', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
@@ -306,7 +320,7 @@
                 document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-                if (browserInfo.safari && browserInfo.mobile) {
+                if (browser.safari && browser.mobile) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }
@@ -505,13 +519,26 @@
         }
     }
 
+    function getTextActionButton(item, text) {
+
+        if (!text) {
+            text = itemHelper.getDisplayName(item);
+        }
+
+        var html = '<button data-id="' + item.Id + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-channelid="' + item.ChannelId + '" data-isfolder="' + item.IsFolder + '" type="button" class="itemAction textActionButton" data-action="link">';
+        html += text;
+        html += '</button>';
+
+        return html;
+    }
+
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
         nowPlayingTextElement.innerHTML = MediaController.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
 
             if (nowPlayingName.item) {
-                return '<div>' + LibraryBrowser.getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
+                return '<div>' + getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
             }
 
             return '<div>' + nowPlayingName.text + '</div>';
@@ -519,7 +546,7 @@
         }).join('');
 
         var url;
-        var imgHeight = 80;
+        var imgHeight = 70;
 
         var nowPlayingItem = state.NowPlayingItem;
 
@@ -633,11 +660,11 @@
 
         if (currentPlayer) {
 
-            Events.off(currentPlayer, 'playbackstart', onPlaybackStart);
-            Events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
-            Events.off(currentPlayer, 'volumechange', onVolumeChanged);
-            Events.off(currentPlayer, 'playstatechange', onStateChanged);
-            Events.off(currentPlayer, 'positionchange', onStateChanged);
+            events.off(currentPlayer, 'playbackstart', onPlaybackStart);
+            events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
+            events.off(currentPlayer, 'volumechange', onVolumeChanged);
+            events.off(currentPlayer, 'playstatechange', onStateChanged);
+            events.off(currentPlayer, 'positionchange', onStateChanged);
 
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
@@ -677,14 +704,14 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        Events.on(player, 'playbackstart', onPlaybackStart);
-        Events.on(player, 'playbackstop', onPlaybackStopped);
-        Events.on(player, 'volumechange', onVolumeChanged);
-        Events.on(player, 'playstatechange', onStateChanged);
-        Events.on(player, 'positionchange', onStateChanged);
+        events.on(player, 'playbackstart', onPlaybackStart);
+        events.on(player, 'playbackstop', onPlaybackStopped);
+        events.on(player, 'volumechange', onVolumeChanged);
+        events.on(player, 'playstatechange', onStateChanged);
+        events.on(player, 'positionchange', onStateChanged);
     }
 
-    Events.on(MediaController, 'playerchange', function () {
+    events.on(MediaController, 'playerchange', function () {
 
         bindToPlayer(MediaController.getCurrentPlayer());
     });

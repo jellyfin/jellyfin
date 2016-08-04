@@ -61,7 +61,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
             }
 
             if (userData.PlayedPercentage && userData.PlayedPercentage >= 100 || (userData.Played)) {
-                return '<div class="playedIndicator indicator"><i class="md-icon">&#xE5CA;</i></div>';
+                return '<div class="playedIndicator indicator"><i class="md-icon indicatorIcon">&#xE5CA;</i></div>';
             }
         }
 
@@ -89,12 +89,23 @@ define(['css!./indicators.css', 'material-icons'], function () {
     }
 
     function getTimerIndicator(item) {
-        
+
         if (item.SeriesTimerId) {
             return '<i class="md-icon timerIndicator indicator">fiber_smart_record</i>';
         }
         if (item.TimerId) {
             return '<i class="md-icon timerIndicator indicator">fiber_manual_record</i>';
+        }
+
+        return '';
+    }
+
+    function getSyncIndicator(item) {
+
+        if (item.SyncPercent == 100) {
+            return '<div class="syncIndicator indicator fullSyncIndicator"><i class="md-icon indicatorIcon fullSyncIndicatorIcon">offline_pin</i></div>';
+        } else if (item.SyncPercent != null) {
+            return '<div class="syncIndicator indicator emptySyncIndicator"><i class="md-icon indicatorIcon">file_download</i></div>';
         }
 
         return '';
@@ -106,6 +117,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
         getChildCountIndicatorHtml: getChildCountIndicatorHtml,
         enableProgressIndicator: enableProgressIndicator,
         getTimerIndicator: getTimerIndicator,
-        enablePlayedIndicator: enablePlayedIndicator
+        enablePlayedIndicator: enablePlayedIndicator,
+        getSyncIndicator: getSyncIndicator
     };
 });

@@ -77,6 +77,14 @@ paper-progress {
 }
 ```
 
+To change the duration of the indeterminate cycle:
+
+```css
+paper-progress {
+  --paper-progress-indeterminate-cycle-duration: 2s;
+}
+```
+
 The following mixins are available for styling:
 
 | Custom property | Description | Default |
@@ -90,5 +98,6 @@ The following mixins are available for styling:
 | `--paper-progress-disabled-active-color` | The color of the active bar if disabled | `--google-grey-500` |
 | `--paper-progress-disabled-secondary-color` | The color of the secondary bar if disabled | `--google-grey-300` |
 | `--paper-progress-height` | The height of the progress bar | `4px` |
+| `--paper-progress-indeterminate-cycle-duration` | Duration of an indeterminate cycle | `2s` |
 
 

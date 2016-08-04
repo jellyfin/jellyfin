@@ -101,12 +101,12 @@
 
     EmbyTextAreaPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embytextarea') == 'true') {
+        if (this.classList.contains('emby-textarea')) {
             return;
         }
 
         this.rows = 1;
-        this.setAttribute('data-embytextarea', 'true');
+        this.classList.add('emby-textarea');
 
         var parentNode = this.parentNode;
         var label = this.ownerDocument.createElement('label');
@@ -124,28 +124,14 @@
         div.classList.add('emby-textarea-selectionbar');
         parentNode.insertBefore(div, this.nextSibling);
 
-        function onChange() {
-            if (this.value) {
-                label.classList.remove('blank');
-            } else {
-                label.classList.add('blank');
-            }
-        }
-
         this.addEventListener('focus', function () {
-            onChange.call(this);
-            label.classList.add('focused');
+            label.classList.add('textareaLabelFocused');
+            label.classList.remove('textareaLabelUnfocused');
         });
         this.addEventListener('blur', function () {
-            onChange.call(this);
-            label.classList.remove('focused');
+            label.classList.remove('textareaLabelFocused');
+            label.classList.add('textareaLabelUnfocused');
         });
-
-        this.addEventListener('change', onChange);
-        this.addEventListener('input', onChange);
-        this.addEventListener('valueset', onChange);
-
-        onChange.call(this);
 
         this.label = function (text) {
             label.innerHTML = text;
