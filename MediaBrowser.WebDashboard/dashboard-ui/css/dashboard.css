@@ -754,6 +754,14 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     width: 50%;
 }
 
+    .activeSession .cardBox {
+        -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 0 !important;
+    }
+
     .activeSession .cardPadder {
         padding-bottom: 56.25%;
     }
@@ -839,21 +847,12 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     color: #fff;
     position: absolute;
     right: 10px;
-    bottom: 39px;
-}
-
-.sessionTranscodingFramerate {
-    position: absolute;
-    left: 10px;
     bottom: 19px;
-    color: #fff;
 }
 
 .sessionNowPlayingStreamInfo {
-    color: #fff;
-    position: absolute;
-    right: 10px;
-    bottom: 19px;
+    white-space: nowrap;
+    font-size: 90%;
 }
 
 .activeSession .transcodingProgress {

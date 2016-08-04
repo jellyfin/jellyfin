@@ -311,7 +311,7 @@ textarea {
     margin-top: 5px;
 }
 
-.background-theme-a, .dialog.background-theme-a {
+.background-theme-a .backgroundContainer, .dialog.background-theme-a {
     background-color: #f5f5f5;
 }
 
@@ -653,9 +653,9 @@ progress {
     color: #555;
 }
 
-    .ui-body-a .inputLabelFocused, .ui-body-a .textareaLabelFocused, .ui-body-a .selectLabelFocused {
-        color: green;
-    }
+.ui-body-a .inputLabelFocused, .ui-body-a .textareaLabelFocused, .ui-body-a .selectLabelFocused {
+    color: green;
+}
 
 .ui-body-a .selectLabelUnfocused, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #555;

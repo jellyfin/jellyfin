@@ -1812,8 +1812,9 @@ var AppInfo = {};
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
         }
 
-        if (browser.tv && !browser.animate) {
-            define("loading", [embyWebComponentsBowerPath + "/loading/loading-smarttv"], returnFirstDependency);
+        if (browser.tizen || browser.operaTv) {
+            // Need the older version due to artifacts
+            define("loading", [embyWebComponentsBowerPath + "/loading/loading-legacy"], returnFirstDependency);
         } else {
             define("loading", [embyWebComponentsBowerPath + "/loading/loading-lite"], returnFirstDependency);
         }

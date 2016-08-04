@@ -7,10 +7,15 @@
     margin-left: .5em;
 }
 
-.background-theme-b, .dialog.background-theme-b {
+.background-theme-b .backgroundContainer, .dialog.background-theme-b {
     background-color: #121314;
     /*background: radial-gradient(circle, #282828, #141414);*/
 }
+
+    .background-theme-b .backgroundContainer.withBackdrop {
+        background-color: rgba(6, 6,6, .9);
+        /*background: radial-gradient(circle, #282828, #141414);*/
+    }
 
 .ui-body-b {
     /* Need the important tag for paper dialogs with this class */
@@ -28,10 +33,6 @@
     right: 0;
     bottom: 0;
     z-index: -1;
-}
-
-.withBackdrop {
-    background-color: rgba(6, 6,6, .9);
 }
 
 .pageWithAbsoluteTabs neon-animatable {
