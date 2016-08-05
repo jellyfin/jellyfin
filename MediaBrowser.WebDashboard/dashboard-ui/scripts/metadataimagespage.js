@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     var currentType;
 
@@ -159,22 +159,22 @@
 
             var isChecked = config.DisabledImageFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<paper-icon-item class="imageFetcherItem" data-pluginname="' + plugin.Name + '">';
+            html += '<div class="listItem imageFetcherItem" data-pluginname="' + plugin.Name + '">';
 
             html += '<paper-checkbox class="chkImageFetcher" data-pluginname="' + plugin.Name + '" item-icon' + isChecked + '></paper-checkbox>';
 
-            html += '<paper-item-body>';
+            html += '<div class="listItemBody">';
 
-            html += '<div>';
+            html += '<h3 class="listItemBodyText">';
             html += plugin.Name;
+            html += '</h3>';
+
             html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><i class="md-icon">keyboard_arrow_up</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><i class="md-icon">keyboard_arrow_down</i></button>';
 
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
-
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         html += '</div>';
@@ -262,22 +262,22 @@
 
             var isChecked = config.DisabledMetadataFetchers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<paper-icon-item class="metadataFetcherItem" data-pluginname="' + plugin.Name + '">';
+            html += '<div class="listItem metadataFetcherItem" data-pluginname="' + plugin.Name + '">';
 
             html += '<paper-checkbox class="chkMetadataFetcher" data-pluginname="' + plugin.Name + '" item-icon' + isChecked + '></paper-checkbox>';
 
-            html += '<paper-item-body>';
+            html += '<div class="listItemBody">';
 
-            html += '<div>';
+            html += '<h3 class="listItemBodyText">';
             html += plugin.Name;
+            html += '</h3>';
+
             html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><i class="md-icon">keyboard_arrow_up</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><i class="md-icon">keyboard_arrow_down</i></button>';
 
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnUp" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnDown" style="padding:3px 8px;"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
-
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         html += '</div>';
@@ -330,27 +330,27 @@
 
             var plugin = plugins[i];
 
-            html += '<paper-icon-item class="localReaderOption" data-pluginname="' + plugin.Name + '">';
+            html += '<div class="listItem localReaderOption" data-pluginname="' + plugin.Name + '">';
 
-            html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+            html += '<i class="listItemIcon md-icon">live_tv</i>';
 
-            html += '<paper-item-body>';
+            html += '<div class="listItemBody">';
 
-            html += '<div>';
+            html += '<h3 class="listItemBodyText">';
             html += plugin.Name;
+            html += '</h3>';
+
             html += '</div>';
 
-            html += '</paper-item-body>';
-
             if (i > 0) {
-                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '"><iron-icon icon="keyboard-arrow-up"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonUp') + '" class="btnLocalReaderUp btnLocalReaderMove" data-pluginindex="' + i + '"><i class="md-icon">keyboard_arrow_up</i></button>';
             }
             else if (plugins.length > 1) {
 
-                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '"><iron-icon icon="keyboard-arrow-down"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDown') + '" class="btnLocalReaderDown btnLocalReaderMove" data-pluginindex="' + i + '"><i class="md-icon">keyboard_arrow_down</i></button>';
             }
 
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         html += '</div>';

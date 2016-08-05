@@ -591,10 +591,6 @@ progress {
     margin: 0 0 3em 0;
 }
 
-    .syncActivityForTarget paper-fab {
-        border-radius: 0;
-    }
-
 @media all and (min-width: 800px) {
 
     .syncActivityForTarget {

@@ -151,28 +151,28 @@
                     var itemHtml = '';
 
                     itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">';
-                    itemHtml += '<paper-icon-item>';
+                    itemHtml += '<div class="listItem">';
 
-                    itemHtml += '<paper-fab mini class="blue" icon="dvr" item-icon></paper-fab>';
+                    itemHtml += '<i class="listItemIcon md-icon">dvr</i>';
 
-                    itemHtml += '<paper-item-body three-line>';
+                    itemHtml += '<div class="listItemBody three-line">';
 
-                    itemHtml += '<div>';
+                    itemHtml += '<h3 class="listItemBodyText">';
                     itemHtml += item.Title;
-                    itemHtml += '</div>';
+                    itemHtml += '</h3>';
 
-                    itemHtml += '<div secondary>';
+                    itemHtml += '<div class="listItemBodyText secondary">';
                     var date = datetime.parseISO8601Date(item.Date, true);
                     itemHtml += date.toLocaleDateString();
                     itemHtml += '</div>';
 
-                    itemHtml += '<div secondary>';
+                    itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
                     itemHtml += item.Description;
                     itemHtml += '</div>';
 
-                    itemHtml += '</paper-item-body>';
+                    itemHtml += '</div>';
 
-                    itemHtml += '</paper-icon-item>';
+                    itemHtml += '</div>';
                     itemHtml += '</a>';
 
                     return itemHtml;
@@ -1031,7 +1031,7 @@
 
             var html = '';
 
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
             var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : '#52B54B';
 
@@ -1043,30 +1043,30 @@
                     height: 40
                 });
 
-                html += '<paper-fab mini style="background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+                html += '<i class="listItemIcon md-icon" style="width:2em!important;height:2em!important;padding:0;color:transparent;background-color:' + color + ';background-image:url(\'' + userImgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;">dvr</i>';
             }
             else {
-                html += '<paper-fab mini icon="dvr" style="background-color:' + color + '" item-icon></paper-fab>';
+                html += '<i class="listItemIcon md-icon" style="background-color:' + color + '">dvr</i>';
             }
 
-            html += '<paper-item-body three-line>';
+            html += '<div class="listItemBody three-line">';
 
-            html += '<div>';
+            html += '<h3 class="listItemBodyText">';
             html += entry.Name;
-            html += '</div>';
+            html += '</h3>';
 
-            html += '<div secondary>';
+            html += '<div class="listItemBodyText secondary">';
             var date = datetime.parseISO8601Date(entry.Date, true);
             html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString().toLowerCase();
             html += '</div>';
 
-            html += '<div secondary>';
+            html += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
             html += entry.ShortOverview || '';
             html += '</div>';
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
 
             return html;
         }
