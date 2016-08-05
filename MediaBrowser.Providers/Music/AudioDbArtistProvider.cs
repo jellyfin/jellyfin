@@ -61,17 +61,16 @@ namespace MediaBrowser.Providers.Music
                 {
                     result.Item = new MusicArtist();
                     result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.artists[0]);
+                    ProcessResult(result.Item, obj.artists[0], info.MetadataLanguage);
                 }
             }
 
             return result;
         }
 
-        private void ProcessResult(MusicArtist item, Artist result)
+        private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
         {
             item.HomePageUrl = result.strWebsite;
-            item.Overview = (result.strBiographyEN ?? string.Empty).StripHtml();
 
             if (!string.IsNullOrEmpty(result.strGenre))
             {
@@ -80,6 +79,40 @@ namespace MediaBrowser.Providers.Music
 
             item.SetProviderId(MetadataProviders.AudioDbArtist, result.idArtist);
             item.SetProviderId(MetadataProviders.MusicBrainzArtist, result.strMusicBrainzID);
+
+            string overview = null;
+
+            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyDE;
+            }
+            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyFR;
+            }
+            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyNL;
+            }
+            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyRU;
+            }
+            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyIT;
+            }
+            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strBiographyPT;
+            }
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = result.strBiographyEN;
+            }
+
+            item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
         public string Name
@@ -180,18 +213,18 @@ namespace MediaBrowser.Providers.Music
             public string strBiographyEN { get; set; }
             public string strBiographyDE { get; set; }
             public string strBiographyFR { get; set; }
-            public object strBiographyCN { get; set; }
+            public string strBiographyCN { get; set; }
             public string strBiographyIT { get; set; }
-            public object strBiographyJP { get; set; }
-            public object strBiographyRU { get; set; }
-            public object strBiographyES { get; set; }
-            public object strBiographyPT { get; set; }
-            public object strBiographySE { get; set; }
-            public object strBiographyNL { get; set; }
-            public object strBiographyHU { get; set; }
-            public object strBiographyNO { get; set; }
-            public object strBiographyIL { get; set; }
-            public object strBiographyPL { get; set; }
+            public string strBiographyJP { get; set; }
+            public string strBiographyRU { get; set; }
+            public string strBiographyES { get; set; }
+            public string strBiographyPT { get; set; }
+            public string strBiographySE { get; set; }
+            public string strBiographyNL { get; set; }
+            public string strBiographyHU { get; set; }
+            public string strBiographyNO { get; set; }
+            public string strBiographyIL { get; set; }
+            public string strBiographyPL { get; set; }
             public string strGender { get; set; }
             public string intMembers { get; set; }
             public string strCountry { get; set; }
