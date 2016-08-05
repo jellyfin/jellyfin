@@ -4,28 +4,45 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Net;
+using System.Collections.Generic;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
-    public class ProgressiveFileCopier
+    public class ProgressiveFileCopier : IAsyncStreamSource, IHasOptions
     {
         private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
+        private readonly string _path;
+        private readonly CancellationToken _cancellationToken;
+        private readonly Dictionary<string, string> _outputHeaders;
 
         // 256k
         private const int BufferSize = 81920;
 
         private long _bytesWritten = 0;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job, ILogger logger)
+        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
+            _path = path;
+            _outputHeaders = outputHeaders;
             _job = job;
             _logger = logger;
+            _cancellationToken = cancellationToken;
         }
 
-        public async Task StreamFile(string path, Stream outputStream, CancellationToken cancellationToken)
+        public IDictionary<string, string> Options
+        {
+            get
+            {
+                return _outputHeaders;
+            }
+        }
+
+        public async Task WriteToAsync(Stream outputStream)
         {
             try
             {
