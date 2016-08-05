@@ -61,14 +61,14 @@ namespace MediaBrowser.Providers.Music
                 {
                     result.Item = new MusicAlbum();
                     result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.album[0]);
+                    ProcessResult(result.Item, obj.album[0], info.MetadataLanguage);
                 }
             }
 
             return result;
         }
 
-        private void ProcessResult(MusicAlbum item, Album result)
+        private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
         {
             if (!string.IsNullOrWhiteSpace(result.strArtist))
             {
@@ -91,7 +91,39 @@ namespace MediaBrowser.Providers.Music
             item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
             item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
-            item.Overview = (result.strDescriptionEN ?? string.Empty).StripHtml();
+            string overview = null;
+
+            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionDE;
+            }
+            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionFR;
+            }
+            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionNL;
+            }
+            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionRU;
+            }
+            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionIT;
+            }
+            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.strDescriptionPT;
+            }
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = result.strDescriptionEN;
+            }
+
+            item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
         public string Name
@@ -186,20 +218,20 @@ namespace MediaBrowser.Providers.Music
             public string strAlbumThumb { get; set; }
             public string strAlbumCDart { get; set; }
             public string strDescriptionEN { get; set; }
-            public object strDescriptionDE { get; set; }
-            public object strDescriptionFR { get; set; }
-            public object strDescriptionCN { get; set; }
-            public object strDescriptionIT { get; set; }
-            public object strDescriptionJP { get; set; }
-            public object strDescriptionRU { get; set; }
-            public object strDescriptionES { get; set; }
-            public object strDescriptionPT { get; set; }
-            public object strDescriptionSE { get; set; }
-            public object strDescriptionNL { get; set; }
-            public object strDescriptionHU { get; set; }
-            public object strDescriptionNO { get; set; }
-            public object strDescriptionIL { get; set; }
-            public object strDescriptionPL { get; set; }
+            public string strDescriptionDE { get; set; }
+            public string strDescriptionFR { get; set; }
+            public string strDescriptionCN { get; set; }
+            public string strDescriptionIT { get; set; }
+            public string strDescriptionJP { get; set; }
+            public string strDescriptionRU { get; set; }
+            public string strDescriptionES { get; set; }
+            public string strDescriptionPT { get; set; }
+            public string strDescriptionSE { get; set; }
+            public string strDescriptionNL { get; set; }
+            public string strDescriptionHU { get; set; }
+            public string strDescriptionNO { get; set; }
+            public string strDescriptionIL { get; set; }
+            public string strDescriptionPL { get; set; }
             public object intLoved { get; set; }
             public object intScore { get; set; }
             public string strReview { get; set; }

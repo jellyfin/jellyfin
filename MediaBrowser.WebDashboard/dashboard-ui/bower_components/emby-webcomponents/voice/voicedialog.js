@@ -121,7 +121,7 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             html += '<div>';
 
             html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
-            html += '<div class="dialogContentInner centeredContent">';
+            html += '<div class="dialogContentInner dialog-content-centered">';
             html += '<div class="voiceHelpContent">';
 
             html += '<div class="defaultVoiceHelp">';

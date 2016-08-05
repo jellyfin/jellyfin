@@ -91,9 +91,11 @@
         };
 
         var backButton = false;
+        var isFullscreen;
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
+            isFullscreen = true;
             backButton = true;
             dialogOptions.autoFocus = true;
         } else {
@@ -105,6 +107,10 @@
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
+
+        if (isFullscreen) {
+            dlg.classList.add('actionsheet-fullscreen');
+        }
 
         if (!layoutManager.tv) {
             dlg.classList.add('actionsheet-extraSpacing');

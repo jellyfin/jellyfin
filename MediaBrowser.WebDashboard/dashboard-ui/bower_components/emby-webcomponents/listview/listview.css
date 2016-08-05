@@ -38,7 +38,7 @@ div.listItem {
     vertical-align: middle;
 }
 
-.listItem [is=paper-icon-button-light] {
+.listItem .paper-icon-button-light {
     margin: 0;
 }
 

@@ -138,7 +138,7 @@
         var html = '';
 
         html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
-        html += '<div class="dialogContentInner centeredContent">';
+        html += '<div class="dialogContentInner dialog-content-centered">';
         html += '<form style="margin:auto;">';
 
         html += '<div class="fldSelectPlaylist">';

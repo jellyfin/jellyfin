@@ -55,14 +55,14 @@
 
     EmbyButtonPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embybutton') == 'true') {
+        if (this.classList.contains('emby-button')) {
             return;
         }
 
-        this.setAttribute('data-embybutton', 'true');
+        this.classList.add('emby-button');
 
         if (browser.safari || browser.firefox || browser.noFlex) {
-            this.classList.add('noflex');
+            this.classList.add('emby-button-noflex');
         }
 
         if (enableAnimation()) {

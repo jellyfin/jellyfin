@@ -6,7 +6,7 @@
     max-height: 84%;
 }
 
-.layout-tv .actionSheet {
+.actionsheet-fullscreen {
     max-height: none;
 }
 
@@ -45,7 +45,7 @@
     vertical-align: middle;
 }
 
-.noflex .actionSheetItemText {
+.emby-button-noflex .actionSheetItemText {
     display: inline-block;
 }
 

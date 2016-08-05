@@ -144,7 +144,9 @@ Custom property | Description | Default
         this._markdown = '```\n' + snippet + '\n' + '```';
 
         // Stamp the template.
-        Polymer.dom(this).appendChild(document.importNode(template.content, true));
+        if (!template.is) {
+          Polymer.dom(this).appendChild(document.importNode(template.content, true));
+        }
       },
 
       _copyToClipboard: function() {
@@ -160,7 +162,7 @@ Custom property | Description | Default
           this.$.copyButton.icon = 'done';
         } catch (err) {
           // Copy command is not available
-          console.error(err);
+          Polymer.Base._error(err);
           this.$.copyButton.icon = 'error';
         }
 

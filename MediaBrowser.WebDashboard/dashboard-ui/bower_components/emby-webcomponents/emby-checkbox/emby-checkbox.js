@@ -25,10 +25,8 @@
         this.classList.add('mdl-checkbox__input');
 
         var labelElement = this.parentNode;
-        //labelElement.classList.add('mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect mdl-js-ripple-effect--ignore-events');
         labelElement.classList.add('mdl-checkbox');
         labelElement.classList.add('mdl-js-checkbox');
-        labelElement.classList.add('mdl-js-ripple-effect');
 
         var labelTextElement = labelElement.querySelector('span');
 

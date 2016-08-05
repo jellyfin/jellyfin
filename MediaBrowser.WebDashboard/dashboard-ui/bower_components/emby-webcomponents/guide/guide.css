@@ -271,11 +271,7 @@
 @media all and (min-height: 720px) {
 
     .channelPrograms, .channelHeaderCell {
-        height: 6vh;
-    }
-
-    .layout-tv .channelPrograms, .layout-tv .channelHeaderCell {
-        height: 9vh;
+        height: 4.2em;
     }
 }
 

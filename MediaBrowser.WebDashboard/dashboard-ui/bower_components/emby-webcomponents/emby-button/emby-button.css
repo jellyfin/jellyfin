@@ -1,4 +1,4 @@
-[is="emby-button"] {
+.emby-button {
     position: relative;
     display: inline-block;
     align-items: center;
@@ -30,17 +30,20 @@
     text-transform: uppercase;
 }
 
-    [is="emby-button"].raised, [is="emby-button"].fab {
+    .emby-button.raised, .emby-button.fab {
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
     }
 
-    [is="emby-button"].fab {
+    .emby-button > i {
+        /* For non-fab buttons that have icons */
+        font-size: 1.5em;
+        width: auto;
+        height: auto;
+    }
+
+    .emby-button.fab {
         display: inline-flex;
         border-radius: 50%;
-        min-width: 56px;
-        min-height: 56px;
-        height: 5.2vh;
-        width: 5.2vh;
         background-color: #444;
         padding: .6em;
         box-sizing: border-box;
@@ -51,46 +54,29 @@
         margin: 0;
     }
 
-        [is="emby-button"].fab i {
-            height: 40px;
-            width: 40px;
+        .emby-button.fab > i {
+            height: auto;
+            width: auto;
             vertical-align: middle;
-            font-size: 40px;
+            font-size: 2.85em;
         }
 
-    [is="emby-button"].noflex {
+    .emby-button.noflex {
         display: inline-block;
         white-space: nowrap;
     }
 
-    [is="emby-button"].fab.mini:not(.autoSize) {
-        min-width: 40px !important;
-        min-height: 40px !important;
-        height: 3.3vh !important;
-        width: 3.3vh !important;
-    }
-
-    [is="emby-button"].fab.mini {
+    .emby-button.fab.mini {
         padding: 8px;
     }
 
-        [is="emby-button"].fab.mini i {
-            height: 24px !important;
-            width: 24px !important;
-            font-size: 24px !important;
+        .emby-button.fab.mini > i {
+            height: auto;
+            width: auto;
+            font-size: 1.72em;
         }
 
-    [is="emby-button"].fab iron-icon {
-        width: 100%;
-        height: 100%;
-        vertical-align: middle;
-    }
-
-    [is="emby-button"].fab i {
-        vertical-align: middle;
-    }
-
-    [is="emby-button"].block {
+    .emby-button.block {
         display: block;
         align-items: center;
         justify-content: center;
@@ -98,49 +84,32 @@
         width: 100%;
     }
 
-    [is="emby-button"].raised:focus {
+    .emby-button.raised:focus {
         box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
         transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    [is="emby-button"] iron-icon + span {
+    .emby-button i + span {
         margin-left: .5em;
     }
 
-    [is="emby-button"] i + span {
+    .emby-button span + i {
         margin-left: .5em;
     }
 
-    [is="emby-button"] span + i {
-        margin-left: .5em;
+    .emby-button.iconRight i {
+        margin-left: auto;
+        margin-right: .25em;
     }
 
-    [is="emby-button"]:not(.autoSize) i {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-    }
-
-[is=emby-button].autoSize {
-    width: auto !important;
-    height: auto !important;
-    min-height: initial !important;
-    min-width: initial !important;
-}
-
-[is=emby-button].iconRight i {
-    margin-left: auto;
-    margin-right: .25em;
-}
-
-[is=emby-button].noflex.iconRight i {
+.emby-button-noflex.iconRight i {
     position: absolute;
     right: 0;
     top: 25%;
     margin-right: .5em;
 }
 
-[is=paper-icon-button-light] {
+.paper-icon-button-light {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -158,10 +127,10 @@
     user-select: none;
     cursor: pointer;
     z-index: 0;
-    min-width: 24px;
-    min-height: 24px;
-    width: 40px;
-    height: 40px;
+    min-width: initial;
+    min-height: initial;
+    width: auto;
+    height: auto;
     padding: 8px;
     font-weight: normal;
     vertical-align: middle;
@@ -178,73 +147,46 @@
     justify-content: center;
 }
 
-    [is=paper-icon-button-light].autoSize {
-        width: auto !important;
-        height: auto !important;
-    }
-
-    [is=paper-icon-button-light][disabled] {
+    .paper-icon-button-light[disabled] {
         opacity: .3;
     }
 
-    [is=paper-icon-button-light] i {
-        width: 24px;
-        height: 24px;
-        font-size: 24px;
+    .paper-icon-button-light > i {
+        width: auto;
+        height: auto;
+        font-size: 1.72em;
         /* Make sure its on top of the ripple */
         position: relative;
         z-index: 1;
         vertical-align: middle;
     }
 
-.layout-tv [is=paper-icon-button-light] {
-    width: auto;
-    height: auto;
-    min-width: initial;
-    min-height: initial;
-}
-
-    .layout-tv [is=paper-icon-button-light] i {
-        width: 3.7vh;
-        height: 3.7vh;
-        font-size: 3.7vh;
+    .paper-icon-button-light > img {
+        width: 1.72em;
+        /* Can't use 100% height or it will stretch past the boundaries in safari */
+        /*height: 100%;*/
+        max-height: 100%;
+        /* Make sure its on top of the ripple */
+        position: relative;
+        z-index: 1;
+        vertical-align: middle;
     }
 
-[is=paper-icon-button-light] iron-icon {
-    width: 100%;
-    height: 100%;
-    /* Make sure its on top of the ripple */
-    position: relative;
-    z-index: 1;
-    vertical-align: middle;
-}
+    .paper-icon-button-light:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: opacity .3s ease-out;
+        background: currentcolor;
+        opacity: 0;
+    }
 
-[is=paper-icon-button-light] img {
-    width: 100%;
-    /* Can't use 100% height or it will stretch past the boundaries in safari */
-    /*height: 100%;*/
-    max-height: 100%;
-    /* Make sure its on top of the ripple */
-    position: relative;
-    z-index: 1;
-    vertical-align: middle;
-}
-
-[is=paper-icon-button-light]:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    transition: opacity .3s ease-out;
-    background: currentcolor;
-    opacity: 0;
-}
-
-[is=paper-icon-button-light]:focus:after {
-    opacity: .2;
-}
+    .paper-icon-button-light:focus:after {
+        opacity: .2;
+    }
 
 .ripple-effect {
     position: absolute;
