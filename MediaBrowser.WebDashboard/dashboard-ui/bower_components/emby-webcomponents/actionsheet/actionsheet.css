@@ -45,7 +45,7 @@
     vertical-align: middle;
 }
 
-.noflex .actionSheetItemText {
+.emby-button-noflex .actionSheetItemText {
     display: inline-block;
 }
 

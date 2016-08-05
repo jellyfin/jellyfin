@@ -1664,7 +1664,7 @@
 
             var displayType = Globalize.translate('MediaInfoStreamType' + stream.Type);
 
-            html += '<div class="mediaInfoStreamType">' + displayType + '</div>';
+            html += '<h3 class="mediaInfoStreamType">' + displayType + '</h3>';
 
             var attributes = [];
 

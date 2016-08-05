@@ -7,13 +7,13 @@
     contain: layout style;
 }
 
-[is="emby-button"].fab iron-icon {
+.emby-button.fab iron-icon {
     width: 100%;
     height: 100%;
     vertical-align: middle;
 }
 
-[is="emby-button"] iron-icon + span {
+.emby-button iron-icon + span {
     margin-left: .5em;
 }
 .paper-icon-button-light > iron-icon {
