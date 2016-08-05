@@ -35,12 +35,6 @@
     margin-right: .25em !important;
 }
 
-.cardOverlayFab-md-icon {
-    width: auto !important;
-    height: auto !important;
-    font-size: 30px !important;
-}
-
 .withHoverMenu {
     overflow: hidden;
 }

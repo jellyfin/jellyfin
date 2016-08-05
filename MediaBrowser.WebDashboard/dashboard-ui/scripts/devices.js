@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     function deleteDevice(page, id) {
 
@@ -36,35 +36,39 @@
         html += devices.map(function (d) {
 
             var deviceHtml = '';
-            deviceHtml += '<paper-icon-item>';
+            deviceHtml += '<div class="listItem">';
 
-            deviceHtml += '<paper-fab mini style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
+            deviceHtml += '<i class="listItemIcon md-icon" style="background:#999;">tablet_android</i>';
 
-            deviceHtml += '<paper-item-body three-line>';
+            if (d.AppName && d.LastUserName) {
+                deviceHtml += '<div class="listItemBody three-line">';
+            } else {
+                deviceHtml += '<div class="listItemBody two-line">';
+            }
             deviceHtml += '<a class="clearLink" href="device.html?id=' + d.Id + '">';
 
-            deviceHtml += '<div>';
+            deviceHtml += '<div class="listItemBodyText">';
             deviceHtml += d.Name;
             deviceHtml += '</div>';
 
             if (d.AppName) {
-                deviceHtml += '<div secondary>';
+                deviceHtml += '<div class="listItemBodyText secondary">';
                 deviceHtml += d.AppName;
                 deviceHtml += '</div>';
             }
 
             if (d.LastUserName) {
-                deviceHtml += '<div secondary>';
+                deviceHtml += '<div class="listItemBodyText secondary">';
                 deviceHtml += Globalize.translate('DeviceLastUsedByUserName', d.LastUserName);
                 deviceHtml += '</div>';
             }
 
             deviceHtml += '</a>';
-            deviceHtml += '</paper-item-body>';
+            deviceHtml += '</div>';
 
-            deviceHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + d.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
+            deviceHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + d.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
 
-            deviceHtml += '</paper-icon-item>';
+            deviceHtml += '</div>';
 
             return deviceHtml;
 
@@ -91,9 +95,7 @@
 
         })).then(function (result) {
 
-            require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-                load(page, result.Items);
-            });
+            load(page, result.Items);
 
             Dashboard.hideLoadingMsg();
         });

@@ -113,12 +113,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             if (i === 0) {
                 if (isLargeStyle) {
-                    html += '<h2>';
+                    html += '<h2 class="listItemBodyText">';
                 } else {
-                    html += '<div>';
+                    html += '<div class="listItemBodyText">';
                 }
             } else {
-                html += '<div class="secondary">';
+                html += '<div class="secondary listItemBodyText">';
             }
             html += (textlines[i] || '&nbsp;');
             if (i === 0 && isLargeStyle) {
@@ -164,7 +164,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     }
 
                     if (i == 0) {
-                        html += '<h1 class="listGroupHeader first">';
+                        html += '<h1 class="listGroupHeader listGroupHeader-first">';
                     }
                     else {
                         html += '<h1 class="listGroupHeader">';
@@ -178,7 +178,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            var cssClass = "listItem";
+            var cssClass = "listItem listItem-nosidepadding";
 
             if (clickEntireItem) {
                 cssClass += ' itemAction';
@@ -187,7 +187,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var downloadWidth = 80;
 
             if (isLargeStyle) {
-                cssClass += " largeImage";
+                cssClass += " listItem-largeImage";
                 downloadWidth = 500;
             }
 
@@ -208,10 +208,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             var imgUrl = getImageUrl(item, downloadWidth);
 
+            var imageClass = isLargeStyle ? 'listItemImage listItemImage-large' : 'listItemImage';
+
             if (imgUrl) {
-                html += '<div class="listItemImage lazy" data-src="' + imgUrl + '" item-icon>';
+                html += '<div class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
             } else {
-                html += '<div class="listItemImage">';
+                html += '<div class="' + imageClass + '">';
             }
 
             var indicatorsHtml = '';
@@ -277,11 +279,11 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             html += getTextLinesHtml(textlines, isLargeStyle);
 
             if (!enableSideMediaInfo) {
-                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+                html += '<div class="secondary listItemMediaInfo listItemBodyText">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
             }
 
             if (enableOverview && item.Overview) {
-                html += '<div class="secondary overview">';
+                html += '<div class="secondary overview listItemBodyText">';
                 html += item.Overview;
                 html += '</div>';
             }

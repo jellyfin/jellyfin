@@ -16,6 +16,7 @@
 .emby-button iron-icon + span {
     margin-left: .5em;
 }
+
 .paper-icon-button-light > iron-icon {
     width: 100%;
     height: 100%;
@@ -114,7 +115,7 @@ h2 {
 }
 
 h3 {
-    font-weight: 500;
+    font-weight: 400;
 }
 
 a, a:active, a:hover {
@@ -685,4 +686,8 @@ progress {
 
 .ui-body-a .cardFooter .cardText + .cardText {
     opacity: .8;
+}
+
+.ui-body-a .listItem .secondary {
+    color: #737373;
 }
