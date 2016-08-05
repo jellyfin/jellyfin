@@ -48,11 +48,11 @@
 
     EmbyButtonPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embybutton') == 'true') {
+        if (this.classList.contains('paper-icon-button-light')) {
             return;
         }
 
-        this.setAttribute('data-embybutton', 'true');
+        this.classList.add('paper-icon-button-light');
 
         if (enableAnimation()) {
             this.addEventListener('keydown', onKeyDown);

@@ -122,7 +122,7 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             var html = '';
 
             html += '<div class="dialogContent">';
-            html += '<div class="dialogContentInner centeredContent">';
+            html += '<div class="dialogContentInner dialog-content-centered">';
             html += '<form style="margin:auto;">';
 
             html += '<h1>' + globalize.translate('HeaderChannels') + '</h1>';

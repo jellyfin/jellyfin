@@ -7,6 +7,23 @@
     contain: layout style;
 }
 
+[is="emby-button"].fab iron-icon {
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+}
+
+[is="emby-button"] iron-icon + span {
+    margin-left: .5em;
+}
+.paper-icon-button-light > iron-icon {
+    width: 100%;
+    height: 100%;
+    /* Make sure its on top of the ripple */
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+}
 /* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
