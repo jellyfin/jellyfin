@@ -1513,7 +1513,6 @@ var AppInfo = {};
         define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
         define("paper-item", ["html!" + bowerPath + "/paper-item/paper-item.html"]);
         define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-        define("paper-fab", ["emby-icons", "html!" + bowerPath + "/paper-fab/paper-fab.html"]);
         define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
         define("paper-input", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-input.html"]);
         define("paper-icon-item", ['webcomponentsjs', "html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
