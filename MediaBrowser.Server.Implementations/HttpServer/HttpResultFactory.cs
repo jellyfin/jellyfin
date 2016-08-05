@@ -706,11 +706,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public object GetAsyncStreamWriter(IAsyncStreamSource streamSource)
         {
-            if (streamSource as IHttpResult != null)
-            {
-                return new AsyncStreamWriterEx(streamSource);
-            }
-
             return new AsyncStreamWriter(streamSource);
         }
     }
