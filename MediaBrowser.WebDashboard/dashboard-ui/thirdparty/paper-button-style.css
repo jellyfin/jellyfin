@@ -100,12 +100,6 @@ button.emby-button span {
     vertical-align: middle;
 }
 
-button.emby-button.iconRight iron-icon {
-    position: absolute;
-    right: 5px;
-    top: 5px;
-}
-
 .clearButton {
     background: transparent;
     border: 0;
@@ -130,20 +124,11 @@ button.emby-button.mini:not(.fab) {
     padding: 0.4em 0.7em;
 }
 
-    button.emby-button.mini:not(.fab) iron-icon {
-        height: 20px;
-        width: 20px;
-    }
-
 button.emby-button.notext {
     min-width: 2.8em;
     padding-left: .25em !important;
     padding-right: .25em !important;
 }
-
-    button.emby-button.notext iron-icon {
-        margin-right: 0;
-    }
 
 .fab.green {
     background-color: #81c784 !important;

@@ -3,11 +3,6 @@
     margin-left: 0;
 }
 
-iron-icon {
-    min-width: 24px;
-    min-height: 24px;
-}
-
 .paperCheckboxFieldDescription {
     padding-left: 31px;
     padding-top: 5px;
