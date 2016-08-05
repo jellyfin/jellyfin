@@ -21,7 +21,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected override async Task<string> GetCommandLineArguments(EncodingJob state)
         {
             // Get the output codec name
-            var videoCodec = EncodingJobFactory.GetVideoEncoder(state, GetEncodingOptions());
+            var videoCodec = EncodingJobFactory.GetVideoEncoder(MediaEncoder, state, GetEncodingOptions());
 
             var format = string.Empty;
             var keyFrame = string.Empty;

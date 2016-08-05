@@ -392,9 +392,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
-        public bool SupportsEncoder(string decoder)
+        public bool SupportsEncoder(string encoder)
         {
-            return _encoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+            return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool SupportsDecoder(string decoder)
