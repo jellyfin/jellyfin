@@ -151,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             DiscoveredWanIpAddress = address;
 
-            UpdateConnectInfo();
+            var task = UpdateConnectInfo();
         }
 
         private async Task UpdateConnectInfo()

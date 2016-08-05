@@ -75,7 +75,7 @@ namespace MediaBrowser.LocalMetadata
             }
         }
 
-        public int Order
+        public  virtual int Order
         {
             get
             {
