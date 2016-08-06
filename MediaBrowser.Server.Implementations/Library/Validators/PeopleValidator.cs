@@ -125,7 +125,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
                     var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview);
                     var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 90;
-                    performFullRefresh = false;
 
                     var defaultMetadataRefreshMode = performFullRefresh
                         ? MetadataRefreshMode.FullRefresh
@@ -138,7 +137,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     var options = new MetadataRefreshOptions(_fileSystem)
                     {
                         MetadataRefreshMode = person.Value ? defaultMetadataRefreshMode : MetadataRefreshMode.ValidationOnly,
-                        ImageRefreshMode = person.Value ? imageRefreshMode : ImageRefreshMode.ValidationOnly
+                        ImageRefreshMode = person.Value ? imageRefreshMode : ImageRefreshMode.ValidationOnly,
+                        ForceSave = performFullRefresh
                     };
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);

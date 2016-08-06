@@ -16,7 +16,10 @@ namespace MediaBrowser.Controller.Providers
         private readonly ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>> _cache =
             new ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>>(StringComparer.OrdinalIgnoreCase);
 
-		public DirectoryService(ILogger logger, IFileSystem fileSystem)
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache =
+        new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+
+        public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
 			_fileSystem = fileSystem;
@@ -100,29 +103,19 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            return _fileSystem.GetFileInfo(path);
-            //var directory = Path.GetDirectoryName(path);
+            FileSystemMetadata file;
+            if (!_fileCache.TryGetValue(path, out file))
+            {
+                file = _fileSystem.GetFileInfo(path);
 
-            //if (string.IsNullOrWhiteSpace(directory))
-            //{
-            //    _logger.Debug("Parent path is null for {0}", path);
-            //    return null;
-            //}
+                if (file != null)
+                {
+                    _fileCache.TryAdd(path, file);
+                }
+            }
 
-            //try
-            //{
-            //    var dict = GetFileSystemDictionary(directory, false);
-
-            //    FileSystemMetadata entry;
-            //    dict.TryGetValue(path, out entry);
-
-            //    return entry;
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.ErrorException("Error in GetFileSystemDictionary. Directory: :{0}. Original path: {1}", ex, directory, path);
-            //    return null;
-            //}
+            return file;
+            //return _fileSystem.GetFileInfo(path);
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path)

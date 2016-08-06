@@ -95,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 108;
+        public const int LatestSchemaVersion = 109;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -915,7 +915,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                     else
                     {
-                        _saveItemCommand.GetParameter(index++).Value = item.Name.RemoveDiacritics();
+                        _saveItemCommand.GetParameter(index++).Value = GetCleanValue(item.Name);
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = item.PresentationUniqueKey;
@@ -2763,13 +2763,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 whereClauses.Add("CleanName=@Name");
-                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name.RemoveDiacritics();
+                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = GetCleanValue(query.Name);
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
                 whereClauses.Add("CleanName like @NameContains");
-                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains.RemoveDiacritics() + "%";
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + GetCleanValue(query.NameContains) + "%";
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
@@ -2877,7 +2877,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var artist in query.ArtistNames)
                 {
                     clauses.Add("@ArtistName" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
-                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = artist.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = GetCleanValue(artist);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2894,7 +2894,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     if (artistItem != null)
                     {
                         clauses.Add("@ExcludeArtistName" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
-                        cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = artistItem.Name.RemoveDiacritics();
+                        cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = GetCleanValue(artistItem.Name);
                         index++;
                     }
                 }
@@ -2915,7 +2915,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Genres)
                 {
                     clauses.Add("@Genre" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=2)");
-                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2929,7 +2929,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Tags)
                 {
                     clauses.Add("@Tag" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=4)");
-                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2949,7 +2949,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Studios)
                 {
                     clauses.Add("@Studio" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=3)");
-                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2963,7 +2963,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Keywords)
                 {
                     clauses.Add("@Keyword" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=5)");
-                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -3296,6 +3296,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             return whereClauses;
+        }
+
+        private string GetCleanValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            return value.RemoveDiacritics().ToLower();
         }
 
         private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
@@ -4024,7 +4034,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     ? (CommandBehavior.SequentialAccess | CommandBehavior.SingleResult)
                     : CommandBehavior.SequentialAccess;
 
-                //Logger.Debug("GetItemValues: " + cmd.CommandText);
+                Logger.Debug("GetItemValues: " + cmd.CommandText);
 
                 using (var reader = cmd.ExecuteReader(commandBehavior))
                 {
@@ -4268,7 +4278,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 else
                 {
-                    _saveItemValuesCommand.GetParameter(3).Value = pair.Item2.RemoveDiacritics();
+                    _saveItemValuesCommand.GetParameter(3).Value = GetCleanValue(pair.Item2);
                 }
                 _saveItemValuesCommand.Transaction = transaction;
 
