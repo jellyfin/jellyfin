@@ -1620,7 +1620,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 size = _imageProcessor.GetImageSize(imageInfo);
             }
-            catch (Exception ex)
+            catch
             {
                 //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return null;
