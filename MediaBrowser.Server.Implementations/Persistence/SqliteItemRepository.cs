@@ -3817,37 +3817,42 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        {
+            return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
+        }
+
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
         {
-            return GetItemValues(query, 0, typeof(MusicArtist).FullName);
+            return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
         {
-            return GetItemValues(query, 1, typeof(MusicArtist).FullName);
+            return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
         {
-            return GetItemValues(query, 3, typeof(Studio).FullName);
+            return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(Genre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(GameGenre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(GameGenre).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(MusicGenre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
 
-        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int itemValueType, string returnType)
+        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -3862,6 +3867,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             CheckDisposed();
 
             var now = DateTime.UtcNow;
+
+            var typeClause = itemValueTypes.Length == 1 ?
+                ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
 
             using (var cmd = _connection.CreateCommand())
             {
@@ -3887,7 +3896,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     };
                     var whereClauses = GetWhereClauses(typeSubQuery, cmd, "itemTypes");
 
-                    whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND Type=@ItemValueType)");
+                    whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND " + typeClause + ")");
 
                     var typeWhereText = whereClauses.Count == 0 ?
                         string.Empty :
@@ -3929,12 +3938,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (typesToCount.Count == 0)
                 {
-                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where " + typeClause + " AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
                 }
                 else
                 {
                     //whereText += " And itemTypes not null";
-                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where " + typeClause + " AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
                 }
 
                 var outerQuery = new InternalItemsQuery(query.User)
@@ -3964,7 +3973,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.CommandText += " group by PresentationUniqueKey";
 
                 cmd.Parameters.Add(cmd, "@SelectType", DbType.String).Value = returnType;
-                cmd.Parameters.Add(cmd, "@ItemValueType", DbType.Int32).Value = itemValueType;
 
                 if (EnableJoinUserData(query))
                 {
