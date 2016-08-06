@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (FileNotFoundException)
             {
             }
-            catch (DirectoryNotFoundException ex)
+            catch (DirectoryNotFoundException)
             {
             }
             catch (IOException ex)

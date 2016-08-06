@@ -29,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IInstallationManager _installationManager;
 
         //private readonly ILogManager _logManager;
-        private readonly ILogger _logger;
+        //private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
         private readonly ITaskManager _taskManager;
         private readonly IActivityManager _activityManager;

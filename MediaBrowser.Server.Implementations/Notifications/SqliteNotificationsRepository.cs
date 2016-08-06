@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
         public event EventHandler<NotificationUpdateEventArgs> NotificationAdded;
         public event EventHandler<NotificationReadEventArgs> NotificationsMarkedRead;
-        public event EventHandler<NotificationUpdateEventArgs> NotificationUpdated;
+        ////public event EventHandler<NotificationUpdateEventArgs> NotificationUpdated;
 
         public async Task Initialize()
         {

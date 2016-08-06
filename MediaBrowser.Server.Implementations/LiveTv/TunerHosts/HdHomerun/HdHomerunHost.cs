@@ -431,7 +431,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
                 }
             }
-            catch (Exception ex)
+            catch
             {
 
             }

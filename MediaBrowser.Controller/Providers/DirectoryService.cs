@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Providers
 			_fileSystem = fileSystem;
         }
 
-		public DirectoryService(IFileSystem fileSystem)
+        public DirectoryService(IFileSystem fileSystem)
             : this(new NullLogger(), fileSystem)
         {
         }
@@ -108,12 +108,20 @@ namespace MediaBrowser.Controller.Providers
                 return null;
             }
 
-            var dict = GetFileSystemDictionary(directory, false);
+            try
+            {
+                var dict = GetFileSystemDictionary(directory, false);
 
-            FileSystemMetadata entry;
-            dict.TryGetValue(path, out entry);
+                FileSystemMetadata entry;
+                dict.TryGetValue(path, out entry);
 
-            return entry;
+                return entry;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in GetFileSystemDictionary. Directory: :{0}. Original path: {1}", ex, directory, path);
+                return null;
+            }
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path)
