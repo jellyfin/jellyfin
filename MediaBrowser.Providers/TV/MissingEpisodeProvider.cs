@@ -133,7 +133,7 @@ namespace MediaBrowser.Providers.TV
             {
                 foreach (var series in group)
                 {
-                    var directoryService = new DirectoryService(_fileSystem);
+                    var directoryService = new DirectoryService(_logger, _fileSystem);
 
                     await series.RefreshMetadata(new MetadataRefreshOptions(directoryService), cancellationToken).ConfigureAwait(false);
 

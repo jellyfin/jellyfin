@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using CommonIO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -19,7 +20,7 @@ namespace MediaBrowser.Controller.Providers
         public bool ForceSave { get; set; }
 
         public MetadataRefreshOptions(IFileSystem fileSystem)
-			: this(new DirectoryService(fileSystem))
+			: this(new DirectoryService(new NullLogger(), fileSystem))
         {
         }
 
