@@ -649,7 +649,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp.Rtsp
 
         #region Public Events
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        ////public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
 
