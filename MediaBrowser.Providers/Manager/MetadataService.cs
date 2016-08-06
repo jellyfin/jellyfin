@@ -349,9 +349,6 @@ namespace MediaBrowser.Providers.Manager
 
             if (!runAllProviders)
             {
-                // Avoid implicitly captured closure
-                var currentItem = item;
-
                 var providersWithChanges = providers
                     .Where(i =>
                     {
@@ -359,12 +356,6 @@ namespace MediaBrowser.Providers.Manager
                         if (hasFileChangeMonitor != null)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
-                        }
-
-                        var hasChangeMonitor = i as IHasChangeMonitor;
-                        if (hasChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasChangeMonitor, currentItem.DateLastSaved, options.DirectoryService);
                         }
 
                         return false;
@@ -716,27 +707,6 @@ namespace MediaBrowser.Providers.Manager
                 //if (hasChanged)
                 //{
                 //    Logger.Debug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
-                //}
-
-                return hasChanged;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error in {0}.HasChanged", ex, changeMonitor.GetType().Name);
-                return false;
-            }
-        }
-
-        private bool HasChanged(IHasMetadata item, IHasChangeMonitor changeMonitor, DateTime date, IDirectoryService directoryService)
-        {
-            try
-            {
-                var hasChanged = changeMonitor.HasChanged(item, directoryService, date);
-
-                //if (hasChanged)
-                //{
-                //    Logger.Debug("{0} reports change to {1} since {2}", changeMonitor.GetType().Name,
-                //        item.Path ?? item.Name, date);
                 //}
 
                 return hasChanged;
