@@ -86,7 +86,7 @@
             elem.classList.add('hide');
         };
 
-        if (!browser.animate || browser.mobile) {
+        if (!browser.animate || browser.slow) {
             onfinish();
             return;
         }
@@ -108,7 +108,7 @@
 
         elem.classList.remove('hide');
 
-        if (!browser.animate || browser.mobile) {
+        if (!browser.animate || browser.slow) {
             return;
         }
 
@@ -130,7 +130,7 @@
 
         elem.classList.remove('hide');
 
-        if (!browser.animate || browser.mobile) {
+        if (!browser.animate || browser.slow) {
             return;
         }
 
@@ -320,7 +320,7 @@
                 document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
                 nowPlayingBarElement = document.querySelector('.nowPlayingBar');
 
-                if (browser.safari && browser.mobile) {
+                if (browser.safari && browser.slow) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
                     nowPlayingBarElement.classList.add('noMediaProgress');
                 }

@@ -347,7 +347,7 @@
             return true;
         }
 
-        return browser.mobile;
+        return true;
     }
 
     function centerDialog(dlg) {

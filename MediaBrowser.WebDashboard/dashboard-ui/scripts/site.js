@@ -834,7 +834,7 @@ var Dashboard = {
                 quality -= 10;
             }
 
-            if (browserInfo.mobile || browserInfo.tv) {
+            if (browserInfo.slow) {
                 quality -= 40;
             }
 
@@ -1092,14 +1092,13 @@ var AppInfo = {};
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
-        AppInfo.enableAutoSave = browserInfo.mobile;
+        AppInfo.enableAutoSave = browserInfo.touch;
         AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
         AppInfo.enableAppStorePolicy = isCordova;
 
         var isIOS = browserInfo.ipad || browserInfo.iphone;
         var isAndroid = browserInfo.android;
-        var isMobile = browserInfo.mobile;
 
         if (isIOS) {
 
@@ -1135,7 +1134,7 @@ var AppInfo = {};
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
-        AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
+        AppInfo.hasPhysicalVolumeButtons = isCordova || browserInfo.mobile;
 
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
@@ -1511,12 +1510,9 @@ var AppInfo = {};
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
 
         define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
-        define("paper-item", ["html!" + bowerPath + "/paper-item/paper-item.html"]);
         define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
         define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
         define("paper-input", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-input.html"]);
-        define("paper-icon-item", ['webcomponentsjs', "html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
-        define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
 
