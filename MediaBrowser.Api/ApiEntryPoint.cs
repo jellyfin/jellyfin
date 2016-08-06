@@ -349,7 +349,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            var timerDuration = 1000;
+            var timerDuration = 10000;
 
             if (job.Type != TranscodingJobType.Progressive)
             {
