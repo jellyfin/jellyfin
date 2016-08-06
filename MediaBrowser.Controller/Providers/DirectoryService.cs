@@ -100,28 +100,29 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            var directory = Path.GetDirectoryName(path);
+            return _fileSystem.GetFileInfo(path);
+            //var directory = Path.GetDirectoryName(path);
 
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                _logger.Debug("Parent path is null for {0}", path);
-                return null;
-            }
+            //if (string.IsNullOrWhiteSpace(directory))
+            //{
+            //    _logger.Debug("Parent path is null for {0}", path);
+            //    return null;
+            //}
 
-            try
-            {
-                var dict = GetFileSystemDictionary(directory, false);
+            //try
+            //{
+            //    var dict = GetFileSystemDictionary(directory, false);
 
-                FileSystemMetadata entry;
-                dict.TryGetValue(path, out entry);
+            //    FileSystemMetadata entry;
+            //    dict.TryGetValue(path, out entry);
 
-                return entry;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in GetFileSystemDictionary. Directory: :{0}. Original path: {1}", ex, directory, path);
-                return null;
-            }
+            //    return entry;
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.ErrorException("Error in GetFileSystemDictionary. Directory: :{0}. Original path: {1}", ex, directory, path);
+            //    return null;
+            //}
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path)
