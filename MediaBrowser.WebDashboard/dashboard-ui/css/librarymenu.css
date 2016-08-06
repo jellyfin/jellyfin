@@ -20,7 +20,7 @@
     margin: 0 !important;
     width: 100% !important;
     /* Page needs to supply padding */
-    top: 92px !important;
+    top: 102px !important;
     transition: transform 200ms ease-out;
 }
 

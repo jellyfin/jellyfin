@@ -1,4 +1,4 @@
-﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage fullWidthContent" data-require="scripts/dashboardpage,humanedate,buttonenabled,paper-icon-item,paper-item-body,paper-fab,emby-collapse,emby-button">
+﻿<div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage fullWidthContent" data-require="scripts/dashboardpage,humanedate,buttonenabled,listViewStyle,emby-collapse,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -21,7 +21,7 @@
                             <p id="appVersionNumber">
                             </p>
                             <p id="pUpToDate" style="display: flex; align-items:center;" class="hide">
-                                <iron-icon icon="check" style="background-color: #52B54B;border-radius:.25em;color: #fff;margin-right:.5em;"></iron-icon>
+                                <i class="md-icon" style="background-color: #52B54B;border-radius:.25em;color: #fff;margin-right:.5em;padding:.25em;font-size:110%;">check</i>
                                 ${ServerUpToDate}
                             </p>
                             <div id="pUpdateNow" style="display: none;">
@@ -41,8 +41,14 @@
                             <p class="externalUrl"></p>
 
                             <div style="margin-top: 1em;">
-                                <button is="emby-button" type="button" class="raised subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></button>
-                                <button is="emby-button" type="button" id="btnShutdown" class="raised subdued" onclick="DashboardPage.shutdown();"><i class="md-icon">close</i><span>${ButtonShutdown}</span></button>
+                                <button is="emby-button" type="button" class="raised subdued btnRestartContainer hide" onclick="DashboardPage.restart();">
+                                    <i class="md-icon">refresh</i>
+                                    <span>${ButtonRestart}</span>
+                                </button>
+                                <button is="emby-button" type="button" id="btnShutdown" class="raised subdued" onclick="DashboardPage.shutdown();">
+                                    <i class="md-icon">close</i>
+                                    <span>${ButtonShutdown}</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -58,7 +64,10 @@
                                 </div>
                                 <p>${MessagePleaseRestartServerToFinishUpdating}</p>
                                 <div class="btnRestartContainer hide">
-                                    <button is="emby-button" type="button" class="raised submit" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestartNow}</span></button>
+                                    <button is="emby-button" type="button" class="raised submit" onclick="DashboardPage.restart();">
+                                        <i class="md-icon">refresh</i>
+                                        <span>${ButtonRestartNow}</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -67,7 +76,9 @@
                     <div class="healthMonitorSection hide" style="margin-top: 2em;">
                         <h1 style="display:flex;align-items:center;">
                             <div>${HeaderHealthMonitor}</div>
-                            <button is="paper-icon-button-light" type="button" style="margin-left:.5em;"><iron-icon icon="refresh"></iron-icon></button>
+                            <button is="paper-icon-button-light" type="button" style="margin-left: .5em;">
+                                <i class="md-icon">refresh</i>
+                            </button>
                         </h1>
                         <div class="healthMonitor paperList">
                         </div>

@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     var currentConfig;
 
@@ -37,21 +37,21 @@
         var html = config.PathSubstitutions.map(function (map) {
 
             var mapHtml = '';
-            mapHtml += '<paper-icon-item>';
+            mapHtml += '<div class="listItem">';
 
-            mapHtml += '<paper-fab mini icon="folder" class="blue" item-icon></paper-fab>';
+            mapHtml += '<i class="listItemIcon md-icon">folder</i>';
 
-            mapHtml += '<paper-item-body three-line>';
+            mapHtml += '<div class="listItemBody three-line">';
 
-            mapHtml += "<div>" + map.From + "</div>";
-            mapHtml += "<div secondary><b>" + Globalize.translate('HeaderTo') + "</b></div>";
-            mapHtml += "<div secondary>" + map.To + "</div>";
+            mapHtml += "<h3 class='listItemBodyText'>" + map.From + "</h3>";
+            mapHtml += "<div class='listItemBodyText secondary'>" + Globalize.translate('HeaderTo') + "</div>";
+            mapHtml += "<div class='listItemBodyText secondary'>" + map.To + "</div>";
 
-            mapHtml += '</paper-item-body>';
+            mapHtml += '</div>';
 
-            mapHtml += '<button type="button" is="paper-icon-button-light" data-index="' + index + '" class="btnDeletePath"><iron-icon icon="delete"></iron-icon></button>';
+            mapHtml += '<button type="button" is="paper-icon-button-light" data-index="' + index + '" class="btnDeletePath"><i class="md-icon">delete</i></button>';
 
-            mapHtml += '</paper-icon-item>';
+            mapHtml += '</div>';
 
             index++;
 
@@ -75,10 +75,8 @@
 
         currentConfig = config;
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-            reloadPathMappings(page, config);
-            Dashboard.hideLoadingMsg();
-        });
+        reloadPathMappings(page, config);
+        Dashboard.hideLoadingMsg();
     }
 
     function reload(page) {

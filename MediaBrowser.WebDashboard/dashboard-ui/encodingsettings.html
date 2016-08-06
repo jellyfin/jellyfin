@@ -8,7 +8,7 @@
                 <div class="selectContainer">
                     <select is="emby-select" id="selectVideoDecoder" label="${LabelHardwareAccelerationType}">
                         <option value="">${OptionNone}</option>
-                        <option value="qsv">Intel Quick Sync</option>
+                        <option value="qsv">Intel Quick Sync (experimental)</option>
                         <option value="h264_omx">OpenMAX OMX (experimental)</option>
                         <option value="nvenc">Nvidia NVENC (experimental)</option>
                     </select>
@@ -29,7 +29,7 @@
                     </select>
                     <div class="fieldDescription">${LabelTranscodingThreadCountHelp}</div>
                 </div>
-                <div class="checkboxContainer">
+                <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input is="emby-checkbox" type="checkbox" id="chkEnableThrottle" />
                         <span>${OptionEnableTranscodingThrottle}</span>

@@ -150,6 +150,11 @@
             The AuthKey used to sign the JWT Token
             </summary>
         </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.FallbackAuthKeys">
+            <summary>
+            Allow verification using multiple Auth keys
+            </summary>
+        </member>
         <member name="F:ServiceStack.Auth.JwtAuthProviderReader.privateKey">
             <summary>
             The RSA Private Key used to Sign the JWT Token when RSA is used
@@ -168,6 +173,11 @@
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.PublicKeyXml">
             <summary>
             Convenient overload to intialize the Public Key via exported XML
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.FallbackPublicKeys">
+            <summary>
+            Allow verification using multiple public keys
             </summary>
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.ExpireTokensIn">
@@ -679,6 +689,11 @@
             Use HostContext.LocalCache or HostContext.Cache
             </summary>
         </member>
+        <member name="P:ServiceStack.CacheInfo.NoCompression">
+            <summary>
+            Skip compression for this Cache Result
+            </summary>
+        </member>
         <member name="T:ServiceStack.CacheResponseAttribute">
             <summary>
             Cache the Response of a Service
@@ -712,6 +727,11 @@
         <member name="P:ServiceStack.CacheResponseAttribute.LocalCache">
             <summary>
             Use HostContext.LocalCache or HostContext.Cache
+            </summary>
+        </member>
+        <member name="P:ServiceStack.CacheResponseAttribute.NoCompression">
+            <summary>
+            Skip compression for this Cache Result
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.CollectionPropertyRule`1.Create``1(System.Linq.Expressions.Expression{System.Func{``0,System.Collections.Generic.IEnumerable{`0}}},System.Func{ServiceStack.FluentValidation.CascadeMode})">
@@ -4726,7 +4746,23 @@
             <param name="serviceType"></param>
             <param name="inFunqAsType"></param>
         </member>
+        <member name="M:ServiceStack.ContainerTypeExtensions.RegisterAutoWiredType(Funq.Container,System.String,System.Type,System.Type,Funq.ReuseScope)">
+            <summary>
+            Registers a named instance of type in the IoC container and
+            adds auto-wiring to the specified type.
+            </summary>
+            <param name="serviceType"></param>
+            <param name="inFunqAsType"></param>
+        </member>
         <member name="M:ServiceStack.ContainerTypeExtensions.RegisterAutoWiredType(Funq.Container,System.Type,Funq.ReuseScope)">
+            <summary>
+            Registers the type in the IoC container and
+            adds auto-wiring to the specified type.
+            The reuse scope is set to none (transient).
+            </summary>
+            <param name="serviceTypes"></param>
+        </member>
+        <member name="M:ServiceStack.ContainerTypeExtensions.RegisterAutoWiredType(Funq.Container,System.String,System.Type,Funq.ReuseScope)">
             <summary>
             Registers the type in the IoC container and
             adds auto-wiring to the specified type.
@@ -5486,6 +5522,16 @@
         <member name="M:ServiceStack.IAppHost.RegisterTypedMessageResponseFilter``1(System.Action{ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,``0})">
             <summary>
             Add Request Filter for a specific MQ Response DTO Type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GatewayRequestFilters">
+            <summary>
+            Add Request Filter for Service Gateway Requests
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.GatewayResponseFilters">
+            <summary>
+            Add Response Filter for Service Gateway Responses
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.ViewEngines">
@@ -8183,13 +8229,32 @@
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:Funq.Container.RegisterAutoWired``1(System.String)">
+            <summary>
+            Register an autowired dependency
+            </summary>
+            <param name="name">Name of dependency</param>
+            <typeparam name="T"></typeparam>
+        </member>
         <member name="M:Funq.Container.RegisterAutoWiredAs``2">
             <summary>
             Register an autowired dependency as a separate type
             </summary>
             <typeparam name="T"></typeparam>
         </member>
+        <member name="M:Funq.Container.RegisterAutoWiredAs``2(System.String)">
+            <summary>
+            Register an autowired dependency as a separate type
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
         <member name="M:Funq.Container.RegisterAs``2">
+            <summary>
+            Alias for RegisterAutoWiredAs
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:Funq.Container.RegisterAs``2(System.String)">
             <summary>
             Alias for RegisterAutoWiredAs
             </summary>

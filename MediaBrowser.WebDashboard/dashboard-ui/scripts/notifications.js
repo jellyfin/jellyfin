@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'listViewStyle'], function (libraryBrowser) {
 
     function notifications() {
 
@@ -115,7 +115,7 @@
             });
         }
 
-        require(['humanedate', 'paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+        require(['humanedate'], function () {
             for (var i = 0, length = list.length; i < length; i++) {
 
                 var notification = list[i];
@@ -136,33 +136,33 @@
             itemHtml += '<a class="clearLink" href="' + notification.Url + '" target="_blank">';
         }
 
-        itemHtml += '<paper-icon-item>';
+        itemHtml += '<div class="listItem">';
 
         if (notification.Level == "Error") {
-            itemHtml += '<paper-fab mini class="" style="background:#cc3333;" icon="error" item-icon></paper-fab>';
+            itemHtml += '<i class="listItemIcon md-icon" style="background:#cc3333;">error</i>';
         } else {
-            itemHtml += '<paper-fab mini  class="blue" icon="dvr" item-icon></paper-fab>';
+            itemHtml += '<i class="listItemIcon md-icon">dvr</i>';
         }
 
-        itemHtml += '<paper-item-body three-line>';
+        itemHtml += '<div class="listItemBody three-line">';
 
-        itemHtml += '<div>';
+        itemHtml += '<h3 class="listItemBodyText">';
         itemHtml += notification.Name;
-        itemHtml += '</div>';
+        itemHtml += '</h3>';
 
-        itemHtml += '<div secondary>';
+        itemHtml += '<div class="listItemBodyText secondary">';
         itemHtml += humane_date(notification.Date);
         itemHtml += '</div>';
 
         if (notification.Description) {
-            itemHtml += '<div secondary>';
+            itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
             itemHtml += notification.Description;
             itemHtml += '</div>';
         }
 
-        itemHtml += '</paper-item-body>';
+        itemHtml += '</div>';
 
-        itemHtml += '</paper-icon-item>';
+        itemHtml += '</div>';
 
         if (notification.Url) {
             itemHtml += '</a>';

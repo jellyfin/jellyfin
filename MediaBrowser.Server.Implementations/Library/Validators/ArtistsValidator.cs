@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Server.Implementations.Library.Validators
 {
@@ -43,36 +44,39 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allSongs = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => !i.IsFolder && i is IHasArtist)
-                .Cast<IHasArtist>()
+            var items = _libraryManager.GetAllArtists(new InternalItemsQuery())
+                .Items
+                .Select(i => i.Item1)
                 .ToList();
 
-            var allArtists = _libraryManager.GetArtists(allSongs).ToList();
-
             var numComplete = 0;
-            var numArtists = allArtists.Count;
+            var count = items.Count;
 
-            foreach (var artistItem in allArtists)
+            foreach (var item in items)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 try
                 {
-                    await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
-                catch (IOException ex)
+                catch (OperationCanceledException)
                 {
-                    _logger.ErrorException("Error validating Artist {0}", ex, artistItem.Name);
+                    // Don't clutter the log
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing {0}", ex, item.Name);
                 }
 
-                // Update progress
                 numComplete++;
                 double percent = numComplete;
-                percent /= numArtists;
+                percent /= count;
+                percent *= 100;
 
-                progress.Report(100 * percent);
+                progress.Report(percent);
             }
+
+            progress.Report(100);
         }
     }
 }
