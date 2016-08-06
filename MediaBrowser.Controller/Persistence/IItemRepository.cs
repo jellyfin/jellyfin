@@ -169,6 +169,7 @@ namespace MediaBrowser.Controller.Persistence
         QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query);
+        QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query);
     }
 }
 
