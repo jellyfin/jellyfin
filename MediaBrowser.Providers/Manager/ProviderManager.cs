@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var options = GetMetadataOptions(item);
 
-			return GetImageProviders(item, options, new ImageRefreshOptions(new DirectoryService(_fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
+			return GetImageProviders(item, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), includeDisabled).OfType<IRemoteImageProvider>();
         }
 
         private bool CanRefresh(IMetadataProvider provider, IHasMetadata item, MetadataOptions options, bool includeDisabled, bool checkIsOwnedItem)
@@ -488,7 +488,7 @@ namespace MediaBrowser.Providers.Manager
                 ItemType = typeof(T).Name
             };
 
-			var imageProviders = GetImageProviders(dummy, options, new ImageRefreshOptions(new DirectoryService(_fileSystem)), true).ToList();
+			var imageProviders = GetImageProviders(dummy, options, new ImageRefreshOptions(new DirectoryService(_logger, _fileSystem)), true).ToList();
 
             AddMetadataPlugins(summary.Plugins, dummy, options);
             AddImagePlugins(summary.Plugins, dummy, imageProviders);
