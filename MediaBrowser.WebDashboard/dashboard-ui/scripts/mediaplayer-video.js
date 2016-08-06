@@ -997,9 +997,9 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            if (browserInfo.msie && !browserInfo.mobile) {
+            if (browserInfo.msie) {
 
-                if (navigator.userAgent.indexOf('Windows NT 6.1;') != -1 || !mediaSource.RunTimeTicks) {
+                if (!window.MediaSource || !mediaSource.RunTimeTicks) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
                 }
             }
@@ -1077,7 +1077,7 @@
 
             elem.classList.remove('hide');
 
-            if (!browserInfo.animate || browserInfo.mobile) {
+            if (!browserInfo.animate || browserInfo.slow) {
                 return;
             }
 

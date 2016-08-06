@@ -119,7 +119,7 @@
 
             return registrationServices.validateFeature('livetv').then(function () {
 
-                var limit = browser.mobile ? 100 : 400;
+                var limit = browser.slow ? 100 : 400;
 
                 context.querySelector('.guideRequiresUnlock').classList.add('hide');
 

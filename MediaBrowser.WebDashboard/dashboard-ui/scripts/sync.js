@@ -156,7 +156,7 @@
 
         if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
             html += '<br/>';
-            html += '<div class="checkboxContainer">';
+            html += '<div class="checkboxContainer checkboxContainer-withDescription">';
             html += '<label>';
             html += '<input is="emby-checkbox" type="checkbox" id="chkUnwatchedOnly"/>';
             html += '<span>' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</span>';
@@ -172,7 +172,7 @@
             html += '<div class="collapseContent">';
             if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
                 html += '<br/>';
-                html += '<div class="checkboxContainer">';
+                html += '<div class="checkboxContainer checkboxContainer-withDescription">';
                 html += '<label>';
                 html += '<input is="emby-checkbox" type="checkbox" id="chkSyncNewContent"/>';
                 html += '<span>' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</span>';

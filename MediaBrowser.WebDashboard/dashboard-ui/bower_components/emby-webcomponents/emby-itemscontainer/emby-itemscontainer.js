@@ -179,7 +179,7 @@
 
         this.addEventListener('click', onClick);
 
-        if (browser.mobile) {
+        if (browser.touch) {
             this.addEventListener('contextmenu', disableEvent);
         } else {
             this.addEventListener('contextmenu', onContextMenu);

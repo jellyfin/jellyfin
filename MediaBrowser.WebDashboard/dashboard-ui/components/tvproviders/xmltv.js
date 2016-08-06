@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'registrationservices', 'paper-checkbox', 'emby-input', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function ($, registrationServices) {
+﻿define(['jQuery', 'registrationservices', 'paper-checkbox', 'emby-input', 'listViewStyle', 'paper-icon-button-light'], function ($, registrationServices) {
 
     return function (page, providerId, options) {
 
@@ -135,24 +135,24 @@
 
                 var device = devices[i];
 
-                html += '<paper-icon-item>';
+                html += '<div class="listItem">';
 
                 var enabledTuners = providerInfo.EnableAllTuners || [];
                 var isChecked = providerInfo.EnableAllTuners || enabledTuners.indexOf(device.Id) != -1;
                 var checkedAttribute = isChecked ? ' checked' : '';
                 html += '<paper-checkbox data-id="' + device.Id + '" class="chkTuner" item-icon ' + checkedAttribute + '></paper-checkbox>';
 
-                html += '<paper-item-body two-line>';
-                html += '<div>';
+                html += '<div class="listItemBody two-line">';
+                html += '<div class="listItemBodyText">';
                 html += device.FriendlyName || getTunerName(device.Type);
                 html += '</div>';
 
-                html += '<div secondary>';
+                html += '<div class="listItemBodyText secondary">';
                 html += device.Url;
                 html += '</div>';
-                html += '</paper-item-body>';
+                html += '</div>';
 
-                html += '</paper-icon-item>';
+                html += '</div>';
             }
 
             page.querySelector('.tunerList').innerHTML = html;

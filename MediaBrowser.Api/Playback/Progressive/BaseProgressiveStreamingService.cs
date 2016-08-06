@@ -142,7 +142,8 @@ namespace MediaBrowser.Api.Playback.Progressive
             var outputPath = state.OutputFilePath;
             var outputPathExists = FileSystem.FileExists(outputPath);
 
-            var isTranscodeCached = outputPathExists && !ApiEntryPoint.Instance.HasActiveTranscodingJob(outputPath, TranscodingJobType.Progressive);
+            var transcodingJob = ApiEntryPoint.Instance.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
+            var isTranscodeCached = outputPathExists && transcodingJob != null;
 
             AddDlnaHeaders(state, responseHeaders, request.Static || isTranscodeCached);
 
@@ -159,6 +160,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
                         Path = state.MediaPath
+
                     }).ConfigureAwait(false);
                 }
             }
@@ -170,13 +172,25 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 try
                 {
+                    if (transcodingJob != null)
+                    {
+                        ApiEntryPoint.Instance.OnTranscodeBeginRequest(transcodingJob);
+                    }
+
                     return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
                         ResponseHeaders = responseHeaders,
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
                         Path = outputPath,
-                        FileShare = FileShare.ReadWrite
+                        FileShare = FileShare.ReadWrite,
+                        OnComplete = () =>
+                        {
+                            if (transcodingJob != null)
+                            {
+                                ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
+                            }
+                        }
 
                     }).ConfigureAwait(false);
                 }
@@ -348,7 +362,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     outputHeaders[item.Key] = item.Value;
                 }
 
-                Func<Stream,Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream, CancellationToken.None);
+                Func<Stream, Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream, CancellationToken.None);
 
                 return ResultFactory.GetAsyncStreamWriter(streamWriter, outputHeaders);
             }

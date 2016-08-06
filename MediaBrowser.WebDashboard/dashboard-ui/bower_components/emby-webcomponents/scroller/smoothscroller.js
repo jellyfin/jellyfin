@@ -170,11 +170,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (layoutManager.mobile) {
-
-            options.enableNativeScroll = true;
-        }
-        else if (browser.edge && !browser.xboxOne) {
+        else if (browser.edge && (!browser.xboxOne && !browser.touch)) {
             // no scrolling supported
             options.enableNativeScroll = false;
         }
