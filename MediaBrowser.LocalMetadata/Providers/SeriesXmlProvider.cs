@@ -31,7 +31,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             return directoryService.GetFile(Path.Combine(info.Path, "series.xml"));
         }
 
-        public int Order
+        public override int Order
         {
             get
             {

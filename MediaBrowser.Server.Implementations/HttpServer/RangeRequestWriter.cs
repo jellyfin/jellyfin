@@ -191,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 throw;
             }

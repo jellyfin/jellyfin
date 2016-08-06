@@ -211,7 +211,7 @@ namespace MediaBrowser.Common.Plugins
             {
                 return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
             }
-            catch (Exception ex)
+            catch
             {
                 return (TConfigurationType)Activator.CreateInstance(typeof(TConfigurationType));
             }
