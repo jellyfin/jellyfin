@@ -20,6 +20,8 @@ button.listItem {
     line-height: 160%;
     border-bottom: 1px solid #2a2a2a;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .listItem-nosidepadding {

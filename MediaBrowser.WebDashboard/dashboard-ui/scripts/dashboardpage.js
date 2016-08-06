@@ -427,6 +427,7 @@
 
             //html += '<div>';
             var showTranscodingInfo = false;
+
             if (session.TranscodingInfo && session.TranscodingInfo.IsAudioDirect && session.TranscodingInfo.IsVideoDirect) {
                 html += Globalize.translate('LabelPlayMethodDirectStream');
             }
@@ -455,28 +456,30 @@
 
                 var line = [];
 
-                if (session.TranscodingInfo.Bitrate) {
+                if (session.TranscodingInfo) {
+                    if (session.TranscodingInfo.Bitrate) {
 
-                    if (session.TranscodingInfo.Bitrate > 1000000) {
-                        line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
-                    } else {
-                        line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
+                        if (session.TranscodingInfo.Bitrate > 1000000) {
+                            line.push((session.TranscodingInfo.Bitrate / 1000000).toFixed(1) + ' Mbps');
+                        } else {
+                            line.push(Math.floor(session.TranscodingInfo.Bitrate / 1000) + ' kbps');
+                        }
                     }
-                }
-                if (session.TranscodingInfo.Container) {
+                    if (session.TranscodingInfo.Container) {
 
-                    line.push(session.TranscodingInfo.Container);
-                }
+                        line.push(session.TranscodingInfo.Container);
+                    }
 
-                if (session.TranscodingInfo.VideoCodec) {
+                    if (session.TranscodingInfo.VideoCodec) {
 
-                    //line.push(Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec));
-                    line.push(session.TranscodingInfo.VideoCodec);
-                }
-                if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
+                        //line.push(Globalize.translate('LabelVideoCodec').replace('{0}', session.TranscodingInfo.VideoCodec));
+                        line.push(session.TranscodingInfo.VideoCodec);
+                    }
+                    if (session.TranscodingInfo.AudioCodec && session.TranscodingInfo.AudioCodec != session.TranscodingInfo.Container) {
 
-                    //line.push(Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec));
-                    line.push(session.TranscodingInfo.AudioCodec);
+                        //line.push(Globalize.translate('LabelAudioCodec').replace('{0}', session.TranscodingInfo.AudioCodec));
+                        line.push(session.TranscodingInfo.AudioCodec);
+                    }
                 }
 
                 if (line.length) {
