@@ -58,7 +58,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 else
                 {
                     // Kick this off, but no need to wait on it
-                    Task.Run(async () =>
+                    var task = Task.Run(async () =>
                     {
                         await DownloadFontFile(fontsDirectory, fontFilename, new Progress<double>()).ConfigureAwait(false);
 
