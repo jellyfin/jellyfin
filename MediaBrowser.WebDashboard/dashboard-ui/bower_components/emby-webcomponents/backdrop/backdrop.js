@@ -2,7 +2,7 @@
 
     function enableAnimation(elem) {
 
-        if (browser.mobile) {
+        if (browser.slow) {
             return false;
         }
 

@@ -251,32 +251,7 @@
 }
 
 .channelPrograms, .channelHeaderCell {
-    height: 15vh;
-}
-
-@media all and (min-height: 500px) {
-
-    .channelPrograms, .channelHeaderCell {
-        height: 10.5vh;
-    }
-}
-
-@media all and (min-height: 600px) {
-
-    .channelPrograms, .channelHeaderCell {
-        height: 9vh;
-    }
-}
-
-@media all and (min-height: 720px) {
-
-    .channelPrograms, .channelHeaderCell {
-        height: 6vh;
-    }
-
-    .layout-tv .channelPrograms, .layout-tv .channelHeaderCell {
-        height: 9vh;
-    }
+    height: 4em;
 }
 
 .channelTimeslotHeader {
@@ -288,28 +263,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 14vh;
-}
-
-@media all and (min-height: 500px) {
-
-    .timeslotHeader, .channelTimeslotHeader {
-        height: 10vh;
-    }
-}
-
-@media all and (min-height: 600px) {
-
-    .timeslotHeader, .channelTimeslotHeader {
-        height: 8vh;
-    }
-}
-
-@media all and (min-height: 720px) {
-
-    .timeslotHeader, .channelTimeslotHeader {
-        height: 5.75vh;
-    }
+    height: 3.5em;
 }
 
 .pointerInput .channelHeaderCell:hover {

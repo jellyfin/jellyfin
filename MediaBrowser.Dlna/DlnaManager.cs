@@ -248,8 +248,7 @@ namespace MediaBrowser.Dlna
                         //_logger.Debug("IsMatch-Substring value: {0} testValue: {1} isMatch: {2}", value, header.Value, isMatch);
                         return isMatch;
                     case HeaderMatchType.Regex:
-                        // Reports of IgnoreCase not working on linux so try it a couple different ways.
-                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase) || Regex.IsMatch(value.ToUpper(), header.Value.ToUpper(), RegexOptions.IgnoreCase);
+                        return Regex.IsMatch(value, header.Value, RegexOptions.IgnoreCase);
                     default:
                         throw new ArgumentException("Unrecognized HeaderMatchType");
                 }

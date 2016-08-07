@@ -28,6 +28,31 @@
         return false;
     }
 
+    function isMobile(userAgent) {
+
+        var terms = [
+            'mobi',
+            'ipad',
+            'iphone',
+            'ipod',
+            'silk',
+            'gt-p1000',
+            'nexus 7',
+            'kindle fire',
+            'opera mini'
+        ];
+
+        var lower = userAgent.toLowerCase();
+
+        for (var i = 0, length = terms.length; i < length; i++) {
+            if (lower.indexOf(terms[i]) != -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function isStyleSupported(prop, value) {
         // If no value is supplied, use "inherit"
         value = arguments.length === 2 ? value : 'inherit';
@@ -128,7 +153,7 @@
         browser.tv = true;
     }
 
-    if (userAgent.toLowerCase().indexOf("mobi") != -1) {
+    if (isMobile(userAgent)) {
         browser.mobile = true;
     }
 
@@ -144,7 +169,13 @@
         browser.noFlex = true;
     }
 
-    //browser.noFlex = (browser.tv && !browser.chrome && !browser.operaTv) || browser.ps4;
+    if (browser.mobile || browser.tv) {
+        browser.slow = true;
+    }
+
+    if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
+        browser.touch = true;
+    }
 
     return browser;
 });

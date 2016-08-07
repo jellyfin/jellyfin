@@ -17,8 +17,8 @@
 
         var html = '';
 
-        html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
-        html += '<div class="dialogContentInner centeredContent">';
+        html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
+        html += '<div class="dialogContentInner dialog-content-centered">';
         html += '<form style="margin:auto;">';
 
         html += '<div class="fldSelectPlaylist selectContainer">';
@@ -121,9 +121,9 @@
             var html = '';
             var title = globalize.translate('sharedcomponents#RefreshMetadata');
 
-            html += '<div class="dialogHeader">';
+            html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="dialogHeaderTitle">';
+            html += '<div class="formDialogHeaderTitle">';
             html += title;
             html += '</div>';
 
@@ -142,13 +142,13 @@
             });
 
             if (layoutManager.tv) {
-                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+                centerFocus(dlg.querySelector('.formDialogContent'), false, true);
             }
 
             return new Promise(function (resolve, reject) {
 
                 if (layoutManager.tv) {
-                    centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                    centerFocus(dlg.querySelector('.formDialogContent'), false, false);
                 }
 
                 dlg.addEventListener('close', resolve);

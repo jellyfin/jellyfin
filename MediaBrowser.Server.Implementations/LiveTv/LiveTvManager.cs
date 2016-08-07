@@ -133,7 +133,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         void service_DataSourceChanged(object sender, EventArgs e)
         {
-            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            if (!_isDisposed)
+            {
+                _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            }
         }
 
         public async Task<QueryResult<LiveTvChannel>> GetInternalChannels(LiveTvChannelQuery query, CancellationToken cancellationToken)
@@ -1238,7 +1241,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var programs = new List<Guid>();
             var channels = new List<Guid>();
 
-            var guideDays = GetGuideDays(list.Count);
+            var guideDays = GetGuideDays();
 
             _logger.Info("Refreshing guide with {0} days of guide data", guideDays);
 
@@ -1326,7 +1329,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         }
 
         private const int MaxGuideDays = 14;
-        private double GetGuideDays(int channelCount)
+        private double GetGuideDays()
         {
             var config = GetConfiguration();
 
@@ -1335,13 +1338,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return Math.Max(1, Math.Min(config.GuideDays.Value, MaxGuideDays));
             }
 
-            var programsPerDay = channelCount * 48;
-
-            const int maxPrograms = 24000;
-
-            var days = Math.Round((double)maxPrograms / programsPerDay);
-
-            return Math.Max(3, Math.Min(days, MaxGuideDays));
+            return 7;
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)
@@ -2309,6 +2306,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         }
 
         private readonly object _disposeLock = new object();
+        private bool _isDisposed = false;
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
@@ -2317,6 +2315,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             if (dispose)
             {
+                _isDisposed = true;
+
                 lock (_disposeLock)
                 {
                     foreach (var stream in _openStreams.Values.ToList())

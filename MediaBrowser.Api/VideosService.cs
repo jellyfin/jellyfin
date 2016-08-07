@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Api
 {
@@ -81,11 +82,18 @@ namespace MediaBrowser.Api
 
             var dtoOptions = GetDtoOptions(request);
 
-            var video = (Video)item;
-
-            var items = video.GetAdditionalParts()
-                         .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, video))
-                         .ToArray();
+            var video = item as Video;
+            BaseItemDto[] items;
+            if (video != null)
+            {
+                items = video.GetAdditionalParts()
+                    .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, video))
+                    .ToArray();
+            }
+            else
+            {
+                items = new BaseItemDto[] { };
+            }
 
             var result = new ItemsResult
             {

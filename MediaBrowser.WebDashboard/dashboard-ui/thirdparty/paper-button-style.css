@@ -1,109 +1,103 @@
-﻿button[is="emby-button"]:not(.fab).blue {
+﻿button.emby-button:not(.fab).blue {
     color: #03a9f4;
 }
 
-    button[is="emby-button"]:not(.fab).blue:hover {
+    button.emby-button:not(.fab).blue:hover {
         background: #e1f5f3;
     }
 
-button[is="emby-button"].fab.blue {
+button.emby-button.fab.blue {
     background: #03a9f4;
 }
 
-button[is="emby-button"].menuButton {
+button.emby-button.menuButton {
     color: #212121;
     text-align: left;
 }
 
-    button[is="emby-button"].menuButton:hover {
+    button.emby-button.menuButton:hover {
         background: #e1f5f3;
     }
 
 
-button[is="emby-button"].submit {
+button.emby-button.submit {
     color: #52B54B;
 }
 
-button[is="emby-button"].raised.submit, button[is="emby-button"].raised:not(.subdued):not(.cancel) {
+button.emby-button.raised.submit, button.emby-button.raised:not(.subdued):not(.cancel) {
     background: #52B54B;
     color: #fff;
 }
 
-button[is="emby-button"].more {
+button.emby-button.more {
     color: #EC407A;
 }
 
-button[is="emby-button"].raised.more {
+button.emby-button.raised.more {
     background: #EC407A;
     color: #fff;
 }
 
-button[is="emby-button"].secondary {
+button.emby-button.secondary {
     color: #4285f4;
 }
 
-button[is="emby-button"].raised.secondary {
+button.emby-button.raised.secondary {
     background: #4285f4;
     color: #fff;
 }
 
-button[is="emby-button"].accent {
+button.emby-button.accent {
     color: #52B54B;
 }
 
-button[is="emby-button"].raised.accent {
+button.emby-button.raised.accent {
     background: #52B54B;
     color: #fff;
 }
 
-button[is="emby-button"].alt {
+button.emby-button.alt {
     color: #F57F17;
 }
 
-button[is="emby-button"].raised.alt {
+button.emby-button.raised.alt {
     background: #F57F17;
     color: #fff;
 }
 
-.ui-body-b button[is="emby-button"].cancel {
+.ui-body-b button.emby-button.cancel {
     color: #444;
 }
 
-.ui-body-b button[is="emby-button"].raised.cancel {
+.ui-body-b button.emby-button.raised.cancel {
     background: #444;
     color: #fff;
 }
 
-button[is="emby-button"].cancelDark {
+button.emby-button.cancelDark {
     color: #444;
 }
 
-button[is="emby-button"].raised.cancelDark {
+button.emby-button.raised.cancelDark {
     background: #444;
     color: #fff;
 }
 
-.ui-body-b button[is="emby-button"].subdued:not([disabled]) {
+.ui-body-b button.emby-button.subdued:not([disabled]) {
     color: #404040;
 }
 
-.ui-body-b button[is="emby-button"].raised.subdued:not([disabled]) {
+.ui-body-b button.emby-button.raised.subdued:not([disabled]) {
     background: #404040;
     color: #fff;
 }
 
-.ui-body-b button[is="emby-button"].raised[disabled].subduedd {
+.ui-body-b button.emby-button.raised[disabled].subduedd {
     background: #111;
 }
 
-button[is="emby-button"] span {
+button.emby-button span {
     vertical-align: middle;
-}
-
-button[is="emby-button"].iconRight iron-icon {
-    position: absolute;
-    right: 5px;
-    top: 5px;
 }
 
 .clearButton {
@@ -126,24 +120,15 @@ button[is="emby-button"].iconRight iron-icon {
     color: inherit !important;
 }
 
-button[is="emby-button"].mini:not(.fab) {
+button.emby-button.mini:not(.fab) {
     padding: 0.4em 0.7em;
 }
 
-    button[is="emby-button"].mini:not(.fab) iron-icon {
-        height: 20px;
-        width: 20px;
-    }
-
-button[is="emby-button"].notext {
+button.emby-button.notext {
     min-width: 2.8em;
     padding-left: .25em !important;
     padding-right: .25em !important;
 }
-
-    button[is="emby-button"].notext iron-icon {
-        margin-right: 0;
-    }
 
 .fab.green {
     background-color: #81c784 !important;
@@ -173,21 +158,21 @@ div.dialogHeader {
     font-size: 110%;
 }
 
-.ui-body-a div.dialogHeader {
+.ui-body-a div.formDialogHeader {
     background-color: #52B54B;
     color: #fff;
 }
 
-.ui-body-a .dialogHeader a {
+.ui-body-a .formDialogHeader a {
     color: #fff !important;
     text-transform: uppercase;
 }
 
-.ui-body-b div.dialogHeader {
+.ui-body-b div.formDialogHeader {
     background-color: #101010;
 }
 
-.dialogHeaderTitle {
+.formDialogHeaderTitle {
     margin-left: .75em;
 }
 
@@ -198,7 +183,7 @@ div.dialogHeader {
     margin-top: .7em;
 }
 
-.dialogHeader button {
+.formDialogHeader button {
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -209,8 +194,4 @@ div.dialogHeader {
 
 .formDialog.background-theme-b {
     background-color: #181818;
-}
-
-.ui-body-b .listItem .secondary {
-    color: #aaa;
 }

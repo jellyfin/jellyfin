@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     function loadProfiles(page) {
 
@@ -30,51 +30,48 @@
 
     function renderProfiles(page, element, profiles) {
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+        var html = '';
 
-            var html = '';
+        if (profiles.length) {
+            html += '<div class="paperList">';
+        }
 
-            if (profiles.length) {
-                html += '<div class="paperList">';
+        for (var i = 0, length = profiles.length; i < length; i++) {
+
+            var profile = profiles[i];
+
+            html += '<div class="listItem">';
+
+            html += "<a item-icon class='clearLink listItemIconContainer' href='dlnaprofile.html?id=" + profile.Id + "'>";
+            html += '<i class="md-icon listItemIcon">dvr</i>';
+            html += "</a>";
+
+            html += '<div class="listItemBody">';
+            html += "<a class='clearLink' href='dlnaprofile.html?id=" + profile.Id + "'>";
+
+            html += "<div>" + profile.Name + "</div>";
+            //html += "<div secondary>" + task.Description + "</div>";
+
+            html += "</a>";
+            html += '</div>';
+
+            if (profile.Type == 'User') {
+                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteProfile" data-profileid="' + profile.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
             }
 
-            for (var i = 0, length = profiles.length; i < length; i++) {
+            html += '</div>';
+        }
 
-                var profile = profiles[i];
+        if (profiles.length) {
+            html += '</div>';
+        }
 
-                html += '<paper-icon-item>';
+        element.innerHTML = html;
 
-                html += "<a item-icon class='clearLink' href='dlnaprofile.html?id=" + profile.Id + "'>";
-                html += '<paper-fab mini icon="dvr" class="blue"></paper-fab>';
-                html += "</a>";
+        $('.btnDeleteProfile', element).on('click', function () {
 
-                html += '<paper-item-body two-line>';
-                html += "<a class='clearLink' href='dlnaprofile.html?id=" + profile.Id + "'>";
-
-                html += "<div>" + profile.Name + "</div>";
-                //html += "<div secondary>" + task.Description + "</div>";
-
-                html += "</a>";
-                html += '</paper-item-body>';
-
-                if (profile.Type == 'User') {
-                    html += '<button type="button" is="paper-icon-button-light" class="btnDeleteProfile" data-profileid="' + profile.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
-                }
-
-                html += '</paper-icon-item>';
-            }
-
-            if (profiles.length) {
-                html += '</div>';
-            }
-
-            element.innerHTML = html;
-
-            $('.btnDeleteProfile', element).on('click', function () {
-
-                var id = this.getAttribute('data-profileid');
-                deleteProfile(page, id);
-            });
+            var id = this.getAttribute('data-profileid');
+            deleteProfile(page, id);
         });
     }
 

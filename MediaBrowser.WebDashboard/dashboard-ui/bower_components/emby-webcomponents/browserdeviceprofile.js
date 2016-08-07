@@ -263,7 +263,8 @@ define(['browser'], function (browser) {
                 videoAudioCodecs.push('ac3');
 
                 // This works in edge desktop, but not mobile
-                if (!browser.edge || !browser.mobile) {
+                // TODO: Retest this on mobile
+                if (!browser.edge || !browser.touch) {
                     hlsVideoAudioCodecs.push('ac3');
                 }
             }
@@ -287,7 +288,8 @@ define(['browser'], function (browser) {
         }
 
         if (isEdgeUniversal()) {
-            videoAudioCodecs.push('dca');
+            //videoAudioCodecs.push('dca');
+            //videoAudioCodecs.push('dts');
             //videoAudioCodecs.push('truehd');
         }
 

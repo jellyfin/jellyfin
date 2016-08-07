@@ -1,7 +1,8 @@
 ﻿@media all and (min-width: 300px) {
 
-    .libraryViewNav {
+    .libraryViewNav, .libraryViewNav > .contentScrollSlider {
         display: flex;
+        flex-grow: 1;
     }
 
         .libraryViewNav .pageTabButton {

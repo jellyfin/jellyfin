@@ -771,7 +771,7 @@
             html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="videoVolumeSlider"/>';
             html += '</div>'; // guide
 
-            html += '<button is="paper-icon-button-light" class="mediaButton castButton autoSize" onclick="MediaController.showPlayerSelection(this, false);" style="height:32px;width:32px;"><i class="md-icon">cast</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton castButton autoSize" onclick="MediaController.showPlayerSelection(this, false);"><i class="md-icon">cast</i></button>';
             html += '<button is="paper-icon-button-light" class="mediaButton fullscreenButton autoSize" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"><i class="md-icon">fullscreen</i></button>';
             html += '<button is="paper-icon-button-light" class="mediaButton infoButton autoSize" onclick="MediaPlayer.toggleInfo();"><i class="md-icon">info</i></button>';
 
@@ -997,9 +997,9 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            if (browserInfo.msie && !browserInfo.mobile) {
+            if (browserInfo.msie) {
 
-                if (navigator.userAgent.indexOf('Windows NT 6.1;') != -1 || !mediaSource.RunTimeTicks) {
+                if (!window.MediaSource || !mediaSource.RunTimeTicks) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
                 }
             }
@@ -1077,7 +1077,7 @@
 
             elem.classList.remove('hide');
 
-            if (!browserInfo.animate || browserInfo.mobile) {
+            if (!browserInfo.animate || browserInfo.slow) {
                 return;
             }
 

@@ -1,5 +1,5 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'browser', 'layoutManager', 'apphost', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
-    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, browser, layoutManager, appHost) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'layoutManager', 'apphost', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
+    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, layoutManager, appHost) {
 
         // Regular Expressions for parsing tags and attributes
         var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
@@ -102,13 +102,31 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
         }
 
+        function isResizable(windowWidth) {
+
+            var screen = window.screen;
+            if (screen) {
+                var screenWidth = screen.availWidth;
+
+                if ((screenWidth - windowWidth) > 20) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         function getImageWidth(shape) {
 
             var screenWidth = window.innerWidth;
 
-            if (!browser.mobile && !browser.tv) {
+            if (isResizable(screenWidth)) {
                 var roundScreenTo = 100;
                 screenWidth = Math.ceil(screenWidth / roundScreenTo) * roundScreenTo;
+            }
+
+            if (window.screen) {
+                screenWidth = Math.min(screenWidth, screen.availWidth || screenWidth);
             }
 
             var imagesPerRow = getPostersPerRow(shape, screenWidth);
@@ -975,7 +993,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            return counts.join(' • ');
+            return counts.join(', ');
         }
 
         function buildCard(index, item, apiClient, options, className) {
@@ -1014,7 +1032,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 var overlayPlayButton = options.overlayPlayButton;
 
-                if (overlayPlayButton == null && !options.overlayMoreButton) {
+                if (overlayPlayButton == null && !options.overlayMoreButton && !options.cardLayout) {
                     overlayPlayButton = item.MediaType == 'Video';
                 }
 
@@ -1094,7 +1112,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (forceName && !options.cardLayout) {
                 showTitle = imgUrl;
-                
+
                 if (overlayText == null) {
                     overlayText = true;
                 }

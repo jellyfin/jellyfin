@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-select', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-select', 'paper-icon-button-light', 'listViewStyle', 'formDialogStyle'], function (dialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;
@@ -116,17 +116,17 @@
 
         var html = '';
 
-        html += '<paper-icon-item role="menuitem" class="lnkPath">';
+        html += '<div class="listItem lnkPath">';
 
-        html += '<paper-fab mini style="background:#52B54B;" icon="folder" item-icon></paper-fab>';
+        html += '<i class="listItemIcon md-icon">folder</i>';
 
-        html += '<paper-item-body>';
-        html += path;
-        html += '</paper-item-body>';
+        html += '<div class="listItemBody">';
+        html += '<div class="listItemBodyText">' + path + '</div>';
+        html += '</div>';
 
-        html += '<button is="paper-icon-button-light"" class="btnRemovePath" data-index="' + index + '"><iron-icon icon="remove-circle"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light"" class="btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
 
-        html += '</paper-icon-item>';
+        html += '</div>';
 
         return html;
     }

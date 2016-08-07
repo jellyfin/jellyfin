@@ -156,7 +156,7 @@
 
         if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
             html += '<br/>';
-            html += '<div class="checkboxContainer">';
+            html += '<div class="checkboxContainer checkboxContainer-withDescription">';
             html += '<label>';
             html += '<input is="emby-checkbox" type="checkbox" id="chkUnwatchedOnly"/>';
             html += '<span>' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</span>';
@@ -172,7 +172,7 @@
             html += '<div class="collapseContent">';
             if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
                 html += '<br/>';
-                html += '<div class="checkboxContainer">';
+                html += '<div class="checkboxContainer checkboxContainer-withDescription">';
                 html += '<label>';
                 html += '<input is="emby-checkbox" type="checkbox" id="chkSyncNewContent"/>';
                 html += '<span>' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</span>';
@@ -228,7 +228,7 @@
 
     function showSyncMenuInternal(options) {
 
-        require(['dialogHelper'], function (dialogHelper) {
+        require(['dialogHelper', 'formDialogStyle'], function (dialogHelper) {
 
             var userId = Dashboard.getCurrentUserId();
 
@@ -254,18 +254,21 @@
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
-                dlg.classList.add('popupEditor');
+                dlg.classList.add('formDialog');
 
                 var html = '';
-                html += '<div class="dialogHeader" style="margin:0 0 2em;">';
+                html += '<div class="formDialogHeader">';
                 html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-                html += '<div class="dialogHeaderTitle">';
+                html += '<div class="formDialogHeaderTitle">';
                 html += Globalize.translate('SyncMedia');
                 html += '</div>';
 
                 html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
 
                 html += '</div>';
+
+                html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
+                html += '<div class="dialogContentInner dialog-content-centered">';
 
                 html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
 
@@ -276,6 +279,10 @@
                 html += '</p>';
 
                 html += '</form>';
+
+                html += '</div>';
+                html += '</div>';
+
 
                 dlg.innerHTML = html;
                 document.body.appendChild(dlg);

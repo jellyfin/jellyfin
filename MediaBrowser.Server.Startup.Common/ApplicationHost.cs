@@ -606,7 +606,7 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient, FileSystemManager, ServerConfigurationManager);
                 }
-                catch (Exception ex)
+                catch
                 {
                     Logger.Error("Error loading ImageMagick. Will revert to GDI.");
                 }
@@ -616,7 +616,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 return new GDIImageEncoder(FileSystemManager, LogManager.GetLogger("GDI"));
             }
-            catch (Exception ex)
+            catch
             {
                 Logger.Error("Error loading GDI. Will revert to NullImageEncoder.");
             }
@@ -1412,7 +1412,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 return new Uri(externalDns).Host;
             }
-            catch (Exception e)
+            catch
             {
                 return externalDns;
             }

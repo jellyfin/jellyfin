@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
+﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -55,22 +55,28 @@
 
     EmbyButtonPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embybutton') == 'true') {
+        if (this.classList.contains('emby-button')) {
             return;
         }
 
-        this.setAttribute('data-embybutton', 'true');
+        this.classList.add('emby-button');
 
         if (browser.safari || browser.firefox || browser.noFlex) {
-            this.classList.add('noflex');
+            this.classList.add('emby-button-noflex');
         }
 
         if (enableAnimation()) {
-            this.addEventListener('keydown', onKeyDown);
+            dom.addEventListener(this, 'keydown', onKeyDown, {
+                passive: true
+            });
             if (browser.safari) {
-                this.addEventListener('click', animateButton);
+                dom.addEventListener(this, 'click', animateButton, {
+                    passive: true
+                });
             } else {
-                this.addEventListener('mousedown', onMouseDown);
+                dom.addEventListener(this, 'mousedown', onMouseDown, {
+                    passive: true
+                });
                 //this.addEventListener('touchstart', animateButton);
             }
         }

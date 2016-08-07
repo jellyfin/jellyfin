@@ -349,7 +349,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            var timerDuration = 1000;
+            var timerDuration = 10000;
 
             if (job.Type != TranscodingJobType.Progressive)
             {
@@ -559,13 +559,13 @@ namespace MediaBrowser.Api
             {
 
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
 
                 DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
             }
-            catch (Exception ex)
+            catch
             {
                 //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
             }

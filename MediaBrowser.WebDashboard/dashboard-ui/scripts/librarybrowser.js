@@ -272,7 +272,9 @@
                         clickBar: 1,
                         //centerOffset: window.innerWidth * .05,
                         hiddenScroll: true,
-                        requireAnimation: true
+
+                        // In safari the transform is causing the headers to occasionally disappear or flicker
+                        requireAnimation: !browserInfo.safari
                     });
                     tabs.scroller.init();
                 } else {
@@ -789,7 +791,7 @@
 
                         var radioValue = option.id.replace(',', '_');
                         isChecked = (options.query.SortBy || '').replace(',', '_') == radioValue ? ' checked' : '';
-                        html += '<label class="block"><input type="radio" is="emby-radio" name="SortBy" data-id="' + option.id + '" value="' + radioValue + '" class="menuSortBy" ' + isChecked + ' /><span>' + option.name + '</span></label>';
+                        html += '<label class="radio-label-block"><input type="radio" is="emby-radio" name="SortBy" data-id="' + option.id + '" value="' + radioValue + '" class="menuSortBy" ' + isChecked + ' /><span>' + option.name + '</span></label>';
                     }
                     html += '</div>';
 
@@ -798,9 +800,9 @@
                     html += '</h2>';
                     html += '<div>';
                     isChecked = options.query.SortOrder == 'Ascending' ? ' checked' : '';
-                    html += '<label class="block"><input type="radio" is="emby-radio" name="SortOrder" value="Ascending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionAscending') + '</span></label>';
+                    html += '<label class="radio-label-block"><input type="radio" is="emby-radio" name="SortOrder" value="Ascending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionAscending') + '</span></label>';
                     isChecked = options.query.SortOrder == 'Descending' ? ' checked' : '';
-                    html += '<label class="block"><input type="radio" is="emby-radio" name="SortOrder" value="Descending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionDescending') + '</span></label>';
+                    html += '<label class="radio-label-block"><input type="radio" is="emby-radio" name="SortOrder" value="Descending" class="menuSortOrder" ' + isChecked + ' /><span>' + Globalize.translate('OptionDescending') + '</span></label>';
                     html += '</div>';
                     html += '</div>';
 

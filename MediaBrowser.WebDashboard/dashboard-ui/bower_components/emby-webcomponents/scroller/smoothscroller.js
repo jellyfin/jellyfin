@@ -1,30 +1,4 @@
-define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutManager) {
-
-    var supportsCaptureOption = false;
-    try {
-        var opts = Object.defineProperty({}, 'capture', {
-            get: function () {
-                supportsCaptureOption = true;
-            }
-        });
-        window.addEventListener("test", null, opts);
-    } catch (e) { }
-
-    function addEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.addEventListener(type, handler, optionsOrCapture);
-    }
-
-    function removeEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.removeEventListener(type, handler, optionsOrCapture);
-    }
+define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, layoutManager, dom) {
 
     /**
 * Return type of the value.
@@ -102,13 +76,9 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
     var namespace = pluginName;
 
     // Other global values
-    var dragInitEventNames = ['touchstart', 'mousedown'];
-    var dragInitEvents = 'touchstart.' + namespace + ' mousedown.' + namespace;
     var dragMouseEvents = ['mousemove', 'mouseup'];
     var dragTouchEvents = ['touchmove', 'touchend'];
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
-    var clickEvent = 'click.' + namespace;
-    var mouseDownEvent = 'mousedown.' + namespace;
     var interactiveElements = ['INPUT', 'SELECT', 'TEXTAREA'];
     var tmpArray = [];
     var time;
@@ -161,10 +131,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // no scrolling supported
             options.enableNativeScroll = false;
         }
-        else if (browser.edge && !browser.xboxOne) {
-            // no scrolling supported
-            options.enableNativeScroll = false;
-        }
         else if (isSmoothScrollSupported && browser.firefox) {
             // native smooth scroll
             options.enableNativeScroll = true;
@@ -174,9 +140,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (layoutManager.mobile ||
-           layoutManager.desktop ||
-           !browser.animate) {
+        else if (layoutManager.desktop || !browser.animate) {
 
             options.enableNativeScroll = true;
         }
@@ -900,19 +864,24 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 return;
             }
             var delta = normalizeWheelDelta(event);
-            // Trap scrolling only when necessary and/or requested
-            if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
-                //stopDefault(event, 1);
-            }
 
             if (transform) {
+                // Trap scrolling only when necessary and/or requested
+                if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
+                    //stopDefault(event, 1);
+                }
+
                 self.slideBy(o.scrollBy * delta);
             } else {
 
+                if (isSmoothScrollSupported) {
+                    delta *= 12;
+                }
+
                 if (o.horizontal) {
-                    slideeElement.scrollLeft += 12 * delta;
+                    slideeElement.scrollLeft += delta;
                 } else {
-                    slideeElement.scrollTop += 12 * delta;
+                    slideeElement.scrollTop += delta;
                 }
             }
         }
@@ -927,13 +896,19 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             window.removeEventListener('resize', onResize, true);
 
             // Reset native FRAME element scroll
-            removeEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+            dom.removeEventListener(frameElement, 'scroll', resetScroll, {
                 passive: true
             });
 
-            removeEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+            dom.removeEventListener(scrollSource, wheelEvent, scrollHandler, {
                 passive: true
             });
+
+            dom.removeEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
+                passive: true
+            });
+
+            dragSourceElement.removeEventListener('mousedown', dragInitSlidee);
 
             // Reset initialized status and return the instance
             self.initialized = 0;
@@ -992,22 +967,24 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             }
 
             if (transform) {
-                dragInitEventNames.forEach(function (eventName) {
-                    dragSourceElement.addEventListener(eventName, dragInitSlidee);
+
+                dom.addEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
+                    passive: true
                 });
+                dragSourceElement.addEventListener('mousedown', dragInitSlidee);
 
                 if (!o.scrollWidth) {
                     window.addEventListener('resize', onResize, true);
                 }
 
                 if (!o.horizontal) {
-                    addEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+                    dom.addEventListener(frameElement, 'scroll', resetScroll, {
                         passive: true
                     });
                 }
 
                 // Scrolling navigation
-                addEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+                dom.addEventListener(scrollSource, wheelEvent, scrollHandler, {
                     passive: true
                 });
 
@@ -1016,7 +993,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 // Don't bind to mouse events with vertical scroll since the mouse wheel can handle this natively
 
                 // Scrolling navigation
-                addEventListenerWithOptions(scrollSource, wheelEvent, scrollHandler, {
+                dom.addEventListener(scrollSource, wheelEvent, scrollHandler, {
                     passive: true
                 });
             }

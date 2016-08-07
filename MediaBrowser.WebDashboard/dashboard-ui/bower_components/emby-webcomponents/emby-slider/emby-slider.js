@@ -16,12 +16,6 @@
 
     function updateValues(range, backgroundLower, backgroundUpper) {
 
-        //if (fraction === 0) {
-        //    range.classList.add('is-lowest-value');
-        //} else {
-        //    range.classList.remove('is-lowest-value');
-        //}
-
         var value = range.value;
         requestAnimationFrame(function () {
 

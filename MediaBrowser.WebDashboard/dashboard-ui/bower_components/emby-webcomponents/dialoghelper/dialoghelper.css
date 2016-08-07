@@ -64,10 +64,6 @@
     overflow-y: hidden !important;
 }
 
-.dialog > * {
-    padding: 0 24px;
-}
-
 .dialogBackdrop {
     background-color: #000;
     opacity: 0;

@@ -97,7 +97,7 @@ h2 {
 }
 
 h3 {
-    font-weight: 500;
+    font-weight: 400;
 }
 
 a, a:active, a:hover {
@@ -573,10 +573,6 @@ progress {
     margin: 0 0 3em 0;
 }
 
-    .syncActivityForTarget paper-fab {
-        border-radius: 0;
-    }
-
 @media all and (min-width: 800px) {
 
     .syncActivityForTarget {
@@ -668,4 +664,8 @@ progress {
 
 .ui-body-a .cardFooter .cardText + .cardText {
     opacity: .8;
+}
+
+.ui-body-a .listItem .secondary {
+    color: #737373;
 }

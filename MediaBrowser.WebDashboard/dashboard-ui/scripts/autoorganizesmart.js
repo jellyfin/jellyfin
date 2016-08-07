@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     var query = {
 
@@ -58,30 +58,30 @@
 
             var info = infos[i];
 
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
-            html += '<paper-fab mini icon="folder" item-icon class="blue"></paper-fab>';
+            html += '<i class="listItemIcon md-icon">folder</i>';
 
             html += (info.DisplayName || info.ItemName);
 
-            html += '</paper-icon-item>';
+            html += '</div>';
 
             var matchStringIndex = 0;
 
             html += info.MatchStrings.map(function (m) {
 
                 var matchStringHtml = '';
-                matchStringHtml += '<paper-icon-item>';
+                matchStringHtml += '<div class="listItem">';
 
-                matchStringHtml += '<paper-item-body>';
+                matchStringHtml += '<div class="listItemBody">';
 
-                matchStringHtml += "<div secondary>" + m + "</div>";
+                matchStringHtml += "<div class='listItemBodyText secondary'>" + m + "</div>";
 
-                matchStringHtml += '</paper-item-body>';
+                matchStringHtml += '</div>';
 
-                matchStringHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
+                matchStringHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
 
-                matchStringHtml += '</paper-icon-item>';
+                matchStringHtml += '</div>';
                 matchStringIndex++;
 
                 return matchStringHtml;

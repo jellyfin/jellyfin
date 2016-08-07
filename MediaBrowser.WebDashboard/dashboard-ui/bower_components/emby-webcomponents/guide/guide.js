@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
 
     function Guide(options) {
 
@@ -119,7 +119,7 @@
 
             return registrationServices.validateFeature('livetv').then(function () {
 
-                var limit = browser.mobile ? 100 : 400;
+                var limit = browser.slow ? 100 : 400;
 
                 context.querySelector('.guideRequiresUnlock').classList.add('hide');
 
@@ -738,32 +738,6 @@
             }
         }
 
-        var supportsCaptureOption = false;
-        try {
-            var opts = Object.defineProperty({}, 'capture', {
-                get: function () {
-                    supportsCaptureOption = true;
-                }
-            });
-            window.addEventListener("test", null, opts);
-        } catch (e) { }
-
-        function addEventListenerWithOptions(target, type, handler, options) {
-            var optionsOrCapture = options;
-            if (!supportsCaptureOption) {
-                optionsOrCapture = options.capture;
-            }
-            target.addEventListener(type, handler, optionsOrCapture);
-        }
-
-        function removeEventListenerWithOptions(target, type, handler, options) {
-            var optionsOrCapture = options;
-            if (!supportsCaptureOption) {
-                optionsOrCapture = options.capture;
-            }
-            target.removeEventListener(type, handler, optionsOrCapture);
-        }
-
         function onTimerCreated(e, apiClient, data) {
 
             var programId = data.ProgramId;
@@ -826,13 +800,13 @@
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
 
-            addEventListenerWithOptions(programGrid, 'scroll', function (e) {
+            dom.addEventListener(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
             }, {
                 passive: true
             });
 
-            addEventListenerWithOptions(timeslotHeaders, 'scroll', function () {
+            dom.addEventListener(timeslotHeaders, 'scroll', function () {
                 onTimeslotHeadersScroll(context, this, programGrid);
             }, {
                 passive: true

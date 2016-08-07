@@ -311,11 +311,21 @@ button.cardImageContainer {
 }
 
 .card .indicators {
-    right: 2%;
-    top: 3%;
+    right: 2.5%;
+    top: 2.5%;
     position: absolute;
     display: flex;
     align-items: center;
+}
+
+.portraitCard .indicators {
+    right: 3%;
+    top: 2%;
+}
+
+.backdropCard .indicators {
+    right: 1.5%;
+    top: 2.8%;
 }
 
 .cardOverlayButton {
@@ -352,6 +362,10 @@ button.cardImageContainer {
 
 .defaultCardColor5 {
     background-color: #F57F17;
+}
+
+.scalableCard.bannerCard {
+    width: 100%;
 }
 
 .scalableCard.backdropCard {

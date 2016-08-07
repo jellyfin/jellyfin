@@ -253,13 +253,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 
-.userDataIcons paper-fab {
-    background: #444;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-}
-
 .itemBackdrop {
     background-size: cover;
     background-position: center 15%;
@@ -406,11 +399,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-bottom: .5em;
 }
 
-.detailButtonsContainer {
-    font-size: 90%;
-}
-
-[is="emby-button"].detailFloatingButton {
+.emby-button.detailFloatingButton {
     width: 56px !important;
     height: 56px !important;
     top: -28px;
@@ -419,7 +408,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: #52B54B !important;
 }
 
-[is="emby-button"].btnFloatingRecord {
+.emby-button.btnFloatingRecord {
     background-color: #cc3333 !important;
 }
 
@@ -530,15 +519,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0;
 }
 
-    .detailPageCollabsible .ui-collapsible-heading a {
-        background-color: #141414 !important;
-        font-size: 16px;
-        font-weight: 400 !important;
-        border-radius: 4px;
-        padding-top: .75em;
-        padding-bottom: .75em;
-    }
-
 .detailSection h1 {
     margin-bottom: .25em;
     position: relative;
@@ -556,11 +536,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: relative;
 }
 
-    .detailSectionHeader, .detailSectionHeader h3 {
-        font-size: 17px;
-        font-weight: 400;
-    }
-
 .ui-body-a .detailSectionHeader {
     border: 1px solid #ddd;
     border-width: 0 0 1px 0;
@@ -573,6 +548,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeader, .detailSectionHeader h3 {
     font-size: 20px;
+    font-weight: 400;
 }
 
     .detailSectionHeader button {
@@ -808,7 +784,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: block;
     color: #fff;
     margin-bottom: 1em;
-    font-size: 120%;
 }
 
 .mediaInfoAttribute {

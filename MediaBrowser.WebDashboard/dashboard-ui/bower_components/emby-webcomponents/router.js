@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings) {
+define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -300,9 +300,20 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
         console.log('embyRouter - processing path request ' + pathname);
 
-        if ((!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
+        var isCurrentRouteStartup = currentRouteInfo ? currentRouteInfo.route.startup : true;
+        var shouldExitApp = ctx.isBack && route.isDefaultRoute && isCurrentRouteStartup;
+
+        if (!shouldExitApp && (!apiClient || !apiClient.isLoggedIn()) && !route.anonymous) {
             console.log('embyRouter - route does not allow anonymous access, redirecting to login');
             beginConnectionWizard();
+            return;
+        }
+
+        if (shouldExitApp) {
+            if (appHost.supports('exit')) {
+                appHost.exit();
+                return;
+            }
             return;
         }
 
@@ -310,7 +321,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
             console.log('embyRouter - user is authenticated');
 
-            var isCurrentRouteStartup = currentRouteInfo ? currentRouteInfo.route.startup : true;
             if (ctx.isBack && (route.isDefaultRoute || route.startup) && !isCurrentRouteStartup) {
                 handleBackToDefault();
                 return;
@@ -480,6 +490,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
             // can't use this with home right now due to the back menu
             if (currentRouteInfo.route.type != 'home') {
+                loading.hide();
                 return Promise.resolve();
             }
         }

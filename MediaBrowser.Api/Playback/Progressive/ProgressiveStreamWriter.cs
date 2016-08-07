@@ -27,29 +27,39 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         public async Task StreamFile(string path, Stream outputStream, CancellationToken cancellationToken)
         {
-            var eofCount = 0;
-
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            try
             {
-                while (eofCount < 15)
+                var eofCount = 0;
+
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
-                    var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, cancellationToken).ConfigureAwait(false);
-
-                    //var position = fs.Position;
-                    //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
-
-                    if (bytesRead == 0)
+                    while (eofCount < 15)
                     {
-                        if (_job == null || _job.HasExited)
+                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, cancellationToken).ConfigureAwait(false);
+
+                        //var position = fs.Position;
+                        //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                        if (bytesRead == 0)
                         {
-                            eofCount++;
+                            if (_job == null || _job.HasExited)
+                            {
+                                eofCount++;
+                            }
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                        else
+                        {
+                            eofCount = 0;
+                        }
                     }
-                    else
-                    {
-                        eofCount = 0;
-                    }
+                }
+            }
+            finally
+            {
+                if (_job != null)
+                {
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(_job);
                 }
             }
         }

@@ -55,6 +55,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </demo-snippet>
 
+  <demo-snippet id="typeExtensionDemo">
+    <template is="dom-bind">
+      <paper-checkbox checked="{{checked}}"></paper-checkbox>
+      <input value="[[checked]]">
+    </template>
+  </demo-snippet>
+
   <script>
     suite('display', function() {
       var emptyHeight;
@@ -107,6 +114,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var markdownElement = element.$.marked;
         expect(markdownElement.markdown).to.be.equal(
             '```\n\n<paper-checkbox disabled></paper-checkbox>\n\n```');
+      });
+
+      test('elements are only rendered once when using a custom type-extension', function() {
+        var element = document.getElementById('typeExtensionDemo');
+
+        // Render the distributed children.
+        Polymer.dom.flush();
+
+        var inputs = element.querySelectorAll('input');
+        expect(inputs.length).to.be.equal(1);
+      });
+
+      test('can support databinding between elements', function(done) {
+        var element = document.getElementById('typeExtensionDemo');
+        var input = Polymer.dom(element).querySelector('input');
+        var checkbox = Polymer.dom(element).querySelector('paper-checkbox')
+
+        // Render the distributed children.
+        Polymer.dom.flush();
+
+        checkbox.set('checked', true);
+
+        flush(function() {
+          expect(checkbox.checked).to.be.equal(true);
+          expect(input.value).to.be.equal('true');
+          done();
+        });
       });
     });
 

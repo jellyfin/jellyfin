@@ -7,7 +7,7 @@
     var hasChanges = false;
 
     // These images can be large and we're seeing memory problems in safari
-    var browsableImagePageSize = browserInfo.safari ? 6 : (browserInfo.mobile ? 10 : 40);
+    var browsableImagePageSize = browserInfo.slow ? 6 : 30;
 
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';

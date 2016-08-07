@@ -3,11 +3,6 @@
     margin-left: 0;
 }
 
-iron-icon {
-    min-width: 24px;
-    min-height: 24px;
-}
-
 .paperCheckboxFieldDescription {
     padding-left: 31px;
     padding-top: 5px;
@@ -83,7 +78,7 @@ paper-input + .fieldDescription {
 
     .dashboardDocument .mainDrawer {
         z-index: 998 !important;
-        top: 65px !important;
+        top: 58px !important;
         left: 0 !important;
         transform: none !important;
     }
@@ -160,12 +155,6 @@ paper-input + .fieldDescription {
     }
 }
 
-/* Swatches */
-
-paper-fab.blue {
-    background: #03a9f4;
-}
-
 paper-checkbox #checkboxContainer {
     width: 22px !important;
     height: 22px !important;
@@ -194,48 +183,6 @@ paper-input label, paper-textarea label {
 .paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
-}
-
-paper-fab {
-    vertical-align: middle;
-    display: inline-flex !important;
-}
-
-    paper-fab.mini {
-        width: 22px;
-        height: 22px;
-    }
-
-        paper-fab.mini iron-icon {
-            width: 22px;
-            height: 22px;
-        }
-
-.ui-body-a paper-fab.subdued {
-    background: #fff;
-    color: #000;
-}
-
-    .ui-body-a paper-fab.subdued paper-material.keyboard-focus {
-        background: #686868 !important;
-    }
-
-paper-fab.white {
-    background: #fff;
-    color: #000;
-}
-
-    paper-fab.white paper-material.keyboard-focus {
-        background: #01579b !important;
-        color: #fff;
-    }
-
-paper-fab.square {
-    border-radius: 5px;
-}
-
-paper-fab.accent {
-    background-color: #52B54B;
 }
 
 paper-textarea.mono textarea {
@@ -723,18 +670,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 .scheduledTaskPaperIconItem {
     outline: none !important;
 }
-
-    .scheduledTaskPaperIconItem[data-status='Idle'] paper-fab {
-        background-color: #999;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Cancelling"] paper-fab {
-        background-color: #cc3333;
-    }
-
-    .scheduledTaskPaperIconItem[data-status="Running"] paper-fab {
-        background-color: #52B54B;
-    }
 
     .scheduledTaskPaperIconItem #progressContainer {
         height: 8px !important;

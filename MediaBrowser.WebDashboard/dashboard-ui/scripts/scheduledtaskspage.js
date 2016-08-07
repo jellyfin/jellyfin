@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle', 'paper-progress'], function ($) {
 
     function reloadList(page) {
 
@@ -50,37 +50,37 @@
                 html += '<div class="paperList">';
             }
 
-            html += '<paper-icon-item class="scheduledTaskPaperIconItem" data-status="' + task.State + '">';
+            html += '<div class="listItem scheduledTaskPaperIconItem" data-status="' + task.State + '">';
 
-            html += "<a item-icon class='clearLink' href='scheduledtask.html?id=" + task.Id + "'>";
-            html += '<paper-fab mini icon="schedule"></paper-fab>';
+            html += "<a item-icon class='clearLink listItemIconContainer' href='scheduledtask.html?id=" + task.Id + "'>";
+            html += '<i class="md-icon listItemIcon">schedule</i>';
             html += "</a>";
 
-            html += '<paper-item-body two-line>';
+            html += '<div class="listItemBody two-line">';
             html += "<a class='clearLink' href='scheduledtask.html?id=" + task.Id + "'>";
 
-            html += "<div>" + task.Name + "</div>";
+            html += "<h3 class='listItemBodyText'>" + task.Name + "</h3>";
             //html += "<div secondary>" + task.Description + "</div>";
 
-            html += "<div secondary id='taskProgress" + task.Id + "'>" + getTaskProgressHtml(task) + "</div>";
+            html += "<div class='secondary listItemBodyText' id='taskProgress" + task.Id + "'>" + getTaskProgressHtml(task) + "</div>";
 
             html += "</a>";
-            html += '</paper-item-body>';
+            html += '</div>';
 
             if (task.State == "Idle") {
 
-                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><iron-icon icon="play-arrow"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><i class="md-icon">play_arrow</i></button>';
             }
             else if (task.State == "Running") {
 
-                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStopTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStop') + '"><iron-icon icon="stop"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStopTask" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStop') + '"><i class="md-icon">stop</i></button>';
 
             } else {
 
-                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask hide" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><iron-icon icon="play-arrow"></iron-icon></button>';
+                html += '<button type="button" is="paper-icon-button-light" id="btnTask' + task.Id + '" class="btnStartTask hide" data-taskid="' + task.Id + '" title="' + Globalize.translate('ButtonStart') + '"><i class="md-icon">play_arrow</i></button>';
             }
 
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         if (tasks.length) {
@@ -186,7 +186,7 @@
             elem.classList.add('btnStartTask');
             elem.classList.remove('btnStopTask');
             elem.classList.remove('hide');
-            elem.querySelector('iron-icon').icon = 'play-arrow';
+            elem.querySelector('i').innerHTML = 'play_arrow';
             elem.title = Globalize.translate('ButtonStart');
         }
         else if (state == "Running") {
@@ -194,7 +194,7 @@
             elem.classList.remove('btnStartTask');
             elem.classList.add('btnStopTask');
             elem.classList.remove('hide');
-            elem.querySelector('iron-icon').icon = 'stop';
+            elem.querySelector('i').innerHTML = 'stop';
             elem.title = Globalize.translate('ButtonStop');
 
         } else {
@@ -202,11 +202,11 @@
             elem.classList.add('btnStartTask');
             elem.classList.remove('btnStopTask');
             elem.classList.add('hide');
-            elem.querySelector('iron-icon').icon = 'play-arrow';
+            elem.querySelector('i').innerHTML = 'play_arrow';
             elem.title = Globalize.translate('ButtonStart');
         }
 
-        var item = $(elem).parents('paper-icon-item')[0];
+        var item = $(elem).parents('.listItem')[0];
         item.setAttribute('data-status', state);
     }
 
@@ -280,9 +280,7 @@
 
         startInterval();
 
-        require(['paper-fab', 'paper-progress', 'paper-item-body', 'paper-icon-item'], function () {
-            reloadList(page);
-        });
+        reloadList(page);
 
         Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
         Events.on(ApiClient, "websocketopen", onWebSocketConnectionOpen);

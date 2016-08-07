@@ -107,7 +107,7 @@
             html += '<h1>' + globalize.translate('sharedcomponents#MySubtitles') + '</h1>';
 
             if (layoutManager.tv) {
-                html += '<div class="paperList clear">';
+                html += '<div class="paperList paperList-clear">';
             } else {
                 html += '<div class="paperList">';
             }
@@ -138,7 +138,7 @@
 
                 if (!layoutManager.tv) {
                     if (s.Path) {
-                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete"><i class="md-icon">delete</i></button>';
+                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete listItemButton"><i class="md-icon">delete</i></button>';
                     }
                 }
 
@@ -225,7 +225,7 @@
                 }
                 html += '<h1>' + provider + '</h1>';
                 if (layoutManager.tv) {
-                    html += '<div class="paperList clear">';
+                    html += '<div class="paperList paperList-clear">';
                 } else {
                     html += '<div class="paperList">';
                 }
@@ -254,10 +254,10 @@
 
             html += '</div>';
 
-            html += '<div class="secondary">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
+            html += '<div class="secondary listItemAside">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
             if (!layoutManager.tv) {
-                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><i class="md-icon">' + moreIcon + '</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions listItemButton"><i class="md-icon">' + moreIcon + '</i></button>';
             }
 
             html += '</' + tagName + '>';
@@ -333,7 +333,7 @@
 
         var lang = form.querySelector('#selectLanguage', form).value;
 
-        searchForSubtitles(dom.parentWithClass(form, 'dialogContent'), lang);
+        searchForSubtitles(dom.parentWithClass(form, 'formDialogContent'), lang);
 
         e.preventDefault();
         return false;
@@ -429,17 +429,13 @@
             var btnSubmit = dlg.querySelector('.btnSubmit');
 
             if (layoutManager.tv) {
-                centerFocus(dlg.querySelector('.dialogContent'), false, true);
-            }
-
-            if (layoutManager.tv) {
-                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+                centerFocus(dlg.querySelector('.formDialogContent'), false, true);
                 dlg.querySelector('.btnSearchSubtitles').classList.add('hide');
             } else {
                 btnSubmit.classList.add('hide');
             }
 
-            var editorContent = dlg.querySelector('.dialogContent');
+            var editorContent = dlg.querySelector('.formDialogContent');
 
             dlg.querySelector('.subtitleList').addEventListener('click', onSubtitleListClick);
             dlg.querySelector('.subtitleResults').addEventListener('click', onSubtitleResultsClick);
@@ -459,7 +455,7 @@
                 dlg.addEventListener('close', function () {
 
                     if (layoutManager.tv) {
-                        centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                        centerFocus(dlg.querySelector('.formDialogContent'), false, false);
                     }
 
                     if (hasChanges) {

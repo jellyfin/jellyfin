@@ -51,7 +51,7 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
             });
         }
 
-        if (playbackManager.canQueueMediaType(mediaType)) {
+        if (playbackManager.canQueue(item)) {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Queue'),
                 id: 'queue'

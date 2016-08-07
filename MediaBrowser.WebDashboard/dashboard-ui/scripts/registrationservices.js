@@ -65,32 +65,32 @@
     function getSubscriptionBenefitHtml(item) {
 
         var html = '';
-        html += '<paper-icon-item>';
+        html += '<div class="listItem">';
 
-        html += '<paper-fab mini style="background-color:#52B54B;" icon="' + item.icon + '" item-icon></paper-fab>';
+        html += '<i class="listItemIcon md-icon">' + item.icon + '</i>';
 
-        html += '<paper-item-body three-line>';
+        html += '<div class="listItemBody two-line">';
         html += '<a class="clearLink" href="https://emby.media/premiere" target="_blank">';
 
-        html += '<div>';
+        html += '<h3 class="listItemBodyText">';
         html += item.name;
-        html += '</div>';
+        html += '</h3>';
 
-        html += '<div secondary style="white-space:normal;">';
+        html += '<div class="listItemBodyText secondary" style="white-space:normal;">';
         html += item.text;
         html += '</div>';
 
         html += '</a>';
-        html += '</paper-item-body>';
+        html += '</div>';
 
-        html += '</paper-icon-item>';
+        html += '</div>';
 
         return html;
     }
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['dialogHelper', 'paper-fab', 'paper-item-body', 'paper-icon-item', 'emby-button'], function (dialogHelper) {
+        require(['dialogHelper', 'listViewStyle', 'emby-button'], function (dialogHelper) {
 
             var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border',
@@ -103,10 +103,10 @@
 
             var html = '';
             html += '<h2 class="dialogHeader">';
-            html += '<paper-fab icon="arrow-back" mini class="btnCancelSupporterInfo" tabindex="-1"></paper-fab>';
+            html += '<button is="emby-button" type="button" class="fab mini btnCancelSupporterInfo" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
             html += '</h2>';
 
-            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:1em;">';
+            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:0 1em 1em;">';
 
             html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 

@@ -24,7 +24,7 @@ var ScheduledTaskPage = {
 
         $('#pTaskDescription', page).html(task.Description);
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
+        require(['listViewStyle'], function () {
             ScheduledTaskPage.loadTaskTriggers(page, task);
         });
 
@@ -41,16 +41,16 @@ var ScheduledTaskPage = {
 
             var trigger = task.Triggers[i];
 
-            html += '<paper-icon-item>';
+            html += '<div class="listItem">';
 
-            html += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
+            html += '<i class="md-icon listItemIcon">schedule</i>';
 
-            html += '<paper-item-body two-line>';
+            html += '<div class="listItemBody two-line">';
 
-            html += "<div>" + ScheduledTaskPage.getTriggerFriendlyName(trigger) + "</div>";
+            html += "<div class='listItemBodyText'>" + ScheduledTaskPage.getTriggerFriendlyName(trigger) + "</div>";
 
             if (trigger.MaxRuntimeMs) {
-                html += '<div secondary>';
+                html += '<div class="listItemBodyText secondary">';
 
                 var hours = trigger.MaxRuntimeMs / 3600000;
 
@@ -62,11 +62,11 @@ var ScheduledTaskPage = {
                 html += '</div>';
             }
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"><iron-icon icon="delete"></iron-icon></button>';
+            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"><i class="md-icon">delete</i></button>';
 
-            html += '</paper-icon-item>';
+            html += '</div>';
         }
 
         html += '</div>';

@@ -86,6 +86,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 "srt",
                 "h264_nvenc",
                 "h264_qsv",
+                "h264_omx",
+                "h264_vaapi",
                 "ac3"
             };
 

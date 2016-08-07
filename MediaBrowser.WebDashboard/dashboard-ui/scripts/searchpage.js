@@ -121,7 +121,7 @@
                 centerImage: true,
                 centerText: true,
                 textLines: getAdditionalTextLines,
-                overlayPlayButton: true,
+                overlayMoreButton: true,
                 serverId: ApiClient.serverInfo().Id
             });
 

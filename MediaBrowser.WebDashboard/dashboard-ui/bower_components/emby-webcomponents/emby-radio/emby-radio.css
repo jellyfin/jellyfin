@@ -7,12 +7,12 @@
     padding-left: 0;
 }
 
-    .mdl-radio.block {
-        display: flex;
-        align-items: center;
-        margin-top: .5em;
-        margin-bottom: .5em;
-    }
+.radio-label-block {
+    display: flex;
+    align-items: center;
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
 
 .mdl-radio {
     padding-left: 24px;
@@ -20,9 +20,6 @@
 
 .mdl-radio__button {
     line-height: 24px;
-}
-
-.mdl-radio .mdl-radio__button {
     position: absolute;
     width: 0;
     height: 0;
@@ -55,8 +52,7 @@
     border: 2px solid rgb(63,81,181);
 }
 
-.mdl-radio__outer-circle fieldset[disabled] .mdl-radio,
-.mdl-radio.is-disabled .mdl-radio__outer-circle {
+.mdl-radio__button:disabled + .mdl-radio__label + .mdl-radio__outer-circle {
     border: 2px solid rgba(0,0,0, 0.26);
     cursor: auto;
 }
@@ -87,8 +83,7 @@
     transform: scale3d(1, 1, 1);
 }
 
-fieldset[disabled] .mdl-radio .mdl-radio__inner-circle,
-.mdl-radio.is-disabled .mdl-radio__inner-circle {
+.mdl-radio__button:disabled + .mdl-radio__label + .mdl-radio__outer-circle + .mdl-radio__inner-circle {
     background: rgba(0,0,0, 0.26);
     cursor: auto;
 }
@@ -101,36 +96,7 @@ fieldset[disabled] .mdl-radio .mdl-radio__inner-circle,
     cursor: pointer;
 }
 
-fieldset[disabled] .mdl-radio .mdl-radio__label,
-.mdl-radio.is-disabled .mdl-radio__label {
+.mdl-radio__button:disabled + .mdl-radio__label {
     color: rgba(0,0,0, 0.26);
     cursor: auto;
 }
-
-.mdl-radio__ripple-container {
-    position: absolute;
-    z-index: 2;
-    top: -9px;
-    left: -13px;
-    box-sizing: border-box;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    cursor: pointer;
-    overflow: hidden;
-    -webkit-mask-image: -webkit-radial-gradient(circle, white, black);
-}
-
-    .mdl-radio__ripple-container .mdl-ripple {
-        background: rgb(63,81,181);
-    }
-
-fieldset[disabled] .mdl-radio .mdl-radio__ripple-container,
-.mdl-radio.is-disabled .mdl-radio__ripple-container {
-    cursor: auto;
-}
-
-    fieldset[disabled] .mdl-radio .mdl-radio__ripple-container .mdl-ripple,
-    .mdl-radio.is-disabled .mdl-radio__ripple-container .mdl-ripple {
-        background: transparent;
-    }

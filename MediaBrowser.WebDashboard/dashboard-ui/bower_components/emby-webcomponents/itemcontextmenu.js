@@ -136,7 +136,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     });
                 }
 
-                if (playbackManager.canQueueMediaType(item.MediaType)) {
+                if (playbackManager.canQueue(item)) {
                     if (options.queue !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#Queue'),

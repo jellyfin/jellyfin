@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser'], function (visibleinviewport, imageFetcher, layoutManager, events, browser) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom) {
 
     var thresholdX;
     var thresholdY;
@@ -56,7 +56,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
 
-    var enableFade = browser.animate && !browser.mobile && !browser.operaTv;
+    var enableFade = browser.animate && !browser.slow;
 
     function fillImage(elem, source, enableEffects) {
 
@@ -89,32 +89,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
             tokens[i] = true;
         }
-    }
-
-    var supportsCaptureOption = false;
-    try {
-        var opts = Object.defineProperty({}, 'capture', {
-            get: function () {
-                supportsCaptureOption = true;
-            }
-        });
-        window.addEventListener("test", null, opts);
-    } catch (e) { }
-
-    function addEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.addEventListener(type, handler, optionsOrCapture);
-    }
-
-    function removeEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.removeEventListener(type, handler, optionsOrCapture);
     }
 
     function unveilWithIntersection(images, root) {
@@ -185,19 +159,19 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             }
 
             if (!images.length) {
-                removeEventListenerWithOptions(document, 'focus', unveil, {
+                dom.removeEventListener(document, 'focus', unveil, {
                     capture: true,
                     passive: true
                 });
-                removeEventListenerWithOptions(document, 'scroll', unveil, {
+                dom.removeEventListener(document, 'scroll', unveil, {
                     capture: true,
                     passive: true
                 });
-                removeEventListenerWithOptions(document, wheelEvent, unveil, {
+                dom.removeEventListener(document, wheelEvent, unveil, {
                     capture: true,
                     passive: true
                 });
-                removeEventListenerWithOptions(window, 'resize', unveil, {
+                dom.removeEventListener(window, 'resize', unveil, {
                     capture: true,
                     passive: true
                 });
@@ -216,19 +190,19 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             }, 1);
         }
 
-        addEventListenerWithOptions(document, 'focus', unveil, {
+        dom.addEventListener(document, 'focus', unveil, {
             capture: true,
             passive: true
         });
-        addEventListenerWithOptions(document, 'scroll', unveil, {
+        dom.addEventListener(document, 'scroll', unveil, {
             capture: true,
             passive: true
         });
-        addEventListenerWithOptions(document, wheelEvent, unveil, {
+        dom.addEventListener(document, wheelEvent, unveil, {
             capture: true,
             passive: true
         });
-        addEventListenerWithOptions(window, 'resize', unveil, {
+        dom.addEventListener(window, 'resize', unveil, {
             capture: true,
             passive: true
         });

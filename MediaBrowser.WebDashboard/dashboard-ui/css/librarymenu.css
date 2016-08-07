@@ -20,7 +20,7 @@
     margin: 0 !important;
     width: 100% !important;
     /* Page needs to supply padding */
-    top: 92px !important;
+    top: 102px !important;
     transition: transform 200ms ease-out;
 }
 
@@ -220,22 +220,26 @@
         align-items: center;
     }
 
-.dashboardDocument .viewMenuBar {
-    background-color: #333;
-    height: auto;
+.dashboardDocument {
+    font-size: 13px;
 }
 
-    .dashboardDocument .viewMenuBar .primaryIcons {
-        padding: .7em 0;
+    .dashboardDocument .viewMenuBar {
+        background-color: #333;
+        height: auto;
     }
 
-.dashboardDocument.withTallToolbar .primaryIcons {
-    padding-bottom: 0;
-}
+        .dashboardDocument .viewMenuBar .primaryIcons {
+            padding: .7em 0;
+        }
 
-.dashboardDocument .viewMenuBar #selectionBar {
-    height: 3px;
-}
+    .dashboardDocument.withTallToolbar .primaryIcons {
+        padding-bottom: 0;
+    }
+
+    .dashboardDocument .viewMenuBar #selectionBar {
+        height: 3px;
+    }
 
 .viewMenuBarTabs {
     width: 100%;

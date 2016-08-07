@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     function resetTuner(page, id) {
 
@@ -30,21 +30,21 @@
             for (var i = 0, length = tuners.length; i < length; i++) {
 
                 var tuner = tuners[i];
-                html += '<paper-icon-item>';
+                html += '<div class="listItem">';
 
-                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+                html += '<i class="listItemIcon md-icon">live_tv</i>';
 
-                html += '<paper-item-body two-line>';
+                html += '<div class="listItemBody two-line">';
 
-                html += '<div>';
+                html += '<h3 class="listItemBodyText">';
                 html += tuner.Name;
-                html += '</div>';
+                html += '</h3>';
 
-                html += '<div secondary>';
+                html += '<div class="listItemBodyText secondary">';
                 html += tuner.SourceType;
                 html += '</div>';
 
-                html += '<div secondary>';
+                html += '<div class="listItemBodyText secondary">';
                 if (tuner.Status == 'RecordingTv') {
                     if (tuner.ChannelName) {
 
@@ -73,13 +73,13 @@
                 }
                 html += '</div>';
 
-                html += '</paper-item-body>';
+                html += '</div>';
 
                 if (tuner.CanReset) {
-                    html += '<button type="button" is="paper-icon-button-light" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"><iron-icon icon="refresh"></iron-icon></button>';
+                    html += '<button type="button" is="paper-icon-button-light" data-tunerid="' + tuner.Id + '" title="' + Globalize.translate('ButtonResetTuner') + '" class="btnResetTuner"><i class="md-icon">refresh</i></button>';
                 }
 
-                html += '</paper-icon-item>';
+                html += '</div>';
             }
 
             html += '</div>';
@@ -198,24 +198,24 @@
 
                 var href = 'livetvtunerprovider-' + device.Type + '.html?id=' + device.Id;
 
-                html += '<paper-icon-item>';
+                html += '<div class="listItem">';
 
-                html += '<paper-fab mini style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+                html += '<i class="listItemIcon md-icon">live_tv</i>';
 
-                html += '<paper-item-body two-line>';
+                html += '<div class="listItemBody two-line">';
                 html += '<a class="clearLink" href="' + href + '">';
-                html += '<div>';
+                html += '<h3 class="listItemBodyText">';
                 html += device.FriendlyName || getTunerName(device.Type);
-                html += '</div>';
+                html += '</h3>';
 
-                html += '<div secondary>';
+                html += '<div class="listItemBodyText secondary">';
                 html += device.Url;
                 html += '</div>';
                 html += '</a>';
-                html += '</paper-item-body>';
+                html += '</div>';
 
-                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><iron-icon icon="delete"></iron-icon></button>';
-                html += '</paper-icon-item>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnDeleteDevice" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
+                html += '</div>';
             }
 
             html += '</div>';
@@ -308,22 +308,22 @@
             for (var i = 0, length = providers.length; i < length; i++) {
 
                 var provider = providers[i];
-                html += '<paper-icon-item>';
+                html += '<div class="listItem">';
 
-                html += '<paper-fab mini style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
+                html += '<i class="listItemIcon md-icon">dvr</i>';
 
-                html += '<paper-item-body two-line>';
+                html += '<div class="listItemBody two-line">';
 
                 html += '<a class="clearLink" href="' + getProviderConfigurationUrl(provider.Type) + '&id=' + provider.Id + '">';
 
-                html += '<div>';
+                html += '<h3 class="listItemBodyText">';
                 html += getProviderName(provider.Type);
-                html += '</div>';
+                html += '</h3>';
 
                 html += '</a>';
-                html += '</paper-item-body>';
-                html += '<button type="button" is="paper-icon-button-light" class="btnOptions" data-id="' + provider.Id + '"><iron-icon icon="more-vert"></iron-icon></button>';
-                html += '</paper-icon-item>';
+                html += '</div>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnOptions" data-id="' + provider.Id + '"><i class="md-icon">more_vert</i></button>';
+                html += '</div>';
             }
 
             html += '</div>';

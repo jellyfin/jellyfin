@@ -251,7 +251,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 httpRes.Close();
             }
-            catch (Exception errorEx)
+            catch
             {
                 //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }

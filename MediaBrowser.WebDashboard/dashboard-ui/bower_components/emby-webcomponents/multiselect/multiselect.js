@@ -140,26 +140,6 @@
         }
     }
 
-    function shake(elem, iterations) {
-        var keyframes = [
-          { transform: 'translate3d(0, 0, 0)', offset: 0 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.1 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.2 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.3 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.4 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.5 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.6 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.7 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.8 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
-          { transform: 'translate3d(0, 0, 0)', offset: 1 }];
-        var timing = { duration: 900, iterations: iterations };
-
-        if (elem.animate) {
-            elem.animate(keyframes, timing);
-        }
-    }
-
     function showSelectionCommands() {
 
         var selectionCommandsPanel = currentSelectionCommandsPanel;
@@ -189,10 +169,6 @@
             var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
 
             btnSelectionPanelOptions.addEventListener('click', showMenuForSelectedItems);
-
-            if (!browser.mobile) {
-                shake(btnSelectionPanelOptions, 1);
-            }
         }
     }
 
@@ -488,7 +464,7 @@
         function initTapHold(element) {
 
             // mobile safari doesn't allow contextmenu override
-            if (browser.mobile && !browser.safari) {
+            if (browser.touch && !browser.safari) {
                 container.addEventListener('contextmenu', onTapHold);
             } else {
                 require(['hammer'], function (Hammer) {

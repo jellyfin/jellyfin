@@ -834,7 +834,7 @@ var Dashboard = {
                 quality -= 10;
             }
 
-            if (browserInfo.mobile || browserInfo.tv) {
+            if (browserInfo.slow) {
                 quality -= 40;
             }
 
@@ -892,7 +892,7 @@ var Dashboard = {
                     profile.DirectPlayProfiles.push({
                         Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm,wtv",
                         Type: 'Video',
-                        AudioCodec: 'aac,aac_latm,mp2,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
+                        AudioCodec: 'aac,aac_latm,mp2,mp3,ac3,wma,dca,dts,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
                     });
 
                     profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
@@ -1092,14 +1092,13 @@ var AppInfo = {};
         AppInfo.enableHomeFavorites = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
-        AppInfo.enableAutoSave = browserInfo.mobile;
+        AppInfo.enableAutoSave = browserInfo.touch;
         AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
         AppInfo.enableAppStorePolicy = isCordova;
 
         var isIOS = browserInfo.ipad || browserInfo.iphone;
         var isAndroid = browserInfo.android;
-        var isMobile = browserInfo.mobile;
 
         if (isIOS) {
 
@@ -1135,7 +1134,7 @@ var AppInfo = {};
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
-        AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
+        AppInfo.hasPhysicalVolumeButtons = isCordova || browserInfo.mobile;
 
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
@@ -1345,7 +1344,7 @@ var AppInfo = {};
             howler: bowerPath + '/howler.js/howler.min',
             sortable: bowerPath + '/Sortable/Sortable.min',
             isMobile: bowerPath + '/isMobile/isMobile.min',
-            headroom: bowerPath + '/headroom.js/dist/headroom.min',
+            headroom: bowerPath + '/headroom.js/dist/headroom',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
@@ -1511,13 +1510,9 @@ var AppInfo = {};
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
 
         define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
-        define("paper-item", ["html!" + bowerPath + "/paper-item/paper-item.html"]);
         define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-        define("paper-fab", ["emby-icons", "html!" + bowerPath + "/paper-fab/paper-fab.html"]);
         define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
         define("paper-input", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-input.html"]);
-        define("paper-icon-item", ['webcomponentsjs', "html!" + bowerPath + "/paper-item/paper-icon-item.html"]);
-        define("paper-item-body", ["html!" + bowerPath + "/paper-item/paper-item-body.html"]);
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
 
@@ -1555,6 +1550,7 @@ var AppInfo = {};
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
+        define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
         if ('registerElement' in document && 'content' in document.createElement('template')) {
@@ -1571,11 +1567,11 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            define("localassetmanager", ["cordova/localassetmanager"]);
-            define("fileupload", ["cordova/fileupload"]);
+            define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
+            define("fileupload", ["cordova/fileupload"], returnFirstDependency);
         } else {
-            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
-            define("fileupload", [apiClientBowerPath + "/fileupload"]);
+            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
+            define("fileupload", [apiClientBowerPath + "/fileupload"], returnFirstDependency);
         }
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
@@ -1651,6 +1647,9 @@ var AppInfo = {};
                 },
                 canPlay: function (item) {
                     return MediaController.canPlay(item);
+                },
+                canQueue: function (item) {
+                    return MediaController.canQueueMediaType(item.MediaType, item.Type);
                 },
                 instantMix: function (item) {
                     return MediaController.instantMix(item);

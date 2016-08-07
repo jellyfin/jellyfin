@@ -1522,8 +1522,7 @@
             page.querySelector('#themeSongsCollapsible').classList.remove('hide');
 
             var html = listView.getListViewHtml({
-                items: items,
-                sortBy: query.SortBy
+                items: items
             });
 
             page.querySelector('#themeSongsContent').innerHTML = html;
@@ -1664,7 +1663,7 @@
 
             var displayType = Globalize.translate('MediaInfoStreamType' + stream.Type);
 
-            html += '<div class="mediaInfoStreamType">' + displayType + '</div>';
+            html += '<h3 class="mediaInfoStreamType">' + displayType + '</h3>';
 
             var attributes = [];
 

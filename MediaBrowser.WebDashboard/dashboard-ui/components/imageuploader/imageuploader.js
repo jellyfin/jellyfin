@@ -153,7 +153,7 @@
             html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + Globalize.translate('HeaderUploadImage') + '</div>';
             html += '</h2>';
 
-            html += '<div class="editorContent">';
+            html += '<div class="editorContent" style="padding:0 1em;">';
             html += Globalize.translateDocument(template);
             html += '</div>';
 

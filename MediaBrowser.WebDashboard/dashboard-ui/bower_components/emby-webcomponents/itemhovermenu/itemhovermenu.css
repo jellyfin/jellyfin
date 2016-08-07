@@ -14,6 +14,7 @@
     padding: .5em;
     color: #fff;
     text-align: left;
+    font-size: 90%;
 }
 
 .cardOverlayMediaInfo {
@@ -33,12 +34,6 @@
 .cardOverlayFab {
     background-color: #282828 !important;
     margin-right: .25em !important;
-}
-
-.cardOverlayFab-md-icon {
-    width: auto !important;
-    height: auto !important;
-    font-size: 30px !important;
 }
 
 .withHoverMenu {

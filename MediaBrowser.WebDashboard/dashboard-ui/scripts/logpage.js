@@ -35,14 +35,14 @@
                     var logHtml = '';
                     logHtml += '<div class="listItem">';
 
-                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank" style="margin-left:1em;">';
+                    logHtml += '<a item-icon class="clearLink" href="' + logUrl + '" target="_blank">';
                     logHtml += '<i class="md-icon listItemIcon">schedule</i>';
                     logHtml += "</a>";
 
-                    logHtml += '<div class="listItemBody">';
+                    logHtml += '<div class="listItemBody two-line">';
                     logHtml += '<a class="clearLink" href="' + logUrl + '" target="_blank">';
 
-                    logHtml += "<div>" + log.Name + "</div>";
+                    logHtml += "<h3 class='listItemBodyText'>" + log.Name + "</h3>";
 
                     var date = datetime.parseISO8601Date(log.DateModified, true);
 
@@ -50,7 +50,7 @@
 
                     text += ' ' + datetime.getDisplayTime(date);
 
-                    logHtml += '<div class="secondary">' + text + '</div>';
+                    logHtml += '<div class="listItemBodyText secondary">' + text + '</div>';
 
                     logHtml += "</a>";
                     logHtml += '</div>';
