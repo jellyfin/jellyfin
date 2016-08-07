@@ -347,7 +347,7 @@
             return true;
         }
 
-        return true;
+        return browser.touch;
     }
 
     function centerDialog(dlg) {

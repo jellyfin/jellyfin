@@ -28,9 +28,14 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
     }
 
     function resetRegistration() {
-        navigator.serviceWorker.ready.then(function (registration) {
-            serviceWorkerRegistration = registration;
-        });
+
+        var serviceWorker = navigator.serviceWorker;
+
+        if (serviceWorker) {
+            serviceWorker.ready.then(function (registration) {
+                serviceWorkerRegistration = registration;
+            });
+        }
     }
 
     resetRegistration();

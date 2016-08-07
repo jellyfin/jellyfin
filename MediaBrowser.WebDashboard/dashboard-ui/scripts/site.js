@@ -1344,7 +1344,7 @@ var AppInfo = {};
             howler: bowerPath + '/howler.js/howler.min',
             sortable: bowerPath + '/Sortable/Sortable.min',
             isMobile: bowerPath + '/isMobile/isMobile.min',
-            headroom: bowerPath + '/headroom.js/dist/headroom.min',
+            headroom: bowerPath + '/headroom.js/dist/headroom',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
@@ -1646,6 +1646,9 @@ var AppInfo = {};
                 },
                 canPlay: function (item) {
                     return MediaController.canPlay(item);
+                },
+                canQueue: function (item) {
+                    return MediaController.canQueueMediaType(item.MediaType, item.Type);
                 },
                 instantMix: function (item) {
                     return MediaController.instantMix(item);
