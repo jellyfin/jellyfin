@@ -923,14 +923,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (type == typeof(Person))
             {
-                var subFolderIndex = 0;
-
-                while (!char.IsLetterOrDigit(validFilename[subFolderIndex]))
+                foreach (char c in validFilename)
                 {
-                    subFolderIndex++;
+                    if (char.IsLetterOrDigit(c))
+                    {
+                        subFolderPrefix = c.ToString();
+                        break;
+                    }
                 }
-
-                subFolderPrefix = validFilename.Substring(subFolderIndex, 1);
             }
 
             var fullPath = string.IsNullOrEmpty(subFolderPrefix) ?
@@ -1383,6 +1383,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
             SetTopParentOrAncestorIds(query);
             return ItemRepository.GetMusicGenres(query);
+        }
+
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        {
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            SetTopParentOrAncestorIds(query);
+            return ItemRepository.GetAllArtists(query);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)

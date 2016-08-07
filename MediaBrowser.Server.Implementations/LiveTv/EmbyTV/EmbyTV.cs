@@ -55,8 +55,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public static EmbyTV Current;
 
-        public event EventHandler DataSourceChanged;
-        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged;
+        public event EventHandler DataSourceChanged { add { } remove { } }
+        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged { add { } remove { } }
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);

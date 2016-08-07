@@ -398,7 +398,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These are mp4 chapters
             if (string.Equals(streamInfo.codec_name, "mov_text", StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                // Edit: but these are also sometimes subtitles?
+                //return null;
             }
 
             var stream = new MediaStream

@@ -286,28 +286,41 @@ namespace MediaBrowser.Api.Playback
 
         protected string GetH264Encoder(StreamState state)
         {
+            var defaultEncoder = "libx264";
+
             // Only use alternative encoders for video files.
             // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
             if (state.VideoType == VideoType.VideoFile)
             {
-                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                var hwType = ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType;
+
+                if (string.Equals(hwType, "qsv", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(hwType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "h264_qsv";
+                    return GetAvailableEncoder("h264_qsv", defaultEncoder);
                 }
 
-                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(hwType, "nvenc", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "h264_nvenc";
+                    return GetAvailableEncoder("h264_nvenc", defaultEncoder);
                 }
-                if (string.Equals(ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(hwType, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
-                    return "h264_omx";
+                    return GetAvailableEncoder("h264_omx", defaultEncoder);
                 }
             }
 
-            return "libx264";
+            return defaultEncoder;
+        }
+
+        private string GetAvailableEncoder(string preferredEncoder, string defaultEncoder)
+        {
+            if (MediaEncoder.SupportsEncoder(preferredEncoder))
+            {
+                return preferredEncoder;
+            }
+            return defaultEncoder;
         }
 
         /// <summary>
@@ -1080,7 +1093,7 @@ namespace MediaBrowser.Api.Playback
             //process.BeginOutputReadLine();
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            Task.Run(() => StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream));
+            var task = Task.Run(() => StartStreamingLog(transcodingJob, state, process.StandardError.BaseStream, state.LogFileStream));
 
             // Wait for the file to exist before proceeeding
             while (!FileSystem.FileExists(state.WaitForPath ?? outputPath) && !transcodingJob.HasExited)

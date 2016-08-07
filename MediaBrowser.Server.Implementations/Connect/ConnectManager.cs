@@ -65,12 +65,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (!string.IsNullOrWhiteSpace(address))
                 {
-                    try
+                    Uri newUri;
+
+                    if (Uri.TryCreate(address, UriKind.Absolute, out newUri))
                     {
-                        address = new Uri(address).Host;
-                    }
-                    catch
-                    {
+                        address = newUri.Host;
                     }
                 }
 
@@ -151,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             DiscoveredWanIpAddress = address;
 
-            UpdateConnectInfo();
+            var task = UpdateConnectInfo();
         }
 
         private async Task UpdateConnectInfo()
