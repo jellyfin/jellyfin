@@ -1550,6 +1550,7 @@ var AppInfo = {};
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
+        define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
         if ('registerElement' in document && 'content' in document.createElement('template')) {

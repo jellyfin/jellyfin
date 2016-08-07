@@ -111,16 +111,16 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             dlg.classList.add('formDialog');
 
             var html = '';
-            html += '<div class="dialogHeader">';
+            html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="dialogHeaderTitle">';
+            html += '<div class="formDialogHeaderTitle">';
             html += globalize.translate('sharedcomponents#VoiceInput');
             html += '</div>';
             html += '</div>';
 
             html += '<div>';
 
-            html += '<div class="dialogContent smoothScrollY" style="padding-top:2em;">';
+            html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
             html += '<div class="dialogContentInner dialog-content-centered">';
             html += '<div class="voiceHelpContent">';
 

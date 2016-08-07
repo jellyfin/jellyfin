@@ -391,7 +391,7 @@
                 });
 
                 if (layoutManager.tv) {
-                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                    scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }
 
                 dlg.querySelector('.btnSupporterForConverting').addEventListener('click', onSupporterButtonClick);

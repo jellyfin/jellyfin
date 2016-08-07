@@ -1,37 +1,38 @@
-﻿<div class="dialogHeader" style="margin:0 0 2em;">
-    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
-        <i class="md-icon">&#xE5C4;</i>
-    </button>
-    <div class="dialogHeaderTitle">
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="formDialogHeaderTitle">
         ${HeaderInviteUser}
     </div>
 </div>
+<div class="formDialogContent smoothScrollY" style="padding-top:2em;">
+    <div class="dialogContentInner dialog-content-centered">
+        <form class="addUserForm" style="max-width: none;margin:0;">
 
-<form class="addUserForm" style="max-width: none;margin:0;">
-
-    <div class="inputContainer">
-        <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectGuestUserName}" required />
-        <div class="fieldDescription">
-            <div>${LabelConnectGuestUserNameHelp}</div>
-            <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
-        </div>
-    </div>
-
-    <div is="emby-collapse" title="${HeaderShareMediaFolders}">
-        <div class="collapseContent">
-            <div class="librarySharingList">
-
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectGuestUserName}" required />
+                <div class="fieldDescription">
+                    <div>${LabelConnectGuestUserNameHelp}</div>
+                    <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+                </div>
             </div>
-        </div>
+
+            <div is="emby-collapse" title="${HeaderShareMediaFolders}">
+                <div class="collapseContent">
+                    <div class="librarySharingList">
+
+                    </div>
+                </div>
+            </div>
+            <p class="fieldDescription" style="margin-top:.5em;">${MessageGuestSharingPermissionsHelp}</p>
+            <br />
+            <button is="emby-button" type="submit" class="raised submit block">
+                <i class="md-icon">check</i>
+                <span>${ButtonSendInvitation}</span>
+            </button>
+            <br />
+            <br />
+            <br />
+            <br />
+        </form>
     </div>
-    <p class="fieldDescription" style="margin-top:.5em;">${MessageGuestSharingPermissionsHelp}</p>
-    <br />
-    <button is="emby-button" type="submit" class="raised submit block">
-        <i class="md-icon">check</i>
-        <span>${ButtonSendInvitation}</span>
-    </button>
-    <br />
-    <br />
-    <br />
-    <br />
-</form>
+</div>

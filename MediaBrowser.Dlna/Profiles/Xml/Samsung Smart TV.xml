@@ -4,7 +4,7 @@
   <Identification>
     <ModelUrl>samsung.com</ModelUrl>
     <Headers>
-      <HttpHeaderInfo name="User-Agent" value=".*(SEC_HHP_\[TV\] [A-Z]{2}\d{2}J[A-Z]?\d{3,4})*." match="Regex" />
+      <HttpHeaderInfo name="User-Agent" value="SEC_" match="Substring" />
     </Headers>
   </Identification>
   <Manufacturer>Emby</Manufacturer>
