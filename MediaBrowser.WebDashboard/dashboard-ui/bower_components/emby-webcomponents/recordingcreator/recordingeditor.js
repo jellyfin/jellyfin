@@ -15,7 +15,7 @@
         context.querySelector('.itemGenres').innerHTML = (programInfo.Genres || []).join(' / ');
         context.querySelector('.itemOverview').innerHTML = programInfo.Overview || '';
 
-        var timerPageImageContainer = context.querySelector('.timerPageImageContainer');
+        //var timerPageImageContainer = context.querySelector('.timerPageImageContainer');
 
         context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(programInfo);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(programInfo);
@@ -144,7 +144,7 @@
                 });
 
                 if (layoutManager.tv) {
-                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                    scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }
 
                 init(dlg);

@@ -3,25 +3,24 @@
     flex-direction: column;
 }
 
-    .formDialog .dialogHeader {
-        padding: .7em .5em;
-        display: flex;
-        align-items: center;
-        background-color: #101010;
-        flex-shrink: 0;
-    }
+.formDialogHeader {
+    padding: .7em .5em;
+    display: flex;
+    align-items: center;
+    background-color: #101010;
+    flex-shrink: 0;
+}
 
-    .formDialog .dialogHeaderTitle {
-        margin-left: .75em;
-    }
+.formDialogHeaderTitle {
+    margin-left: .75em;
+}
 
-    .formDialog .dialogContent {
-        flex-grow: 1;
-    }
+.formDialogContent {
+    flex-grow: 1;
+}
 
 .dialogContentInner {
-    padding-top: .5em;
-    padding-bottom: 30vh;
+    padding: .5em 1em 30vh 1em;
 }
 
 .dialog-content-centered {

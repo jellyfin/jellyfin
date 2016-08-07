@@ -333,7 +333,7 @@
 
         var lang = form.querySelector('#selectLanguage', form).value;
 
-        searchForSubtitles(dom.parentWithClass(form, 'dialogContent'), lang);
+        searchForSubtitles(dom.parentWithClass(form, 'formDialogContent'), lang);
 
         e.preventDefault();
         return false;
@@ -429,17 +429,13 @@
             var btnSubmit = dlg.querySelector('.btnSubmit');
 
             if (layoutManager.tv) {
-                centerFocus(dlg.querySelector('.dialogContent'), false, true);
-            }
-
-            if (layoutManager.tv) {
-                centerFocus(dlg.querySelector('.dialogContent'), false, true);
+                centerFocus(dlg.querySelector('.formDialogContent'), false, true);
                 dlg.querySelector('.btnSearchSubtitles').classList.add('hide');
             } else {
                 btnSubmit.classList.add('hide');
             }
 
-            var editorContent = dlg.querySelector('.dialogContent');
+            var editorContent = dlg.querySelector('.formDialogContent');
 
             dlg.querySelector('.subtitleList').addEventListener('click', onSubtitleListClick);
             dlg.querySelector('.subtitleResults').addEventListener('click', onSubtitleResultsClick);
@@ -459,7 +455,7 @@
                 dlg.addEventListener('close', function () {
 
                     if (layoutManager.tv) {
-                        centerFocus(dlg.querySelector('.dialogContent'), false, false);
+                        centerFocus(dlg.querySelector('.formDialogContent'), false, false);
                     }
 
                     if (hasChanges) {

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-select', 'paper-icon-button-light', 'listViewStyle'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-select', 'paper-icon-button-light', 'listViewStyle', 'formDialogStyle'], function (dialogHelper, $) {
 
     var currentDeferred;
     var hasChanges;

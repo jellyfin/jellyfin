@@ -58,17 +58,17 @@ button.listItem {
     flex-direction: column;
     vertical-align: middle;
     justify-content: center;
-    min-height: 48px;
+    min-height: 3.44em;
 }
 
 .two-line {
-    min-height: 72px;
+    min-height: 5.15em;
     padding-top: 0;
     padding-bottom: 0;
 }
 
 .three-line {
-    min-height: 88px;
+    min-height: 6.3em;
     padding-top: 0;
     padding-bottom: 0;
 }

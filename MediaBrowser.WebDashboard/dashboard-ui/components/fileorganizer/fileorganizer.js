@@ -216,7 +216,7 @@
                     dlg.innerHTML = html;
                     document.body.appendChild(dlg);
 
-                    dlg.querySelector('.dialogHeaderTitle').innerHTML = Globalize.translate('FileOrganizeManually');
+                    dlg.querySelector('.formDialogHeaderTitle').innerHTML = Globalize.translate('FileOrganizeManually');
 
                     dialogHelper.open(dlg);
 

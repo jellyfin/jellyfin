@@ -106,7 +106,7 @@
             html += '<button is="emby-button" type="button" class="fab mini btnCancelSupporterInfo" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
             html += '</h2>';
 
-            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:1em;">';
+            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:0 1em 1em;">';
 
             html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 

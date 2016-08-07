@@ -272,7 +272,9 @@
                         clickBar: 1,
                         //centerOffset: window.innerWidth * .05,
                         hiddenScroll: true,
-                        requireAnimation: true
+
+                        // In safari the transform is causing the headers to occasionally disappear or flicker
+                        requireAnimation: !browserInfo.safari
                     });
                     tabs.scroller.init();
                 } else {

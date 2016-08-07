@@ -892,7 +892,7 @@ var Dashboard = {
                     profile.DirectPlayProfiles.push({
                         Container: "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm,wtv",
                         Type: 'Video',
-                        AudioCodec: 'aac,aac_latm,mp2,mp3,ac3,wma,dca,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
+                        AudioCodec: 'aac,aac_latm,mp2,mp3,ac3,wma,dca,dts,pcm,PCM_S16LE,PCM_S24LE,opus,flac'
                     });
 
                     profile.CodecProfiles = profile.CodecProfiles.filter(function (i) {
@@ -1344,7 +1344,7 @@ var AppInfo = {};
             howler: bowerPath + '/howler.js/howler.min',
             sortable: bowerPath + '/Sortable/Sortable.min',
             isMobile: bowerPath + '/isMobile/isMobile.min',
-            headroom: bowerPath + '/headroom.js/dist/headroom.min',
+            headroom: bowerPath + '/headroom.js/dist/headroom',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
@@ -1550,6 +1550,7 @@ var AppInfo = {};
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
+        define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
         if ('registerElement' in document && 'content' in document.createElement('template')) {
@@ -1566,11 +1567,11 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            define("localassetmanager", ["cordova/localassetmanager"]);
-            define("fileupload", ["cordova/fileupload"]);
+            define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
+            define("fileupload", ["cordova/fileupload"], returnFirstDependency);
         } else {
-            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
-            define("fileupload", [apiClientBowerPath + "/fileupload"]);
+            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
+            define("fileupload", [apiClientBowerPath + "/fileupload"], returnFirstDependency);
         }
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
@@ -1646,6 +1647,9 @@ var AppInfo = {};
                 },
                 canPlay: function (item) {
                     return MediaController.canPlay(item);
+                },
+                canQueue: function (item) {
+                    return MediaController.canQueueMediaType(item.MediaType, item.Type);
                 },
                 instantMix: function (item) {
                     return MediaController.instantMix(item);

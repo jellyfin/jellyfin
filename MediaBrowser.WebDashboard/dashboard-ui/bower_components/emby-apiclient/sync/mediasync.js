@@ -1,66 +1,41 @@
-﻿(function (globalScope) {
+﻿define(['localassetmanager'], function (LocalAssetManager) {
 
-    function mediaSync() {
+    return function () {
 
         var self = this;
 
         self.sync = function (apiClient, serverInfo, options) {
 
-            var deferred = DeferredBuilder.Deferred();
-
-            reportOfflineActions(apiClient, serverInfo).then(function () {
+            return reportOfflineActions(apiClient, serverInfo).then(function () {
 
                 // Do the first data sync
-                syncData(apiClient, serverInfo, false).then(function () {
+                return syncData(apiClient, serverInfo, false).then(function () {
 
                     // Download new content
-                    getNewMedia(apiClient, serverInfo, options).then(function () {
+                    return getNewMedia(apiClient, serverInfo, options).then(function () {
 
                         // Do the second data sync
-                        syncData(apiClient, serverInfo, false).then(function () {
-
-                            deferred.resolve();
-
-                        }, getOnFail(deferred));
-
-                    }, getOnFail(deferred));
-
-                }, getOnFail(deferred));
-
-            }, getOnFail(deferred));
-
-            return deferred.promise();
+                        return syncData(apiClient, serverInfo, false);
+                    });
+                });
+            });
         };
 
         function reportOfflineActions(apiClient, serverInfo) {
 
             console.log('Begin reportOfflineActions');
 
-            var deferred = DeferredBuilder.Deferred();
+            return LocalAssetManager.getOfflineActions(serverInfo.Id).then(function (actions) {
 
-            require(['localassetmanager'], function () {
+                if (!actions.length) {
+                    return Promise.resolve();
+                }
 
-                LocalAssetManager.getOfflineActions(serverInfo.Id).then(function (actions) {
+                return apiClient.reportOfflineActions(actions).then(function () {
 
-                    if (!actions.length) {
-                        deferred.resolve();
-                        return;
-                    }
-
-                    apiClient.reportOfflineActions(actions).then(function () {
-
-                        LocalAssetManager.deleteOfflineActions(actions).then(function () {
-
-                            deferred.resolve();
-
-                        }, getOnFail(deferred));
-
-                    }, getOnFail(deferred));
-
-                }, getOnFail(deferred));
+                    return LocalAssetManager.deleteOfflineActions(actions);
+                });
             });
-
-            return deferred.promise();
         }
 
         function syncData(apiClient, serverInfo, syncUserItemAccess) {
@@ -69,24 +44,21 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            LocalAssetManager.getServerItemIds(serverInfo.Id).then(function (localIds) {
 
-                LocalAssetManager.getServerItemIds(serverInfo.Id).then(function (localIds) {
+                var request = {
+                    TargetId: apiClient.deviceId(),
+                    LocalItemIds: localIds,
+                    OfflineUserIds: (serverInfo.Users || []).map(function (u) { return u.Id; })
+                };
 
-                    var request = {
-                        TargetId: apiClient.deviceId(),
-                        LocalItemIds: localIds,
-                        OfflineUserIds: (serverInfo.Users || []).map(function (u) { return u.Id; })
-                    };
+                apiClient.syncData(request).then(function (result) {
 
-                    apiClient.syncData(request).then(function (result) {
-
-                        afterSyncData(apiClient, serverInfo, syncUserItemAccess, result, deferred);
-
-                    }, getOnFail(deferred));
+                    afterSyncData(apiClient, serverInfo, syncUserItemAccess, result, deferred);
 
                 }, getOnFail(deferred));
-            });
+
+            }, getOnFail(deferred));
 
             return deferred.promise();
         }
@@ -146,18 +118,7 @@
 
             console.log('Begin removeLocalItem');
 
-            var deferred = DeferredBuilder.Deferred();
-
-            require(['localassetmanager'], function () {
-
-                LocalAssetManager.removeLocalItem(itemId, serverId).then(function (localIds) {
-
-                    deferred.resolve();
-
-                }, getOnFail(deferred));
-            });
-
-            return deferred.promise();
+            return LocalAssetManager.removeLocalItem(itemId, serverId);
         }
 
         function getNewMedia(apiClient, serverInfo, options) {
@@ -203,27 +164,23 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            var libraryItem = jobItem.Item;
+            LocalAssetManager.createLocalItem(libraryItem, serverInfo, jobItem.OriginalFileName).then(function (localItem) {
 
-                var libraryItem = jobItem.Item;
-                LocalAssetManager.createLocalItem(libraryItem, serverInfo, jobItem.OriginalFileName).then(function (localItem) {
+                downloadMedia(apiClient, jobItem, localItem, options).then(function (isQueued) {
 
-                    downloadMedia(apiClient, jobItem, localItem, options).then(function (isQueued) {
+                    if (isQueued) {
+                        deferred.resolve();
+                        return;
+                    }
 
-                        if (isQueued) {
-                            deferred.resolve();
-                            return;
-                        }
+                    getImages(apiClient, jobItem, localItem).then(function () {
 
-                        getImages(apiClient, jobItem, localItem).then(function () {
+                        getSubtitles(apiClient, jobItem, localItem).then(function () {
 
-                            getSubtitles(apiClient, jobItem, localItem).then(function () {
+                            apiClient.reportSyncJobItemTransferred(jobItem.SyncJobItemId).then(function () {
 
-                                apiClient.reportSyncJobItemTransferred(jobItem.SyncJobItemId).then(function () {
-
-                                    deferred.resolve();
-
-                                }, getOnFail(deferred));
+                                deferred.resolve();
 
                             }, getOnFail(deferred));
 
@@ -232,7 +189,8 @@
                     }, getOnFail(deferred));
 
                 }, getOnFail(deferred));
-            });
+
+            }, getOnFail(deferred));
 
             return deferred.promise();
         }
@@ -242,33 +200,29 @@
             console.log('Begin downloadMedia');
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File", {
+                api_key: apiClient.accessToken()
+            });
 
-                var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File", {
-                    api_key: apiClient.accessToken()
-                });
+            var localPath = localItem.LocalPath;
 
-                var localPath = localItem.LocalPath;
+            console.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
 
-                console.log('Downloading media. Url: ' + url + '. Local path: ' + localPath);
+            options = options || {};
 
-                options = options || {};
+            LocalAssetManager.downloadFile(url, localPath, options.enableBackgroundTransfer, options.enableNewDownloads).then(function (path, isQueued) {
 
-                LocalAssetManager.downloadFile(url, localPath, options.enableBackgroundTransfer, options.enableNewDownloads).then(function (path, isQueued) {
+                if (isQueued) {
+                    deferred.resolveWith(null, [true]);
+                    return;
+                }
+                LocalAssetManager.addOrUpdateLocalItem(localItem).then(function () {
 
-                    if (isQueued) {
-                        deferred.resolveWith(null, [true]);
-                        return;
-                    }
-                    LocalAssetManager.addOrUpdateLocalItem(localItem).then(function () {
-
-                        deferred.resolveWith(null, [false]);
-
-                    }, getOnFail(deferred));
+                    deferred.resolveWith(null, [false]);
 
                 }, getOnFail(deferred));
 
-            });
+            }, getOnFail(deferred));
 
             return deferred.promise();
         }
@@ -350,28 +304,25 @@
             console.log('Begin downloadImage');
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            LocalAssetManager.hasImage(serverId, itemId, imageTag).then(function (hasImage) {
 
-                LocalAssetManager.hasImage(serverId, itemId, imageTag).then(function (hasImage) {
+                if (hasImage) {
+                    deferred.resolve();
+                    return;
+                }
 
-                    if (hasImage) {
-                        deferred.resolve();
-                        return;
-                    }
-
-                    var imageUrl = apiClient.getImageUrl(itemId, {
-                        tag: imageTag,
-                        type: imageType,
-                        api_key: apiClient.accessToken()
-                    });
-
-                    LocalAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).then(function () {
-
-                        deferred.resolve();
-
-                    }, getOnFail(deferred));
-
+                var imageUrl = apiClient.getImageUrl(itemId, {
+                    tag: imageTag,
+                    type: imageType,
+                    api_key: apiClient.accessToken()
                 });
+
+                LocalAssetManager.downloadImage(imageUrl, serverId, itemId, imageTag).then(function () {
+
+                    deferred.resolve();
+
+                }, getOnFail(deferred));
+
             });
 
             return deferred.promise();
@@ -382,22 +333,19 @@
             console.log('Begin getSubtitles');
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            if (!jobItem.Item.MediaSources.length) {
+                console.log("Cannot download subtitles because video has no media source info.");
+                deferred.resolve();
+                return;
+            }
 
-                if (!jobItem.Item.MediaSources.length) {
-                    console.log("Cannot download subtitles because video has no media source info.");
-                    deferred.resolve();
-                    return;
-                }
-
-                var files = jobItem.AdditionalFiles.filter(function (f) {
-                    return f.Type == 'Subtitles';
-                });
-
-                var mediaSource = jobItem.Item.MediaSources[0];
-
-                getNextSubtitle(files, 0, apiClient, jobItem, localItem, mediaSource, deferred);
+            var files = jobItem.AdditionalFiles.filter(function (f) {
+                return f.Type == 'Subtitles';
             });
+
+            var mediaSource = jobItem.Item.MediaSources[0];
+
+            getNextSubtitle(files, 0, apiClient, jobItem, localItem, mediaSource, deferred);
 
             return deferred.promise();
         }
@@ -443,17 +391,14 @@
                 api_key: apiClient.accessToken()
             });
 
-            require(['localassetmanager'], function () {
+            LocalAssetManager.downloadSubtitles(url, localItem, subtitleStream).then(function (subtitlePath) {
 
-                LocalAssetManager.downloadSubtitles(url, localItem, subtitleStream).then(function (subtitlePath) {
-
-                    subtitleStream.Path = subtitlePath;
-                    LocalAssetManager.addOrUpdateLocalItem(localItem).then(function () {
-                        deferred.resolve();
-                    }, getOnFail(deferred));
-
+                subtitleStream.Path = subtitlePath;
+                LocalAssetManager.addOrUpdateLocalItem(localItem).then(function () {
+                    deferred.resolve();
                 }, getOnFail(deferred));
-            });
+
+            }, getOnFail(deferred));
 
             return deferred.promise();
         }
@@ -496,25 +441,22 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            require(['localassetmanager'], function () {
+            LocalAssetManager.getUserIdsWithAccess(itemId, serverId).then(function (savedUserIdsWithAccess) {
 
-                LocalAssetManager.getUserIdsWithAccess(itemId, serverId).then(function (savedUserIdsWithAccess) {
+                var userIdsWithAccess = syncDataResult.ItemUserAccess[itemId];
 
-                    var userIdsWithAccess = syncDataResult.ItemUserAccess[itemId];
+                if (userIdsWithAccess.join(',') == savedUserIdsWithAccess.join(',')) {
+                    // Hasn't changed, nothing to do
+                    deferred.resolve();
+                }
+                else {
 
-                    if (userIdsWithAccess.join(',') == savedUserIdsWithAccess.join(',')) {
-                        // Hasn't changed, nothing to do
+                    LocalAssetManager.saveUserIdsWithAccess(itemId, serverId, userIdsWithAccess).then(function () {
                         deferred.resolve();
-                    }
-                    else {
+                    }, getOnFail(deferred));
+                }
 
-                        LocalAssetManager.saveUserIdsWithAccess(itemId, serverId, userIdsWithAccess).then(function () {
-                            deferred.resolve();
-                        }, getOnFail(deferred));
-                    }
-
-                }, getOnFail(deferred));
-            });
+            }, getOnFail(deferred));
 
             return deferred.promise();
         }
@@ -525,12 +467,5 @@
                 deferred.reject();
             };
         }
-    }
-
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.MediaSync = mediaSync;
-
-})(this);
+    };
+});

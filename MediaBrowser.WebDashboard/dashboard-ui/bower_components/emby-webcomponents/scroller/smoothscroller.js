@@ -170,12 +170,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (browser.edge && (!browser.xboxOne && !browser.touch)) {
-            // no scrolling supported
-            options.enableNativeScroll = false;
-        }
-        else if (layoutManager.desktop ||
-           !browser.animate) {
+        else if (layoutManager.desktop || !browser.animate) {
 
             options.enableNativeScroll = true;
         }
@@ -899,19 +894,24 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 return;
             }
             var delta = normalizeWheelDelta(event);
-            // Trap scrolling only when necessary and/or requested
-            if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
-                //stopDefault(event, 1);
-            }
 
             if (transform) {
+                // Trap scrolling only when necessary and/or requested
+                if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
+                    //stopDefault(event, 1);
+                }
+
                 self.slideBy(o.scrollBy * delta);
             } else {
 
+                if (isSmoothScrollSupported) {
+                    delta *= 12;
+                }
+
                 if (o.horizontal) {
-                    slideeElement.scrollLeft += 12 * delta;
+                    slideeElement.scrollLeft += delta;
                 } else {
-                    slideeElement.scrollTop += 12 * delta;
+                    slideeElement.scrollTop += delta;
                 }
             }
         }

@@ -299,7 +299,7 @@
 
             page.querySelector('.identifyProviderIds').innerHTML = html;
 
-            page.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Identify');
+            page.querySelector('.formDialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Identify');
         });
     }
 
@@ -341,7 +341,7 @@
                 dlg.addEventListener('close', onDialogClosed);
 
                 if (layoutManager.tv) {
-                    scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                    scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }
 
                 dialogHelper.open(dlg);
@@ -412,7 +412,7 @@
             document.body.appendChild(dlg);
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
             }
 
             dialogHelper.open(dlg);
@@ -458,7 +458,7 @@
             dlg.querySelector('#txtLookupYear').value = itemYear;
         }
 
-        dlg.querySelector('.dialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Search');
+        dlg.querySelector('.formDialogHeaderTitle').innerHTML = globalize.translate('sharedcomponents#Search');
     }
 
     return {

@@ -158,21 +158,21 @@ div.dialogHeader {
     font-size: 110%;
 }
 
-.ui-body-a div.dialogHeader {
+.ui-body-a div.formDialogHeader {
     background-color: #52B54B;
     color: #fff;
 }
 
-.ui-body-a .dialogHeader a {
+.ui-body-a .formDialogHeader a {
     color: #fff !important;
     text-transform: uppercase;
 }
 
-.ui-body-b div.dialogHeader {
+.ui-body-b div.formDialogHeader {
     background-color: #101010;
 }
 
-.dialogHeaderTitle {
+.formDialogHeaderTitle {
     margin-left: .75em;
 }
 
@@ -183,7 +183,7 @@ div.dialogHeader {
     margin-top: .7em;
 }
 
-.dialogHeader button {
+.formDialogHeader button {
     margin-top: 0;
     margin-bottom: 0;
 }

@@ -78,7 +78,7 @@ paper-input + .fieldDescription {
 
     .dashboardDocument .mainDrawer {
         z-index: 998 !important;
-        top: 65px !important;
+        top: 58px !important;
         left: 0 !important;
         transform: none !important;
     }
