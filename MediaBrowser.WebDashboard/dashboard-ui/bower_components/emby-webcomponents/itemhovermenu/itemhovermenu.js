@@ -243,7 +243,9 @@
 
         this.parent.addEventListener('mouseenter', onHoverIn, true);
         this.parent.addEventListener('mouseleave', onHoverOut, true);
-        this.parent.addEventListener("touchstart", preventTouchHover);
+        dom.parent.addEventListener(this.parent, "touchstart", preventTouchHover, {
+            passive: true
+        });
     }
 
     ItemHoverMenu.prototype = {
@@ -253,7 +255,10 @@
         destroy: function () {
             this.parent.removeEventListener('mouseenter', onHoverIn, true);
             this.parent.removeEventListener('mouseleave', onHoverOut, true);
-            this.parent.removeEventListener("touchstart", preventTouchHover);
+
+            dom.parent.removeEventListener(this.parent, "touchstart", preventTouchHover, {
+                passive: true
+            });
         }
     }
 

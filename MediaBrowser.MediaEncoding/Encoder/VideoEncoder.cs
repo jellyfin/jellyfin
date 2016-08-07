@@ -84,7 +84,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return args;
             }
 
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 5.ToString(UsCulture));
 
             args += keyFrameArg;

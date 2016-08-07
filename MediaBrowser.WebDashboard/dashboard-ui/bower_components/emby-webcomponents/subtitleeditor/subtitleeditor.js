@@ -107,7 +107,7 @@
             html += '<h1>' + globalize.translate('sharedcomponents#MySubtitles') + '</h1>';
 
             if (layoutManager.tv) {
-                html += '<div class="paperList clear">';
+                html += '<div class="paperList paperList-clear">';
             } else {
                 html += '<div class="paperList">';
             }
@@ -225,7 +225,7 @@
                 }
                 html += '<h1>' + provider + '</h1>';
                 if (layoutManager.tv) {
-                    html += '<div class="paperList clear">';
+                    html += '<div class="paperList paperList-clear">';
                 } else {
                     html += '<div class="paperList">';
                 }
