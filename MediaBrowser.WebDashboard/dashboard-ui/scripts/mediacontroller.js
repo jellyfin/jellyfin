@@ -932,7 +932,7 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['localassetmanager'], function () {
+                require(['localassetmanager'], function (LocalAssetManager) {
 
                     var serverInfo = ApiClient.serverInfo();
 
@@ -1045,7 +1045,7 @@
 
                     if (mediaSource.Protocol == 'File') {
 
-                        require(['localassetmanager'], function () {
+                        require(['localassetmanager'], function (LocalAssetManager) {
 
                             LocalAssetManager.fileExists(mediaSource.Path).then(function (exists) {
                                 console.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);

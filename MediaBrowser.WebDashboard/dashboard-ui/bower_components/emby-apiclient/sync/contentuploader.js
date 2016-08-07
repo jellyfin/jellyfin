@@ -1,39 +1,35 @@
-﻿(function (globalScope) {
+﻿define(['localassetmanager'], function (localAssetManager) {
 
-    function contentUploader(connectionManager) {
+    return function (connectionManager) {
 
         var self = this;
 
         self.uploadImages = function (server) {
 
-            var deferred = DeferredBuilder.Deferred();
-
-            LocalAssetManager.getCameraPhotos().then(function (photos) {
+            return LocalAssetManager.getCameraPhotos().then(function (photos) {
 
                 if (!photos.length) {
-                    deferred.resolve();
-                    return;
+                    return Promise.resolve();
                 }
 
                 var apiClient = connectionManager.getApiClient(server.Id);
 
-                apiClient.getContentUploadHistory().then(function (uploadHistory) {
+                return apiClient.getContentUploadHistory().then(function (uploadHistory) {
 
                     photos = getFilesToUpload(photos, uploadHistory);
 
                     console.log('Found ' + photos.length + ' files to upload');
 
-                    uploadNext(photos, 0, server, apiClient, deferred);
+                    return new Promise(function (resolve, reject) {
+
+                        uploadNext(photos, 0, server, apiClient, resolve, reject);
+                    });
 
                 }, function () {
-                    deferred.reject();
+                    return Promise.resolve();
                 });
 
-            }, function () {
-                deferred.reject();
             });
-
-            return deferred.promise();
         };
 
         function getFilesToUpload(files, uploadHistory) {
@@ -57,62 +53,45 @@
             return CryptoJS.SHA1(file + "1").toString();
         }
 
-        function uploadNext(files, index, server, apiClient, deferred) {
+        function uploadNext(files, index, server, apiClient, resolve, reject) {
 
             var length = files.length;
 
             if (index >= length) {
 
-                deferred.resolve();
+                resolve();
                 return;
             }
 
             uploadFile(files[index], apiClient).then(function () {
 
-                uploadNext(files, index + 1, server, apiClient, deferred);
+                uploadNext(files, index + 1, server, apiClient, resolve, reject);
             }, function () {
-                uploadNext(files, index + 1, server, apiClient, deferred);
+                uploadNext(files, index + 1, server, apiClient, resolve, reject);
             });
         }
 
         function uploadFile(file, apiClient) {
 
-            var deferred = DeferredBuilder.Deferred();
+            return new Promise(function (resolve, reject) {
 
-            require(['fileupload', "cryptojs-sha1"], function () {
+                require(['fileupload', "cryptojs-sha1"], function (FileUpload) {
 
-                var name = 'camera image ' + new Date().getTime();
+                    var name = 'camera image ' + new Date().getTime();
 
-                var url = apiClient.getUrl('Devices/CameraUploads', {
-                    DeviceId: apiClient.deviceId(),
-                    Name: name,
-                    Album: 'Camera Roll',
-                    Id: getUploadId(file),
-                    api_key: apiClient.accessToken()
-                });
+                    var url = apiClient.getUrl('Devices/CameraUploads', {
+                        DeviceId: apiClient.deviceId(),
+                        Name: name,
+                        Album: 'Camera Roll',
+                        Id: getUploadId(file),
+                        api_key: apiClient.accessToken()
+                    });
 
-                console.log('Uploading file to ' + url);
+                    console.log('Uploading file to ' + url);
 
-                new MediaBrowser.FileUpload().upload(file, name, url).then(function () {
-
-                    console.log('File upload succeeded');
-                    deferred.resolve();
-
-                }, function () {
-
-                    console.log('File upload failed');
-                    deferred.reject();
+                    new FileUpload().upload(file, name, url).then(resolve, reject);
                 });
             });
-
-            return deferred.promise();
         }
-    }
-
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.ContentUploader = contentUploader;
-
-})(this);
+    };
+});

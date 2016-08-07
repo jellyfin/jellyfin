@@ -1,22 +1,12 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
-    function fileUpload() {
+    return function () {
 
         var self = this;
 
         self.upload = function (file, name, url) {
 
-            return new Promise(function (resolve, reject) {
-
-                reject();
-            });
+            return Promise.reject();
         };
-    }
-
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.FileUpload = fileUpload;
-
-})(this);
+    };
+});

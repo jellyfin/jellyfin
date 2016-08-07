@@ -1566,11 +1566,11 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova()) {
-            define("localassetmanager", ["cordova/localassetmanager"]);
-            define("fileupload", ["cordova/fileupload"]);
+            define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
+            define("fileupload", ["cordova/fileupload"], returnFirstDependency);
         } else {
-            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"]);
-            define("fileupload", [apiClientBowerPath + "/fileupload"]);
+            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
+            define("fileupload", [apiClientBowerPath + "/fileupload"], returnFirstDependency);
         }
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
