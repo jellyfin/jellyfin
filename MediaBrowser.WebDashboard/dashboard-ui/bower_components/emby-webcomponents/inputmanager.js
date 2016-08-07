@@ -1,4 +1,4 @@
-define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackManager, focusManager, embyRouter) {
+define(['playbackManager', 'focusManager', 'embyRouter', 'dom'], function (playbackManager, focusManager, embyRouter, dom) {
 
     var lastInputTime = new Date().getTime();
 
@@ -231,7 +231,9 @@ define(['playbackManager', 'focusManager', 'embyRouter'], function (playbackMana
         }
     }
 
-    document.addEventListener('click', notify);
+    dom.addEventListener(document, 'click', notify, {
+        passive: true
+    });
 
     return {
         trigger: handleCommand,

@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
+﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -55,8 +55,12 @@
         this.classList.add('paper-icon-button-light');
 
         if (enableAnimation()) {
-            this.addEventListener('keydown', onKeyDown);
-            this.addEventListener('click', animateButton);
+            dom.addEventListener(this, 'keydown', onKeyDown, {
+                passive: true
+            });
+            dom.addEventListener(this, 'click', animateButton, {
+                passive: true
+            });
         }
     };
 

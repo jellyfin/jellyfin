@@ -1,4 +1,4 @@
-define(['focusManager', 'scrollStyles'], function (focusManager) {
+define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
 
     function getOffsets(elems) {
 
@@ -107,16 +107,28 @@ define(['focusManager', 'scrollStyles'], function (focusManager) {
         centerFocus: {
             on: function (element, horizontal) {
                 if (horizontal) {
-                    element.addEventListener('focus', centerOnFocusHorizontal, true);
+                    dom.addEventListener(element, 'focus', centerOnFocusHorizontal, {
+                        capture: true,
+                        passive: true
+                    });
                 } else {
-                    element.addEventListener('focus', centerOnFocusVertical, true);
+                    dom.addEventListener(element, 'focus', centerOnFocusVertical, {
+                        capture: true,
+                        passive: true
+                    });
                 }
             },
             off: function (element, horizontal) {
                 if (horizontal) {
-                    element.removeEventListener('focus', centerOnFocusHorizontal, true);
+                    dom.removeEventListener(element, 'focus', centerOnFocusHorizontal, {
+                        capture: true,
+                        passive: true
+                    });
                 } else {
-                    element.removeEventListener('focus', centerOnFocusVertical, true);
+                    dom.removeEventListener(element, 'focus', centerOnFocusVertical, {
+                        capture: true,
+                        passive: true
+                    });
                 }
             }
         },

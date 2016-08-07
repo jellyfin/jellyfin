@@ -247,7 +247,10 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
     }
 
     function triggerDestroy(view) {
-        view.dispatchEvent(new CustomEvent("viewdestroy", {}));
+
+        view.dispatchEvent(new CustomEvent('viewdestroy', {
+            cancelable: false
+        }));
     }
 
     function reset() {

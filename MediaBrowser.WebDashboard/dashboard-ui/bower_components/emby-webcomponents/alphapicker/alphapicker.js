@@ -110,6 +110,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
                 var value = alphaPickerButton.getAttribute('data-value');
 
                 element.dispatchEvent(new CustomEvent("alphavalueclicked", {
+                    cancelable: false,
                     detail: {
                         value: value
                     }
@@ -247,6 +248,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
 
             if (applyValue) {
                 element.dispatchEvent(new CustomEvent("alphavaluechanged", {
+                    cancelable: false,
                     detail: {
                         value: value
                     }
