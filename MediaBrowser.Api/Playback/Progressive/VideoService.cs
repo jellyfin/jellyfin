@@ -149,11 +149,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                 {
                     args += " -copyts -avoid_negative_ts disabled -start_at_zero";
                 }
-                
+
                 return args;
             }
 
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 5.ToString(UsCulture));
 
             args += keyFrameArg;
