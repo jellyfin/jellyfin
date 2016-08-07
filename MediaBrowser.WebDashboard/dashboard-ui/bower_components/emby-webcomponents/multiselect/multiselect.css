@@ -15,7 +15,6 @@
     left: 0;
     right: 0;
     background: #43A047;
-    z-index: 1000;
     padding: .5em;
     display: flex;
     align-items: center;

@@ -3,11 +3,9 @@
     border: 0;
     outline: none !important;
     color: inherit;
-    width: 100%;
     vertical-align: middle;
     font-family: inherit;
     font-size: inherit;
-
     margin: 0;
     display: block;
     align-items: center;
@@ -18,6 +16,10 @@
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
+}
+
+.listItem-button {
+    width: 100%;
 }
 
 .listItem-nosidepadding {
