@@ -11,17 +11,25 @@ define(['css!./indicators.css', 'material-icons'], function () {
         return false;
     }
 
-    function getProgressHtml(pct) {
+    function getProgressHtml(pct, options) {
 
-        return '<div class="itemProgressBar"><div class="itemProgressBarForeground" style="width:' + pct + '%;"></div></div>';
+        var containerClass = 'itemProgressBar';
+
+        if (options) {
+            if (options.containerClass) {
+                containerClass += ' ' + options.containerClass;
+            }
+        }
+
+        return '<div class="' + containerClass + '"><div class="itemProgressBarForeground" style="width:' + pct + '%;"></div></div>';
     }
 
-    function getProgressBarHtml(item) {
+    function getProgressBarHtml(item, options) {
 
         if (enableProgressIndicator(item)) {
             if (item.Type == "Recording" && item.CompletionPercentage) {
 
-                return getProgressHtml(item.CompletionPercentage);
+                return getProgressHtml(item.CompletionPercentage, options);
             }
 
             var userData = item.UserData;
@@ -30,7 +38,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
                 if (pct && pct < 100) {
 
-                    return getProgressHtml(pct);
+                    return getProgressHtml(pct, options);
                 }
             }
         }

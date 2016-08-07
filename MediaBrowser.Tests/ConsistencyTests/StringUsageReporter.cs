@@ -71,7 +71,7 @@ namespace MediaBrowser.Tests.ConsistencyTests
         /// <summary>
         /// List of file extension to search.
         /// </summary>
-        public static string[] TargetExtensions = new[] { "js", "html" };
+        public static string[] TargetExtensions = new[] { ".js", ".html" };
 
         /// <summary>
         /// List of paths to exclude from search.
@@ -96,11 +96,11 @@ namespace MediaBrowser.Tests.ConsistencyTests
             }
         }
 
-        [TestMethod]
-        public void ReportStringUsage()
-        {
-            this.CheckDashboardStrings(false);
-        }
+        //[TestMethod]
+        //public void ReportStringUsage()
+        //{
+        //    this.CheckDashboardStrings(false);
+        //}
 
         [TestMethod]
         public void ReportUnusedStrings()
@@ -135,7 +135,7 @@ namespace MediaBrowser.Tests.ConsistencyTests
 
             var allFiles = rootFolderInfo.GetFiles("*", SearchOption.AllDirectories);
 
-            var filteredFiles1 = allFiles.Where(f => TargetExtensions.Any(e => f.Name.EndsWith(e)));
+            var filteredFiles1 = allFiles.Where(f => TargetExtensions.Any(e => string.Equals(e, f.Extension, StringComparison.OrdinalIgnoreCase)));
             var filteredFiles2 = filteredFiles1.Where(f => !ExcludePaths.Any(p => f.FullName.Contains(p)));
 
             var selectedFiles = filteredFiles2.OrderBy(f => f.FullName).ToList();

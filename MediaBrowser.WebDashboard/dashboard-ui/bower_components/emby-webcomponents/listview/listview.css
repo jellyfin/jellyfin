@@ -1,17 +1,13 @@
-button.listItem {
+.listItem {
     background: transparent;
     border: 0;
-    border-bottom: 1px solid #2a2a2a;
-    cursor: pointer;
     outline: none !important;
     color: inherit;
     width: 100%;
     vertical-align: middle;
     font-family: inherit;
     font-size: inherit;
-}
 
-.listItem {
     margin: 0;
     display: block;
     align-items: center;
@@ -33,17 +29,20 @@ button.listItem {
     padding: .5em !important;
 }
 
-.listItem > *:not(.listItemBody) {
+.listItemImage, .listItemIcon {
     flex-shrink: 0;
 }
 
-.listItem > * {
+.listItemBody, .listItemImage, .listItemIcon {
     display: inline-block;
     vertical-align: middle;
 }
 
-.listItem .paper-icon-button-light {
+.listItemButton {
     margin: 0;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
 }
 
 .listViewDragHandle {
@@ -71,10 +70,6 @@ button.listItem {
     min-height: 6.3em;
     padding-top: 0;
     padding-bottom: 0;
-}
-
-.listItemBody > div:not(.secondary) {
-    font-size: 115%;
 }
 
 .listItemBodyText {
@@ -119,7 +114,7 @@ button.listItem {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 
-.listItemImage .itemProgressBar {
+.listItemProgressBar {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -148,14 +143,14 @@ button.listItem {
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 
-    .paperList.clear {
-        box-shadow: none !important;
-        background-color: transparent !important;
-    }
+.paperList-clear {
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
 
-    .paperList .listItem {
-        border-bottom: 0;
-    }
+.paperList .listItem {
+    border-bottom: 0;
+}
 
 .layout-tv .listItemMediaInfo {
     margin: .5em 0;
@@ -175,7 +170,7 @@ button.listItem {
     margin-top: 0;
 }
 
-.listItem .indicators {
+.listItemIndicators {
     right: .5vh;
     top: .5vh;
     position: absolute;
