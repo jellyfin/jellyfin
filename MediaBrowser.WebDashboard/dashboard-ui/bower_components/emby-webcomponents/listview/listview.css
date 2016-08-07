@@ -31,7 +31,7 @@
     padding: .5em !important;
 }
 
-.listItemImage, .listItemIcon {
+.listItemImage, .listItemIcon, .listItemAside {
     flex-shrink: 0;
 }
 
