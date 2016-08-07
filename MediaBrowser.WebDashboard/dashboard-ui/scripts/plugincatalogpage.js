@@ -129,6 +129,11 @@
 
         var hasOpenTag = false;
 
+        if (options.showCategory === false) {
+            html += '<div class="itemsContainer vertical-wrap">';
+            hasOpenTag = true;
+        }
+
         for (i = 0, length = availablePlugins.length; i < length; i++) {
 
             plugin = availablePlugins[i];
