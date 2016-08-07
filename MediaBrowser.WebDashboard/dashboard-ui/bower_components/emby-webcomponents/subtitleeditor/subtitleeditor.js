@@ -138,7 +138,7 @@
 
                 if (!layoutManager.tv) {
                     if (s.Path) {
-                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete"><i class="md-icon">delete</i></button>';
+                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete listItemButton"><i class="md-icon">delete</i></button>';
                     }
                 }
 
@@ -254,10 +254,10 @@
 
             html += '</div>';
 
-            html += '<div class="secondary">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
+            html += '<div class="secondary listItemAside">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
             if (!layoutManager.tv) {
-                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><i class="md-icon">' + moreIcon + '</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions listItemButton"><i class="md-icon">' + moreIcon + '</i></button>';
             }
 
             html += '</' + tagName + '>';
