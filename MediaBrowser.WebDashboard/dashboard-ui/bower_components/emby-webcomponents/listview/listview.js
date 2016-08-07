@@ -181,7 +181,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var cssClass = "listItem listItem-nosidepadding";
 
             if (clickEntireItem) {
-                cssClass += ' itemAction';
+                cssClass += ' itemAction listItem-button';
             }
 
             var downloadWidth = 80;
