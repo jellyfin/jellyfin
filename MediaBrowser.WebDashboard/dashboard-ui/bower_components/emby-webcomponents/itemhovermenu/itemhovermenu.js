@@ -243,7 +243,7 @@
 
         this.parent.addEventListener('mouseenter', onHoverIn, true);
         this.parent.addEventListener('mouseleave', onHoverOut, true);
-        dom.parent.addEventListener(this.parent, "touchstart", preventTouchHover, {
+        dom.addEventListener(this.parent, "touchstart", preventTouchHover, {
             passive: true
         });
     }
@@ -256,7 +256,7 @@
             this.parent.removeEventListener('mouseenter', onHoverIn, true);
             this.parent.removeEventListener('mouseleave', onHoverOut, true);
 
-            dom.parent.removeEventListener(this.parent, "touchstart", preventTouchHover, {
+            dom.removeEventListener(this.parent, "touchstart", preventTouchHover, {
                 passive: true
             });
         }

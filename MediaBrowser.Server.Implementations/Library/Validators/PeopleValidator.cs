@@ -115,6 +115,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             _logger.Debug("Will refresh {0} people", dict.Count);
 
+            var numPeople = dict.Count;
+
             foreach (var person in dict)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -124,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     var item = _libraryManager.GetPerson(person.Key);
 
                     var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview);
-                    var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 90;
+                    var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 60;
 
                     var defaultMetadataRefreshMode = performFullRefresh
                         ? MetadataRefreshMode.FullRefresh
@@ -155,7 +157,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 // Update progress
                 numComplete++;
                 double percent = numComplete;
-                percent /= people.Count;
+                percent /= numPeople;
 
                 progress.Report(100 * percent);
             }
