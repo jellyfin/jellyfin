@@ -172,6 +172,7 @@ button.card {
     position: relative;
     background-clip: content-box !important;
     border-radius: 2px;
+    color: #fff;
 }
 
 .visualCardBox .cardImageContainer {
@@ -259,6 +260,7 @@ button.cardImageContainer {
     z-index: 1;
     overflow: hidden;
     max-width: 100%;
+    color: #fff;
 }
 
 .innerCardFooterClear {
@@ -274,14 +276,7 @@ button.cardImageContainer {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.cardText {
     color: inherit;
-}
-
-.innerCardFooter .cardText, .cardImageContainer .cardText {
-    color: #fff;
 }
 
 .cardTextCentered {
@@ -310,7 +305,7 @@ button.cardImageContainer {
     color: #fff;
 }
 
-.card .indicators {
+.cardIndicators {
     right: 2.5%;
     top: 2.5%;
     position: absolute;
@@ -318,12 +313,12 @@ button.cardImageContainer {
     align-items: center;
 }
 
-.portraitCard .indicators {
+.portraitCardIndicators {
     right: 3%;
     top: 2%;
 }
 
-.backdropCard .indicators {
+.backdropCardIndicators {
     right: 1.5%;
     top: 2.8%;
 }

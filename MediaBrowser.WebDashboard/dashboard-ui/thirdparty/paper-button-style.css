@@ -176,20 +176,9 @@ div.dialogHeader {
     margin-left: .75em;
 }
 
-.dialog.popupEditor h2.dialogHeader {
-    font-weight: inherit !important;
-    line-height: 36px;
-    padding: 0 1em;
-    margin-top: .7em;
-}
-
 .formDialogHeader button {
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.dialog.popupEditor {
-    padding-bottom: 100px;
 }
 
 .formDialog.background-theme-b {
