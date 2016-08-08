@@ -308,7 +308,6 @@
 
             dlg.classList.add('ui-body-' + theme);
             dlg.classList.add('background-theme-' + theme);
-            dlg.classList.add('popupEditor');
 
             var html = '';
             html += '<h2 class="dialogHeader">';

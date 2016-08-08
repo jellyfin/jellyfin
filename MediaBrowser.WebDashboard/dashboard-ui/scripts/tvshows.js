@@ -266,10 +266,6 @@
                         id: 'OfficialRating,SortName'
                     },
                     {
-                        name: Globalize.translate('OptionPlayCount'),
-                        id: 'PlayCount,SortName'
-                    },
-                    {
                         name: Globalize.translate('OptionReleaseDate'),
                         id: 'PremiereDate,SortName'
                     }],

@@ -1102,7 +1102,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (indicatorsHtml) {
-                cardImageContainerOpen += '<div class="indicators">' + indicatorsHtml + '</div>';
+                cardImageContainerOpen += '<div class="cardIndicators ' + options.shape + 'CardIndicators">' + indicatorsHtml + '</div>';
             }
 
             var forceName = imgInfo.forceName;
