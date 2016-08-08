@@ -81,6 +81,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (ApplicationException), 500}
             };
 
+            HostConfig.Instance.GlobalResponseHeaders = new Dictionary<string, string>();
             HostConfig.Instance.DebugMode = false;
 
             HostConfig.Instance.LogFactory = LogManager.LogFactory;
