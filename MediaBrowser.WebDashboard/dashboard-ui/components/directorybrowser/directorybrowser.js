@@ -233,7 +233,6 @@
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
-                dlg.classList.add('popupEditor');
 
                 dlg.classList.add('directoryPicker');
 

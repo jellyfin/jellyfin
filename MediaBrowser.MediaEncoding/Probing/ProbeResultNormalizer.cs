@@ -168,6 +168,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 ExtractTimestamp(info);
+
+                var stereoMode = GetDictionaryValue(tags, "stereo_mode");
+                if (string.Equals(stereoMode, "left_right", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Video3DFormat = Video3DFormat.FullSideBySide;
+                }
             }
 
             return info;

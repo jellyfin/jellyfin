@@ -92,7 +92,7 @@
 
     function onAddButtonClick() {
 
-        var page = $(this).parents('.popupEditor')[0];
+        var page = $(this).parents('.dlg-librarycreator')[0];
 
         require(['directorybrowser'], function (directoryBrowser) {
 
@@ -168,7 +168,7 @@
 
             return p.toLowerCase() != location.toLowerCase();
         });
-        var page = $(this).parents('.popupEditor')[0];
+        var page = $(this).parents('.dlg-librarycreator')[0];
         renderPaths(page);
     }
 
@@ -207,7 +207,7 @@
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
-                dlg.classList.add('popupEditor');
+                dlg.classList.add('dlg-librarycreator');
 
                 dlg.innerHTML = Globalize.translateDocument(template);
                 document.body.appendChild(dlg);

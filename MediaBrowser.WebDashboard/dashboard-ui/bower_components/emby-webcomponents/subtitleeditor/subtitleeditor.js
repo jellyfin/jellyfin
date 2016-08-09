@@ -117,7 +117,9 @@
                 var itemHtml = '';
 
                 var tagName = layoutManager.tv ? 'button' : 'div';
-                var className = layoutManager.tv && s.Path ? 'listItem btnDelete' : 'listItem';
+                var className = layoutManager.tv && s.Path ? 'listItem listItem-focusscale btnDelete' : 'listItem';
+
+                className += ' listItem-noborder';
 
                 itemHtml += '<' + tagName + ' class="' + className + '" data-index="' + s.Index + '">';
 

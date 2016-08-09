@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder" }
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Person" },
 
             }).ConfigureAwait(false);
 

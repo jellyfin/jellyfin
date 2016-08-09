@@ -32,7 +32,7 @@ define(['dom'], function (dom) {
         }
     }
 
-    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'PAPER-CHECKBOX'];
+    var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'];
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
     var focusableQuery = focusableTagNames.join(',') + ',.focusable';
 
@@ -89,7 +89,7 @@ define(['dom'], function (dom) {
     }
 
     function getFocusableElements(parent) {
-        var elems = (parent || document).querySelectorAll(focusableQuery);
+        var elems = (parent || document.body).querySelectorAll(focusableQuery);
         var focusableElements = [];
 
         for (var i = 0, length = elems.length; i < length; i++) {

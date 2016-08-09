@@ -125,7 +125,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                     queue: true,
                     playAllFromHere: !item.IsFolder,
                     queueAllFromHere: !item.IsFolder,
-                    identify: false,
                     playlistId: playlistId,
                     collectionId: collectionId
 
@@ -258,7 +257,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             } :
             {};
 
-            options.identify = false;
             options.positionTo = target;
 
             showContextMenu(card, options);

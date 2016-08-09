@@ -151,7 +151,7 @@
                     var itemHtml = '';
 
                     itemHtml += '<a class="clearLink" href="' + item.Link + '" target="_blank">';
-                    itemHtml += '<div class="listItem">';
+                    itemHtml += '<div class="listItem listItem-noborder">';
 
                     itemHtml += '<i class="listItemIcon md-icon">dvr</i>';
 
@@ -1034,7 +1034,7 @@
 
             var html = '';
 
-            html += '<div class="listItem">';
+            html += '<div class="listItem listItem-noborder">';
 
             var color = entry.Severity == 'Error' || entry.Severity == 'Fatal' || entry.Severity == 'Warn' ? '#cc0000' : '#52B54B';
 

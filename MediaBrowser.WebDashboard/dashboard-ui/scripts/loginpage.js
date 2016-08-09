@@ -163,7 +163,7 @@
             html += '<div class="cardFooter">';
             html += '<div class="cardText">' + user.Name + '</div>';
 
-            html += '<div class="cardText">';
+            html += '<div class="cardText cardText-secondary">';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;

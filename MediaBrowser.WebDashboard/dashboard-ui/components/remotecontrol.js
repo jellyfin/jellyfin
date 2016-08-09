@@ -541,7 +541,7 @@
 
             } else {
 
-                btnCast.querySelector('i').innerHTML = 'cast-connected';
+                btnCast.querySelector('i').innerHTML = 'cast_connected';
                 btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }
