@@ -2,7 +2,7 @@
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '3.5%' : '0.5%';
+        var pct = browserInfo.mobile ? '4%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -162,6 +162,10 @@
             },
 
             configureSwipeTabs: function (ownerpage, tabs) {
+
+                if (!browserInfo.touch) {
+                    return;
+                }
 
                 var pageCount = ownerpage.querySelectorAll('.pageTabContent').length;
 
