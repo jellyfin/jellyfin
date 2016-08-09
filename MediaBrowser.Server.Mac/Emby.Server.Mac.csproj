@@ -3183,36 +3183,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-checkbox\test\index.html">
       <Link>Resources\dashboard-ui\bower_components\paper-checkbox\test\index.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\README.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\paper-fab.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\paper-fab.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\demo\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\demo\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\test\a11y.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\test\a11y.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\test\basic.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\test\basic.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-fab\test\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-fab\test\index.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-icon-button\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\paper-icon-button\.bower.json</Link>
     </BundleResource>
@@ -3338,93 +3308,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-input\test\paper-textarea.html">
       <Link>Resources\dashboard-ui\bower_components\paper-input\test\paper-textarea.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\.travis.yml">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\.travis.yml</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\CONTRIBUTING.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\CONTRIBUTING.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\README.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\all-imports.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\all-imports.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-icon-item.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-icon-item.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-behavior.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-behavior.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-body.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-body.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item-shared-styles.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item-shared-styles.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\paper-item.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\paper-item.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\.github\ISSUE_TEMPLATE.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\.github\ISSUE_TEMPLATE.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\demo\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\demo\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\test\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\test\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-item\test\paper-item.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-item\test\paper-item.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\.travis.yml">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\.travis.yml</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\CONTRIBUTING.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\CONTRIBUTING.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\README.md">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\bower.json">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\paper-material-shared-styles.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\paper-material-shared-styles.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\paper-material.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\paper-material.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\demo\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\demo\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\test\index.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\test\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-material\test\paper-material.html">
-      <Link>Resources\dashboard-ui\bower_components\paper-material\test\paper-material.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\paper-progress\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\paper-progress\.bower.json</Link>
