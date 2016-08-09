@@ -447,8 +447,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
          */
         self.getPos = function (item) {
 
-            var doc = document;
-
             var slideeOffset = getBoundingClientRect(slideeElement);
             var itemOffset = getBoundingClientRect(item);
 

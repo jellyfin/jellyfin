@@ -13,12 +13,14 @@ define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
 
     function getPosition(scrollContainer, item, horizontal) {
 
-        var offsets = getOffsets([scrollContainer, item]);
-        var slideeOffset = offsets[0];
-        var itemOffset = offsets[1];
+        var slideeOffset = getBoundingClientRect(scrollContainer);
+        var itemOffset = getBoundingClientRect(item);
 
         var offset = horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
-        var size = item[horizontal ? 'offsetWidth' : 'offsetHeight'];
+        var size = horizontal ? itemOffset.width : itemOffset.height;
+        if (!size) {
+            size = item[horizontal ? 'offsetWidth' : 'offsetHeight'];
+        }
 
         if (horizontal) {
             offset += scrollContainer.scrollLeft;
