@@ -257,7 +257,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             } :
             {};
 
-            options.identify = false;
             options.positionTo = target;
 
             showContextMenu(card, options);

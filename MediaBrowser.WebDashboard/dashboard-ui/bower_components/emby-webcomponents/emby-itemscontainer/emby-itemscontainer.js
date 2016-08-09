@@ -41,7 +41,6 @@
             //}
 
             itemShortcuts.showContextMenu(card, {
-                identify: false,
                 positionTo: target,
                 itemsContainer: itemsContainer
             });
