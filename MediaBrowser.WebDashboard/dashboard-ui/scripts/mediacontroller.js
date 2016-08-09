@@ -121,7 +121,7 @@
 
     function showActivePlayerMenu(playerInfo) {
 
-        require(['dialogHelper', 'emby-checkbox', 'emby-button'], function (dialogHelper) {
+        require(['dialogHelper', 'dialog', 'emby-checkbox', 'emby-button'], function (dialogHelper) {
             showActivePlayerMenuInternal(dialogHelper, playerInfo);
         });
     }
@@ -141,11 +141,14 @@
 
         var dlg = dialogHelper.createDialog(dialogOptions);
 
+        dlg.classList.add('promptDialog');
+
+        html += '<div class="promptDialogContent">';
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
         html += '</h2>';
 
-        html += '<div style="padding:0 2em;">';
+        html += '<div>';
 
         if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
 
@@ -158,17 +161,18 @@
 
         html += '</div>';
 
-        html += '<div class="buttons">';
+        html += '<div class="promptDialogButtons">';
 
         // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
         if (screen.availWidth >= 600) {
-            html += '<button is="emby-button" type="button" class="btnRemoteControl">' + Globalize.translate('ButtonRemoteControl') + '</button>';
+            html += '<button is="emby-button" type="button" class="btnRemoteControl promptDialogButton">' + Globalize.translate('ButtonRemoteControl') + '</button>';
         }
 
-        html += '<button is="emby-button" type="button" class="btnDisconnect">' + Globalize.translate('ButtonDisconnect') + '</button>';
-        html += '<button is="emby-button" type="button" class="btnCancel">' + Globalize.translate('ButtonCancel') + '</button>';
+        html += '<button is="emby-button" type="button" class="btnDisconnect promptDialogButton">' + Globalize.translate('ButtonDisconnect') + '</button>';
+        html += '<button is="emby-button" type="button" class="btnCancel promptDialogButton">' + Globalize.translate('ButtonCancel') + '</button>';
         html += '</div>';
 
+        html += '</div>';
         dlg.innerHTML = html;
 
         document.body.appendChild(dlg);

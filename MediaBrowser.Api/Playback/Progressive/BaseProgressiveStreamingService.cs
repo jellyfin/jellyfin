@@ -165,40 +165,40 @@ namespace MediaBrowser.Api.Playback.Progressive
                 }
             }
 
-            // Not static but transcode cache file exists
-            if (isTranscodeCached)
-            {
-                var contentType = state.GetMimeType(outputPath);
+            //// Not static but transcode cache file exists
+            //if (isTranscodeCached && state.VideoRequest == null)
+            //{
+            //    var contentType = state.GetMimeType(outputPath);
 
-                try
-                {
-                    if (transcodingJob != null)
-                    {
-                        ApiEntryPoint.Instance.OnTranscodeBeginRequest(transcodingJob);
-                    }
+            //    try
+            //    {
+            //        if (transcodingJob != null)
+            //        {
+            //            ApiEntryPoint.Instance.OnTranscodeBeginRequest(transcodingJob);
+            //        }
 
-                    return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
-                    {
-                        ResponseHeaders = responseHeaders,
-                        ContentType = contentType,
-                        IsHeadRequest = isHeadRequest,
-                        Path = outputPath,
-                        FileShare = FileShare.ReadWrite,
-                        OnComplete = () =>
-                        {
-                            if (transcodingJob != null)
-                            {
-                                ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
-                            }
-                        }
+            //        return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
+            //        {
+            //            ResponseHeaders = responseHeaders,
+            //            ContentType = contentType,
+            //            IsHeadRequest = isHeadRequest,
+            //            Path = outputPath,
+            //            FileShare = FileShare.ReadWrite,
+            //            OnComplete = () =>
+            //            {
+            //                if (transcodingJob != null)
+            //                {
+            //                    ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
+            //                }
+            //            }
 
-                    }).ConfigureAwait(false);
-                }
-                finally
-                {
-                    state.Dispose();
-                }
-            }
+            //        }).ConfigureAwait(false);
+            //    }
+            //    finally
+            //    {
+            //        state.Dispose();
+            //    }
+            //}
 
             // Need to start ffmpeg
             try
