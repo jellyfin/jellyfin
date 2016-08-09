@@ -63,6 +63,15 @@ namespace MediaBrowser.Api
 
             Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
+            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+        }
+
+        private void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
+            }
         }
 
         void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
@@ -401,7 +410,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            Logger.Debug("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            Logger.Info("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             KillTranscodingJob(job, true, path => true);
         }

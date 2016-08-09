@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using CommonIO;
@@ -24,13 +25,22 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
-        private readonly ConcurrentDictionary<string, System.Xml.Serialization.XmlSerializer> _serializers =
-            new ConcurrentDictionary<string, System.Xml.Serialization.XmlSerializer>();
+        private readonly Dictionary<string, System.Xml.Serialization.XmlSerializer> _serializers =
+            new Dictionary<string, System.Xml.Serialization.XmlSerializer>();
 
         private System.Xml.Serialization.XmlSerializer GetSerializer(Type type)
         {
             var key = type.FullName;
-            return _serializers.GetOrAdd(key, k => new System.Xml.Serialization.XmlSerializer(type));
+            lock (_serializers)
+            {
+                System.Xml.Serialization.XmlSerializer serializer;
+                if (!_serializers.TryGetValue(key, out serializer))
+                {
+                    serializer = new System.Xml.Serialization.XmlSerializer(type);
+                    _serializers[key] = serializer;
+                }
+                return serializer;
+            }
         }
 
         /// <summary>
