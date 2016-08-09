@@ -37,6 +37,10 @@
     flex-shrink: 0;
 }
 
+.actionSheetMenuItem-noflex {
+    display: block;
+}
+
 .actionSheetItemText {
     padding: .8em 0;
     white-space: nowrap;
