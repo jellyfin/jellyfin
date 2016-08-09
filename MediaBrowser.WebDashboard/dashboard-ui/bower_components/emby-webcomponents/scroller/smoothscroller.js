@@ -109,7 +109,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             touchDragging: 1, // Enable navigation by dragging the SLIDEE with touch events.
             releaseSwing: false, // Ease out on dragging swing release.
             swingSpeed: 0.2, // Swing synchronization speed, where: 1 = instant, 0 = infinite.
-            elasticBounds: false, // Stretch SLIDEE position limits when dragging past FRAME boundaries.
             dragThreshold: 3, // Distance in pixels before Sly recognizes dragging.
             intervactive: null, // Selector for special interactive elements.
 
@@ -351,16 +350,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 		 */
         function slideTo(newPos, immediate) {
 
-            // Handle overflowing position limits
-            if (dragging.init && dragging.slidee && o.elasticBounds) {
-                if (newPos > pos.end) {
-                    newPos = pos.end + (newPos - pos.end) / 6;
-                } else if (newPos < pos.start) {
-                    newPos = pos.start + (newPos - pos.start) / 6;
-                }
-            } else {
-                newPos = within(newPos, pos.start, pos.end);
-            }
+            newPos = within(newPos, pos.start, pos.end);
 
             if (!transform) {
 
@@ -387,10 +377,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
         var scrollEvent = new CustomEvent("scroll");
 
         function renderAnimate() {
-
-            if (!transform) {
-                return;
-            }
 
             var obj = getComputedStyle(slideeElement, null).getPropertyValue('transform').match(/([-+]?(?:\d*\.)?\d+)\D*, ([-+]?(?:\d*\.)?\d+)\D*\)/);
             if (obj) {
@@ -441,66 +427,36 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             };
         }
 
-        function getOffsets(elems) {
+        function getBoundingClientRect(elem) {
 
-            var doc = document;
-            var results = [];
-
-            if (!doc) {
-                return results;
+            // Support: BlackBerry 5, iOS 3 (original iPhone)
+            // If we don't have gBCR, just use 0,0 rather than error
+            if (elem.getBoundingClientRect) {
+                return elem.getBoundingClientRect();
+            } else {
+                return { top: 0, left: 0 };
             }
-
-            var docElem = doc.documentElement;
-            var docElemValues = {
-                clientTop: docElem.clientTop,
-                clientLeft: docElem.clientLeft
-            };
-
-            var win = doc.defaultView;
-            var winValues = {
-                pageXOffset: win.pageXOffset,
-                pageYOffset: win.pageYOffset
-            };
-
-            var box;
-            var elem;
-
-            for (var i = 0, length = elems.length; i < length; i++) {
-
-                elem = elems[i];
-                // Support: BlackBerry 5, iOS 3 (original iPhone)
-                // If we don't have gBCR, just use 0,0 rather than error
-                if (elem.getBoundingClientRect) {
-                    box = elem.getBoundingClientRect();
-                } else {
-                    box = { top: 0, left: 0 };
-                }
-
-                results[i] = {
-                    top: box.top + winValues.pageYOffset - docElemValues.clientTop,
-                    left: box.left + winValues.pageXOffset - docElemValues.clientLeft
-                };
-            }
-
-            return results;
         }
 
         /**
-		 * Returns the position object.
-		 *
-		 * @param {Mixed} item
-		 *
-		 * @return {Object}
-		 */
+         * Returns the position object.
+         *
+         * @param {Mixed} item
+         *
+         * @return {Object}
+         */
         self.getPos = function (item) {
 
-            var offsets = getOffsets([slideeElement, item]);
+            var doc = document;
 
-            var slideeOffset = offsets[0];
-            var itemOffset = offsets[1];
+            var slideeOffset = getBoundingClientRect(slideeElement);
+            var itemOffset = getBoundingClientRect(item);
 
             var offset = o.horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
-            var size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
+            var size = o.horizontal ? itemOffset.width : itemOffset.height;
+            if (!size) {
+                size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
+            }
 
             var centerOffset = o.centerOffset || 0;
 
