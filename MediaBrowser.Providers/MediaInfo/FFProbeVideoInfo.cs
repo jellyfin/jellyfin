@@ -231,6 +231,8 @@ namespace MediaBrowser.Providers.MediaInfo
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
             video.Timestamp = mediaInfo.Timestamp;
 
+            video.Video3DFormat = video.Video3DFormat ?? mediaInfo.Video3DFormat;
+
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
