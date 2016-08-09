@@ -5,7 +5,7 @@
     right: 0;
     top: 0;
     background-color: rgba(0, 0, 0, .3);
-    z-index: 999;
+    z-index: 99998;
     border: 1px solid #43A047;
 }
 
@@ -19,6 +19,7 @@
     display: flex;
     align-items: center;
     color: #fff;
+    z-index: 99999;
 }
 
 .itemSelectionCount {

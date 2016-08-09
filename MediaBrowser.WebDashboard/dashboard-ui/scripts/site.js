@@ -1433,6 +1433,7 @@ var AppInfo = {};
         define("backdrop", [embyWebComponentsBowerPath + "/backdrop/backdrop"], returnFirstDependency);
         define("fetchHelper", [embyWebComponentsBowerPath + "/fetchhelper"], returnFirstDependency);
 
+        define("roundCardStyle", ["cardStyle", 'css!' + embyWebComponentsBowerPath + "/cardbuilder/roundcard"], returnFirstDependency);
         define("cardStyle", ['css!' + embyWebComponentsBowerPath + "/cardbuilder/card"], returnFirstDependency);
         define("cardBuilder", [embyWebComponentsBowerPath + "/cardbuilder/cardbuilder"], returnFirstDependency);
         define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);

@@ -669,7 +669,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return 'defaultCardColor' + getDefaultColorIndex(str);
         }
 
-        function getCardTextLines(lines, cssClass, forceLines) {
+        function getCardTextLines(lines, cssClass, forceLines, addSecondaryClass) {
 
             var html = '';
 
@@ -679,6 +679,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             for (i = 0, length = lines.length; i < length; i++) {
 
                 var text = lines[i];
+
+                if (i == 1 && addSecondaryClass) {
+                    cssClass += ' cardText-secondary';
+                }
 
                 if (text) {
                     html += "<div class='" + cssClass + "'>";
@@ -865,7 +869,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            html += getCardTextLines(lines, cssClass, !options.overlayText);
+            html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter);
 
             if (progressHtml) {
                 html += progressHtml;
@@ -1076,6 +1080,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             } else {
 
                 if (overlayButtons && !separateCardBox) {
+                    cardImageContainerClass += ' cardImageContainerClass-button';
                     cardImageContainerOpen = imgUrl ? ('<button type="button" data-action="' + action + '" class="itemAction ' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<button type="button" data-action="' + action + '" class="itemAction ' + cardImageContainerClass + '">');
                     cardImageContainerClose = '</button>';
 

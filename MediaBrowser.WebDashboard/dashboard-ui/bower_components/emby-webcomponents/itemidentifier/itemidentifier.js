@@ -203,15 +203,15 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter cardFooter-visual">';
         html += '<div class="cardText cardTextCentered">' + result.Name + '</div>';
 
-        html += '<div class="cardText cardTextCentered">';
+        html += '<div class="cardText cardText-secondary cardTextCentered">';
         html += result.ProductionYear || '&nbsp;';
         html += '</div>';
 
         if (result.GameSystem) {
-            html += '<div class="cardText cardTextCentered">';
+            html += '<div class="cardText cardText-secondary cardTextCentered">';
             html += result.GameSystem;
             html += '</div>';
         }

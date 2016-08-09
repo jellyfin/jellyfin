@@ -69,12 +69,12 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager'], function (imageLoa
         nameHtml += '<div class="cardText">' + person.Name + '</div>';
 
         if (person.Role) {
-            nameHtml += '<div class="cardText">as ' + person.Role + '</div>';
+            nameHtml += '<div class="cardText cardText-secondary">as ' + person.Role + '</div>';
         }
         else if (person.Type) {
-            nameHtml += '<div class="cardText">' + Globalize.translate('core#' + person.Type) + '</div>';
+            nameHtml += '<div class="cardText cardText-secondary">' + Globalize.translate('core#' + person.Type) + '</div>';
         } else {
-            nameHtml += '<div class="cardText">&nbsp;</div>';
+            nameHtml += '<div class="cardText cardText-secondary">&nbsp;</div>';
         }
 
         var html = '\
