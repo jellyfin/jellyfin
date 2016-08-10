@@ -874,8 +874,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
-                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
+                string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
@@ -980,7 +980,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FileSystem.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format("-i {0} -threads 1 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
             var probeSize = GetProbeSizeArgument(new[] { inputArgument }, protocol);
 
