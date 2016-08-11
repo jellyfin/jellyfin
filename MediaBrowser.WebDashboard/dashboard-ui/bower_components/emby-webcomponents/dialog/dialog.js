@@ -8,7 +8,8 @@ define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, 
                 actionSheet.show({
 
                     title: options.text,
-                    items: options.buttons
+                    items: options.buttons,
+                    timeout: options.timeout
 
                 }).then(resolve, reject);
             });
@@ -45,7 +46,7 @@ define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, 
 
         if (options.title) {
             html += '<h2>' + options.title + '</h2>';
-        } 
+        }
 
         var text = options.html || options.text;
 

@@ -1504,9 +1504,6 @@ var AppInfo = {};
         define("cryptojs-sha1", [sha1Path]);
         define("cryptojs-md5", [md5Path]);
 
-        // Done
-        define("emby-icons", ['webcomponentsjs', "html!" + bowerPath + "/emby-icons/emby-icons.html"]);
-
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
 
@@ -2290,8 +2287,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvseriestimer.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['emby-checkbox', 'emby-input', 'emby-button', 'emby-collapse', 'scripts/livetvcomponents', 'scripts/livetvseriestimer', 'livetvcss'],
+            autoFocus: false,
+            controller: 'scripts/livetvseriestimer'
         });
 
         defineRoute({

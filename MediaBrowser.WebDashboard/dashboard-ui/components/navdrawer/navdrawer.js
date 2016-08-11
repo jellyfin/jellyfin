@@ -125,6 +125,8 @@
                     onPanEnd(ev);
                 }
             });
+
+            self.edgeHammer = edgeHammer;
         }
 
         function disableEvent(e) {

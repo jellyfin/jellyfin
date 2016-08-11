@@ -9,16 +9,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
             return i.Type == 'Video';
         })[0] || {};
 
-        var shape = (options.backdropShape || 'backdrop') + 'Card';
+        var shape = (options.backdropShape || 'backdrop');
 
         if (videoStream.Width && videoStream.Height) {
 
             if ((videoStream.Width / videoStream.Height) <= 1.34) {
-                shape = (options.squareShape || 'square') + 'Card';
+                shape = (options.squareShape || 'square');
             }
         }
 
-        className += ' ' + shape;
+        className += ' ' + shape + 'Card';
 
         if (options.block || options.rows) {
             className += ' block';
@@ -37,7 +37,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
 
             var chapter = chapters[i];
 
-            html += buildChapterCard(item, apiClient, chapter, i, options, className);
+            html += buildChapterCard(item, apiClient, chapter, i, options, className, shape);
             itemsInRow++;
 
             if (options.rows && itemsInRow >= options.rows) {
@@ -65,7 +65,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
         return null;
     }
 
-    function buildChapterCard(item, apiClient, chapter, index, options, className) {
+    function buildChapterCard(item, apiClient, chapter, index, options, className, shape) {
 
         var imgUrl = getImgUrl(item, chapter, index, options.width || 400, apiClient);
 
@@ -88,7 +88,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
 <button type="button" class="' + className + '"' + dataAttributes + '> \
 <div class="cardBox">\
 <div class="cardScalable">\
-<div class="cardPadder"></div>\
+<div class="cardPadder-'+ shape + '"></div>\
 <div class="cardContent">\
 ' + cardImageContainer + '\
 </div>\

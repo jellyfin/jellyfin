@@ -133,7 +133,7 @@
 
             html += '<div class="cardScalable">';
 
-            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardPadder cardPadder-square"></div>';
             html += '<a class="cardContent" href="#" data-ajax="false" data-haspw="' + user.HasPassword + '" data-username="' + user.Name + '" data-userid="' + user.Id + '">';
 
             var imgUrl;

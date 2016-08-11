@@ -500,7 +500,7 @@
                     var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
                     chapterHtml += '<div class="cardBox">';
                     chapterHtml += '<div class="cardScalable">';
-                    chapterHtml += '<div class="cardPadder"></div>';
+                    chapterHtml += '<div class="cardPadder cardPadder-backdrop"></div>';
 
                     chapterHtml += '<div class="cardContent">';
 

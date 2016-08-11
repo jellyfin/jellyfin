@@ -48,7 +48,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-backdrop"></div>';
 
         if (href) {
             html += '<a class="cardContent" href="' + href + '">';

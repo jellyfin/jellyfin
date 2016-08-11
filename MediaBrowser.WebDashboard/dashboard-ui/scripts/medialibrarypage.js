@@ -300,7 +300,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-backdrop"></div>';
 
         html += '<div class="cardContent">';
         var imgUrl = '';

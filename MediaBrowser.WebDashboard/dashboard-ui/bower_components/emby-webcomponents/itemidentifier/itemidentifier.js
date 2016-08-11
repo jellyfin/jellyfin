@@ -188,7 +188,7 @@
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder-portrait"></div>';
 
         html += '<div class="cardContent searchImage">';
 

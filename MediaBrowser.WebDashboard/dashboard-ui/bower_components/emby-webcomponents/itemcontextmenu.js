@@ -105,14 +105,14 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.open !== false) {
-                if (item.Type != 'Timer' && item.Type != 'Audio') {
-                    commands.push({
-                        name: globalize.translate('sharedcomponents#Open'),
-                        id: 'open'
-                    });
-                }
-            }
+            //if (options.open !== false) {
+            //    if (item.Type != 'Timer' && item.Type != 'Audio') {
+            //        commands.push({
+            //            name: globalize.translate('sharedcomponents#Open'),
+            //            id: 'open'
+            //        });
+            //    }
+            //}
 
             if (canPlay) {
                 if (options.play !== false) {

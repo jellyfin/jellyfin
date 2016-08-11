@@ -1,62 +1,4 @@
-﻿define(['datetime', 'jQuery'], function (datetime, $) {
-
-    var currentItem;
-
-    function deleteTimer(page, id) {
-
-        require(['confirm'], function (confirm) {
-
-            confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation')).then(function () {
-
-                Dashboard.showLoadingMsg();
-
-                ApiClient.cancelLiveTvTimer(id).then(function () {
-
-                    Dashboard.hideLoadingMsg();
-                    require(['toast'], function (toast) {
-                        toast(Globalize.translate('MessageRecordingCancelled'));
-                    });
-
-                    reload(page);
-                });
-            });
-        });
-    }
-
-    function renderTimer(page, item) {
-
-        currentItem = item;
-
-        $('.itemName', page).html(item.Name);
-
-        $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
-        $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-
-        $('#chkNewOnly', page).checked(item.RecordNewOnly);
-        $('#chkAllChannels', page).checked(item.RecordAnyChannel);
-        $('#chkAnyTime', page).checked(item.RecordAnyTime);
-
-        var channelHtml = '';
-        if (item.RecordAnyChannel) {
-            channelHtml += Globalize.translate('LabelAllChannels');
-        }
-        else if (item.ChannelId) {
-            channelHtml += '<a href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
-        }
-
-        $('.channel', page).html(channelHtml).trigger('create');
-
-        selectDays(page, item.Days);
-
-        if (item.RecordAnyTime) {
-            $('.time', page).html(Globalize.translate('LabelAnytime')).trigger('create');
-        }
-        else if (item.ChannelId) {
-            $('.time', page).html(datetime.getDisplayTime(item.StartDate)).trigger('create');
-        }
-
-        Dashboard.hideLoadingMsg();
-    }
+﻿define(['datetime', 'dom', 'emby-itemscontainer'], function (datetime, dom) {
 
     function getDaysOfWeek() {
 
@@ -75,7 +17,7 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1);
+            page.querySelector('#chk' + day).checked = days.indexOf(day) != -1;
 
         }
 
@@ -91,7 +33,7 @@
 
             var day = daysOfWeek[i];
 
-            if ($('#chk' + day, page).checked()) {
+            if (page.querySelector('#chk' + day).checked) {
                 days.push(day);
             }
         }
@@ -99,102 +41,90 @@
         return days;
     }
 
-    function onSubmit() {
+    return function (view, params) {
 
-        Dashboard.showLoadingMsg();
+        function renderTimer(page, item) {
 
-        var form = this;
+            page.querySelector('.itemName').innerHTML = item.Name;
 
-        ApiClient.getLiveTvSeriesTimer(currentItem.Id).then(function (item) {
+            page.querySelector('#txtPrePaddingMinutes').value = item.PrePaddingSeconds / 60;
+            page.querySelector('#txtPostPaddingMinutes').value = item.PostPaddingSeconds / 60;
 
-            item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
-            item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
+            page.querySelector('#chkNewOnly').checked = item.RecordNewOnly;
+            page.querySelector('#chkAllChannels').checked = item.RecordAnyChannel;
+            page.querySelector('#chkAnyTime').checked = item.RecordAnyTime;
 
-            item.RecordNewOnly = $('#chkNewOnly', form).checked();
-            item.RecordAnyChannel = $('#chkAllChannels', form).checked();
-            item.RecordAnyTime = $('#chkAnyTime', form).checked();
+            selectDays(page, item.Days);
 
-            item.Days = getDays(form);
+            Dashboard.hideLoadingMsg();
+        }
 
-            ApiClient.updateLiveTvSeriesTimer(item).then(function () {
-                Dashboard.hideLoadingMsg();
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageRecordingSaved'));
-                });
+        function onSubmit(e) {
+
+            var form = this;
+
+            var id = params.id;
+
+            ApiClient.getLiveTvSeriesTimer(id).then(function (item) {
+
+                item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
+                item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
+
+                item.RecordNewOnly = form.querySelector('#chkNewOnly').checked;
+                item.RecordAnyChannel = form.querySelector('#chkAllChannels').checked;
+                item.RecordAnyTime = form.querySelector('#chkAnyTime').checked;
+
+                item.Days = getDays(form);
+
+                ApiClient.updateLiveTvSeriesTimer(item);
             });
-        });
 
-        // Disable default form submission
-        return false;
+            e.preventDefault();
+            // Disable default form submission
+            return false;
+        }
 
-    }
+        function renderSchedule(page, result) {
 
-    function renderSchedule(page, result) {
+            var timers = result.Items;
 
-        var timers = result.Items;
+            LiveTvHelpers.getTimersHtml(timers).then(function (html) {
 
-        LiveTvHelpers.getTimersHtml(timers).then(function(html) {
-            var elem = $('.scheduleTab', page).html(html)[0];
+                var scheduleTab = page.querySelector('.scheduleTab');
+                scheduleTab.innerHTML = html;
 
-            ImageLoader.lazyChildren(elem);
-
-            $('.btnDeleteTimer', elem).on('click', function () {
-
-                var id = this.getAttribute('data-timerid');
-
-                deleteTimer(page, id);
+                ImageLoader.lazyChildren(scheduleTab);
             });
-        });
-    }
+        }
 
-    function reload(page) {
+        function reload() {
 
-        Dashboard.showLoadingMsg();
+            var id = params.id;
+            Dashboard.showLoadingMsg();
 
-        var id = getParameterByName('id');
+            ApiClient.getLiveTvSeriesTimer(id).then(function (result) {
 
-        ApiClient.getLiveTvSeriesTimer(id).then(function (result) {
+                renderTimer(view, result);
 
-            renderTimer(page, result);
+            });
 
-        });
+            ApiClient.getLiveTvTimers({
 
-        ApiClient.getLiveTvTimers({
+                seriesTimerId: id
 
-            seriesTimerId: id
+            }).then(function (timerResult) {
 
-        }).then(function (timerResult) {
+                renderSchedule(view, timerResult);
 
-            renderSchedule(page, timerResult);
+            });
+        }
 
-        });
-    }
-
-    $(document).on('pageinit', "#liveTvSeriesTimerPage", function () {
-
-        var page = this;
-
-        $('.radioSeriesTimerTab', page).on('change', function () {
-
-            $('.tab', page).hide();
-            $('.' + this.value + 'Tab', page).show();
-
+        view.querySelector('form').addEventListener('change', function () {
+            view.querySelector('.btnSubmit').click();
         });
 
-        $('.liveTvSeriesTimerForm').off('submit', onSubmit).on('submit', onSubmit);
-
-    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
-
-        var page = this;
-
-        $('.radioProfileTab', page).checked(false).checkboxradio('refresh');
-        $('#radioSettings', page).checked(true).checkboxradio('refresh').trigger('change');
-
-        reload(page);
-
-    }).on('pagebeforehide', "#liveTvSeriesTimerPage", function () {
-
-        currentItem = null;
-    });
-
+        view.querySelector('.liveTvSeriesTimerForm').addEventListener('submit', onSubmit);
+        view.querySelector('.scheduleTab').addEventListener('timercancelled', reload);
+        view.addEventListener('viewbeforeshow', reload);
+    };
 });

@@ -96,7 +96,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-square"></div>';
 
         var href = "useredit.html?userId=" + user.Id + "";
         html += '<a class="cardContent" href="' + href + '">';
@@ -138,7 +138,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div style="text-align:right; float:right;padding:0;">';
-        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">more_vert</i></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';
@@ -237,7 +237,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-square"></div>';
 
         var href = "#";
         html += '<a class="cardContent" href="' + href + '">';
@@ -257,7 +257,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><i class="md-icon">more_vert</i></button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';

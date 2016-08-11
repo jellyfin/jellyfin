@@ -192,7 +192,7 @@
     function getCard(img, target, shape) {
 
         shape = shape || 'backdropCard';
-        var html = '<div class="card scalableCard ' + shape + '"><div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div>';
+        var html = '<div class="card scalableCard ' + shape + '"><div class="cardBox"><div class="cardScalable"><div class="cardPadder cardPadder-backdrop"></div>';
 
         if (target) {
             html += '<a class="cardContent" href="' + target + '" target="_blank">';
