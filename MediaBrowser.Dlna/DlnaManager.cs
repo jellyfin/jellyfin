@@ -73,8 +73,13 @@ namespace MediaBrowser.Dlna
             lock (_profiles)
             {
                 var list = _profiles.Values.ToList();
-                return list.Select(i => i.Item2).OrderBy(i => i.Name);
+                return list
+                    .OrderBy(i => i.Item1.Info.Type == DeviceProfileType.User ? 0 : 1)
+                    .ThenBy(i => i.Item1.Info.Name)
+                    .Select(i => i.Item2)
+                    .ToList();
             }
+
         }
 
         public DeviceProfile GetDefaultProfile()
