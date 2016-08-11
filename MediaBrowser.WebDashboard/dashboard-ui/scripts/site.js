@@ -2287,8 +2287,9 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvseriestimer.html',
-            dependencies: [],
-            autoFocus: false
+            dependencies: ['emby-checkbox', 'emby-input', 'emby-button', 'emby-collapse', 'scripts/livetvcomponents', 'scripts/livetvseriestimer', 'livetvcss'],
+            autoFocus: false,
+            controller: 'scripts/livetvseriestimer'
         });
 
         defineRoute({
