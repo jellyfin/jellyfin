@@ -61,6 +61,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         public void RestartTimer()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             lock (_timerLock)
             {
                 if (_timer == null)
@@ -281,8 +286,10 @@ namespace MediaBrowser.Server.Implementations.IO
             }
         }
 
+        private bool _disposed;
         public void Dispose()
         {
+            _disposed = true;
             DisposeTimer();
         }
     }
