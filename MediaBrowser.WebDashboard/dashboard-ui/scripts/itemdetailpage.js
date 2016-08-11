@@ -1828,7 +1828,7 @@
                 imgUrl = "css/images/items/detail/video.png";
             }
 
-            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardPadder cardPadder-backdrop"></div>';
 
             html += '<div class="cardContent">';
             html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';

@@ -40,14 +40,11 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
 
     resetRegistration();
 
-    function show(title, options, timeoutMs) {
+    function showPersistentNotification(title, options, timeoutMs) {
+        serviceWorkerRegistration.showNotification(title, options);
+    }
 
-        resetRegistration();
-
-        if (serviceWorkerRegistration && !timeoutMs) {
-            serviceWorkerRegistration.showNotification(title, options);
-            return;
-        }
+    function showNonPersistentNotification(title, options, timeoutMs) {
 
         try {
             var notif = new Notification(title, options);
@@ -67,6 +64,18 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
                 throw err;
             }
         }
+    }
+
+    function show(title, options, timeoutMs) {
+
+        resetRegistration();
+
+        if (serviceWorkerRegistration) {
+            showPersistentNotification(title, options, timeoutMs);
+            return;
+        }
+
+        showNonPersistentNotification(title, options, timeoutMs);
     }
 
     function showNewItemNotification(item, apiClient) {
@@ -162,10 +171,10 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             else if (status == 'progress') {
                 notification.title = globalize.translate('sharedcomponents#InstallingPackage').replace('{0}', installation.Name + ' ' + installation.Version);
 
-                //notification.actions =
-                //[
-                //    { action: 'cancel', title: globalize.translate('sharedcomponents#ButtonCancel')/*, icon: 'https://example/like.png'*/ }
-                //];
+                notification.actions =
+                [
+                    { action: 'cancel-install-' + installation.Id, title: globalize.translate('sharedcomponents#ButtonCancel')/*, icon: 'https://example/like.png'*/ }
+                ];
             }
 
             if (status == 'progress') {

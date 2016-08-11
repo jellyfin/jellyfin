@@ -697,10 +697,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
         border: 0 !important;
     }
 
-    .activeSession .cardPadder {
-        padding-bottom: 56.25%;
-    }
-
 
 .sessionNowPlayingContent {
     background-size: cover;

@@ -58,7 +58,7 @@ namespace MediaBrowser.WebDashboard.Api
     {
     }
 
-    [Route("/web/cachefiles", "GET")]
+    [Route("/web/staticfiles", "GET")]
     public class GetCacheFiles
     {
     }
@@ -147,18 +147,23 @@ namespace MediaBrowser.WebDashboard.Api
 
         public object Get(GetCacheFiles request)
         {
+            var allFiles = GetCacheFileList();
+
+            return ResultFactory.GetOptimizedResult(Request, _jsonSerializer.SerializeToString(allFiles));
+        }
+
+        private List<string> GetCacheFileList()
+        {
             var creator = GetPackageCreator();
             var directory = creator.DashboardUIPath;
 
             var skipExtensions = GetUndeployedExtensions();
 
-            var allFiles =
+            return
                 Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
                 .Where(i => !skipExtensions.Contains(Path.GetExtension(i) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 .Select(i => i.Replace(directory, string.Empty, StringComparison.OrdinalIgnoreCase).Replace("\\", "/").TrimStart('/') + "?v=" + _appHost.ApplicationVersion.ToString())
                 .ToList();
-
-            return ResultFactory.GetOptimizedResult(Request, _jsonSerializer.SerializeToString(allFiles));
         }
 
         /// <summary>
@@ -332,12 +337,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             var appVersion = _appHost.ApplicationVersion.ToString();
 
-            var mode = request.Mode;
+            File.WriteAllText(Path.Combine(path, "staticfiles"), _jsonSerializer.SerializeToString(GetCacheFileList()));
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                _fileSystem.DeleteFile(Path.Combine(path, "scripts", "registrationservices.js"));
-            }
+            var mode = request.Mode;
 
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");

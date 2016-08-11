@@ -81,7 +81,7 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager'], function (imageLoa
 <button type="button" data-isfolder="' + person.IsFolder + '" data-type="' + person.Type + '" data-action="link" data-id="' + person.Id + '" data-serverid="' + serverId + '" raised class="' + className + '"> \
 <div class="visualCardBox cardBox">\
 <div class="cardScalable">\
-<div class="cardPadder"></div>\
+<div class="cardPadder-portrait"></div>\
 <div class="cardContent">\
 ' + cardImageContainer + '\
 </div>\

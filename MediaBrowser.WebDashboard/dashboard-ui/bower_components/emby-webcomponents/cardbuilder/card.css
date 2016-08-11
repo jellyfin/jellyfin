@@ -48,19 +48,19 @@
     position: relative;
 }
 
-.backdropCard .cardPadder, .smallBackdropCard .cardPadder, .overflowBackdropCard .cardPadder {
+.cardPadder-backdrop, .cardPadder-smallBackdrop, .cardPadder-overflowBackdrop {
     padding-bottom: 56.25%;
 }
 
-.squareCard .cardPadder, .overflowSquareCard .cardPadder {
+.cardPadder-square, .cardPadder-overflowSquare {
     padding-bottom: 100%;
 }
 
-.portraitCard .cardPadder, .overflowPortraitCard .cardPadder {
+.cardPadder-portrait, .cardPadder-overflowPortrait {
     padding-bottom: 150%;
 }
 
-.bannerCard .cardPadder {
+.cardPadder-banner {
     padding-bottom: 18.5%;
 }
 

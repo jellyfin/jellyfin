@@ -1073,7 +1073,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     cardContentClose = '</button>';
                 }
                 cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
-                cardImageContainerOpen = '<div class="' + cardBoxClass + '"><div class="cardScalable"><div class="cardPadder"></div>' + cardContentOpen + cardImageContainerOpen;
+                cardImageContainerOpen = '<div class="' + cardBoxClass + '"><div class="cardScalable"><div class="cardPadder-' + options.shape + '"></div>' + cardContentOpen + cardImageContainerOpen;
                 cardBoxClose = '</div>';
                 cardScalableClose = '</div>';
                 cardImageContainerClose = '</div>';

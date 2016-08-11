@@ -65,7 +65,7 @@
         html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-square"></div>';
 
         syncJobPage += '?id=' + job.Id;
 

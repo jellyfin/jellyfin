@@ -96,7 +96,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-square"></div>';
 
         var href = "useredit.html?userId=" + user.Id + "";
         html += '<a class="cardContent" href="' + href + '">';
@@ -237,7 +237,7 @@
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable">';
 
-        html += '<div class="cardPadder"></div>';
+        html += '<div class="cardPadder cardPadder-square"></div>';
 
         var href = "#";
         html += '<a class="cardContent" href="' + href + '">';
