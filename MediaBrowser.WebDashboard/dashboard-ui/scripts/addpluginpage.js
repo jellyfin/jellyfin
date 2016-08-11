@@ -73,10 +73,10 @@
                     var review = positive[i];
 
                     html += "<div>";
-                    html += "<span class='storeItemReviewText'>";
+                    html += "<span class='storeItemReviewText' style='display:inline-flex;align-items:center;'>";
                     html += new Date(review.timestamp).toDateString();
                     if (review.rating) {
-                        html += '<iron-icon icon="star" style="color:#666;height:20px;width:20px;min-height:20px;min-width:20px;margin-right:.25em;"></iron-icon>';
+                        html += '<i class="md-icon" style="color:#cc3333;height:auto;width:auto;margin-left:.5em;">star</i>';
                         html += review.rating.toFixed(1);
                     }
                     html += " " + review.title;
@@ -138,7 +138,7 @@
         //Ratings and Reviews
         var ratingHtml = '';
         if (pkg.avgRating) {
-            ratingHtml += '<iron-icon icon="star" style="color:#666;height:20px;width:20px;min-height:20px;min-width:20px;margin-right:.25em;"></iron-icon>';
+            ratingHtml += '<i class="md-icon" style="color:#cc3333;height:auto;width:auto;">star</i>';
             ratingHtml += pkg.avgRating.toFixed(1);
         }
         ratingHtml += "<span>";

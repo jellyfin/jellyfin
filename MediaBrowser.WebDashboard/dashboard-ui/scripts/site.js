@@ -1504,9 +1504,6 @@ var AppInfo = {};
         define("cryptojs-sha1", [sha1Path]);
         define("cryptojs-md5", [md5Path]);
 
-        // Done
-        define("emby-icons", ['webcomponentsjs', "html!" + bowerPath + "/emby-icons/emby-icons.html"]);
-
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
 
