@@ -36,7 +36,7 @@
 
         if (data) {
 
-            console.log('Found backdrop id list in cache. Key: ' + key)
+            console.log('Found backdrop id list in cache. Key: ' + key);
             data = JSON.parse(data);
             return Promise.resolve(data);
         } else {

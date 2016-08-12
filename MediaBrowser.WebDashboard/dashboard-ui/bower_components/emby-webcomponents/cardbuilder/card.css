@@ -37,12 +37,8 @@
     }
 
     .vertical-wrap .card {
-        contain: strict;
+        contain: layout style;
     }
-
-.layout-tv .vertical-wrap .card {
-    contain: layout style;
-}
 
 .cardScalable {
     position: relative;
@@ -71,9 +67,15 @@
     border: 3px solid transparent;
 }
 
-.layout-tv .cardBox {
+.cardBox-focustransform {
     will-change: transform;
+    /*transition: transform 200ms ease-out;*/
 }
+
+/*.card:focus > .cardBox-focustransform {
+    transition-delay: 50ms;
+    transform: scale(1.16, 1.16);
+}*/
 
 @media all and (min-width: 600px) {
 

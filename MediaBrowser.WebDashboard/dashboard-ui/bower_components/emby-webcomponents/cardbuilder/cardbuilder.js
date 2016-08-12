@@ -1043,6 +1043,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (!layoutManager.tv) {
                 cardBoxClass += ' cardBox-mobile';
+            } else {
+                cardBoxClass += ' cardBox-focustransform';
             }
 
             var footerCssClass;
