@@ -96,19 +96,30 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        [IgnoreDataMember]
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
-            {
-                var userdatakeys = GetUserDataKeys();
+            var userdatakeys = GetUserDataKeys();
 
-                if (userdatakeys.Count > 1)
-                {
-                    return userdatakeys[0];
-                }
-                return base.PresentationUniqueKey;
+            if (userdatakeys.Count > 1)
+            {
+                return AddLibrariesToPresentationUniqueKey(userdatakeys[0]);
             }
+            return base.CreatePresentationUniqueKey();
+        }
+
+        private string AddLibrariesToPresentationUniqueKey(string key)
+        {
+            return key;
+            //var folders = LibraryManager.GetCollectionFolders(this)
+            //    .Select(i => i.Id.ToString("N"))
+            //    .ToArray();
+
+            //if (folders.Length == 0)
+            //{
+            //    return key;
+            //}
+
+            //return key + "-" + string.Join("-", folders);
         }
 
         private static string GetUniqueSeriesKey(BaseItem series)
@@ -117,7 +128,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 return series.Id.ToString("N");
             }
-            return series.PresentationUniqueKey;
+            return series.GetPresentationUniqueKey();
         }
 
         public override int GetChildCount(User user)

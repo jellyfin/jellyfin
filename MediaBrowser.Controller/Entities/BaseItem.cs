@@ -1194,10 +1194,17 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
-        [IgnoreDataMember]
-        public virtual string PresentationUniqueKey
+        public virtual string CreatePresentationUniqueKey()
         {
-            get { return Id.ToString("N"); }
+            return Id.ToString("N");
+        }
+
+        [IgnoreDataMember]
+        public string PresentationUniqueKey { get; set; }
+
+        public string GetPresentationUniqueKey()
+        {
+            return PresentationUniqueKey ?? CreatePresentationUniqueKey();
         }
 
         public virtual bool RequiresRefresh()

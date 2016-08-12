@@ -19,13 +19,9 @@ namespace MediaBrowser.Controller.Entities
             list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
-
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
-            {
-                return GetUserDataKeys()[0];
-            }
+            return GetUserDataKeys()[0];
         }
 
         /// <summary>

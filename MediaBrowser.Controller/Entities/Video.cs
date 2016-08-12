@@ -44,18 +44,14 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
+            if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
             {
-                if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
-                {
-                    return PrimaryVersionId;
-                }
-
-                return base.PresentationUniqueKey;
+                return PrimaryVersionId;
             }
+
+            return base.CreatePresentationUniqueKey();
         }
 
         [IgnoreDataMember]
