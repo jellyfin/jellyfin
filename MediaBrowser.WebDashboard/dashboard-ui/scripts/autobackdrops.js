@@ -12,7 +12,13 @@
 
     function enabled() {
 
-        var userId = Dashboard.getCurrentUserId();
+        var apiClient = window.ApiClient;
+
+        if (!apiClient) {
+            return false;
+        }
+
+        var userId = apiClient.getCurrentUserId();
 
         var val = appStorage.getItem('enableBackdrops-' + userId);
 
@@ -46,7 +52,7 @@
                 ParentId: parentId
             };
 
-            return apiClient.getItems(Dashboard.getCurrentUserId(), options).then(function (result) {
+            return apiClient.getItems(apiClient.getCurrentUserId(), options).then(function (result) {
 
                 var images = result.Items.map(function (i) {
                     return {
@@ -70,7 +76,7 @@
             return;
         }
 
-        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).then(function (images) {
+        getBackdropItemIds(apiClient, apiClient.getCurrentUserId(), type, parentId).then(function (images) {
 
             if (images.length) {
 

@@ -64,7 +64,7 @@
     padding-bottom: 18.5%;
 }
 
-.card .cardBox {
+.cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none;
@@ -77,7 +77,7 @@
 
 @media all and (min-width: 600px) {
 
-    .layout-desktop .card .cardBox, .layout-mobile .card .cardBox {
+    .cardBox-mobile {
         margin: 3px;
     }
 }
@@ -92,12 +92,8 @@
         border-color: transparent;
     }
 
-.bottomPaddedCard .cardBox:not(.visualCardBox) {
+.cardBox-bottompadded {
     margin-bottom: 1em;
-}
-
-.hiddenScrollX .bottomPaddedCard .cardBox, .smoothScrollX .bottomPaddedCard .cardBox {
-    margin-bottom: 0;
 }
 
 .btnCardOptions {
@@ -105,18 +101,6 @@
     float: right;
     padding: 5px 0 2px;
     margin: 0 !important;
-}
-
-.dimunselected .card .cardImageContainer {
-    -webkit-filter: brightness(50%);
-    filter: brightness(50%);
-    transition: filter, -webkit-filter 600ms ease-out !important;
-}
-
-.dimunselected .card:focus .cardImageContainer {
-    -webkit-filter: initial;
-    filter: initial;
-    transition: filter, -webkit-filter 600ms ease-out !important;
 }
 
 .mediaSourceIndicator {
