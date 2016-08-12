@@ -412,7 +412,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeasonName",
             "SeasonId",
             "SeriesId",
-            "SeriesSortName"
+            "SeriesSortName",
+            "PresentationUniqueKey"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -918,7 +919,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = GetCleanValue(item.Name);
                     }
 
-                    _saveItemCommand.GetParameter(index++).Value = item.PresentationUniqueKey;
+                    _saveItemCommand.GetParameter(index++).Value = item.GetPresentationUniqueKey();
                     _saveItemCommand.GetParameter(index++).Value = item.SlugName;
                     _saveItemCommand.GetParameter(index++).Value = item.OriginalTitle;
 
@@ -1451,6 +1452,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     hasSeries.SeriesSortName = reader.GetString(index);
                 }
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.PresentationUniqueKey = reader.GetString(index);
             }
             index++;
 

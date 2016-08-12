@@ -284,6 +284,13 @@ namespace MediaBrowser.Providers.Manager
             updateType |= SaveCumulativeRunTimeTicks(item, isFullRefresh, currentUpdateType);
             updateType |= SaveDateLastMediaAdded(item, isFullRefresh, currentUpdateType);
 
+            var presentationUniqueKey = item.CreatePresentationUniqueKey();
+            if (!string.Equals(item.PresentationUniqueKey, presentationUniqueKey, StringComparison.Ordinal))
+            {
+                item.PresentationUniqueKey = presentationUniqueKey;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
+
             return updateType;
         }
 

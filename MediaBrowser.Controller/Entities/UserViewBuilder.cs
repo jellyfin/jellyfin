@@ -1198,7 +1198,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            items = items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
+            items = items.DistinctBy(i => i.GetPresentationUniqueKey(), StringComparer.OrdinalIgnoreCase);
 
             if (query.SortBy.Length > 0)
             {
