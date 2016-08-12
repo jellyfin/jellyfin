@@ -2,7 +2,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     var thresholdX;
     var thresholdY;
-    var windowSize;
 
     var supportsIntersectionObserver = function () {
 
@@ -20,37 +19,28 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         return false;
     }();
 
-    function resetWindowSize() {
-        windowSize = {
-            innerHeight: window.innerHeight,
-            innerWidth: window.innerWidth
-        };
-    }
-
     function resetThresholds() {
 
         var x = screen.availWidth;
         var y = screen.availHeight;
 
-        if (layoutManager.mobile) {
+        if (browser.touch) {
             x *= 2;
             y *= 2;
         }
 
         thresholdX = x;
         thresholdY = y;
-        resetWindowSize();
     }
 
     if (!supportsIntersectionObserver) {
-        window.addEventListener("orientationchange", resetThresholds);
-        window.addEventListener('resize', resetThresholds);
-        events.on(layoutManager, 'modechange', resetThresholds);
+        dom.addEventListener(window, "orientationchange", resetThresholds, { passive: true });
+        dom.addEventListener(window, 'resize', resetThresholds, { passive: true });
         resetThresholds();
     }
 
     function isVisible(elem) {
-        return visibleinviewport(elem, true, thresholdX, thresholdY, windowSize);
+        return visibleinviewport(elem, true, thresholdX, thresholdY);
     }
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');

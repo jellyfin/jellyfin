@@ -1,4 +1,4 @@
-﻿define(['browser', 'connectionManager', 'playbackManager', 'css!./style'], function (browser, connectionManager, playbackManager) {
+﻿define(['browser', 'connectionManager', 'playbackManager', 'dom', 'css!./style'], function (browser, connectionManager, playbackManager, dom) {
 
     function enableAnimation(elem) {
 
@@ -178,14 +178,6 @@
         currentLoadingBackdrop = instance;
     }
 
-    var windowWidth;
-    function resetWindowSize() {
-        windowWidth = screen.availWidth || window.innerWidth;
-    }
-    window.addEventListener("orientationchange", resetWindowSize);
-    window.addEventListener('resize', resetWindowSize);
-    resetWindowSize();
-
     function getItemImageUrls(item) {
 
         var apiClient = connectionManager.getApiClient(item.ServerId);
@@ -197,7 +189,7 @@
                 return apiClient.getScaledImageUrl(item.Id, {
                     type: "Backdrop",
                     tag: imgTag,
-                    maxWidth: Math.min(windowWidth, 1920),
+                    maxWidth: Math.min(dom.getWindowSize().innerWidth, 1920),
                     index: index
                 });
             });
@@ -210,7 +202,7 @@
                 return apiClient.getScaledImageUrl(item.ParentBackdropItemId, {
                     type: "Backdrop",
                     tag: imgTag,
-                    maxWidth: Math.min(windowWidth, 1920),
+                    maxWidth: Math.min(dom.getWindowSize().innerWidth, 1920),
                     index: index
                 });
             });

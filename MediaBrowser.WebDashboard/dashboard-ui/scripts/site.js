@@ -2865,7 +2865,11 @@ var AppInfo = {};
 
             if (!browserInfo.tv && !AppInfo.isNativeApp) {
                 if (navigator.serviceWorker) {
-                    navigator.serviceWorker.register('serviceworker.js');
+                    try {
+                        navigator.serviceWorker.register('serviceworker.js');
+                    } catch (err) {
+                        console.log('Error registering serviceWorker: ' + err);
+                    }
                 }
 
                 if (window.Notification) {

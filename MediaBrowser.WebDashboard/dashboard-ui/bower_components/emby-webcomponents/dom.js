@@ -70,11 +70,30 @@ define([], function () {
         target.removeEventListener(type, handler, optionsOrCapture);
     }
 
+    var windowSize;
+    function resetWindowSize() {
+        windowSize = {
+            innerHeight: window.innerHeight,
+            innerWidth: window.innerWidth
+        };
+    }
+
+    function getWindowSize() {
+        if (!windowSize) {
+            resetWindowSize();
+            addEventListenerWithOptions(window, "orientationchange", resetWindowSize, { passive: true });
+            addEventListenerWithOptions(window, 'resize', resetWindowSize, { passive: true });
+        }
+
+        return windowSize;
+    }
+
     return {
         parentWithAttribute: parentWithAttribute,
         parentWithClass: parentWithClass,
         parentWithTag: parentWithTag,
         addEventListener: addEventListenerWithOptions,
-        removeEventListener: removeEventListenerWithOptions
+        removeEventListener: removeEventListenerWithOptions,
+        getWindowSize: getWindowSize
     };
 });

@@ -1,5 +1,8 @@
 .cardBox-round {
-    border: .7em solid transparent;
+    border: .7em solid transparent !important;
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
 }
 
 .cardImageContainer-round {
@@ -8,12 +11,6 @@
 
 .cardImageContainer, .card-round:focus .cardImageContainer {
     border-color: #fff;
-}
-
-.cardBox-round {
-    transition: transform 180ms ease-out !important;
-    -webkit-transform-origin: center center;
-    transform-origin: center center;
 }
 
 .layout-tv .card-round:focus .cardBox {
