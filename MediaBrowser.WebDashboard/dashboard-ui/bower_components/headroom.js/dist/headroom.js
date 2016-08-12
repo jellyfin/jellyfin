@@ -10,12 +10,7 @@
 
     /* exported features */
 
-    var features = {
-        bind: !!(function () { }.bind),
-        classList: 'classList' in document.documentElement,
-        rAF: !!(window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame)
-    };
-    window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+    var requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
 
     /**
      * Handles debouncing of events via requestAnimationFrame
@@ -158,9 +153,6 @@
          * Initialises the widget
          */
         init: function () {
-            if (!Headroom.cutsTheMustard) {
-                return;
-            }
 
             this.elem.classList.add(this.classes.initial);
 
@@ -262,77 +254,18 @@
          * @return {Number} pixels the page has scrolled along the Y-axis
          */
         getScrollY: function () {
-            return (this.scroller.pageYOffset !== undefined)
-              ? this.scroller.pageYOffset
-              : (this.scroller.scrollTop !== undefined)
-                ? this.scroller.scrollTop
-                : (document.documentElement || document.body.parentNode || document.body).scrollTop;
-        },
 
-        /**
-         * Gets the height of the viewport
-         * @see http://andylangton.co.uk/blog/development/get-viewport-size-width-and-height-javascript
-         * @return {int} the height of the viewport in pixels
-         */
-        getViewportHeight: function () {
-            return window.innerHeight
-              || document.documentElement.clientHeight
-              || document.body.clientHeight;
-        },
-
-        /**
-         * Gets the height of the document
-         * @see http://james.padolsey.com/javascript/get-document-height-cross-browser/
-         * @return {int} the height of the document in pixels
-         */
-        getDocumentHeight: function () {
-            var body = document.body,
-              documentElement = document.documentElement;
-
-            return Math.max(
-              body.scrollHeight, documentElement.scrollHeight,
-              body.offsetHeight, documentElement.offsetHeight,
-              body.clientHeight, documentElement.clientHeight
-            );
-        },
-
-        /**
-         * Gets the height of the DOM element
-         * @param  {Object}  elm the element to calculate the height of which
-         * @return {int}     the height of the element in pixels
-         */
-        getElementHeight: function (elm) {
-            return Math.max(
-              elm.scrollHeight,
-              elm.offsetHeight,
-              elm.clientHeight
-            );
-        },
-
-        /**
-         * Gets the height of the scroller element
-         * @return {int} the height of the scroller element in pixels
-         */
-        getScrollerHeight: function () {
-            return (this.scroller === window || this.scroller === document.body)
-              ? this.getDocumentHeight()
-              : this.getElementHeight(this.scroller);
-        },
-
-        /**
-         * determines if the scroll position is outside of document boundaries
-         * @param  {int}  currentScrollY the current y scroll position
-         * @return {bool} true if out of bounds, false otherwise
-         */
-        isOutOfBounds: function (currentScrollY) {
-            var pastTop = currentScrollY < 0;
-
-            if (pastTop) {
-                return true;
+            var pageYOffset = this.scroller.pageYOffset;
+            if (pageYOffset !== undefined) {
+                return pageYOffset;
             }
 
-            var pastBottom = currentScrollY + this.getViewportHeight() > this.getScrollerHeight();
-            return pastBottom;
+            var scrollTop = this.scroller.scrollTop;
+            if (scrollTop !== undefined) {
+                return scrollTop;
+            }
+
+            return (document.documentElement || document.body).scrollTop;
         },
 
         /**
@@ -378,14 +311,16 @@
               scrollDirection = currentScrollY > this.lastKnownScrollY ? 'down' : 'up',
               toleranceExceeded = this.toleranceExceeded(currentScrollY, scrollDirection);
 
-            if (this.isOutOfBounds(currentScrollY)) { // Ignore bouncy scrolling in OSX
+            if (currentScrollY < 0) { // Ignore bouncy scrolling in OSX
                 return;
             }
 
-            if (currentScrollY <= this.offset) {
-                this.top();
-            } else {
-                this.notTop();
+            if (this.enableTopClasses) {
+                if (currentScrollY <= this.offset) {
+                    this.top();
+                } else {
+                    this.notTop();
+                }
             }
 
             if (this.shouldUnpin(currentScrollY, toleranceExceeded)) {
@@ -417,7 +352,6 @@
             initial: 'headroom'
         }
     };
-    Headroom.cutsTheMustard = typeof features !== 'undefined' && features.rAF && features.bind && features.classList;
 
     window.Headroom = Headroom;
 

@@ -98,7 +98,8 @@
                     scalable: true,
                     overlayPlayButton: section.overlayPlayButton,
                     overlayMoreButton: section.overlayMoreButton,
-                    action: section.action
+                    action: section.action,
+                    allowBottomPadding: !enableScrollX()
                 });
 
                 html += '</div>';

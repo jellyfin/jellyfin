@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.TV
             {
                 return series.Id.ToString("N");
             }
-            return series.PresentationUniqueKey;
+            return series.GetPresentationUniqueKey();
         }
 
         /// <summary>
