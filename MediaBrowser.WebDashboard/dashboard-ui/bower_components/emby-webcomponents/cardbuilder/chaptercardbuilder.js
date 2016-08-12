@@ -1,4 +1,4 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], function (datetime, imageLoader, connectionManager, itemShortcuts) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts', 'layoutManager'], function (datetime, imageLoader, connectionManager, itemShortcuts, layoutManager) {
 
     function buildChapterCardsHtml(item, chapters, options) {
 
@@ -84,9 +84,15 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts'], functi
         nameHtml += '<div class="cardText">' + chapter.Name + '</div>';
         nameHtml += '<div class="cardText">' + datetime.getDisplayRunningTime(chapter.StartPositionTicks) + '</div>';
 
+        var cardBoxCssClass = 'cardBox';
+
+        if (layoutManager.tv) {
+            cardBoxCssClass += ' cardBox-focustransform';
+        }
+
         var html = '\
 <button type="button" class="' + className + '"' + dataAttributes + '> \
-<div class="cardBox">\
+<div class="' + cardBoxCssClass + '">\
 <div class="cardScalable">\
 <div class="cardPadder-'+ shape + '"></div>\
 <div class="cardContent">\

@@ -83,7 +83,8 @@
             showParentTitle: true,
             coverImage: true,
             lazy: true,
-            cardLayout: true
+            cardLayout: true,
+            allowBottomPadding: !enableScrollX()
         });
 
         ImageLoader.lazyChildren(recordingItems);

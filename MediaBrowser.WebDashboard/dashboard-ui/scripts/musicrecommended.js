@@ -43,7 +43,8 @@
                 showParentTitle: true,
                 lazy: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(elem);
@@ -89,7 +90,8 @@
                 action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -135,7 +137,8 @@
                 action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -177,7 +180,8 @@
                 coverImage: true,
                 showItemCounts: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -241,10 +245,6 @@
 
         function enableScrollX() {
             return browserInfo.mobile && AppInfo.enableAppLayouts;
-        }
-
-        function getThumbShape() {
-            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
         }
 
         self.initTab = function () {
@@ -350,12 +350,6 @@
         }
 
         var mdlTabs = view.querySelector('.libraryViewNav');
-
-        var baseUrl = 'music.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
 
         libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5, 6]);
 

@@ -88,6 +88,8 @@
                     view.querySelector('#resumableSection').classList.add('hide');
                 }
 
+                var allowBottomPadding = !enableScrollX();
+
                 var container = view.querySelector('#resumableItems');
                 cardBuilder.buildCards(result.Items, {
                     itemsContainer: container,
@@ -98,7 +100,8 @@
                     showParentTitle: true,
                     overlayText: false,
                     centerText: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    allowBottomPadding: allowBottomPadding
                 });
             });
         }

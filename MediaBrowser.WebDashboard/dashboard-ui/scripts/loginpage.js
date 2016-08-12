@@ -129,7 +129,7 @@
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
-            html += '<div class="card squareCard bottomPaddedCard scalableCard"><div class="cardBox visualCardBox">';
+            html += '<div class="card squareCard scalableCard"><div class="cardBox cardBox-bottompadded visualCardBox">';
 
             html += '<div class="cardScalable">';
 

@@ -197,22 +197,18 @@ div[data-role='page'] {
  * Adding them is left as an exercise for the reader.
  */
 .headroom {
-    -webkit-transition: transform 200ms linear;
-    transition: transform 200ms linear;
+    transition: transform 180ms linear;
 }
 
 .headroom--pinned {
-    -webkit-transform: translateY(0%);
-    transform: translateY(0%);
+    transform: none;
 }
 
 .headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-100%);
     transform: translateY(-100%);
 }
 
 .libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-210%);
     transform: translateY(-210%);
 }
 

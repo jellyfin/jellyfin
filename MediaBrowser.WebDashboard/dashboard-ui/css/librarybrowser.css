@@ -998,3 +998,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         width: 16.666666666666666666666666666667% !important;
     }
 }
+
+.btnSyncComplete {
+    background: #673AB7 !important;
+}
+
+.btnSyncComplete i {
+    border-radius: 1000px;
+}

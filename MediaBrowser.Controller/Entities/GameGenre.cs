@@ -16,12 +16,9 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
-            {
-                return GetUserDataKeys()[0];
-            }
+            return GetUserDataKeys()[0];
         }
 
         /// <summary>

@@ -685,18 +685,13 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
         display: inline-block;
     }
 
-.activeSession {
-    width: 50%;
-}
 
-    .activeSession .cardBox {
-        -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border: 0 !important;
+@media all and (min-width: 420px) {
+
+    .activeSession {
+        width: 50% !important;
     }
-
+}
 
 .sessionNowPlayingContent {
     background-size: cover;
@@ -877,10 +872,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 
     .sessionAppName {
         max-width: 150px;
-    }
-
-    .activeSession {
-        width: 100%;
     }
 }
 

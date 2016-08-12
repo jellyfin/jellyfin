@@ -37,12 +37,8 @@
     }
 
     .vertical-wrap .card {
-        contain: strict;
+        contain: layout style;
     }
-
-.layout-tv .vertical-wrap .card {
-    contain: layout style;
-}
 
 .cardScalable {
     position: relative;
@@ -64,20 +60,26 @@
     padding-bottom: 18.5%;
 }
 
-.card .cardBox {
+.cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none;
     border: 3px solid transparent;
 }
 
-.layout-tv .cardBox {
+.cardBox-focustransform {
     will-change: transform;
+    /*transition: transform 200ms ease-out;*/
 }
+
+/*.card:focus > .cardBox-focustransform {
+    transition-delay: 50ms;
+    transform: scale(1.16, 1.16);
+}*/
 
 @media all and (min-width: 600px) {
 
-    .layout-desktop .card .cardBox, .layout-mobile .card .cardBox {
+    .cardBox-mobile {
         margin: 3px;
     }
 }
@@ -92,12 +94,8 @@
         border-color: transparent;
     }
 
-.bottomPaddedCard .cardBox:not(.visualCardBox) {
+.cardBox-bottompadded {
     margin-bottom: 1em;
-}
-
-.hiddenScrollX .bottomPaddedCard .cardBox, .smoothScrollX .bottomPaddedCard .cardBox {
-    margin-bottom: 0;
 }
 
 .btnCardOptions {
@@ -105,18 +103,6 @@
     float: right;
     padding: 5px 0 2px;
     margin: 0 !important;
-}
-
-.dimunselected .card .cardImageContainer {
-    -webkit-filter: brightness(50%);
-    filter: brightness(50%);
-    transition: filter, -webkit-filter 600ms ease-out !important;
-}
-
-.dimunselected .card:focus .cardImageContainer {
-    -webkit-filter: initial;
-    filter: initial;
-    transition: filter, -webkit-filter 600ms ease-out !important;
 }
 
 .mediaSourceIndicator {
@@ -146,8 +132,14 @@
     justify-content: center;
     position: relative;
     background-clip: content-box !important;
-    border-radius: 2px;
     color: #fff;
+}
+
+@media all and (min-width: 600px) {
+
+    .cardImageContainer {
+        border-radius: 2px;
+    }
 }
 
 .visualCardBox .cardImageContainer {

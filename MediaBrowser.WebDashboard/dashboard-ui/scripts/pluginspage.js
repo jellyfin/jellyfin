@@ -43,9 +43,9 @@
             configPageUrl :
             null;
 
-        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard bottomPaddedCard scalableCard'>";
+        html += "<div data-id='" + plugin.Id + "' data-name='" + plugin.Name + "' class='card backdropCard scalableCard'>";
 
-        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="cardBox cardBox-bottompadded visualCardBox">';
         html += '<div class="cardScalable">';
 
         html += '<div class="cardPadder cardPadder-backdrop"></div>';

@@ -114,22 +114,18 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        [IgnoreDataMember]
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
+            if (IndexNumber.HasValue)
             {
-                if (IndexNumber.HasValue)
+                var series = Series;
+                if (series != null)
                 {
-                    var series = Series;
-                    if (series != null)
-                    {
-                        return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
-                    }
+                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
                 }
-
-                return base.PresentationUniqueKey;
             }
+
+            return base.CreatePresentationUniqueKey();
         }
 
         /// <summary>

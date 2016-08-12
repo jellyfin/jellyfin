@@ -271,7 +271,9 @@
                 editImages: true,
                 editSubtitles: true,
                 sync: false,
-                share: false
+                share: false,
+                play: false,
+                queue: false
 
             }).then(function (result) {
 

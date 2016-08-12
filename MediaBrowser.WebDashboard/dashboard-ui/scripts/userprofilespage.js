@@ -230,11 +230,11 @@
 
         var html = '';
 
-        var cssClass = "card squareCard bottomPaddedCard";
+        var cssClass = "card squareCard";
 
         html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
 
-        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="cardBox cardBox-bottompadded visualCardBox">';
         html += '<div class="cardScalable">';
 
         html += '<div class="cardPadder cardPadder-square"></div>';

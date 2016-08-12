@@ -150,12 +150,8 @@
             requestAnimationFrame(function () {
                 if (pos) {
                     options.target.style.transform = 'translate3d(' + pos + 'px, 0, 0)';
-                    options.target.style.WebkitTransform = 'translate3d(' + pos + 'px, 0, 0)';
-                    options.target.style.MozTransform = 'translate3d(' + pos + 'px, 0, 0)';
                 } else {
                     options.target.style.transform = 'none';
-                    options.target.style.WebkitTransform = 'none';
-                    options.target.style.MozTransform = 'none';
                 }
             });
         };

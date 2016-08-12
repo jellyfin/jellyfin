@@ -1,5 +1,17 @@
 define(['dom'], function (dom) {
 
+    var scopes = [];
+    function pushScope(elem) {
+        scopes.push(elem);
+    }
+
+    function popScope(elem) {
+
+        if (scopes.length) {
+            scopes.length -= 1;
+        }
+    }
+
     function autoFocus(view, defaultToFirst, findAutoFocusElement) {
 
         var element;
@@ -34,7 +46,14 @@ define(['dom'], function (dom) {
 
     var focusableTagNames = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'];
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
-    var focusableQuery = focusableTagNames.join(',') + ',.focusable';
+    var focusableQuery = focusableTagNames.map(function (t) {
+
+        if (t == 'INPUT') {
+            t += ':not([type="range"])';
+        }
+        return t + ':not([tabindex="-1"]):not(:disabled)';
+
+    }).join(',') + ',.focusable';
 
     function isFocusable(elem) {
 
@@ -63,6 +82,17 @@ define(['dom'], function (dom) {
     }
 
     // Determines if a focusable element can be focused at a given point in time 
+    function isCurrentlyFocusableInternal(elem) {
+
+        // http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
+        if (elem.offsetParent === null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Determines if a focusable element can be focused at a given point in time 
     function isCurrentlyFocusable(elem) {
 
         if (elem.disabled) {
@@ -73,11 +103,6 @@ define(['dom'], function (dom) {
             return false;
         }
 
-        // http://stackoverflow.com/questions/19669786/check-if-element-is-visible-in-dom
-        if (elem.offsetParent === null) {
-            return false;
-        }
-
         if (elem.tagName == 'INPUT') {
             var type = elem.type;
             if (type == 'range') {
@@ -85,18 +110,22 @@ define(['dom'], function (dom) {
             }
         }
 
-        return true;
+        return isCurrentlyFocusableInternal(elem);
+    }
+
+    function getDefaultScope() {
+        return scopes[0] || document.body;
     }
 
     function getFocusableElements(parent) {
-        var elems = (parent || document.body).querySelectorAll(focusableQuery);
+        var elems = (parent || getDefaultScope()).querySelectorAll(focusableQuery);
         var focusableElements = [];
 
         for (var i = 0, length = elems.length; i < length; i++) {
 
             var elem = elems[i];
 
-            if (isCurrentlyFocusable(elem)) {
+            if (isCurrentlyFocusableInternal(elem)) {
                 focusableElements.push(elem);
             }
         }
@@ -132,7 +161,7 @@ define(['dom'], function (dom) {
             elem = elem.parentNode;
 
             if (!elem) {
-                return document.body;
+                return getDefaultScope();
             }
         }
 
@@ -192,7 +221,7 @@ define(['dom'], function (dom) {
             activeElement = focusableParent(activeElement);
         }
 
-        var container = activeElement ? getFocusContainer(activeElement, direction) : document.body;
+        var container = activeElement ? getFocusContainer(activeElement, direction) : getDefaultScope();
 
         if (!activeElement) {
             autoFocus(container, true, false);
@@ -218,9 +247,9 @@ define(['dom'], function (dom) {
                 continue;
             }
 
-            if (!isCurrentlyFocusable(curr)) {
-                continue;
-            }
+            //if (!isCurrentlyFocusableInternal(curr)) {
+            //    continue;
+            //}
 
             var elementRect = getViewportBoundingClientRect(curr, windowData);
 
@@ -415,6 +444,8 @@ define(['dom'], function (dom) {
             nav(sourceElement, 3);
         },
         sendText: sendText,
-        isCurrentlyFocusable: isCurrentlyFocusable
+        isCurrentlyFocusable: isCurrentlyFocusable,
+        pushScope: pushScope,
+        popScope: popScope
     };
 });

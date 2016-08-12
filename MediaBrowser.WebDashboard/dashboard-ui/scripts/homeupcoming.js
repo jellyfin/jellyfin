@@ -99,7 +99,10 @@
             html += '<div class="homePageSection">';
             html += '<h1 class="listHeader">' + group.name + '</h1>';
 
+            var allowBottomPadding = true;
+
             if (enableScrollX()) {
+                allowBottomPadding = false;
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
                 html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
@@ -116,7 +119,8 @@
                 centerText: true,
                 context: 'home-upcoming',
                 overlayMoreButton: true,
-                showParentTitle: true
+                showParentTitle: true,
+                allowBottomPadding: allowBottomPadding
 
             });
             html += '</div>';
