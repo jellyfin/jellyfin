@@ -50,23 +50,25 @@ function isCacheable(request) {
     return true;
 }
 
-//self.addEventListener('fetch', function (event) {
+if (self.location.toString().indexOf('localhost') == -1) {
+    self.addEventListener('fetch', function (event) {
 
-//    if (!isCacheable(event.request)) {
-//        return;
-//    }
+        if (!isCacheable(event.request)) {
+            return;
+        }
 
-//    event.respondWith(
-//      caches.open(staticFileCacheName).then(function (cache) {
-//          return cache.match(event.request).then(function (response) {
-//              return response || fetch(event.request).then(function (response) {
-//                  cache.put(event.request, response.clone());
-//                  return response;
-//              });
-//          });
-//      })
-//    );
-//});
+        event.respondWith(
+          caches.open(staticFileCacheName).then(function (cache) {
+              return cache.match(event.request).then(function (response) {
+                  return response || fetch(event.request).then(function (response) {
+                      cache.put(event.request, response.clone());
+                      return response;
+                  });
+              });
+          })
+        );
+    });
+}
 
 self.addEventListener('activate', function (event) {
 

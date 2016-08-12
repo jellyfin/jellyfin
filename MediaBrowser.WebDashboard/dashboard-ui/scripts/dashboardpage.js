@@ -309,7 +309,7 @@
 
                 var nowPlayingItem = session.NowPlayingItem;
 
-                var className = nowPlayingItem ? 'scalableCard card activeSession' : 'scalableCard card activeSession';
+                var className = nowPlayingItem ? 'scalableCard card activeSession backdropCard' : 'scalableCard card activeSession backdropCard';
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                     className += ' transcodingSession';

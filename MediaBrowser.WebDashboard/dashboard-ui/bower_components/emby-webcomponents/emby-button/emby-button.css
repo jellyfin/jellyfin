@@ -30,7 +30,12 @@
     text-transform: uppercase;
 }
 
-    .emby-button.raised, .emby-button.fab {
+    .emby-button.raised {
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        text-transform: none;
+    }
+
+    .emby-button.fab {
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
     }
 
@@ -141,7 +146,6 @@
     position: relative;
     overflow: hidden;
     font-weight: 500;
-    text-transform: uppercase;
     border-radius: 50%;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     justify-content: center;

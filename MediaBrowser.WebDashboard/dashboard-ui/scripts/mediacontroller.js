@@ -213,72 +213,12 @@
         MediaController.enableDisplayMirroring(this.checked);
     }
 
-    function bindKeys(controller) {
-
-        var self = this;
-        var keyResult = {};
-
-        self.keyBinding = function (e) {
-
-            if (bypass()) return;
-
-            console.log("keyCode", e.keyCode);
-
-            if (keyResult[e.keyCode]) {
-                e.preventDefault();
-                keyResult[e.keyCode](e);
-            }
-        };
-
-        self.keyPrevent = function (e) {
-
-            if (bypass()) return;
-
-            var codes = [32, 38, 40, 37, 39, 81, 77, 65, 84, 83, 70];
-
-            if (codes.indexOf(e.keyCode) != -1) {
-                e.preventDefault();
-            }
-        };
-
-        keyResult[32] = function () { // spacebar
-
-            var player = controller.getCurrentPlayer();
-
-            player.getPlayerState().then(function (result) {
-
-                var state = result;
-
-                if (state.NowPlayingItem && state.PlayState) {
-                    if (state.PlayState.IsPaused) {
-                        player.unpause();
-                    } else {
-                        player.pause();
-                    }
-                }
-            });
-        };
-
-        var bypass = function () {
-            // Get active elem to see what type it is
-            var active = document.activeElement;
-            var type = active.type || active.tagName.toLowerCase();
-            return (type === "text" || type === "select" || type === "textarea" || type == "password");
-        };
-    }
-
     function mediaController() {
 
         var self = this;
         var currentPlayer;
         var currentTargetInfo;
         var players = [];
-
-        var keys = new bindKeys(self);
-
-        window.addEventListener('keydown', keys.keyBinding);
-        window.addEventListener('keypress', keys.keyPrevent);
-        window.addEventListener('keyup', keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 

@@ -1079,7 +1079,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 outerCardFooter = getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, true);
             }
 
-            if (outerCardFooter && !options.cardLayout) {
+            if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {
                 cardBoxClass += ' cardBox-bottompadded';
             }
 

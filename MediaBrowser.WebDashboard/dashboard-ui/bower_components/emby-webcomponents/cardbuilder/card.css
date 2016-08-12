@@ -132,8 +132,14 @@
     justify-content: center;
     position: relative;
     background-clip: content-box !important;
-    border-radius: 2px;
     color: #fff;
+}
+
+@media all and (min-width: 600px) {
+
+    .cardImageContainer {
+        border-radius: 2px;
+    }
 }
 
 .visualCardBox .cardImageContainer {
