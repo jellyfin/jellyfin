@@ -109,17 +109,16 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private string AddLibrariesToPresentationUniqueKey(string key)
         {
-            return key;
-            //var folders = LibraryManager.GetCollectionFolders(this)
-            //    .Select(i => i.Id.ToString("N"))
-            //    .ToArray();
+            var folders = LibraryManager.GetCollectionFolders(this)
+                .Select(i => i.Id.ToString("N"))
+                .ToArray();
 
-            //if (folders.Length == 0)
-            //{
-            //    return key;
-            //}
+            if (folders.Length == 0)
+            {
+                return key;
+            }
 
-            //return key + "-" + string.Join("-", folders);
+            return key + "-" + string.Join("-", folders);
         }
 
         private static string GetUniqueSeriesKey(BaseItem series)
