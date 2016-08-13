@@ -67,7 +67,7 @@
         html += '</h3>';
         html += '</div>';
 
-        html += '<button is="paper-icon-button-light" class="btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
+        html += '<button is="paper-icon-button-light" class="listItemButton btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
 
         html += '</div>';
 

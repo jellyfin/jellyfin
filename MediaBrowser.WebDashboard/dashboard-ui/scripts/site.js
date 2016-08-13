@@ -154,8 +154,6 @@ var Dashboard = {
 
         if (info.HasPendingRestart) {
 
-            Dashboard.hideDashboardVersionWarning();
-
             Dashboard.getCurrentUser().then(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
@@ -213,16 +211,6 @@ var Dashboard = {
     reloadPage: function () {
 
         window.location.reload(true);
-    },
-
-    hideDashboardVersionWarning: function () {
-
-        var elem = document.getElementById('dashboardVersionWarning');
-
-        if (elem) {
-
-            elem.parentNode.removeChild(elem);
-        }
     },
 
     showFooterNotification: function (options) {

@@ -284,6 +284,13 @@ namespace MediaBrowser.Api.Playback
                         options.ForceDirectPlay = true;
                     }
                 }
+                else if (item is Video)
+                {
+                    if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
+                    {
+                        options.ForceDirectPlay = true;
+                    }
+                }
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -311,6 +318,13 @@ namespace MediaBrowser.Api.Playback
                 if (item is Audio)
                 {
                     if (!user.Policy.EnableAudioPlaybackTranscoding)
+                    {
+                        options.ForceDirectStream = true;
+                    }
+                }
+                else if (item is Video)
+                {
+                    if (!user.Policy.EnableAudioPlaybackTranscoding && !user.Policy.EnableVideoPlaybackTranscoding && !user.Policy.EnablePlaybackRemuxing)
                     {
                         options.ForceDirectStream = true;
                     }
