@@ -44,16 +44,16 @@ namespace MediaBrowser.Controller.Entities
 
         public string CollectionType { get; set; }
 
-        private readonly Dictionary<string, LibraryOptions> _libraryOptions = new Dictionary<string, LibraryOptions>();
+        private static readonly Dictionary<string, LibraryOptions> LibraryOptions = new Dictionary<string, LibraryOptions>();
         public LibraryOptions GetLibraryOptions()
         {
-            lock (_libraryOptions)
+            lock (LibraryOptions)
             {
                 LibraryOptions options;
-                if (!_libraryOptions.TryGetValue(Path, out options))
+                if (!LibraryOptions.TryGetValue(Path, out options))
                 {
                     options = LoadLibraryOptions();
-                    _libraryOptions[Path] = options;
+                    LibraryOptions[Path] = options;
                 }
 
                 return options;
