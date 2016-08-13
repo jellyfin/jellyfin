@@ -408,8 +408,15 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private void SetItemByNameInfo(BaseItem item, BaseItemDto dto, List<BaseItem> taggedItems, User user = null)
         {
-            if (item is MusicArtist || item is MusicGenre)
+            if (item is MusicArtist)
             {
+                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
+                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
+                dto.SongCount = taggedItems.Count(i => i is Audio);
+            }
+            else if (item is MusicGenre)
+            {
+                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
@@ -422,6 +429,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 // This populates them all and covers Genre, Person, Studio, Year
 
+                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
                 dto.GameCount = taggedItems.Count(i => i is Game);

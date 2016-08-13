@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using CommonIO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Library
 {

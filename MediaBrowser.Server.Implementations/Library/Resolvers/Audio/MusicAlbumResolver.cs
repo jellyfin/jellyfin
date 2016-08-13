@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using CommonIO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {

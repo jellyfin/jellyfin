@@ -1223,7 +1223,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .Select(dir => GetVirtualFolderInfo(dir, topLibraryFolders));
         }
 
-        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> collectionFolders)
+        private VirtualFolderInfo GetVirtualFolderInfo(string dir, List<BaseItem> allCollectionFolders)
         {
             var info = new VirtualFolderInfo
             {
@@ -1237,7 +1237,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 CollectionType = GetCollectionType(dir)
             };
 
-            var libraryFolder = collectionFolders.FirstOrDefault(i => string.Equals(i.Path, dir, StringComparison.OrdinalIgnoreCase));
+            var libraryFolder = allCollectionFolders.FirstOrDefault(i => string.Equals(i.Path, dir, StringComparison.OrdinalIgnoreCase));
 
             if (libraryFolder != null && libraryFolder.HasImage(ImageType.Primary))
             {
@@ -1247,6 +1247,12 @@ namespace MediaBrowser.Server.Implementations.Library
             if (libraryFolder != null)
             {
                 info.ItemId = libraryFolder.Id.ToString("N");
+            }
+
+            var collectionFolder = libraryFolder as CollectionFolder;
+            if (collectionFolder != null)
+            {
+                info.LibraryOptions = collectionFolder.GetLibraryOptions();
             }
 
             return info;
@@ -2426,13 +2432,13 @@ namespace MediaBrowser.Server.Implementations.Library
             options.AudioFileExtensions.Remove(".m3u");
             options.AudioFileExtensions.Remove(".wpl");
 
-            if (!libraryOptions.EnableAudioArchiveFiles)
+            if (!libraryOptions.EnableArchiveMediaFiles)
             {
                 options.AudioFileExtensions.Remove(".rar");
                 options.AudioFileExtensions.Remove(".zip");
             }
 
-            if (!libraryOptions.EnableVideoArchiveFiles)
+            if (!libraryOptions.EnableArchiveMediaFiles)
             {
                 options.VideoFileExtensions.Remove(".rar");
                 options.VideoFileExtensions.Remove(".zip");
