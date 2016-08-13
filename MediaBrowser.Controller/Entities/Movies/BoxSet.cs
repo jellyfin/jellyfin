@@ -62,11 +62,18 @@ namespace MediaBrowser.Controller.Entities.Movies
             return UnratedItem.Movie;
         }
 
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            if (IsLegacyBoxSet)
+            {
+                return base.LoadChildren();
+            }
+            return new List<BaseItem>();
+        }
+
         protected override IEnumerable<BaseItem> LoadChildren()
         {
-            var first = LinkedChildren.FirstOrDefault();
-
-            if (first != null && first.Type == LinkedChildType.Shortcut)
+            if (IsLegacyBoxSet)
             {
                 return base.LoadChildren();
             }
@@ -89,7 +96,22 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                return true;
+                if (IsLegacyBoxSet)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        private bool IsLegacyBoxSet
+        {
+            get
+            {
+                // TODO
+                return false;
             }
         }
 

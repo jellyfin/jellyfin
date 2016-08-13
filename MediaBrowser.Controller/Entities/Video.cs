@@ -12,6 +12,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Controller.Entities
@@ -610,6 +611,11 @@ namespace MediaBrowser.Controller.Entities
                 PlayableStreamFileNames = i.PlayableStreamFileNames.ToList(),
                 SupportsDirectStream = i.VideoType == VideoType.VideoFile
             };
+
+            if (info.Protocol == MediaProtocol.File)
+            {
+                info.ETag = i.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
+            }
 
             if (i.IsShortcut)
             {

@@ -1589,6 +1589,10 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 29)
+                {
+                    request.Tag = val;
+                }
             }
         }
 
