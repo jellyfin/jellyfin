@@ -1,6 +1,6 @@
 ﻿define(['globalize', 'emby-checkbox'], function (globalize) {
 
-    function embed(parent, contentType) {
+    function embed(parent, contentType, libraryOptions) {
 
         return new Promise(function (resolve, reject) {
 
@@ -13,6 +13,10 @@
                 parent.innerHTML = globalize.translateDocument(template);
 
                 setContentType(parent, contentType);
+
+                if (libraryOptions) {
+                    setLibraryOptions(parent, libraryOptions);
+                }
 
                 resolve();
             }
@@ -39,17 +43,23 @@
     function getLibraryOptions(parent) {
 
         var options = {
-            EnableVideoArchiveFiles: parent.querySelector('.chkArhiveAsMedia').checked
+            EnableArchiveMediaFiles: parent.querySelector('.chkArhiveAsMedia').checked
         };
 
-        options.EnableAudioArchiveFiles = options.EnableVideoArchiveFiles;
+        options.EnableAudioArchiveFiles = options.EnableArchiveMediaFiles;
 
         return options;
+    }
+
+    function setLibraryOptions(parent, options) {
+
+        parent.querySelector('.chkArhiveAsMedia').checked = options.EnableArchiveMediaFiles;;
     }
 
     return {
         embed: embed,
         setContentType: setContentType,
-        getLibraryOptions: getLibraryOptions
+        getLibraryOptions: getLibraryOptions,
+        setLibraryOptions: setLibraryOptions
     };
 });

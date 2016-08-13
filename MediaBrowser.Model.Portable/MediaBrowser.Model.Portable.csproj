@@ -205,6 +205,9 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\ImageSavingConvention.cs">
       <Link>Configuration\ImageSavingConvention.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\LibraryOptions.cs">
+      <Link>Configuration\LibraryOptions.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\MetadataConfiguration.cs">
       <Link>Configuration\MetadataConfiguration.cs</Link>
     </Compile>

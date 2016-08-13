@@ -837,6 +837,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The album count.</value>
         public int? AlbumCount { get; set; }
+        public int? ArtistCount { get; set; }
         /// <summary>
         /// Gets or sets the music video count.
         /// </summary>

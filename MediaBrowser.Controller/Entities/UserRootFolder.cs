@@ -16,6 +16,31 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
+        private List<Guid> _childrenIds = null;
+        private readonly object _childIdsLock = new object();
+        //protected override IEnumerable<BaseItem> LoadChildren()
+        //{
+        //    lock (_childIdsLock)
+        //    {
+        //        if (_childrenIds == null)
+        //        {
+        //            var list = base.LoadChildren().ToList();
+        //            _childrenIds = list.Select(i => i.Id).ToList();
+        //            return list;
+        //        }
+
+        //        return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+        //    }
+        //}
+
+        private void ResetCachedChildren()
+        {
+            lock (_childIdsLock)
+            {
+                _childrenIds = null;
+            }
+        }
+
         protected override async Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
         {
             if (query.Recursive)
@@ -69,6 +94,8 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool BeforeMetadataRefresh()
         {
+            ResetCachedChildren();
+
             var hasChanges = base.BeforeMetadataRefresh();
 
             if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
@@ -82,6 +109,8 @@ namespace MediaBrowser.Controller.Entities
 
         protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
+            ResetCachedChildren();
+
             await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
                 .ConfigureAwait(false);
 

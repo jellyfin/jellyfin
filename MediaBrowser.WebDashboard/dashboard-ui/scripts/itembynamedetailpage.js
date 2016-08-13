@@ -4,6 +4,13 @@
 
         var sections = [];
 
+        if (item.ArtistCount) {
+            sections.push({
+                name: Globalize.translate('TabArtists'),
+                type: 'MusicArtist'
+            });
+        }
+
         if (item.MovieCount) {
 
             sections.push({
@@ -188,8 +195,25 @@
                     playFromHere: true,
                     showTitle: true,
                     showParentTitle: true,
-                    centerText: true,
-                    overlayPlayButton: true
+                    coverImage: true,
+                    cardLayout: true
+                });
+                break;
+
+            case 'MusicArtist':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "MusicArtist",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 8
+                }, {
+                    shape: "square",
+                    playFromHere: true,
+                    showTitle: true,
+                    showParentTitle: true,
+                    coverImage: true,
+                    cardLayout: true
                 });
                 break;
 
