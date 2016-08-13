@@ -273,7 +273,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual IEnumerable<BaseItem> LoadChildren()
         {
-            //Logger.Debug("Loading children from {0} {1}", Id, Path);
+            //Logger.Debug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
