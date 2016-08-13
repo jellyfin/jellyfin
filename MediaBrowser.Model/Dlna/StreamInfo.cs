@@ -252,6 +252,8 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("TranscodingMaxAudioChannels", item.TranscodingMaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.TranscodingMaxAudioChannels.Value) : string.Empty));
             list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString().ToLower()));
 
+            list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
+
             return list;
         }
 
