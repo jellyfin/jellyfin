@@ -67,6 +67,31 @@ namespace MediaBrowser.Controller.Entities
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
+        private List<Guid> _childrenIds = null;
+        private readonly object _childIdsLock = new object();
+        protected override IEnumerable<BaseItem> LoadChildren()
+        {
+            lock (_childIdsLock)
+            {
+                if (_childrenIds == null || _childrenIds.Count == 0)
+                {
+                    var list = base.LoadChildren().ToList();
+                    _childrenIds = list.Select(i => i.Id).ToList();
+                    return list;
+                }
+
+                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+            }
+        }
+
+        private void ResetCachedChildren()
+        {
+            lock (_childIdsLock)
+            {
+                _childrenIds = null;
+            }
+        }
+
         private bool _requiresRefresh;
         public override bool RequiresRefresh()
         {
@@ -89,6 +114,8 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool BeforeMetadataRefresh()
         {
+            ResetCachedChildren();
+
             var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
@@ -96,9 +123,11 @@ namespace MediaBrowser.Controller.Entities
 
         private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService, bool setPhysicalLocations)
         {
+            ResetCachedChildren();
+
             var path = ContainingFolderPath;
 
-            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths , directoryService)
+            var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
                 Path = path,
@@ -135,7 +164,7 @@ namespace MediaBrowser.Controller.Entities
 
             return args;
         }
-        
+
         /// <summary>
         /// Adds the virtual child.
         /// </summary>
