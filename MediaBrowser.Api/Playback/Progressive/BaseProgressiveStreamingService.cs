@@ -154,12 +154,20 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
+                    TimeSpan? cacheDuration = null;
+
+                    if (!string.IsNullOrEmpty(request.Tag))
+                    {
+                        cacheDuration = TimeSpan.FromDays(365);
+                    }
+
                     return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
                         ResponseHeaders = responseHeaders,
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
-                        Path = state.MediaPath
+                        Path = state.MediaPath,
+                        CacheDuration = cacheDuration
 
                     }).ConfigureAwait(false);
                 }

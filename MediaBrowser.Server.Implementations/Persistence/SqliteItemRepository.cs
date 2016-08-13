@@ -3975,7 +3975,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     AlbumArtistStartsWithOrGreater = query.AlbumArtistStartsWithOrGreater,
                     Tags = query.Tags,
                     OfficialRatings = query.OfficialRatings,
-                    Genres = query.GenreIds,
+                    GenreIds = query.GenreIds,
+                    Genres = query.Genres,
                     Years = query.Years
                 };
 
@@ -4127,6 +4128,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 else if (string.Equals(typeName, typeof(MusicAlbum).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.AlbumCount = value;
+                }
+                else if (string.Equals(typeName, typeof(MusicArtist).FullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.ArtistCount = value;
                 }
                 else if (string.Equals(typeName, typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
                 {

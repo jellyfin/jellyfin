@@ -95,6 +95,7 @@
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
     <Compile Include="Configuration\EncodingOptions.cs" />
     <Compile Include="Configuration\FanartOptions.cs" />
+    <Compile Include="Configuration\LibraryOptions.cs" />
     <Compile Include="Configuration\MetadataConfiguration.cs" />
     <Compile Include="Configuration\PeopleMetadataOptions.cs" />
     <Compile Include="Configuration\XbmcMetadataOptions.cs" />

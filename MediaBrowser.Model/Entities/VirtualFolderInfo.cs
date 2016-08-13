@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -24,6 +25,8 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The type of the collection.</value>
         public string CollectionType { get; set; }
+
+        public LibraryOptions LibraryOptions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VirtualFolderInfo"/> class.
