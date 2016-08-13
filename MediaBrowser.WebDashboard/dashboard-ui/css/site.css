@@ -629,8 +629,8 @@ progress {
 }
 
 .ui-body-a .emby-collapsible-title {
-    margin: .25em 0;
-    color: #000;
+    margin: 0;
+    color: #333;
     padding: 0 0 0 .5em;
     font-weight: 500;
 }
