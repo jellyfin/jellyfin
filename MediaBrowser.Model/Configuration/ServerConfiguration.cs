@@ -180,8 +180,6 @@ namespace MediaBrowser.Model.Configuration
 
         public NameValuePair[] ContentTypes { get; set; }
 
-        public bool EnableAudioArchiveFiles { get; set; }
-        public bool EnableVideoArchiveFiles { get; set; }
         public int RemoteClientBitrateLimit { get; set; }
 
         public AutoOnOff EnableLibraryMonitor { get; set; }

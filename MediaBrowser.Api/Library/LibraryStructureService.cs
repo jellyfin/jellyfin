@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Api.Library
 {
@@ -52,6 +53,8 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The path.</value>
         public string[] Paths { get; set; }
+
+        public LibraryOptions LibraryOptions { get; set; }
     }
 
     [Route("/Library/VirtualFolders", "DELETE")]
@@ -190,7 +193,9 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(AddVirtualFolder request)
         {
-            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, request.Paths, request.RefreshLibrary);
+            var libraryOptions = request.LibraryOptions ?? new LibraryOptions();
+
+            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, request.Paths, libraryOptions, request.RefreshLibrary);
         }
 
         /// <summary>

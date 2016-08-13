@@ -765,6 +765,7 @@ namespace MediaBrowser.Server.Startup.Common
             UserView.PlaylistManager = PlaylistManager;
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
+            CollectionFolder.XmlSerializer = XmlSerializer;
         }
 
         /// <summary>
