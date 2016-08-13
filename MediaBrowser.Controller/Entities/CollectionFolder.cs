@@ -3,11 +3,14 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Serialization;
 using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
@@ -18,6 +21,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class CollectionFolder : Folder, ICollectionFolder
     {
+        public static IXmlSerializer XmlSerializer { get; set; }
+
         public CollectionFolder()
         {
             PhysicalLocationsList = new List<string>();
@@ -38,6 +43,61 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public string CollectionType { get; set; }
+
+        private readonly Dictionary<string, LibraryOptions> _libraryOptions = new Dictionary<string, LibraryOptions>();
+        public LibraryOptions GetLibraryOptions()
+        {
+            lock (_libraryOptions)
+            {
+                LibraryOptions options;
+                if (!_libraryOptions.TryGetValue(Path, out options))
+                {
+                    options = LoadLibraryOptions();
+                    _libraryOptions[Path] = options;
+                }
+
+                return options;
+            }
+        }
+
+        private LibraryOptions LoadLibraryOptions()
+        {
+            try
+            {
+                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(Path)) as LibraryOptions;
+
+                if (result == null)
+                {
+                    return new LibraryOptions();
+                }
+
+                return result;
+            }
+            catch (FileNotFoundException)
+            {
+                return new LibraryOptions();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return new LibraryOptions();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading library options", ex);
+
+                return new LibraryOptions();
+            }
+        }
+
+        private static string GetLibraryOptionsPath(string path)
+        {
+            return System.IO.Path.Combine(path, "options.xml");
+        }
+
+        public static void SaveLibraryOptions(string path, LibraryOptions options)
+        {
+            XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
+        }
 
         /// <summary>
         /// Allow different display preferences for each collection folder

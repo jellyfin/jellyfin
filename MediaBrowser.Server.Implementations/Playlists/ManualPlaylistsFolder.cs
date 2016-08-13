@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
-            return GetRecursiveChildren(i => i is Playlist);
+            return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
 
         public override bool IsHidden

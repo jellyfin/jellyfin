@@ -194,10 +194,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            var file = directoryService.GetFile(item.Path);
-            if (file != null && file.LastWriteTimeUtc != item.DateModified)
+            if (item.EnableRefreshOnDateModifiedChange)
             {
-                return true;
+                var file = directoryService.GetFile(item.Path);
+                if (file != null && file.LastWriteTimeUtc != item.DateModified)
+                {
+                    return true;
+                }
             }
 
             return false;
