@@ -1055,14 +1055,14 @@ namespace MediaBrowser.Api.Playback
             var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             Logger.Info(commandLineLogMessage);
 
-            var logFilePrefix = "transcode";
+            var logFilePrefix = "ffmpeg-transcode";
             if (state.VideoRequest != null && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                logFilePrefix = "directstream";
+                logFilePrefix = "ffmpeg-directstream";
             }
             else if (state.VideoRequest != null && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                logFilePrefix = "remux";
+                logFilePrefix = "ffmpeg-remux";
             }
 
             var logFilePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.LogDirectoryPath, logFilePrefix + "-" + Guid.NewGuid() + ".txt");

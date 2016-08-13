@@ -58,6 +58,12 @@ namespace MediaBrowser.Controller.Playlists
             return true;
         }
 
+        protected override IEnumerable<BaseItem> LoadChildren()
+        {
+            // Save a trip to the database
+            return new List<BaseItem>();
+        }
+
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
             return GetPlayableItems(user).Result;

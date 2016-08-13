@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, pathsToCreate.ToArray(), true);
+                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, pathsToCreate.ToArray(), new LibraryOptions(), true);
                 }
                 catch (Exception ex)
                 {

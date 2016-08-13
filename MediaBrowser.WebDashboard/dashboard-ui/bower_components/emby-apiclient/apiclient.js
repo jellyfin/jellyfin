@@ -1728,7 +1728,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths, libraryOptions) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1751,7 +1751,8 @@
                 type: "POST",
                 url: url,
                 data: JSON.stringify({
-                    Paths: initialPaths
+                    Paths: initialPaths,
+                    LibraryOptions: libraryOptions
                 }),
                 contentType: 'application/json'
             });

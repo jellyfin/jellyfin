@@ -53,7 +53,7 @@
         return true;
     }
 
-    EmbyButtonPrototype.attachedCallback = function () {
+    EmbyButtonPrototype.createdCallback = function () {
 
         if (this.classList.contains('emby-button')) {
             return;

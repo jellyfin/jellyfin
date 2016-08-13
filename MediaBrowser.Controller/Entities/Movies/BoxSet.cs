@@ -62,6 +62,19 @@ namespace MediaBrowser.Controller.Entities.Movies
             return UnratedItem.Movie;
         }
 
+        protected override IEnumerable<BaseItem> LoadChildren()
+        {
+            var first = LinkedChildren.FirstOrDefault();
+
+            if (first != null && first.Type == LinkedChildType.Shortcut)
+            {
+                return base.LoadChildren();
+            }
+
+            // Save a trip to the database
+            return new List<BaseItem>();
+        }
+
         [IgnoreDataMember]
         public override bool IsPreSorted
         {

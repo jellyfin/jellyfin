@@ -383,7 +383,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
             {
-                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds);
+                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
             }
 
             return null;
