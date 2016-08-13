@@ -55,9 +55,12 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool EnableForceSaveOnDateModifiedChange
+        public override bool EnableRefreshOnDateModifiedChange
         {
-            get { return true; }
+            get
+            {
+                return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso;
+            }
         }
 
         public int? TotalBitrate { get; set; }

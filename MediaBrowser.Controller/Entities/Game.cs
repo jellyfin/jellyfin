@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public override bool EnableForceSaveOnDateModifiedChange
+        public override bool EnableRefreshOnDateModifiedChange
         {
             get { return true; }
         }

@@ -105,6 +105,15 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
+            if (appHost.supports('sync') && options.syncLocal !== false) {
+                if (itemHelper.canSync(user, item)) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#MakeAvailableOffline'),
+                        id: 'synclocal'
+                    });
+                }
+            }
+
             //if (options.open !== false) {
             //    if (item.Type != 'Timer' && item.Type != 'Audio') {
             //        commands.push({
@@ -208,15 +217,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     commands.push({
                         name: globalize.translate('sharedcomponents#SyncToOtherDevice'),
                         id: 'sync'
-                    });
-                }
-            }
-
-            if (appHost.supports('sync') && options.syncLocal !== false) {
-                if (itemHelper.canSync(user, item)) {
-                    commands.push({
-                        name: globalize.translate('sharedcomponents#MakeAvailableOffline'),
-                        id: 'synclocal'
                     });
                 }
             }

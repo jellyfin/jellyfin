@@ -52,7 +52,7 @@ namespace MediaBrowser.Controller.Entities
 
         bool RequiresRefresh();
 
-        bool EnableForceSaveOnDateModifiedChange { get; }
+        bool EnableRefreshOnDateModifiedChange { get; }
 
         string PresentationUniqueKey { get; set; }
 

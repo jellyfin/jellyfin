@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.Manager
                 if (file != null)
                 {
                     var fileLastWriteTime = file.LastWriteTimeUtc;
-                    if (item.EnableForceSaveOnDateModifiedChange && fileLastWriteTime != item.DateModified)
+                    if (item.EnableRefreshOnDateModifiedChange && fileLastWriteTime != item.DateModified)
                     {
                         Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, fileLastWriteTime, item.Id);
                         requiresRefresh = true;

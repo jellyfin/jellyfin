@@ -37,14 +37,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             if (!args.IsDirectory)
             {
-                if (_libraryManager.IsAudioFile(args.Path))
+                var libraryOptions = args.GetLibraryOptions();
+
+                if (_libraryManager.IsAudioFile(args.Path, libraryOptions))
                 {
                     var collectionType = args.GetCollectionType();
 
                     var isMixed = string.IsNullOrWhiteSpace(collectionType);
 
                     // For conflicting extensions, give priority to videos
-                    if (isMixed && _libraryManager.IsVideoFile(args.Path))
+                    if (isMixed && _libraryManager.IsVideoFile(args.Path, libraryOptions))
                     {
                         return null;
                     }
