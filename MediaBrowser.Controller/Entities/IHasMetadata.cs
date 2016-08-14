@@ -58,6 +58,6 @@ namespace MediaBrowser.Controller.Entities
 
         string GetPresentationUniqueKey();
         string CreatePresentationUniqueKey();
-
+        bool StopRefreshIfLocalMetadataFound { get; }
     }
 }
