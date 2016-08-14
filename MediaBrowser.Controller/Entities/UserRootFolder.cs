@@ -18,20 +18,20 @@ namespace MediaBrowser.Controller.Entities
     {
         private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
-        //protected override IEnumerable<BaseItem> LoadChildren()
-        //{
-        //    lock (_childIdsLock)
-        //    {
-        //        if (_childrenIds == null)
-        //        {
-        //            var list = base.LoadChildren().ToList();
-        //            _childrenIds = list.Select(i => i.Id).ToList();
-        //            return list;
-        //        }
+        protected override IEnumerable<BaseItem> LoadChildren()
+        {
+            lock (_childIdsLock)
+            {
+                if (_childrenIds == null)
+                {
+                    var list = base.LoadChildren().ToList();
+                    _childrenIds = list.Select(i => i.Id).ToList();
+                    return list;
+                }
 
-        //        return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
-        //    }
-        //}
+                return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+            }
+        }
 
         private void ResetCachedChildren()
         {
