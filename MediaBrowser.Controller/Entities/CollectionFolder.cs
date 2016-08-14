@@ -95,9 +95,19 @@ namespace MediaBrowser.Controller.Entities
             return System.IO.Path.Combine(path, "options.xml");
         }
 
+        public void UpdateLibraryOptions(LibraryOptions options)
+        {
+            SaveLibraryOptions(Path, options);
+        }
+
         public static void SaveLibraryOptions(string path, LibraryOptions options)
         {
-            XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
+            lock (LibraryOptions)
+            {
+                LibraryOptions[path] = options;
+
+                XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
+            }
         }
 
         /// <summary>

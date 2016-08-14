@@ -134,6 +134,11 @@
 
     function onDialogClosing() {
 
+        var dlg = this;
+
+        var libraryOptions = libraryoptionseditor.getLibraryOptions(dlg.querySelector('.libraryOptions'));
+
+        ApiClient.updateVirtualFolderOptions(currentOptions.library.ItemId, libraryOptions);
     }
 
     function onDialogClosed() {
