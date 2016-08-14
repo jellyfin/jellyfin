@@ -187,7 +187,7 @@
         opacity: .2;
     }
 
-.ripple-effect {
+.emby-button-ripple-effect, .paper-icon-button-light-ripple-effect {
     position: absolute;
     border-radius: 50%;
     width: 50px;
@@ -197,7 +197,7 @@
     background: currentcolor;
     animation: ripple-animation .8s;
     opacity: 0.25;
-    -webkit-transform: translate(0, 0);
+    transform-origin: center center;
     transform: translate3d(0, 0, 0);
 }
 
