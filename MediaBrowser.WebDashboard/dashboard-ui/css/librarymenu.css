@@ -151,63 +151,6 @@
     bottom: 0;
 }
 
-.pageTabButton {
-    background: transparent;
-    border: 0 !important;
-    cursor: pointer;
-    outline: none !important;
-    width: auto;
-    font-family: inherit;
-    font-size: inherit;
-    color: #aaa !important;
-    display: inline-block;
-    vertical-align: middle;
-    flex-shrink: 0;
-    margin: 0;
-    padding: 1.2em .9em;
-    transition: none !important;
-    position: relative;
-    text-transform: uppercase;
-    font-weight: bold !important;
-    height: auto;
-    min-width: initial;
-    line-height: initial;
-    border-radius: 0 !important;
-    overflow: hidden;
-}
-
-    /*.libraryViewNav .pageTabButton:hover {
-            background-color: transparent;
-        }
-
-        .libraryViewNav .pageTabButton:active {
-            background-color: rgba(100,100,100, 0.20);
-        }*/
-
-    .pageTabButton:focus {
-        font-weight: bold !important;
-    }
-
-    .pageTabButton.is-active {
-        color: #52B54B !important;
-    }
-
-.pageTabButtonSelectionBar {
-    position: absolute;
-    left: 0;
-    border: 0;
-    /* Need this or it will be partially covered by the drop-shadow on android */
-    bottom: 1px;
-    height: 2px;
-    right: 0;
-    border-radius: 0;
-    z-index: 1000;
-}
-
-.pageTabButton.is-active .pageTabButtonSelectionBar {
-    background: #52B54B;
-}
-
 .viewMenuBar, .ui-body-b .libraryViewNav {
     background-color: #222326;
     color: #fff;

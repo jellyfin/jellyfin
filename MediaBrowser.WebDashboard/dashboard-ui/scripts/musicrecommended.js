@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder) {
 
     function itemsPerRow() {
 

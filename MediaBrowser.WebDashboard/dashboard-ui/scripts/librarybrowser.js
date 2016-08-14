@@ -1,8 +1,8 @@
-﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom) {
+﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'browser', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom, browser) {
 
     function fadeInRight(elem) {
 
-        var pct = browserInfo.mobile ? '4%' : '0.5%';
+        var pct = browser.mobile ? '4%' : '0.5%';
 
         var keyframes = [
           { opacity: '0', transform: 'translate3d(' + pct + ', 0, 0)', offset: 0 },
@@ -10,28 +10,6 @@
 
         elem.animate(keyframes, {
             duration: 160,
-            iterations: 1,
-            easing: 'ease-out'
-        });
-    }
-
-    function animateSelectionBar(button) {
-
-        var elem = button.querySelector('.pageTabButtonSelectionBar');
-
-        if (!elem) {
-            return;
-        }
-
-        var keyframes = [
-          { transform: 'translate3d(-100%, 0, 0)', offset: 0 },
-          { transform: 'none', offset: 1 }];
-
-        if (!elem.animate) {
-            return;
-        }
-        elem.animate(keyframes, {
-            duration: 120,
             iterations: 1,
             easing: 'ease-out'
         });
@@ -135,35 +113,9 @@
                 return true;
             },
 
-            selectedTab: function (tabs, selected) {
-
-                if (selected == null) {
-
-                    return tabs.selectedTabIndex || 0;
-                }
-
-                var current = LibraryBrowser.selectedTab(tabs);
-                tabs.selectedTabIndex = selected;
-                if (current == selected) {
-                    tabs.dispatchEvent(new CustomEvent("beforetabchange", {
-                        detail: {
-                            selectedTabIndex: selected
-                        }
-                    }));
-                    tabs.dispatchEvent(new CustomEvent("tabchange", {
-                        detail: {
-                            selectedTabIndex: selected
-                        }
-                    }));
-                } else {
-                    var tabButtons = tabs.querySelectorAll('.pageTabButton');
-                    tabButtons[selected].click();
-                }
-            },
-
             configureSwipeTabs: function (ownerpage, tabs) {
 
-                if (!browserInfo.touch) {
+                if (!browser.touch) {
                     return;
                 }
 
@@ -176,18 +128,18 @@
 
                     hammertime.on('swipeleft', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
+                            var selected = parseInt(tabs.selectedIndex() || '0');
                             if (selected < (pageCount - 1)) {
-                                LibraryBrowser.selectedTab(tabs, selected + 1);
+                                tabs.selectedIndex(selected + 1);
                             }
                         }
                     });
 
                     hammertime.on('swiperight', function (e) {
                         if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(LibraryBrowser.selectedTab(tabs) || '0');
+                            var selected = parseInt(tabs.selectedIndex() || '0');
                             if (selected > 0) {
-                                LibraryBrowser.selectedTab(tabs, selected - 1);
+                                tabs.selectedIndex(selected - 1);
                             }
                         }
                     });
@@ -196,150 +148,62 @@
 
             configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs) {
 
-                if (!browserInfo.safari) {
+                if (!browser.safari) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                if (!browserInfo.safari || !AppInfo.isNativeApp) {
-                    var buttons = tabs.querySelectorAll('.pageTabButton');
-                    for (var i = 0, length = buttons.length; i < length; i++) {
-                        var div = document.createElement('div');
-                        div.classList.add('pageTabButtonSelectionBar');
-                        buttons[i].appendChild(div);
-                    }
-                }
+                ownerpage.addEventListener('viewshow', LibraryBrowser.onTabbedpagebeforeshow);
 
-                tabs.addEventListener('click', function (e) {
-
-                    var current = tabs.querySelector('.is-active');
-                    var link = dom.parentWithClass(e.target, 'pageTabButton');
-
-                    if (link && link != current) {
-
-                        if (current) {
-                            current.classList.remove('is-active');
-                            panels[parseInt(current.getAttribute('data-index'))].classList.remove('is-active');
-                        }
-
-                        link.classList.add('is-active');
-                        animateSelectionBar(link);
-                        var index = parseInt(link.getAttribute('data-index'));
-                        var newPanel = panels[index];
-
-                        tabs.dispatchEvent(new CustomEvent("beforetabchange", {
-                            detail: {
-                                selectedTabIndex: index
-                            }
-                        }));
-
-                        // If toCenter is called syncronously within the click event, it sometimes ends up canceling it
-                        setTimeout(function () {
-
-                            if (animateTabs && animateTabs.indexOf(index) != -1 && /*browserInfo.animate &&*/ newPanel.animate) {
-                                fadeInRight(newPanel);
-                            }
-
-                            tabs.selectedTabIndex = index;
-
-                            tabs.dispatchEvent(new CustomEvent("tabchange", {
-                                detail: {
-                                    selectedTabIndex: index
-                                }
-                            }));
-
-                            newPanel.classList.add('is-active');
-                        }, 120);
-
-                        if (tabs.scroller) {
-                            tabs.scroller.toCenter(link, false);
-                        }
+                tabs.addEventListener('beforetabchange', function(e) {
+                    if (e.detail.previousIndex != null) {
+                        panels[e.detail.previousIndex].classList.remove('is-active');
                     }
                 });
 
-                ownerpage.addEventListener('viewbeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
+                tabs.addEventListener('beforetabchange', function (e) {
 
-                var contentScrollSlider = tabs.querySelector('.contentScrollSlider');
-                if (contentScrollSlider) {
-                    tabs.scroller = new scroller(tabs, {
-                        horizontal: 1,
-                        itemNav: 0,
-                        mouseDragging: 1,
-                        touchDragging: 1,
-                        slidee: tabs.querySelector('.contentScrollSlider'),
-                        smart: true,
-                        releaseSwing: true,
-                        scrollBy: 200,
-                        speed: 120,
-                        elasticBounds: 1,
-                        dragHandle: 1,
-                        dynamicHandle: 1,
-                        clickBar: 1,
-                        //centerOffset: window.innerWidth * .05,
-                        hiddenScroll: true,
+                    var newPanel = panels[e.detail.selectedTabIndex];
 
-                        // In safari the transform is causing the headers to occasionally disappear or flicker
-                        requireAnimation: !browserInfo.safari
-                    });
-                    tabs.scroller.init();
-                } else {
-                    tabs.classList.add('hiddenScrollX');
-                }
+                    if (e.detail.previousIndex != null && e.detail.previousIndex != e.detail.selectedTabIndex) {
+                        if (newPanel.animate && (animateTabs || []).indexOf(e.detail.selectedTabIndex) != -1) {
+                            fadeInRight(newPanel);
+                        }
+                    }
+
+                    newPanel.classList.add('is-active');
+                });
             },
 
             onTabbedpagebeforeshow: function (e) {
 
                 var page = e.target;
                 var delay = 0;
-                var isFirstLoad = false;
 
-                if (!page.getAttribute('data-firstload')) {
+                var pageTabsContainer = page.querySelector('.libraryViewNav');
+                if (!pageTabsContainer || !pageTabsContainer.triggerTabChange) {
                     delay = 300;
-                    isFirstLoad = true;
-                    page.setAttribute('data-firstload', '1');
                 }
 
                 if (delay) {
                     setTimeout(function () {
 
-                        LibraryBrowser.onTabbedpagebeforeshowInternal(page, e, isFirstLoad);
+                        LibraryBrowser.onTabbedpagebeforeshowInternal(page, e);
                     }, delay);
                 } else {
-                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, e, isFirstLoad);
+                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, e);
                 }
             },
 
-            onTabbedpagebeforeshowInternal: function (page, e, isFirstLoad) {
+            onTabbedpagebeforeshowInternal: function (page, e) {
 
                 var pageTabsContainer = page.querySelector('.libraryViewNav');
 
-                if (isFirstLoad) {
-
-                    console.log('selected tab is null, checking query string');
-
-                    var selected = page.firstTabIndex != null ? page.firstTabIndex : parseInt(getParameterByName('tab') || '0');
-
-                    console.log('selected tab will be ' + selected);
-
-                    LibraryBrowser.selectedTab(pageTabsContainer, selected);
-
-                } else {
-
-                    // Go back to the first tab
-                    if (!e.detail.isRestored) {
-                        LibraryBrowser.selectedTab(pageTabsContainer, 0);
-                        return;
-                    }
-                    pageTabsContainer.dispatchEvent(new CustomEvent("beforetabchange", {
-                        detail: {
-                            selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
-                        }
-                    }));
-                    pageTabsContainer.dispatchEvent(new CustomEvent("tabchange", {
-                        detail: {
-                            selectedTabIndex: LibraryBrowser.selectedTab(pageTabsContainer)
-                        }
-                    }));
+                // Go back to the first tab
+                if (!e.detail.isRestored) {
+                    pageTabsContainer.selectedIndex(0);
+                    return;
                 }
+                pageTabsContainer.triggerTabChange();
             },
 
             showTab: function (url, index) {
@@ -814,7 +678,7 @@
                     document.body.appendChild(dlg);
 
                     // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
-                    var delay = browserInfo.animate ? 0 : 100;
+                    var delay = browser.animate ? 0 : 100;
                     setTimeout(function () {
                         dialogHelper.open(dlg);
                     }, delay);

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
 
     return function (view, params) {
 
@@ -209,11 +209,7 @@
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
                 renderedTabs = [];
-                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
-                    }
-                }));
+                mdlTabs.triggerTabChange();
             }
         }
 

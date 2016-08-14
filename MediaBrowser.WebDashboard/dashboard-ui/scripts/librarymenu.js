@@ -645,32 +645,30 @@
                 viewMenuBarTabs.classList.remove('hide');
             }
 
-            if (LibraryMenu.tabType != type) {
+            require(['emby-tabs', 'emby-button'], function () {
+                if (LibraryMenu.tabType != type) {
 
-                var index = 0;
+                    var index = 0;
 
-                viewMenuBarTabs.innerHTML = '<div class="libraryViewNav hiddenScrollX">' + builder().map(function (t) {
+                    viewMenuBarTabs.innerHTML = '<div is="emby-tabs"><div class="emby-tabs-slider">' + builder().map(function (t) {
 
-                    var tabClass = selectedIndex == index ? 'pageTabButton is-active' : 'pageTabButton';
+                        var tabClass = selectedIndex == index ? 'emby-tab-button emby-tab-button-active' : 'emby-tab-button';
 
-                    var tabHtml = '<a class="' + tabClass + '" href="' + t.href + '" data-index="' + index + '">' + t.name + '<div class="pageTabButtonSelectionBar"></div></a>';
-                    index++;
-                    return tabHtml;
+                        var tabHtml = '<button onclick="Dashboard.navigate(this.getAttribute(\'data-href\'));" data-href="' + t.href + '" is="emby-button" class="' + tabClass + '" data-index="' + index + '"><div class="emby-button-foreground">' + t.name + '</div></button>';
+                        index++;
+                        return tabHtml;
 
-                }).join('') + '</div>';
+                    }).join('') + '</div></div>';
 
-                document.body.classList.add('withTallToolbar');
+                    document.body.classList.add('withTallToolbar');
+                    LibraryMenu.tabType = type;
+                    return;
+                }
+
+                viewMenuBarTabs.querySelector('is=["emby-tabs"]').selectedIndex(selectedIndex);
+               
                 LibraryMenu.tabType = type;
-                return;
-            }
-
-            var activeTab = viewMenuBarTabs.querySelector('.is-active');
-            var newTab = viewMenuBarTabs.querySelector('.pageTabButton[data-index="' + selectedIndex + '"]');
-            newTab.classList.add('is-active');
-            if (newTab != activeTab && activeTab) {
-                activeTab.classList.remove('is-active');
-            }
-            LibraryMenu.tabType = type;
+            });
         },
 
         setTitle: function (title) {

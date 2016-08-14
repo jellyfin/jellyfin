@@ -475,6 +475,12 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             };
         };
 
+        self.getCenterPosition = function(item) {
+
+            var pos = self.getPos(item);
+            return within(pos.center, pos.start, pos.end);
+        };
+
         /**
 		 * Slide SLIDEE by amount of pixels.
 		 *
