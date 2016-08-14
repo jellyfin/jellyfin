@@ -100,14 +100,28 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('notificationclick', function (event) {
-    event.notification.close();
 
+    var notification = event.notification;
+    notification.close();
+
+    var data = notification.data;
+    var serverId = data.serverId;
     var action = event.action;
+    var promise;
 
-    if (action.indexOf('cancel-install') == 0) {
-        var id = action.split('-')[2];
-        console.log('cancel: ' + id);
-    } else {
-        clients.openWindow("/index.html");
+    switch (action) {
+        case 'cancel-install':
+            var id = data.id;
+            console.log('cancel: ' + id);
+            break;
+        case 'restart':
+            break;
+        default:
+            clients.openWindow("/");
+            break;
     }
+
+    promise = promise || Promise.resolve();
+    event.waitUntil(promise);
+
 }, false);

@@ -387,26 +387,6 @@ textarea {
     }
 }
 
-/* Footer */
-#footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    /* Above everything, except for the video player and popup overlays */
-    z-index: 1097;
-    color: #fff;
-    border: 0 !important;
-    background-color: rgba(26,26,26,.94);
-}
-
-.footerNotification {
-    padding: .75em 1em;
-    margin: 0;
-    font-weight: normal;
-    border-top: 1px solid #555;
-}
-
 /*
  * Gradient Shadow
  */

@@ -24,6 +24,7 @@
   "ButtonOk": "Ok",
   "ButtonCancel": "Cancel",
   "ButtonGotIt": "Got It",
+  "ButtonRestart": "Restart",
   "RecordingCancelled": "Recording cancelled.",
   "RecordingScheduled": "Recording scheduled.",
   "SeriesRecordingScheduled": "Series recording scheduled.",
@@ -248,5 +249,8 @@
   "MessageItemSaved": "Item saved.",
   "SearchResults": "Search Results",
   "SyncToOtherDevice": "Sync to other device",
-  "MakeAvailableOffline": "Make available offline"
+  "MakeAvailableOffline": "Make available offline",
+  "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+  "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+  "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }
