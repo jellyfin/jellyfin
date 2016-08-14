@@ -1295,6 +1295,17 @@ var AppInfo = {};
         return layoutManager;
     }
 
+    function getAppStorage(basePath) {
+
+        try {
+            localStorage.setItem('_test', '0');
+            localStorage.removeItem('_test');
+            return basePath + "/appstorage-localstorage";
+        } catch (e) {
+            return basePath + "/appstorage-memory";
+        }
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1439,7 +1450,7 @@ var AppInfo = {};
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
         } else {
-            paths.appStorage = apiClientBowerPath + "/appstorage";
+            paths.appStorage = getAppStorage(apiClientBowerPath);
         }
 
         paths.syncDialog = "scripts/sync";
@@ -2969,3 +2980,4 @@ pageClassOn('viewshow', "page", function () {
 
     Dashboard.ensureHeader(page);
 });
+
