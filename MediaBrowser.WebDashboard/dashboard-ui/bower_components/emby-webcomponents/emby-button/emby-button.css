@@ -212,3 +212,8 @@
         opacity: 0;
     }
 }
+
+.emby-button-foreground {
+    position: relative;
+    z-index: 1;
+}

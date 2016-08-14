@@ -5,7 +5,7 @@
         flex-grow: 1;
     }
 
-        .libraryViewNav .pageTabButton {
+        .libraryViewNav .emby-tab-button {
             flex-grow: 1;
         }
 }

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder) {
 
     // The base query options
     var query = {

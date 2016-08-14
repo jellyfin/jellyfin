@@ -1,4 +1,4 @@
-﻿define(['components/remotecontrol'], function (remotecontrolFactory) {
+﻿define(['components/remotecontrol', 'emby-tabs', 'emby-button'], function (remotecontrolFactory) {
 
     return function (view, params) {
 

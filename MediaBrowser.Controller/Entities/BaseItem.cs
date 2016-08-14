@@ -2213,6 +2213,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual bool StopRefreshIfLocalMetadataFound
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public virtual IEnumerable<Guid> GetIdsForAncestorQuery()
         {
             return new[] { Id };

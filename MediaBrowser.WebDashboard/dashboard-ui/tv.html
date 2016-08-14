@@ -1,14 +1,28 @@
 ﻿<div id="tvRecommendedPage" data-dom-cache="true" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs" data-backdroptype="series">
 
-    <div class="libraryViewNav">
-        <div class="contentScrollSlider">
-            <button class="pageTabButton is-active" data-index="0">${TabSuggestions}</button>
-            <button class="pageTabButton" data-index="1">${TabLatest}</button>
-            <button class="pageTabButton" data-index="2">${TabUpcoming}</button>
-            <button class="pageTabButton" data-index="3">${TabShows}</button>
-            <button class="pageTabButton tvEpisodesTab" data-index="4">${TabEpisodes}</button>
-            <button class="pageTabButton" data-index="5">${TabGenres}</button>
-            <button class="pageTabButton" data-index="6">${TabNetworks}</button>
+    <div is="emby-tabs" class="libraryViewNav">
+        <div class="emby-tabs-slider">
+            <button is="emby-button" class="emby-tab-button emby-tab-button-active" data-index="0">
+                <div class="emby-button-foreground">${TabSuggestions}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="1">
+                <div class="emby-button-foreground">${TabLatest}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="2">
+                <div class="emby-button-foreground">${TabUpcoming}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="3">
+                <div class="emby-button-foreground">${TabShows}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="4">
+                <div class="emby-button-foreground">${TabEpisodes}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="5">
+                <div class="emby-button-foreground">${TabGenres}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="6">
+                <div class="emby-button-foreground">${TabNetworks}</div>
+            </button>
         </div>
     </div>
 
