@@ -1349,6 +1349,7 @@
   "HeaderPlayback": "Media Playback",
   "OptionAllowAudioPlaybackTranscoding": "Allow audio playback that requires transcoding",
   "OptionAllowVideoPlaybackTranscoding": "Allow video playback that requires transcoding",
+  "OptionAllowVideoPlaybackRemuxing": "Allow video playback that requires conversion without re-encoding",
   "OptionAllowMediaPlaybackTranscodingHelp": "Users will receive friendly messages when content is unplayable based on policy.",
   "TabStreaming": "Streaming",
   "LabelRemoteClientBitrateLimit": "Internet streaming bitrate limit (Mbps):",
