@@ -154,144 +154,13 @@ var Dashboard = {
 
         if (info.HasPendingRestart) {
 
-            Dashboard.hideDashboardVersionWarning();
-
-            Dashboard.getCurrentUser().then(function (currentUser) {
-
-                if (currentUser.Policy.IsAdministrator) {
-                    Dashboard.showServerRestartWarning(info);
-                }
-            });
-
         } else {
 
-            Dashboard.hideServerRestartWarning();
+            if (Dashboard.initialServerVersion != info.Version && !AppInfo.isNativeApp) {
 
-            if (Dashboard.initialServerVersion != info.Version) {
-
-                Dashboard.showDashboardRefreshNotification();
+                window.location.reload(true);
             }
         }
-    },
-
-    showServerRestartWarning: function (systemInfo) {
-
-        if (AppInfo.isNativeApp) {
-            return;
-        }
-
-        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
-
-        if (systemInfo.CanSelfRestart) {
-            html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.restartServer();"><i class="md-icon">refresh</i><span>' + Globalize.translate('ButtonRestart') + '</span></button>';
-        }
-
-        Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
-    },
-
-    hideServerRestartWarning: function () {
-
-        var elem = document.getElementById('serverRestartWarning');
-        if (elem) {
-            elem.parentNode.removeChild(elem);
-        }
-    },
-
-    showDashboardRefreshNotification: function () {
-
-        if (AppInfo.isNativeApp) {
-            return;
-        }
-
-        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
-
-        html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();"><i class="md-icon">refresh</i><span>' + Globalize.translate('ButtonRefresh') + '</span></button>';
-
-        Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
-    },
-
-    reloadPage: function () {
-
-        window.location.reload(true);
-    },
-
-    hideDashboardVersionWarning: function () {
-
-        var elem = document.getElementById('dashboardVersionWarning');
-
-        if (elem) {
-
-            elem.parentNode.removeChild(elem);
-        }
-    },
-
-    showFooterNotification: function (options) {
-
-        var removeOnHide = !options.id;
-
-        options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
-
-        if (!document.querySelector(".footer")) {
-
-            var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
-
-            footerHtml += '<div id="footerNotifications"></div>';
-            footerHtml += '</div>';
-
-            document.body.insertAdjacentHTML('beforeend', footerHtml);
-        }
-
-        var footer = document.querySelector('.footer');
-        footer.style.top = 'initial';
-        footer.classList.remove('hide');
-
-        var parentElem = footer.querySelector('#footerNotifications');
-
-        var notificationElementId = 'notification' + options.id;
-
-        var elem = parentElem.querySelector('#' + notificationElementId);
-
-        if (!elem) {
-            parentElem.insertAdjacentHTML('beforeend', '<p id="' + notificationElementId + '" class="footerNotification"></p>');
-            elem = parentElem.querySelector('#' + notificationElementId);
-        }
-
-        var onclick = removeOnHide ? "jQuery('#" + notificationElementId + "').trigger('notification.remove').remove();" : "jQuery('#" + notificationElementId + "').trigger('notification.hide').hide();";
-
-        if (options.allowHide !== false) {
-            options.html += '<span style="margin-left: 1em;"><button is="emby-button" type="button" class="submit" onclick="' + onclick + '">' + Globalize.translate('ButtonHide') + "</button></span>";
-        }
-
-        if (options.forceShow) {
-            elem.classList.remove('hide');
-        }
-
-        elem.innerHTML = options.html;
-
-        if (options.timeout) {
-
-            setTimeout(function () {
-
-                if (removeOnHide) {
-                    $(elem).trigger("notification.remove").remove();
-                } else {
-                    $(elem).trigger("notification.hide").hide();
-                }
-
-            }, options.timeout);
-        }
-
-        $(footer).on("notification.remove notification.hide", function (e) {
-
-            setTimeout(function () { // give the DOM time to catch up
-
-                if (!parentElem.innerHTML) {
-                    footer.classList.add('hide');
-                }
-
-            }, 50);
-
-        });
     },
 
     getConfigurationPageUrl: function (name) {
@@ -400,20 +269,6 @@ var Dashboard = {
         });
     },
 
-    refreshSystemInfoFromServer: function () {
-
-        var apiClient = ApiClient;
-
-        if (apiClient && apiClient.accessToken()) {
-            if (AppInfo.enableFooterNotifications) {
-                apiClient.getSystemInfo().then(function (info) {
-
-                    Dashboard.updateSystemInfo(info);
-                });
-            }
-        }
-    },
-
     restartServer: function () {
 
         var apiClient = window.ApiClient;
@@ -449,7 +304,7 @@ var Dashboard = {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
-                Dashboard.reloadPage();
+                window.location.reload(true);
             } else {
                 Dashboard.retryReload(retryCount);
             }
@@ -728,13 +583,7 @@ var Dashboard = {
 
         var msg = data;
 
-        if (msg.MessageType === "ServerShuttingDown") {
-            Dashboard.hideServerRestartWarning();
-        }
-        else if (msg.MessageType === "ServerRestarting") {
-            Dashboard.hideServerRestartWarning();
-        }
-        else if (msg.MessageType === "SystemInfo") {
+        if (msg.MessageType === "SystemInfo") {
             Dashboard.updateSystemInfo(msg.Data);
         }
         else if (msg.MessageType === "RestartRequired") {
@@ -1325,6 +1174,17 @@ var AppInfo = {};
         return layoutManager;
     }
 
+    function getAppStorage(basePath) {
+
+        try {
+            localStorage.setItem('_test', '0');
+            localStorage.removeItem('_test');
+            return basePath + "/appstorage-localstorage";
+        } catch (e) {
+            return basePath + "/appstorage-memory";
+        }
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1469,7 +1329,7 @@ var AppInfo = {};
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
         } else {
-            paths.appStorage = apiClientBowerPath + "/appstorage";
+            paths.appStorage = getAppStorage(apiClientBowerPath);
         }
 
         paths.syncDialog = "scripts/sync";
@@ -2999,3 +2859,4 @@ pageClassOn('viewshow', "page", function () {
 
     Dashboard.ensureHeader(page);
 });
+

@@ -110,8 +110,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                // TODO
-                return false;
+                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }
 

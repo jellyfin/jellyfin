@@ -1757,6 +1757,26 @@
                 contentType: 'application/json'
             });
         };
+        self.updateVirtualFolderOptions = function (id, libraryOptions) {
+
+            if (!id) {
+                throw new Error("null name");
+            }
+
+            var url = "Library/VirtualFolders/LibraryOptions";
+
+            url = self.getUrl(url);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({
+                    Id: id,
+                    LibraryOptions: libraryOptions
+                }),
+                contentType: 'application/json'
+            });
+        };
 
         /**
        * Renames a virtual folder

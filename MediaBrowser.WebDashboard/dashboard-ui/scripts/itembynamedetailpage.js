@@ -196,7 +196,8 @@
                     showTitle: true,
                     showParentTitle: true,
                     coverImage: true,
-                    cardLayout: true
+                    centerText: true,
+                    overlayPlayButton: true
                 });
                 break;
 
@@ -213,7 +214,8 @@
                     showTitle: true,
                     showParentTitle: true,
                     coverImage: true,
-                    cardLayout: true
+                    centerText: true,
+                    overlayPlayButton: true
                 });
                 break;
 

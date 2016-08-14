@@ -46,8 +46,6 @@
             EnableArchiveMediaFiles: parent.querySelector('.chkArhiveAsMedia').checked
         };
 
-        options.EnableAudioArchiveFiles = options.EnableArchiveMediaFiles;
-
         return options;
     }
 
