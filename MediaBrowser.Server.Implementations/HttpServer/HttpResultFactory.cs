@@ -534,7 +534,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (lastDateModified.HasValue && (string.IsNullOrEmpty(cacheKey) || cacheDuration.HasValue))
             {
                 AddAgeHeader(responseHeaders, lastDateModified);
-                responseHeaders["LastModified"] = lastDateModified.Value.ToString("r");
+                responseHeaders["Last-Modified"] = lastDateModified.Value.ToString("r");
             }
 
             if (cacheDuration.HasValue)
