@@ -152,15 +152,21 @@
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
-                ownerpage.addEventListener('viewshow', LibraryBrowser.onTabbedpagebeforeshow);
-
-                tabs.addEventListener('beforetabchange', function(e) {
-                    if (e.detail.previousIndex != null) {
-                        panels[e.detail.previousIndex].classList.remove('is-active');
+                ownerpage.addEventListener('viewbeforeshow', function () {
+                    if (tabs.triggerBeforeTabChange) {
+                        tabs.triggerBeforeTabChange();
                     }
                 });
 
+                ownerpage.addEventListener('viewshow', function () {
+                    tabs.triggerTabChange();
+                });
+
                 tabs.addEventListener('beforetabchange', function (e) {
+
+                    if (e.detail.previousIndex != null) {
+                        panels[e.detail.previousIndex].classList.remove('is-active');
+                    }
 
                     var newPanel = panels[e.detail.selectedTabIndex];
 
@@ -172,38 +178,6 @@
 
                     newPanel.classList.add('is-active');
                 });
-            },
-
-            onTabbedpagebeforeshow: function (e) {
-
-                var page = e.target;
-                var delay = 0;
-
-                var pageTabsContainer = page.querySelector('.libraryViewNav');
-                if (!pageTabsContainer || !pageTabsContainer.triggerTabChange) {
-                    delay = 300;
-                }
-
-                if (delay) {
-                    setTimeout(function () {
-
-                        LibraryBrowser.onTabbedpagebeforeshowInternal(page, e);
-                    }, delay);
-                } else {
-                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, e);
-                }
-            },
-
-            onTabbedpagebeforeshowInternal: function (page, e) {
-
-                var pageTabsContainer = page.querySelector('.libraryViewNav');
-
-                // Go back to the first tab
-                if (!e.detail.isRestored) {
-                    pageTabsContainer.selectedIndex(0);
-                    return;
-                }
-                pageTabsContainer.triggerTabChange();
             },
 
             showTab: function (url, index) {

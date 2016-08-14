@@ -197,6 +197,10 @@
 
     function initSelectionBar(tabs) {
 
+        if (!browser.animate) {
+            return;
+        }
+
         var contentScrollSlider = tabs.querySelector('.emby-tabs-slider');
 
         if (!contentScrollSlider) {
@@ -285,7 +289,7 @@
         }
     };
 
-    EmbyTabs.triggerTabChange = function (selected) {
+    EmbyTabs.triggerBeforeTabChange = function (selected) {
 
         var tabs = this;
 
@@ -294,6 +298,11 @@
                 selectedTabIndex: tabs.selectedIndex()
             }
         }));
+    };
+
+    EmbyTabs.triggerTabChange = function (selected) {
+
+        var tabs = this;
 
         tabs.dispatchEvent(new CustomEvent("tabchange", {
             detail: {
