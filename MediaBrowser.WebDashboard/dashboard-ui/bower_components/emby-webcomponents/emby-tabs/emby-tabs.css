@@ -71,7 +71,7 @@
     width: auto !important;
     height: auto !important;
     background: #181818 !important;
-    animation: emby-tab-button-ripple-animation .8s !important;
+    animation: emby-tab-button-ripple-animation .5s !important;
     transform-origin: center center !important;
     border-radius: 0;
 }

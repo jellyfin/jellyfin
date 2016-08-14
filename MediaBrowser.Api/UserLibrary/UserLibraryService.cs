@@ -450,22 +450,14 @@ namespace MediaBrowser.Api.UserLibrary
             if (item is Person)
             {
                 var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
-                var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 7;
+                var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
 
                 if (!hasMetdata)
                 {
-                    var defaultMetadataRefreshMode = performFullRefresh
-                        ? MetadataRefreshMode.FullRefresh
-                        : MetadataRefreshMode.Default;
-
-                    var imageRefreshMode = performFullRefresh
-                        ? ImageRefreshMode.FullRefresh
-                        : ImageRefreshMode.Default;
-
                     var options = new MetadataRefreshOptions(_fileSystem)
                     {
-                        MetadataRefreshMode = defaultMetadataRefreshMode,
-                        ImageRefreshMode = imageRefreshMode,
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = ImageRefreshMode.FullRefresh,
                         ForceSave = performFullRefresh
                     };
 
