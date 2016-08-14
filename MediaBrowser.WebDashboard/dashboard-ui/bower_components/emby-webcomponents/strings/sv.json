@@ -1,6 +1,4 @@
 {
-    "SyncToOtherDevice": "Sync to other device",
-    "MakeAvailableOffline": "Make available offline",
     "ValueSpecialEpisodeName": "Specialavsnitt - {0}",
     "Share": "Dela",
     "Add": "L\u00e4gg till",
@@ -26,6 +24,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Avbryt",
     "ButtonGotIt": "F\u00f6rst\u00e5tt",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "Inspelning avbruten.",
     "RecordingScheduled": "Inspelning schemalagd",
     "SeriesRecordingScheduled": "Serieinspelning schemalagd.",
@@ -248,5 +247,10 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "Objektet har sparats.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

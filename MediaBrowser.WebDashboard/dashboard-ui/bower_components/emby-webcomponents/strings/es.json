@@ -1,6 +1,4 @@
 {
-    "SyncToOtherDevice": "Sync to other device",
-    "MakeAvailableOffline": "Make available offline",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Compartir",
     "Add": "A\u00f1adir",
@@ -26,6 +24,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
     "ButtonGotIt": "Lo tengo",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "Grabaci\u00f3n cancelada.",
     "RecordingScheduled": "Grabaci\u00f3n programada.",
     "SeriesRecordingScheduled": "Series recording scheduled.",
@@ -248,5 +247,10 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "Elemento grabado.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

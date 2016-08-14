@@ -1,6 +1,4 @@
 {
-    "SyncToOtherDevice": "Sync to other device",
-    "MakeAvailableOffline": "Make available offline",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "\u5206\u4eab",
     "Add": "\u6dfb\u52a0",
@@ -26,6 +24,7 @@
     "ButtonOk": "\u78ba\u5b9a",
     "ButtonCancel": "\u53d6\u6d88",
     "ButtonGotIt": "\u6211\u77e5\u9053\u4e86",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "\u5df2\u53d6\u6d88\u6392\u7a0b\u9304\u88fd",
     "RecordingScheduled": "\u5df2\u6392\u7a0b\u9304\u88fd",
     "SeriesRecordingScheduled": "\u5df2\u6392\u7a0b\u9304\u88fd\u6574\u500b\u7cfb\u5217",
@@ -248,5 +247,10 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "Item saved.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }
