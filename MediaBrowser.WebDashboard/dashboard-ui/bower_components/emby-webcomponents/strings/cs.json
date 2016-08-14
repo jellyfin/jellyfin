@@ -1,6 +1,4 @@
 {
-    "SyncToOtherDevice": "Sync to other device",
-    "MakeAvailableOffline": "Make available offline",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "P\u0159idat",
@@ -26,6 +24,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Zru\u0161it",
     "ButtonGotIt": "M\u00e1m to",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "Nahr\u00e1v\u00e1n\u00ed zru\u0161eno.",
     "RecordingScheduled": "Pl\u00e1n nahr\u00e1v\u00e1n\u00ed.",
     "SeriesRecordingScheduled": "Series recording scheduled.",
@@ -248,5 +247,10 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "Polo\u017eka ulo\u017eena.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }
