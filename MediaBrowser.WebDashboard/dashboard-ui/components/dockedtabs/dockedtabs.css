@@ -1,0 +1,24 @@
+﻿.dockedtabs {
+    height: 60px;
+    background: #212121;
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 99999;
+}
+
+.dockedtabs-bottom {
+    bottom: 0;
+}
+
+.dockedtabs-headroom {
+    transition: transform 180ms linear;
+}
+
+.dockedtabs--pinned {
+    transform: none;
+}
+
+.dockedtabs--unpinned {
+    transform: translateY(100%);
+}

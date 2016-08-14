@@ -1107,4 +1107,7 @@
 
     setDrawerClass();
 
+    //require(['dockedtabs'], function (dockedtabs) {
+    //    new dockedtabs({});
+    //});
 });
