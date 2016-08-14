@@ -165,9 +165,9 @@ var Dashboard = {
 
             Dashboard.hideServerRestartWarning();
 
-            if (Dashboard.initialServerVersion != info.Version) {
+            if (Dashboard.initialServerVersion != info.Version && !AppInfo.isNativeApp) {
 
-                Dashboard.showDashboardRefreshNotification();
+                window.location.reload(true);
             }
         }
     },
@@ -193,24 +193,6 @@ var Dashboard = {
         if (elem) {
             elem.parentNode.removeChild(elem);
         }
-    },
-
-    showDashboardRefreshNotification: function () {
-
-        if (AppInfo.isNativeApp) {
-            return;
-        }
-
-        var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
-
-        html += '<button is="emby-button" type="button" class="raised submit mini" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();"><i class="md-icon">refresh</i><span>' + Globalize.translate('ButtonRefresh') + '</span></button>';
-
-        Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
-    },
-
-    reloadPage: function () {
-
-        window.location.reload(true);
     },
 
     showFooterNotification: function (options) {
@@ -437,7 +419,7 @@ var Dashboard = {
 
             // If this is back to false, the restart completed
             if (!info.HasPendingRestart) {
-                Dashboard.reloadPage();
+                window.location.reload(true);
             } else {
                 Dashboard.retryReload(retryCount);
             }
