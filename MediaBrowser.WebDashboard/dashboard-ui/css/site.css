@@ -307,8 +307,12 @@ textarea {
     margin-top: 5px;
 }
 
-.background-theme-a .backgroundContainer, .dialog.background-theme-a {
+.background-theme-a .backgroundContainer {
     background-color: #f5f5f5;
+}
+
+.dialog.background-theme-a {
+    background-color: #f0f0f0;
 }
 
 .dialog:not(.background-theme-a):not(.background-theme-b) {

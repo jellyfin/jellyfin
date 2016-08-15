@@ -7,6 +7,8 @@ var staticFileBaseUrl = baseUrl + '/staticfiles';
 console.log('service worker location: ' + self.location);
 console.log('service worker base url: ' + baseUrl);
 
+var connectionManager;
+
 function getStaticFileList() {
 
     if (staticFileList) {
@@ -99,6 +101,34 @@ self.addEventListener('activate', function (event) {
     );
 });
 
+function getApiClient(serverId) {
+
+    if (connectionManager) {
+        return Promise.resolve(connectionManager.getApiClient(serverId));
+    }
+
+    //importScripts('serviceworker-cache-polyfill.js');
+
+    return Promise.reject();
+}
+
+function executeAction(action, data, serverId) {
+
+    return getApiClient(serverId).then(function (apiClient) {
+
+        switch (action) {
+            case 'cancel-install':
+                var id = data.id;
+                return apiClient.cancelPackageInstallation(id);
+            case 'restart':
+                return apiClient.restartServer();
+            default:
+                clients.openWindow("/");
+                return Promise.resolve();
+        }
+    });
+}
+
 self.addEventListener('notificationclick', function (event) {
 
     var notification = event.notification;
@@ -107,21 +137,13 @@ self.addEventListener('notificationclick', function (event) {
     var data = notification.data;
     var serverId = data.serverId;
     var action = event.action;
-    var promise;
 
-    switch (action) {
-        case 'cancel-install':
-            var id = data.id;
-            console.log('cancel: ' + id);
-            break;
-        case 'restart':
-            break;
-        default:
-            clients.openWindow("/");
-            break;
+    if (!action) {
+        clients.openWindow("/");
+        event.waitUntil(Promise.resolve());
+        return;
     }
 
-    promise = promise || Promise.resolve();
-    event.waitUntil(promise);
+    event.waitUntil(executeAction(action, data, serverId));
 
 }, false);

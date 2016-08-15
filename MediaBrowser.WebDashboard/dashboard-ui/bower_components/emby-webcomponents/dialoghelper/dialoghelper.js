@@ -355,6 +355,10 @@
             return true;
         }
 
+        if (options.size) {
+            return true;
+        }
+
         return browser.touch;
     }
 
@@ -424,8 +428,8 @@
         var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
-        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
-        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 200 : 300);
+        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 180 : 280);
+        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 180 : 280);
 
         dlg.animationConfig = {
             // scale up

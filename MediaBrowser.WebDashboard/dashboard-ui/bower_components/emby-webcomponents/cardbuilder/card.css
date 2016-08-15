@@ -65,6 +65,8 @@
     margin: 0;
     transition: none;
     border: 3px solid transparent;
+    /* Needed in case cardBox is a button */
+    background-color: transparent;
 }
 
 .cardBox-focustransform {

@@ -42,13 +42,16 @@
         elem.classList.add('emby-tab-button-selection-bar-active');
     }
 
-    function animtateSelectionBar(bar, start, pos, duration) {
+    function animtateSelectionBar(bar, start, pos, duration, onFinish) {
 
         var endTransform = pos ? ('translateX(' + pos + 'px)') : 'none';
         var startTransform = start ? ('translateX(' + start + 'px)') : 'none';
 
         if (!duration || !bar.animate) {
             bar.style.transform = endTransform;
+            if (onFinish) {
+                onFinish();
+            }
             return;
         }
 
@@ -61,9 +64,9 @@
         bar.animate(keyframes, {
             duration: duration,
             iterations: 1,
-            easing: 'ease-out',
+            easing: 'linear',
             fill: 'forwards'
-        });
+        }).onFinish = onFinish;
     }
 
     function moveSelectionBar(tabs, newButton, oldButton, animate) {
@@ -99,22 +102,26 @@
             endPosition = tabButtonOffset.left - tabsOffset.left;
         }
 
-        var delay = animate ? 180 : 0;
-        if (selectionBar) {
-            animtateSelectionBar(selectionBar, startOffset, endPosition, delay);
-        }
+        var delay = animate ? 100 : 0;
         tabs.currentOffset = endPosition;
-
         newButton.classList.add(activeButtonClass);
 
-        setTimeout(function () {
+        var onAnimationFinish = function() {
 
-            showButtonSelectionBar(newButton);
+            if (tabs.getAttribute('data-selectionbar') != 'false') {
+                showButtonSelectionBar(newButton);
+            }
             if (selectionBar) {
                 selectionBar.classList.add('hide');
             }
 
-        }, delay);
+        };
+
+        if (selectionBar) {
+            animtateSelectionBar(selectionBar, startOffset, endPosition, delay, onAnimationFinish);
+        } else {
+            onAnimationFinish();
+        }
     }
 
     function onClick(e) {
@@ -204,6 +211,10 @@
         var contentScrollSlider = tabs.querySelector('.emby-tabs-slider');
 
         if (!contentScrollSlider) {
+            return;
+        }
+
+        if (tabs.getAttribute('data-selectionbar') == 'false') {
             return;
         }
 

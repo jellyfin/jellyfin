@@ -364,7 +364,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (item.IsFolder)
             {
-                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel))
+                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel) && !(item is AggregateFolder))
                 {
                     if (item.SourceType != SourceType.Library)
                     {
