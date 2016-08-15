@@ -1,10 +1,11 @@
 ﻿.dockedtabs {
-    height: 60px;
+    height: 54px;
     background: #212121;
     position: fixed;
     left: 0;
     right: 0;
-    z-index: 99999;
+    z-index: 1;
+    display: flex;
 }
 
 .dockedtabs-bottom {
@@ -21,4 +22,30 @@
 
 .dockedtabs--unpinned {
     transform: translateY(100%);
+}
+
+.dockedtabs-tabs {
+    flex-grow: 1;
+    display: flex;
+}
+
+.dockedtabs-tab-button {
+    flex-grow: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-transform: none !important;
+    font-size: 12px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center;
+}
+
+.dockedtabs-tab-button, .dockedtabs-tab-button-foreground {
+    font-weight: normal !important;
+}
+
+.dockedtabs-tab-button-icon {
+    margin-bottom: .25em;
+    font-size: 20px;
 }

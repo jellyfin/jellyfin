@@ -63,32 +63,5 @@
 }
 
 .emby-tab-button-ripple-effect {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: auto !important;
-    height: auto !important;
-    background: #181818 !important;
-    animation: emby-tab-button-ripple-animation .5s !important;
-    transform-origin: center center !important;
-    border-radius: 0;
-}
-
-@keyframes emby-tab-button-ripple-animation {
-    0% {
-        transform: scale(.2, 1);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: none;
-        opacity: 1;
-    }
-
-    100% {
-        transform: none;
-        opacity: 0;
-    }
+    background: #141414 !important;
 }

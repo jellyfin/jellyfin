@@ -1,4 +1,4 @@
-﻿define(['css!./dockedtabs'], function () {
+﻿define(['css!./dockedtabs', 'emby-tabs'], function () {
 
     function render(options) {
 
@@ -12,6 +12,29 @@
         // favorites
         // live tv
         // now playing
+
+        var html = '';
+
+        html += '    <div is="emby-tabs" class="dockedtabs-tabs" data-selectionbar="false">\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button emby-tab-button-active" data-index="0">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">home</i><div>Home</div></div>\
+            </button>\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="1">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">dvr</i><div>Live TV</div></div>\
+            </button>\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button homeFavoritesTab" data-index="2">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">favorite</i><div>Favorites</div></div>\
+            </button>\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="3">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">playlist_play</i><div>Now Playing</div></div>\
+            </button>\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="3">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">menu</i><div>More</div></div>\
+            </button>\
+    </div>\
+';
+
+        elem.innerHTML = html;
 
         document.body.appendChild(elem);
 

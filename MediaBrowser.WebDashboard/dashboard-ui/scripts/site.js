@@ -978,7 +978,7 @@ var AppInfo = {};
         }
 
         // This doesn't perform well on iOS
-        AppInfo.enableHeadRoom = !isIOS;
+        AppInfo.enableHeadRoom = !isIOS && !browserInfo.msie;
 
         // This currently isn't working on android, unfortunately
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
@@ -1636,9 +1636,9 @@ var AppInfo = {};
 
     function onDialogOpen(dlg) {
         if (dlg.classList.contains('formDialog')) {
-            if (!dlg.classList.contains('background-theme-b')) {
-                dlg.classList.add('background-theme-a');
-                dlg.classList.add('ui-body-a');
+            if (!dlg.classList.contains('background-theme-a')) {
+                dlg.classList.add('background-theme-b');
+                dlg.classList.add('ui-body-b');
             }
         }
     }

@@ -62,7 +62,7 @@
     color: #fff;
     background-color: #1C1C1F;
     text-align: center;
-    box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);
+    /*box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);*/
     will-change: transform;
     contain: layout style;
     height: 100%;
