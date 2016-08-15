@@ -704,9 +704,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             throw error;
         }
 
-        public object GetAsyncStreamWriter(Func<Stream, Task> streamWriter, IDictionary<string, string> responseHeaders = null)
+        public object GetAsyncStreamWriter(IAsyncStreamSource streamSource)
         {
-            return new AsyncStreamWriterFunc(streamWriter, responseHeaders);
+            return new AsyncStreamWriter(streamSource);
         }
     }
 }
