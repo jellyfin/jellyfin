@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'listViewStyle'], function ($) {
+﻿define(['listViewStyle'], function () {
 
     var query = {
 
@@ -7,6 +7,19 @@
     };
 
     var currentResult;
+
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
 
     function reloadList(page) {
 
@@ -93,7 +106,8 @@
             html += "</div>";
         }
 
-        $('.divMatchInfos', page).html(html);
+        var matchInfos = page.querySelector('.divMatchInfos');
+        matchInfos.innerHTML = html;
     }
 
     function getTabs() {
@@ -112,45 +126,47 @@
          }];
     }
 
-    $(document).on('pageinit', "#libraryFileOrganizerSmartMatchPage", function () {
+    return function (view, params) {
 
-        var page = this;
+        var self = this;
 
-        $('.divMatchInfos', page).on('click', '.btnDeleteMatchEntry', function () {
+        var divInfos = view.querySelector('.divMatchInfos');
 
-            var button = this;
-            var index = parseInt(button.getAttribute('data-index'));
-            var matchIndex = parseInt(button.getAttribute('data-matchindex'));
+        divInfos.addEventListener('click', function (e) {
 
-            var info = currentResult.Items[index];
-            var entries = [
-            {
-                Name: info.ItemName,
-                Value: info.MatchStrings[matchIndex]
-            }];
+            var button = parentWithClass(e.target, 'btnDeleteMatchEntry');
 
-            ApiClient.deleteSmartMatchEntries(entries).then(function () {
+            if (button) {
 
-                reloadList(page);
+                var index = parseInt(button.getAttribute('data-index'));
+                var matchIndex = parseInt(button.getAttribute('data-matchindex'));
 
-            }, Dashboard.processErrorResponse);
+                var info = currentResult.Items[index];
+                var entries = [
+                {
+                    Name: info.ItemName,
+                    Value: info.MatchStrings[matchIndex]
+                }];
 
+                ApiClient.deleteSmartMatchEntries(entries).then(function () {
+
+                    reloadList(view);
+
+                }, Dashboard.processErrorResponse);
+            }
         });
 
-    }).on('pageshow', "#libraryFileOrganizerSmartMatchPage", function () {
+        view.addEventListener('viewshow', function (e) {
 
-        var page = this;
+            LibraryMenu.setTabs('autoorganize', 2, getTabs);
+            Dashboard.showLoadingMsg();
 
-        LibraryMenu.setTabs('autoorganize', 2, getTabs);
+            reloadList(view);
+        });
 
-        Dashboard.showLoadingMsg();
+        view.addEventListener('viewhide', function (e) {
 
-        reloadList(page);
-
-    }).on('pagebeforehide', "#libraryFileOrganizerSmartMatchPage", function () {
-
-        var page = this;
-        currentResult = null;
-    });
-
+            currentResult = null;
+        });
+    };
 });

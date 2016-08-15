@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'serverNotifications', 'events', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function ($, serverNotifications, events, taskButton, datetime) {
+﻿define(['serverNotifications', 'events', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function (serverNotifications, events, taskButton, datetime) {
 
     var query = {
 
@@ -7,6 +7,20 @@
     };
 
     var currentResult;
+    var page;
+
+    function parentWithClass(elem, className) {
+
+        while (!elem.classList || !elem.classList.contains(className)) {
+            elem = elem.parentNode;
+
+            if (!elem) {
+                return null;
+            }
+        }
+
+        return elem;
+    }
 
     function showStatusMessage(id) {
 
@@ -167,28 +181,10 @@
             return html;
         }).join('');
 
-        var elem = $('.resultBody', page).html(rows).parents('.tblOrganizationResults').table('refresh').trigger('create');
+        var resultBody = page.querySelector('.resultBody');
+        resultBody.innerHTML = rows;
 
-        $('.btnShowStatusMessage', elem).on('click', function () {
-
-            var id = this.getAttribute('data-resultid');
-
-            showStatusMessage(id);
-        });
-
-        $('.btnProcessResult', elem).on('click', function () {
-
-            var id = this.getAttribute('data-resultid');
-
-            organizeFile(page, id);
-        });
-
-        $('.btnDeleteResult', elem).on('click', function () {
-
-            var id = this.getAttribute('data-resultid');
-
-            deleteOriginalFile(page, id);
-        });
+        resultBody.addEventListener('click', handleItemClick);
 
         var pagingHtml = LibraryBrowser.getQueryPagingHtml({
             startIndex: query.StartIndex,
@@ -198,32 +194,43 @@
             updatePageSizeSetting: false
         });
 
-        $(page)[0].querySelector('.listTopPaging').innerHTML = pagingHtml;
+        var topPaging = page.querySelector('.listTopPaging');
+        topPaging.innerHTML = pagingHtml;
 
-        if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
+        var bottomPaging = page.querySelector('.listBottomPaging');
+        bottomPaging.innerHTML = pagingHtml;
 
-            $('.listBottomPaging', page).html(pagingHtml).trigger('create');
-        } else {
+        var btnNextTop = topPaging.querySelector(".btnNextPage");
+        var btnNextBottom = bottomPaging.querySelector(".btnNextPage");
+        var btnPrevTop = topPaging.querySelector(".btnPreviousPage");
+        var btnPrevBottom = bottomPaging.querySelector(".btnPreviousPage");
 
-            $('.listBottomPaging', page).empty();
-        }
-
-        $('.btnNextPage', page).on('click', function () {
-
+        btnNextTop.addEventListener('click', function () {
             query.StartIndex += query.Limit;
             reloadItems(page, true);
         });
 
-        $('.btnPreviousPage', page).on('click', function () {
+        btnNextBottom.addEventListener('click', function () {
+            query.StartIndex += query.Limit;
+            reloadItems(page, true);
+        });
 
+        btnPrevTop.addEventListener('click', function () {
             query.StartIndex -= query.Limit;
             reloadItems(page, true);
         });
 
+        btnPrevBottom.addEventListener('click', function () {
+            query.StartIndex -= query.Limit;
+            reloadItems(page, true);
+        });
+
+        var btnClearLog = page.querySelector('.btnClearLog');
+
         if (result.TotalRecordCount) {
-            page.querySelector('.btnClearLog').classList.remove('hide');
+            btnClearLog.classList.remove('hide');
         } else {
-            page.querySelector('.btnClearLog').classList.add('hide');
+            btnClearLog.classList.add('hide');
         }
     }
 
@@ -236,12 +243,12 @@
         html += '<img src="css/images/throbber.gif" alt="" class="syncSpinner' + hide + '" style="vertical-align: middle;" />';
         html += '</td>';
 
-        html += '<td>';
+        html += '<td data-title="Date">';
         var date = datetime.parseISO8601Date(item.Date, true);
         html += date.toLocaleDateString();
         html += '</td>';
 
-        html += '<td>';
+        html += '<td data-title="Source" class="fileCell">';
         var status = item.Status;
 
         if (item.IsInProgress) {
@@ -265,7 +272,7 @@
         }
         html += '</td>';
 
-        html += '<td>';
+        html += '<td data-title="Destination" class="fileCell">';
         html += item.TargetPath || '';
         html += '</td>';
 
@@ -282,9 +289,33 @@
         return html;
     }
 
-    function onServerEvent(e, apiClient, data) {
+    function handleItemClick(e) {
 
-        var page = $.mobile.activePage;
+        var id;
+
+        var buttonStatus = parentWithClass(e.target, 'btnShowStatusMessage');
+        if (buttonStatus) {
+
+            id = buttonStatus.getAttribute('data-resultid');
+            showStatusMessage(id);
+        }
+
+        var buttonOrganize = parentWithClass(e.target, 'btnProcessResult');
+        if (buttonOrganize) {
+
+            id = buttonOrganize.getAttribute('data-resultid');
+            organizeFile(e.view, id);
+        }
+
+        var buttonDelete = parentWithClass(e.target, 'btnDeleteResult');
+        if (buttonDelete) {
+
+            id = buttonDelete.getAttribute('data-resultid');
+            deleteOriginalFile(e.view, id);
+        }
+    }
+
+    function onServerEvent(e, apiClient, data) {
 
         if (data) {
 
@@ -322,49 +353,48 @@
          }];
     }
 
-    $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
 
-        var page = this;
+    return function (view, params) {
 
-        $('.btnClearLog', page).on('click', function () {
+        page = view;
+
+        var clearButton = view.querySelector('.btnClearLog');
+        clearButton.addEventListener('click', function () {
 
             ApiClient.clearOrganizationLog().then(function () {
-                reloadItems(page, true);
+                reloadItems(view, true);
             }, Dashboard.processErrorResponse);
         });
 
-    }).on('pageshow', '#libraryFileOrganizerLogPage', function () {
+        view.addEventListener('viewshow', function (e) {
 
-        LibraryMenu.setTabs('autoorganize', 0, getTabs);
+            LibraryMenu.setTabs('autoorganize', 0, getTabs);
 
-        var page = this;
+            reloadItems(view, true);
 
-        reloadItems(page, true);
+            events.on(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
 
-        // on here
-        taskButton({
-            mode: 'on',
-            progressElem: page.querySelector('.organizeProgress'),
-            panel: page.querySelector('.organizeTaskPanel'),
-            taskKey: 'AutoOrganize',
-            button: page.querySelector('.btnOrganize')
+            // on here
+            taskButton({
+                mode: 'on',
+                progressElem: view.querySelector('.organizeProgress'),
+                panel: view.querySelector('.organizeTaskPanel'),
+                taskKey: 'AutoOrganize',
+                button: view.querySelector('.btnOrganize')
+            });
         });
 
-        events.on(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
+        view.addEventListener('viewhide', function (e) {
 
-    }).on('pagebeforehide', '#libraryFileOrganizerLogPage', function () {
+            currentResult = null;
 
-        var page = this;
+            events.off(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
 
-        currentResult = null;
-
-        // off here
-        taskButton({
-            mode: 'off',
-            button: page.querySelector('.btnOrganize')
+            // off here
+            taskButton({
+                mode: 'off',
+                button: view.querySelector('.btnOrganize')
+            });
         });
-
-        events.off(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
-    });
-
+    };
 });
