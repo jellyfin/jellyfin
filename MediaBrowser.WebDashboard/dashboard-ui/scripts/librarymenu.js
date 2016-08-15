@@ -666,7 +666,7 @@
                 }
 
                 viewMenuBarTabs.querySelector('is=["emby-tabs"]').selectedIndex(selectedIndex);
-               
+
                 LibraryMenu.tabType = type;
             });
         },
@@ -1105,7 +1105,12 @@
 
     setDrawerClass();
 
-    //require(['dockedtabs'], function (dockedtabs) {
-    //    new dockedtabs({});
+    //require(['appfooter'], function (appfooter) {
+    //    var footer = new appfooter({});
+    //    require(['dockedtabs'], function (dockedtabs) {
+    //        new dockedtabs({
+    //            appFooter: footer
+    //        });
+    //    });
     //});
 });

@@ -7,6 +7,8 @@ var staticFileBaseUrl = baseUrl + '/staticfiles';
 console.log('service worker location: ' + self.location);
 console.log('service worker base url: ' + baseUrl);
 
+var connectionManager;
+
 function getStaticFileList() {
 
     if (staticFileList) {
@@ -100,6 +102,13 @@ self.addEventListener('activate', function (event) {
 });
 
 function getApiClient(serverId) {
+
+    if (connectionManager) {
+        return Promise.resolve(connectionManager.getApiClient(serverId));
+    }
+
+    //importScripts('serviceworker-cache-polyfill.js');
+
     return Promise.reject();
 }
 

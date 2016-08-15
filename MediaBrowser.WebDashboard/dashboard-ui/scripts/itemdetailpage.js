@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'scrollStyles', 'emby-itemscontainer'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost) {
 
     var currentItem;
 
@@ -87,16 +87,10 @@
     function updateSyncStatus(page, item) {
 
         var i, length;
-        var elems = page.querySelectorAll('.btnSyncLocal');
+        var elems = page.querySelectorAll('.chkOffline');
         for (i = 0, length = elems.length; i < length; i++) {
 
-            if (item.SyncPercent == 100) {
-                elems[i].querySelector('i').innerHTML = 'offline_pin';
-                elems[i].classList.add('btnSyncComplete');
-            } else {
-                elems[i].querySelector('i').innerHTML = 'file_download';
-                elems[i].classList.remove('btnSyncComplete');
-            }
+            elems[i].checked = item.SyncPercent == 100;
         }
     }
 
@@ -169,16 +163,16 @@
 
             if (itemHelper.canSync(user, item)) {
                 if (appHost.supports('sync')) {
-                    hideAll(page, 'btnSyncLocal', true);
+                    hideAll(page, 'syncLocalContainer', true);
                     hideAll(page, 'btnSync');
                 } else {
-                    hideAll(page, 'btnSyncLocal');
+                    hideAll(page, 'syncLocalContainer');
                     hideAll(page, 'btnSync', true);
                 }
                 updateSyncStatus(page, item);
             } else {
                 hideAll(page, 'btnSync');
-                hideAll(page, 'btnSyncLocal');
+                hideAll(page, 'syncLocalContainer');
             }
 
             if (item.Type == 'Program' && item.TimerId) {
@@ -2060,6 +2054,19 @@
         });
     }
 
+    function onSyncLocalClick() {
+
+        if (this.checked) {
+            require(['syncDialog'], function (syncDialog) {
+                syncDialog.showMenu({
+                    items: [currentItem]
+                });
+            });
+        } else {
+
+        }
+    }
+
     return function (view, params) {
 
         function onPlayTrailerClick() {
@@ -2116,9 +2123,9 @@
             elems[i].addEventListener('click', onSyncClick);
         }
 
-        elems = view.querySelectorAll('.btnSyncLocal');
+        elems = view.querySelectorAll('.chkOffline');
         for (i = 0, length = elems.length; i < length; i++) {
-            elems[i].addEventListener('click', onSyncClick);
+            elems[i].addEventListener('change', onSyncLocalClick);
         }
 
         elems = view.querySelectorAll('.btnRecord,.btnFloatingRecord');
