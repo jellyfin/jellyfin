@@ -198,11 +198,11 @@
             });
         }
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
 
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -211,8 +211,18 @@
             document.body.classList.remove('autoScrollY');
         });
 
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
         view.addEventListener('viewdestroy', function (e) {
 
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
             tabControllers.forEach(function (t) {
                 if (t.destroy) {
                     t.destroy();

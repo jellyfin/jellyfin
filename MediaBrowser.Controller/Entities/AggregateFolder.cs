@@ -167,6 +167,11 @@ namespace MediaBrowser.Controller.Entities
             return args;
         }
 
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
+        }
+
         protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
             ClearCache();
