@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Channels;
 
@@ -1427,7 +1428,7 @@ namespace MediaBrowser.Controller.Entities
                 itemDto.RecursiveItemCount = allItemsQueryResult.TotalRecordCount;
             }
 
-            double recursiveItemCount = allItemsQueryResult.TotalRecordCount;
+            var recursiveItemCount = allItemsQueryResult.TotalRecordCount;
             double unplayedCount = unplayedQueryResult.TotalRecordCount;
 
             if (recursiveItemCount > 0)
@@ -1436,6 +1437,14 @@ namespace MediaBrowser.Controller.Entities
                 dto.PlayedPercentage = 100 - unplayedPercentage;
                 dto.Played = dto.PlayedPercentage.Value >= 100;
                 dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
+            }
+
+            if (itemDto != null)
+            {
+                if (this is Season || this is MusicAlbum)
+                {
+                    itemDto.ChildCount = recursiveItemCount;
+                }
             }
         }
     }

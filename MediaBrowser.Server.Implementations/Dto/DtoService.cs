@@ -458,7 +458,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
 
-                if (item.SourceType == SourceType.Library)
+                if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
                 }
