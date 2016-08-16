@@ -20,13 +20,13 @@
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">home</i><div>Home</div></div>\
             </button>\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="1">\
-                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">dvr</i><div>Live TV</div></div>\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">dvr</i><div>Libraries</div></div>\
             </button>\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button homeFavoritesTab" data-index="2">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">favorite</i><div>Favorites</div></div>\
             </button>\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="3">\
-                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">playlist_play</i><div>Now Playing</div></div>\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">file_download</i><div>Downloads</div></div>\
             </button>\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="3">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">menu</i><div>More</div></div>\

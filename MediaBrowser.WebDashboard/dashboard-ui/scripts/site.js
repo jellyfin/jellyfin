@@ -559,7 +559,7 @@ var Dashboard = {
             pageIds: ['scheduledTasksPage', 'scheduledTaskPage'],
             icon: 'schedule'
         }, {
-            name: Globalize.translate('ButtonMetadataManager'),
+            name: Globalize.translate('MetadataManager'),
             href: "edititemmetadata.html",
             pageIds: [],
             icon: 'mode_edit'
