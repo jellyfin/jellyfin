@@ -85,7 +85,11 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count();
+            Logger.Debug("Season {0} getting child cound", (Path ?? Name));
+            var result = GetChildren(user, true).Count();
+            Logger.Debug("Season {0} child cound: ", result);
+
+            return result;
         }
 
         /// <summary>
@@ -192,7 +196,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(Series series, User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> allSeriesEpisodes)
         {
-            return series.GetEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes, allSeriesEpisodes);
+            return series.GetSeasonEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes, allSeriesEpisodes);
         }
 
         public IEnumerable<Episode> GetEpisodes()
