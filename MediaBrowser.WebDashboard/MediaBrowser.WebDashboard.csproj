@@ -63,9 +63,9 @@
     <Reference Include="ServiceStack.Interfaces">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="WebMarkupMin.Core, Version=1.0.1.0, Culture=neutral, PublicKeyToken=99472178d266584b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\WebMarkupMin.Core.1.0.1\lib\net40\WebMarkupMin.Core.dll</HintPath>
+    <Reference Include="WebMarkupMin.Core, Version=2.1.0.0, Culture=neutral, PublicKeyToken=99472178d266584b, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebMarkupMin.Core.2.1.0\lib\net40-client\WebMarkupMin.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
