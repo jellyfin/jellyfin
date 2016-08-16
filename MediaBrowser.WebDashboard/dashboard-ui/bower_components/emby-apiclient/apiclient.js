@@ -3361,6 +3361,22 @@
             });
         };
 
+        self.cancelSyncItems = function (itemIds, targetId) {
+
+            if (!itemIds) {
+                throw new Error("null itemIds");
+            }
+
+            var url = self.getUrl("Sync/" + (targetId || self.deviceId()) + "/Items", {
+                ItemIds: itemIds.join(',')
+            });
+
+            return self.ajax({
+                type: "DELETE",
+                url: url
+            });
+        };
+
         /**
          * Reports a user has stopped playing an item
          * @param {String} userId

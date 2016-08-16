@@ -208,15 +208,9 @@
             loadSuggestionsTab(view, params, tabContent);
         };
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        var baseUrl = 'movies.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
-
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 3, 4, 5]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 3, 4, 5]);
 
         var tabControllers = [];
         var renderedTabs = [];
@@ -290,14 +284,15 @@
             });
         }
 
-        mdlTabs.addEventListener('beforetabchange', function (e) {
+        viewTabs.addEventListener('beforetabchange', function (e) {
             preLoadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
         view.addEventListener('viewbeforeshow', function (e) {
+
             if (!view.getAttribute('data-title')) {
 
                 var parentId = params.topParentId;
@@ -323,7 +318,7 @@
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
                 renderedTabs = [];
-                mdlTabs.triggerTabChange();
+                viewTabs.triggerTabChange();
             }
         }
 
@@ -333,6 +328,19 @@
 
         view.addEventListener('viewbeforehide', function (e) {
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
+        view.addEventListener('viewdestroy', function (e) {
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
         });
     };
 

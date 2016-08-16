@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
     "XmlTvPremiere": "By default, Emby will import {0} hours of guide data. Importing unlimited data requires an active Emby Premiere subscription.",
     "MoreFromValue": "More from {0}",
-    "OptionSaveMetadataAsHiddenHelp": "Changing this will apply to new metadata saved going forward. Existing metadata files will be updated the next time they are saved by Emby Server."
+    "OptionSaveMetadataAsHiddenHelp": "Changing this will apply to new metadata saved going forward. Existing metadata files will be updated the next time they are saved by Emby Server.",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }

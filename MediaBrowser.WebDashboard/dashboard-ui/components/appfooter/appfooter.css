@@ -5,16 +5,9 @@
     right: 0;
     z-index: 1;
     bottom: 0;
-}
-
-.appfooter-headroom {
     transition: transform 180ms linear;
 }
 
-.appfooter--pinned {
-    transform: none;
-}
-
-.appfooter--unpinned {
+.appfooter.headroom--unpinned {
     transform: translateY(100%);
 }

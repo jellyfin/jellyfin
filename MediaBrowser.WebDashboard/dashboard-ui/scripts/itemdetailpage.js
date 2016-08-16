@@ -90,7 +90,7 @@
         var elems = page.querySelectorAll('.chkOffline');
         for (i = 0, length = elems.length; i < length; i++) {
 
-            elems[i].checked = item.SyncPercent == 100;
+            elems[i].checked = item.SyncPercent != null;
         }
     }
 
@@ -1127,7 +1127,8 @@
                     showTitle: true,
                     centerText: true,
                     lazy: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    allowBottomPadding: !scrollX
                 });
             }
             else if (item.Type == "Season") {
@@ -1141,7 +1142,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts,
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -2054,20 +2055,32 @@
         });
     }
 
-    function onSyncLocalClick() {
-
-        if (this.checked) {
-            require(['syncDialog'], function (syncDialog) {
-                syncDialog.showMenu({
-                    items: [currentItem]
-                });
-            });
-        } else {
-
-        }
-    }
-
     return function (view, params) {
+
+        function resetSyncStatus() {
+            updateSyncStatus(view, currentItem);
+        }
+
+        function onSyncLocalClick() {
+
+            if (this.checked) {
+                require(['syncDialog'], function (syncDialog) {
+                    syncDialog.showMenu({
+                        items: [currentItem]
+                    }).then(function () {
+                        reload(view, params);
+                    }, resetSyncStatus);
+                });
+            } else {
+
+                require(['confirm'], function (confirm) {
+
+                    confirm(Globalize.translate('ConfirmRemoveDownload')).then(function () {
+                        ApiClient.cancelSyncItems([currentItem.Id]);
+                    }, resetSyncStatus);
+                });
+            }
+        }
 
         function onPlayTrailerClick() {
             playTrailer(view);

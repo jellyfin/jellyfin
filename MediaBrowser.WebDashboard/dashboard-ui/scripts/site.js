@@ -1185,6 +1185,31 @@ var AppInfo = {};
         }
     }
 
+    function createWindowHeadroom() {
+        // construct an instance of Headroom, passing the element
+        var headroom = new Headroom([], {
+            // or scroll tolerance per direction
+            tolerance: {
+                down: 20,
+                up: 0
+            },
+            classes: {
+                //pinned: 'appfooter--pinned',
+                //unpinned: 'appfooter--unpinned',
+                //initial: 'appfooter-headroom'
+            }
+        });
+        // initialise
+        headroom.init();
+        return headroom;
+    }
+
+    function createMainContentHammer(Hammer) {
+        
+        var hammer = new Hammer(document.querySelector('.mainDrawerPanelContent'), null);
+        return hammer;
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1490,6 +1515,9 @@ var AppInfo = {};
         define("historyManager", [], function () {
             return Emby.Page;
         });
+
+        define("headroom-window", ['headroom'], createWindowHeadroom);
+        define("hammer-main", ['hammer'], createMainContentHammer);
 
         // mock this for now. not used in this app
         define("playbackManager", [], function () {
@@ -1892,7 +1920,8 @@ var AppInfo = {};
             path: '/channels.html',
             dependencies: [],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/channels'
         });
 
         defineRoute({

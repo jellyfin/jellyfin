@@ -130,11 +130,11 @@
    * @param {DOMElement} elem the header element
    * @param {Object} options options for the widget
    */
-    function Headroom(elem, options) {
+    function Headroom(elems, options) {
         options = extend(options, Headroom.options);
 
         this.lastKnownScrollY = 0;
-        this.elem = elem;
+        this.elems = elems;
         this.debouncer = new Debouncer(this.update.bind(this));
         this.tolerance = normalizeTolerance(options.tolerance);
         this.classes = options.classes;
@@ -143,8 +143,6 @@
         this.initialised = false;
         this.onPin = options.onPin;
         this.onUnpin = options.onUnpin;
-        this.onTop = options.onTop;
-        this.onNotTop = options.onNotTop;
     }
     Headroom.prototype = {
         constructor: Headroom,
@@ -154,11 +152,28 @@
          */
         init: function () {
 
-            this.elem.classList.add(this.classes.initial);
+            for (var i = 0, length = this.elems.length; i < length; i++) {
+                this.elems[i].classList.add(this.classes.initial);
+            }
 
             this.attachEvent();
 
             return this;
+        },
+
+        add: function (elem) {
+            elem.classList.add(this.classes.initial);
+            this.elems.push(elem);
+        },
+
+        remove: function (elem) {
+
+            var classes = this.classes;
+            elem.classList.remove(classes.unpinned, classes.pinned, classes.initial);
+            var i = this.elems.indexOf(elem);
+            if (i != -1) {
+                this.elems.splice(i, 1);
+            }
         },
 
         /**
@@ -168,7 +183,11 @@
             var classes = this.classes;
 
             this.initialised = false;
-            this.elem.classList.remove(classes.unpinned, classes.pinned, classes.top, classes.initial);
+
+            for (var i = 0, length = this.elems.length; i < length; i++) {
+                this.elems[i].classList.remove(classes.unpinned, classes.pinned, classes.initial);
+            }
+
             removeEventListenerWithOptions(this.scroller, 'scroll', this.debouncer, {
                 capture: false,
                 passive: true
@@ -196,13 +215,17 @@
          * Unpins the header if it's currently pinned
          */
         unpin: function () {
-            var classList = this.elem.classList,
-              classes = this.classes;
 
-            if (classList.contains(classes.pinned) || !classList.contains(classes.unpinned)) {
-                classList.add(classes.unpinned);
-                classList.remove(classes.pinned);
-                this.onUnpin && this.onUnpin.call(this);
+            var classes = this.classes;
+
+            for (var i = 0, length = this.elems.length; i < length; i++) {
+                var classList = this.elems[i].classList;
+
+                if (classList.contains(classes.pinned) || !classList.contains(classes.unpinned)) {
+                    classList.add(classes.unpinned);
+                    classList.remove(classes.pinned);
+                    this.onUnpin && this.onUnpin.call(this);
+                }
             }
         },
 
@@ -210,42 +233,19 @@
          * Pins the header if it's currently unpinned
          */
         pin: function () {
-            var classList = this.elem.classList,
-              classes = this.classes;
 
-            if (classList.contains(classes.unpinned)) {
-                classList.remove(classes.unpinned);
-                classList.add(classes.pinned);
-                this.onPin && this.onPin.call(this);
+            var classes = this.classes;
+
+            for (var i = 0, length = this.elems.length; i < length; i++) {
+                var classList = this.elems[i].classList;
+
+                if (classList.contains(classes.unpinned)) {
+                    classList.remove(classes.unpinned);
+                    classList.add(classes.pinned);
+                    this.onPin && this.onPin.call(this);
+                }
             }
-        },
 
-        /**
-         * Handles the top states
-         */
-        top: function () {
-            var classList = this.elem.classList,
-              classes = this.classes;
-
-            if (!classList.contains(classes.top)) {
-                classList.add(classes.top);
-                classList.remove(classes.notTop);
-                this.onTop && this.onTop.call(this);
-            }
-        },
-
-        /**
-         * Handles the not top state
-         */
-        notTop: function () {
-            var classList = this.elem.classList,
-              classes = this.classes;
-
-            if (!classList.contains(classes.notTop)) {
-                classList.add(classes.notTop);
-                classList.remove(classes.top);
-                this.onNotTop && this.onNotTop.call(this);
-            }
         },
 
         /**
@@ -315,14 +315,6 @@
                 return;
             }
 
-            if (this.enableTopClasses) {
-                if (currentScrollY <= this.offset) {
-                    this.top();
-                } else {
-                    this.notTop();
-                }
-            }
-
             if (this.shouldUnpin(currentScrollY, toleranceExceeded)) {
                 this.unpin();
             }
@@ -347,8 +339,6 @@
         classes: {
             pinned: 'headroom--pinned',
             unpinned: 'headroom--unpinned',
-            top: 'headroom--top',
-            notTop: 'headroom--not-top',
             initial: 'headroom'
         }
     };

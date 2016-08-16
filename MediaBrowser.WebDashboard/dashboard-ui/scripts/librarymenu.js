@@ -879,21 +879,6 @@
         }
     }
 
-    pageClassOn('pageinit', 'page', function () {
-
-        var page = this;
-
-        var isLibraryPage = page.classList.contains('libraryPage');
-
-        if (isLibraryPage) {
-
-            var navs = page.querySelectorAll('.libraryViewNav');
-            for (var i = 0, length = navs.length; i < length; i++) {
-                initHeadRoom(navs[i]);
-            }
-        }
-    });
-
     pageClassOn('pagebeforeshow', 'page', function (e) {
 
         var page = this;
@@ -999,18 +984,9 @@
             return;
         }
 
-        require(["headroom"], function () {
+        require(["headroom-window"], function (headroom) {
 
-            // construct an instance of Headroom, passing the element
-            var headroom = new Headroom(elem, {
-                // or scroll tolerance per direction
-                tolerance: {
-                    down: 40,
-                    up: 0
-                }
-            });
-            // initialise
-            headroom.init();
+            headroom.add(elem);
         });
     }
 
@@ -1063,8 +1039,8 @@
         var drawerWidth = screen.availWidth - 50;
         // At least 240
         drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 270
-        drawerWidth = Math.min(drawerWidth, 270);
+        // But not exceeding 280
+        drawerWidth = Math.min(drawerWidth, 280);
 
         var disableEdgeSwipe = false;
 
@@ -1079,8 +1055,7 @@
             target: navDrawerElement,
             onChange: onMainDrawerSelect,
             width: drawerWidth,
-            disableEdgeSwipe: disableEdgeSwipe,
-            edgeSwipeElement: document.querySelector('.mainDrawerPanelContent')
+            disableEdgeSwipe: disableEdgeSwipe
         };
     }
 

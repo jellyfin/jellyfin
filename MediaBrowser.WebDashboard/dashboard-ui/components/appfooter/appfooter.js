@@ -13,27 +13,10 @@
 
     function initHeadRoom(instance, elem) {
 
-        require(["headroom"], function () {
+        require(["headroom-window"], function (headroom) {
 
-            // construct an instance of Headroom, passing the element
-            var headroom = new Headroom(elem, {
-                // or scroll tolerance per direction
-                tolerance: {
-                    down: 20,
-                    up: 0
-                },
-                classes: {
-                    pinned: 'appfooter--pinned',
-                    unpinned: 'appfooter--unpinned',
-                    top: 'appfooter--top',
-                    notTop: 'appfooter--not-top',
-                    initial: 'appfooter-headroom'
-                }
-            });
-            // initialise
-            headroom.init();
-
-            instance.headroom = headroom;
+            self.headroom = headroom;
+            headroom.add(elem);
         });
     }
 
@@ -62,10 +45,11 @@
         var self = this;
 
         if (self.headroom) {
-            self.headroom.destroy();
+            self.headroom.remove(self.element);
+            self.headroom = null;
         }
 
-        self.Element = null;
+        self.element = null;
     };
 
     return dockedTabs;

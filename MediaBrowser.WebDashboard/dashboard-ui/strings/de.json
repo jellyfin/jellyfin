@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "Wir konnten kein FFmpeg in dem von Dir erfassten Verzeichnis finden. FFprobe wird ebenso ben\u00f6tigt und muss sich im gleichen Verzeichnis befinden. Diese Komponenten sind normalerweise in einem B\u00fcndel vorhanden um kommen zusammen mit einem Download. Bitte pr\u00fcfe das Verzeichnis und probiere es erneut.",
     "XmlTvPremiere": "Grunds\u00e4tzlich wird Emby {0} Stunden des EPGs importieren. Um unendlich Daten zu importieren ist eine aktive Emby Premiere Mitgliedschaft notwendig.",
     "MoreFromValue": "Mehr von {0}",
-    "OptionSaveMetadataAsHiddenHelp": "\u00c4nderungen werden sich auf neue Metadaten angewendet. Bereits existierende Metadaten werden bei der n\u00e4chsten Speicherung des Emby Servers auf den neusten Stand gebracht."
+    "OptionSaveMetadataAsHiddenHelp": "\u00c4nderungen werden sich auf neue Metadaten angewendet. Bereits existierende Metadaten werden bei der n\u00e4chsten Speicherung des Emby Servers auf den neusten Stand gebracht.",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }
