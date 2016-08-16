@@ -67,6 +67,7 @@ namespace MediaBrowser.Api.Sync
     }
 
     [Route("/Sync/Items/Cancel", "POST", Summary = "Cancels items from a sync target")]
+    [Route("/Sync/{TargetId}/Items", "DELETE", Summary = "Cancels items from a sync target")]
     public class CancelItems : IReturnVoid
     {
         [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "Items")]
@@ -211,7 +212,7 @@ namespace MediaBrowser.Api.Sync
             return ToOptimizedResult(result);
         }
 
-        public void Delete(CancelItems request)
+        public void Any(CancelItems request)
         {
             var itemIds = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
