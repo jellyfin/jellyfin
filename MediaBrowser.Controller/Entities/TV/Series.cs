@@ -243,24 +243,30 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Season> GetSeasons(User user, bool includeMissingSeasons, bool includeVirtualUnaired)
         {
-            IEnumerable<Season> seasons;
+            var seriesKey = GetUniqueSeriesKey(this);
 
-            seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
+            Logger.Debug("GetSeasons SeriesKey: {0}", seriesKey);
+            var seasons = LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
+                AncestorWithPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
-            }).Cast<Season>();
+            }).Cast<Season>().ToList();
+
+            Logger.Debug("GetSeasons returned {0} items from database", seasons.Count);
 
             if (!includeMissingSeasons)
             {
-                seasons = seasons.Where(i => !(i.IsMissingSeason));
+                seasons = seasons.Where(i => !(i.IsMissingSeason)).ToList();
             }
+            Logger.Debug("GetSeasons has {0} items after includeMissingSeasons filter", seasons.Count);
+
             if (!includeVirtualUnaired)
             {
-                seasons = seasons.Where(i => !i.IsVirtualUnaired);
+                seasons = seasons.Where(i => !i.IsVirtualUnaired).ToList();
             }
+            Logger.Debug("GetSeasons has {0} items after includeVirtualUnaired filter", seasons.Count);
 
             return seasons;
         }
