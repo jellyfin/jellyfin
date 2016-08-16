@@ -24,7 +24,7 @@
         var options = {
             IncludeItemTypes: "Audio",
             Limit: itemsPerRow(),
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",

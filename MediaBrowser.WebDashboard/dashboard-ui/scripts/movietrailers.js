@@ -18,7 +18,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Trailer",
                         Recursive: true,
-                        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                        Fields: "PrimaryImageAspectRatio,SortName,BasicSyncInfo",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,
