@@ -1039,8 +1039,8 @@
         var drawerWidth = screen.availWidth - 50;
         // At least 240
         drawerWidth = Math.max(drawerWidth, 240);
-        // But not exceeding 270
-        drawerWidth = Math.min(drawerWidth, 270);
+        // But not exceeding 280
+        drawerWidth = Math.min(drawerWidth, 280);
 
         var disableEdgeSwipe = false;
 

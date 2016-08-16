@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "Vi kan dessverre ikke finne FFmpeg bruke banen du har angitt. FFprobe er ogs\u00e5 n\u00f8dvendig og m\u00e5 ligge i samme mappe. Disse komponentene er vanligvis buntet sammen i samme nedlastning. Kontroller banen og pr\u00f8v igjen.",
     "XmlTvPremiere": "Som standard, vill Emby importere {0} timer av tv guide informasjon. For \u00e5 kunne importere ubegrenset med data kreves det et aktivt Emby Premiere abonnement.",
     "MoreFromValue": "More from {0}",
-    "OptionSaveMetadataAsHiddenHelp": "Changing this will apply to new metadata saved going forward. Existing metadata files will be updated the next time they are saved by Emby Server."
+    "OptionSaveMetadataAsHiddenHelp": "Changing this will apply to new metadata saved going forward. Existing metadata files will be updated the next time they are saved by Emby Server.",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }

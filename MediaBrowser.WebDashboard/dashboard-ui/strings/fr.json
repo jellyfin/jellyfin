@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "Nous ne pouvons pas localiser FFmpeg en utilisant le chemin que vous avez saisi. FFprobe est \u00e9galement n\u00e9cessaire et doit exister dans le m\u00eame dossier. Ces composants sont g\u00e9n\u00e9ralement regroup\u00e9s dans le m\u00eame t\u00e9l\u00e9chargement. S'il vous pla\u00eet v\u00e9rifier le chemin et essayer \u00e0 nouveau.",
     "XmlTvPremiere": "Par d\u00e9faut, Emby importera {0} heures de donn\u00e9es de guidage. L\u2019importation de donn\u00e9es illimit\u00e9 n\u00e9cessite un abonnement Emby Premiere.",
     "MoreFromValue": "Plus de {0}",
-    "OptionSaveMetadataAsHiddenHelp": "La modification s'appliquera aux nouvelles m\u00e9tadonn\u00e9es enregistr\u00e9es \u00e0 l'avenir. Les fichiers de m\u00e9tadonn\u00e9es existants seront mis \u00e0 jour la prochaine fois par Emby Server."
+    "OptionSaveMetadataAsHiddenHelp": "La modification s'appliquera aux nouvelles m\u00e9tadonn\u00e9es enregistr\u00e9es \u00e0 l'avenir. Les fichiers de m\u00e9tadonn\u00e9es existants seront mis \u00e0 jour la prochaine fois par Emby Server.",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }

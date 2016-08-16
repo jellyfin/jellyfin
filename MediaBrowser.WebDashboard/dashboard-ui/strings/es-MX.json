@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "No fue posible localizar FFmpeg usando la ruta que introdujo. FFprobe tambi\u00e9n es requerido y debe de estar en la misma carpeta. Estos componentes normalmente est\u00e1n empaquetados en la misma descarga. Por favor verifique la ruta e intente de nuevo.",
     "XmlTvPremiere": "Por defecto, Emby importara {0} horas de datos de la gu\u00eda. Para importar datos ilimitados necesita una subscripcion activa de Emby Premiere",
     "MoreFromValue": "Mas de {0}",
-    "OptionSaveMetadataAsHiddenHelp": "Cambiando esto se aplicara a nuevos metadatos en adelante. Los archivos de metadatos existentes ser\u00e1n actualizados la pr\u00f3xima vez que sean guardados por el Servidor Emby"
+    "OptionSaveMetadataAsHiddenHelp": "Cambiando esto se aplicara a nuevos metadatos en adelante. Los archivos de metadatos existentes ser\u00e1n actualizados la pr\u00f3xima vez que sean guardados por el Servidor Emby",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }

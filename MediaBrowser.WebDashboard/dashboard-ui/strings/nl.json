@@ -2310,5 +2310,9 @@
     "FFmpegSavePathNotFound": "We zijn niet in staat om FFmpeg te lokaliseren met behulp van het pad dat u hebt ingevoerd. FFprobe is ook nodig en moet \u200b\u200bin dezelfde map staan. Deze componenten worden gewoonlijk gebundeld in dezelfde download. Controleer het pad en probeer het opnieuw.",
     "XmlTvPremiere": "Standaard wordt {0} uur gids data in Emby ge\u00efmporteerd. Het importeren van onbeperkte data vereist een actieve Emby Premiere abonnement.",
     "MoreFromValue": "Meer van {0}",
-    "OptionSaveMetadataAsHiddenHelp": "Het veranderen van dit zal gelden voor nieuwe metadata die wordt opgeslagen. Bestaande metadata bestanden zullen de volgende keer dat ze worden opgeslagen door Emby Server worden bijgewerkt."
+    "OptionSaveMetadataAsHiddenHelp": "Het veranderen van dit zal gelden voor nieuwe metadata die wordt opgeslagen. Bestaande metadata bestanden zullen de volgende keer dat ze worden opgeslagen door Emby Server worden bijgewerkt.",
+    "EnablePhotos": "Enable photos",
+    "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
+    "MakeAvailableOffline": "Make available offline",
+    "ConfirmRemoveDownload": "Remove download?"
 }

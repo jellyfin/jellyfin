@@ -3363,23 +3363,16 @@
 
         self.cancelSyncItems = function (itemIds, targetId) {
 
-            if (!userId) {
-                throw new Error("null userId");
+            if (!itemIds) {
+                throw new Error("null itemIds");
             }
 
-            if (!itemId) {
-                throw new Error("null itemId");
-            }
-
-            var url = self.getUrl("Sync/Items/Cancel");
+            var url = self.getUrl("Sync/" + (targetId || self.deviceId()) + "/Items", {
+                ItemIds: itemIds.join(',')
+            });
 
             return self.ajax({
-                type: "POST",
-                data: JSON.stringify({
-                    TargetId: targetId || self.deviceId(),
-                    ItemIds: itemIds
-                }),
-                contentType: "application/json",
+                type: "DELETE",
                 url: url
             });
         };
