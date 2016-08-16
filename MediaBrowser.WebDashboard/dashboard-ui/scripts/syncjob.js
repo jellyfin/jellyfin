@@ -18,7 +18,7 @@
 
         require(['syncDialog'], function (syncDialog) {
             syncDialog.renderForm({
-                elem: $('.formFields', page),
+                elem: page.querySelector('.formFields'),
                 dialogOptions: dialogOptions,
                 dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
                 showName: true,

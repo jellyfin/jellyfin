@@ -1,46 +1,49 @@
-﻿define(['loading', 'localsync'], function (loading) {
-
-    function refreshSyncStatus(page) {
-
-        if (LocalSync.isSupported()) {
-
-            var status = LocalSync.getSyncStatus();
-
-            page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-            if (status == 'Active') {
-                loading.show();
-            } else {
-                loading.hide();
-            }
-
-            if (status == "Active") {
-                page.querySelector('.btnSyncNow').classList.add('hide');
-            }
-            else {
-                page.querySelector('.btnSyncNow').classList.remove('hide');
-            }
-
-        }
-    }
-
-    function syncNow(page) {
-
-        LocalSync.sync();
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('MessageSyncStarted'));
-        });
-        refreshSyncStatus(page);
-    }
+﻿define(['loading', 'apphost', 'localsync'], function (loading, appHost) {
 
     return function (view, params) {
 
         var interval;
 
+        function isLocalSyncManagement() {
+            return appHost.supports('sync') && params.mode == 'offline';
+        }
+
+        function refreshSyncStatus(page) {
+
+            if (isLocalSyncManagement()) {
+
+                var status = LocalSync.getSyncStatus();
+
+                page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
+                if (status == 'Active') {
+                    loading.show();
+                } else {
+                    loading.hide();
+                }
+
+                if (status == "Active") {
+                    page.querySelector('.btnSyncNow').classList.add('hide');
+                }
+                else {
+                    page.querySelector('.btnSyncNow').classList.remove('hide');
+                }
+            }
+        }
+
+        function syncNow(page) {
+
+            LocalSync.sync();
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageSyncStarted'));
+            });
+            refreshSyncStatus(page);
+        }
+
         view.querySelector('.btnSyncNow').addEventListener('click', function () {
             syncNow(view);
         });
 
-        if (LocalSync.isSupported()) {
+        if (isLocalSyncManagement()) {
 
             view.querySelector('.localSyncStatus').classList.remove('hide');
 
