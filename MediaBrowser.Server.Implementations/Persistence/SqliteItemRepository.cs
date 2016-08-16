@@ -2152,7 +2152,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (query.User != null)
                     {
-                        query.SortBy = new[] { ItemSortBy.IsPlayed, "SimilarityScore", ItemSortBy.Random };
+                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.Random };
                     }
                     else
                     {

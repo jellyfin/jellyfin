@@ -48,11 +48,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var eofCount = 0;
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var fs = _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
                     while (eofCount < 15)
                     {
-                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, cancellationToken).ConfigureAwait(false);
+                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, _cancellationToken).ConfigureAwait(false);
 
                         //var position = fs.Position;
                         //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
@@ -63,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                             {
                                 eofCount++;
                             }
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                            await Task.Delay(100, _cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
