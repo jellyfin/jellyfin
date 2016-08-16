@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Providers;
 
@@ -84,7 +86,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private void ResetCachedChildren()
+        private void ClearCache()
         {
             lock (_childIdsLock)
             {
@@ -114,7 +116,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool BeforeMetadataRefresh()
         {
-            ResetCachedChildren();
+            ClearCache();
 
             var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
             _requiresRefresh = false;
@@ -123,7 +125,7 @@ namespace MediaBrowser.Controller.Entities
 
         private ItemResolveArgs CreateResolveArgs(IDirectoryService directoryService, bool setPhysicalLocations)
         {
-            ResetCachedChildren();
+            ClearCache();
 
             var path = ContainingFolderPath;
 
@@ -165,6 +167,21 @@ namespace MediaBrowser.Controller.Entities
             return args;
         }
 
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
+        }
+
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        {
+            ClearCache();
+
+            await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
+                .ConfigureAwait(false);
+
+            ClearCache();
+        }
+
         /// <summary>
         /// Adds the virtual child.
         /// </summary>
@@ -178,15 +195,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             _virtualChildren.Add(child);
-        }
-
-        /// <summary>
-        /// Get the children of this folder from the actual file system
-        /// </summary>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
-        {
-            return base.GetNonCachedChildren(directoryService).Concat(_virtualChildren);
         }
 
         /// <summary>

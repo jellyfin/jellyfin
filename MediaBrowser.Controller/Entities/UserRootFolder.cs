@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private void ResetCachedChildren()
+        private void ClearCache()
         {
             lock (_childIdsLock)
             {
@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool BeforeMetadataRefresh()
         {
-            ResetCachedChildren();
+            ClearCache();
 
             var hasChanges = base.BeforeMetadataRefresh();
 
@@ -107,12 +107,21 @@ namespace MediaBrowser.Controller.Entities
             return hasChanges;
         }
 
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            ClearCache();
+
+            return base.GetNonCachedChildren(directoryService);
+        }
+
         protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
         {
-            ResetCachedChildren();
+            ClearCache();
 
             await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
                 .ConfigureAwait(false);
+
+            ClearCache();
 
             // Not the best way to handle this, but it solves an issue
             // CollectionFolders aren't always getting saved after changes

@@ -236,6 +236,7 @@
     <Compile Include="Net\IAuthorizationContext.cs" />
     <Compile Include="Net\IAuthService.cs" />
     <Compile Include="Net\IHasAuthorization.cs" />
+    <Compile Include="Net\IAsyncStreamSource.cs" />
     <Compile Include="Net\IHasResultFactory.cs" />
     <Compile Include="Net\IHasSession.cs" />
     <Compile Include="Net\IHttpResultFactory.cs" />
