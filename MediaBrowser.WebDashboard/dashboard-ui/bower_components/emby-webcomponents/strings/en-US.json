@@ -252,5 +252,7 @@
   "MakeAvailableOffline": "Make available offline",
   "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
   "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+  "HeaderDeleteItems": "Delete Items",
+  "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
   "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

@@ -416,8 +416,8 @@
 
         $('.btnSyncSupporter', page).on('click', function () {
 
-            requirejs(["registrationservices"], function () {
-                RegistrationServices.validateFeature('sync');
+            requirejs(["registrationservices"], function (registrationServices) {
+                registrationServices.validateFeature('sync');
             });
         });
         $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));

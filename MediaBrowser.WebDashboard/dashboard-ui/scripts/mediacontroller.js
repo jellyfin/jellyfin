@@ -462,11 +462,11 @@
                 return;
             }
 
-            requirejs(["registrationservices"], function () {
+            requirejs(["registrationservices"], function (registrationServices) {
 
                 self.playbackTimeLimitMs = null;
 
-                RegistrationServices.validateFeature('playback').then(fn, function () {
+                registrationServices.validateFeature('playback').then(fn, function () {
 
                     self.playbackTimeLimitMs = lockedTimeLimitMs;
                     startAutoStopTimer();
