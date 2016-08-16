@@ -1204,6 +1204,12 @@ var AppInfo = {};
         return headroom;
     }
 
+    function createMainContentHammer(Hammer) {
+        
+        var hammer = new Hammer(document.querySelector('.mainDrawerPanelContent'), null);
+        return hammer;
+    }
+
     function initRequire() {
 
         var urlArgs = "v=" + (window.dashboardVersion || new Date().getDate());
@@ -1511,6 +1517,7 @@ var AppInfo = {};
         });
 
         define("headroom-window", ['headroom'], createWindowHeadroom);
+        define("hammer-main", ['hammer'], createMainContentHammer);
 
         // mock this for now. not used in this app
         define("playbackManager", [], function () {

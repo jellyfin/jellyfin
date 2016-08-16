@@ -66,7 +66,7 @@ namespace MediaBrowser.Api.Sync
         public string Id { get; set; }
     }
 
-    [Route("/Sync/{TargetId}/Items", "DELETE", Summary = "Cancels items from a sync target")]
+    [Route("/Sync/Items/Cancel", "POST", Summary = "Cancels items from a sync target")]
     public class CancelItems : IReturnVoid
     {
         [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "Items")]

@@ -2054,20 +2054,29 @@
         });
     }
 
-    function onSyncLocalClick() {
-
-        if (this.checked) {
-            require(['syncDialog'], function (syncDialog) {
-                syncDialog.showMenu({
-                    items: [currentItem]
-                });
-            });
-        } else {
-
-        }
-    }
-
     return function (view, params) {
+
+        function onSyncLocalClick() {
+
+            if (this.checked) {
+                require(['syncDialog'], function (syncDialog) {
+                    syncDialog.showMenu({
+                        items: [currentItem]
+                    });
+                });
+            } else {
+
+                require(['confirm'], function (confirm) {
+
+                    confirm(Globalize.translate('ConfirmRemoveDownload')).then(function () {
+                        ApiClient.cancelSyncItems([currentItem.Id]);
+                    }, function () {
+
+                        updateSyncStatus(view, currentItem);
+                    });
+                });
+            }
+        }
 
         function onPlayTrailerClick() {
             playTrailer(view);

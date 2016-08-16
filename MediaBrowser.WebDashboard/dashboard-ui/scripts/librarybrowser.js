@@ -116,32 +116,43 @@
             configureSwipeTabs: function (ownerpage, tabs) {
 
                 if (!browser.touch) {
-                    return;
+                    //return;
                 }
 
+                //require(['hammer'], function (Hammer) {
+
+                //    var hammertime = new Hammer(ownerpage);
+                //    hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+
+                //});
+
                 var pageCount = ownerpage.querySelectorAll('.pageTabContent').length;
-
-                require(['hammer'], function (Hammer) {
-
-                    var hammertime = new Hammer(ownerpage);
-                    hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
-
-                    hammertime.on('swipeleft', function (e) {
-                        if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(tabs.selectedIndex() || '0');
-                            if (selected < (pageCount - 1)) {
-                                tabs.selectedIndex(selected + 1);
-                            }
+                var onSwipeLeft = function (e) {
+                    if (LibraryBrowser.allowSwipe(e.target) && ownerpage.contains(e.target)) {
+                        var selected = parseInt(tabs.selectedIndex() || '0');
+                        if (selected < (pageCount - 1)) {
+                            tabs.selectedIndex(selected + 1);
                         }
-                    });
+                    }
+                };
 
-                    hammertime.on('swiperight', function (e) {
-                        if (LibraryBrowser.allowSwipe(e.target)) {
-                            var selected = parseInt(tabs.selectedIndex() || '0');
-                            if (selected > 0) {
-                                tabs.selectedIndex(selected - 1);
-                            }
+                var onSwipeRight = function (e) {
+                    if (LibraryBrowser.allowSwipe(e.target) && ownerpage.contains(e.target)) {
+                        var selected = parseInt(tabs.selectedIndex() || '0');
+                        if (selected > 0) {
+                            tabs.selectedIndex(selected - 1);
                         }
+                    }
+                };
+
+                require(['hammer-main'], function (hammertime) {
+                    
+                    hammertime.on('swipeleft', onSwipeLeft);
+                    hammertime.on('swiperight', onSwipeRight);
+
+                    ownerpage.addEventListener('viewdestroy', function () {
+                        hammertime.off('swipeleft', onSwipeLeft);
+                        hammertime.off('swiperight', onSwipeRight);
                     });
                 });
             },

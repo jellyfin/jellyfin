@@ -1055,8 +1055,7 @@
             target: navDrawerElement,
             onChange: onMainDrawerSelect,
             width: drawerWidth,
-            disableEdgeSwipe: disableEdgeSwipe,
-            edgeSwipeElement: document.querySelector('.mainDrawerPanelContent')
+            disableEdgeSwipe: disableEdgeSwipe
         };
     }
 

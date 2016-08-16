@@ -97,7 +97,10 @@
                 return;
             }
 
-            var edgeHammer = new Hammer(options.edgeSwipeElement, null);
+            require(['hammer-main'], initEdgeSwipeInternal);
+        }
+
+        function initEdgeSwipeInternal(edgeHammer) {
             var isPeeking = false;
 
             edgeHammer.on('panstart panmove', function (ev) {
