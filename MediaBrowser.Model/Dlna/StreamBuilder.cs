@@ -570,7 +570,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
+                int audioBitrate = GetAudioBitrate(playlistItem.SubProtocol, options.GetMaxBitrate(), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 int? maxBitrateSetting = options.GetMaxBitrate();
@@ -593,7 +593,7 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private int GetAudioBitrate(int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
+        private int GetAudioBitrate(string subProtocol, int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
             var defaultBitrate = 128000;
             if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
@@ -611,7 +611,14 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
                     {
-                        defaultBitrate = Math.Max(448000, defaultBitrate);
+                        if (string.Equals(subProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+                        {
+                            defaultBitrate = Math.Max(384000, defaultBitrate);
+                        }
+                        else
+                        {
+                            defaultBitrate = Math.Max(448000, defaultBitrate);
+                        }
                     }
                     else
                     {
