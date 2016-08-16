@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonIO;
-using WebMarkupMin.Core.Minifiers;
+using WebMarkupMin.Core;
 
 namespace MediaBrowser.WebDashboard.Api
 {
