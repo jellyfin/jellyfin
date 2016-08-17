@@ -379,13 +379,19 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private IEnumerable<Episode> GetAllEpisodes(User user)
         {
-            return LibraryManager.GetItemList(new InternalItemsQuery(user)
+            Logger.Debug("Series.GetAllEpisodes entering GetItemList");
+
+            var result =  LibraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Episode).Name },
                 SortBy = new[] { ItemSortBy.SortName }
 
-            }).Cast<Episode>();
+            }).Cast<Episode>().ToList();
+
+            Logger.Debug("Series.GetAllEpisodes returning {0} episodes", result.Count);
+
+            return result;
         }
 
         public IEnumerable<Episode> GetSeasonEpisodes(User user, Season parentSeason, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
