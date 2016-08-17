@@ -52,7 +52,8 @@ namespace MediaBrowser.Server.Implementations.IO
             ".db",
 
             // bts sync files
-            ".bts"
+            ".bts",
+            ".sync"
         };
 
         /// <summary>

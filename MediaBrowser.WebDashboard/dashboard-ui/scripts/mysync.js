@@ -1,4 +1,30 @@
-﻿define(['loading', 'apphost', 'localsync'], function (loading, appHost) {
+﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync'], function (loading, appHost, globalize, syncJobList, events) {
+
+    function initSupporterInfo(view, params) {
+
+        view.querySelector('.btnSyncSupporter').addEventListener('click', function () {
+
+            requirejs(["registrationservices"], function (registrationServices) {
+                registrationServices.validateFeature('sync');
+            });
+        });
+
+        view.querySelector('.supporterPromotion .mainText').innerHTML = globalize.translate('HeaderSyncRequiresSupporterMembership');
+
+        var apiClient = ApiClient;
+        apiClient.getPluginSecurityInfo().then(function (regInfo) {
+
+            if (regInfo.IsMBSupporter) {
+                view.querySelector('.supporterPromotionContainer').classList.add('hide');
+            } else {
+                view.querySelector('.supporterPromotionContainer').classList.remove('hide');
+            }
+
+        }, function () {
+
+            view.querySelector('.supporterPromotionContainer').classList.remove('hide');
+        });
+    }
 
     return function (view, params) {
 
@@ -51,18 +77,31 @@
             view.querySelector('.localSyncStatus').classList.add('hide');
         }
 
+        initSupporterInfo(view, params);
+        var mySyncJobList = new syncJobList({
+            isLocalSync: params.mode === 'offline',
+            serverId: ApiClient.serverId(),
+            userId: params.mode === 'offline' ? null : ApiClient.getCurrentUserId(),
+            element: view.querySelector('.syncActivity')
+        });
+
+        events.on(mySyncJobList, 'jobedit', function (e, jobId, serverId) {
+
+            Dashboard.navigate('mysyncjob.html?id=' + jobId);
+        });
+
         view.addEventListener('viewbeforeshow', function () {
-            var page = this;
 
-            refreshSyncStatus(page);
+            refreshSyncStatus(view);
 
-            interval = setInterval(function () {
-                refreshSyncStatus(page);
-            }, 5000);
+            if (appHost.supports('sync')) {
+                interval = setInterval(function () {
+                    refreshSyncStatus(view);
+                }, 5000);
+            }
         });
 
         view.addEventListener('viewbeforehide', function () {
-            var page = this;
 
             loading.hide();
 
@@ -70,6 +109,11 @@
                 clearInterval(interval);
                 interval = null;
             }
+        });
+
+        view.addEventListener('viewdestroy', function () {
+
+            mySyncJobList.destroy();
         });
     };
 });

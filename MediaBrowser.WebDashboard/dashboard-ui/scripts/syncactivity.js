@@ -410,7 +410,7 @@
          }];
     }
 
-    $(document).on('pageinit', ".syncActivityPage", function () {
+    $(document).on('pageinit', "#syncActivityPage", function () {
 
         var page = this;
 
@@ -422,7 +422,7 @@
         });
         $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));
 
-    }).on('pageshow', ".syncActivityPage", function () {
+    }).on('pageshow', "#syncActivityPage", function () {
 
         if (this.id == 'syncActivityPage') {
             LibraryMenu.setTabs('syncadmin', 0, getTabs);
@@ -450,7 +450,7 @@
         startListening(page);
         Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
 
-    }).on('pagebeforehide', ".syncActivityPage", function () {
+    }).on('pagebeforehide', "#syncActivityPage", function () {
 
         var page = this;
 

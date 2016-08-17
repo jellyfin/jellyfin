@@ -72,14 +72,5 @@
 }
 
 .fullSyncIndicator {
-    color: #673AB7;
-    padding: 0;
-    border: 4px solid #673AB7;
-    background: #fff;
-    width: auto;
-    height: auto;
-}
-
-.fullSyncIndicatorIcon {
-    margin: -3px;
+    background: rgba(82,181,75,1);
 }
