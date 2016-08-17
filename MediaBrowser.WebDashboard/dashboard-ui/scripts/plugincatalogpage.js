@@ -125,9 +125,12 @@
                 html += getPluginHtml(topPlugins[i], options, installedPlugins);
             }
             html += '</div>';
+            html += '<br/>';
+            html += '<br/>';
         }
 
         var hasOpenTag = false;
+        currentCategory = null;
 
         if (options.showCategory === false) {
             html += '<div class="itemsContainer vertical-wrap">';
@@ -146,7 +149,6 @@
                     if (currentCategory) {
                         hasOpenTag = false;
                         html += '</div>';
-                        html += '<br/>';
                         html += '<br/>';
                         html += '<br/>';
                     }

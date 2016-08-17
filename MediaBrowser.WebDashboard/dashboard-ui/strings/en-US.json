@@ -880,7 +880,6 @@
   "OptionNone": "None",
   "HeaderLiveTv": "Live TV",
   "HeaderReports": "Reports",
-  "HeaderMetadataManager": "Metadata Manager",
   "HeaderSettings": "Settings",
   "OptionDefaultSort": "Default",
   "OptionCommunityMostWatchedSort": "Most Watched",
@@ -1739,7 +1738,7 @@
   "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
   "ButtonDashboard": "Dashboard",
   "ButtonReports": "Reports",
-  "ButtonMetadataManager": "Metadata Manager",
+  "MetadataManager": "Metadata Manager",
   "HeaderTime": "Time",
   "LabelAddedOnDate": "Added {0}",
   "ButtonStart": "Start",
@@ -2314,5 +2313,7 @@
   "EnablePhotos": "Enable photos",
   "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
   "MakeAvailableOffline": "Make available offline",
-  "ConfirmRemoveDownload": "Remove download?"
+  "ConfirmRemoveDownload": "Remove download?",
+  "SyncToOtherDevices": "Sync to other devices",
+  "ManageOfflineDownloads": "Manage offline downloads"
 }

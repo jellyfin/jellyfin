@@ -195,7 +195,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html);
+        elem.innerHTML = html;
 
         $('#selectSyncTarget', elem).on('change', function () {
 
@@ -303,7 +303,7 @@
             var promise = dialogHelper.open(dlg);
 
             renderForm({
-                elem: $('.formFields', dlg),
+                elem: dlg.querySelector('.formFields'),
                 dialogOptions: dialogOptions,
                 dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
             });
