@@ -702,7 +702,7 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query);
+                return PostFilterAndSort(items, query, true, true);
             }
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
@@ -903,7 +903,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.ItemIds.Length > 0)
             {
                 var specificItems = query.ItemIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
-                return Task.FromResult(PostFilterAndSort(specificItems, query));
+                return Task.FromResult(PostFilterAndSort(specificItems, query, true, true));
             }
 
             return GetItemsInternal(query);
@@ -959,12 +959,12 @@ namespace MediaBrowser.Controller.Entities
                    : GetChildren(user, true).Where(filter);
             }
 
-            return PostFilterAndSort(items, query);
+            return PostFilterAndSort(items, query, true, true);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
+        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool collapseBoxSetItems, bool enableSorting)
         {
-            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager);
+            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager, collapseBoxSetItems, enableSorting);
         }
 
         public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)

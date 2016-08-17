@@ -231,7 +231,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             DateTime added;
                             if (DateTime.TryParseExact(val, BaseNfoSaver.DateAddedFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
                             {
-                                item.EndDate = added.ToUniversalTime();
+                                item.DateCreated = added.ToUniversalTime();
                             }
                             else if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
                             {

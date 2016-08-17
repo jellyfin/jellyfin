@@ -148,6 +148,8 @@
 
                 channelQuery.Limit = channelLimit;
                 channelQuery.AddCurrentProgram = false;
+                channelQuery.EnableUserData = false;
+                channelQuery.EnableImageTypes = "Primary";
 
                 channelsPromise = channelsPromise || apiClient.getLiveTvChannels(channelQuery);
 
@@ -169,9 +171,10 @@
                             return c.Id;
                         }).join(','),
                         ImageTypeLimit: 1,
-                        EnableImageTypes: "Primary,Backdrop",
+                        EnableImageTypes: layoutManager.tv ? "Primary,Backdrop" : "Primary",
                         SortBy: "StartDate",
-                        EnableTotalRecordCount: false
+                        EnableTotalRecordCount: false,
+                        EnableUserData: false
 
                     }).then(function (programsResult) {
 

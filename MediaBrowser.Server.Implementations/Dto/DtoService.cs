@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (user != null)
             {
-                await AttachUserSpecificInfo(dto, item, user, fields).ConfigureAwait(false);
+                await AttachUserSpecificInfo(dto, item, user, options).ConfigureAwait(false);
             }
 
             var hasMediaSources = item as IHasMediaSources;
@@ -446,17 +446,18 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="fields">The fields.</param>
-        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions dtoOptions)
         {
+            var fields = dtoOptions.Fields;
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
 
-                dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
+                if (dtoOptions.EnableUserData)
+                {
+                    dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
+                }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
@@ -476,7 +477,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             else
             {
-                dto.UserData = _userDataRepository.GetUserDataDto(item, user).Result;
+                if (dtoOptions.EnableUserData)
+                {
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, user).Result;
+                }
             }
 
             dto.PlayAccess = item.GetPlayAccess(user);
@@ -484,7 +488,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.BasicSyncInfo) || fields.Contains(ItemFields.SyncInfo))
             {
                 var userCanSync = user != null && user.Policy.EnableSync;
-                dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
+                if (userCanSync && _syncManager.SupportsSync(item))
+                {
+                    dto.SupportsSync = true;
+                }
             }
 
             if (fields.Contains(ItemFields.SeasonUserData))
@@ -969,7 +976,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Id = GetDtoId(item);
             dto.IndexNumber = item.IndexNumber;
             dto.ParentIndexNumber = item.ParentIndexNumber;
-            dto.IsFolder = item.IsFolder;
+
+            if (item.IsFolder)
+            {
+                dto.IsFolder = true;
+            }
+            else if (item is IHasMediaSources)
+            {
+                dto.IsFolder = false;
+            }
+
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
             if (item.IsHD.HasValue && item.IsHD.Value)

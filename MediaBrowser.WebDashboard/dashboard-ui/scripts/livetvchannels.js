@@ -14,7 +14,8 @@
                     query: {
                         StartIndex: 0,
                         EnableFavoriteSorting: true,
-                        Limit: LibraryBrowser.getDefaultPageSize()
+                        Limit: LibraryBrowser.getDefaultPageSize(),
+                        Fields: "PrimaryImageAspectRatio"
                     }
                 };
 

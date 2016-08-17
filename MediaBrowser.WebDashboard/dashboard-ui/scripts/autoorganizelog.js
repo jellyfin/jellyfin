@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'paper-icon-button-light'], function ($, datetime) {
+﻿define(['jQuery', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function ($, taskButton, datetime) {
 
     var query = {
 
@@ -309,11 +309,12 @@
         reloadItems(page);
 
         // on here
-        $('.btnOrganize', page).taskButton({
+        taskButton({
             mode: 'on',
             progressElem: page.querySelector('.organizeProgress'),
             panel: page.querySelector('.organizeTaskPanel'),
-            taskKey: 'AutoOrganize'
+            taskKey: 'AutoOrganize',
+            button: page.querySelector('.btnOrganize')
         });
 
         Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
@@ -325,8 +326,9 @@
         currentResult = null;
 
         // off here
-        $('.btnOrganize', page).taskButton({
-            mode: 'off'
+        taskButton({
+            mode: 'off',
+            button: page.querySelector('.btnOrganize')
         });
 
         Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);

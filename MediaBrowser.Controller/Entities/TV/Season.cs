@@ -170,13 +170,15 @@ namespace MediaBrowser.Controller.Entities.TV
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            Logger.Debug("Season.GetItemsInternal entering GetEpisodes");
+            var id = Guid.NewGuid().ToString("N");
+
+            Logger.Debug("Season.GetItemsInternal entering GetEpisodes. Request id: " + id);
             var items = GetEpisodes(user).Where(filter);
 
-            Logger.Debug("Season.GetItemsInternal entering PostFilterAndSort");
-            var result = PostFilterAndSort(items, query);
+            Logger.Debug("Season.GetItemsInternal entering PostFilterAndSort. Request id: " + id);
+            var result = PostFilterAndSort(items, query, false, false);
 
-            Logger.Debug("Season.GetItemsInternal complete");
+            Logger.Debug("Season.GetItemsInternal complete. Request id: " + id);
             return Task.FromResult(result);
         }
 

@@ -674,7 +674,7 @@
                     return;
                 }
 
-                viewMenuBarTabs.querySelector('is=["emby-tabs"]').selectedIndex(selectedIndex);
+                viewMenuBarTabs.querySelector('[is="emby-tabs"]').selectedIndex(selectedIndex);
 
                 LibraryMenu.tabType = type;
             });
@@ -797,11 +797,11 @@
             else if (isReportsPage && itemId == 'reports') {
                 lnkMediaFolder.classList.add('selectedMediaFolder');
             }
-            else if (isMySyncPage && itemId == 'manageoffline') {
+            else if (isMySyncPage && itemId == 'manageoffline' && window.location.href.toString().indexOf('mode=offline') != -1) {
 
                 lnkMediaFolder.classList.add('selectedMediaFolder');
             }
-            else if (isMySyncPage && itemId == 'syncotherdevices') {
+            else if (isMySyncPage && itemId == 'syncotherdevices' && window.location.href.toString().indexOf('mode=offline') == -1) {
 
                 lnkMediaFolder.classList.add('selectedMediaFolder');
             }
@@ -812,22 +812,6 @@
                 lnkMediaFolder.classList.remove('selectedMediaFolder');
             }
         }
-    }
-
-    function replaceQueryString(url, param, value) {
-        var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
-        if (url.match(re))
-            return url.replace(re, '$1' + param + "=" + value + '$2');
-        else if (value) {
-
-            if (url.indexOf('?') == -1) {
-                return url + '?' + param + "=" + value;
-            }
-
-            return url + '&' + param + "=" + value;
-        }
-
-        return url;
     }
 
     function onWebSocketMessage(e, data) {
@@ -883,14 +867,10 @@
 
         if (isDashboardPage) {
             refreshDashboardInfoInDrawer(page);
-            //mainDrawerPanel.forceNarrow = false;
         } else {
-
             if (navDrawerElement.classList.contains('adminDrawer')) {
                 refreshLibraryDrawer();
             }
-
-            //mainDrawerPanel.forceNarrow = true;
         }
 
         setDrawerClass(page);

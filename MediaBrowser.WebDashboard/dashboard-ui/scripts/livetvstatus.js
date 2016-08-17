@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'listViewStyle'], function ($) {
+﻿define(['jQuery', 'scripts/taskbutton', 'listViewStyle'], function ($, taskButton) {
 
     function resetTuner(page, id) {
 
@@ -595,10 +595,11 @@
         reload(page);
 
         // on here
-        $('.btnRefresh', page).taskButton({
+        taskButton({
             mode: 'on',
             progressElem: page.querySelector('.refreshGuideProgress'),
-            taskKey: 'RefreshGuide'
+            taskKey: 'RefreshGuide',
+            button: page.querySelector('.btnRefresh')
         });
 
     }).on('pagehide', "#liveTvStatusPage", function () {
@@ -606,8 +607,11 @@
         var page = this;
 
         // off here
-        $('.btnRefreshGuide', page).taskButton({
-            mode: 'off'
+        taskButton({
+            mode: 'off',
+            progressElem: page.querySelector('.refreshGuideProgress'),
+            taskKey: 'RefreshGuide',
+            button: page.querySelector('.btnRefresh')
         });
 
     });

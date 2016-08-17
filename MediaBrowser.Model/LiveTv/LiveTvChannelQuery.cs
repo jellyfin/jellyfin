@@ -59,5 +59,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if [add current program]; otherwise, <c>false</c>.</value>
         public bool AddCurrentProgram { get; set; }
+        public bool EnableUserData { get; set; }
+
+        public LiveTvChannelQuery()
+        {
+            EnableUserData = true;
+        }
     }
 }
