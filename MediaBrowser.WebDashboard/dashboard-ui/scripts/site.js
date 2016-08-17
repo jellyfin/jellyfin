@@ -2327,7 +2327,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mysync.html',
-            dependencies: ['scripts/syncactivity', 'scripts/taskbutton', 'emby-button'],
+            dependencies: [],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mysync'
@@ -2493,7 +2493,8 @@ var AppInfo = {};
         defineRoute({
             path: '/syncactivity.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/syncactivity'
         });
 
         defineRoute({

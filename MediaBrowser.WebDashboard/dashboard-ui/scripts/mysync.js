@@ -1,4 +1,4 @@
-﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync'], function (loading, appHost, globalize, syncJobList, events) {
+﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events) {
 
     function initSupporterInfo(view, params) {
 

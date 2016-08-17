@@ -702,7 +702,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
-        function getCardFooterText(item, options, showTitle, imgUrl, footerClass, progressHtml, isOuterFooter) {
+        function getCardFooterText(item, options, showTitle, forceName, imgUrl, footerClass, progressHtml, isOuterFooter) {
 
             var html = '';
 
@@ -869,6 +869,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
+            if (showTitle && forceName && lines.length == 1) {
+                lines = [];
+            }
+
             html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter);
 
             if (progressHtml) {
@@ -1012,7 +1016,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var imgInfo = getCardImageUrl(item, apiClient, options);
             var imgUrl = imgInfo.imgUrl;
 
-            var forceName = imgInfo.forceName;
+            var forceName = imgInfo.forceName || !imgUrl;
 
             var showTitle = options.showTitle == 'auto' ? true : (options.showTitle || item.Type == 'PhotoAlbum' || item.Type == 'Folder');
             var overlayText = options.overlayText;
@@ -1057,7 +1061,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
-                innerCardFooter += getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, false);
+                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, false);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1076,7 +1080,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter' : 'cardFooter transparent';
-                outerCardFooter = getCardFooterText(item, options, showTitle, imgUrl, footerCssClass, progressHtml, true);
+                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, true);
             }
 
             if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {

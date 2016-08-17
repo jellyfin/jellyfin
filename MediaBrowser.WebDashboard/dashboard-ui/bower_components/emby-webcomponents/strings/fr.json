@@ -252,5 +252,7 @@
     "MakeAvailableOffline": "Rendre disponible hors connexion",
     "ServerNameIsRestarting": "Emby Server - {0} est red\u00e9marr\u00e9.",
     "ServerNameIsShuttingDown": "Emby Server - {0} est arr\u00eater.",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
     "PleaseRestartServerName": "S'il vous pla\u00eet red\u00e9marrer Emby server - {0}."
 }

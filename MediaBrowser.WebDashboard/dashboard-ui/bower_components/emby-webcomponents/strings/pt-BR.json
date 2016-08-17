@@ -252,5 +252,7 @@
     "MakeAvailableOffline": "Disponibilizar offline",
     "ServerNameIsRestarting": "Servidor Emby - {0} est\u00e1 reiniciando.",
     "ServerNameIsShuttingDown": "Servidor Emby - {0} est\u00e1 desligando.",
+    "HeaderDeleteItems": "Apagar Itens",
+    "ConfirmDeleteItems": "Apagar estes itens ir\u00e1 remov\u00ea-los do sistema de arquivos e da biblioteca de m\u00eddia. Tem certeza que deseja continuar?",
     "PleaseRestartServerName": "Por favor reinicie o Servidor Emby - {0}."
 }
