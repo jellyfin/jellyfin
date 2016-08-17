@@ -237,7 +237,7 @@ namespace MediaBrowser.Controller.Entities.TV
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
             var items = GetSeasons(user).Where(filter);
-            var result = PostFilterAndSort(items, query);
+            var result = PostFilterAndSort(items, query, false, true);
             return Task.FromResult(result);
         }
 
