@@ -674,7 +674,7 @@
                     return;
                 }
 
-                viewMenuBarTabs.querySelector('is=["emby-tabs"]').selectedIndex(selectedIndex);
+                viewMenuBarTabs.querySelector('[is="emby-tabs"]').selectedIndex(selectedIndex);
 
                 LibraryMenu.tabType = type;
             });

@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'apphost', 'cardStyle'], function ($, appHost) {
+﻿define(['jQuery', 'apphost', 'scripts/taskbutton', 'cardStyle'], function ($, appHost, taskButton) {
 
     function changeCollectionType(page, virtualFolder) {
 
@@ -461,10 +461,11 @@
         var page = this;
 
         // on here
-        $('.btnRefresh', page).taskButton({
+        taskButton({
             mode: 'on',
             progressElem: page.querySelector('.refreshProgress'),
-            taskKey: 'RefreshLibrary'
+            taskKey: 'RefreshLibrary',
+            button: page.querySelector('.btnRefresh')
         });
 
     });
@@ -474,8 +475,11 @@
         var page = this;
 
         // off here
-        $('.btnRefresh', page).taskButton({
-            mode: 'off'
+        taskButton({
+            mode: 'off',
+            progressElem: page.querySelector('.refreshProgress'),
+            taskKey: 'RefreshLibrary',
+            button: page.querySelector('.btnRefresh')
         });
 
     });

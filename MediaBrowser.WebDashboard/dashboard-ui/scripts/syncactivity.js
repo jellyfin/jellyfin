@@ -1,4 +1,4 @@
-﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events) {
+﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'scripts/taskbutton', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events, taskButton) {
 
     function getTabs() {
         return [
@@ -57,6 +57,22 @@
         view.addEventListener('viewshow', function () {
 
             LibraryMenu.setTabs('syncadmin', 0, getTabs);
+
+            taskButton({
+                mode: 'on',
+                progressElem: view.querySelector('.syncProgress'),
+                taskKey: 'SyncPrepare',
+                button: view.querySelector('.btnSync')
+            });
+        });
+
+        view.addEventListener('viewbeforehide', function () {
+
+            taskButton({
+                mode: 'off',
+                taskKey: 'SyncPrepare',
+                button: view.querySelector('.btnSync')
+            });
         });
 
         view.addEventListener('viewdestroy', function () {
