@@ -58,7 +58,7 @@ namespace MediaBrowser.Controller.Entities
             var user = query.User;
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
             
-            return PostFilterAndSort(result.Where(filter), query);
+            return PostFilterAndSort(result.Where(filter), query, true, true);
         }
 
         public override int GetChildCount(User user)

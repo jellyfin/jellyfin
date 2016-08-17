@@ -176,7 +176,7 @@ namespace MediaBrowser.Controller.Entities.TV
             var items = GetEpisodes(user).Where(filter);
 
             Logger.Debug("Season.GetItemsInternal entering PostFilterAndSort. Request id: " + id);
-            var result = PostFilterAndSort(items, query);
+            var result = PostFilterAndSort(items, query, false, false);
 
             Logger.Debug("Season.GetItemsInternal complete. Request id: " + id);
             return Task.FromResult(result);
