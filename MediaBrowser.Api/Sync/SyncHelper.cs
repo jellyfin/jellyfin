@@ -24,7 +24,7 @@ namespace MediaBrowser.Api.Sync
                         }
                         break;
                     }
-                    if (item.IsFolder && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
+                    if (item.IsFolderItem && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
                     {
                         options.Add(SyncJobOption.Quality);
                         options.Add(SyncJobOption.Profile);
@@ -44,7 +44,7 @@ namespace MediaBrowser.Api.Sync
             {
                 if (item.SupportsSync ?? false)
                 {
-                    if (item.IsFolder || item.IsGameGenre || item.IsMusicGenre || item.IsGenre || item.IsArtist || item.IsStudio || item.IsPerson)
+                    if (item.IsFolderItem || item.IsGameGenre || item.IsMusicGenre || item.IsGenre || item.IsArtist || item.IsStudio || item.IsPerson)
                     {
                         options.Add(SyncJobOption.SyncNewContent);
                         options.Add(SyncJobOption.ItemLimit);
