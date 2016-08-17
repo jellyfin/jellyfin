@@ -139,6 +139,10 @@ namespace MediaBrowser.Api
                 {
                     options.ImageTypeLimit = hasDtoOptions.ImageTypeLimit.Value;
                 }
+                if (hasDtoOptions.EnableUserData.HasValue)
+                {
+                    options.EnableUserData = hasDtoOptions.EnableUserData.Value;
+                }
 
                 if (!string.IsNullOrWhiteSpace(hasDtoOptions.EnableImageTypes))
                 {

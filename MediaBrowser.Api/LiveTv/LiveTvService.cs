@@ -82,6 +82,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "AddCurrentProgram", Description = "Optional. Adds current program info to each channel", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public bool AddCurrentProgram { get; set; }
 
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
+
         public GetChannels()
         {
             AddCurrentProgram = true;
@@ -148,6 +151,9 @@ namespace MediaBrowser.Api.LiveTv
         public string Fields { get; set; }
 
         public bool EnableTotalRecordCount { get; set; }
+
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
 
         public GetRecordings()
         {
@@ -271,6 +277,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string EnableImageTypes { get; set; }
 
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
+
         /// <summary>
         /// Fields to return within the items, in addition to basic information
         /// </summary>
@@ -331,6 +340,9 @@ namespace MediaBrowser.Api.LiveTv
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
+
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
     }
 
     [Route("/LiveTv/Programs/{Id}", "GET", Summary = "Gets a live tv program")]
@@ -726,7 +738,12 @@ namespace MediaBrowser.Api.LiveTv
 
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, GetDtoOptions(Request), user).ConfigureAwait(false)).ToArray();
+            var options = GetDtoOptions(request);
+            RemoveFields(options);
+
+            options.AddCurrentProgram = request.AddCurrentProgram;
+
+            var returnArray = (await _dtoService.GetBaseItemDtos(channelResult.Items, options, user).ConfigureAwait(false)).ToArray();
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -735,6 +752,14 @@ namespace MediaBrowser.Api.LiveTv
             };
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        private void RemoveFields(DtoOptions options)
+        {
+            options.Fields.Remove(ItemFields.CanDelete);
+            options.Fields.Remove(ItemFields.CanDownload);
+            options.Fields.Remove(ItemFields.DisplayPreferencesId);
+            options.Fields.Remove(ItemFields.Etag);
         }
 
         public object Get(GetChannel request)

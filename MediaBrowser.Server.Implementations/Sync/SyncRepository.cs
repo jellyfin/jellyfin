@@ -414,6 +414,20 @@ namespace MediaBrowser.Server.Implementations.Sync
                         whereClauses.Add("TargetId=@TargetId");
                         cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                     }
+                    if (!string.IsNullOrWhiteSpace(query.ExcludeTargetIds))
+                    {
+                        var excludeIds = (query.ExcludeTargetIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (excludeIds.Length == 1)
+                        {
+                            whereClauses.Add("TargetId<>@ExcludeTargetId");
+                            cmd.Parameters.Add(cmd, "@ExcludeTargetId", DbType.String).Value = excludeIds[0];
+                        }
+                        else if (excludeIds.Length > 1)
+                        {
+                            whereClauses.Add("TargetId<>@ExcludeTargetId");
+                            cmd.Parameters.Add(cmd, "@ExcludeTargetId", DbType.String).Value = excludeIds[0];
+                        }
+                    }
                     if (!string.IsNullOrWhiteSpace(query.UserId))
                     {
                         whereClauses.Add("UserId=@UserId");

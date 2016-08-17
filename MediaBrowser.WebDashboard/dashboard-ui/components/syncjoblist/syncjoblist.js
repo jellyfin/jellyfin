@@ -198,6 +198,8 @@ globalize.translate('CancelSyncJobConfirmation');
 
         if (listInstance.options.isLocalSync) {
             options.TargetId = apiClient.deviceId();
+        } else {
+            options.ExcludeTargetIds = apiClient.deviceId();
         }
 
         return apiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
@@ -303,7 +305,7 @@ globalize.translate('CancelSyncJobConfirmation');
         this.options = options;
 
         var onSyncJobsUpdatedHandler = onSyncJobsUpdated.bind(this);
-        this.onSyncJobsUpdatedHandler = null;
+        this.onSyncJobsUpdatedHandler = onSyncJobsUpdatedHandler;
         events.on(serverNotifications, 'SyncJobs', onSyncJobsUpdatedHandler);
 
         var onClickHandler = onElementClick.bind(this);
@@ -318,15 +320,15 @@ globalize.translate('CancelSyncJobConfirmation');
 
         stopListening(this);
 
-        this.options = null;
-
         var onSyncJobsUpdatedHandler = this.onSyncJobsUpdatedHandler;
         this.onSyncJobsUpdatedHandler = null;
         events.off(serverNotifications, 'SyncJobs', onSyncJobsUpdatedHandler);
 
         var onClickHandler = this.onClickHandler;
         this.onClickHandler = null;
-        options.element.removeEventListener('click', onClickHandler);
+        this.options.element.removeEventListener('click', onClickHandler);
+
+        this.options = null;
     };
 
     return syncJobList;
