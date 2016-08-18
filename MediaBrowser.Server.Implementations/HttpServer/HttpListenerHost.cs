@@ -331,6 +331,46 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return url;
         }
 
+        private string NormalizeConfiguredLocalAddress(string address)
+        {
+            var index = address.Trim('/').IndexOf('/');
+
+            if (index != -1)
+            {
+                address = address.Substring(index + 1);
+            }
+
+            return address.Trim('/');
+        }
+
+        private bool ValidateHost(Uri url)
+        {
+            var hosts = _config
+                .Configuration
+                .LocalNetworkAddresses
+                .Select(NormalizeConfiguredLocalAddress)
+                .ToList();
+
+            if (hosts.Count == 0)
+            {
+                return true;
+            }
+
+            var host = url.Host ?? string.Empty;
+
+            _logger.Debug("Validating host {0}", host);
+
+            if (_networkManager.IsInPrivateAddressSpace(host))
+            {
+                hosts.Add("localhost");
+                hosts.Add("127.0.0.1");
+
+                return hosts.Any(i => host.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -348,6 +388,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.StatusCode = 503;
                 httpRes.Close();
                 return ;
+            }
+
+            if (!ValidateHost(url))
+            {
+                httpRes.StatusCode = 400;
+                httpRes.ContentType = "text/plain";
+                httpRes.Write("Invalid host");
+
+                httpRes.Close();
+                return;
             }
 
             var operationName = httpReq.OperationName;
