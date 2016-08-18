@@ -157,24 +157,7 @@ namespace MediaBrowser.Api.UserLibrary
                 folder = user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder();
             }
 
-            if (!string.IsNullOrEmpty(request.Ids))
-            {
-                request.Recursive = true;
-                var query = GetItemsQuery(request, user);
-                var result = await folder.GetItems(query).ConfigureAwait(false);
-
-                if (string.IsNullOrWhiteSpace(request.SortBy))
-                {
-                    var ids = query.ItemIds.ToList();
-
-                    // Try to preserve order
-                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
-                }
-
-                return result;
-            }
-
-            if (request.Recursive)
+            if (request.Recursive || !string.IsNullOrEmpty(request.Ids))
             {
                 return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
             }
