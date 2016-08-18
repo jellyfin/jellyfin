@@ -106,5 +106,7 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <value>The internal metadata path.</value>
         string InternalMetadataPath { get; }
+
+        string ArtistsPath { get; }
     }
 }

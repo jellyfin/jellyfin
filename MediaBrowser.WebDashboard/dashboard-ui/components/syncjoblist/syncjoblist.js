@@ -57,7 +57,7 @@ globalize.translate('CancelSyncJobConfirmation');
             statusIcon.classList.remove('status-text-icon');
             statusIcon.classList.add('zeroProgressStatus');
         } else if (progress >= 100) {
-            statusIcon.innerHTML = 'file_download';
+            statusIcon.innerHTML = 'check';
             statusIcon.classList.add('md-icon');
             statusIcon.classList.remove('status-text-icon');
             statusIcon.classList.remove('zeroProgressStatus');
@@ -80,7 +80,7 @@ globalize.translate('CancelSyncJobConfirmation');
         if (progress === 0) {
             html += '<i class="md-icon listItemIcon statusIcon zeroProgressStatus">file_download</i>';
         } else if (progress >= 100) {
-            html += '<i class="md-icon listItemIcon statusIcon">file_download</i>';
+            html += '<i class="md-icon listItemIcon statusIcon">check</i>';
         } else {
             html += '<i class="listItemIcon statusIcon status-text-icon">' + (Math.round(progress)) + '%</i>';
         }
@@ -139,7 +139,8 @@ globalize.translate('CancelSyncJobConfirmation');
         var html = '';
         var lastTargetName = '';
 
-        var showTargetName = !listInstance.options.isLocalSync;
+        var isLocalSync = listInstance.options.isLocalSync;
+        var showTargetName = !isLocalSync;
 
         var hasOpenSection = false;
 
@@ -179,6 +180,15 @@ globalize.translate('CancelSyncJobConfirmation');
         }
 
         var elem = listInstance.options.element;
+
+        if (!html) {
+            if (isLocalSync) {
+                html = '<div style="padding:1em .25em;">' + globalize.translate('MessageDownloadsFound') + '</div>';
+            } else {
+                html = '<div style="padding:1em .25em;">' + globalize.translate('MessageNoSyncJobsFound') + '</div>';
+            }
+        }
+
         elem.innerHTML = html;
 
         imageLoader.lazyChildren(elem);

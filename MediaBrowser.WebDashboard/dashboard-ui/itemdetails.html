@@ -160,12 +160,12 @@
             </div>
 
             <div id="scenesCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderScenes}
-                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink hide" style="margin-top: -8px; display: inline-block;" href="librarysettings.html" title="${ButtonSettings}">
-                        <button is="paper-icon-button-light" class="autoSize"><i class="md-icon">settings</i></button>
-                    </a>
-                </h1>
+                <div style="display: flex; align-items: center; margin:.5em 0;">
+                    <h1 style="margin:0;">
+                        ${HeaderScenes}
+                    </h1>
+                    <button is="paper-icon-button-light" class="chapterSettingsButton hide"><i class="md-icon">settings</i></button>
+                </div>
                 <div id="scenesContent" class="itemsContainer"></div>
                 <button is="emby-button" type="button" class="raised more moreScenes hide">${ButtonMore}</button>
             </div>
