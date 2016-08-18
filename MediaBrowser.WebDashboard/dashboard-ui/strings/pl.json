@@ -880,7 +880,6 @@
     "OptionNone": "\u017baden",
     "HeaderLiveTv": "TV Na \u017bywo",
     "HeaderReports": "Raporty",
-    "HeaderMetadataManager": "Manager metadanych",
     "HeaderSettings": "Ustawienia",
     "OptionDefaultSort": "Domy\u015blny",
     "OptionCommunityMostWatchedSort": "Najcz\u0119\u015bciej Ogl\u0105dane",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Witaj ponownie!",
     "ButtonTakeTheTourToSeeWhatsNew": "Zobacz co nowego dla Ciebie przygotowali\u015bmy",
     "MessageNoSyncJobsFound": "Brak zada\u0144 synchronizacji. Stw\u00f3rz nowe u\u017cywaj\u0105c odno\u015bnik\u00f3w Sync w interfejsie webowym Emby.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Wybierz urz\u0105dzenie",
     "ButtonCancelItem": "Anuluj obiekt",
     "ButtonQueueForRetry": "Zapisz aby spr\u00f3bowa\u0107 p\u00f3\u017aniej",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Prosz\u0119 upewnij si\u0119 \u017ce otwarty tuner jest dost\u0119pny.",
     "ButtonDashboard": "Panel G\u0142\u00f3wny",
     "ButtonReports": "Raporty",
-    "ButtonMetadataManager": "Manager metadanych",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Czas",
     "LabelAddedOnDate": "Dodano {0}",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

@@ -880,7 +880,6 @@
     "OptionNone": "Nada",
     "HeaderLiveTv": "TV en directo",
     "HeaderReports": "Informes",
-    "HeaderMetadataManager": "Gestor de metadatos",
     "HeaderSettings": "Ajustes",
     "OptionDefaultSort": "Por defecto",
     "OptionCommunityMostWatchedSort": "M\u00e1s visto",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "\u00a1Bienvenido de nuevo!",
     "ButtonTakeTheTourToSeeWhatsNew": "Da un paseo para ver que hay nuevo",
     "MessageNoSyncJobsFound": "No se han encontrado trabajos de sincronizaci\u00f3n. Cr\u00e9alos usando los botones de sincronizaci\u00f3n que se encuentran a trav\u00e9s de la interfaz web.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Elegir dispositivos",
     "ButtonCancelItem": "Cancelar \u00edtem",
     "ButtonQueueForRetry": "En cola para reintentar",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Aseg\u00farese que hay un sintonizador disponible.",
     "ButtonDashboard": "Panel de control",
     "ButtonReports": "Informes",
-    "ButtonMetadataManager": "Gestor de metadatos",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Duraci\u00f3n",
     "LabelAddedOnDate": "A\u00f1adido {0}",
     "ButtonStart": "Inicio",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

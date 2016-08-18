@@ -880,7 +880,6 @@
     "OptionNone": "\u017d\u00e1dn\u00fd",
     "HeaderLiveTv": "Live TV",
     "HeaderReports": "Hl\u00e1\u0161en\u00ed",
-    "HeaderMetadataManager": "Spr\u00e1vce metadat",
     "HeaderSettings": "Nastaven\u00ed",
     "OptionDefaultSort": "Default",
     "OptionCommunityMostWatchedSort": "Nejsledovan\u011bj\u0161\u00ed",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "V\u00edtejte zp\u011bt!",
     "ButtonTakeTheTourToSeeWhatsNew": "Chci vid\u011bt co je nov\u00e9ho",
     "MessageNoSyncJobsFound": "Nebyly nalezeny \u017e\u00e1dn\u00e9 synchroniza\u010dn\u00ed \u00falohy. Synchroniza\u010dn\u00ed \u00falohy vytvo\u0159\u00edte pomoc\u00ed tla\u010d\u00edtek \"Synchronizace\" kdekoliv ve webov\u00e9m rozhran\u00ed.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Vyber za\u0159\u00edzen\u00ed",
     "ButtonCancelItem": "Zru\u0161it polo\u017eku",
     "ButtonQueueForRetry": "Za\u0159azeno pro obnoven\u00ed",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Pros\u00edm ujist\u011bte se, \u017ee je otev\u0159en\u00fd tuner dostupn\u00fd.",
     "ButtonDashboard": "Hlavn\u00ed nab\u00eddka",
     "ButtonReports": "Hl\u00e1\u0161en\u00ed",
-    "ButtonMetadataManager": "Spr\u00e1vce metadat",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "\u010cas",
     "LabelAddedOnDate": "P\u0159id\u00e1no {0}",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

@@ -880,7 +880,6 @@
     "OptionNone": "None",
     "HeaderLiveTv": "Live TV",
     "HeaderReports": "Napl\u00f3k",
-    "HeaderMetadataManager": "Metaadat Kezel\u0151",
     "HeaderSettings": "Be\u00e1ll\u00edt\u00e1sok",
     "OptionDefaultSort": "Alap\u00e9rtelmezett",
     "OptionCommunityMostWatchedSort": "Most Watched",
@@ -1583,7 +1582,8 @@
     "ButtonTakeTheTour": "Take the tour",
     "HeaderWelcomeBack": "Welcome back!",
     "ButtonTakeTheTourToSeeWhatsNew": "Take the tour to see what's new",
-    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the web interface.",
+    "MessageNoSyncJobsFound": "No sync jobs found. Create sync jobs using the Sync buttons found throughout the app.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Select Devices",
     "ButtonCancelItem": "Cancel item",
     "ButtonQueueForRetry": "Queue for retry",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
     "ButtonDashboard": "Vez\u00e9rl\u0151pult",
     "ButtonReports": "Napl\u00f3k",
-    "ButtonMetadataManager": "Metaadat Kezel\u0151",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Time",
     "LabelAddedOnDate": "Added {0}",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

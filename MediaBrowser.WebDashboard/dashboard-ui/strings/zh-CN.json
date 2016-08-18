@@ -880,7 +880,6 @@
     "OptionNone": "\u6ca1\u6709",
     "HeaderLiveTv": "\u7535\u89c6\u76f4\u64ad",
     "HeaderReports": "\u62a5\u544a",
-    "HeaderMetadataManager": "\u5a92\u4f53\u8d44\u6599\u7ba1\u7406",
     "HeaderSettings": "Settings",
     "OptionDefaultSort": "\u9ed8\u8ba4",
     "OptionCommunityMostWatchedSort": "\u6700\u53d7\u77a9\u76ee",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "\u6b22\u8fce\u56de\u6765\uff01",
     "ButtonTakeTheTourToSeeWhatsNew": "\u8fdb\u884c\u53c2\u89c2\uff0c\u770b\u770b\u6709\u4ec0\u4e48\u65b0\u4e1c\u897f",
     "MessageNoSyncJobsFound": "\u6ca1\u6709\u53d1\u73b0\u540c\u6b65\u4f5c\u4e1a\u3002\u4f7f\u7528Web\u754c\u9762\u4e2d\u7684\u540c\u6b65\u6309\u94ae\u6765\u521b\u5efa\u540c\u6b65\u4f5c\u4e1a\u3002",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "\u9009\u62e9\u8bbe\u5907",
     "ButtonCancelItem": "\u53d6\u6d88\u9879\u76ee",
     "ButtonQueueForRetry": "\u91cd\u8bd5\u961f\u5217",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "\u8bf7\u786e\u4fdd\u6709\u4e00\u4e2a\u6253\u5f00\u7684\u53ef\u7528\u8c03\u8c10\u5668",
     "ButtonDashboard": "\u63a7\u5236\u53f0",
     "ButtonReports": "\u62a5\u544a",
-    "ButtonMetadataManager": "\u5a92\u4f53\u8d44\u6599\u7ba1\u7406",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "\u65f6\u95f4",
     "LabelAddedOnDate": "\u6dfb\u52a0 {0}",
     "ButtonStart": "\u5f00\u59cb",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

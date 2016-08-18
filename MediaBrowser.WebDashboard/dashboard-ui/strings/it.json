@@ -880,7 +880,6 @@
     "OptionNone": "Nessuno",
     "HeaderLiveTv": "Diretta TV",
     "HeaderReports": "Rapporti",
-    "HeaderMetadataManager": "Manager Metadati",
     "HeaderSettings": "Configurazione",
     "OptionDefaultSort": "Predefinito",
     "OptionCommunityMostWatchedSort": "Pi\u00f9 visti",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Ben tornato!",
     "ButtonTakeTheTourToSeeWhatsNew": "Fai un tour per vedere cosa \u00e8 cambiato",
     "MessageNoSyncJobsFound": "Nessuna sincronizzazione pianificata. Creane una utilizzando i pulsanti sull'interfaccia web",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Seleziona periferiche",
     "ButtonCancelItem": "Cancella oggetto",
     "ButtonQueueForRetry": "In attesa di riprovare",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Si prega di assicurarsi che ci sia un sintonizzatore disponibile.",
     "ButtonDashboard": "Pannello",
     "ButtonReports": "Reports",
-    "ButtonMetadataManager": "Manager Metadati",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Tempo",
     "LabelAddedOnDate": "Aggiunto {0}",
     "ButtonStart": "Avvio",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

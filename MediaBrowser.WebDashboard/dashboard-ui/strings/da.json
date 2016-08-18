@@ -880,7 +880,6 @@
     "OptionNone": "Ingen",
     "HeaderLiveTv": "Live TV",
     "HeaderReports": "Rapporter",
-    "HeaderMetadataManager": "Metadata Manager",
     "HeaderSettings": "Indstillinger",
     "OptionDefaultSort": "Standard",
     "OptionCommunityMostWatchedSort": "Mest sete",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Velkommen tilbage!",
     "ButtonTakeTheTourToSeeWhatsNew": "Tag en rundvisning for at se hvad der er nyt",
     "MessageNoSyncJobsFound": "Intet sync job blev fundet. Opret sync jobs ved at benytte Sync knapper som findes gennem web-interfacet.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "V\u00e6lg enheder",
     "ButtonCancelItem": "Annuller genstand",
     "ButtonQueueForRetry": "S\u00e6t et nyt fors\u00f8g i k\u00f8",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Sikre dig at en \u00e5ben tuner er tilg\u00e6ngelig.",
     "ButtonDashboard": "Betjeningspanel",
     "ButtonReports": "Rapporter",
-    "ButtonMetadataManager": "Metadata Manager",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Tid",
     "LabelAddedOnDate": "Tilf\u00f8jet {0}",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }
