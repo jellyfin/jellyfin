@@ -50,7 +50,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 {
                     return new CollectionFolder
                     {
-                        CollectionType = GetCollectionType(args)
+                        CollectionType = GetCollectionType(args),
+                        PhysicalLocationsList = args.PhysicalLocations.ToList()
                     };
                 }
             }
