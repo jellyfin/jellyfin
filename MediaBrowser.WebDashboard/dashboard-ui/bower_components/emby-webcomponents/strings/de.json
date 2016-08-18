@@ -252,7 +252,7 @@
     "MakeAvailableOffline": "Offline verf\u00fcgbar machen",
     "ServerNameIsRestarting": "Emby Server - {0} startet neu.",
     "ServerNameIsShuttingDown": "Emby Server - {0} f\u00e4hrt herunter.",
-    "HeaderDeleteItems": "Delete Items",
-    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
+    "HeaderDeleteItems": "Objekte l\u00f6schen",
+    "ConfirmDeleteItems": "Das L\u00f6schen dieser Objekte l\u00f6scht die Dateien vom Laufwerk und in deiner Medienbibliothek. Bist du wirklich sicher?",
     "PleaseRestartServerName": "Bitte starte Emby Server - {0} neu."
 }

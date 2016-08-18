@@ -359,6 +359,10 @@ video::-webkit-media-text-track-background {
     margin-top: -2.5em;
 }
 
+::cue {
+    background-color: transparent;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
+}
 
 .videoSubtitles {
     position: fixed;

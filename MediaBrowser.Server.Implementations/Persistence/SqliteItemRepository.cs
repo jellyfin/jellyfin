@@ -3152,17 +3152,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ItemIds.Length > 0)
             {
-                var excludeIds = new List<string>();
+                var includeIds = new List<string>();
 
                 var index = 0;
                 foreach (var id in query.ItemIds)
                 {
-                    excludeIds.Add("Guid = @IncludeId" + index);
+                    includeIds.Add("Guid = @IncludeId" + index);
                     cmd.Parameters.Add(cmd, "@IncludeId" + index, DbType.Guid).Value = new Guid(id);
                     index++;
                 }
 
-                whereClauses.Add(string.Join(" OR ", excludeIds.ToArray()));
+                whereClauses.Add(string.Join(" OR ", includeIds.ToArray()));
             }
             if (query.ExcludeItemIds.Length > 0)
             {
