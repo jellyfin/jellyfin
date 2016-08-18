@@ -3095,6 +3095,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     whereClauses.Add("LocationType<>'Virtual'");
                 }
             }
+            if (query.IsSpecialSeason.HasValue)
+            {
+                if (query.IsSpecialSeason.Value)
+                {
+                    whereClauses.Add("IndexNumber = 0");
+                }
+                else
+                {
+                    whereClauses.Add("IndexNumber <> 0");
+                }
+            }
             if (query.IsUnaired.HasValue)
             {
                 if (query.IsUnaired.Value)

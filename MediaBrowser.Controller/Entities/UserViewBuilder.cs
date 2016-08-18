@@ -1100,8 +1100,6 @@ namespace MediaBrowser.Controller.Entities
             bool? isVirtualUnaired,
             bool? isUnaired)
         {
-            items = FilterVirtualSeasons(items, isMissing, isVirtualUnaired, isUnaired);
-
             if (isMissing.HasValue)
             {
                 var val = isMissing.Value;
@@ -1136,57 +1134,6 @@ namespace MediaBrowser.Controller.Entities
                 items = items.Where(i =>
                 {
                     var e = i as Episode;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            return items;
-        }
-
-        private static IEnumerable<BaseItem> FilterVirtualSeasons(
-            IEnumerable<BaseItem> items,
-            bool? isMissing,
-            bool? isVirtualUnaired,
-            bool? isUnaired)
-        {
-            if (isMissing.HasValue)
-            {
-                var val = isMissing.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return (e.IsMissingSeason) == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isUnaired.HasValue)
-            {
-                var val = isUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isVirtualUnaired.HasValue)
-            {
-                var val = isVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
                     if (e != null)
                     {
                         return e.IsVirtualUnaired == val;

@@ -423,23 +423,14 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException("No series exists with Id " + request.Id);
             }
 
-            var seasons = series.GetSeasons(user);
-
-            if (request.IsSpecialSeason.HasValue)
+            var seasons = (await series.GetItems(new InternalItemsQuery(user)
             {
-                var val = request.IsSpecialSeason.Value;
+                IsMissing = request.IsMissing,
+                IsVirtualUnaired = request.IsVirtualUnaired,
+                IsSpecialSeason = request.IsSpecialSeason,
+                AdjacentTo = request.AdjacentTo
 
-                seasons = seasons.Where(i => i.IsSpecialSeason == val);
-            }
-
-            seasons = FilterVirtualSeasons(request, seasons);
-
-            // This must be the last filter
-            if (!string.IsNullOrEmpty(request.AdjacentTo))
-            {
-                seasons = UserViewBuilder.FilterForAdjacency(seasons, request.AdjacentTo)
-                    .Cast<Season>();
-            }
+            }).ConfigureAwait(false)).Items.OfType<Season>();
 
             var dtoOptions = GetDtoOptions(request);
 
@@ -451,23 +442,6 @@ namespace MediaBrowser.Api
                 TotalRecordCount = returnItems.Length,
                 Items = returnItems
             };
-        }
-
-        private IEnumerable<Season> FilterVirtualSeasons(GetSeasons request, IEnumerable<Season> items)
-        {
-            if (request.IsMissing.HasValue)
-            {
-                var val = request.IsMissing.Value;
-                items = items.Where(i => (i.IsMissingSeason) == val);
-            }
-
-            if (request.IsVirtualUnaired.HasValue)
-            {
-                var val = request.IsVirtualUnaired.Value;
-                items = items.Where(i => i.IsVirtualUnaired == val);
-            }
-
-            return items;
         }
 
         public async Task<object> Get(GetEpisodes request)
