@@ -1465,7 +1465,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
         {
-            if (query.AncestorIds.Length == 0 && !query.ParentId.HasValue && query.ChannelIds.Length == 0 && query.TopParentIds.Length == 0 && string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey))
+            if (query.AncestorIds.Length == 0 && 
+                !query.ParentId.HasValue && 
+                query.ChannelIds.Length == 0 && 
+                query.TopParentIds.Length == 0 && 
+                string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey)
+                && query.ItemIds.Length == 0)
             {
                 var userViews = _userviewManager().GetUserViews(new UserViewQuery
                 {

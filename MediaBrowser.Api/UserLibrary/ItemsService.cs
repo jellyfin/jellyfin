@@ -149,6 +149,24 @@ namespace MediaBrowser.Api.UserLibrary
                 item = user == null ? _libraryManager.RootFolder : user.RootFolder;
             }
 
+            if (!string.IsNullOrEmpty(request.Ids))
+            {
+                var query = GetItemsQuery(request, user);
+                var specificItems = _libraryManager.GetItemList(query).ToArray();
+                if (query.SortBy.Length == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+
+                    // Try to preserve order
+                    specificItems = specificItems.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                }
+                return new QueryResult<BaseItem>
+                {
+                    Items = specificItems.ToArray(),
+                    TotalRecordCount = specificItems.Length
+                };
+            }
+
             // Default list type = children
 
             var folder = item as Folder;
@@ -157,14 +175,9 @@ namespace MediaBrowser.Api.UserLibrary
                 folder = user == null ? _libraryManager.RootFolder : _libraryManager.GetUserRootFolder();
             }
 
-            if (request.Recursive || !string.IsNullOrEmpty(request.Ids))
+            if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
             {
                 return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
-            }
-
-            if (user == null)
-            {
-                return await folder.GetItems(GetItemsQuery(request, null)).ConfigureAwait(false);
             }
 
             var userRoot = item as UserRootFolder;
