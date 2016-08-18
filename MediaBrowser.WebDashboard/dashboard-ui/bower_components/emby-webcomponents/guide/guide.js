@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
 
     function Guide(options) {
 
@@ -14,6 +14,8 @@
         var totalRendererdMs = msPerDay;
 
         var currentDate;
+        var currentStartIndex = 0;
+        var currentChannelLimit = 0;
 
         var channelQuery = {
 
@@ -119,7 +121,7 @@
 
             return registrationServices.validateFeature('livetv').then(function () {
 
-                var limit = browser.slow ? 100 : 400;
+                var limit = browser.mobile ? 100 : 500;
 
                 context.querySelector('.guideRequiresUnlock').classList.add('hide');
 
@@ -144,8 +146,11 @@
 
             getChannelLimit(context).then(function (channelLimit) {
 
+                currentChannelLimit = channelLimit;
+
                 showLoading();
 
+                channelQuery.StartIndex = currentStartIndex;
                 channelQuery.Limit = channelLimit;
                 channelQuery.AddCurrentProgram = false;
                 channelQuery.EnableUserData = false;
@@ -162,6 +167,25 @@
 
                 console.log(nextDay);
                 channelsPromise.then(function (channelsResult) {
+
+                    if (channelsResult.TotalRecordCount > channelLimit) {
+                        context.querySelector('.guidePaging').classList.remove('hide');
+
+                        if (channelQuery.StartIndex) {
+                            context.querySelector('.btnPreviousPage').disabled = false;
+                        } else {
+                            context.querySelector('.btnPreviousPage').disabled = true;
+                        }
+
+                        if ((channelQuery.StartIndex + channelLimit) < channelsResult.TotalRecordCount) {
+                            context.querySelector('.btnNextPage').disabled = false;
+                        } else {
+                            context.querySelector('.btnNextPage').disabled = true;
+                        }
+
+                    } else {
+                        context.querySelector('.guidePaging').classList.add('hide');
+                    }
 
                     apiClient.getLiveTvPrograms({
                         UserId: apiClient.getCurrentUserId(),
@@ -821,6 +845,20 @@
             });
 
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
+                currentStartIndex = 0;
+                channelsPromise = null;
+                reloadPage(context);
+            });
+
+            context.querySelector('.btnNextPage').addEventListener('click', function () {
+                currentStartIndex += currentChannelLimit;
+                channelsPromise = null;
+                reloadPage(context);
+            });
+
+            context.querySelector('.btnPreviousPage').addEventListener('click', function () {
+                currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
+                channelsPromise = null;
                 reloadPage(context);
             });
 
