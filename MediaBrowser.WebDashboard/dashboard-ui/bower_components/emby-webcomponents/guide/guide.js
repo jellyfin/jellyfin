@@ -171,7 +171,8 @@
                             return c.Id;
                         }).join(','),
                         ImageTypeLimit: 1,
-                        EnableImageTypes: layoutManager.tv ? "Primary,Backdrop" : "Primary",
+                        EnableImages: false,
+                        //EnableImageTypes: layoutManager.tv ? "Primary,Backdrop" : "Primary",
                         SortBy: "StartDate",
                         EnableTotalRecordCount: false,
                         EnableUserData: false

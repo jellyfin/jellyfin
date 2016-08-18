@@ -2229,6 +2229,10 @@
 
         }
 
+        view.querySelector('.chapterSettingsButton').addEventListener('click', function () {
+            Dashboard.navigate('librarysettings.html');
+        });
+
         view.addEventListener('viewbeforeshow', function () {
             var page = this;
             reload(page, params);

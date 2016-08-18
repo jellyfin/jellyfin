@@ -42,6 +42,13 @@ namespace MediaBrowser.Providers.Manager
             var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.None;
+            var requiresRefresh = false;
+
+            if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
+            {
+                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
+                requiresRefresh = item.RequiresRefresh();
+            }
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
@@ -70,14 +77,10 @@ namespace MediaBrowser.Providers.Manager
 
             bool hasRefreshedMetadata = true;
             bool hasRefreshedImages = true;
-            var requiresRefresh = false;
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
-                requiresRefresh = item.RequiresRefresh();
-
                 var providers = GetProviders(item, refreshOptions, requiresRefresh)
                     .ToList();
 
