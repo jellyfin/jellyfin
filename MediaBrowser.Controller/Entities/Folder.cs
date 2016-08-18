@@ -903,6 +903,14 @@ namespace MediaBrowser.Controller.Entities
             if (query.ItemIds.Length > 0)
             {
                 var specificItems = query.ItemIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+
+                if (query.SortBy.Length == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+
+                    // Try to preserve order
+                    specificItems = specificItems.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToList();
+                }
                 return Task.FromResult(PostFilterAndSort(specificItems, query, true, true));
             }
 

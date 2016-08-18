@@ -880,7 +880,6 @@
     "OptionNone": "Inga",
     "HeaderLiveTv": "Live-TV",
     "HeaderReports": "Rapporter",
-    "HeaderMetadataManager": "Metadatahanteraren",
     "HeaderSettings": "Inst\u00e4llningar",
     "OptionDefaultSort": "F\u00f6rval",
     "OptionCommunityMostWatchedSort": "Oftast visade",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "V\u00e4lkommen tillbaka!",
     "ButtonTakeTheTourToSeeWhatsNew": "Ta en rundtur och se vad som \u00e4r nytt",
     "MessageNoSyncJobsFound": "Inga synkroniseringsjobb hittades. Skapa synkroniseringsjobb med hj\u00e4lp av Synkronisera-knapparna som finns i hela gr\u00e4nssnittet.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "V\u00e4lj Enheter",
     "ButtonCancelItem": "Avbryt objekt",
     "ButtonQueueForRetry": "K\u00f6a f\u00f6r nytt f\u00f6rs\u00f6k",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "V\u00e4nligen kontrollera att det finns en ledig TV-mottagare.",
     "ButtonDashboard": "Kontrollpanel",
     "ButtonReports": "Rapporter",
-    "ButtonMetadataManager": "Metadatahanteraren",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Tid",
     "LabelAddedOnDate": "{0} tillagd",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

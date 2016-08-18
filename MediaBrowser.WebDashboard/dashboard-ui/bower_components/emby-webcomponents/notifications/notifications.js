@@ -86,6 +86,10 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
 
     function showNewItemNotification(item, apiClient) {
 
+        if (playbackManager.isPlayingVideo()) {
+            return;
+        }
+
         var notification = {
             title: "New " + item.Type,
             body: item.Name,
@@ -116,11 +120,7 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
 
         var newItems = data.ItemsAdded;
 
-        if (!newItems.length || !window.Notification || Notification.permission !== "granted") {
-            return;
-        }
-
-        if (playbackManager.isPlayingVideo()) {
+        if (!newItems.length) {
             return;
         }
 
@@ -131,7 +131,6 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             IsFolder: false,
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            ImageTypes: "Primary",
             Ids: newItems.join(',')
 
         }).then(function (result) {

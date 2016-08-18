@@ -880,7 +880,6 @@
     "OptionNone": "Geen",
     "HeaderLiveTv": "Live TV",
     "HeaderReports": "Rapporten",
-    "HeaderMetadataManager": "Metadata Manager",
     "HeaderSettings": "Instellingen",
     "OptionDefaultSort": "Standaard",
     "OptionCommunityMostWatchedSort": "Meest bekeken",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Welkom terug!",
     "ButtonTakeTheTourToSeeWhatsNew": "Volg de tour om te zien wat nieuw is",
     "MessageNoSyncJobsFound": "Geen sync opdrachten gevonden. Maak sync opdrachten via de Synchronisatie knoppen in de web interface.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "Selecteer Apparaten",
     "ButtonCancelItem": "Annuleren item",
     "ButtonQueueForRetry": "Wachtrij voor opnieuw proberen",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Controleer of er een vrije tuner beschikbaar is.",
     "ButtonDashboard": "Dashboard",
     "ButtonReports": "Rapporten",
-    "ButtonMetadataManager": "Metadata Manager",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Tijd",
     "LabelAddedOnDate": "Toegevoegd {0}",
     "ButtonStart": "Start",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

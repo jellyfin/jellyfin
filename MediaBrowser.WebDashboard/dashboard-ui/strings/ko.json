@@ -880,7 +880,6 @@
     "OptionNone": "\uc5c6\uc74c",
     "HeaderLiveTv": "TV \ubc29\uc1a1",
     "HeaderReports": "Reports",
-    "HeaderMetadataManager": "\uba54\ud0c0\ub370\uc774\ud130 \ub9e4\ub2c8\uc800",
     "HeaderSettings": "\uc124\uc815",
     "OptionDefaultSort": "\uae30\ubcf8",
     "OptionCommunityMostWatchedSort": "Most Watched",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Welcome back!",
     "ButtonTakeTheTourToSeeWhatsNew": "\uc0c8\ub85c\uc6b4 \ub0b4\uc6a9\uc744 \ub458\ub7ec \ubcf4\uc138\uc694",
     "MessageNoSyncJobsFound": "\ub3d9\uae30\ud654 \uc791\uc5c5\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \uc6f9 \uc778\ud130\ud398\uc774\uc2a4\uc5d0 \uc788\ub294 \ub3d9\uae30\ud654 \ubc84\ud2bc\uc744 \uc0ac\uc6a9\ud558\uc5ec \ub3d9\uae30\ud654 \uc791\uc5c5\uc744 \uc0dd\uc131\ud558\uc138\uc694.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "\uc7a5\uce58 \uc120\ud0dd",
     "ButtonCancelItem": "\ud56d\ubaa9 \ucde8\uc18c",
     "ButtonQueueForRetry": "Queue for retry",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Please ensure there is an open tuner availalble.",
     "ButtonDashboard": "\ub300\uc2dc\ubcf4\ub4dc",
     "ButtonReports": "Reports",
-    "ButtonMetadataManager": "\uba54\ud0c0\ub370\uc774\ud130 \uad00\ub9ac",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "\uc2dc\uac01",
     "LabelAddedOnDate": "Added {0}",
     "ButtonStart": "\uc2dc\uc791",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }

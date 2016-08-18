@@ -880,7 +880,6 @@
     "OptionNone": "Aucun",
     "HeaderLiveTv": "TV en direct",
     "HeaderReports": "Rapports",
-    "HeaderMetadataManager": "Gestionnaire de m\u00e9tadonn\u00e9es",
     "HeaderSettings": "Param\u00e8tres",
     "OptionDefaultSort": "Par d\u00e9faut",
     "OptionCommunityMostWatchedSort": "Les plus lus",
@@ -1584,6 +1583,7 @@
     "HeaderWelcomeBack": "Bienvenue !",
     "ButtonTakeTheTourToSeeWhatsNew": "Suivez le guide pour d\u00e9couvrir les nouveaut\u00e9s",
     "MessageNoSyncJobsFound": "Aucune t\u00e2che de synchronisation trouv\u00e9e. Vous pouvez cr\u00e9er des t\u00e2ches de synchronisation gr\u00e2ce aux boutons 'Synchroniser' partout dans l'interface web.",
+    "MessageDownloadsFound": "No offline downloads. Make your media available offline by clicking Make Available Offline throughout the app.",
     "HeaderSelectDevices": "S\u00e9lectionnez un appareil",
     "ButtonCancelItem": "Annuler l'\u00e9l\u00e9ment",
     "ButtonQueueForRetry": "File d'attente pour une nouvelle tentative",
@@ -1739,7 +1739,7 @@
     "MessageEnsureOpenTuner": "Veuillez vous assurer qu'un tuner est bien disponible.",
     "ButtonDashboard": "Tableau de bord",
     "ButtonReports": "Rapports",
-    "ButtonMetadataManager": "G\u00e9rer les m\u00e9tadonn\u00e9es",
+    "MetadataManager": "Metadata Manager",
     "HeaderTime": "Heure",
     "LabelAddedOnDate": "Ajout\u00e9 {0}",
     "ButtonStart": "Commencer",
@@ -2314,5 +2314,8 @@
     "EnablePhotos": "Enable photos",
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
-    "ConfirmRemoveDownload": "Remove download?"
+    "ConfirmRemoveDownload": "Remove download?",
+    "SyncToOtherDevices": "Sync to other devices",
+    "ManageOfflineDownloads": "Manage offline downloads",
+    "MessageDownloadScheduled": "Download scheduled"
 }
