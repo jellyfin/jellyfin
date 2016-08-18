@@ -3152,17 +3152,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ItemIds.Length > 0)
             {
-                var excludeIds = new List<string>();
+                var includeIds = new List<string>();
 
                 var index = 0;
                 foreach (var id in query.ItemIds)
                 {
-                    excludeIds.Add("Guid = @IncludeId" + index);
+                    includeIds.Add("Guid = @IncludeId" + index);
                     cmd.Parameters.Add(cmd, "@IncludeId" + index, DbType.Guid).Value = new Guid(id);
                     index++;
                 }
 
-                whereClauses.Add(string.Join(" OR ", excludeIds.ToArray()));
+                whereClauses.Add(string.Join(" OR ", includeIds.ToArray()));
             }
             if (query.ExcludeItemIds.Length > 0)
             {
@@ -3878,6 +3878,52 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
+        }
+
+        public List<string> GetStudioNames()
+        {
+            return GetItemValueNames(new[] { 3 });
+        }
+
+        public List<string> GetAllArtistNames()
+        {
+            return GetItemValueNames(new[] { 0, 1 });
+        }
+
+        private List<string> GetItemValueNames(int[] itemValueTypes)
+        {
+            CheckDisposed();
+
+            var now = DateTime.UtcNow;
+
+            var typeClause = itemValueTypes.Length == 1 ?
+                ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
+
+            var list = new List<string>();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "Select Value From ItemValues where " + typeClause + " Group By CleanValue";
+
+                var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
+
+                using (var reader = cmd.ExecuteReader(commandBehavior))
+                {
+                    LogQueryTime("GetItemValueNames", cmd, now);
+
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(0))
+                        {
+                            list.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+            }
+
+            return list;
         }
 
         private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
