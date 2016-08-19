@@ -11,7 +11,7 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "foobar2000";
 
             SupportedMediaTypes = "Audio";
-            
+
             Identification = new DeviceIdentification
             {
                 FriendlyName = @"foobar",
@@ -70,6 +70,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Audio
                 }
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }

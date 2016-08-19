@@ -30,6 +30,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 }
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }
