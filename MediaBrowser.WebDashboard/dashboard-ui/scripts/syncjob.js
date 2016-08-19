@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'datetime', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function ($, datetime) {
+﻿define(['datetime', 'dom', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (datetime, dom) {
 
     function renderJob(page, job, dialogOptions) {
 
@@ -18,7 +18,7 @@
 
         require(['syncDialog'], function (syncDialog) {
             syncDialog.renderForm({
-                elem: $('.formFields', page),
+                elem: page.querySelector('.formFields'),
                 dialogOptions: dialogOptions,
                 dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
                 showName: true,
@@ -119,10 +119,6 @@
         var elem = page.querySelector('.jobItems');
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
-
-        $('.btnJobItemMenu', elem).on('click', function () {
-            showJobItemMenu(this);
-        });
     }
 
     function parentWithClass(elem, className) {
@@ -273,16 +269,36 @@
             txtSyncJobName.value = job.Name;
         }
 
-        $('#selectProfile', page).val(job.Profile || '').trigger('change');
-        $('#selectQuality', page).val(job.Quality || '').trigger('change');
-        $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly);
-        $('#chkSyncNewContent', page).checked(job.SyncNewContent);
-        $('#txtItemLimit', page).val(job.ItemLimit);
+        var selectProfile = page.querySelector('#selectProfile');
+        if (selectProfile) {
+            selectProfile.value = job.Profile || '';
+        }
 
+        var selectQuality = page.querySelector('#selectQuality');
+        if (selectQuality) {
+            selectQuality.value = job.Quality || '';
+        }
+
+        var chkUnwatchedOnly = page.querySelector('#chkUnwatchedOnly');
+        if (chkUnwatchedOnly) {
+            chkUnwatchedOnly.checked = job.UnwatchedOnly;
+        }
+
+        var chkSyncNewContent = page.querySelector('#chkSyncNewContent');
+        if (chkSyncNewContent) {
+            chkSyncNewContent.checked = job.SyncNewContent;
+        }
+
+        var txtItemLimit = page.querySelector('#txtItemLimit');
+        if (txtItemLimit) {
+            txtItemLimit.value = job.ItemLimit;
+        }
+
+        var txtBitrate = page.querySelector('#txtBitrate');
         if (job.Bitrate) {
-            $('#txtBitrate', page).val(job.Bitrate / 1000000);
+            txtBitrate.value = job.Bitrate / 1000000;
         } else {
-            $('#txtBitrate', page).val('');
+            txtBitrate.value = '';
         }
 
         var target = editOptions.Targets.filter(function (t) {
@@ -290,7 +306,10 @@
         })[0];
         var targetName = target ? target.Name : '';
 
-        $('#selectSyncTarget', page).val(targetName);
+        var selectSyncTarget = page.querySelector('#selectSyncTarget');
+        if (selectSyncTarget) {
+            selectSyncTarget.value = targetName;
+        }
     }
 
     var _jobOptions;
@@ -400,6 +419,13 @@
             }
 
         }
+
+        view.querySelector('.jobItems').addEventListener('click', function (e) {
+            var btnJobItemMenu = dom.parentWithClass(e.target, 'btnJobItemMenu');
+            if (btnJobItemMenu) {
+                showJobItemMenu(btnJobItemMenu);
+            }
+        });
 
         view.addEventListener('viewshow', function () {
             var page = this;

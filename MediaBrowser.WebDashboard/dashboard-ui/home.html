@@ -1,10 +1,20 @@
 ﻿<div id="indexPage" style="outline: none;" data-role="page" data-dom-cache="true" class="page homePage libraryPage allLibraryPage backdropPage pageWithAbsoluteTabs" data-title="${ButtonHome}" data-backdroptype="movie,series,game,book">
 
-    <div class="libraryViewNav">
-        <button class="pageTabButton is-active" data-index="0">${TabHome}</button>
-        <button class="pageTabButton" data-index="1">${TabNextUp}</button>
-        <button class="pageTabButton homeFavoritesTab" data-index="2">${TabFavorites}</button>
-        <button class="pageTabButton" data-index="3">${TabUpcoming}</button>
+    <div is="emby-tabs" class="libraryViewNav">
+        <div class="emby-tabs-slider">
+            <button is="emby-button" class="emby-tab-button emby-tab-button-active" data-index="0">
+                <div class="emby-button-foreground">${TabHome}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="1">
+                <div class="emby-button-foreground">${TabNextUp}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button homeFavoritesTab" data-index="2">
+                <div class="emby-button-foreground">${TabFavorites}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="3">
+                <div class="emby-button-foreground">${TabUpcoming}</div>
+            </button>
+        </div>
     </div>
     <div class="is-active pageTabContent ehsContent" id="homeTab" data-index="0">
         <div class="ui-bar-b readOnlyContent welcomeMessage hide" style="padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">

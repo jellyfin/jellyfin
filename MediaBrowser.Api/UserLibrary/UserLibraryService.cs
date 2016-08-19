@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -244,6 +246,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string EnableImageTypes { get; set; }
 
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
+
         public GetLatestMedia()
         {
             Limit = 20;
@@ -262,14 +267,16 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
+        private readonly IFileSystem _fileSystem;
 
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, IUserViewManager userViewManager)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, IUserViewManager userViewManager, IFileSystem fileSystem)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _userDataRepository = userDataRepository;
             _dtoService = dtoService;
             _userViewManager = userViewManager;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -426,17 +433,40 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetItem request)
+        public async Task<object> Get(GetItem request)
         {
             var user = _userManager.GetUserById(request.UserId);
 
             var item = string.IsNullOrEmpty(request.Id) ? user.RootFolder : _libraryManager.GetItemById(request.Id);
+
+            await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
             return ToOptimizedSerializedResultUsingCache(result);
+        }
+
+        private async Task RefreshItemOnDemandIfNeeded(BaseItem item)
+        {
+            if (item is Person)
+            {
+                var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview) && item.HasImage(ImageType.Primary);
+                var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 3;
+
+                if (!hasMetdata)
+                {
+                    var options = new MetadataRefreshOptions(_fileSystem)
+                    {
+                        MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
+                        ImageRefreshMode = ImageRefreshMode.FullRefresh,
+                        ForceSave = performFullRefresh
+                    };
+
+                    await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+                }
+            }
         }
 
         /// <summary>

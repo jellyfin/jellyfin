@@ -45,6 +45,7 @@
         $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback);
         $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding);
         $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding);
+        $('#chkEnableVideoPlaybackRemuxing', page).checked(user.Policy.EnablePlaybackRemuxing);
 
         $('#chkEnableSync', page).checked(user.Policy.EnableSync);
         $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding);
@@ -186,6 +187,7 @@
         user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
         user.Policy.EnableAudioPlaybackTranscoding = $('#chkEnableAudioPlaybackTranscoding', page).checked();
         user.Policy.EnableVideoPlaybackTranscoding = $('#chkEnableVideoPlaybackTranscoding', page).checked();
+        user.Policy.EnablePlaybackRemuxing = $('#chkEnableVideoPlaybackRemuxing', page).checked();
 
         user.Policy.EnableContentDownloading = $('#chkEnableDownloading', page).checked();
 

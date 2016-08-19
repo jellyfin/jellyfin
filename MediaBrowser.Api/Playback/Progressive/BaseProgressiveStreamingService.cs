@@ -154,12 +154,20 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
+                    TimeSpan? cacheDuration = null;
+
+                    if (!string.IsNullOrEmpty(request.Tag))
+                    {
+                        cacheDuration = TimeSpan.FromDays(365);
+                    }
+
                     return await ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
                         ResponseHeaders = responseHeaders,
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
-                        Path = state.MediaPath
+                        Path = state.MediaPath,
+                        CacheDuration = cacheDuration
 
                     }).ConfigureAwait(false);
                 }
@@ -362,9 +370,9 @@ namespace MediaBrowser.Api.Playback.Progressive
                     outputHeaders[item.Key] = item.Value;
                 }
 
-                Func<Stream, Task> streamWriter = stream => new ProgressiveFileCopier(FileSystem, job, Logger).StreamFile(outputPath, stream, CancellationToken.None);
+                var streamSource = new ProgressiveFileCopier(FileSystem, outputPath, outputHeaders, job, Logger, CancellationToken.None);
 
-                return ResultFactory.GetAsyncStreamWriter(streamWriter, outputHeaders);
+                return ResultFactory.GetAsyncStreamWriter(streamSource);
             }
             finally
             {
@@ -383,7 +391,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
             {
-                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds);
+                return Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
             }
 
             return null;

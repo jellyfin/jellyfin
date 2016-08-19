@@ -13,7 +13,6 @@
     padding: .25em 1.15em;
     line-height: 160%;
     cursor: pointer;
-    white-space: nowrap;
     overflow: hidden;
 }
 

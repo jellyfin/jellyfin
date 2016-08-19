@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonIO;
-using WebMarkupMin.Core.Minifiers;
+using WebMarkupMin.Core;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -55,6 +55,11 @@ namespace MediaBrowser.WebDashboard.Api
 
     [Route("/robots.txt", "GET")]
     public class GetRobotsTxt
+    {
+    }
+
+    [Route("/web/staticfiles", "GET")]
+    public class GetCacheFiles
     {
     }
 
@@ -138,6 +143,27 @@ namespace MediaBrowser.WebDashboard.Api
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
+        }
+
+        public object Get(GetCacheFiles request)
+        {
+            var allFiles = GetCacheFileList();
+
+            return ResultFactory.GetOptimizedResult(Request, _jsonSerializer.SerializeToString(allFiles));
+        }
+
+        private List<string> GetCacheFileList()
+        {
+            var creator = GetPackageCreator();
+            var directory = creator.DashboardUIPath;
+
+            var skipExtensions = GetUndeployedExtensions();
+
+            return
+                Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+                .Where(i => !skipExtensions.Contains(Path.GetExtension(i) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Select(i => i.Replace(directory, string.Empty, StringComparison.OrdinalIgnoreCase).Replace("\\", "/").TrimStart('/') + "?v=" + _appHost.ApplicationVersion.ToString())
+                .ToList();
         }
 
         /// <summary>
@@ -274,6 +300,21 @@ namespace MediaBrowser.WebDashboard.Api
             return new PackageCreator(_fileSystem, _localization, Logger, _serverConfigurationManager, _jsonSerializer);
         }
 
+        private List<string> GetUndeployedExtensions()
+        {
+            var list = new List<string>();
+
+            list.Add(".log");
+            list.Add(".txt");
+            list.Add(".map");
+            list.Add(".md");
+            list.Add(".gz");
+            list.Add(".bat");
+            list.Add(".sh");
+
+            return list;
+        }
+
         public async Task<object> Get(GetDashboardPackage request)
         {
             var path = Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath,
@@ -296,12 +337,9 @@ namespace MediaBrowser.WebDashboard.Api
 
             var appVersion = _appHost.ApplicationVersion.ToString();
 
-            var mode = request.Mode;
+            File.WriteAllText(Path.Combine(path, "staticfiles"), _jsonSerializer.SerializeToString(GetCacheFileList()));
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                _fileSystem.DeleteFile(Path.Combine(path, "scripts", "registrationservices.js"));
-            }
+            var mode = request.Mode;
 
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
@@ -313,14 +351,9 @@ namespace MediaBrowser.WebDashboard.Api
                 //bowerPath = versionedBowerPath;
             }
 
-            DeleteFilesByExtension(bowerPath, ".log");
-            DeleteFilesByExtension(bowerPath, ".txt");
-            DeleteFilesByExtension(bowerPath, ".map");
-            DeleteFilesByExtension(bowerPath, ".md");
+            GetUndeployedExtensions().ForEach(i => DeleteFilesByExtension(bowerPath, i));
+
             DeleteFilesByExtension(bowerPath, ".json", "strings\\");
-            DeleteFilesByExtension(bowerPath, ".gz");
-            DeleteFilesByExtension(bowerPath, ".bat");
-            DeleteFilesByExtension(bowerPath, ".sh");
             DeleteFilesByName(bowerPath, "copying", true);
             DeleteFilesByName(bowerPath, "license", true);
             DeleteFilesByName(bowerPath, "license-mit", true);
@@ -359,13 +392,11 @@ namespace MediaBrowser.WebDashboard.Api
             //DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "meteor");
             //DeleteFoldersByName(Path.Combine(bowerPath, "Sortable"), "st");
             //DeleteFoldersByName(Path.Combine(bowerPath, "Swiper"), "src");
-           
+
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
                 _fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
-
-                _fileSystem.DeleteFile(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
             }
             else
             {

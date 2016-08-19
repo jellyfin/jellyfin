@@ -38,13 +38,22 @@ namespace MediaBrowser.Server.Implementations.IO
         /// </summary>
         private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string>
         {
-            "thumbs.db",
             "small.jpg",
             "albumart.jpg",
 
             // WMC temp recording directories that will constantly be written to
             "TempRec",
             "TempSBE"
+        };
+
+        private readonly IReadOnlyList<string> _alwaysIgnoreExtensions = new List<string>
+        {
+            // thumbs.db
+            ".db",
+
+            // bts sync files
+            ".bts",
+            ".sync"
         };
 
         /// <summary>
@@ -411,7 +420,9 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var filename = Path.GetFileName(path);
 
-            var monitorPath = !(!string.IsNullOrEmpty(filename) && _alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase));
+            var monitorPath = !string.IsNullOrEmpty(filename) && 
+                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) && 
+                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
             // Ignore certain files
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();

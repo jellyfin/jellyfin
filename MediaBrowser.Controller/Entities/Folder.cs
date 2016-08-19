@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Channels;
 
@@ -273,6 +274,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         protected virtual IEnumerable<BaseItem> LoadChildren()
         {
+            //Logger.Debug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
             //just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
@@ -643,8 +645,9 @@ namespace MediaBrowser.Controller.Entities
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             var collectionType = LibraryManager.GetContentType(this);
+            var libraryOptions = LibraryManager.GetLibraryOptions(this);
 
-            return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, collectionType);
+            return LibraryManager.ResolvePaths(GetFileSystemChildren(directoryService), directoryService, this, libraryOptions, collectionType);
         }
 
         /// <summary>
@@ -699,7 +702,7 @@ namespace MediaBrowser.Controller.Entities
                     items = GetRecursiveChildren(user, query);
                 }
 
-                return PostFilterAndSort(items, query);
+                return PostFilterAndSort(items, query, true, true);
             }
 
             if (!(this is UserRootFolder) && !(this is AggregateFolder))
@@ -900,7 +903,15 @@ namespace MediaBrowser.Controller.Entities
             if (query.ItemIds.Length > 0)
             {
                 var specificItems = query.ItemIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
-                return Task.FromResult(PostFilterAndSort(specificItems, query));
+
+                if (query.SortBy.Length == 0)
+                {
+                    var ids = query.ItemIds.ToList();
+
+                    // Try to preserve order
+                    specificItems = specificItems.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToList();
+                }
+                return Task.FromResult(PostFilterAndSort(specificItems, query, true, true));
             }
 
             return GetItemsInternal(query);
@@ -956,12 +967,12 @@ namespace MediaBrowser.Controller.Entities
                    : GetChildren(user, true).Where(filter);
             }
 
-            return PostFilterAndSort(items, query);
+            return PostFilterAndSort(items, query, true, true);
         }
 
-        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query)
+        protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool collapseBoxSetItems, bool enableSorting)
         {
-            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager);
+            return UserViewBuilder.PostFilterAndSort(items, this, null, query, LibraryManager, ConfigurationManager, collapseBoxSetItems, enableSorting);
         }
 
         public virtual IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
@@ -1425,7 +1436,7 @@ namespace MediaBrowser.Controller.Entities
                 itemDto.RecursiveItemCount = allItemsQueryResult.TotalRecordCount;
             }
 
-            double recursiveItemCount = allItemsQueryResult.TotalRecordCount;
+            var recursiveItemCount = allItemsQueryResult.TotalRecordCount;
             double unplayedCount = unplayedQueryResult.TotalRecordCount;
 
             if (recursiveItemCount > 0)
@@ -1434,6 +1445,14 @@ namespace MediaBrowser.Controller.Entities
                 dto.PlayedPercentage = 100 - unplayedPercentage;
                 dto.Played = dto.PlayedPercentage.Value >= 100;
                 dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
+            }
+
+            if (itemDto != null)
+            {
+                if (this is Season || this is MusicAlbum)
+                {
+                    itemDto.ChildCount = recursiveItemCount;
+                }
             }
         }
     }

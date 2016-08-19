@@ -105,14 +105,23 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.open !== false) {
-                if (item.Type != 'Timer' && item.Type != 'Audio') {
+            if (appHost.supports('sync') && options.syncLocal !== false) {
+                if (itemHelper.canSync(user, item)) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#Open'),
-                        id: 'open'
+                        name: globalize.translate('sharedcomponents#MakeAvailableOffline'),
+                        id: 'synclocal'
                     });
                 }
             }
+
+            //if (options.open !== false) {
+            //    if (item.Type != 'Timer' && item.Type != 'Audio') {
+            //        commands.push({
+            //            name: globalize.translate('sharedcomponents#Open'),
+            //            id: 'open'
+            //        });
+            //    }
+            //}
 
             if (canPlay) {
                 if (options.play !== false) {
@@ -206,7 +215,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
             if (isMobileApp && options.sync !== false) {
                 if (itemHelper.canSync(user, item)) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#Sync'),
+                        name: globalize.translate('sharedcomponents#SyncToOtherDevice'),
                         id: 'sync'
                     });
                 }
@@ -413,6 +422,19 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         break;
                     }
                 case 'sync':
+                    {
+                        require(['syncDialog'], function (syncDialog) {
+                            syncDialog.showMenu({
+                                items: [
+                                {
+                                    Id: itemId
+                                }]
+                            });
+                        });
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'synclocal':
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({

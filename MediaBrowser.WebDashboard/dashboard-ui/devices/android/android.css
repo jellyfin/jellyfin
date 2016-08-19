@@ -1,11 +1,11 @@
 ﻿@media all and (min-width: 300px) {
 
-    .libraryViewNav, .libraryViewNav > .contentScrollSlider {
+    .libraryViewNav, .emby-tabs-slider {
         display: flex;
         flex-grow: 1;
     }
 
-        .libraryViewNav .pageTabButton {
-            flex-grow: 1;
-        }
+    .emby-tab-button {
+        flex-grow: 1;
+    }
 }

@@ -197,22 +197,18 @@ div[data-role='page'] {
  * Adding them is left as an exercise for the reader.
  */
 .headroom {
-    -webkit-transition: transform 200ms linear;
-    transition: transform 200ms linear;
+    transition: transform 180ms linear;
 }
 
 .headroom--pinned {
-    -webkit-transform: translateY(0%);
-    transform: translateY(0%);
+    transform: none;
 }
 
 .headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-100%);
     transform: translateY(-100%);
 }
 
 .libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-210%);
     transform: translateY(-210%);
 }
 
@@ -311,8 +307,12 @@ textarea {
     margin-top: 5px;
 }
 
-.background-theme-a .backgroundContainer, .dialog.background-theme-a {
+.background-theme-a .backgroundContainer {
     background-color: #f5f5f5;
+}
+
+.dialog.background-theme-a {
+    background-color: #f0f0f0;
 }
 
 .dialog:not(.background-theme-a):not(.background-theme-b) {
@@ -389,26 +389,6 @@ textarea {
     .page:not(.standalonePage) .header {
         padding-top: 0;
     }
-}
-
-/* Footer */
-#footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    /* Above everything, except for the video player and popup overlays */
-    z-index: 1097;
-    color: #fff;
-    border: 0 !important;
-    background-color: rgba(26,26,26,.94);
-}
-
-.footerNotification {
-    padding: .75em 1em;
-    margin: 0;
-    font-weight: normal;
-    border-top: 1px solid #555;
 }
 
 /*
@@ -633,8 +613,8 @@ progress {
 }
 
 .ui-body-a .emby-collapsible-title {
-    margin: .25em 0;
-    color: #000;
+    margin: .15em 0;
+    color: #333;
     padding: 0 0 0 .5em;
     font-weight: 500;
 }

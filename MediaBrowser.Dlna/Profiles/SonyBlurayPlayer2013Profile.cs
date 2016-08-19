@@ -181,6 +181,8 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }

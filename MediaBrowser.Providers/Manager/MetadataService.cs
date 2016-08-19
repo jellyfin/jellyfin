@@ -42,6 +42,13 @@ namespace MediaBrowser.Providers.Manager
             var config = ProviderManager.GetMetadataOptions(item);
 
             var updateType = ItemUpdateType.None;
+            var requiresRefresh = false;
+
+            if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
+            {
+                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
+                requiresRefresh = item.RequiresRefresh();
+            }
 
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, ServerConfigurationManager, FileSystem);
             var localImagesFailed = false;
@@ -70,14 +77,10 @@ namespace MediaBrowser.Providers.Manager
 
             bool hasRefreshedMetadata = true;
             bool hasRefreshedImages = true;
-            var requiresRefresh = false;
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                // TODO: If this returns true, should we instead just change metadata refresh mode to Full?
-                requiresRefresh = item.RequiresRefresh();
-
                 var providers = GetProviders(item, refreshOptions, requiresRefresh)
                     .ToList();
 
@@ -149,7 +152,7 @@ namespace MediaBrowser.Providers.Manager
                 if (file != null)
                 {
                     var fileLastWriteTime = file.LastWriteTimeUtc;
-                    if (item.EnableForceSaveOnDateModifiedChange && fileLastWriteTime != item.DateModified)
+                    if (item.EnableRefreshOnDateModifiedChange && fileLastWriteTime != item.DateModified)
                     {
                         Logger.Debug("Date modified for {0}. Old date {1} new date {2} Id {3}", item.Path, item.DateModified, fileLastWriteTime, item.Id);
                         requiresRefresh = true;
@@ -283,6 +286,13 @@ namespace MediaBrowser.Providers.Manager
 
             updateType |= SaveCumulativeRunTimeTicks(item, isFullRefresh, currentUpdateType);
             updateType |= SaveDateLastMediaAdded(item, isFullRefresh, currentUpdateType);
+
+            var presentationUniqueKey = item.CreatePresentationUniqueKey();
+            if (!string.Equals(item.PresentationUniqueKey, presentationUniqueKey, StringComparison.Ordinal))
+            {
+                item.PresentationUniqueKey = presentationUniqueKey;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
 
             return updateType;
         }
@@ -525,7 +535,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // Local metadata is king - if any is found don't run remote providers
-            if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
+            if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !item.StopRefreshIfLocalMetadataFound))
             {
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);

@@ -101,6 +101,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Implementations.Updates;
 
 namespace MediaBrowser.Server.Startup.Common
@@ -765,6 +766,9 @@ namespace MediaBrowser.Server.Startup.Common
             UserView.PlaylistManager = PlaylistManager;
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
+            CollectionFolder.XmlSerializer = XmlSerializer;
+            BaseStreamingService.AppHost = this;
+            BaseStreamingService.HttpClient = HttpClient;
         }
 
         /// <summary>
@@ -820,42 +824,11 @@ namespace MediaBrowser.Server.Startup.Common
 
         private string CertificatePath { get; set; }
 
-        private string NormalizeConfiguredLocalAddress(string address)
-        {
-            var index = address.Trim('/').IndexOf('/');
-
-            if (index != -1)
-            {
-                address = address.Substring(index + 1);
-            }
-
-            return address.Trim('/');
-        }
         private IEnumerable<string> GetUrlPrefixes()
         {
-            var hosts = ServerConfigurationManager
-                .Configuration
-                .LocalNetworkAddresses
-                .Select(NormalizeConfiguredLocalAddress)
-                .ToList();
+            var hosts = new List<string>();
 
-            if (hosts.Count == 0)
-            {
-                hosts.Add("+");
-            }
-
-            if (!hosts.Contains("+", StringComparer.OrdinalIgnoreCase))
-            {
-                if (!hosts.Contains("localhost", StringComparer.OrdinalIgnoreCase))
-                {
-                    hosts.Add("localhost");
-                }
-
-                if (!hosts.Contains("127.0.0.1", StringComparer.OrdinalIgnoreCase))
-                {
-                    hosts.Add("127.0.0.1");
-                }
-            }
+            hosts.Add("+");
 
             return hosts.SelectMany(i =>
             {

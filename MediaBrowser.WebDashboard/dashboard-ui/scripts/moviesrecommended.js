@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -27,12 +27,15 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
+            var allowBottomPadding = !enableScrollX();
+
             var container = page.querySelector('#recentlyAddedItems');
             cardBuilder.buildCards(items, {
                 itemsContainer: container,
                 shape: getPortraitShape(),
                 scalable: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: allowBottomPadding
             });
         });
     }
@@ -65,13 +68,16 @@
                 page.querySelector('#resumableSection').classList.add('hide');
             }
 
+            var allowBottomPadding = !enableScrollX();
+
             var container = page.querySelector('#resumableItems');
             cardBuilder.buildCards(result.Items, {
                 itemsContainer: container,
                 preferThumb: true,
                 shape: getThumbShape(),
                 scalable: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: allowBottomPadding
             });
 
         });
@@ -104,7 +110,10 @@
         html += '<div class="homePageSection">';
         html += '<h1 class="listHeader">' + title + '</h1>';
 
+        var allowBottomPadding = true;
+
         if (enableScrollX()) {
+            allowBottomPadding = false;
             html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
         } else {
             html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
@@ -113,7 +122,8 @@
         html += cardBuilder.getCardsHtml(recommendation.Items, {
             shape: getPortraitShape(),
             scalable: true,
-            overlayPlayButton: true
+            overlayPlayButton: true,
+            allowBottomPadding: allowBottomPadding
         });
 
         html += '</div>';
@@ -198,15 +208,9 @@
             loadSuggestionsTab(view, params, tabContent);
         };
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        var baseUrl = 'movies.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
-
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 3, 4, 5]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 3, 4, 5]);
 
         var tabControllers = [];
         var renderedTabs = [];
@@ -280,14 +284,15 @@
             });
         }
 
-        mdlTabs.addEventListener('beforetabchange', function (e) {
+        viewTabs.addEventListener('beforetabchange', function (e) {
             preLoadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
         view.addEventListener('viewbeforeshow', function (e) {
+
             if (!view.getAttribute('data-title')) {
 
                 var parentId = params.topParentId;
@@ -313,11 +318,7 @@
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
                 renderedTabs = [];
-                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
-                    }
-                }));
+                viewTabs.triggerTabChange();
             }
         }
 
@@ -327,6 +328,19 @@
 
         view.addEventListener('viewbeforehide', function (e) {
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
+        });
+
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
+        view.addEventListener('viewdestroy', function (e) {
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
         });
     };
 

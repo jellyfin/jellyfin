@@ -14,11 +14,20 @@
             </div>
         </div>
 
-        <div class="libraryViewNav headroomDisabled">
-            <button class="pageTabButton is-active" data-index="0">${TabNowPlaying}</button>
-            <button class="pageTabButton" data-index="1">${TabControls}</button>
-            <button class="pageTabButton" data-index="2">${TabPlaylist}</button>
+        <div is="emby-tabs" class="libraryViewNav headroomDisabled">
+            <div class="emby-tabs-slider">
+                <button is="emby-button" class="emby-tab-button is-active" data-index="0">
+                    <div class="emby-button-foreground">${TabNowPlaying}</div>
+                </button>
+                <button is="emby-button" class="emby-tab-button" data-index="1">
+                    <div class="emby-button-foreground">${TabControls}</div>
+                </button>
+                <button is="emby-button" class="emby-tab-button" data-index="2">
+                    <div class="emby-button-foreground">${TabPlaylist}</div>
+                </button>
+            </div>
         </div>
+
         <div class="is-active pageTabContent ehsContent" id="nowPlayingTab" data-index="0">
             <div style="text-align:center;">
                 <div class="nowPlayingPageTitle" style="line-height: normal;">

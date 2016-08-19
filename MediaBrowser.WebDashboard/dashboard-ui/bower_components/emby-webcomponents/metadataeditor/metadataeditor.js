@@ -1,4 +1,4 @@
-﻿define(['itemHelper', 'dom', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, dom, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require) {
+﻿define(['itemHelper', 'dom', 'layoutManager', 'dialogHelper', 'datetime', 'loading', 'focusManager', 'connectionManager', 'globalize', 'require', 'shell', 'dom', 'emby-checkbox', 'emby-input', 'emby-select', 'listViewStyle', 'emby-textarea', 'emby-button', 'paper-icon-button-light', 'css!./../formdialog'], function (itemHelper, dom, layoutManager, dialogHelper, datetime, loading, focusManager, connectionManager, globalize, require, shell, dom) {
 
     var currentContext;
     var metadataEditorInfo;
@@ -271,7 +271,9 @@
                 editImages: true,
                 editSubtitles: true,
                 sync: false,
-                share: false
+                share: false,
+                play: false,
+                queue: false
 
             }).then(function (result) {
 
@@ -329,6 +331,19 @@
 
     function init(context, apiClient) {
 
+        context.querySelector('.externalIds').addEventListener('click', function (e) {
+            var btnOpenExternalId = dom.parentWithClass(e.target, 'btnOpenExternalId');
+            if (btnOpenExternalId) {
+                var field = context.querySelector('#' + btnOpenExternalId.getAttribute('data-fieldid'));
+
+                var formatString = field.getAttribute('data-formatstring');
+
+                if (field.value) {
+                    shell.openUrl(formatString.replace('{0}', field.value));
+                }
+            }
+        });
+
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
             closeDialog(false);
@@ -368,7 +383,7 @@
             editPerson(context, {}, -1);
         });
 
-        context.querySelector('#peopleList').addEventListener('click', function(e) {
+        context.querySelector('#peopleList').addEventListener('click', function (e) {
 
             var btnDeletePerson = dom.parentWithClass(e.target, 'btnDeletePerson');
             if (btnDeletePerson) {
@@ -464,18 +479,6 @@
         selectEl.value = metadataInfo.ContentType || '';
     }
 
-    function onExternalIdChange() {
-
-        var formatString = this.getAttribute('data-formatstring');
-        var buttonClass = this.getAttribute('data-buttonclass');
-
-        if (this.value) {
-            document.querySelector('.' + buttonClass).setAttribute('href', formatString.replace('{0}', this.value));
-        } else {
-            document.querySelector('.' + buttonClass).setAttribute('href', '#');
-        }
-    }
-
     function loadExternalIds(context, item, externalIds) {
 
         var html = '';
@@ -487,7 +490,6 @@
             var idInfo = externalIds[i];
 
             var id = "txt1" + idInfo.Key;
-            var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
             var labelText = globalize.translate('sharedcomponents#LabelDynamicExternalId').replace('{0}', idInfo.Name);
@@ -498,11 +500,11 @@
             var value = providerIds[idInfo.Key] || '';
 
             html += '<div style="flex-grow:1;">';
-            html += '<input is="emby-input" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"/>';
+            html += '<input is="emby-input" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" id="' + id + '" label="' + labelText + '"/>';
             html += '</div>';
 
             if (formatString) {
-                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><button type="button" is="paper-icon-button-light" class="autoSize"><i class="md-icon">open_in_browser</i></button></a>';
+                html += '<button type="button" is="paper-icon-button-light" class="btnOpenExternalId" data-fieldid="' + id + '"><i class="md-icon">open_in_browser</i></button>';
             }
             html += '</div>';
 
@@ -511,12 +513,6 @@
 
         var elem = context.querySelector('.externalIds', context);
         elem.innerHTML = html;
-
-        var extIdEls = elem.querySelector('.txtExternalId') || [];
-        Array.prototype.forEach.call(extIdEls, function (el) {
-            el.addEventListener('change', onExternalIdChange.bind(el));
-            el.dispatchEvent(new Event('change'));
-        });
     }
 
     // Function to hide the element by selector or raw element
@@ -1169,9 +1165,6 @@
             }
 
             var dlg = dialogHelper.createDialog(dialogOptions);
-
-            dlg.classList.add('ui-body-b');
-            dlg.classList.add('background-theme-b');
 
             dlg.classList.add('formDialog');
 

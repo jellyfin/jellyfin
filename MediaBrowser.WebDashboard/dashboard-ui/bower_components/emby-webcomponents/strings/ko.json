@@ -24,6 +24,7 @@
     "ButtonOk": "OK",
     "ButtonCancel": "\ucde8\uc18c",
     "ButtonGotIt": "Got It",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "\ub179\ud654\uac00 \ucde8\uc18c\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
     "RecordingScheduled": "Recording scheduled.",
     "SeriesRecordingScheduled": "Series recording scheduled.",
@@ -246,5 +247,12 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "\ud56d\ubaa9\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

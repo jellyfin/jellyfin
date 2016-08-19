@@ -35,6 +35,12 @@
                     <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
                     <div class="detailUserDataIcons userDataIcons"></div>
                 </div>
+                <div class="syncLocalContainer hide" style="margin-top:1em; display: inline-flex; padding: 0 .5em;">
+                    <label class="checkboxContainer" style="margin:0;">
+                        <input type="checkbox" is="emby-checkbox" class="chkOffline" />
+                        <span>${MakeAvailableOffline}</span>
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -52,6 +58,12 @@
             <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
             <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
             <div class="detailUserDataIcons userDataIcons"></div>
+        </div>
+        <div class="syncLocalContainer hide" style="margin-top:1em; display: inline-flex; padding: 0 .5em;">
+            <label class="checkboxContainer" style="margin:0;">
+                <input type="checkbox" is="emby-checkbox" class="chkOffline" />
+                <span>${MakeAvailableOffline}</span>
+            </label>
         </div>
     </div>
     <div data-role="content" style="padding-top:0;clear:both;">
@@ -148,12 +160,12 @@
             </div>
 
             <div id="scenesCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderScenes}
-                    <a class="detailSectionHeaderButton chapterSettingsButton clearLink hide" style="margin-top: -8px; display: inline-block;" href="librarysettings.html" title="${ButtonSettings}">
-                        <button is="paper-icon-button-light" class="autoSize"><i class="md-icon">settings</i></button>
-                    </a>
-                </h1>
+                <div style="display: flex; align-items: center; margin:.5em 0;">
+                    <h1 style="margin:0;">
+                        ${HeaderScenes}
+                    </h1>
+                    <button is="paper-icon-button-light" class="chapterSettingsButton hide"><i class="md-icon">settings</i></button>
+                </div>
                 <div id="scenesContent" class="itemsContainer"></div>
                 <button is="emby-button" type="button" class="raised more moreScenes hide">${ButtonMore}</button>
             </div>

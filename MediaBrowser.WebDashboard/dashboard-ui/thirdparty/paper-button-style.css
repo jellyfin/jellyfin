@@ -83,16 +83,12 @@ button.emby-button.raised.cancelDark {
     color: #fff;
 }
 
-.ui-body-b button.emby-button.subdued:not([disabled]) {
-    color: #404040;
-}
-
 .ui-body-b button.emby-button.raised.subdued:not([disabled]) {
     background: #404040;
     color: #fff;
 }
 
-.ui-body-b button.emby-button.raised[disabled].subduedd {
+.ui-body-b button.emby-button.raised[disabled].subdued {
     background: #111;
 }
 
@@ -170,10 +166,6 @@ div.dialogHeader {
 
 .ui-body-b div.formDialogHeader {
     background-color: #101010;
-}
-
-.formDialogHeaderTitle {
-    margin-left: .75em;
 }
 
 .formDialogHeader button {

@@ -283,7 +283,14 @@
 
         if (!dlg.classList.contains('hide')) {
 
+            dlg.dispatchEvent(new CustomEvent('closing', {
+                bubbles: false,
+                cancelable: false
+            }));
+
             var onAnimationFinish = function () {
+                focusManager.popScope(dlg);
+
                 dlg.classList.add('hide');
                 if (dlg.close) {
                     dlg.close();
@@ -319,6 +326,7 @@
     function animateDialogOpen(dlg) {
 
         var onAnimationFinish = function () {
+            focusManager.pushScope(dlg);
             if (dlg.getAttribute('data-autofocus') == 'true') {
                 autoFocus(dlg);
             }
@@ -344,6 +352,10 @@
         }
 
         if (options.size == 'fullscreen') {
+            return true;
+        }
+
+        if (options.size) {
             return true;
         }
 
@@ -416,8 +428,8 @@
         var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
-        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
-        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 200 : 300);
+        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 180 : 280);
+        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 180 : 280);
 
         dlg.animationConfig = {
             // scale up

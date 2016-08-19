@@ -1,9 +1,16 @@
-﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections">
+﻿<div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}">
 
-    <div class="libraryViewNav">
-        <button class="pageTabButton is-active" data-index="0">${TabLatest}</button>
-        <button class="pageTabButton" data-index="1">${TabChannels}</button>
+    <div is="emby-tabs" class="libraryViewNav">
+        <div class="emby-tabs-slider">
+            <button is="emby-button" class="emby-tab-button is-active" data-index="0">
+                <div class="emby-button-foreground">${TabLatest}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="1">
+                <div class="emby-button-foreground">${TabChannels}</div>
+            </button>
+        </div>
     </div>
+
     <div class="is-active pageTabContent ehsContent" id="latestTab" data-index="0">
         <div class="latestItems"></div>
     </div>

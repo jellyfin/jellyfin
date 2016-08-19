@@ -424,7 +424,7 @@ namespace MediaBrowser.Controller.Entities
 
             query.SortBy = new string[] { };
 
-            return PostFilterAndSort(items, parent, null, query);
+            return PostFilterAndSort(items, parent, null, query, false, true);
         }
 
         private QueryResult<BaseItem> GetFavoriteSongs(Folder parent, User user, InternalItemsQuery query)
@@ -780,7 +780,7 @@ namespace MediaBrowser.Controller.Entities
         {
             items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager));
 
-            return PostFilterAndSort(items, queryParent, null, query, _libraryManager, _config);
+            return PostFilterAndSort(items, queryParent, null, query, _libraryManager, _config, true, true);
         }
 
         public static bool FilterItem(BaseItem item, InternalItemsQuery query)
@@ -791,9 +791,11 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items,
             BaseItem queryParent,
             int? totalRecordLimit,
-            InternalItemsQuery query)
+            InternalItemsQuery query,
+            bool collapseBoxSetItems,
+            bool enableSorting)
         {
-            return PostFilterAndSort(items, queryParent, totalRecordLimit, query, _libraryManager, _config);
+            return PostFilterAndSort(items, queryParent, totalRecordLimit, query, _libraryManager, _config, collapseBoxSetItems, enableSorting);
         }
 
         public static QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items,
@@ -801,7 +803,9 @@ namespace MediaBrowser.Controller.Entities
             int? totalRecordLimit,
             InternalItemsQuery query,
             ILibraryManager libraryManager,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager,
+            bool collapseBoxSetItems,
+            bool enableSorting)
         {
             var user = query.User;
 
@@ -810,7 +814,10 @@ namespace MediaBrowser.Controller.Entities
                 query.IsVirtualUnaired,
                 query.IsUnaired);
 
-            items = CollapseBoxSetItemsIfNeeded(items, query, queryParent, user, configurationManager);
+            if (collapseBoxSetItems)
+            {
+                items = CollapseBoxSetItemsIfNeeded(items, query, queryParent, user, configurationManager);
+            }
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))
@@ -818,7 +825,7 @@ namespace MediaBrowser.Controller.Entities
                 items = FilterForAdjacency(items, query.AdjacentTo);
             }
 
-            return Sort(items, totalRecordLimit, query, libraryManager);
+            return SortAndPage(items, totalRecordLimit, query, libraryManager, enableSorting);
         }
 
         public static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
@@ -1093,8 +1100,6 @@ namespace MediaBrowser.Controller.Entities
             bool? isVirtualUnaired,
             bool? isUnaired)
         {
-            items = FilterVirtualSeasons(items, isMissing, isVirtualUnaired, isUnaired);
-
             if (isMissing.HasValue)
             {
                 var val = isMissing.Value;
@@ -1140,65 +1145,14 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static IEnumerable<BaseItem> FilterVirtualSeasons(
-            IEnumerable<BaseItem> items,
-            bool? isMissing,
-            bool? isVirtualUnaired,
-            bool? isUnaired)
-        {
-            if (isMissing.HasValue)
-            {
-                var val = isMissing.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return (e.IsMissingSeason) == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isUnaired.HasValue)
-            {
-                var val = isUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            if (isVirtualUnaired.HasValue)
-            {
-                var val = isVirtualUnaired.Value;
-                items = items.Where(i =>
-                {
-                    var e = i as Season;
-                    if (e != null)
-                    {
-                        return e.IsVirtualUnaired == val;
-                    }
-                    return true;
-                });
-            }
-
-            return items;
-        }
-
-        public static QueryResult<BaseItem> Sort(IEnumerable<BaseItem> items,
+        public static QueryResult<BaseItem> SortAndPage(IEnumerable<BaseItem> items,
             int? totalRecordLimit,
             InternalItemsQuery query,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager, bool enableSorting)
         {
             var user = query.User;
 
-            items = items.DistinctBy(i => i.PresentationUniqueKey, StringComparer.OrdinalIgnoreCase);
+            items = items.DistinctBy(i => i.GetPresentationUniqueKey(), StringComparer.OrdinalIgnoreCase);
 
             if (query.SortBy.Length > 0)
             {

@@ -129,11 +129,11 @@
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
-            html += '<div class="card squareCard bottomPaddedCard scalableCard"><div class="cardBox visualCardBox">';
+            html += '<div class="card squareCard scalableCard"><div class="cardBox cardBox-bottompadded visualCardBox">';
 
             html += '<div class="cardScalable">';
 
-            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardPadder cardPadder-square"></div>';
             html += '<a class="cardContent" href="#" data-ajax="false" data-haspw="' + user.HasPassword + '" data-username="' + user.Name + '" data-userid="' + user.Id + '">';
 
             var imgUrl;

@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (user != null)
             {
-                await AttachUserSpecificInfo(dto, item, user, fields).ConfigureAwait(false);
+                await AttachUserSpecificInfo(dto, item, user, options).ConfigureAwait(false);
             }
 
             var hasMediaSources = item as IHasMediaSources;
@@ -408,8 +408,15 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         private void SetItemByNameInfo(BaseItem item, BaseItemDto dto, List<BaseItem> taggedItems, User user = null)
         {
-            if (item is MusicArtist || item is MusicGenre)
+            if (item is MusicArtist)
             {
+                dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
+                dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
+                dto.SongCount = taggedItems.Count(i => i is Audio);
+            }
+            else if (item is MusicGenre)
+            {
+                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
@@ -422,6 +429,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 // This populates them all and covers Genre, Person, Studio, Year
 
+                dto.ArtistCount = taggedItems.Count(i => i is MusicArtist);
                 dto.AlbumCount = taggedItems.Count(i => i is MusicAlbum);
                 dto.EpisodeCount = taggedItems.Count(i => i is Episode);
                 dto.GameCount = taggedItems.Count(i => i is Game);
@@ -438,19 +446,20 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <summary>
         /// Attaches the user specific info.
         /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="fields">The fields.</param>
-        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        private async Task AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, DtoOptions dtoOptions)
         {
+            var fields = dtoOptions.Fields;
+
             if (item.IsFolder)
             {
                 var folder = (Folder)item;
 
-                dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
+                if (dtoOptions.EnableUserData)
+                {
+                    dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
+                }
 
-                if (item.SourceType == SourceType.Library)
+                if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
                     dto.ChildCount = GetChildCount(folder, user);
                 }
@@ -468,7 +477,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             else
             {
-                dto.UserData = _userDataRepository.GetUserDataDto(item, user).Result;
+                if (dtoOptions.EnableUserData)
+                {
+                    dto.UserData = _userDataRepository.GetUserDataDto(item, user).Result;
+                }
             }
 
             dto.PlayAccess = item.GetPlayAccess(user);
@@ -476,7 +488,10 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.BasicSyncInfo) || fields.Contains(ItemFields.SyncInfo))
             {
                 var userCanSync = user != null && user.Policy.EnableSync;
-                dto.SupportsSync = userCanSync && _syncManager.SupportsSync(item);
+                if (userCanSync && _syncManager.SupportsSync(item))
+                {
+                    dto.SupportsSync = true;
+                }
             }
 
             if (fields.Contains(ItemFields.SeasonUserData))
@@ -940,20 +955,23 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Genres = item.Genres;
             }
 
-            dto.ImageTags = new Dictionary<ImageType, string>();
-
-            // Prevent implicitly captured closure
-            var currentItem = item;
-            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type))
-                .ToList())
+            if (options.EnableImages)
             {
-                if (options.GetImageLimit(image.Type) > 0)
-                {
-                    var tag = GetImageCacheTag(item, image);
+                dto.ImageTags = new Dictionary<ImageType, string>();
 
-                    if (tag != null)
+                // Prevent implicitly captured closure
+                var currentItem = item;
+                foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type))
+                    .ToList())
+                {
+                    if (options.GetImageLimit(image.Type) > 0)
                     {
-                        dto.ImageTags[image.Type] = tag;
+                        var tag = GetImageCacheTag(item, image);
+
+                        if (tag != null)
+                        {
+                            dto.ImageTags[image.Type] = tag;
+                        }
                     }
                 }
             }
@@ -961,7 +979,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Id = GetDtoId(item);
             dto.IndexNumber = item.IndexNumber;
             dto.ParentIndexNumber = item.ParentIndexNumber;
-            dto.IsFolder = item.IsFolder;
+
+            if (item.IsFolder)
+            {
+                dto.IsFolder = true;
+            }
+            else if (item is IHasMediaSources)
+            {
+                dto.IsFolder = false;
+            }
+
             dto.MediaType = item.MediaType;
             dto.LocationType = item.LocationType;
             if (item.IsHD.HasValue && item.IsHD.Value)
@@ -1500,97 +1527,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (dto.ProductionLocations == null)
             {
                 dto.ProductionLocations = new List<string>();
-            }
-        }
-
-        /// <summary>
-        /// Since it can be slow to make all of these calculations independently, this method will provide a way to do them all at once
-        /// </summary>
-        /// <param name="folder">The folder.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="dto">The dto.</param>
-        /// <param name="fields">The fields.</param>
-        /// <param name="syncProgress">The synchronize progress.</param>
-        /// <returns>Task.</returns>
-        private async Task SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string, SyncJobItemStatus> syncProgress)
-        {
-            var recursiveItemCount = 0;
-            var unplayed = 0;
-
-            double totalPercentPlayed = 0;
-            double totalSyncPercent = 0;
-
-            var children = await folder.GetItems(new InternalItemsQuery
-            {
-                IsFolder = false,
-                Recursive = true,
-                ExcludeLocationTypes = new[] { LocationType.Virtual },
-                User = user
-
-            }).ConfigureAwait(false);
-
-            // Loop through each recursive child
-            foreach (var child in children.Items)
-            {
-                var userdata = _userDataRepository.GetUserData(user, child);
-
-                recursiveItemCount++;
-
-                var isUnplayed = true;
-
-                // Incrememt totalPercentPlayed
-                if (userdata != null)
-                {
-                    if (userdata.Played)
-                    {
-                        totalPercentPlayed += 100;
-
-                        isUnplayed = false;
-                    }
-                    else if (userdata.PlaybackPositionTicks > 0 && child.RunTimeTicks.HasValue && child.RunTimeTicks.Value > 0)
-                    {
-                        double itemPercent = userdata.PlaybackPositionTicks;
-                        itemPercent /= child.RunTimeTicks.Value;
-                        totalPercentPlayed += itemPercent;
-                    }
-                }
-
-                if (isUnplayed)
-                {
-                    unplayed++;
-                }
-
-                double percent = 0;
-                SyncJobItemStatus syncItemProgress;
-                if (syncProgress.TryGetValue(child.Id.ToString("N"), out syncItemProgress))
-                {
-                    switch (syncItemProgress)
-                    {
-                        case SyncJobItemStatus.Synced:
-                            percent = 100;
-                            break;
-                        case SyncJobItemStatus.Converting:
-                        case SyncJobItemStatus.ReadyToTransfer:
-                        case SyncJobItemStatus.Transferring:
-                            percent = 50;
-                            break;
-                    }
-                }
-                totalSyncPercent += percent;
-            }
-
-            dto.RecursiveItemCount = recursiveItemCount;
-            dto.UserData.UnplayedItemCount = unplayed;
-
-            if (recursiveItemCount > 0)
-            {
-                dto.UserData.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
-
-                var pct = totalSyncPercent / recursiveItemCount;
-                if (pct > 0)
-                {
-                    dto.SyncPercent = pct;
-                }
             }
         }
 

@@ -24,6 +24,7 @@
     "ButtonOk": "D'acord",
     "ButtonCancel": "Cancel\u00b7la",
     "ButtonGotIt": "Got It",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "Enregistrament cancel\u00b7lat.",
     "RecordingScheduled": "Recording scheduled.",
     "SeriesRecordingScheduled": "Series recording scheduled.",
@@ -246,5 +247,12 @@
     "HeaderIdentifyItemHelp": "Enter one or more search criteria. Remove criteria to increase search results.",
     "PleaseEnterNameOrId": "Please enter a name or an external Id.",
     "MessageItemSaved": "\u00cdtem desat.",
-    "SearchResults": "Search Results"
+    "SearchResults": "Search Results",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

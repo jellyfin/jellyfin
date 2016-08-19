@@ -73,8 +73,10 @@
 
             config.CachePath = form.querySelector('#txtCachePath').value;
 
+            var requiresReload = false;
+
             if (config.UICulture != currentLanguage) {
-                Dashboard.showDashboardRefreshNotification();
+                requiresReload = true;
             }
 
             config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
@@ -95,12 +97,14 @@
                     brandingConfig.LoginDisclaimer = form.querySelector('#txtLoginDisclaimer').value;
                     brandingConfig.CustomCss = form.querySelector('#txtCustomCss').value;
 
-                    var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
+                    if (currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss) {
+                        requiresReload = true;
+                    }
 
                     ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).then(Dashboard.processServerConfigurationUpdateResult);
 
-                    if (cssChanged) {
-                        Dashboard.showDashboardRefreshNotification();
+                    if (requiresReload && !AppInfo.isNativeApp) {
+                        window.location.reload(true);
                     }
                 });
 

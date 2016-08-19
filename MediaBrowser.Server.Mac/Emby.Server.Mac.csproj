@@ -639,6 +639,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncsettings.html">
       <Link>Resources\dashboard-ui\syncsettings.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\touchicon.png">
+      <Link>Resources\dashboard-ui\touchicon.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\touchicon114.png">
+      <Link>Resources\dashboard-ui\touchicon114.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\touchicon144.png">
+      <Link>Resources\dashboard-ui\touchicon144.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\touchicon72.png">
+      <Link>Resources\dashboard-ui\touchicon72.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\tv.html">
       <Link>Resources\dashboard-ui\tv.html</Link>
     </BundleResource>
@@ -1005,8 +1017,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\apiclient.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\apiclient.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage-cache.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage-cache.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage-localstorage.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage-localstorage.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage-memory.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage-memory.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\bower.json</Link>
@@ -1049,9 +1067,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-icons\emby-icons.html">
-      <Link>Resources\dashboard-ui\bower_components\emby-icons\emby-icons.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\.bower.json</Link>
@@ -1250,6 +1265,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-slider\emby-slider.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-slider\emby-slider.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-tabs\emby-tabs.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-tabs\emby-tabs.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-tabs\emby-tabs.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-tabs\emby-tabs.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-textarea\emby-textarea.css</Link>
@@ -3603,6 +3624,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\viewcontainer-lite.js">
       <Link>Resources\dashboard-ui\components\viewcontainer-lite.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\appfooter\appfooter.css">
+      <Link>Resources\dashboard-ui\components\appfooter\appfooter.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\appfooter\appfooter.js">
+      <Link>Resources\dashboard-ui\components\appfooter\appfooter.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\channelmapper\channelmapper.js">
       <Link>Resources\dashboard-ui\components\channelmapper\channelmapper.js</Link>
     </BundleResource>
@@ -3611,6 +3638,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\directorybrowser\directorybrowser.js">
       <Link>Resources\dashboard-ui\components\directorybrowser\directorybrowser.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\dockedtabs\dockedtabs.css">
+      <Link>Resources\dashboard-ui\components\dockedtabs\dockedtabs.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\dockedtabs\dockedtabs.js">
+      <Link>Resources\dashboard-ui\components\dockedtabs\dockedtabs.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\fileorganizer\fileorganizer.js">
       <Link>Resources\dashboard-ui\components\fileorganizer\fileorganizer.js</Link>
@@ -3657,6 +3690,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.template.html">
       <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.js">
+      <Link>Resources\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.template.html">
+      <Link>Resources\dashboard-ui\components\libraryoptionseditor\libraryoptionseditor.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\medialibrarycreator\medialibrarycreator.js">
       <Link>Resources\dashboard-ui\components\medialibrarycreator\medialibrarycreator.js</Link>
     </BundleResource>
@@ -3674,6 +3713,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\navdrawer\navdrawer.js">
       <Link>Resources\dashboard-ui\components\navdrawer\navdrawer.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\syncjoblist\syncjoblist.js">
+      <Link>Resources\dashboard-ui\components\syncjoblist\syncjoblist.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvproviders\schedulesdirect.js">
       <Link>Resources\dashboard-ui\components\tvproviders\schedulesdirect.js</Link>
@@ -3750,9 +3792,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logo.png">
       <Link>Resources\dashboard-ui\css\images\logo.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logo536.png">
-      <Link>Resources\dashboard-ui\css\images\logo536.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogoicon.png">
       <Link>Resources\dashboard-ui\css\images\mblogoicon.png</Link>
     </BundleResource>
@@ -3761,18 +3800,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\rotten.png">
       <Link>Resources\dashboard-ui\css\images\rotten.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon.png">
-      <Link>Resources\dashboard-ui\css\images\touchicon.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon114.png">
-      <Link>Resources\dashboard-ui\css\images\touchicon114.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon144.png">
-      <Link>Resources\dashboard-ui\css\images\touchicon144.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\touchicon72.png">
-      <Link>Resources\dashboard-ui\css\images\touchicon72.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userflyoutdefault.png">
       <Link>Resources\dashboard-ui\css\images\userflyoutdefault.png</Link>
@@ -4433,6 +4460,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\ar.json">
       <Link>Resources\dashboard-ui\strings\ar.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\be-BY.json">
+      <Link>Resources\dashboard-ui\strings\be-BY.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\bg-BG.json">
       <Link>Resources\dashboard-ui\strings\bg-BG.json</Link>

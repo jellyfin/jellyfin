@@ -191,14 +191,12 @@
 
         view.addEventListener('viewbeforeshow', function (e) {
             document.body.classList.add('hiddenViewMenuBar');
-            document.body.classList.add('hiddenNowPlayingBar');
             LibraryMenu.setMenuButtonVisible(false);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
             document.body.classList.remove('hiddenViewMenuBar');
-            document.body.classList.remove('hiddenNowPlayingBar');
             LibraryMenu.setMenuButtonVisible(true);
         });
 

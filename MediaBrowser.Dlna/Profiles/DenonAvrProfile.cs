@@ -24,6 +24,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Audio
                 },
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }

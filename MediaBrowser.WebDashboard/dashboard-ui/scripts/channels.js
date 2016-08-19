@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer', 'emby-tabs', 'emby-button', 'scripts/channelslatest', 'scripts/sections'], function (libraryBrowser, cardBuilder) {
 
     // The base query options
     var query = {
@@ -70,18 +70,29 @@
         }
     }
 
-    pageIdOn('pageinit', "channelsPage", function () {
+    return function (view, params) {
 
-        var page = this;
+        var self = this;
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        var mdlTabs = page.querySelector('.libraryViewNav');
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 1]);
 
-        libraryBrowser.configurePaperLibraryTabs(page, mdlTabs, page.querySelectorAll('.pageTabContent'), [0, 1]);
-
-        mdlTabs.addEventListener('tabchange', function (e) {
-            loadTab(page, parseInt(e.detail.selectedTabIndex));
+        viewTabs.addEventListener('tabchange', function (e) {
+            loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
-    });
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
 
+        view.addEventListener('viewdestroy', function (e) {
+
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
+        });
+    };
 });

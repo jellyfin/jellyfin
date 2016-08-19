@@ -12,9 +12,6 @@
 
         $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor);
 
-        page.querySelector('#chkEnableAudioArchiveFiles').checked = config.EnableAudioArchiveFiles;
-        page.querySelector('#chkEnableVideoArchiveFiles').checked = config.EnableVideoArchiveFiles;
-
         $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden);
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
@@ -95,9 +92,6 @@
             config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
             config.EnableLibraryMonitor = $('#selectEnableRealtimeMonitor', form).val();
-
-            config.EnableAudioArchiveFiles = form.querySelector('#chkEnableAudioArchiveFiles').checked;
-            config.EnableVideoArchiveFiles = form.querySelector('#chkEnableVideoArchiveFiles').checked;
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 

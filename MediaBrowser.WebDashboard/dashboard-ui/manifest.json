@@ -1,7 +1,9 @@
 ﻿{
-  "name": "Emby Mobile",
+  "name": "Emby",
   "short_name": "Emby",
-  "start_url": "index.html",
+  "start_url": "/index.html",
+  "description": "The open media solution.",
+  "lang": "en-US",
   "related_applications": [
     {
       "platform": "android",
@@ -17,10 +19,19 @@
   ],
   "icons": [
     {
-      "src": "css/images/touchicon144.png",
+      "src": "touchicon72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "touchicon114.png",
+      "sizes": "114x114",
+      "type": "image/png"
+    },
+    {
+      "src": "touchicon144.png",
       "sizes": "144x144",
-      "type": "image/png",
-      "density": "3.0"
+      "type": "image/png"
     }
   ],
   "display": "standalone",

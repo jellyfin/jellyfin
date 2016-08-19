@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Persistence;
 
 namespace MediaBrowser.Server.Implementations.Library.Validators
 {
@@ -15,16 +16,18 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
 
-        public GenresValidator(ILibraryManager libraryManager, ILogger logger)
+        public GenresValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -35,21 +38,17 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.GetGenres(new InternalItemsQuery
-            {
-                ExcludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicArtist).Name, typeof(MusicAlbum).Name, typeof(MusicVideo).Name, typeof(Game).Name }
-            })
-                .Items
-                .Select(i => i.Item1)
-                .ToList();
+            var names = _itemRepo.GetGenreNames();
 
             var numComplete = 0;
-            var count = items.Count;
+            var count = names.Count;
 
-            foreach (var item in items)
+            foreach (var name in names)
             {
                 try
                 {
+                    var item = _libraryManager.GetGenre(name);
+
                     await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -59,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error refreshing {0}", ex, item.Name);
+                    _logger.ErrorException("Error refreshing {0}", ex, name);
                 }
 
                 numComplete++;

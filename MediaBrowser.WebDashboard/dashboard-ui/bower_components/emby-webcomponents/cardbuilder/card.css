@@ -37,47 +37,51 @@
     }
 
     .vertical-wrap .card {
-        contain: strict;
+        contain: layout style;
     }
-
-.layout-tv .vertical-wrap .card {
-    contain: layout style;
-}
 
 .cardScalable {
     position: relative;
 }
 
-.backdropCard .cardPadder, .smallBackdropCard .cardPadder, .overflowBackdropCard .cardPadder {
+.cardPadder-backdrop, .cardPadder-smallBackdrop, .cardPadder-overflowBackdrop {
     padding-bottom: 56.25%;
 }
 
-.squareCard .cardPadder, .overflowSquareCard .cardPadder {
+.cardPadder-square, .cardPadder-overflowSquare {
     padding-bottom: 100%;
 }
 
-.portraitCard .cardPadder, .overflowPortraitCard .cardPadder {
+.cardPadder-portrait, .cardPadder-overflowPortrait {
     padding-bottom: 150%;
 }
 
-.bannerCard .cardPadder {
+.cardPadder-banner {
     padding-bottom: 18.5%;
 }
 
-.card .cardBox {
+.cardBox {
     padding: 0 !important;
     margin: 0;
     transition: none;
     border: 3px solid transparent;
+    /* Needed in case cardBox is a button */
+    background-color: transparent;
 }
 
-.layout-tv .cardBox {
+.cardBox-focustransform {
     will-change: transform;
+    /*transition: transform 200ms ease-out;*/
 }
+
+/*.card:focus > .cardBox-focustransform {
+    transition-delay: 50ms;
+    transform: scale(1.16, 1.16);
+}*/
 
 @media all and (min-width: 600px) {
 
-    .layout-desktop .card .cardBox, .layout-mobile .card .cardBox {
+    .cardBox-mobile {
         margin: 3px;
     }
 }
@@ -92,12 +96,8 @@
         border-color: transparent;
     }
 
-.bottomPaddedCard .cardBox:not(.visualCardBox) {
+.cardBox-bottompadded {
     margin-bottom: 1em;
-}
-
-.hiddenScrollX .bottomPaddedCard .cardBox, .smoothScrollX .bottomPaddedCard .cardBox {
-    margin-bottom: 0;
 }
 
 .btnCardOptions {
@@ -105,18 +105,6 @@
     float: right;
     padding: 5px 0 2px;
     margin: 0 !important;
-}
-
-.dimunselected .card .cardImageContainer {
-    -webkit-filter: brightness(50%);
-    filter: brightness(50%);
-    transition: filter, -webkit-filter 600ms ease-out !important;
-}
-
-.dimunselected .card:focus .cardImageContainer {
-    -webkit-filter: initial;
-    filter: initial;
-    transition: filter, -webkit-filter 600ms ease-out !important;
 }
 
 .mediaSourceIndicator {
@@ -146,8 +134,14 @@
     justify-content: center;
     position: relative;
     background-clip: content-box !important;
-    border-radius: 2px;
     color: #fff;
+}
+
+@media all and (min-width: 600px) {
+
+    .cardImageContainer {
+        border-radius: 2px;
+    }
 }
 
 .visualCardBox .cardImageContainer {
@@ -206,8 +200,8 @@
 }
 
 .visualCardBox .cardFooter {
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);

@@ -1001,7 +1001,8 @@ namespace MediaBrowser.Server.Implementations.Session
                     var series = episode.Series;
                     if (series != null)
                     {
-                        var episodes = series.GetEpisodes(user, false, false)
+                        var episodes = series.GetEpisodes(user)
+                            .Where(i => !i.IsVirtualItem)
                             .SkipWhile(i => i.Id != episode.Id)
                             .ToList();
 

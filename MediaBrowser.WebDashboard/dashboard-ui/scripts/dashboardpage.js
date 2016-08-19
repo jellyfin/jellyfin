@@ -309,7 +309,7 @@
 
                 var nowPlayingItem = session.NowPlayingItem;
 
-                var className = nowPlayingItem ? 'scalableCard card activeSession' : 'scalableCard card activeSession';
+                var className = nowPlayingItem ? 'scalableCard card activeSession backdropCard' : 'scalableCard card activeSession backdropCard';
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                     className += ' transcodingSession';
@@ -320,7 +320,7 @@
                 html += '<div class="cardBox visualCardBox">';
                 html += '<div class="cardScalable">';
 
-                html += '<div class="cardPadder"></div>';
+                html += '<div class="cardPadder cardPadder-backdrop"></div>';
                 html += '<div class="cardContent">';
 
                 html += '<div class="sessionNowPlayingContent"';

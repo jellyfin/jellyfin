@@ -1728,7 +1728,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths, libraryOptions) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1751,7 +1751,28 @@
                 type: "POST",
                 url: url,
                 data: JSON.stringify({
-                    Paths: initialPaths
+                    Paths: initialPaths,
+                    LibraryOptions: libraryOptions
+                }),
+                contentType: 'application/json'
+            });
+        };
+        self.updateVirtualFolderOptions = function (id, libraryOptions) {
+
+            if (!id) {
+                throw new Error("null name");
+            }
+
+            var url = "Library/VirtualFolders/LibraryOptions";
+
+            url = self.getUrl(url);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({
+                    Id: id,
+                    LibraryOptions: libraryOptions
                 }),
                 contentType: 'application/json'
             });
@@ -3336,6 +3357,22 @@
 
             return self.ajax({
                 type: "POST",
+                url: url
+            });
+        };
+
+        self.cancelSyncItems = function (itemIds, targetId) {
+
+            if (!itemIds) {
+                throw new Error("null itemIds");
+            }
+
+            var url = self.getUrl("Sync/" + (targetId || self.deviceId()) + "/Items", {
+                ItemIds: itemIds.join(',')
+            });
+
+            return self.ajax({
+                type: "DELETE",
                 url: url
             });
         };

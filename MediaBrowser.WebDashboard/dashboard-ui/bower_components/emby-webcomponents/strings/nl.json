@@ -24,6 +24,7 @@
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuleren",
     "ButtonGotIt": "Begrepen",
+    "ButtonRestart": "Restart",
     "RecordingCancelled": "Opname geannuleerd.",
     "RecordingScheduled": "Opname schema",
     "SeriesRecordingScheduled": "Serieopname gepland.",
@@ -246,5 +247,12 @@
     "HeaderIdentifyItemHelp": "Vul \u00e9\u00e9n of meer zoek criteria in. Verwijder criteria om zoekresultaten te vergroten.",
     "PleaseEnterNameOrId": "Voer een naam of een externe Id in",
     "MessageItemSaved": "Item opgeslagen.",
-    "SearchResults": "Zoekresultaten"
+    "SearchResults": "Zoekresultaten",
+    "SyncToOtherDevice": "Sync to other device",
+    "MakeAvailableOffline": "Make available offline",
+    "ServerNameIsRestarting": "Emby Server - {0} is restarting.",
+    "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
+    "HeaderDeleteItems": "Delete Items",
+    "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
+    "PleaseRestartServerName": "Please restart Emby Server - {0}."
 }

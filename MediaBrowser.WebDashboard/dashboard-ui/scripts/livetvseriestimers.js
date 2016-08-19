@@ -40,11 +40,11 @@
 
             html += '<div class="listItem">';
 
-            html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
+            html += '<i class="md-icon listItemIcon">live_tv</i>';
 
             html += '<div class="listItemBody three-line">';
             html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
-            html += '<h3>';
+            html += '<h3 class="listItemBodyText">';
             html += timer.Name;
             html += '</h3>';
 

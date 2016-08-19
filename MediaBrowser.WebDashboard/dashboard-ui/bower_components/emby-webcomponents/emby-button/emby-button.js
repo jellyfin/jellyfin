@@ -6,7 +6,9 @@
 
         var div = document.createElement('div');
 
-        div.classList.add('ripple-effect');
+        for (var i = 0, length = btn.classList.length; i < length; i++) {
+            div.classList.add(btn.classList[i] + '-ripple-effect');
+        }
 
         var offsetX = e.offsetX || 0;
         var offsetY = e.offsetY || 0;
@@ -16,7 +18,12 @@
             div.style.top = offsetY + 'px';
         }
 
-        btn.appendChild(div);
+        var firstChild = btn.firstChild;
+        if (firstChild) {
+            btn.insertBefore(div, btn.firstChild);
+        } else {
+            btn.appendChild(div);
+        }
 
         div.addEventListener("animationend", function () {
             div.parentNode.removeChild(div);
@@ -53,7 +60,7 @@
         return true;
     }
 
-    EmbyButtonPrototype.attachedCallback = function () {
+    EmbyButtonPrototype.createdCallback = function () {
 
         if (this.classList.contains('emby-button')) {
             return;

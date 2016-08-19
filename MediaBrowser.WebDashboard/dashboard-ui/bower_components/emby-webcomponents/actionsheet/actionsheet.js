@@ -34,8 +34,9 @@
 
     function getPosition(options, dlg) {
 
-        var windowHeight = window.innerHeight;
-        var windowWidth = window.innerWidth;
+        var windowSize = dom.getWindowSize();
+        var windowHeight = windowSize.innerHeight;
+        var windowWidth = windowSize.innerWidth;
 
         if (windowHeight < 540) {
             return null;
@@ -125,7 +126,7 @@
 
         // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
         if (options.items.length > 20) {
-            var minWidth = window.innerWidth >= 300 ? 240 : 200;
+            var minWidth = dom.getWindowSize().innerWidth >= 300 ? 240 : 200;
             style += "min-width:" + minWidth + "px;";
         }
 

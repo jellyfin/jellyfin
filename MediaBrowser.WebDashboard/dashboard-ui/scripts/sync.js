@@ -23,7 +23,7 @@
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessagePleaseSelectDeviceToSyncTo'));
             });
-            return;
+            return false;
         }
 
         var options = {
@@ -55,9 +55,14 @@
 
             dialogHelper.close(dlg);
             require(['toast'], function (toast) {
-                toast(Globalize.translate('MessageSyncJobCreated'));
+
+                var msg = target == ApiClient.deviceId() ? Globalize.translate('MessageDownloadScheduled') : Globalize.translate('MessageSyncJobCreated');
+
+                toast(msg);
             });
         });
+
+        return true;
     }
 
     function setJobValues(job, form) {
@@ -195,7 +200,7 @@
         //html += '</div>';
         //html += '</div>';
 
-        $(elem).html(html);
+        elem.innerHTML = html;
 
         $('#selectSyncTarget', elem).on('change', function () {
 
@@ -219,93 +224,103 @@
 
     function showSyncMenu(options) {
 
-        requirejs(["registrationservices"], function () {
-            RegistrationServices.validateFeature('sync').then(function () {
-                showSyncMenuInternal(options);
+        return new Promise(function (resolve, reject) {
+
+            require(["registrationservices", 'dialogHelper', 'formDialogStyle'], function (registrationServices, dialogHelper) {
+                registrationServices.validateFeature('sync').then(function () {
+
+                    showSyncMenuInternal(dialogHelper, options).then(resolve, reject);
+
+                }, reject);
             });
         });
     }
 
-    function showSyncMenuInternal(options) {
+    function showSyncMenuInternal(dialogHelper, options) {
 
-        require(['dialogHelper', 'formDialogStyle'], function (dialogHelper) {
+        var userId = Dashboard.getCurrentUserId();
 
-            var userId = Dashboard.getCurrentUserId();
+        var dialogOptionsQuery = {
+            UserId: userId,
+            ItemIds: (options.items || []).map(function (i) {
+                return i.Id || i;
+            }).join(','),
 
-            var dialogOptionsQuery = {
-                UserId: userId,
-                ItemIds: (options.items || []).map(function (i) {
-                    return i.Id || i;
-                }).join(','),
+            ParentId: options.ParentId,
+            Category: options.Category
+        };
 
-                ParentId: options.ParentId,
-                Category: options.Category
-            };
+        return ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
 
-            ApiClient.getJSON(ApiClient.getUrl('Sync/Options', dialogOptionsQuery)).then(function (dialogOptions) {
+            currentDialogOptions = dialogOptions;
 
-                currentDialogOptions = dialogOptions;
-
-                var dlg = dialogHelper.createDialog({
-                    size: 'small',
-                    removeOnClose: true,
-                    autoFocus: false
-                });
-
-                dlg.classList.add('ui-body-a');
-                dlg.classList.add('background-theme-a');
-                dlg.classList.add('formDialog');
-
-                var html = '';
-                html += '<div class="formDialogHeader">';
-                html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-                html += '<div class="formDialogHeaderTitle">';
-                html += Globalize.translate('SyncMedia');
-                html += '</div>';
-
-                html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
-
-                html += '</div>';
-
-                html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
-                html += '<div class="dialogContentInner dialog-content-centered">';
-
-                html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
-
-                html += '<div class="formFields"></div>';
-
-                html += '<p>';
-                html += '<button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">sync</i><span>' + Globalize.translate('ButtonSync') + '</span></button>';
-                html += '</p>';
-
-                html += '</form>';
-
-                html += '</div>';
-                html += '</div>';
-
-
-                dlg.innerHTML = html;
-                document.body.appendChild(dlg);
-
-                dialogHelper.open(dlg);
-
-                $('form', dlg).on('submit', function () {
-
-                    submitJob(dlg, userId, options, this, dialogHelper);
-                    return false;
-                });
-
-                $('.btnCancel', dlg).on('click', function () {
-                    dialogHelper.close(dlg);
-                });
-
-                renderForm({
-                    elem: $('.formFields', dlg),
-                    dialogOptions: dialogOptions,
-                    dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
-                });
+            var dlg = dialogHelper.createDialog({
+                size: 'small',
+                removeOnClose: true,
+                autoFocus: false
             });
 
+            dlg.classList.add('ui-body-a');
+            dlg.classList.add('background-theme-a');
+            dlg.classList.add('formDialog');
+
+            var html = '';
+            html += '<div class="formDialogHeader">';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+            html += '<div class="formDialogHeaderTitle">';
+            html += Globalize.translate('SyncMedia');
+            html += '</div>';
+
+            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + Globalize.translate('ButtonHelp') + '</span></button></a>';
+
+            html += '</div>';
+
+            html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
+            html += '<div class="dialogContentInner dialog-content-centered">';
+
+            html += '<form class="formSubmitSyncRequest" style="margin: auto;">';
+
+            html += '<div class="formFields"></div>';
+
+            html += '<p>';
+            html += '<button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">sync</i><span>' + Globalize.translate('ButtonSync') + '</span></button>';
+            html += '</p>';
+
+            html += '</form>';
+
+            html += '</div>';
+            html += '</div>';
+
+
+            dlg.innerHTML = html;
+            document.body.appendChild(dlg);
+            var submitted = false;
+
+            $('form', dlg).on('submit', function () {
+
+                submitted = submitJob(dlg, userId, options, this, dialogHelper);
+
+                return false;
+            });
+
+            $('.btnCancel', dlg).on('click', function () {
+                dialogHelper.close(dlg);
+            });
+
+            var promise = dialogHelper.open(dlg);
+
+            renderForm({
+                elem: dlg.querySelector('.formFields'),
+                dialogOptions: dialogOptions,
+                dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
+            });
+
+            return promise.then(function () {
+                if (submitted) {
+                    return Promise.resolve();
+                }
+                return Promise.reject();
+            });
         });
     }
 

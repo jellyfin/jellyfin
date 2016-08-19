@@ -41,16 +41,16 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-color: #000;
 }
 
-.libraryViewNav .pageTabButton {
+.libraryViewNav .emby-tab-button {
     font-weight: 400;
     text-transform: none;
 }
 
-.pageTabButton.is-active .pageTabButtonSelectionBar {
+.emby-tab-button-selection-bar {
     display: none !important;
 }
 
-.libraryViewNav .pageTabButton.is-active {
+.libraryViewNav .emby-tab-button-active {
     color: #52B54B !important;
 }
 
