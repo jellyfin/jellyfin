@@ -56,10 +56,13 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     if (series != null)
                     {
                         episode.SeriesId = series.Id;
+                        episode.SeriesName = series.Name;
+                        episode.SeriesSortName = series.SortName;
                     }
                     if (season != null)
                     {
                         episode.SeasonId = season.Id;
+                        episode.SeasonName = season.Name;
                     }
                 }
 
