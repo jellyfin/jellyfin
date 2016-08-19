@@ -1139,7 +1139,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                         var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
 
-                        var result = await organize.OrganizeEpisodeFile(path, CancellationToken.None).ConfigureAwait(false);
+                        var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

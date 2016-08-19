@@ -3882,17 +3882,35 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public List<string> GetStudioNames()
         {
-            return GetItemValueNames(new[] { 3 });
+            return GetItemValueNames(new[] { 3 }, new List<string>(), new List<string>());
         }
 
         public List<string> GetAllArtistNames()
         {
-            return GetItemValueNames(new[] { 0, 1 });
+            return GetItemValueNames(new[] { 0, 1 }, new List<string>(), new List<string>());
         }
 
-        private List<string> GetItemValueNames(int[] itemValueTypes)
+        public List<string> GetMusicGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" }, new List<string>());
+        }
+
+        public List<string> GetGameGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string> { "Game" }, new List<string>());
+        }
+
+        public List<string> GetGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string>(), new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist", "Game", "GameSystem" });
+        }
+
+        private List<string> GetItemValueNames(int[] itemValueTypes, List<string> withItemTypes, List<string> excludeItemTypes)
         {
             CheckDisposed();
+
+            withItemTypes = withItemTypes.SelectMany(MapIncludeItemTypes).ToList();
+            excludeItemTypes = excludeItemTypes.SelectMany(MapIncludeItemTypes).ToList();
 
             var now = DateTime.UtcNow;
 
@@ -3904,7 +3922,20 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "Select Value From ItemValues where " + typeClause + " Group By CleanValue";
+                cmd.CommandText = "Select Value From ItemValues where " + typeClause;
+
+                if (withItemTypes.Count > 0)
+                {
+                    var typeString = string.Join(",", withItemTypes.Select(i => "'" + i + "'").ToArray());
+                    cmd.CommandText += " AND ItemId In (select guid from typedbaseitems where type in (" + typeString + "))";
+                }
+                if (excludeItemTypes.Count > 0)
+                {
+                    var typeString = string.Join(",", excludeItemTypes.Select(i => "'" + i + "'").ToArray());
+                    cmd.CommandText += " AND ItemId not In (select guid from typedbaseitems where type in (" + typeString + "))";
+                }
+
+                cmd.CommandText += " Group By CleanValue";
 
                 var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
 

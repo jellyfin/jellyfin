@@ -198,6 +198,8 @@ namespace MediaBrowser.Dlna.Profiles
                     Method = SubtitleDeliveryMethod.External
                 }
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }
