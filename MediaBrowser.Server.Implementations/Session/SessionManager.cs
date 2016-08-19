@@ -1869,6 +1869,27 @@ namespace MediaBrowser.Server.Implementations.Session
             return GetSessionByAuthenticationToken(info, deviceId, remoteEndpoint, null);
         }
 
+        public Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            // TODO: How to identify admin sessions?
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+
+            var tasks = sessions.Select(session => Task.Run(async () =>
+            {
+                try
+                {
+                    await session.SessionController.SendMessage(name, data, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending message", ex);
+                }
+
+            }, cancellationToken));
+
+            return Task.WhenAll(tasks);
+        }
+
         public Task SendMessageToUserSessions<T>(string userId, string name, T data,
             CancellationToken cancellationToken)
         {
