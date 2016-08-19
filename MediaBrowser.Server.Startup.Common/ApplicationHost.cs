@@ -101,6 +101,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Implementations.Updates;
 
 namespace MediaBrowser.Server.Startup.Common
@@ -766,6 +767,8 @@ namespace MediaBrowser.Server.Startup.Common
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
             CollectionFolder.XmlSerializer = XmlSerializer;
+            BaseStreamingService.AppHost = this;
+            BaseStreamingService.HttpClient = HttpClient;
         }
 
         /// <summary>
