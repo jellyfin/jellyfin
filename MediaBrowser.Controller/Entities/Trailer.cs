@@ -124,5 +124,15 @@ namespace MediaBrowser.Controller.Entities
 
             return list;
         }
+
+        [IgnoreDataMember]
+        public override bool StopRefreshIfLocalMetadataFound
+        {
+            get
+            {
+                // Need people id's from internet metadata
+                return false;
+            }
+        }
     }
 }

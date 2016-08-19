@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -72,12 +74,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied file data points to a music album
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns><c>true</c> if [is music album] [the specified data]; otherwise, <c>false</c>.</returns>
-        public bool IsMusicAlbum(string path, IDirectoryService directoryService)
+        public bool IsMusicAlbum(string path, IDirectoryService directoryService, LibraryOptions libraryOptions)
         {
-            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, _libraryManager);
+            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, libraryOptions, _libraryManager);
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (args.IsDirectory)
             {
                 //if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
-                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, _libraryManager)) return true;
+                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, args.GetLibraryOptions(), _libraryManager)) return true;
             }
 
             return false;
@@ -100,18 +99,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied list contains what we should consider music
         /// </summary>
-        /// <param name="list">The list.</param>
-        /// <param name="allowSubfolders">if set to <c>true</c> [allow subfolders].</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <param name="logger">The logger.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <returns><c>true</c> if the specified list contains music; otherwise, <c>false</c>.</returns>
         private bool ContainsMusic(IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
             ILogger logger,
             IFileSystem fileSystem,
+            LibraryOptions libraryOptions,
             ILibraryManager libraryManager)
         {
             var discSubfolderCount = 0;
@@ -124,11 +117,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                     if (allowSubfolders)
                     {
                         var path = fileSystemInfo.FullName;
-                        var isMultiDisc = IsMultiDiscFolder(path);
+                        var isMultiDisc = IsMultiDiscFolder(path, libraryOptions);
 
                         if (isMultiDisc)
                         {
-                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
 
                             if (hasMusic)
                             {
@@ -138,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                         }
                         else
                         {
-                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+                            var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
 
                             if (hasMusic)
                             {
@@ -151,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
                 var fullName = fileSystemInfo.FullName;
 
-                if (libraryManager.IsAudioFile(fullName))
+                if (libraryManager.IsAudioFile(fullName, libraryOptions))
                 {
                     return true;
                 }
@@ -165,9 +158,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             return discSubfolderCount > 0;
         }
 
-        private bool IsMultiDiscFolder(string path)
+        private bool IsMultiDiscFolder(string path, LibraryOptions libraryOptions)
         {
-            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions(libraryOptions);
 
             var parser = new AlbumParser(namingOptions, new PatternsLogger());
             var result = parser.ParseMultiPart(path);

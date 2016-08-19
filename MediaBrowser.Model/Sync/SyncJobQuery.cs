@@ -23,6 +23,7 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
+        public string ExcludeTargetIds { get; set; }
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

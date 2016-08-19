@@ -4,38 +4,55 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Net;
+using System.Collections.Generic;
+using ServiceStack.Web;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
-    public class ProgressiveFileCopier
+    public class ProgressiveFileCopier : IAsyncStreamSource, IHasOptions
     {
         private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
+        private readonly string _path;
+        private readonly CancellationToken _cancellationToken;
+        private readonly Dictionary<string, string> _outputHeaders;
 
         // 256k
         private const int BufferSize = 81920;
 
         private long _bytesWritten = 0;
 
-        public ProgressiveFileCopier(IFileSystem fileSystem, TranscodingJob job, ILogger logger)
+        public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
+            _path = path;
+            _outputHeaders = outputHeaders;
             _job = job;
             _logger = logger;
+            _cancellationToken = cancellationToken;
         }
 
-        public async Task StreamFile(string path, Stream outputStream, CancellationToken cancellationToken)
+        public IDictionary<string, string> Options
+        {
+            get
+            {
+                return _outputHeaders;
+            }
+        }
+
+        public async Task WriteToAsync(Stream outputStream)
         {
             try
             {
                 var eofCount = 0;
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var fs = _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
                     while (eofCount < 15)
                     {
-                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, cancellationToken).ConfigureAwait(false);
+                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, _cancellationToken).ConfigureAwait(false);
 
                         //var position = fs.Position;
                         //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
@@ -46,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                             {
                                 eofCount++;
                             }
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                            await Task.Delay(100, _cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {

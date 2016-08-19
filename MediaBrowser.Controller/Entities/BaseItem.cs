@@ -455,7 +455,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateLastRefreshed { get; set; }
 
         [IgnoreDataMember]
-        public virtual bool EnableForceSaveOnDateModifiedChange
+        public virtual bool EnableRefreshOnDateModifiedChange
         {
             get { return false; }
         }
@@ -951,7 +951,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => !i.IsDirectory && string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase))
                 );
 
-            return LibraryManager.ResolvePaths(files, directoryService, null)
+            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Audio.Audio>()
                 .Select(audio =>
                 {
@@ -981,7 +981,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => directoryService.GetFiles(i.FullName));
 
-            return LibraryManager.ResolvePaths(files, directoryService, null)
+            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Video>()
                 .Select(item =>
                 {
@@ -1194,10 +1194,17 @@ namespace MediaBrowser.Controller.Entities
             get { return null; }
         }
 
-        [IgnoreDataMember]
-        public virtual string PresentationUniqueKey
+        public virtual string CreatePresentationUniqueKey()
         {
-            get { return Id.ToString("N"); }
+            return Id.ToString("N");
+        }
+
+        [IgnoreDataMember]
+        public string PresentationUniqueKey { get; set; }
+
+        public string GetPresentationUniqueKey()
+        {
+            return PresentationUniqueKey ?? CreatePresentationUniqueKey();
         }
 
         public virtual bool RequiresRefresh()
@@ -2199,6 +2206,15 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public virtual bool SupportsAncestors
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool StopRefreshIfLocalMetadataFound
         {
             get
             {

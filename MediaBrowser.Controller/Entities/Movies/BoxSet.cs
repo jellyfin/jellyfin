@@ -62,6 +62,26 @@ namespace MediaBrowser.Controller.Entities.Movies
             return UnratedItem.Movie;
         }
 
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            if (IsLegacyBoxSet)
+            {
+                return base.GetNonCachedChildren(directoryService);
+            }
+            return new List<BaseItem>();
+        }
+
+        protected override IEnumerable<BaseItem> LoadChildren()
+        {
+            if (IsLegacyBoxSet)
+            {
+                return base.LoadChildren();
+            }
+
+            // Save a trip to the database
+            return new List<BaseItem>();
+        }
+
         [IgnoreDataMember]
         public override bool IsPreSorted
         {
@@ -76,7 +96,21 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             get
             {
-                return true;
+                if (IsLegacyBoxSet)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        private bool IsLegacyBoxSet
+        {
+            get
+            {
+                return !FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, Path);
             }
         }
 

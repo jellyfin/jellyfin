@@ -85,7 +85,11 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            return GetChildren(user, true).Count();
+            Logger.Debug("Season {0} getting child cound", (Path ?? Name));
+            var result = GetChildren(user, true).Count();
+            Logger.Debug("Season {0} child cound: ", result);
+
+            return result;
         }
 
         /// <summary>
@@ -114,22 +118,18 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
-        [IgnoreDataMember]
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
+            if (IndexNumber.HasValue)
             {
-                if (IndexNumber.HasValue)
+                var series = Series;
+                if (series != null)
                 {
-                    var series = Series;
-                    if (series != null)
-                    {
-                        return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
-                    }
+                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
                 }
-
-                return base.PresentationUniqueKey;
             }
+
+            return base.CreatePresentationUniqueKey();
         }
 
         /// <summary>
@@ -139,24 +139,6 @@ namespace MediaBrowser.Controller.Entities.TV
         protected override string CreateSortName()
         {
             return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
-        }
-
-        [IgnoreDataMember]
-        public bool IsMissingSeason
-        {
-            get { return (IsVirtualItem) && !IsUnaired; }
-        }
-
-        [IgnoreDataMember]
-        public bool IsVirtualUnaired
-        {
-            get { return (IsVirtualItem) && IsUnaired; }
-        }
-
-        [IgnoreDataMember]
-        public bool IsSpecialSeason
-        {
-            get { return (IndexNumber ?? -1) == 0; }
         }
 
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
@@ -170,10 +152,15 @@ namespace MediaBrowser.Controller.Entities.TV
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
+            var id = Guid.NewGuid().ToString("N");
+
+            Logger.Debug("Season.GetItemsInternal entering GetEpisodes. Request id: " + id);
             var items = GetEpisodes(user).Where(filter);
 
-            var result = PostFilterAndSort(items, query);
+            Logger.Debug("Season.GetItemsInternal entering PostFilterAndSort. Request id: " + id);
+            var result = PostFilterAndSort(items, query, false, false);
 
+            Logger.Debug("Season.GetItemsInternal complete. Request id: " + id);
             return Task.FromResult(result);
         }
 
@@ -184,19 +171,17 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>IEnumerable{Episode}.</returns>
         public IEnumerable<Episode> GetEpisodes(User user)
         {
-            var config = user.Configuration;
-
-            return GetEpisodes(Series, user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
+            return GetEpisodes(Series, user);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes)
+        public IEnumerable<Episode> GetEpisodes(Series series, User user)
         {
-            return GetEpisodes(series, user, includeMissingEpisodes, includeVirtualUnairedEpisodes, null);
+            return GetEpisodes(series, user, null);
         }
 
-        public IEnumerable<Episode> GetEpisodes(Series series, User user, bool includeMissingEpisodes, bool includeVirtualUnairedEpisodes, IEnumerable<Episode> allSeriesEpisodes)
+        public IEnumerable<Episode> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes)
         {
-            return series.GetEpisodes(user, this, includeMissingEpisodes, includeVirtualUnairedEpisodes, allSeriesEpisodes);
+            return series.GetSeasonEpisodes(user, this, allSeriesEpisodes);
         }
 
         public IEnumerable<Episode> GetEpisodes()
