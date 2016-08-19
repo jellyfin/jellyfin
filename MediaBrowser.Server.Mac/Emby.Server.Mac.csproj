@@ -1017,6 +1017,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\apiclient.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\apiclient.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage-cache.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage-cache.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\appstorage-localstorage.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\appstorage-localstorage.js</Link>
     </BundleResource>
@@ -3710,6 +3713,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\navdrawer\navdrawer.js">
       <Link>Resources\dashboard-ui\components\navdrawer\navdrawer.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\syncjoblist\syncjoblist.js">
+      <Link>Resources\dashboard-ui\components\syncjoblist\syncjoblist.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvproviders\schedulesdirect.js">
       <Link>Resources\dashboard-ui\components\tvproviders\schedulesdirect.js</Link>
