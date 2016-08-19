@@ -95,6 +95,12 @@ namespace MediaBrowser.Model.FileOrganization
         /// <value>The size of the file.</value>
         public long FileSize { get; set; }
 
+        /// <summary>
+        /// Indicates if the item is currently being processed.
+        /// </summary>
+        /// <remarks>Runtime property not persisted to the store.</remarks>
+        public bool IsInProgress { get; set; }
+
         public FileOrganizationResult()
         {
             DuplicatePaths = new List<string>();

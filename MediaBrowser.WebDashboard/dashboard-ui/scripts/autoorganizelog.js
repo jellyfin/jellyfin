@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function ($, taskButton, datetime) {
+﻿define(['jQuery', 'serverNotifications', 'events', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function ($, serverNotifications, events, taskButton, datetime) {
 
     var query = {
 
@@ -41,7 +41,7 @@
 
                     Dashboard.hideLoadingMsg();
 
-                    reloadItems(page);
+                    reloadItems(page, true);
 
                 }, Dashboard.processErrorResponse);
             });
@@ -58,7 +58,7 @@
         require(['components/fileorganizer/fileorganizer'], function (fileorganizer) {
 
             fileorganizer.show(item).then(function () {
-                reloadItems(page);
+                reloadItems(page, false);
             });
         });
     }
@@ -99,16 +99,18 @@
 
                     Dashboard.hideLoadingMsg();
 
-                    reloadItems(page);
+                    reloadItems(page, true);
 
                 }, Dashboard.processErrorResponse);
             });
         });
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, showSpinner) {
 
-        Dashboard.showLoadingMsg();
+        if (showSpinner) {
+            Dashboard.showLoadingMsg();
+        }
 
         ApiClient.getFileOrganizationResults(query).then(function (result) {
 
@@ -156,47 +158,9 @@
 
             var html = '';
 
-            html += '<tr>';
+            html += '<tr id="row' + item.Id + '">';
 
-            html += '<td>';
-
-            var date = datetime.parseISO8601Date(item.Date, true);
-            html += date.toLocaleDateString();
-
-            html += '</td>';
-
-            html += '<td>';
-            var status = item.Status;
-
-            if (status == 'SkippedExisting') {
-                html += '<a data-resultid="' + item.Id + '" style="color:blue;" href="#" class="btnShowStatusMessage">';
-                html += item.OriginalFileName;
-                html += '</a>';
-            }
-            else if (status == 'Failure') {
-                html += '<a data-resultid="' + item.Id + '" style="color:red;" href="#" class="btnShowStatusMessage">';
-                html += item.OriginalFileName;
-                html += '</a>';
-            } else {
-                html += '<div style="color:green;">';
-                html += item.OriginalFileName;
-                html += '</div>';
-            }
-            html += '</td>';
-
-            html += '<td>';
-            html += item.TargetPath || '';
-            html += '</td>';
-
-            html += '<td class="organizerButtonCell">';
-
-            if (item.Status != 'Success') {
-
-                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton autoSize" title="' + Globalize.translate('ButtonOrganizeFile') + '"><i class="md-icon">folder</i></button>';
-                html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton autoSize" title="' + Globalize.translate('ButtonDeleteFile') + '"><i class="md-icon">delete</i></button>';
-            }
-
-            html += '</td>';
+            html += renderItemRow(item);
 
             html += '</tr>';
 
@@ -247,13 +211,13 @@
         $('.btnNextPage', page).on('click', function () {
 
             query.StartIndex += query.Limit;
-            reloadItems(page);
+            reloadItems(page, true);
         });
 
         $('.btnPreviousPage', page).on('click', function () {
 
             query.StartIndex -= query.Limit;
-            reloadItems(page);
+            reloadItems(page, true);
         });
 
         if (result.TotalRecordCount) {
@@ -263,13 +227,82 @@
         }
     }
 
-    function onWebSocketMessage(e, msg) {
+    function renderItemRow(item) {
+
+        var html = '';
+
+        html += '<td>';
+        var hide = item.IsInProgress ? '' : ' hide';
+        html += '<img src="css/images/throbber.gif" alt="" class="syncSpinner' + hide + '" style="vertical-align: middle;" />';
+        html += '</td>';
+
+        html += '<td>';
+        var date = datetime.parseISO8601Date(item.Date, true);
+        html += date.toLocaleDateString();
+        html += '</td>';
+
+        html += '<td>';
+        var status = item.Status;
+
+        if (item.IsInProgress) {
+            html += '<span style="color:darkorange;">';
+            html += item.OriginalFileName;
+            html += '</span>';
+        }
+        else if (status == 'SkippedExisting') {
+            html += '<a data-resultid="' + item.Id + '" style="color:blue;" href="#" class="btnShowStatusMessage">';
+            html += item.OriginalFileName;
+            html += '</a>';
+        }
+        else if (status == 'Failure') {
+            html += '<a data-resultid="' + item.Id + '" style="color:red;" href="#" class="btnShowStatusMessage">';
+            html += item.OriginalFileName;
+            html += '</a>';
+        } else {
+            html += '<span style="color:green;">';
+            html += item.OriginalFileName;
+            html += '</span>';
+        }
+        html += '</td>';
+
+        html += '<td>';
+        html += item.TargetPath || '';
+        html += '</td>';
+
+        html += '<td class="organizerButtonCell">';
+
+        if (item.Status != 'Success') {
+
+            html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnProcessResult organizerButton autoSize" title="' + Globalize.translate('ButtonOrganizeFile') + '"><i class="md-icon">folder</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" data-resultid="' + item.Id + '" class="btnDeleteResult organizerButton autoSize" title="' + Globalize.translate('ButtonDeleteFile') + '"><i class="md-icon">delete</i></button>';
+        }
+
+        html += '</td>';
+
+        return html;
+    }
+
+    function onServerEvent(e, apiClient, data) {
 
         var page = $.mobile.activePage;
 
-        if ((msg.MessageType == 'ScheduledTaskEnded' && msg.Data.Key == 'AutoOrganize') || msg.MessageType == 'AutoOrganizeUpdate') {
+        if (data) {
 
-            reloadItems(page);
+            updateItemStatus(page, data);
+        } else {
+
+            reloadItems(page, false);
+        }
+    }
+
+    function updateItemStatus(page, item) {
+
+        var rowId = '#row' + item.Id;
+        var row = page.querySelector(rowId);
+
+        if (row) {
+
+            row.innerHTML = renderItemRow(item);
         }
     }
 
@@ -296,7 +329,7 @@
         $('.btnClearLog', page).on('click', function () {
 
             ApiClient.clearOrganizationLog().then(function () {
-                reloadItems(page);
+                reloadItems(page, true);
             }, Dashboard.processErrorResponse);
         });
 
@@ -306,7 +339,7 @@
 
         var page = this;
 
-        reloadItems(page);
+        reloadItems(page, true);
 
         // on here
         taskButton({
@@ -317,7 +350,7 @@
             button: page.querySelector('.btnOrganize')
         });
 
-        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
+        events.on(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
 
     }).on('pagebeforehide', '#libraryFileOrganizerLogPage', function () {
 
@@ -331,7 +364,7 @@
             button: page.querySelector('.btnOrganize')
         });
 
-        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
+        events.off(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
     });
 
 });
