@@ -48,6 +48,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             string collectionType,
             IDirectoryService directoryService)
         {
+            if (parent != null && parent.Path != null && parent.Path.IndexOf("disney", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                var b = true;
+                var a = b;
+            }
+
             var result = ResolveMultipleInternal(parent, files, collectionType, directoryService);
 
             if (result != null)
@@ -197,6 +203,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
         /// <returns>Video.</returns>
         protected override Video Resolve(ItemResolveArgs args)
         {
+            if (args.Path != null && args.Path.IndexOf("disney", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                var b = true;
+                var a = b;
+            }
+
             var collectionType = args.GetCollectionType();
 
             if (IsInvalid(args.Parent, collectionType))

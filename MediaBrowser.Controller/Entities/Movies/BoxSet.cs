@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             if (IsLegacyBoxSet)
             {
-                return base.LoadChildren();
+                return base.GetNonCachedChildren(directoryService);
             }
             return new List<BaseItem>();
         }
