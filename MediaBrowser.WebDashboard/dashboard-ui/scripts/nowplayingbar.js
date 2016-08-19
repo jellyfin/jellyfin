@@ -424,7 +424,7 @@
             }
         }
 
-        var timeText = datetime.getDisplayRunningTime(playState.PositionTicks);
+        var timeText = playState.PositionTicks == null ? '--:--' : datetime.getDisplayRunningTime(playState.PositionTicks);
 
         if (nowPlayingItem.RunTimeTicks) {
 

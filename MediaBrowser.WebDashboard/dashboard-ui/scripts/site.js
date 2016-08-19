@@ -1205,7 +1205,7 @@ var AppInfo = {};
     }
 
     function createMainContentHammer(Hammer) {
-        
+
         var hammer = new Hammer(document.querySelector('.mainDrawerPanelContent'), null);
         return hammer;
     }
@@ -1432,7 +1432,6 @@ var AppInfo = {};
         define('fetch', [bowerPath + '/fetch/fetch']);
         define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
-        define("fingerprintjs2", [bowerPath + '/fingerprintjs2/fingerprint2'], returnFirstDependency);
         define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
@@ -2773,6 +2772,7 @@ var AppInfo = {};
 
             require(postInitDependencies);
             upgradeLayouts();
+            initAutoSync();
         });
     }
 
@@ -2784,6 +2784,16 @@ var AppInfo = {};
                 }
             });
         }
+    }
+
+    function initAutoSync() {
+        require(['serverNotifications', 'events'], function (serverNotifications, events) {
+            events.on(serverNotifications, 'SyncJobItemReady', function (e, apiClient, data) {
+                require(['localsync'], function (localSync) {
+                    localSync.sync({});
+                });
+            });
+        });
     }
 
     initRequire();
