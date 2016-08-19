@@ -1178,6 +1178,7 @@ namespace MediaBrowser.Api.Playback
             double? percent = null;
             TimeSpan? transcodingPosition = null;
             long? bytesTranscoded = null;
+            int? bitRate = null;
 
             var parts = line.Split(' ');
 
@@ -1241,11 +1242,32 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
+                else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = part.Split(new[] { '=' }, 2).Last();
+
+                    int? scale = null;
+                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        scale = 1024;
+                        rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (scale.HasValue)
+                    {
+                        float val;
+
+                        if (float.TryParse(rate, NumberStyles.Any, UsCulture, out val))
+                        {
+                            bitRate = (int)Math.Ceiling(val * scale.Value);
+                        }
+                    }
+                }
             }
 
             if (framerate.HasValue || percent.HasValue)
             {
-                ApiEntryPoint.Instance.ReportTranscodingProgress(transcodingJob, state, transcodingPosition, framerate, percent, bytesTranscoded);
+                ApiEntryPoint.Instance.ReportTranscodingProgress(transcodingJob, state, transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
             }
         }
 
