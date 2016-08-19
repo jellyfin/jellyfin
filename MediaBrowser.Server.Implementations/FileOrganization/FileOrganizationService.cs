@@ -112,8 +112,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeEpisodeFile(result.OriginalPath, GetAutoOrganizeOptions(), true, CancellationToken.None)
+            var organizeResult = await organizer.OrganizeEpisodeFile(result.OriginalPath, GetAutoOrganizeOptions(), true, CancellationToken.None)
                     .ConfigureAwait(false);
+
+            if (organizeResult.Status != FileSortingStatus.Success)
+            {
+                throw new Exception(result.StatusMessage);
+            }
         }
 
         public Task ClearLog()
@@ -126,7 +131,12 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var organizer = new EpisodeFileOrganizer(this, _config, _fileSystem, _logger, _libraryManager,
                 _libraryMonitor, _providerManager);
 
-            await organizer.OrganizeWithCorrection(request, GetAutoOrganizeOptions(), CancellationToken.None).ConfigureAwait(false);
+            var result = await organizer.OrganizeWithCorrection(request, GetAutoOrganizeOptions(), CancellationToken.None).ConfigureAwait(false);
+
+            if (result.Status != FileSortingStatus.Success)
+            {
+                throw new Exception(result.StatusMessage);
+            }
         }
 
         public QueryResult<SmartMatchInfo> GetSmartMatchInfos(FileOrganizationResultQuery query)
