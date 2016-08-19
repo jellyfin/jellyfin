@@ -2309,7 +2309,7 @@ namespace MediaBrowser.Api.Playback
             dict["deviceId"] = auth.DeviceId ?? string.Empty;
             dict["context"] = "streaming";
 
-            Logger.Info(JsonSerializer.SerializeToString(dict));
+            //Logger.Info(JsonSerializer.SerializeToString(dict));
             if (!ServerConfigurationManager.Configuration.CodecsUsed.Contains(outputAudio ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 var list = ServerConfigurationManager.Configuration.CodecsUsed.ToList();

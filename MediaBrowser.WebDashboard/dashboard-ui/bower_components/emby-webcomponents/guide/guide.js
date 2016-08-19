@@ -844,6 +844,10 @@
                 selectDate(context);
             });
 
+            context.querySelector('.btnSelectDateIcon').addEventListener('click', function () {
+                selectDate(context);
+            });
+
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
                 channelsPromise = null;
