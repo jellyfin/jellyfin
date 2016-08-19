@@ -100,8 +100,6 @@
                     filterButton: false
                 });
 
-                view.querySelector('.paging').innerHTML = pagingHtml;
-
                 updateFilterControls();
 
                 var context = params.context;
@@ -162,7 +160,7 @@
                 }
 
                 var elem = view.querySelector('#items');
-                elem.innerHTML = html + pagingHtml;
+                elem.innerHTML = html;
                 ImageLoader.lazyChildren(elem);
 
                 var i, length;

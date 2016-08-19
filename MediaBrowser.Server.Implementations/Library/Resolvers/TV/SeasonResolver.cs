@@ -43,9 +43,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 var season = new Season
                 {
                     IndexNumber = new SeasonPathParser(namingOptions, new RegexProvider()).Parse(args.Path, true, true).SeasonNumber,
-                    SeriesId = series.Id
+                    SeriesId = series.Id,
+                    SeriesSortName = series.SortName,
+                    SeriesName = series.Name
                 };
-                
+
                 if (season.IndexNumber.HasValue && season.IndexNumber.Value == 0)
                 {
                     season.Name = _config.Configuration.SeasonZeroDisplayName;
