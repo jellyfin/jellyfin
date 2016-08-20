@@ -610,7 +610,7 @@
 
         function onPositionSliderChange() {
 
-            var newPercent = parseInt(this.value);
+            var newPercent = parseFloat(this.value);
 
             var newPositionTicks = (newPercent / 100) * getSeekableDuration();
 
