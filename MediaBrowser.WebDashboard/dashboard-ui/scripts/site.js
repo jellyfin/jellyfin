@@ -1430,7 +1430,11 @@ var AppInfo = {};
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
         define('fetch', [bowerPath + '/fetch/fetch']);
-        define('objectassign', [embyWebComponentsBowerPath + '/objectassign']);
+
+        define('functionbind', [embyWebComponentsBowerPath + '/polyfills/bind']);
+        define('arraypolyfills', [embyWebComponentsBowerPath + '/polyfills/array']);
+        define('objectassign', [embyWebComponentsBowerPath + '/polyfills/objectassign']);
+
         define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
         define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
@@ -1782,7 +1786,15 @@ var AppInfo = {};
         }
 
         if (typeof Object.assign != 'function') {
-            deps.push('objectassign');
+            list.push('objectassign');
+        }
+
+        if (!Array.prototype.filter) {
+            list.push('arraypolyfills');
+        }
+
+        if (!Function.prototype.bind) {
+            list.push('functionbind');
         }
 
         require(deps, function () {

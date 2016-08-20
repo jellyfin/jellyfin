@@ -182,12 +182,12 @@
     height: 100%;
 }
 
-.cardImage.coveredImage, .cardImageContainer.coveredImage, .coveredImage .cardImage {
+.coveredImage {
     background-size: 100% 100%;
     background-position: center center;
 }
 
-.coveredImage.noScale, .coveredImage.noScale .cardImage {
+.coveredImage-noScale {
     background-size: cover;
 }
 

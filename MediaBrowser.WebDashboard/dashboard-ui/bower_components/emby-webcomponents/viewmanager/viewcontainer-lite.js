@@ -16,7 +16,7 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
             return false;
         }
 
-        return true;
+        return browser.edge && !browser.mobile;
     }
 
     function loadView(options) {
@@ -261,7 +261,7 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
         selectedPageIndex = -1;
     }
 
-    if (enableAnimation() && !document.documentElement.animate) {
+    if (enableAnimation() && !browser.animate) {
         require(['webAnimations']);
     }
 

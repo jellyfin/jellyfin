@@ -15,37 +15,10 @@
         }
     }
 
-    function getButtonSelectionBar(tabButton) {
-        var elem = tabButton.querySelector('.' + buttonClass + '-selection-bar');
-
-        if (!elem) {
-            elem = document.createElement('div');
-            elem.classList.add(buttonClass + '-selection-bar');
-            tabButton.appendChild(elem);
-        }
-
-        return elem;
-    }
-
-    function hideButtonSelectionBar(tabButton) {
-
-        var elem = getButtonSelectionBar(tabButton);
-
-        elem.classList.add('hide');
-        elem.classList.remove('emby-tab-button-selection-bar-active');
-    }
-
-    function showButtonSelectionBar(tabButton) {
-        var elem = getButtonSelectionBar(tabButton);
-
-        elem.classList.remove('hide');
-        elem.classList.add('emby-tab-button-selection-bar-active');
-    }
-
     function animtateSelectionBar(bar, start, pos, duration, onFinish) {
 
-        var endTransform = pos ? ('translateX(' + pos + 'px)') : 'none';
-        var startTransform = start ? ('translateX(' + start + 'px)') : 'none';
+        var endTransform = pos ? ('translateX(' + Math.round(pos) + 'px)') : 'none';
+        var startTransform = start ? ('translateX(' + Math.round(start) + 'px)') : 'none';
 
         if (!duration || !bar.animate) {
             bar.style.transform = endTransform;
@@ -66,15 +39,13 @@
             iterations: 1,
             easing: 'linear',
             fill: 'forwards'
-        }).onFinish = onFinish;
+        });
+
+        // for some reason onFinish is not firing. temporary browser issue?
+        setTimeout(onFinish, duration);
     }
 
     function moveSelectionBar(tabs, newButton, oldButton, animate) {
-
-        if (oldButton) {
-            hideButtonSelectionBar(oldButton);
-        }
-        hideButtonSelectionBar(newButton);
 
         var selectionBar = tabs.selectionBar;
 
@@ -104,13 +75,14 @@
 
         var delay = animate ? 100 : 0;
         tabs.currentOffset = endPosition;
-        newButton.classList.add(activeButtonClass);
 
-        var onAnimationFinish = function() {
+        var onAnimationFinish = function () {
 
-            if (tabs.getAttribute('data-selectionbar') != 'false') {
-                showButtonSelectionBar(newButton);
-            }
+            //if (tabs.getAttribute('data-selectionbar') != 'false') {
+            //    showButtonSelectionBar(newButton);
+            //}
+            newButton.classList.add(activeButtonClass);
+
             if (selectionBar) {
                 selectionBar.classList.add('hide');
             }

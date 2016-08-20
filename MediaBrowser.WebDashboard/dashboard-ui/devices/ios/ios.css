@@ -54,6 +54,10 @@ body:not(.dashboardDocument) .mainDrawerButton {
     color: #52B54B !important;
 }
 
+.emby-tab-button-active {
+    border-color: transparent !important;
+}
+
 .criticReviewPaperList {
     background-color: #262626;
 }

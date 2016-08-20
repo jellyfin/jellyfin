@@ -152,8 +152,9 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
             xhr.onload = function (e) {
                 if (this.status < 400) {
                     resolve(JSON.parse(this.response));
+                } else {
+                    resolve({});
                 }
-                resolve({});
             };
 
             xhr.onerror = function () {
