@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Model.FileOrganization;
+﻿using MediaBrowser.Model.Events;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Querying;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,6 +9,11 @@ namespace MediaBrowser.Controller.FileOrganization
 {
     public interface IFileOrganizationService
     {
+        event EventHandler<GenericEventArgs<FileOrganizationResult>> ItemAdded;
+        event EventHandler<GenericEventArgs<FileOrganizationResult>> ItemUpdated;
+        event EventHandler<GenericEventArgs<FileOrganizationResult>> ItemRemoved;
+        event EventHandler LogReset;
+
         /// <summary>
         /// Processes the new files.
         /// </summary>
@@ -81,5 +88,20 @@ namespace MediaBrowser.Controller.FileOrganization
         /// <param name="ItemName">Item name.</param>
         /// <param name="matchString">The match string to delete.</param>
         void DeleteSmartMatchEntry(string ItemName, string matchString);
+
+        /// <summary>
+        /// Attempts to add a an item to the list of currently processed items.
+        /// </summary>
+        /// <param name="result">The result item.</param>
+        /// <param name="fullClientRefresh">Passing true will notify the client to reload all items, otherwise only a single item will be refreshed.</param>
+        /// <returns>True if the item was added, False if the item is already contained in the list.</returns>
+        bool AddToInProgressList(FileOrganizationResult result, bool fullClientRefresh);
+
+        /// <summary>
+        /// Removes an item from the list of currently processed items.
+        /// </summary>
+        /// <param name="result">The result item.</param>
+        /// <returns>True if the item was removed, False if the item was not contained in the list.</returns>
+        bool RemoveFromInprogressList(FileOrganizationResult result);
     }
 }
