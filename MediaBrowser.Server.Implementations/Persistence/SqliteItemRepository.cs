@@ -4286,6 +4286,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var index = 0;
             foreach (var image in images)
             {
+                if (string.IsNullOrWhiteSpace(image.Path))
+                {
+                    // Invalid
+                    continue;
+                }
+
                 _saveImagesCommand.GetParameter(0).Value = itemId;
                 _saveImagesCommand.GetParameter(1).Value = image.Type;
                 _saveImagesCommand.GetParameter(2).Value = image.Path;
