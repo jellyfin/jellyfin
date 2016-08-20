@@ -1748,10 +1748,10 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("localsync", ["cordova/android/localsync"]);
+            define("localsync", ["cordova/android/localsync"], returnFirstDependency);
         }
         else {
-            define("localsync", ["scripts/localsync"]);
+            define("localsync", ["scripts/localsync"], returnFirstDependency);
         }
 
         define("livetvcss", ['css!css/livetv.css']);
