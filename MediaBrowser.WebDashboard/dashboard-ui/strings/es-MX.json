@@ -2315,7 +2315,9 @@
     "EnablePhotosHelp": "Las fotograf\u00edas ser\u00e1n detectadas y mostradas junto con otros archivos de medios.",
     "MakeAvailableOffline": "Hacer disponible sin conexi\u00f3n",
     "ConfirmRemoveDownload": "\u00bfEliminar descarga?",
+    "RemoveDownload": "Remove download",
     "SyncToOtherDevices": "Sincronizar a otros dispositivos",
     "ManageOfflineDownloads": "Administrar elementos sin conexi\u00f3n",
-    "MessageDownloadScheduled": "Descarga programada"
+    "MessageDownloadScheduled": "Descarga programada",
+    "RememberMe": "Remember me"
 }

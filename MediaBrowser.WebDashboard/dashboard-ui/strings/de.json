@@ -2315,7 +2315,9 @@
     "EnablePhotosHelp": "Fotos werden erkannt und neben anderen Mediendateien angezeigt.",
     "MakeAvailableOffline": "Offline verf\u00fcgbar machen",
     "ConfirmRemoveDownload": "Download entfernen?",
+    "RemoveDownload": "Remove download",
     "SyncToOtherDevices": "Mit anderen Ger\u00e4ten synchronisieren",
     "ManageOfflineDownloads": "Offline-Downloads verwalten",
-    "MessageDownloadScheduled": "Download geplant"
+    "MessageDownloadScheduled": "Download geplant",
+    "RememberMe": "Remember me"
 }

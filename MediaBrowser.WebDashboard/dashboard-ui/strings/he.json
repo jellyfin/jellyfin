@@ -366,7 +366,7 @@
     "LabelAutomaticUpdatesTmdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheMovieDB.org. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
     "LabelAutomaticUpdatesTvdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheTVDB.com. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
     "LabelFanartApiKey": "Personal api key:",
-    "LabelFanartApiKeyHelp": "Requests to fanart without a personal API key return results that were approved over 7 days ago. With a personal API key that drops to 48 hours and if you are also a fanart VIP member that will further drop to around 10 minutes.",
+    "LabelFanartApiKeyHelp": "Requests to fanart without a personal API key return images that were approved over 7 days ago. With a personal API key that drops to 48 hours and if you are also a fanart VIP member that will further drop to around 10 minutes.",
     "ExtractChapterImagesHelp": "Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs when videos are discovered, and also as a nightly scheduled task. The schedule is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
     "LabelMetadataDownloadLanguage": "\u05e9\u05e4\u05ea \u05d4\u05d5\u05e8\u05d3\u05d4 \u05de\u05d5\u05e2\u05d3\u05e4\u05ea:",
     "LabelImageSavingConvention": "\u05e9\u05d9\u05d8\u05ea \u05e9\u05de\u05d9\u05e8\u05ea \u05ea\u05de\u05d5\u05e0\u05d4:",
@@ -2315,7 +2315,9 @@
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
     "ConfirmRemoveDownload": "Remove download?",
+    "RemoveDownload": "Remove download",
     "SyncToOtherDevices": "Sync to other devices",
     "ManageOfflineDownloads": "Manage offline downloads",
-    "MessageDownloadScheduled": "Download scheduled"
+    "MessageDownloadScheduled": "Download scheduled",
+    "RememberMe": "Remember me"
 }
