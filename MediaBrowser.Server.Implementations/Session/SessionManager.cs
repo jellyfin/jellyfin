@@ -1871,29 +1871,15 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken)
         {
-            // TODO: How to identify admin sessions?
-            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null).ToList();
+            var adminUserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id.ToString("N")).ToList();
 
-            var tasks = sessions.Select(session => Task.Run(async () =>
-            {
-                try
-                {
-                    await session.SessionController.SendMessage(name, data, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sending message", ex);
-                }
-
-            }, cancellationToken));
-
-            return Task.WhenAll(tasks);
+            return SendMessageToUserSessions(adminUserIds, name, data, cancellationToken);
         }
 
-        public Task SendMessageToUserSessions<T>(string userId, string name, T data,
+        public Task SendMessageToUserSessions<T>(List<string> userIds, string name, T data,
             CancellationToken cancellationToken)
         {
-            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && i.ContainsUser(userId)).ToList();
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && userIds.Any(i.ContainsUser)).ToList();
 
             var tasks = sessions.Select(session => Task.Run(async () =>
             {
