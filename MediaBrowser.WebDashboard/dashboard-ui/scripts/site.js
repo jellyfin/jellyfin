@@ -1495,12 +1495,14 @@ var AppInfo = {};
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
-            require(['legacy/fnchecked']);
+            require(['fnchecked']);
             if (window.ApiClient) {
                 jQuery.ajax = ApiClient.ajax;
             }
             return jQuery;
         });
+
+        define("fnchecked", ['legacy/fnchecked']);
 
         define("dialogHelper", [embyWebComponentsBowerPath + "/dialoghelper/dialoghelper"], function (dialoghelper) {
 
