@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardStyle'], function (libraryBrowser) {
+﻿define(['appSettings', 'cardStyle', 'emby-checkbox'], function (appSettings) {
 
     function getApiClient() {
 
@@ -82,6 +82,8 @@
 
     function showManualForm(context, showCancel, focusPassword) {
 
+        context.querySelector('.chkRememberLogin').checked = appSettings.enableAutoLogin();
+
         context.querySelector('.manualLoginForm').classList.remove('hide');
         context.querySelector('.visualLoginForm').classList.add('hide');
 
@@ -146,7 +148,7 @@
                     type: "Primary"
                 });
 
-                html += '<div class="cardImageContainer coveredImage noScale" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                html += '<div class="cardImageContainer coveredImage coveredImage-noScale" style="background-image:url(\'' + imgUrl + '\');"></div>';
             }
             else {
 
@@ -154,7 +156,7 @@
 
                 imgUrl = 'css/images/logindefault.png';
 
-                html += '<div class="cardImageContainer coveredImage noScale" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
+                html += '<div class="cardImageContainer coveredImage coveredImage-noScale" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
             }
 
             html += '</a>';
@@ -224,6 +226,8 @@
         });
 
         view.querySelector('.manualLoginForm').addEventListener('submit', function (e) {
+
+            appSettings.enableAutoLogin(view.querySelector('.chkRememberLogin').checked);
 
             var apiClient = getApiClient();
             LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);

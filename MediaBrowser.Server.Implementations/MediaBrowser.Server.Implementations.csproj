@@ -271,6 +271,7 @@
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />
+    <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />

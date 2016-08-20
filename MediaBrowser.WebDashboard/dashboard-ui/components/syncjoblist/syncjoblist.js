@@ -263,8 +263,12 @@ globalize.translate('CancelSyncJobConfirmation');
                 id: 'delete'
             });
         } else {
+            var txt = listInstance.options.isLocalSync ?
+globalize.translate('RemoveDownload') :
+globalize.translate('ButtonCancelSyncJob');
+
             menuItems.push({
-                name: globalize.translate('ButtonCancelSyncJob'),
+                name: globalize.translate(txt),
                 id: 'cancel'
             });
         }

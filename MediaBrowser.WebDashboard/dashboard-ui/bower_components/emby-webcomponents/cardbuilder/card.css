@@ -182,12 +182,23 @@
     height: 100%;
 }
 
-.cardImage.coveredImage, .cardImageContainer.coveredImage, .coveredImage .cardImage {
+.cardImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+}
+
+.coveredImage {
     background-size: 100% 100%;
     background-position: center center;
 }
 
-.coveredImage.noScale, .coveredImage.noScale .cardImage {
+.coveredImage-noScale {
     background-size: cover;
 }
 
@@ -246,17 +257,6 @@
 
 .cardCenteredText {
     white-space: normal;
-}
-
-.cardImage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center bottom;
 }
 
 .cardImageIcon {

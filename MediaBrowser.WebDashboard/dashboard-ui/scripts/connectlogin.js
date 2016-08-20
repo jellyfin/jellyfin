@@ -1,8 +1,10 @@
-﻿define([], function () {
+﻿define(['appSettings'], function (appSettings) {
 
     function login(page, username, password) {
 
         Dashboard.showLoadingMsg();
+
+        appSettings.enableAutoLogin(true);
 
         ConnectionManager.loginToConnect(username, password).then(function () {
 
@@ -77,7 +79,11 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connect().then(function (result) {
+        ConnectionManager.connect({
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 
@@ -177,7 +183,11 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connectToAddress(host).then(function (result) {
+        ConnectionManager.connectToAddress(host, {
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 

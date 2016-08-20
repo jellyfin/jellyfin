@@ -2,7 +2,7 @@
 
     var syncPromise;
 
-    window.LocalSync = {
+    return {
 
         sync: function (options) {
 

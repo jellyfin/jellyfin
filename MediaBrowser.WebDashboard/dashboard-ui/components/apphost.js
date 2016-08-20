@@ -21,12 +21,13 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     function generateDeviceId() {
         return new Promise(function (resolve, reject) {
 
-            require(['fingerprintjs2'], function (Fingerprint2) {
+            require(["cryptojs-sha1"], function () {
 
-                new Fingerprint2().get(function (result, components) {
-                    console.log('Generated device id: ' + result); //a hash, representing your device fingerprint
-                    resolve(result);
-                });
+                var keys = [];
+                keys.push(navigator.userAgent);
+                keys.push(new Date().getTime());
+
+                resolve(CryptoJS.SHA1(keys.join('|')).toString());
             });
         });
     }

@@ -1,4 +1,4 @@
-﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events) {
+﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events, localSync) {
 
     function initSupporterInfo(view, params) {
 
@@ -38,7 +38,7 @@
 
             if (isLocalSyncManagement()) {
 
-                var status = LocalSync.getSyncStatus();
+                var status = localSync.getSyncStatus();
 
                 page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
                 if (status == 'Active') {
@@ -58,7 +58,7 @@
 
         function syncNow(page) {
 
-            LocalSync.sync();
+            localSync.sync();
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageSyncStarted'));
             });
