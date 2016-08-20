@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardStyle'], function (libraryBrowser) {
+﻿define(['appSettings', 'cardStyle', 'emby-checkbox'], function (appSettings) {
 
     function getApiClient() {
 
@@ -81,6 +81,8 @@
     }
 
     function showManualForm(context, showCancel, focusPassword) {
+
+        context.querySelector('.chkRememberLogin').checked = appSettings.enableAutoLogin();
 
         context.querySelector('.manualLoginForm').classList.remove('hide');
         context.querySelector('.visualLoginForm').classList.add('hide');
@@ -224,6 +226,8 @@
         });
 
         view.querySelector('.manualLoginForm').addEventListener('submit', function (e) {
+
+            appSettings.enableAutoLogin(view.querySelector('.chkRememberLogin').checked);
 
             var apiClient = getApiClient();
             LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);

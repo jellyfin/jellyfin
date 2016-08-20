@@ -2318,5 +2318,6 @@
   "RemoveDownload": "Remove download",
   "SyncToOtherDevices": "Sync to other devices",
   "ManageOfflineDownloads": "Manage offline downloads",
-  "MessageDownloadScheduled": "Download scheduled"
+  "MessageDownloadScheduled": "Download scheduled",
+  "RememberMe": "Remember me"
 }
