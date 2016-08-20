@@ -1969,7 +1969,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['emby-collapse', 'paper-textarea', 'paper-input', 'paper-checkbox', 'jqmlistview'],
+            dependencies: ['emby-collapse', 'paper-textarea', 'paper-input', 'paper-checkbox'],
             controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
@@ -2158,7 +2158,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapse', 'paper-input', 'paper-checkbox', 'emby-button', 'jqmlistview'],
+            dependencies: ['emby-collapse', 'paper-input', 'paper-checkbox', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/librarysettings'

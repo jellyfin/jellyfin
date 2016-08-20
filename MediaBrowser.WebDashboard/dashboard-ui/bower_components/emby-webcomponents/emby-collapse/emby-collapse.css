@@ -4,7 +4,7 @@
 
 .collapseContent {
     border-width: 0 1px 1px 1px;
-    padding: 1em 1.25em;
+    padding: 1.25em 1.25em;
     height: 0;
     transition-property: height;
     transition-duration: 300ms;

@@ -593,7 +593,6 @@ progress {
 
 .ui-body-b .emby-collapsible-content, .ui-body-b .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #222;
 }
 
@@ -621,7 +620,6 @@ progress {
 
 .ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #fff;
 }
 

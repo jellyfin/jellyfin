@@ -41,21 +41,11 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-color: #000;
 }
 
-.libraryViewNav .emby-tab-button {
+.emby-tab-button {
     font-weight: 400;
     text-transform: none;
-}
-
-.emby-tab-button-selection-bar {
-    display: none !important;
-}
-
-.libraryViewNav .emby-tab-button-active {
-    color: #52B54B !important;
-}
-
-.emby-tab-button-active {
     border-color: transparent !important;
+    border-width: 0 !important;
 }
 
 .criticReviewPaperList {
