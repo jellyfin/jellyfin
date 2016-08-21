@@ -1531,16 +1531,7 @@
 
             renderThemeSongs(page, themeSongs);
             renderThemeVideos(page, themeVideos);
-
-            page.dispatchEvent(new CustomEvent("thememediadownload", {
-                detail: {
-                    themeMediaResult: result
-                },
-                bubbles: true
-            }));
-
         });
-
     }
 
     function renderThemeSongs(page, items) {

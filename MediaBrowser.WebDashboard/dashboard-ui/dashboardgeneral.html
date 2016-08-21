@@ -5,12 +5,10 @@
 
             <form class="dashboardGeneralForm">
 
-                <div>
-                    <paper-input type="text" id="txtServerName" label="${LabelFriendlyServerName}"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtServerName" label="${LabelFriendlyServerName}" />
                     <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
-
                 </div>
-                <br /><br />
                 <div>
                     <label for="selectLocalizationLanguage" class="selectLabel">${LabelPreferredDisplayLanguage}</label>
                     <select id="selectLocalizationLanguage" data-mini="true"></select>
@@ -44,46 +42,46 @@
 
                 <div is="emby-collapse" title="${HeaderAdvanced}">
                     <div class="collapseContent">
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display: inline-block; width: 85%;"></paper-input>
-                                <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}" class="autoSize">
-                                    <i class="md-icon">search</i>
-                                </button>
+                        <div>
+                            <div class="inputContainer">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="flex-grow:1;">
+                                        <input is="emby-input" id="txtCachePath" label="${LabelCachePath}" autocomplete="off" />
+                                    </div>
+                                    <button type="button" is="paper-icon-button-light" id="btnSelectCachePath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                                </div>
                                 <div class="fieldDescription">${LabelCachePathHelp}</div>
-                            </li>
-                        </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div is="emby-collapse" title="${HeaderAutomaticUpdates}">
                     <div class="collapseContent">
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li class="fldAutomaticUpdates">
-                                <div data-role="controlgroup">
-                                    <input type="checkbox" id="chkEnableAutomaticServerUpdates" data-mini="true" />
-                                    <label for="chkEnableAutomaticServerUpdates">${OptionEnableAutomaticServerUpdates}</label>
-                                </div>
-                            </li>
-                            <li>
-                                <label class="lnlAutomaticUpdateLevel selectLabel" for="selectAutomaticUpdateLevel"></label>
-                                <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
-                                    <option value="Release">${OptionRelease}</option>
-                                    <option value="Beta">${OptionBeta}</option>
-                                    <option value="Dev">${OptionDev}</option>
-                                </select>
-                                <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
-                                    ${DevBuildWarning}
-                                </div>
-                            </li>
-                            <li id="fldEnableAutomaticRestart" style="display: none;">
-                                <paper-checkbox id="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</paper-checkbox>
-                                <div class="fieldDescription paperCheckboxFieldDescription">
-                                    ${LabelAllowServerAutoRestartHelp}
-                                </div>
-                            </li>
-                        </ul>
+                        <div class="fldAutomaticUpdates">
+                            <div data-role="controlgroup">
+                                <input type="checkbox" id="chkEnableAutomaticServerUpdates" data-mini="true" />
+                                <label for="chkEnableAutomaticServerUpdates">${OptionEnableAutomaticServerUpdates}</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="lnlAutomaticUpdateLevel selectLabel" for="selectAutomaticUpdateLevel"></label>
+                            <select name="selectAutomaticUpdateLevel" id="selectAutomaticUpdateLevel">
+                                <option value="Release">${OptionRelease}</option>
+                                <option value="Beta">${OptionBeta}</option>
+                                <option value="Dev">${OptionDev}</option>
+                            </select>
+                            <div id="devBuildWarning" class="fieldDescription warningFieldDescription" style="display: none;">
+                                ${DevBuildWarning}
+                            </div>
+                        </div>
+                        <div id="fldEnableAutomaticRestart" style="display: none;">
+                            <paper-checkbox id="chkEnableAutomaticRestart">${LabelAllowServerAutoRestart}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">
+                                ${LabelAllowServerAutoRestartHelp}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -92,16 +90,14 @@
                         <p>${HeaderBrandingHelp}</p>
                         <br />
 
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
-                                <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
-                            </li>
-                            <li>
-                                <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
-                                <div class="fieldDescription">${LabelCustomCssHelp}</div>
-                            </li>
-                        </ul>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}" />
+                            <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
+                        </div>
+                        <div class="inputContainer">
+                            <textarea is="emby-textarea" id="txtCustomCss" label="${LabelCustomCss}" class="textarea-mono"></textarea>
+                            <div class="fieldDescription">${LabelCustomCssHelp}</div>
+                        </div>
                     </div>
                 </div>
 
@@ -119,22 +115,21 @@
                             ${OptionDisableForDevelopmentHelp}
                         </div>
                         <br /><br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="text" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" style="display: inline-block; width: 80%;"></paper-input>
+                        <div class="inputContainer">
+                            <div style="display: flex; align-items: center;">
+                                <div style="flex-grow:1;">
+                                    <input is="emby-input" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" autocomplete="off" />
+                                </div>
                                 <button type="button" is="paper-icon-button-light" id="btnSelectDashboardSourcePath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
-                                <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
-                            </li>
-                        </ul>
+                            </div>
+                            <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
+                        </div>
                     </div>
                 </div>
                 <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    </li>
-
-                </ul>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                </div>
             </form>
 
         </div>

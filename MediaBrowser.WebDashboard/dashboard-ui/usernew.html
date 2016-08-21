@@ -1,4 +1,4 @@
-﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmlistview,scripts/usernew,emby-input,paper-checkbox,emby-button">
+﻿<div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -11,40 +11,39 @@
 
                 <div class="folderAccessContainer">
                     <h1>${HeaderLibraryAccess}</h1>
-                    <div>
-                        <paper-checkbox id="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</paper-checkbox>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkEnableAllFolders" />
+                            <span>${OptionEnableAccessToAllLibraries}</span>
+                        </label>
                         <div class="fieldDescription paperCheckboxFieldDescription">${LibraryAccessHelp}</div>
                     </div>
                     <div class="folderAccessListContainer">
-                        <br />
                         <div class="folderAccess">
                         </div>
                     </div>
                 </div>
-                <br />
-                <br />
                 <div class="channelAccessContainer" style="display:none;">
                     <h1>${HeaderChannelAccess}</h1>
-                    <div>
-                        <paper-checkbox id="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</paper-checkbox>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input type="checkbox" is="emby-checkbox" id="chkEnableAllChannels" />
+                            <span>${OptionEnableAccessToAllChannels}</span>
+                        </label>
                         <div class="fieldDescription paperCheckboxFieldDescription">${ChannelAccessHelp}</div>
                     </div>
                     <div class="channelAccessListContainer">
-                        <br />
                         <div class="channelAccess">
                         </div>
                     </div>
                 </div>
 
                 <br />
-                <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
 
-                        <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
-                    </li>
-                </ul>
+                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+                </div>
             </form>
         </div>
     </div>

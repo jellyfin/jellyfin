@@ -8,11 +8,6 @@
     padding-top: 5px;
 }
 
-paper-input + .fieldDescription {
-    padding-top: 5px;
-    opacity: .9;
-}
-
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
     margin-bottom: 30px !important;
@@ -175,35 +170,18 @@ paper-checkbox #checkmark {
     padding: .5em 0;
 }
 
-paper-input label, paper-textarea label {
-    font-size: 18px !important;
-    font-family: inherit !important;
-}
-
 .paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
 }
 
-paper-textarea.mono textarea {
+.textarea-mono {
     font-family: monospace !important;
 }
 
 .ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
     background-color: #52B54B;
     border-color: #52B54B;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label {
-    color: #555;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
-    color: green;
-}
-
-paper-input .focused-line, paper-textarea .focused-line {
-    background-color: #52B54B !important;
 }
 
 .paperList {
@@ -670,21 +648,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 .scheduledTaskPaperIconItem {
     outline: none !important;
 }
-
-    .scheduledTaskPaperIconItem #progressContainer {
-        height: 8px !important;
-        border-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem #primaryProgress {
-        border-bottom-left-radius: 5px;
-        border-top-left-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem paper-progress {
-        display: inline-block;
-    }
-
 
 @media all and (min-width: 420px) {
 

@@ -1,4 +1,4 @@
-﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="jqmlistview,scripts/notificationsetting,paper-input,paper-checkbox,emby-button">
+﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,emby-select,emby-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -7,11 +7,12 @@
 
             <form class="notificationSettingForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-checkbox id="chkEnabled">${LabelNotificationEnabled}</paper-checkbox>
-                    </li>
-                </ul>
+                <br />
+                <div>
+                    <paper-checkbox id="chkEnabled">${LabelNotificationEnabled}</paper-checkbox>
+                </div>
+                <br />
+                <br />
 
                 <div class="monitorUsers" style="display: none;">
                     <div class="paperListLabel">${LabelMonitorUsers}</div>
@@ -22,9 +23,8 @@
                 </div>
 
                 <div>
-                    <div>
-                        <label for="selectUsers" class="selectLabel">${LabelSendNotificationToUsers}</label>
-                        <select id="selectUsers">
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectUsers" label="${LabelSendNotificationToUsers}">
                             <option value="All">${OptionAllUsers}</option>
                             <option value="Admins">${OptionAdminUsers}</option>
                             <option value="Custom">${OptionCustomUsers}</option>
@@ -37,7 +37,6 @@
                         </div>
                     </div>
                     <br />
-                    <br />
                 </div>
 
                 <div>
@@ -49,22 +48,19 @@
                 </div>
 
                 <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-input id="txtTitle" type="text" required label="${LabelMessageTitle}"></paper-input>
-                        <div class="fieldDescription tokenHelp">
-                            <div>${LabelAvailableTokens}</div>
-                            <div class="tokenList" style="margin-top: .5em;"></div>
-                        </div>
-                    </li>
-                    <li>
-                        <br />
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtTitle" type="text" required label="${LabelMessageTitle}"/>
+                    <div class="fieldDescription tokenHelp">
+                        <div>${LabelAvailableTokens}</div>
+                        <div class="tokenList" style="margin-top: .5em;"></div>
+                    </div>
+                </div>
+                <div>
+                    <br />
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
 
-                        <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
-                    </li>
-
-                </ul>
+                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+                </div>
             </form>
 
         </div>

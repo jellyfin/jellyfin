@@ -557,18 +557,33 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return allRoutes;
     }
 
+    var backdropContainer;
+    var backgroundContainer;
     function setTransparency(level) {
+
+        if (!backdropContainer) {
+            backdropContainer = document.querySelector('.backdropContainer');
+        }
+        if (!backgroundContainer) {
+            backgroundContainer = document.querySelector('.backgroundContainer');
+        }
 
         if (level == 'full' || level == Emby.TransparencyLevel.Full) {
             backdrop.clear(true);
             document.documentElement.classList.add('transparentDocument');
+            backgroundContainer.classList.add('backgroundContainer-transparent');
+            backdropContainer.classList.add('hide');
         }
         else if (level == 'backdrop' || level == Emby.TransparencyLevel.Backdrop) {
             backdrop.externalBackdrop(true);
             document.documentElement.classList.add('transparentDocument');
+            backgroundContainer.classList.add('backgroundContainer-transparent');
+            backdropContainer.classList.add('hide');
         } else {
             backdrop.externalBackdrop(false);
             document.documentElement.classList.remove('transparentDocument');
+            backgroundContainer.classList.remove('backgroundContainer-transparent');
+            backdropContainer.classList.remove('hide');
         }
     }
 

@@ -1,4 +1,4 @@
-﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events, localSync) {
+﻿define(['apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (appHost, globalize, syncJobList, events, localSync) {
 
     function initSupporterInfo(view, params) {
 
@@ -39,13 +39,6 @@
             if (isLocalSyncManagement()) {
 
                 var status = localSync.getSyncStatus();
-
-                page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-                if (status == 'Active') {
-                    loading.show();
-                } else {
-                    loading.hide();
-                }
 
                 if (status == "Active") {
                     page.querySelector('.btnSyncNow').classList.add('hide');
@@ -102,8 +95,6 @@
         });
 
         view.addEventListener('viewbeforehide', function () {
-
-            loading.hide();
 
             if (interval) {
                 clearInterval(interval);

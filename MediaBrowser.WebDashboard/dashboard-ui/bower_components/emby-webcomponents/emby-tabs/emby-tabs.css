@@ -1,7 +1,7 @@
 ﻿.emby-tab-button {
     background: transparent;
-    border: 2px solid transparent !important;
-    border-width: 0 0 2px 0 !important;
+    border: 2px solid transparent;
+    border-width: 0 0 2px 0;
     cursor: pointer;
     outline: none !important;
     width: auto;
@@ -24,13 +24,13 @@
     overflow: hidden;
 }
 
-.emby-tab-button:focus {
-    font-weight: bold !important;
-}
+    .emby-tab-button:focus {
+        font-weight: bold !important;
+    }
 
 .emby-tab-button-active {
     color: #52B54B !important;
-    border-color: #52B54B !important;
+    border-color: #52B54B;
 }
 
 .emby-tabs-slider {

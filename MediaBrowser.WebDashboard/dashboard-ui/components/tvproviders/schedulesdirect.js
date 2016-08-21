@@ -1,4 +1,4 @@
-﻿define(['jQuery','paper-checkbox', 'listViewStyle', 'paper-input', 'paper-checkbox'], function ($) {
+﻿define(['jQuery','paper-checkbox', 'listViewStyle', 'emby-input', 'emby-select'], function ($) {
 
     return function (page, providerId, options) {
 

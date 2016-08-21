@@ -8,6 +8,10 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
     function enableAnimation() {
 
+        if (browser.animate) {
+            return true;
+        }
+
         if (browser.tv) {
             return false;
         }
@@ -261,7 +265,7 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
         selectedPageIndex = -1;
     }
 
-    if (enableAnimation() && !browser.animate) {
+    if (enableAnimation()) {
         require(['webAnimations']);
     }
 

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, cardBuilder, appSettings, groupedcards) {
+﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'dom', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, appSettings, groupedcards, dom) {
 
     function getUserViews(userId) {
 
@@ -95,7 +95,7 @@
                 cssClass += ' ' + item.CollectionType + 'buttonCard';
             }
 
-            var href = item.url || LibraryBrowser.getHref(item);
+            var href = item.url || libraryBrowser.getHref(item);
             var onclick = item.onclick ? ' onclick="' + item.onclick + '"' : '';
 
             icon = item.icon || icon;
@@ -402,7 +402,7 @@
 
     function loadLatestChannelMedia(elem, userId) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 
@@ -451,7 +451,7 @@
 
             if (items.length) {
 
-                var screenWidth = window.innerWidth;
+                var screenWidth = dom.getWindowSize().innerWidth;
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
@@ -495,7 +495,7 @@
 
     function loadResume(elem, userId) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 
@@ -621,7 +621,7 @@
 
     function loadLatestChannelItemsFromChannel(page, channel, index) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 

@@ -116,7 +116,7 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
-input:not(.paper-input):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -593,7 +593,6 @@ progress {
 
 .ui-body-b .emby-collapsible-content, .ui-body-b .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #222;
 }
 
@@ -621,7 +620,6 @@ progress {
 
 .ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #fff;
 }
 

@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'cardBuilder'], function ($, cardBuilder) {
+﻿define(['jQuery', 'cardBuilder', 'dom'], function ($, cardBuilder, dom) {
 
     // The base query options
     var query = {
@@ -29,7 +29,7 @@
 
             updateFilterControls();
 
-            var screenWidth = window.innerWidth;
+            var screenWidth = dom.getWindowSize().innerWidth;
 
             html += cardBuilder.getCardsHtml({
 
