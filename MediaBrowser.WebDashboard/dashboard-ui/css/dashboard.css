@@ -8,11 +8,6 @@
     padding-top: 5px;
 }
 
-paper-input + .fieldDescription {
-    padding-top: 5px;
-    opacity: .9;
-}
-
 /* Tabs (e.g. advanced metadata page) */
 .localnav {
     margin-bottom: 30px !important;

@@ -1,4 +1,4 @@
-﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input,emby-button">
+﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -33,8 +33,9 @@
                     </div>
                 </div>
                 <br />
-                <div>
-                    <paper-input type="number" id="txtNumTrailers" min="1" max="10" step="1" label="${LabelNumberTrailerToPlay}"></paper-input>
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtNumTrailers" min="1" max="10" step="1" label="${LabelNumberTrailerToPlay}" />
                 </div>
                 <br />
                 <div>
@@ -46,25 +47,28 @@
                     <paper-checkbox class="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</paper-checkbox>
                 </div>
                 <br />
-                <div>
-                    <div>
-                        <paper-input type="text" label="${LabelCustomIntrosPath}" id="txtCustomIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectCustomIntrosPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <br />
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtCustomIntrosPath" label="${LabelCustomIntrosPath}" required="required" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCustomIntrosPath" class="autoSize" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
                 </div>
-                <br />
-                <div>
-                    <div>
-                        <paper-input type="text" label="${LabelCodecIntrosPath}" id="txtCodecIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectCodecIntrosPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtCodecIntrosPath" label="${LabelCodecIntrosPath}" required="required" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCodecIntrosPath" class="autoSize" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">
                         <div>${LabelCodecIntrosPathHelp}</div>
                         <div style="margin-top:.5em;"><a href="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" target="_blank">${ButtonLearnMore}</a></div>
                     </div>
                 </div>
-                <br />
                 <br />
                 <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                 <p>${CinemaModeConfigurationHelp2}</p>
