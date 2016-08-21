@@ -175,35 +175,18 @@ paper-checkbox #checkmark {
     padding: .5em 0;
 }
 
-paper-input label, paper-textarea label {
-    font-size: 18px !important;
-    font-family: inherit !important;
-}
-
 .paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
 }
 
-paper-textarea.mono textarea {
+.textarea-mono {
     font-family: monospace !important;
 }
 
 .ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
     background-color: #52B54B;
     border-color: #52B54B;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.paper-input-container .paper-input-label, .ui-body-a paper-textarea label {
-    color: #555;
-}
-
-.ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container label, .ui-body-a .paper-input-container-0 .input-content.label-is-highlighted.paper-input-container .paper-input-label {
-    color: green;
-}
-
-paper-input .focused-line, paper-textarea .focused-line {
-    background-color: #52B54B !important;
 }
 
 .paperList {

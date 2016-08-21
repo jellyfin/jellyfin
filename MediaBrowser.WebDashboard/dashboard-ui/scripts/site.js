@@ -1396,10 +1396,7 @@ var AppInfo = {};
         define("paper-button", ["html!" + bowerPath + "/paper-button/paper-button.html"]);
         define("paper-icon-button", ["html!" + bowerPath + "/paper-icon-button/paper-icon-button.html"]);
 
-        define("paper-textarea", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-textarea.html"]);
         define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-        define("paper-progress", ["html!" + bowerPath + "/paper-progress/paper-progress.html"]);
-        define("paper-input", ['webcomponentsjs', "html!" + bowerPath + "/paper-input/paper-input.html"]);
 
         define("paper-collapse-item", ["html!" + bowerPath + "/paper-collapse-item/paper-collapse-item.html"]);
 
@@ -1796,10 +1793,10 @@ var AppInfo = {};
 
     function initAfterDependencies() {
 
-        var deps = [];
+        var list = [];
 
         if (!window.fetch) {
-            deps.push('fetch');
+            list.push('fetch');
         }
 
         if (typeof Object.assign != 'function') {
@@ -1814,7 +1811,7 @@ var AppInfo = {};
             list.push('functionbind');
         }
 
-        require(deps, function () {
+        require(list, function () {
 
             createConnectionManager().then(function () {
 
@@ -1987,7 +1984,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['emby-collapse', 'paper-textarea', 'paper-input', 'paper-checkbox'],
+            dependencies: ['emby-collapse', 'emby-textarea', 'emby-input', 'paper-checkbox'],
             controller: 'scripts/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'
@@ -2176,7 +2173,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapse', 'paper-input', 'paper-checkbox', 'emby-button'],
+            dependencies: ['emby-collapse', 'emby-input', 'paper-checkbox', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/librarysettings'
@@ -2245,7 +2242,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtunerprovider-satip.html',
-            dependencies: ['paper-input', 'paper-checkbox'],
+            dependencies: ['emby-input', 'paper-checkbox'],
             autoFocus: false,
             roles: 'admin',
             controller: 'scripts/livetvtunerprovider-satip'
@@ -2788,7 +2785,7 @@ var AppInfo = {};
 
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');
 
-            if (!browserInfo.tv && !AppInfo.isNativeApp) {
+            if (!browserInfo.tv) {
                 if (navigator.serviceWorker) {
                     try {
                         navigator.serviceWorker.register('serviceworker.js');
