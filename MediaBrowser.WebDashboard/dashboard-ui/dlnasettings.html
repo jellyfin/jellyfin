@@ -1,54 +1,59 @@
-﻿<div id="dlnaSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="jqmlistview,scripts/dlnasettings,paper-input,paper-checkbox,emby-button">
+﻿<div id="dlnaSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Play%20to" data-require="scripts/dlnasettings,emby-select,emby-input,paper-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
 
             <form class="dlnaSettingsForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-checkbox type="checkbox" id="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaPlayToHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox type="checkbox" id="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"></paper-input>
-                        <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
-                    </li>
-                </ul>
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-checkbox id="chkEnableServer">${LabelEnableDlnaServer}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaServerHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkBlastAliveMessages">${LabelEnableBlastAliveMessages}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtBlastInterval" min="1" max="300" label="${LabelBlastMessageInterval}"></paper-input>
-                        <div class="fieldDescription">${LabelBlastMessageIntervalHelp}</div>
-                    </li>
-                    <li>
-                        <label for="selectUser" class="selectLabel">${LabelDefaultUser}</label>
-                        <select id="selectUser" data-mini="true"></select>
-                        <div class="fieldDescription">${LabelDefaultUserHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnableMovieFolders">${LabelEnableEnhancedMovies}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableEnhancedMoviesHelp}</div>
-                    </li>
-                </ul>
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block">
-                            <i class="md-icon">check</i><span>${ButtonSave}</span>
-                        </button>
-                    </li>
-                </ul>
+                <div>
+                    <paper-checkbox type="checkbox" id="chkEnablePlayTo">${LabelEnableDlnaPlayTo}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaPlayToHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <paper-checkbox type="checkbox" id="chkEnableDlnaDebugLogging">${LabelEnableDlnaDebugLogging}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaDebugLoggingHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtClientDiscoveryInterval" min="1" max="300" label="${LabelEnableDlnaClientDiscoveryInterval}"/>
+                    <div class="fieldDescription">${LabelEnableDlnaClientDiscoveryIntervalHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkEnableServer">${LabelEnableDlnaServer}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableDlnaServerHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkBlastAliveMessages">${LabelEnableBlastAliveMessages}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableBlastAliveMessagesHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtBlastInterval" min="1" max="300" label="${LabelBlastMessageInterval}"/>
+                    <div class="fieldDescription">${LabelBlastMessageIntervalHelp}</div>
+                </div>
+                <br />
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectUser" data-mini="true" label="${LabelDefaultUser}"></select>
+                    <div class="fieldDescription">${LabelDefaultUserHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <paper-checkbox id="chkEnableMovieFolders">${LabelEnableEnhancedMovies}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableEnhancedMoviesHelp}</div>
+                </div>
+                <br />
+                <br />
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block">
+                        <i class="md-icon">check</i><span>${ButtonSave}</span>
+                    </button>
+                </div>
             </form>
 
         </div>

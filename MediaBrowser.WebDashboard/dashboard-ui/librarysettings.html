@@ -4,9 +4,8 @@
         <div class="content-primary">
             <form class="librarySettingsForm">
 
-                <div class="fldLibraryMonitor hide">
-                    <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
-                    <select id="selectEnableRealtimeMonitor" data-mini="true">
+                <div class="selectContainer fldLibraryMonitor hide">
+                    <select is="emby-select" id="selectEnableRealtimeMonitor" data-mini="true" label="${LabelEnableRealtimeMonitor}">
                         <option value="Auto">${OptionAuto}</option>
                         <option value="Enabled">${OptionYes}</option>
                         <option value="Disabled">${OptionNo}</option>
@@ -15,23 +14,22 @@
                         ${LabelEnableRealtimeMonitorHelp}
                     </div>
                 </div>
-                <br /><br />
-                <div>
-                    <label for="selectDateAdded" class="selectLabel">${LabelDateAddedBehavior}</label>
-                    <select id="selectDateAdded" data-mini="true">
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectDateAdded" data-mini="true" label="${LabelDateAddedBehavior}">
                         <option value="0">${OptionDateAddedImportTime}</option>
                         <option value="1">${OptionDateAddedFileTime}</option>
                     </select>
                     <div class="fieldDescription">${LabelDateAddedBehaviorHelp}</div>
                 </div>
-                <br />
-                <div>
-                    <paper-input id="txtMetadataPath" label="${LabelMetadataPath}" style="width: 85%; display: inline-block;"></paper-input>
-                    <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtMetadataPath" label="${LabelMetadataPath}" required="required" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
+                    </div>
                     <div class="fieldDescription">${LabelMetadataPathHelp}</div>
-                    <br/>
                 </div>
-                <br />
                 <div>
                     <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
                     <div class="fieldDescription paperCheckboxFieldDescription">${OptionSaveMetadataAsHiddenHelp}</div>
@@ -88,16 +86,16 @@
 
                 <div is="emby-collapse" title="${HeaderTV}">
                     <div class="collapseContent">
-                        <div>
-                            <paper-input type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required />
                         </div>
                     </div>
                 </div>
 
                 <div is="emby-collapse" title="Fanart.tv">
                     <div class="collapseContent">
-                        <div>
-                            <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}" />
                             <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
                             <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
                         </div>
