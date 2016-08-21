@@ -46,6 +46,7 @@
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
+        label.classList.add('inputLabelUnfocused');
 
         var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date';
 

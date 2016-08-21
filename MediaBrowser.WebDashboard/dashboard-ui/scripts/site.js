@@ -179,7 +179,7 @@ var Dashboard = {
         }
 
         if (url.indexOf('/') != 0) {
-            if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
+            if (url.indexOf('://') == -1) {
                 url = '/' + url;
             }
         }
@@ -1528,10 +1528,21 @@ var AppInfo = {};
         // mock this for now. not used in this app
         define("playbackManager", [], function () {
             return {
+                isPlaying: function () {
+                    return MediaPlayer.currentItem != null;
+                },
                 isPlayingVideo: function () {
-                    return false;
+                    return MediaPlayer.currentItem != null;
                 },
                 play: function (options) {
+
+                    if (options.fullscreen === false) {
+                        // theme backdrops - not supported
+                        if (!options.items || options.items[0].MediaType == 'Video') {
+                            return;
+                        }
+                    }
+
                     MediaController.play(options);
                 },
                 currentPlaylistIndex: function (options) {
@@ -1554,6 +1565,9 @@ var AppInfo = {};
                 },
                 pause: function () {
                     return MediaController.pause();
+                },
+                stop: function () {
+                    return MediaController.stop();
                 }
             };
         });
@@ -1645,7 +1659,7 @@ var AppInfo = {};
                         apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
                     });
                 } else {
-                    Dashboard.navigate(LibraryBrowser.getHref(item));
+                    Emby.Page.show('/' + LibraryBrowser.getHref(item), { item: item });
                 }
             }
 
@@ -2726,7 +2740,7 @@ var AppInfo = {};
 
             var postInitDependencies = [];
 
-            postInitDependencies.push('scripts/thememediaplayer');
+            postInitDependencies.push('bower_components/emby-webcomponents/thememediaplayer');
             postInitDependencies.push('scripts/remotecontrol');
             postInitDependencies.push('css!css/chromecast.css');
             postInitDependencies.push('scripts/autobackdrops');
