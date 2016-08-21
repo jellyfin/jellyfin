@@ -11,7 +11,7 @@
     box-sizing: border-box;
     /* Remove select styling */
     /* Font size must the 16px or larger to prevent iOS page zoom on focus */
-    font-size: inherit;
+    font-size: 110%;
     /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;

@@ -48,7 +48,7 @@
         label.classList.add('inputLabel');
         label.classList.add('inputLabelUnfocused');
 
-        var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date';
+        var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date' && this.type != 'time';
 
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
