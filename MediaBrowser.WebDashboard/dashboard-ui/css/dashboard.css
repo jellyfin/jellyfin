@@ -654,21 +654,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     outline: none !important;
 }
 
-    .scheduledTaskPaperIconItem #progressContainer {
-        height: 8px !important;
-        border-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem #primaryProgress {
-        border-bottom-left-radius: 5px;
-        border-top-left-radius: 5px;
-    }
-
-    .scheduledTaskPaperIconItem paper-progress {
-        display: inline-block;
-    }
-
-
 @media all and (min-width: 420px) {
 
     .activeSession {

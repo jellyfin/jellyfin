@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'listViewStyle', 'paper-progress'], function ($) {
+﻿define(['jQuery', 'listViewStyle'], function ($) {
 
     function reloadList(page) {
 
@@ -141,11 +141,14 @@
 
             var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
-            html += '<paper-progress max="100" value="' + progress + '" title="' + progress + '%">';
-            html += '' + progress + '%';
-            html += '</paper-progress>';
+            html += '<div style="display:flex;align-items:center;">';
+            html += '<div class="taskProgressOuter" title="' + progress + '%" style="flex-grow:1;">';
+            html += '<div class="taskProgressInner" style="width:' + progress + '%;">';
+            html += '</div>';
+            html += '</div>';
 
             html += "<span style='color:#009F00;margin-left:5px;'>" + progress + "%</span>";
+            html += '</div>';
 
         } else {
 
