@@ -73,9 +73,13 @@
 
             html += '<div class="listItem">';
 
+            html += '<div class="listItemIconContainer">';
             html += '<i class="listItemIcon md-icon">folder</i>';
+            html += '</div>';
 
-            html += (info.DisplayName || info.ItemName);
+            html += '<div class="listItemBody">';
+            html += "<h2 class='listItemBodyText'>" + (info.DisplayName || info.ItemName) + "</h2>";
+            html += '</div>';
 
             html += '</div>';
 
@@ -84,15 +88,16 @@
             html += info.MatchStrings.map(function (m) {
 
                 var matchStringHtml = '';
+
                 matchStringHtml += '<div class="listItem">';
 
-                matchStringHtml += '<div class="listItemBody">';
+                matchStringHtml += '<div class="listItemBody" style="padding: .1em 1em .4em 5.5em; min-height: 1.5em;">';
 
                 matchStringHtml += "<div class='listItemBodyText secondary'>" + m + "</div>";
 
                 matchStringHtml += '</div>';
 
-                matchStringHtml += '<button type="button" is="paper-icon-button-light" class="btnDeleteMatchEntry" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
+                matchStringHtml += '<button type="button" is="emby-button" class="btnDeleteMatchEntry" style="padding: 0;" data-index="' + i + '" data-matchindex="' + matchStringIndex + '" title="' + Globalize.translate('ButtonDelete') + '"><i class="md-icon">delete</i></button>';
 
                 matchStringHtml += '</div>';
                 matchStringIndex++;

@@ -1913,7 +1913,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/autoorganizesmart.html',
-            dependencies: [],
+            dependencies: ['emby-button'],
             controller: 'scripts/autoorganizesmart',
             autoFocus: false,
             roles: 'admin'
@@ -1921,7 +1921,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/autoorganizetv.html',
-            dependencies: ['jqmtable', 'paper-input', 'paper-checkbox'],
+            dependencies: ['emby-checkbox', 'emby-input', 'emby-button', 'emby-select', 'emby-collapse'],
             controller: 'scripts/autoorganizetv',
             autoFocus: false,
             roles: 'admin'
