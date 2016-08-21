@@ -1758,6 +1758,7 @@ var AppInfo = {};
 
         define("livetvcss", ['css!css/livetv.css']);
         define("detailtablecss", ['css!css/detailtable.css']);
+        define("autoorganizetablecss", ['css!css/autoorganizetable.css']);
 
         define("buttonenabled", ["legacy/buttonenabled"]);
 
@@ -1905,20 +1906,23 @@ var AppInfo = {};
 
         defineRoute({
             path: '/autoorganizelog.html',
-            dependencies: [],
+            dependencies: ['scripts/taskbutton', 'autoorganizetablecss'],
+            controller: 'scripts/autoorganizelog',
             roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizesmart.html',
             dependencies: [],
+            controller: 'scripts/autoorganizesmart',
             autoFocus: false,
             roles: 'admin'
         });
 
         defineRoute({
             path: '/autoorganizetv.html',
-            dependencies: [],
+            dependencies: ['jqmtable', 'paper-input', 'paper-checkbox'],
+            controller: 'scripts/autoorganizetv',
             autoFocus: false,
             roles: 'admin'
         });
