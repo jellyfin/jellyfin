@@ -1862,7 +1862,7 @@
     "OptionMusicAlbums": "Albums de musique",
     "OptionMusicVideos": "Vid\u00e9oclips",
     "OptionSongs": "Chansons",
-    "OptionHomeVideos": "Vid\u00e9os personnelles",
+    "OptionHomeVideos": "Vid\u00e9os et photos personnelles",
     "OptionBooks": "Livres",
     "ButtonUp": "Haut",
     "ButtonDown": "Bas",
@@ -2315,9 +2315,10 @@
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
     "ConfirmRemoveDownload": "Remove download?",
-    "RemoveDownload": "Remove download",
+    "RemoveDownload": "Supprimer le t\u00e9l\u00e9chargement",
     "SyncToOtherDevices": "Sync to other devices",
-    "ManageOfflineDownloads": "Manage offline downloads",
-    "MessageDownloadScheduled": "Download scheduled",
-    "RememberMe": "Remember me"
+    "ManageOfflineDownloads": "G\u00e9rer les t\u00e9l\u00e9chargements hors ligne",
+    "MessageDownloadScheduled": "T\u00e9l\u00e9chargement planifi\u00e9e",
+    "RememberMe": "Se souvenir de moi",
+    "HeaderOfflineSync": "Offline Sync"
 }

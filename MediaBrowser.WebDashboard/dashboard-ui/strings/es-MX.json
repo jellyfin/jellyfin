@@ -2319,5 +2319,6 @@
     "SyncToOtherDevices": "Sincronizar a otros dispositivos",
     "ManageOfflineDownloads": "Administrar elementos sin conexi\u00f3n",
     "MessageDownloadScheduled": "Descarga programada",
-    "RememberMe": "Remember me"
+    "RememberMe": "Remember me",
+    "HeaderOfflineSync": "Offline Sync"
 }

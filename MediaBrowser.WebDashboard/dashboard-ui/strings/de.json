@@ -366,7 +366,7 @@
     "LabelAutomaticUpdatesTmdbHelp": "Wenn aktiviert werden neue Bilder von TheMovieDB.org automatisch heruntergeladen. Bereits existierende Bilder werden nicht ersetzt. Diese Funktion wird das Durchsuchen nach neuen Medien verl\u00e4ngern und verursacht h\u00f6here Festplattenaktivit\u00e4ten.",
     "LabelAutomaticUpdatesTvdbHelp": "Wenn aktiviert werden neue Bilder von TheTVDB.com automatisch heruntergeladen. Bereits existierende Bilder werden nicht ersetzt. Diese Funktion wird das Durchsuchen nach neuen Medien verl\u00e4ngern und verursacht h\u00f6here Festplattenaktivit\u00e4ten.",
     "LabelFanartApiKey": "Pers\u00f6nlicher API Schl\u00fcssel:",
-    "LabelFanartApiKeyHelp": "Fanart Anfragen ohne einen pers\u00f6nlichen API Schl\u00fcssel liefert Ergebnisse der letzten 7 Tage. Bei Verwendung eines pers\u00f6nlichen API Schl\u00fcssels werden Ergebnisse der letzten 48 Stunden, und als VIP Member, der letzten 10 Minuten geliefert.",
+    "LabelFanartApiKeyHelp": "Fanart Anfragen ohne einen pers\u00f6nlichen API Schl\u00fcssel liefert Bilder der letzten 7 Tage. Bei Verwendung eines pers\u00f6nlichen API Schl\u00fcssels werden Ergebnisse der letzten 48 Stunden, und als VIP Member, der letzten 10 Minuten geliefert.",
     "ExtractChapterImagesHelp": "Das Extrahieren von Kapitel-Bildern erm\u00f6glicht es den Clients eine grafische Szenenauswahl anzubieten. Das Erstellen ist recht langsam, rechenintensiv und erfordert ggf. einige Gigabyte an freien Speicherplatz. Diese Aufgabe startet wenn neue Videos erkannt werden und ebenso als eine n\u00e4chtliche Aufgabe. Es wird nicht empfohlen diese Aufgabe in Zeiten hoher Server-Auslastung zu starten.",
     "LabelMetadataDownloadLanguage": "Bevorzugte Sprache f\u00fcr Downloads:",
     "LabelImageSavingConvention": "Speicherconvention der Bilddatein:",
@@ -2315,9 +2315,10 @@
     "EnablePhotosHelp": "Fotos werden erkannt und neben anderen Mediendateien angezeigt.",
     "MakeAvailableOffline": "Offline verf\u00fcgbar machen",
     "ConfirmRemoveDownload": "Download entfernen?",
-    "RemoveDownload": "Remove download",
+    "RemoveDownload": "Download entfernen",
     "SyncToOtherDevices": "Mit anderen Ger\u00e4ten synchronisieren",
     "ManageOfflineDownloads": "Offline-Downloads verwalten",
     "MessageDownloadScheduled": "Download geplant",
-    "RememberMe": "Remember me"
+    "RememberMe": "Erinnere mich",
+    "HeaderOfflineSync": "Offline Sync"
 }

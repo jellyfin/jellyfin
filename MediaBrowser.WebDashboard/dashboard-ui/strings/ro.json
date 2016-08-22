@@ -2247,7 +2247,7 @@
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
     "ButtonFullRefresh": "Full refresh",
-    "ValueExample": "1:00 PM",
+    "ValueExample": "Example: {0}",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
     "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
     "LabelFileOrUrl": "File or url:",
@@ -2319,5 +2319,6 @@
     "SyncToOtherDevices": "Sync to other devices",
     "ManageOfflineDownloads": "Manage offline downloads",
     "MessageDownloadScheduled": "Download scheduled",
-    "RememberMe": "Remember me"
+    "RememberMe": "Remember me",
+    "HeaderOfflineSync": "Offline Sync"
 }
