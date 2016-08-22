@@ -205,25 +205,33 @@
         var btnPrevTop = topPaging.querySelector(".btnPreviousPage");
         var btnPrevBottom = bottomPaging.querySelector(".btnPreviousPage");
 
-        btnNextTop.addEventListener('click', function () {
-            query.StartIndex += query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnNextTop) {
+            btnNextTop.addEventListener('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnNextBottom.addEventListener('click', function () {
-            query.StartIndex += query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnNextBottom) {
+            btnNextBottom.addEventListener('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnPrevTop.addEventListener('click', function () {
-            query.StartIndex -= query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnPrevTop) {
+            btnPrevTop.addEventListener('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnPrevBottom.addEventListener('click', function () {
-            query.StartIndex -= query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnPrevBottom) {
+            btnPrevBottom.addEventListener('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
         var btnClearLog = page.querySelector('.btnClearLog');
 
