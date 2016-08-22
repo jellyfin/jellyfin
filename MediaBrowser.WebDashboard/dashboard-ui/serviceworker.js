@@ -147,3 +147,8 @@ self.addEventListener('notificationclick', function (event) {
     event.waitUntil(executeAction(action, data, serverId));
 
 }, false);
+
+self.addEventListener('sync', function (event) {
+    if (event.tag == 'emby-sync') {
+    }
+});

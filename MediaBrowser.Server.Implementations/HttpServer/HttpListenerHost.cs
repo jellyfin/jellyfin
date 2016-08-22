@@ -428,8 +428,24 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1 ||
-                localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1)
+                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                httpRes.StatusCode = 200;
+                httpRes.ContentType = "text/html";
+                var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
+                    .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
+
+                if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
+
+                    httpRes.Close();
+                    return;
+                }
+            }
+
+            if (localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1 && 
+                localPath.IndexOf("web/dashboard", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 httpRes.StatusCode = 200;
                 httpRes.ContentType = "text/html";
