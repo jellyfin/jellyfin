@@ -533,22 +533,6 @@ progress {
         }
 }
 
-.nativeApp *:not(input):not(select):not(textarea) {
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-    -moz-touch-callout: none;
-    -ms-touch-callout: none;
-    touch-callout: none;
-    -webkit-user-drag: none;
-    -moz-user-drag: none;
-    -ms-user-drag: none;
-    user-drag: none;
-}
-
 .syncActivityForTarget {
     margin: 0 0 3em 0;
 }

@@ -2319,5 +2319,6 @@
     "SyncToOtherDevices": "Sync to other devices",
     "ManageOfflineDownloads": "Manage offline downloads",
     "MessageDownloadScheduled": "Download scheduled",
-    "RememberMe": "Remember me"
+    "RememberMe": "Remember me",
+    "HeaderOfflineSync": "Offline Sync"
 }

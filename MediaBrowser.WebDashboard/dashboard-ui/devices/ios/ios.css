@@ -43,7 +43,7 @@ body:not(.dashboardDocument) .mainDrawerButton {
 
 .emby-tab-button {
     font-weight: 400;
-    text-transform: none;
+    text-transform: none!important;
     border-color: transparent !important;
     border-width: 0 !important;
 }

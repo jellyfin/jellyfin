@@ -20,7 +20,7 @@
         });
     }
 
-    function dockedTabs(options) {
+    function appFooter(options) {
 
         var self = this;
 
@@ -41,7 +41,7 @@
         initHeadRoom(self, self.element);
     }
 
-    dockedTabs.prototype.destroy = function () {
+    appFooter.prototype.destroy = function () {
         var self = this;
 
         if (self.headroom) {
@@ -52,5 +52,5 @@
         self.element = null;
     };
 
-    return dockedTabs;
+    return appFooter;
 });

@@ -48,7 +48,7 @@
         }
     }
 
-    EmbyButtonPrototype.attachedCallback = function () {
+    EmbyButtonPrototype.createdCallback = function () {
 
         if (this.classList.contains('paper-icon-button-light')) {
             return;

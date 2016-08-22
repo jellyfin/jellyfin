@@ -2319,5 +2319,6 @@
     "SyncToOtherDevices": "Synka till andra enheter",
     "ManageOfflineDownloads": "Hantera offline-nedladdningar",
     "MessageDownloadScheduled": "Nedladdningsschema",
-    "RememberMe": "Remember me"
+    "RememberMe": "Remember me",
+    "HeaderOfflineSync": "Offline Sync"
 }

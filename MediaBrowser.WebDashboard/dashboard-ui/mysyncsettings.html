@@ -4,7 +4,7 @@
         <form class="userProfileSettingsForm" style="margin: 0 auto;">
 
             <h1>
-                ${HeaderSync}
+                ${HeaderOfflineSync}
             </h1>
 
             <br />
@@ -20,21 +20,10 @@
             </div>
 
             <label class="checkboxContainer">
-                <input type="checkbox" is="emby-checkbox" id="chkWifi"/>
+                <input type="checkbox" is="emby-checkbox" id="chkWifi" />
                 <span>${OptionSyncOnlyOnWifi}</span>
             </label>
 
-            <h1>
-                ${HeaderCameraUpload}
-            </h1>
-
-            <p>${SelectCameraUploadServers}</p>
-
-            <br />
-            <div class="checkboxList uploadServerList">
-            </div>
-
-            <br />
             <br />
             <button is="emby-button" type="submit" class="raised submit block">
                 <i class="md-icon">check</i>
