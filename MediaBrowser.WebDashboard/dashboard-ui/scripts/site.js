@@ -861,7 +861,7 @@ var Dashboard = {
                 if (enableVlcAudio) {
 
                     profile.DirectPlayProfiles.push({
-                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus",
+                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,m4a,opus,flac",
                         Type: 'Audio'
                     });
 
@@ -986,8 +986,6 @@ var AppInfo = {};
         AppInfo.hasPhysicalVolumeButtons = isCordova || browserInfo.mobile;
 
         AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
-
-        AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1204,6 +1202,11 @@ var AppInfo = {};
 
         var hammer = new Hammer(document.querySelector('.mainDrawerPanelContent'), null);
         return hammer;
+    }
+
+    function createSharedAppFooter(appFooter) {
+        var footer = new appFooter({});
+        return footer;
     }
 
     function initRequire() {
@@ -1503,6 +1506,7 @@ var AppInfo = {};
 
         define("headroom-window", ['headroom'], createWindowHeadroom);
         define("hammer-main", ['hammer'], createMainContentHammer);
+        define("appfooter-shared", ['appfooter'], createSharedAppFooter);
 
         // mock this for now. not used in this app
         define("playbackManager", [], function () {
@@ -2330,7 +2334,8 @@ var AppInfo = {};
             path: '/mypreferencesmenu.html',
             dependencies: ['emby-button'],
             autoFocus: false,
-            transition: 'fade'
+            transition: 'fade',
+            controller: 'scripts/mypreferencescommon'
         });
 
         defineRoute({
@@ -2753,10 +2758,7 @@ var AppInfo = {};
                     postInitDependencies.push('cordova/ios/orientation');
                     postInitDependencies.push('cordova/ios/remotecontrols');
 
-                    if (Dashboard.capabilities().SupportsSync) {
-
-                        postInitDependencies.push('cordova/ios/backgroundfetch');
-                    }
+                    //postInitDependencies.push('cordova/ios/backgroundfetch');
                 }
 
             } else if (browserInfo.chrome) {

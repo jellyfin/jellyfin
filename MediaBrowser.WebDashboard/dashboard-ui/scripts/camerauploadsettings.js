@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'emby-checkbox'], function (appSettings) {
 
     function loadForm(page, user) {
 
@@ -34,7 +34,7 @@
             toast(Globalize.translate('SettingsSaved'));
         });
 
-        if (cameraUploadServers.length || syncPath) {
+        if (cameraUploadServers.length) {
             if (window.MainActivity) {
                 MainActivity.authorizeStorage();
             }
@@ -60,18 +60,6 @@
             return false;
         });
 
-        view.querySelector('#btnSelectSyncPath').addEventListener('click', function () {
-
-            require(['nativedirectorychooser'], function () {
-                NativeDirectoryChooser.chooseDirectory().then(function (path) {
-
-                    if (path) {
-                        view.querySelector('#txtSyncPath').value = path;
-                    }
-                });
-            });
-        });
-
         view.addEventListener('viewshow', function () {
             var page = this;
 
@@ -83,12 +71,6 @@
 
                 loadForm(page, user);
             });
-
-            if (AppInfo.supportsSyncPathSetting) {
-                page.querySelector('.fldSyncPath').classList.remove('hide');
-            } else {
-                page.querySelector('.fldSyncPath').classList.add('hide');
-            }
         });
     };
 

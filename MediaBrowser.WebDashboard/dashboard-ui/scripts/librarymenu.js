@@ -1046,12 +1046,9 @@
 
     setDrawerClass();
 
-    //require(['appfooter'], function (appfooter) {
-    //    var footer = new appfooter({});
-    //    require(['dockedtabs'], function (dockedtabs) {
-    //        new dockedtabs({
-    //            appFooter: footer
-    //        });
+    //require(['appfooter-shared', 'dockedtabs'], function (footer, dockedtabs) {
+    //    new dockedtabs({
+    //        appFooter: footer
     //    });
     //});
 });

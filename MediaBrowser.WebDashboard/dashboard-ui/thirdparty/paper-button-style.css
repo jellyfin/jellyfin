@@ -6,10 +6,6 @@
         background: #e1f5f3;
     }
 
-button.emby-button.fab.blue {
-    background: #03a9f4;
-}
-
 button.emby-button.menuButton {
     color: #212121;
     text-align: left;
@@ -124,18 +120,6 @@ button.emby-button.notext {
     min-width: 2.8em;
     padding-left: .25em !important;
     padding-right: .25em !important;
-}
-
-.fab.green {
-    background-color: #81c784 !important;
-}
-
-.fab.orange {
-    background-color: #ffd54f !important;
-}
-
-.fab.red {
-    background-color: #e57373 !important;
 }
 
 .ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused, .ui-body-b .textareaLabelUnfocused {

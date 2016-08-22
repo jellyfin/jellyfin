@@ -1,4 +1,4 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'apphost'], function (appSettings, appHost) {
 
     function loadForm(page, user) {
 
@@ -20,7 +20,7 @@
             toast(Globalize.translate('SettingsSaved'));
         });
 
-        if (cameraUploadServers.length || syncPath) {
+        if (syncPath) {
             if (window.MainActivity) {
                 MainActivity.authorizeStorage();
             }
@@ -70,7 +70,7 @@
                 loadForm(page, user);
             });
 
-            if (AppInfo.supportsSyncPathSetting) {
+            if (appHost.supports('customsyncpath')) {
                 page.querySelector('.fldSyncPath').classList.remove('hide');
             } else {
                 page.querySelector('.fldSyncPath').classList.add('hide');
