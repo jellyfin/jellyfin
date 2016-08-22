@@ -385,6 +385,7 @@ namespace MediaBrowser.Server.Startup.Common
                 new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager),
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename),
                 new FolderViewSettingMigration(ServerConfigurationManager, UserManager),
                 new CollectionGroupingMigration(ServerConfigurationManager, UserManager),
                 new CollectionsViewMigration(ServerConfigurationManager, UserManager)
