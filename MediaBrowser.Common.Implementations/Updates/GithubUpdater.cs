@@ -33,7 +33,6 @@ namespace MediaBrowser.Common.Implementations.Updates
                 EnableKeepAlive = false,
                 CancellationToken = cancellationToken,
                 UserAgent = "Emby/3.0"
-
             };
 
             if (_cacheLength.Ticks > 0)
