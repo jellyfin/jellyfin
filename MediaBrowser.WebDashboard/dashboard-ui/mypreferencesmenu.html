@@ -2,14 +2,13 @@
 
     <div data-role="content">
         <div class="readOnlyContent" style="margin: 0 auto;">
-            <h1 class="settingsMenuHeader">${HeaderSettings}</h1>
+            <h1 class="settingsMenuHeader" style="padding-left:.25em;">${HeaderSettings}</h1>
             <div>
                 <a href="#" class="clearLink lnkDisplayPreferences">
                     <div class="listItem">
                         <i class="md-icon listItemIcon" style="background-color: #03a9f4;">tv</i>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonDisplaySettings}</div>
-                            <div class="secondary">${ButtonDisplaySettingsHelp}</div>
+                        <div class="listItemBody">
+                            <div>${HeaderDisplay}</div>
                         </div>
                     </div>
                 </a>
@@ -17,9 +16,8 @@
                 <a href="#" class="clearLink lnkHomeScreenPreferences">
                     <div class="listItem">
                         <i class="md-icon listItemIcon" style="background-color: #e57373;">home</i>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonHomeScreenSettings}</div>
-                            <div class="secondary">${ButtonHomeScreenSettingsHelp}</div>
+                        <div class="listItemBody">
+                            <div>${TabHomeScreen}</div>
                         </div>
                     </div>
                 </a>
@@ -27,9 +25,8 @@
                 <a href="#" class="clearLink lnkLanguagePreferences">
                     <div class="listItem">
                         <i class="md-icon listItemIcon" style="background-color: #81c784;">play_circle_filled</i>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonPlaybackSettings}</div>
-                            <div class="secondary">${ButtonPlaybackSettingsHelp}</div>
+                        <div class="listItemBody">
+                            <div>${TitlePlayback}</div>
                         </div>
                     </div>
                 </a>
@@ -37,9 +34,8 @@
                 <a href="#" class="clearLink lnkMyProfile">
                     <div class="listItem">
                         <i class="md-icon listItemIcon" style="background-color: #ffd54f;">person</i>
-                        <div class="listItemBody two-line">
+                        <div class="listItemBody">
                             <div>${ButtonProfile}</div>
-                            <div class="secondary">${ButtonProfileHelp}</div>
                         </div>
                     </div>
                 </a>
@@ -63,8 +59,7 @@
                 </a>
             </div>
             <div>
-                <br />
-                <h1 class="headerUser"></h1>
+                <h1 class="headerUser" style="padding-left:.25em;"></h1>
                 <div>
                     <a href="selectserver.html" class="clearLink selectServer hide">
                         <div class="listItem">
@@ -84,8 +79,7 @@
             </div>
 
             <div class="adminSection hide">
-                <br />
-                <h1>${HeaderAdmin}</h1>
+                <h1 style="padding-left:.25em;">${HeaderAdmin}</h1>
                 <div>
                     <a href="dashboard.html" class="clearLink">
                         <div class="listItem">

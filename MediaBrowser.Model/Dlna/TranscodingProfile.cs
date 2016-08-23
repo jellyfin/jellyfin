@@ -35,9 +35,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("context")]
         public EncodingContext Context { get; set; }
 
-        [XmlAttribute("forceLiveStream")]
-        public bool ForceLiveStream { get; set; }
-
         [XmlAttribute("enableSubtitlesInManifest")]
         public bool EnableSubtitlesInManifest { get; set; }
 

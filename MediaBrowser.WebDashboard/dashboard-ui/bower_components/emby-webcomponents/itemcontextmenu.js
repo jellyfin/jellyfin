@@ -441,7 +441,8 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                                 items: [
                                 {
                                     Id: itemId
-                                }]
+                                }],
+                                isLocalSync: true
                             });
                         });
                         getResolveFunction(resolve, id)();

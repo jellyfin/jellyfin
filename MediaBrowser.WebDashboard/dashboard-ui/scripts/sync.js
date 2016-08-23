@@ -86,7 +86,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['emby-checkbox', 'emby-input', 'emby-collapse'], function () {
+            require(['emby-checkbox', 'emby-input', 'emby-select'], function () {
 
                 appHost.appInfo().then(function (appInfo) {
                     renderFormInternal(options, appInfo, resolve);
@@ -104,22 +104,22 @@
 
         var html = '';
 
+        var targetContainerClass = options.isLocalSync ? ' hide' : '';
+
         if (options.showName || dialogOptions.Options.indexOf('Name') != -1) {
 
-            html += '<div class="inputContainer">';
+            html += '<div class="inputContainer' + targetContainerClass + '">';
             html += '<input is="emby-input" type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" label="' + Globalize.translate('LabelSyncJobName') + '"/>';
             html += '</div>';
-            html += '<br/>';
         }
 
-        html += '<div>';
         if (options.readOnlySyncTarget) {
-            html += '<div class="inputContainer">';
+            html += '<div class="inputContainer' + targetContainerClass + '">';
             html += '<input is="emby-input" type="text" id="selectSyncTarget" readonly label="' + Globalize.translate('LabelSyncTo') + '"/>';
             html += '</div>';
         } else {
-            html += '<label for="selectSyncTarget" class="selectLabel">' + Globalize.translate('LabelSyncTo') + '</label>';
-            html += '<select id="selectSyncTarget" required="required" data-mini="true">';
+            html += '<div class="selectContainer' + targetContainerClass + '">';
+            html += '<select is="emby-select" id="selectSyncTarget" required="required" label="' + Globalize.translate('LabelSyncTo') + '">';
 
             html += targets.map(function (t) {
 
@@ -133,34 +133,26 @@
                 html += '<div class="fieldDescription">' + Globalize.translate('LabelSyncNoTargetsHelp') + '</div>';
                 html += '<div class="fieldDescription"><a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></div>';
             }
+            html += '</div>';
         }
-        html += '</div>';
 
-        html += '<div class="fldProfile" style="display:none;">';
-        html += '<br/>';
-        html += '<label for="selectProfile" class="selectLabel">' + Globalize.translate('LabelProfile') + '</label>';
-        html += '<select id="selectProfile" data-mini="true">';
+        html += '<div class="fldProfile selectContainer" style="display:none;">';
+        html += '<select is="emby-select" id="selectProfile" label="' + Globalize.translate('LabelProfile') + '">';
         html += '</select>';
         html += '<div class="fieldDescription profileDescription"></div>';
         html += '</div>';
 
-        html += '<div class="fldQuality" style="display:none;">';
-        html += '<br/>';
-        html += '<label for="selectQuality" class="selectLabel">' + Globalize.translate('LabelQuality') + '</label>';
-        html += '<select id="selectQuality" data-mini="true" required="required">';
+        html += '<div class="fldQuality selectContainer" style="display:none;">';
+        html += '<select is="emby-select" id="selectQuality" data-mini="true" required="required" label="' + Globalize.translate('LabelQuality') + '">';
         html += '</select>';
         html += '<div class="fieldDescription qualityDescription"></div>';
         html += '</div>';
 
-        html += '<div class="fldBitrate" style="display:none;">';
-        html += '<br/>';
-        html += '<div class="inputContainer">';
+        html += '<div class="fldBitrate inputContainer" style="display:none;">';
         html += '<input is="emby-input" type="number" step=".1" min=".1" id="txtBitrate" label="' + Globalize.translate('LabelBitrateMbps') + '"/>';
-        html += '</div>';
         html += '</div>';
 
         if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
-            html += '<br/>';
             html += '<div class="checkboxContainer checkboxContainer-withDescription">';
             html += '<label>';
             html += '<input is="emby-checkbox" type="checkbox" id="chkUnwatchedOnly"/>';
@@ -170,31 +162,21 @@
             html += '</div>';
         }
 
-        if (dialogOptions.Options.indexOf('SyncNewContent') != -1 ||
-            dialogOptions.Options.indexOf('ItemLimit') != -1) {
-
-            html += '<div is="emby-collapse" title="' + Globalize.translate('HeaderAdvanced') + '">';
-            html += '<div class="collapseContent">';
-            if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
-                html += '<br/>';
-                html += '<div class="checkboxContainer checkboxContainer-withDescription">';
-                html += '<label>';
-                html += '<input is="emby-checkbox" type="checkbox" id="chkSyncNewContent"/>';
-                html += '<span>' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</span>';
-                html += '</label>';
-                html += '<div class="fieldDescription checkboxFieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
-                html += '</div>';
-            }
-
-            if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
-                html += '<div class="inputContainer">';
-                html += '<input is="emby-input" type="number" step="1" min="1" id="txtItemLimit" label="' + Globalize.translate('LabelItemLimit') + '"/>';
-                html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
-                html += '</div>';
-            }
+        if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
+            html += '<div class="checkboxContainer checkboxContainer-withDescription">';
+            html += '<label>';
+            html += '<input is="emby-checkbox" type="checkbox" id="chkSyncNewContent"/>';
+            html += '<span>' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</span>';
+            html += '</label>';
+            html += '<div class="fieldDescription checkboxFieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
             html += '</div>';
+        }
+
+        if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
+            html += '<div class="inputContainer">';
+            html += '<input is="emby-input" type="number" step="1" min="1" id="txtItemLimit" label="' + Globalize.translate('LabelItemLimit') + '"/>';
+            html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
             html += '</div>';
-            html += '<br/>';
         }
 
         //html += '</div>';
@@ -312,7 +294,8 @@
             renderForm({
                 elem: dlg.querySelector('.formFields'),
                 dialogOptions: dialogOptions,
-                dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
+                dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery),
+                isLocalSync: options.isLocalSync
             });
 
             return promise.then(function () {
