@@ -1079,7 +1079,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
-                footerCssClass = options.cardLayout ? 'cardFooter' : 'cardFooter transparent';
+                footerCssClass = options.cardLayout ? 'cardFooter visualCardBox-cardFooter' : 'cardFooter transparent';
                 outerCardFooter = getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, true);
             }
 

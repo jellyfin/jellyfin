@@ -93,7 +93,7 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
 </div>\
 </div>\
 </div>\
-<div class="cardFooter">\
+<div class="cardFooter visualCardBox-cardFooter">\
 ' + nameHtml + '\
 </div>\
 </div>\

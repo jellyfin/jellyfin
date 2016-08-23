@@ -203,7 +203,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="cardFooter cardFooter-visual">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
         html += '<div class="cardText cardTextCentered">' + result.Name + '</div>';
 
         html += '<div class="cardText cardText-secondary cardTextCentered">';

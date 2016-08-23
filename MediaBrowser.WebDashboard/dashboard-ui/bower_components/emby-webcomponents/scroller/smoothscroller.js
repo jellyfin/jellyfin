@@ -415,7 +415,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 fill: 'both'
             };
 
-            if (!animation.immediate || browser.animate) {
+            if (browser.animate) {
                 animationConfig.easing = 'ease-out';
             }
 

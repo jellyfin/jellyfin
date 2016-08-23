@@ -162,7 +162,7 @@
             html += '</a>';
             html += '</div>';
 
-            html += '<div class="cardFooter">';
+            html += '<div class="cardFooter visualCardBox-cardFooter">';
             html += '<div class="cardText">' + user.Name + '</div>';
 
             html += '<div class="cardText cardText-secondary">';

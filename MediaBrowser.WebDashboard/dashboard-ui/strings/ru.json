@@ -1,4 +1,6 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
     "LabelExit": "\u0412\u044b\u0445\u043e\u0434",
     "LabelVisitCommunity": "\u041f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0435 \u0421\u043e\u043e\u0431\u0449\u0435\u0441\u0442\u0432\u0430",
     "LabelGithub": "GitHub",

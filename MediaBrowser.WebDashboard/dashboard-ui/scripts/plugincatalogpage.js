@@ -217,7 +217,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         html += "<div class='cardText'>";
         html += plugin.name;

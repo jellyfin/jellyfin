@@ -206,11 +206,11 @@
     padding: .5em .3em;
 }
 
-.visualCardBox .cardScalable, .visualCardBox .cardFooter {
+.visualCardBox .cardScalable, .visualCardBox-cardFooter {
     background-color: #222326;
 }
 
-.visualCardBox .cardFooter {
+.visualCardBox-cardFooter {
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
