@@ -164,7 +164,7 @@
             html += '</select>';
             if (!targets.length) {
                 html += '<div class="fieldDescription">' + globalize.translate('sharedcomponents#LabelSyncNoTargetsHelp') + '</div>';
-                html += '<div class="fieldDescription"><a class="lnkHelp" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + globalize.translate('sharedcomponents#LearnMore') + '</a></div>';
+                html += '<div class="fieldDescription"><a class="lnkLearnMore" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">' + globalize.translate('sharedcomponents#LearnMore') + '</a></div>';
             }
             html += '</div>';
         }
@@ -247,9 +247,9 @@
             }));
         }
 
-        var lnkHelp = elem.querySelector('.lnkHelp');
-        if (lnkHelp) {
-            lnkHelp.addEventListener('click', onHelpLinkClick);
+        var lnkLearnMore = elem.querySelector('.lnkLearnMore');
+        if (lnkLearnMore) {
+            lnkLearnMore.addEventListener('click', onHelpLinkClick);
         }
 
         focusManager.autoFocus(elem);
@@ -312,7 +312,7 @@
             html += globalize.translate('sharedcomponents#Sync');
             html += '</div>';
 
-            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + globalize.translate('sharedcomponents#ButtonHelp') + '</span></button></a>';
+            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink lnkHelp" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + globalize.translate('sharedcomponents#Help') + '</span></button></a>';
 
             html += '</div>';
 
@@ -332,8 +332,10 @@
             html += '</div>';
             html += '</div>';
 
-
             dlg.innerHTML = html;
+
+            dlg.querySelector('.lnkHelp').addEventListener('click', onHelpLinkClick);
+
             document.body.appendChild(dlg);
             var submitted = false;
 
