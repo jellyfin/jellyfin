@@ -922,6 +922,7 @@ var Dashboard = {
                 }
 
                 profile.MaxStreamingBitrate = bitrateSetting;
+                profile.MaxStaticMusicBitrate = appSettings.maxStaticMusicBitrate();
 
                 resolve(profile);
             });

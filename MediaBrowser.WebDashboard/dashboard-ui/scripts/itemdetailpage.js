@@ -2057,7 +2057,8 @@
             if (this.checked) {
                 require(['syncDialog'], function (syncDialog) {
                     syncDialog.showMenu({
-                        items: [currentItem]
+                        items: [currentItem],
+                        isLocalSync: true
                     }).then(function () {
                         reload(view, params);
                     }, resetSyncStatus);

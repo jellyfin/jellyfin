@@ -193,8 +193,6 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "CopyTimestamps", Description = "Whether or not to copy timestamps when transcoding with an offset. Defaults to false.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
 
-        public bool ForceLiveStream { get; set; }
-
         public bool EnableSubtitlesInManifest { get; set; }
 
         public VideoStreamRequest()

@@ -358,7 +358,8 @@
                                             return {
                                                 Id: i
                                             };
-                                        })
+                                        }),
+                                        isLocalSync: true
                                     });
                                 });
                                 hideSelections();

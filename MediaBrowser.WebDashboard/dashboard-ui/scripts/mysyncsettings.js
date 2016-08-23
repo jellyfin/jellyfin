@@ -1,45 +1,26 @@
-﻿define(['appSettings', 'apphost'], function (appSettings, appHost) {
+﻿define(['appSettings', 'apphost', 'emby-checkbox', 'emby-select', 'emby-input'], function (appSettings, appHost) {
 
     function loadForm(page, user) {
 
         page.querySelector('#txtSyncPath').value = appSettings.syncPath() || '';
         page.querySelector('#chkWifi').checked = appSettings.syncOnlyOnWifi();
-
-        Dashboard.hideLoadingMsg();
+        page.querySelector('.selectAudioBitrate').value = appSettings.maxStaticMusicBitrate() || '';
     }
 
-    function saveUser(page, user) {
+    function saveUser(page) {
 
         var syncPath = page.querySelector('#txtSyncPath').value;
 
         appSettings.syncPath(syncPath);
         appSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
-
-        Dashboard.hideLoadingMsg();
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('SettingsSaved'));
-        });
-
-        if (syncPath) {
-            if (window.MainActivity) {
-                MainActivity.authorizeStorage();
-            }
-        }
+        appSettings.maxStaticMusicBitrate(page.querySelector('.selectAudioBitrate').value || null);
     }
 
     return function (view, params) {
 
         view.querySelector('form').addEventListener('submit', function (e) {
 
-            Dashboard.showLoadingMsg();
-
-            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
-
-            ApiClient.getUser(userId).then(function (user) {
-
-                saveUser(view, user);
-
-            });
+            saveUser(view);
 
             // Disable default form submission
             e.preventDefault();
@@ -61,8 +42,6 @@
         view.addEventListener('viewshow', function () {
             var page = this;
 
-            Dashboard.showLoadingMsg();
-
             var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
             ApiClient.getUser(userId).then(function (user) {
@@ -75,6 +54,11 @@
             } else {
                 page.querySelector('.fldSyncPath').classList.add('hide');
             }
+        });
+
+        view.addEventListener('viewbeforehide', function () {
+
+            saveUser(this);
         });
     };
 

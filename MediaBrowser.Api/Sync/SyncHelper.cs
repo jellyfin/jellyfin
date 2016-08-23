@@ -24,6 +24,19 @@ namespace MediaBrowser.Api.Sync
                         }
                         break;
                     }
+                    if (item.IsAudio)
+                    {
+                        options.Add(SyncJobOption.Quality);
+                        options.Add(SyncJobOption.Profile);
+                        break;
+                    }
+                    if (item.IsMusicGenre || item.IsArtist|| item.IsType("musicalbum"))
+                    {
+                        options.Add(SyncJobOption.Quality);
+                        options.Add(SyncJobOption.Profile);
+                        options.Add(SyncJobOption.ItemLimit);
+                        break;
+                    }
                     if (item.IsFolderItem && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
                     {
                         options.Add(SyncJobOption.Quality);

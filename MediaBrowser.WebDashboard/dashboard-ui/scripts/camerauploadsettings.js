@@ -16,7 +16,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function saveUser(page, user) {
+    function saveUser(page) {
 
         var chkUploadServer = page.querySelectorAll('.chkUploadServer');
         var cameraUploadServers = [];
@@ -47,13 +47,7 @@
 
             Dashboard.showLoadingMsg();
 
-            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
-
-            ApiClient.getUser(userId).then(function (user) {
-
-                saveUser(view, user);
-
-            });
+            saveUser(view);
 
             // Disable default form submission
             e.preventDefault();
@@ -71,6 +65,11 @@
 
                 loadForm(page, user);
             });
+        });
+
+        view.addEventListener('viewbeforehide', function () {
+
+            saveUser(this);
         });
     };
 
