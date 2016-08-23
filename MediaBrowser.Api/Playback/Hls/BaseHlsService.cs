@@ -281,11 +281,6 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
 
-            if (state.VideoRequest.ForceLiveStream)
-            {
-                return true;
-            }
-
             return isLiveStream;
         }
     }

@@ -1590,13 +1590,6 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 25)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.ForceLiveStream = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
-                }
-                else if (i == 26)
-                {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
                         SubtitleDeliveryMethod method;
@@ -1606,18 +1599,18 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
-                else if (i == 27)
+                else if (i == 26)
                 {
                     request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 28)
+                else if (i == 27)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
-                else if (i == 29)
+                else if (i == 28)
                 {
                     request.Tag = val;
                 }
@@ -2218,7 +2211,6 @@ namespace MediaBrowser.Api.Playback
                     if (state.VideoRequest != null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
-                        state.VideoRequest.ForceLiveStream = transcodingProfile.ForceLiveStream;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
                     }
                 }
