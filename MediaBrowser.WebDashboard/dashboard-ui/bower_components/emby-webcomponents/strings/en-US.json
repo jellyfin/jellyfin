@@ -254,5 +254,21 @@
   "ServerNameIsShuttingDown": "Emby Server - {0} is shutting down.",
   "HeaderDeleteItems": "Delete Items",
   "ConfirmDeleteItems": "Deleting these items will delete them from both the file system and your media library. Are you sure you wish to continue?",
-  "PleaseRestartServerName": "Please restart Emby Server - {0}."
+  "PleaseRestartServerName": "Please restart Emby Server - {0}.",
+  "SyncJobCreated": "Sync job created.",
+  "LabelSyncTo": "Sync to:",
+  "LabelSyncJobName": "Sync job name:",
+  "LabelQuality": "Quality:",
+  "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support sync.",
+  "DownloadScheduled": "Download scheduled",
+  "LearnMore": "Learn more",
+  "LabelProfile": "Profile:",
+  "LabelBitrateMbps": "Bitrate (Mbps):",
+  "SyncUnwatchedVideosOnly": "Sync unwatched videos only",
+  "SyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched.",
+  "AutomaticallySyncNewContent": "Automatically sync new content",
+  "AutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
+  "LabelItemLimit": "Item limit:",
+  "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
+  "PleaseSelectDeviceToSyncTo": "Please select a device to sync to."
 }

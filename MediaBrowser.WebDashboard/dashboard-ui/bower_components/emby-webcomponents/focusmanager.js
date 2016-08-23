@@ -262,6 +262,11 @@ define(['dom'], function (dom) {
 
             var elementRect = getViewportBoundingClientRect(curr, windowData);
 
+            // not currently visible
+            if (!elementRect.width && !elementRect.height) {
+                continue;
+            }
+
             switch (direction) {
 
                 case 0:
