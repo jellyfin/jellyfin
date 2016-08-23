@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxStaticBitrate { get; set; }
 
         public int? MusicStreamingTranscodingBitrate { get; set; }
-        public int? MusicSyncBitrate { get; set; }
+        public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
         /// Controls the content of the X_DLNADOC element in the urn:schemas-dlna-org:device-1-0 namespace.
@@ -115,7 +115,6 @@ namespace MediaBrowser.Model.Dlna
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
             MusicStreamingTranscodingBitrate = 128000;
-            MusicSyncBitrate = 128000;
         }
 
         public List<string> GetSupportedMediaTypes()
