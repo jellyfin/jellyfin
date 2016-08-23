@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
         public int ThrottleDelaySeconds { get; set; }
         public string HardwareAccelerationType { get; set; }
         public string EncoderAppPath { get; set; }
+        public string VaapiDevice { get; set; }
 
         public EncodingOptions()
         {
