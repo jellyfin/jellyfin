@@ -1,4 +1,6 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
     "LabelExit": "Izhod",
     "LabelVisitCommunity": "Obiscite Skupnost",
     "LabelGithub": "Github",
@@ -2108,7 +2110,7 @@
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Kvaliteta:",
     "OptionAutomaticallySyncNewContent": "Samodejno sinhroniziraj nove vsebine",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
     "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched.",
     "LabelItemLimit": "Item limit:",

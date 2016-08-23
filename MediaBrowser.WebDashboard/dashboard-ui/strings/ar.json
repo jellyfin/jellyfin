@@ -1,4 +1,6 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
     "LabelExit": "\u062e\u0631\u0648\u062c",
     "LabelVisitCommunity": "\u0632\u064a\u0627\u0631\u0629 \u0627\u0644\u0645\u062c\u062a\u0645\u0639",
     "LabelGithub": "\u062c\u064a\u062a \u0647\u0628",
@@ -2108,7 +2110,7 @@
     "LabelSyncJobName": "Sync job name:",
     "LabelQuality": "Quality:",
     "OptionAutomaticallySyncNewContent": "Automatically sync new content",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Sync unwatched videos only",
     "OptionSyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched.",
     "LabelItemLimit": "Item limit:",

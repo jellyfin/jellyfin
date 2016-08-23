@@ -1,4 +1,6 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
     "LabelExit": "Afslut",
     "LabelVisitCommunity": "Bes\u00f8g F\u00e6lleskab",
     "LabelGithub": "Github",
@@ -2108,7 +2110,7 @@
     "LabelSyncJobName": "Navn til synkroniserings job:",
     "LabelQuality": "Kvalitet:",
     "OptionAutomaticallySyncNewContent": "Synkroniser automatisk nyt indhold",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Synkroniser kun usete videoer",
     "OptionSyncUnwatchedVideosOnlyHelp": "Kun usete videoer vil blive synkroniseret, og videoer vil blive fjernet fra enheden n\u00e5r de er blevet set.",
     "LabelItemLimit": "Maks. filer:",
