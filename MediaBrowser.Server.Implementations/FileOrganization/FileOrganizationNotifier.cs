@@ -33,37 +33,37 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _organizationService.ItemUpdated += _organizationService_ItemUpdated;
             _organizationService.LogReset += _organizationService_LogReset;
 
-            _taskManager.TaskCompleted += _taskManager_TaskCompleted;
+            //_taskManager.TaskCompleted += _taskManager_TaskCompleted;
         }
 
         private void _organizationService_LogReset(object sender, EventArgs e)
         {
-            _sessionManager.SendMessageToAdminSessions("AutoOrganizeUpdate", (FileOrganizationResult)null, CancellationToken.None);
+            _sessionManager.SendMessageToAdminSessions("AutoOrganize_LogReset", (FileOrganizationResult)null, CancellationToken.None);
         }
 
         private void _organizationService_ItemUpdated(object sender, GenericEventArgs<FileOrganizationResult> e)
         {
-            _sessionManager.SendMessageToAdminSessions("AutoOrganizeUpdate", e.Argument, CancellationToken.None);
+            _sessionManager.SendMessageToAdminSessions("AutoOrganize_ItemUpdated", e.Argument, CancellationToken.None);
         }
 
         private void _organizationService_ItemRemoved(object sender, GenericEventArgs<FileOrganizationResult> e)
         {
-            _sessionManager.SendMessageToAdminSessions("AutoOrganizeUpdate", (FileOrganizationResult)null, CancellationToken.None);
+            _sessionManager.SendMessageToAdminSessions("AutoOrganize_ItemRemoved", e.Argument, CancellationToken.None);
         }
 
         private void _organizationService_ItemAdded(object sender, GenericEventArgs<FileOrganizationResult> e)
         {
-            _sessionManager.SendMessageToAdminSessions("AutoOrganizeUpdate", (FileOrganizationResult)null, CancellationToken.None);
+            _sessionManager.SendMessageToAdminSessions("AutoOrganize_ItemAdded", e.Argument, CancellationToken.None);
         }
 
-        private void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
-        {
-            var taskWithKey = e.Task.ScheduledTask as IHasKey;
-            if (taskWithKey != null && taskWithKey.Key == "AutoOrganize")
-            {
-                _sessionManager.SendMessageToAdminSessions("AutoOrganizeUpdate", (FileOrganizationResult)null, CancellationToken.None);
-            }
-        }
+        //private void _taskManager_TaskCompleted(object sender, TaskCompletionEventArgs e)
+        //{
+        //    var taskWithKey = e.Task.ScheduledTask as IHasKey;
+        //    if (taskWithKey != null && taskWithKey.Key == "AutoOrganize")
+        //    {
+        //        _sessionManager.SendMessageToAdminSessions("AutoOrganize_TaskCompleted", (FileOrganizationResult)null, CancellationToken.None);
+        //    }
+        //}
 
         public void Dispose()
         {
@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _organizationService.ItemUpdated -= _organizationService_ItemUpdated;
             _organizationService.LogReset -= _organizationService_LogReset;
 
-            _taskManager.TaskCompleted -= _taskManager_TaskCompleted;
+            //_taskManager.TaskCompleted -= _taskManager_TaskCompleted;
         }
 
 
