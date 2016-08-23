@@ -39,6 +39,7 @@ namespace MediaBrowser.Model.Entities
         TvRage = 15,
         AudioDbArtist = 16,
         AudioDbAlbum = 17,
-        MusicBrainzTrack = 18
+        MusicBrainzTrack = 18,
+        TvMaze = 19
     }
 }

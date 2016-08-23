@@ -724,6 +724,15 @@ namespace MediaBrowser.Controller.Providers
                         }
                         break;
                     }
+                case "TvMazeId":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.TvMaze, id);
+                        }
+                        break;
+                    }
                 case "AudioDbArtistId":
                     {
                         var id = reader.ReadElementContentAsString();
