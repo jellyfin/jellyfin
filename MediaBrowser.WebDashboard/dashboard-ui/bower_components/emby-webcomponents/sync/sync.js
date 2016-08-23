@@ -252,7 +252,10 @@
             lnkLearnMore.addEventListener('click', onHelpLinkClick);
         }
 
-        focusManager.autoFocus(elem);
+        // This isn't ideal, but allow time for the change handlers above to run
+        setTimeout(function() {
+            focusManager.autoFocus(elem);
+        }, 100);
     }
 
     function showSyncMenu(options) {

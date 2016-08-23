@@ -620,7 +620,7 @@ progress {
 }
 
 
-.ui-body-a .visualCardBox .cardScalable, .ui-body-a .visualCardBox .cardFooter {
+.ui-body-a .visualCardBox .cardScalable, .ui-body-a .visualCardBox-cardFooter {
     background-color: #fff;
 }
 

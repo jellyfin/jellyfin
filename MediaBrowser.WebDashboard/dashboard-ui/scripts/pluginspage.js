@@ -81,7 +81,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         html += '<div style="text-align:right; float:right;padding-top:5px;">';
         html += '<button type="button" is="paper-icon-button-light" class="btnCardMenu autoSize"><i class="md-icon">more_vert</i></button>';

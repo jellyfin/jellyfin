@@ -135,7 +135,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         html += '<div style="text-align:right; float:right;padding:0;">';
         html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu autoSize"><i class="md-icon">more_vert</i></button>';
@@ -254,7 +254,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
         html += '<button type="button" is="paper-icon-button-light" class="btnUserMenu"><i class="md-icon">more_vert</i></button>';

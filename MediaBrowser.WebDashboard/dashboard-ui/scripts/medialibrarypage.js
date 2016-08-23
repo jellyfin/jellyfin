@@ -342,7 +342,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         if (virtualFolder.showMenu !== false) {
             var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';

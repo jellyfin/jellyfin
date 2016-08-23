@@ -24,7 +24,7 @@ define(['dom'], function (dom) {
         }
 
         if (defaultToFirst !== false) {
-            element = getFocusableElements(view)[0];
+            element = getFocusableElements(view, 1)[0];
 
             if (element) {
                 focus(element);
@@ -117,7 +117,7 @@ define(['dom'], function (dom) {
         return scopes[0] || document.body;
     }
 
-    function getFocusableElements(parent) {
+    function getFocusableElements(parent, limit) {
         var elems = (parent || getDefaultScope()).querySelectorAll(focusableQuery);
         var focusableElements = [];
 
@@ -127,6 +127,10 @@ define(['dom'], function (dom) {
 
             if (isCurrentlyFocusableInternal(elem)) {
                 focusableElements.push(elem);
+
+                if (limit && focusableElements.length >= limit) {
+                    break;
+                }
             }
         }
 
