@@ -1,4 +1,4 @@
-﻿define(['apphost', 'globalize', 'connectionManager', 'layoutManager', 'shell', 'focusManager', 'scrollHelper', 'paper-icon-button-light', 'formDialogStyle'], function (appHost, globalize, connectionManager, layoutManager, shell, focusManager, scrollHelper) {
+﻿define(['apphost', 'globalize', 'connectionManager', 'layoutManager', 'shell', 'focusManager', 'scrollHelper', 'appSettings', 'paper-icon-button-light', 'formDialogStyle'], function (appHost, globalize, connectionManager, layoutManager, shell, focusManager, scrollHelper, appSettings) {
 
     var currentDialogOptions;
 
@@ -64,6 +64,56 @@
         });
 
         return true;
+    }
+
+    function submitQuickSyncJob(apiClient, userId, targetId, syncOptions) {
+
+        if (!userId) {
+            throw new Error('userId cannot be null');
+        }
+
+        if (!syncOptions) {
+            throw new Error('syncOptions cannot be null');
+        }
+
+        if (!targetId) {
+            throw new Error('targetId cannot be null');
+        }
+
+        var options = {
+
+            userId: userId,
+            TargetId: targetId,
+
+            ParentId: syncOptions.ParentId,
+            Category: syncOptions.Category,
+            Quality: syncOptions.Quality,
+            Bitrate: syncOptions.Bitrate
+        };
+
+        if (syncOptions.items && syncOptions.items.length) {
+            options.ItemIds = (syncOptions.items || []).map(function (i) {
+                return i.Id || i;
+            }).join(',');
+        }
+
+        return apiClient.ajax({
+
+            type: "POST",
+            url: apiClient.getUrl("Sync/Jobs"),
+            data: JSON.stringify(options),
+            contentType: "application/json",
+            dataType: 'json'
+
+        }).then(function () {
+
+            require(['toast'], function (toast) {
+
+                var msg = targetId == apiClient.deviceId() ? globalize.translate('sharedcomponents#DownloadScheduled') : globalize.translate('sharedcomponents#SyncJobCreated');
+
+                toast(msg);
+            });
+        });
     }
 
     function setJobValues(job, form) {
@@ -253,7 +303,7 @@
         }
 
         // This isn't ideal, but allow time for the change handlers above to run
-        setTimeout(function() {
+        setTimeout(function () {
             focusManager.autoFocus(elem);
         }, 100);
     }
@@ -272,11 +322,43 @@
         });
     }
 
+    function enableAutoSync(options) {
+
+        if (!options.isLocalSync) {
+            return false;
+        }
+
+        var firstItem = (options.items || [])[0] || {};
+
+        if (firstItem.Type == 'Audio') {
+            return true;
+        }
+        if (firstItem.Type == 'MusicAlbum') {
+            return true;
+        }
+        if (firstItem.Type == 'MusicArtist') {
+            return true;
+        }
+        if (firstItem.Type == 'MusicGenre') {
+            return true;
+        }
+
+        return false;
+    }
+
     function showSyncMenuInternal(dialogHelper, options) {
 
         var apiClient = connectionManager.getApiClient(options.serverId);
-
         var userId = apiClient.getCurrentUserId();
+
+        if (enableAutoSync(options)) {
+
+            return submitQuickSyncJob(apiClient, userId, apiClient.deviceId(), {
+                items: options.items,
+                Quality: 'custom',
+                Bitrate: appSettings.maxStaticMusicBitrate()
+            });
+        }
 
         var dialogOptionsQuery = {
             UserId: userId,

@@ -425,10 +425,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({
-                                items: [
-                                {
-                                    Id: itemId
-                                }],
+                                items: [item],
                                 serverId: serverId
                             });
                         });
@@ -439,10 +436,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({
-                                items: [
-                                {
-                                    Id: itemId
-                                }],
+                                items: [item],
                                 isLocalSync: true,
                                 serverId: serverId
                             });
