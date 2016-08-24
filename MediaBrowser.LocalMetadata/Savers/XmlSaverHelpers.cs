@@ -553,6 +553,13 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<TVRageId>" + SecurityElement.Escape(externalId) + "</TVRageId>");
             }
 
+            externalId = item.GetProviderId(MetadataProviders.TvMaze);
+
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                builder.Append("<TvMazeId>" + SecurityElement.Escape(externalId) + "</TvMazeId>");
+            }
+
             var hasTagline = item as IHasTaglines;
             if (hasTagline != null)
             {
