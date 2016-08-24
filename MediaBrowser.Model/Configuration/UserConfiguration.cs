@@ -27,8 +27,6 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayMissingEpisodes { get; set; }
         public bool DisplayUnairedEpisodes { get; set; }
 
-        public bool GroupMoviesIntoBoxSets { get; set; }
-
         public string[] ExcludeFoldersFromGrouping { get; set; }
         public string[] GroupedFolders { get; set; }
 
