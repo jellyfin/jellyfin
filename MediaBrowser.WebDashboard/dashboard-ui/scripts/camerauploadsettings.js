@@ -30,15 +30,6 @@
         appSettings.cameraUploadServers(cameraUploadServers);
 
         Dashboard.hideLoadingMsg();
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('SettingsSaved'));
-        });
-
-        if (cameraUploadServers.length) {
-            if (window.MainActivity) {
-                MainActivity.authorizeStorage();
-            }
-        }
     }
 
     return function (view, params) {
@@ -59,7 +50,7 @@
 
             Dashboard.showLoadingMsg();
 
-            var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+            var userId = params.userId || Dashboard.getCurrentUserId();
 
             ApiClient.getUser(userId).then(function (user) {
 

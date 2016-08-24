@@ -86,7 +86,7 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
         var html = '\
 <button type="button" data-isfolder="' + person.IsFolder + '" data-type="' + person.Type + '" data-action="link" data-id="' + person.Id + '" data-serverid="' + serverId + '" raised class="' + className + '"> \
 <div class="' + cardBoxCssClass + '">\
-<div class="cardScalable">\
+<div class="cardScalable visualCardBox-cardScalable">\
 <div class="cardPadder-portrait"></div>\
 <div class="cardContent">\
 ' + cardImageContainer + '\

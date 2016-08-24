@@ -94,7 +94,7 @@
         html += "<div data-userid='" + user.Id + "' class='" + cssClass + "'>";
 
         html += '<div class="cardBox visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<div class="cardScalable visualCardBox-cardScalable">';
 
         html += '<div class="cardPadder cardPadder-square"></div>';
 
@@ -235,7 +235,7 @@
         html += "<div data-id='" + user.Id + "' class='" + cssClass + "'>";
 
         html += '<div class="cardBox cardBox-bottompadded visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<div class="cardScalable visualCardBox-cardScalable">';
 
         html += '<div class="cardPadder cardPadder-square"></div>';
 

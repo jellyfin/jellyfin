@@ -90,9 +90,9 @@
         });
     }
 
-    function loadPage(page) {
+    function loadPage(page, params) {
 
-        var mode = getParameterByName('mode') || 'auto';
+        var mode = params.mode || 'auto';
 
         if (mode == 'auto') {
 
@@ -295,11 +295,11 @@
         });
 
         view.querySelector('.btnCancelSignup').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnCancelManualServer').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnWelcomeNext').addEventListener('click', function () {
@@ -336,7 +336,7 @@
         });
 
         view.addEventListener('viewshow', function () {
-            loadPage(view);
+            loadPage(view, params);
         });
     };
 });

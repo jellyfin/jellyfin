@@ -134,5 +134,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         Task UpdateEncoderPath(string path, string pathType);
         bool SupportsEncoder(string encoder);
+        bool IsDefaultEncoderPath { get; }
     }
 }
