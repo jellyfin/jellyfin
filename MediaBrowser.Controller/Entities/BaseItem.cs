@@ -281,6 +281,20 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public Task UpdateIsOffline(bool newValue)
+        {
+            var item = this;
+
+            if (item.IsOffline != newValue)
+            {
+                item.IsOffline = newValue;
+                // this is creating too many repeated db updates
+                //return item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+            }
+
+            return Task.FromResult(true);
+        }
+
         /// <summary>
         /// Gets or sets the type of the location.
         /// </summary>
@@ -290,10 +304,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (IsOffline)
-                {
-                    return LocationType.Offline;
-                }
+                //if (IsOffline)
+                //{
+                //    return LocationType.Offline;
+                //}
 
                 if (string.IsNullOrWhiteSpace(Path))
                 {
