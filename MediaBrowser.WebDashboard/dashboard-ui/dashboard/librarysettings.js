@@ -10,8 +10,6 @@
 
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
-        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor);
-
         $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden);
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
@@ -91,8 +89,6 @@
 
             config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
-            config.EnableLibraryMonitor = $('#selectEnableRealtimeMonitor', form).val();
-
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
@@ -168,15 +164,6 @@
         });
 
         $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
-
-        ApiClient.getSystemInfo().then(function (systemInfo) {
-
-            if (systemInfo.SupportsLibraryMonitor) {
-                view.querySelector('.fldLibraryMonitor').classList.remove('hide');
-            } else {
-                view.querySelector('.fldLibraryMonitor').classList.add('hide');
-            }
-        });
 
         view.addEventListener('viewshow', function () {
             LibraryMenu.setTabs('librarysetup', 3, getTabs);
