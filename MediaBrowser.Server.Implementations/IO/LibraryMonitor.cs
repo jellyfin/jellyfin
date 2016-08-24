@@ -172,27 +172,29 @@ namespace MediaBrowser.Server.Implementations.IO
             }
         }
 
-        public void Start()
+        private bool IsLibraryMonitorEnabaled(BaseItem item)
         {
-            if (EnableLibraryMonitor)
+            var options = LibraryManager.GetLibraryOptions(item);
+
+            if (options != null && options.SchemaVersion >= 1)
             {
-                StartInternal();
+                return options.EnableRealtimeMonitor;
             }
+
+            return EnableLibraryMonitor;
         }
 
-        /// <summary>
-        /// Starts this instance.
-        /// </summary>
-        private void StartInternal()
+        public void Start()
         {
             LibraryManager.ItemAdded += LibraryManager_ItemAdded;
             LibraryManager.ItemRemoved += LibraryManager_ItemRemoved;
 
-            var pathsToWatch = new List<string> { LibraryManager.RootFolder.Path };
+            var pathsToWatch = new List<string> { };
 
             var paths = LibraryManager
                 .RootFolder
                 .Children
+                .Where(IsLibraryMonitorEnabaled)
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -210,6 +212,14 @@ namespace MediaBrowser.Server.Implementations.IO
             foreach (var path in pathsToWatch)
             {
                 StartWatchingPath(path);
+            }
+        }
+
+        private void StartWatching(BaseItem item)
+        {
+            if (IsLibraryMonitorEnabaled(item))
+            {
+                StartWatchingPath(item.Path);
             }
         }
 
@@ -235,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             if (e.Item.GetParent() is AggregateFolder)
             {
-                StartWatchingPath(e.Item.Path);
+                StartWatching(e.Item);
             }
         }
 
@@ -382,14 +392,6 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
             DisposeWatcher(dw);
-
-            if (ConfigurationManager.Configuration.EnableLibraryMonitor == AutoOnOff.Auto)
-            {
-                Logger.Info("Disabling realtime monitor to prevent future instability");
-
-                ConfigurationManager.Configuration.EnableLibraryMonitor = AutoOnOff.Disabled;
-                Stop();
-            }
         }
 
         /// <summary>
@@ -420,8 +422,8 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var filename = Path.GetFileName(path);
 
-            var monitorPath = !string.IsNullOrEmpty(filename) && 
-                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) && 
+            var monitorPath = !string.IsNullOrEmpty(filename) &&
+                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
                 !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
             // Ignore certain files
