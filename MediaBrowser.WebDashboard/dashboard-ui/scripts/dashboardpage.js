@@ -318,7 +318,7 @@
                 html += '<div class="' + className + '" id="' + rowId + '">';
 
                 html += '<div class="cardBox visualCardBox">';
-                html += '<div class="cardScalable">';
+                html += '<div class="cardScalable visualCardBox-cardScalable">';
 
                 html += '<div class="cardPadder cardPadder-backdrop"></div>';
                 html += '<div class="cardContent">';

@@ -36,7 +36,7 @@
         justify-content: center;
     }
 
-    .vertical-wrap .card {
+    .vertical-wrap > .card {
         contain: layout style;
     }
 
@@ -135,17 +135,16 @@
     position: relative;
     background-clip: content-box !important;
     color: #fff;
+    /* This is only needed for scalable cards */
+    height: 100%;
 }
 
 @media all and (min-width: 600px) {
 
     .cardImageContainer {
+        /* Should be 0 with visualCardBox, but not really noticeable */
         border-radius: 2px;
     }
-}
-
-.visualCardBox .cardImageContainer {
-    border-radius: 0;
 }
 
 .chapterCardImageContainer {
@@ -178,10 +177,6 @@
     display: block;
 }
 
-.scalableCard .cardImageContainer {
-    height: 100%;
-}
-
 .cardImage {
     position: absolute;
     top: 0;
@@ -206,7 +201,7 @@
     padding: .5em .3em;
 }
 
-.visualCardBox .cardScalable, .visualCardBox-cardFooter {
+.visualCardBox-cardScalable, .visualCardBox-cardFooter {
     background-color: #222326;
 }
 

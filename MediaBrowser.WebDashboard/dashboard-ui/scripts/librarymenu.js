@@ -57,12 +57,7 @@
 
     function onBackClick() {
 
-        if (Dashboard.exitOnBack()) {
-            Dashboard.exit();
-        }
-        else {
-            history.back();
-        }
+        Emby.Page.back();
     }
 
     function updateUserInHeader(user) {

@@ -300,7 +300,7 @@
         html += '<div class="card backdropCard scalableCard" style="' + style + '" data-index="' + index + '">';
 
         html += '<div class="cardBox visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<div class="cardScalable visualCardBox-cardScalable">';
 
         html += '<div class="cardPadder cardPadder-backdrop"></div>';
 

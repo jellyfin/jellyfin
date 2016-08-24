@@ -298,7 +298,8 @@ namespace MediaBrowser.Api.Playback
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
             if (state.VideoType == VideoType.VideoFile)
             {
-                var hwType = ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType;
+                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+                var hwType = encodingOptions.HardwareAccelerationType;
 
                 if (string.Equals(hwType, "qsv", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(hwType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
@@ -314,7 +315,7 @@ namespace MediaBrowser.Api.Playback
                 {
                     return GetAvailableEncoder("h264_omx", defaultEncoder);
                 }
-                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(encodingOptions.VaapiDevice))
                 {
                     return GetAvailableEncoder("h264_vaapi", defaultEncoder);
                 }
@@ -987,6 +988,8 @@ namespace MediaBrowser.Api.Playback
                     arg = "-hwaccel vaapi -hwaccel_output_format vaapi -vaapi_device " + encodingOptions.VaapiDevice + " " + arg;
                 }
             }
+
+            arg += string.Format(" -ss {0}", MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(1).Ticks)); 
 
             return arg.Trim();
         }
@@ -2289,7 +2292,7 @@ namespace MediaBrowser.Api.Playback
                 return Task.FromResult(true);
             }
 
-            if (!string.Equals(MediaEncoder.EncoderLocationType, "Default", StringComparison.OrdinalIgnoreCase))
+            if (!MediaEncoder.IsDefaultEncoderPath)
             {
                 return Task.FromResult(true);
             }

@@ -716,16 +716,6 @@ var Dashboard = {
         });
     },
 
-    exitOnBack: function () {
-
-        var currentView = ViewManager.currentView();
-        return !currentView || currentView.id == 'indexPage';
-    },
-
-    exit: function () {
-        Dashboard.logout();
-    },
-
     getDeviceProfile: function (maxHeight) {
 
         return new Promise(function (resolve, reject) {
@@ -2708,8 +2698,6 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova()) {
             deps.push('registrationservices');
-
-            deps.push('cordova/back');
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');

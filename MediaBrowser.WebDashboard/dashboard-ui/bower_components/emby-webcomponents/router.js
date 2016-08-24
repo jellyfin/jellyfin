@@ -372,6 +372,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
     function handleBackToDefault() {
 
+        if (!appHost.supports('exitmenu') && appHost.supports('exit')) {
+            appHost.exit();
+            return;
+        }
+
         isDummyBackToHome = true;
         skinManager.loadUserSkin();
 
