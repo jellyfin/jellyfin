@@ -18,6 +18,7 @@ namespace MediaBrowser.Model.Configuration
             EnableThrottling = true;
             ThrottleDelaySeconds = 180;
             EncodingThreadCount = -1;
+            VaapiDevice = "/dev/dri/card0";
         }
     }
 }
