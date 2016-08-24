@@ -123,20 +123,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     return "System";
                 }
 
-                if (IsDefaultPath(FFMpegPath))
-                {
-                    return "Default";
-                }
-
                 return "Custom";
             }
         }
 
-        private bool IsDefaultPath(string path)
+        public bool IsDefaultEncoderPath
         {
-            var parentPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg", "20160410");
+            get
+            {
+                var path = FFMpegPath;
 
-            return FileSystem.ContainsSubPath(parentPath, path);
+                var parentPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg", "20160410");
+
+                return FileSystem.ContainsSubPath(parentPath, path);
+            }
         }
 
         private bool IsSystemInstalledPath(string path)

@@ -586,7 +586,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     return GetAvailableEncoder(mediaEncoder, "h264_omx", defaultEncoder);
                 }
-                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(options.VaapiDevice))
                 {
                     return GetAvailableEncoder(mediaEncoder, "h264_vaapi", defaultEncoder);
                 }
