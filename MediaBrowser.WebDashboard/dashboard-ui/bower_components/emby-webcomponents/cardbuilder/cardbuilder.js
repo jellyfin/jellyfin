@@ -702,7 +702,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
-        function getCardFooterText(item, options, showTitle, forceName, imgUrl, footerClass, progressHtml, isOuterFooter) {
+        function getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter) {
 
             var html = '';
 
@@ -737,7 +737,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            if (showTitle) {
+            if (showTitle || forceName) {
 
                 var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
 
@@ -869,7 +869,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            if (showTitle && forceName && lines.length == 1) {
+            if (showTitle && forceName && overlayText && lines.length == 1) {
                 lines = [];
             }
 
@@ -1022,7 +1022,6 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var overlayText = options.overlayText;
 
             if (forceName && !options.cardLayout) {
-                showTitle = imgUrl;
 
                 if (overlayText == null) {
                     overlayText = true;
@@ -1061,7 +1060,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
-                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, false);
+                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1080,7 +1079,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter visualCardBox-cardFooter' : 'cardFooter transparent';
-                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, true);
+                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true);
             }
 
             if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {

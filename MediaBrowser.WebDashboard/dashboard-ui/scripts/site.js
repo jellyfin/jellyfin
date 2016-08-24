@@ -1954,6 +1954,7 @@ var AppInfo = {};
             dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/connectlogin'
         });
 
@@ -2053,6 +2054,7 @@ var AppInfo = {};
             path: '/forgotpassword.html',
             dependencies: ['emby-input', 'emby-button'],
             anonymous: true,
+            startup: true,
             controller: 'scripts/forgotpassword'
         });
 
@@ -2061,6 +2063,7 @@ var AppInfo = {};
             dependencies: ['emby-input', 'emby-button'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/forgotpasswordpin'
         });
 
@@ -2242,6 +2245,7 @@ var AppInfo = {};
             dependencies: ['emby-button', 'humanedate', 'emby-input'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/loginpage'
         });
 
@@ -2471,6 +2475,7 @@ var AppInfo = {};
             dependencies: ['listViewStyle', 'emby-button'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/selectserver'
         });
 
