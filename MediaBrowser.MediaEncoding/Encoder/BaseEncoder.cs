@@ -978,7 +978,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(ih\\,{0})", maxHeightParam));
+                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
                 }
             }
 

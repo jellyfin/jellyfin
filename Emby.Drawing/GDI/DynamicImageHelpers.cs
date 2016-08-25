@@ -34,7 +34,7 @@ namespace Emby.Drawing.GDI
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                    // This causes the image to be blank in OSX
+                    // SourceCopy causes the image to be blank in OSX
                     //graphics.CompositingMode = CompositingMode.SourceCopy;
 
                     for (var row = 0; row < rows; row++)
@@ -83,7 +83,7 @@ namespace Emby.Drawing.GDI
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                    // This causes the image to be blank in OSX
+                    // SourceCopy causes the image to be blank in OSX
                     //graphics.CompositingMode = CompositingMode.SourceCopy;
 
                     for (var row = 0; row < rows; row++)
