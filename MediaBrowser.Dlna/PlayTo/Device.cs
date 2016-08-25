@@ -479,16 +479,16 @@ namespace MediaBrowser.Dlna.PlayTo
                 _successiveStopCount++;
                 _connectFailureCount++;
 
-                if (_successiveStopCount >= maxSuccessiveStopReturns)
-                {
-                    RestartTimerInactive();
-                }
-                if (_connectFailureCount >= maxSuccessiveStopReturns)
+                if (_connectFailureCount >= 3)
                 {
                     if (OnDeviceUnavailable != null)
                     {
                         OnDeviceUnavailable();
                     }
+                }
+                if (_successiveStopCount >= maxSuccessiveStopReturns)
+                {
+                    RestartTimerInactive();
                 }
             }
             catch (Exception ex)

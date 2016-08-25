@@ -706,7 +706,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var html = '';
 
-            var showOtherText = isOuterFooter ? !options.overlayText : options.overlayText;
+            var showOtherText = isOuterFooter ? !overlayText : overlayText;
 
             if (isOuterFooter && options.cardLayout && !layoutManager.tv) {
                 var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
@@ -719,7 +719,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (showOtherText) {
                 var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
-                if (options.showParentTitle && !parentTitleUnderneath) {
+                if ((options.showParentTitle || options.showParentTitleOrTitle) && !parentTitleUnderneath) {
 
                     if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
 
@@ -732,12 +732,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                        var parentTitle = item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
+
+                        if (parentTitle || options.showParentTitle) {
+                            lines.push(parentTitle);
+                        }
                     }
                 }
             }
 
-            if (showTitle || forceName) {
+            if (showTitle || forceName || (options.showParentTitleOrTitle && !lines.length)) {
 
                 var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
 
@@ -834,7 +838,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     lines.push(airTimeText || '');
                 }
 
-                if (item.Type == 'TvChannel') {
+                if (options.showCurrentProgram && item.Type == 'TvChannel') {
 
                     if (item.CurrentProgram) {
                         lines.push(itemHelper.getDisplayName(item.CurrentProgram));
