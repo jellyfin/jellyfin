@@ -41,16 +41,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 var updateLevel = _config.Configuration.SystemUpdateLevel;
 
-                // Go down a level
-                if (updateLevel == PackageVersionClass.Release)
-                {
-                    updateLevel = PackageVersionClass.Beta;
-                }
-                else if (updateLevel == PackageVersionClass.Beta)
-                {
-                    updateLevel = PackageVersionClass.Dev;
-                }
-                else if (updateLevel == PackageVersionClass.Dev)
+                if (updateLevel == PackageVersionClass.Dev)
                 {
                     // It's already dev, there's nothing to check
                     return;
@@ -66,32 +57,42 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         private async Task CheckVersion(Version currentVersion, PackageVersionClass updateLevel, CancellationToken cancellationToken)
         {
-            var result = await new GithubUpdater(_httpClient, _jsonSerializer, TimeSpan.FromMinutes(5))
-                .CheckForUpdateResult("MediaBrowser", "Emby", currentVersion, PackageVersionClass.Beta, _releaseAssetFilename, "MBServer", "Mbserver.zip",
-                    cancellationToken).ConfigureAwait(false);
+            var releases = await new GithubUpdater(_httpClient, _jsonSerializer, TimeSpan.FromMinutes(5))
+                .GetLatestReleases("MediaBrowser", "Emby", _releaseAssetFilename, cancellationToken).ConfigureAwait(false);
 
-            if (result != null && result.IsUpdateAvailable)
+            var newUpdateLevel = updateLevel;
+
+            if (releases.Count >= 2)
             {
-                _config.Configuration.SystemUpdateLevel = updateLevel;
+                var beta = releases[1];
+                Version version;
+                if (Version.TryParse(beta.tag_name, out version))
+                {
+                    if (currentVersion >= version)
+                    {
+                        newUpdateLevel = PackageVersionClass.Beta;
+                    }
+                }
+            }
+
+            if (releases.Count >= 3)
+            {
+                var dev = releases[2];
+                Version version;
+                if (Version.TryParse(dev.tag_name, out version))
+                {
+                    if (currentVersion >= version)
+                    {
+                        newUpdateLevel = PackageVersionClass.Dev;
+                    }
+                }
+            }
+
+            if (newUpdateLevel != updateLevel)
+            {
+                _config.Configuration.SystemUpdateLevel = newUpdateLevel;
                 _config.SaveConfiguration();
-                return;
             }
-
-            // Go down a level
-            if (updateLevel == PackageVersionClass.Release)
-            {
-                updateLevel = PackageVersionClass.Beta;
-            }
-            else if (updateLevel == PackageVersionClass.Beta)
-            {
-                updateLevel = PackageVersionClass.Dev;
-            }
-            else
-            {
-                return;
-            }
-
-            await CheckVersion(currentVersion, updateLevel, cancellationToken).ConfigureAwait(false);
         }
     }
 }
