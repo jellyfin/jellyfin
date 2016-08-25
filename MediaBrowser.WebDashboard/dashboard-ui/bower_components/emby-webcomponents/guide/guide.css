@@ -254,6 +254,10 @@
     height: 4em;
 }
 
+.channelPrograms-tv, .channelHeaderCell-tv {
+    height: 3.2em;
+}
+
 .channelTimeslotHeader {
     border-right-color: transparent;
 }

@@ -106,6 +106,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 LibraryOptions[path] = options;
 
+                options.SchemaVersion = 1;
                 XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
             }
         }

@@ -1,6 +1,6 @@
 {
   "name": "iron-meta",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "keywords": [
     "web-components",
     "polymer"
@@ -22,8 +22,9 @@
     "paper-styles": "polymerelements/paper-styles#^1.0.4",
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
-    "web-component-tester": "*",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "main": "iron-meta.html"
+  "main": "iron-meta.html",
+  "ignore": []
 }

@@ -702,11 +702,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
-        function getCardFooterText(item, options, showTitle, forceName, imgUrl, footerClass, progressHtml, isOuterFooter) {
+        function getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter) {
 
             var html = '';
 
-            var showOtherText = isOuterFooter ? !options.overlayText : options.overlayText;
+            var showOtherText = isOuterFooter ? !overlayText : overlayText;
 
             if (isOuterFooter && options.cardLayout && !layoutManager.tv) {
                 var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
@@ -719,7 +719,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (showOtherText) {
                 var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
-                if (options.showParentTitle && !parentTitleUnderneath) {
+                if ((options.showParentTitle || options.showParentTitleOrTitle) && !parentTitleUnderneath) {
 
                     if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
 
@@ -732,12 +732,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                        var parentTitle = item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
+
+                        if (parentTitle || options.showParentTitle) {
+                            lines.push(parentTitle);
+                        }
                     }
                 }
             }
 
-            if (showTitle) {
+            if (showTitle || forceName || (options.showParentTitleOrTitle && !lines.length)) {
 
                 var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : itemHelper.getDisplayName(item);
 
@@ -834,7 +838,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     lines.push(airTimeText || '');
                 }
 
-                if (item.Type == 'TvChannel') {
+                if (options.showCurrentProgram && item.Type == 'TvChannel') {
 
                     if (item.CurrentProgram) {
                         lines.push(itemHelper.getDisplayName(item.CurrentProgram));
@@ -869,7 +873,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            if (showTitle && forceName && lines.length == 1) {
+            if (showTitle && forceName && overlayText && lines.length == 1) {
                 lines = [];
             }
 
@@ -1022,7 +1026,6 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var overlayText = options.overlayText;
 
             if (forceName && !options.cardLayout) {
-                showTitle = imgUrl;
 
                 if (overlayText == null) {
                     overlayText = true;
@@ -1061,7 +1064,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
-                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, false);
+                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1080,7 +1083,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter visualCardBox-cardFooter' : 'cardFooter transparent';
-                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, imgUrl, footerCssClass, progressHtml, true);
+                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true);
             }
 
             if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {
@@ -1208,9 +1211,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var mediaTypeData = item.MediaType ? (' data-mediatype="' + item.MediaType + '"') : '';
             var collectionTypeData = item.CollectionType ? (' data-collectiontype="' + item.CollectionType + '"') : '';
             var channelIdData = item.ChannelId ? (' data-channelid="' + item.ChannelId + '"') : '';
+            var contextData = options.context ? (' data-context="' + options.context + '"') : '';
 
             return '\
-<' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + ' data-prefix="' + prefix + '" class="' + className + '"> \
+<' + tagName + ' data-index="' + index + '"' + timerAttributes + actionAttribute + ' data-isfolder="' + (item.IsFolder || false) + '" data-serverid="' + (item.ServerId) + '" data-id="' + (item.Id || item.ItemId) + '" data-type="' + item.Type + '"' + mediaTypeData + collectionTypeData + channelIdData + positionTicksData + collectionIdData + playlistIdData + contextData + ' data-prefix="' + prefix + '" class="' + className + '"> \
 ' + cardImageContainerOpen + innerCardFooter + cardImageContainerClose + cardContentClose + overlayButtons + cardScalableClose + outerCardFooter + cardBoxClose + '\
 </' + tagName + '>';
         }

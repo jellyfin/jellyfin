@@ -1625,14 +1625,22 @@ var AppInfo = {};
                 Dashboard.navigate('home.html?tab=3');
             };
 
-            function showItem(item) {
+            function showItem(item, serverId, options) {
                 if (typeof (item) === 'string') {
                     require(['connectionManager'], function (connectionManager) {
                         var apiClient = connectionManager.currentApiClient();
-                        apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+                        apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
+                            embyRouter.showItem(item, options);
+                        });
                     });
                 } else {
-                    Emby.Page.show('/' + LibraryBrowser.getHref(item), { item: item });
+
+                    if (arguments.length == 2) {
+                        options = arguments[1];
+                    }
+
+                    var context = options ? options.context : null;
+                    Emby.Page.show('/' + LibraryBrowser.getHref(item, context), { item: item });
                 }
             }
 
@@ -1954,6 +1962,7 @@ var AppInfo = {};
             dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/connectlogin'
         });
 
@@ -2053,6 +2062,7 @@ var AppInfo = {};
             path: '/forgotpassword.html',
             dependencies: ['emby-input', 'emby-button'],
             anonymous: true,
+            startup: true,
             controller: 'scripts/forgotpassword'
         });
 
@@ -2061,6 +2071,7 @@ var AppInfo = {};
             dependencies: ['emby-input', 'emby-button'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/forgotpasswordpin'
         });
 
@@ -2242,6 +2253,7 @@ var AppInfo = {};
             dependencies: ['emby-button', 'humanedate', 'emby-input'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/loginpage'
         });
 
@@ -2471,6 +2483,7 @@ var AppInfo = {};
             dependencies: ['listViewStyle', 'emby-button'],
             autoFocus: false,
             anonymous: true,
+            startup: true,
             controller: 'scripts/selectserver'
         });
 

@@ -522,17 +522,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return show(pluginManager.mapRoute(skin, homeRoute));
     }
 
-    function showItem(item, serverId) {
+    function showItem(item, serverId, options) {
 
         if (typeof (item) === 'string') {
             require(['connectionManager'], function (connectionManager) {
                 var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
                 apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
-                    embyRouter.showItem(item);
+                    embyRouter.showItem(item, options);
                 });
             });
         } else {
-            skinManager.getCurrentSkin().showItem(item);
+
+            if (arguments.length == 2) {
+                options = arguments[1];
+            }
+            skinManager.getCurrentSkin().showItem(item, options);
         }
     }
 

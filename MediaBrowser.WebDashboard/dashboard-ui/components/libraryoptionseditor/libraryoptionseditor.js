@@ -38,19 +38,14 @@
         } else {
             parent.querySelector('.chkEnablePhotosContainer').classList.add('hide');
         }
-
-        if (contentType == 'music' || contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed') {
-            parent.classList.remove('hide');
-        } else {
-            parent.classList.add('hide');
-        }
     }
 
     function getLibraryOptions(parent) {
 
         var options = {
             EnableArchiveMediaFiles: parent.querySelector('.chkArhiveAsMedia').checked,
-            EnablePhotos: parent.querySelector('.chkEnablePhotos').checked
+            EnablePhotos: parent.querySelector('.chkEnablePhotos').checked,
+            EnableRealtimeMonitor: parent.querySelector('.chkEnableRealtimeMonitor').checked
         };
 
         return options;
@@ -60,6 +55,7 @@
 
         parent.querySelector('.chkArhiveAsMedia').checked = options.EnableArchiveMediaFiles;
         parent.querySelector('.chkEnablePhotos').checked = options.EnablePhotos;
+        parent.querySelector('.chkEnableRealtimeMonitor').checked = options.EnableRealtimeMonitor;
     }
 
     return {
