@@ -132,7 +132,7 @@ namespace MediaBrowser.Server.Mono.Native
         {
             get
             {
-				return Environment.OperatingSystem != Startup.Common.OperatingSystem.Osx;
+                return Environment.OperatingSystem != Startup.Common.OperatingSystem.Osx;
             }
         }
 
@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Mono.Native
             {
                 info.SystemArchitecture = Architecture.X64;
             }
-            else 
+            else
             {
                 info.SystemArchitecture = Architecture.X86;
             }
@@ -273,32 +273,11 @@ namespace MediaBrowser.Server.Mono.Native
                     break;
             }
 
-            info.DownloadUrls = GetDownloadUrls(environment);
+            // No version available - user requirement
+            info.DownloadUrls = new string[] { };
 
             return info;
         }
-
-        private static string[] GetDownloadUrls(NativeEnvironment environment)
-        {
-            switch (environment.OperatingSystem)
-            {
-                case OperatingSystem.Linux:
-
-                    switch (environment.SystemArchitecture)
-                    {
-                        case Architecture.X64:
-                            return new[]
-                            {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
-                            };
-                    }
-                    break;
-            }
-
-            // No version available 
-            return new string[] { };
-        }
-
     }
 
     public class NullPowerManagement : IPowerManagement

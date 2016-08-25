@@ -74,6 +74,8 @@ namespace MediaBrowser.Model.Configuration
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
 
+        public string LastVersion { get; set; }
+
         /// <summary>
         /// Gets or sets the display name of the season zero.
         /// </summary>

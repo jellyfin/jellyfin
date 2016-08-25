@@ -149,6 +149,7 @@
     <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\Extensions.cs" />
+    <Compile Include="FileOrganization\FileOrganizationNotifier.cs" />
     <Compile Include="FileOrganization\FileOrganizationService.cs" />
     <Compile Include="FileOrganization\NameUtils.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
@@ -271,6 +272,7 @@
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />
+    <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />

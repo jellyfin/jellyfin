@@ -36,8 +36,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             return new[] {videoPath};
         }
 
-        public static List<string> GetPlayableStreamFiles(IFileSystem fileSystem, string rootPath, IEnumerable<string> filenames)
+        private static List<string> GetPlayableStreamFiles(IFileSystem fileSystem, string rootPath, List<string> filenames)
         {
+            if (filenames.Count == 0)
+            {
+                return new List<string>();
+            }
+
             var allFiles = fileSystem
                 .GetFilePaths(rootPath, true)
                 .ToList();

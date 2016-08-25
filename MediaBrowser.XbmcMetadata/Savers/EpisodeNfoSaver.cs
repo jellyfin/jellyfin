@@ -118,7 +118,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "airsbefore_season",
                     "DVD_episodenumber",
                     "DVD_season",
-                    "absolute_number"
+                    "absolute_number",
+                    "displayseason",
+                    "displayepisode"
             };
 
             return list;

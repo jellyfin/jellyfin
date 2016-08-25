@@ -298,7 +298,8 @@ namespace MediaBrowser.Api.Playback
             // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
             if (state.VideoType == VideoType.VideoFile)
             {
-                var hwType = ApiEntryPoint.Instance.GetEncodingOptions().HardwareAccelerationType;
+                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+                var hwType = encodingOptions.HardwareAccelerationType;
 
                 if (string.Equals(hwType, "qsv", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(hwType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
@@ -313,6 +314,10 @@ namespace MediaBrowser.Api.Playback
                 if (string.Equals(hwType, "h264_omx", StringComparison.OrdinalIgnoreCase))
                 {
                     return GetAvailableEncoder("h264_omx", defaultEncoder);
+                }
+                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(encodingOptions.VaapiDevice))
+                {
+                    return GetAvailableEncoder("h264_vaapi", defaultEncoder);
                 }
             }
 
@@ -427,7 +432,8 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.IsNullOrEmpty(state.VideoRequest.Profile))
             {
-                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported by h264_omx
                     param += " -profile:v " + state.VideoRequest.Profile;
@@ -482,7 +488,8 @@ namespace MediaBrowser.Api.Playback
 
             if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
             }
@@ -548,59 +555,97 @@ namespace MediaBrowser.Api.Playback
 
             var filters = new List<string>();
 
-            if (state.DeInterlace)
+            if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                filters.Add("format=nv12|vaapi");
+                filters.Add("hwupload");
+            }
+            else if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 filters.Add("yadif=0:-1:0");
             }
 
-            // If fixed dimensions were supplied
-            if (request.Width.HasValue && request.Height.HasValue)
+            if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                var widthParam = request.Width.Value.ToString(UsCulture);
-                var heightParam = request.Height.Value.ToString(UsCulture);
+                // Work around vaapi's reduced scaling features
+                var scaler = "scale_vaapi";
 
-                filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
+                // Given the input dimensions (inputWidth, inputHeight), determine the output dimensions
+                // (outputWidth, outputHeight). The user may request precise output dimensions or maximum
+                // output dimensions. Output dimensions are guaranteed to be even.
+                decimal inputWidth = Convert.ToDecimal(state.VideoStream.Width);
+                decimal inputHeight = Convert.ToDecimal(state.VideoStream.Height);
+                decimal outputWidth = request.Width.HasValue ? Convert.ToDecimal(request.Width.Value) : inputWidth;
+                decimal outputHeight = request.Height.HasValue ? Convert.ToDecimal(request.Height.Value) : inputHeight;
+                decimal maximumWidth = request.MaxWidth.HasValue ? Convert.ToDecimal(request.MaxWidth.Value) : outputWidth;
+                decimal maximumHeight = request.MaxHeight.HasValue ? Convert.ToDecimal(request.MaxHeight.Value) : outputHeight;
+
+                if (outputWidth > maximumWidth || outputHeight > maximumHeight)
+                {
+                    var scale = Math.Min(maximumWidth / outputWidth, maximumHeight / outputHeight);
+                    outputWidth = Math.Min(maximumWidth, Math.Truncate(outputWidth * scale));
+                    outputHeight = Math.Min(maximumHeight, Math.Truncate(outputHeight * scale));
+                }
+
+                outputWidth = 2 * Math.Truncate(outputWidth / 2);
+                outputHeight = 2 * Math.Truncate(outputHeight / 2);
+
+                if (outputWidth != inputWidth || outputHeight != inputHeight)
+                {
+                    filters.Add(string.Format("{0}=w={1}:h={2}", scaler, outputWidth.ToString(UsCulture), outputHeight.ToString(UsCulture)));
+                }
             }
-
-            // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
-            else if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
+            else
             {
-                var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
-                var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+                // If fixed dimensions were supplied
+                if (request.Width.HasValue && request.Height.HasValue)
+                {
+                    var widthParam = request.Width.Value.ToString(UsCulture);
+                    var heightParam = request.Height.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
-            }
+                    filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
+                }
 
-            // If a fixed width was requested
-            else if (request.Width.HasValue)
-            {
-                var widthParam = request.Width.Value.ToString(UsCulture);
+                // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
+                else if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
+                {
+                    var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
+                    var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale={0}:trunc(ow/a/2)*2", widthParam));
-            }
+                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
+                }
 
-            // If a fixed height was requested
-            else if (request.Height.HasValue)
-            {
-                var heightParam = request.Height.Value.ToString(UsCulture);
+                // If a fixed width was requested
+                else if (request.Width.HasValue)
+                {
+                    var widthParam = request.Width.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
-            }
+                    filters.Add(string.Format("scale={0}:trunc(ow/a/2)*2", widthParam));
+                }
 
-            // If a max width was requested
-            else if (request.MaxWidth.HasValue)
-            {
-                var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
+                // If a fixed height was requested
+                else if (request.Height.HasValue)
+                {
+                    var heightParam = request.Height.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
-            }
+                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
+                }
 
-            // If a max height was requested
-            else if (request.MaxHeight.HasValue)
-            {
-                var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+                // If a max width was requested
+                else if (request.MaxWidth.HasValue)
+                {
+                    var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(ih\\,{0})", maxHeightParam));
+                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
+                }
+
+                // If a max height was requested
+                else if (request.MaxHeight.HasValue)
+                {
+                    var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
+                }
             }
 
             var output = string.Empty;
@@ -934,6 +979,17 @@ namespace MediaBrowser.Api.Playback
                     arg += " -i \"" + state.SubtitleStream.Path + "\"";
                 }
             }
+
+            if (state.VideoRequest != null)
+            {
+                var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+                if (GetVideoEncoder(state).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    arg = "-hwaccel vaapi -hwaccel_output_format vaapi -vaapi_device " + encodingOptions.VaapiDevice + " " + arg;
+                }
+            }
+
+            arg += string.Format(" -ss {0}", MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(1).Ticks)); 
 
             return arg.Trim();
         }
@@ -1590,13 +1646,6 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 25)
                 {
-                    if (videoRequest != null)
-                    {
-                        videoRequest.ForceLiveStream = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
-                }
-                else if (i == 26)
-                {
                     if (!string.IsNullOrWhiteSpace(val) && videoRequest != null)
                     {
                         SubtitleDeliveryMethod method;
@@ -1606,18 +1655,18 @@ namespace MediaBrowser.Api.Playback
                         }
                     }
                 }
-                else if (i == 27)
+                else if (i == 26)
                 {
                     request.TranscodingMaxAudioChannels = int.Parse(val, UsCulture);
                 }
-                else if (i == 28)
+                else if (i == 27)
                 {
                     if (videoRequest != null)
                     {
                         videoRequest.EnableSubtitlesInManifest = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
-                else if (i == 29)
+                else if (i == 28)
                 {
                     request.Tag = val;
                 }
@@ -2218,7 +2267,6 @@ namespace MediaBrowser.Api.Playback
                     if (state.VideoRequest != null)
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
-                        state.VideoRequest.ForceLiveStream = transcodingProfile.ForceLiveStream;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
                     }
                 }
@@ -2244,7 +2292,7 @@ namespace MediaBrowser.Api.Playback
                 return Task.FromResult(true);
             }
 
-            if (!string.Equals(MediaEncoder.EncoderLocationType, "Default", StringComparison.OrdinalIgnoreCase))
+            if (!MediaEncoder.IsDefaultEncoderPath)
             {
                 return Task.FromResult(true);
             }

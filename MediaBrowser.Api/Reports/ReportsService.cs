@@ -275,8 +275,6 @@ namespace MediaBrowser.Api.Reports
                     case ItemFilter.IsPlayed:
                         query.IsPlayed = true;
                         break;
-                    case ItemFilter.IsRecentlyAdded:
-                        break;
                     case ItemFilter.IsResumable:
                         query.IsResumable = true;
                         break;

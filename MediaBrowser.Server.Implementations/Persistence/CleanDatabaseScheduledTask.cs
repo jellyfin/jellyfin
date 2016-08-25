@@ -313,8 +313,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     if (Folder.IsPathOffline(path))
                     {
-                        libraryItem.IsOffline = true;
-                        await libraryItem.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
+                        await libraryItem.UpdateIsOffline(true).ConfigureAwait(false);
                         continue;
                     }
 

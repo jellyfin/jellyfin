@@ -157,11 +157,21 @@ namespace MediaBrowser.WebDashboard.Api
             var creator = GetPackageCreator();
             var directory = creator.DashboardUIPath;
 
-            var skipExtensions = GetUndeployedExtensions();
+            var skipExtensions = GetDeployIgnoreExtensions();
+            var skipNames = GetDeployIgnoreFilenames();
 
             return
                 Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
                 .Where(i => !skipExtensions.Contains(Path.GetExtension(i) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => !skipNames.Any(s =>
+                {
+                    if (s.Item2)
+                    {
+                        return string.Equals(s.Item1, Path.GetFileName(i), StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    return (Path.GetFileName(i) ?? string.Empty).IndexOf(s.Item1, StringComparison.OrdinalIgnoreCase) != -1;
+                }))
                 .Select(i => i.Replace(directory, string.Empty, StringComparison.OrdinalIgnoreCase).Replace("\\", "/").TrimStart('/') + "?v=" + _appHost.ApplicationVersion.ToString())
                 .ToList();
         }
@@ -300,7 +310,7 @@ namespace MediaBrowser.WebDashboard.Api
             return new PackageCreator(_fileSystem, _localization, Logger, _serverConfigurationManager, _jsonSerializer);
         }
 
-        private List<string> GetUndeployedExtensions()
+        private List<string> GetDeployIgnoreExtensions()
         {
             var list = new List<string>();
 
@@ -311,6 +321,28 @@ namespace MediaBrowser.WebDashboard.Api
             list.Add(".gz");
             list.Add(".bat");
             list.Add(".sh");
+
+            return list;
+        }
+
+        private List<Tuple<string,bool>> GetDeployIgnoreFilenames()
+        {
+            var list = new List<Tuple<string, bool>>();
+
+            list.Add(new Tuple<string, bool>("copying", true));
+            list.Add(new Tuple<string, bool>("license", true));
+            list.Add(new Tuple<string, bool>("license-mit", true));
+            list.Add(new Tuple<string, bool>("gitignore", false));
+            list.Add(new Tuple<string, bool>("npmignore", false));
+            list.Add(new Tuple<string, bool>("jshintrc", false));
+            list.Add(new Tuple<string, bool>("gruntfile", false));
+            list.Add(new Tuple<string, bool>("bowerrc", false));
+            list.Add(new Tuple<string, bool>("jscsrc", false));
+            list.Add(new Tuple<string, bool>("hero.svg", false));
+            list.Add(new Tuple<string, bool>("travis.yml", false));
+            list.Add(new Tuple<string, bool>("build.js", false));
+            list.Add(new Tuple<string, bool>("editorconfig", false));
+            list.Add(new Tuple<string, bool>("gitattributes", false));
 
             return list;
         }
@@ -344,30 +376,12 @@ namespace MediaBrowser.WebDashboard.Api
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
 
-            if (!string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                //var versionedBowerPath = Path.Combine(Path.GetDirectoryName(bowerPath), "bower_components" + _appHost.ApplicationVersion);
-                //Directory.Move(bowerPath, versionedBowerPath);
-                //bowerPath = versionedBowerPath;
-            }
-
-            GetUndeployedExtensions().ForEach(i => DeleteFilesByExtension(bowerPath, i));
+            GetDeployIgnoreExtensions().ForEach(i => DeleteFilesByExtension(bowerPath, i));
 
             DeleteFilesByExtension(bowerPath, ".json", "strings\\");
-            DeleteFilesByName(bowerPath, "copying", true);
-            DeleteFilesByName(bowerPath, "license", true);
-            DeleteFilesByName(bowerPath, "license-mit", true);
-            DeleteFilesByName(bowerPath, "gitignore");
-            DeleteFilesByName(bowerPath, "npmignore");
-            DeleteFilesByName(bowerPath, "jshintrc");
-            DeleteFilesByName(bowerPath, "gruntfile");
-            DeleteFilesByName(bowerPath, "bowerrc");
-            DeleteFilesByName(bowerPath, "jscsrc");
-            DeleteFilesByName(bowerPath, "hero.svg");
-            DeleteFilesByName(bowerPath, "travis.yml");
-            DeleteFilesByName(bowerPath, "build.js");
-            DeleteFilesByName(bowerPath, "editorconfig");
-            DeleteFilesByName(bowerPath, "gitattributes");
+
+            GetDeployIgnoreFilenames().ForEach(i => DeleteFilesByName(bowerPath, i.Item1, i.Item2));
+
             DeleteFoldersByName(bowerPath, "demo");
             DeleteFoldersByName(bowerPath, "test");
             DeleteFoldersByName(bowerPath, "guides");
@@ -382,8 +396,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             _fileSystem.DeleteDirectory(Path.Combine(bowerPath, "jquery", "src"), true);
-            //_fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "flash"), true);
-            //_fileSystem.DeleteDirectory(Path.Combine(bowerPath, "fingerprintjs2", "specs"), true);
 
             DeleteCryptoFiles(Path.Combine(bowerPath, "cryptojslib", "components"));
 

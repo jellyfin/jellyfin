@@ -55,7 +55,7 @@ namespace MediaBrowser.Model.Dlna
                 stream.DeviceProfileId = options.Profile.Id;
             }
 
-            return GetOptimalStream(streams, options.GetMaxBitrate());
+            return GetOptimalStream(streams, options.GetMaxBitrate(true));
         }
 
         public StreamInfo BuildVideoItem(VideoOptions options)
@@ -88,7 +88,7 @@ namespace MediaBrowser.Model.Dlna
                 stream.DeviceProfileId = options.Profile.Id;
             }
 
-            return GetOptimalStream(streams, options.GetMaxBitrate());
+            return GetOptimalStream(streams, options.GetMaxBitrate(false));
         }
 
         private StreamInfo GetOptimalStream(List<StreamInfo> streams, int? maxBitrate)
@@ -275,24 +275,32 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int configuredBitrate = options.AudioTranscodingBitrate ??
-                    (options.Context == EncodingContext.Static ? options.Profile.MusicSyncBitrate : options.Profile.MusicStreamingTranscodingBitrate) ??
+                int transcodingBitrate = options.AudioTranscodingBitrate ??
+                    options.Profile.MusicStreamingTranscodingBitrate ??
                     128000;
 
-                playlistItem.AudioBitrate = Math.Min(configuredBitrate, playlistItem.AudioBitrate ?? configuredBitrate);
+                int? configuredBitrate = options.GetMaxBitrate(true);
+
+                if (configuredBitrate.HasValue)
+                {
+                    transcodingBitrate = Math.Min(configuredBitrate.Value, transcodingBitrate);
+                }
+
+                playlistItem.AudioBitrate = Math.Min(transcodingBitrate, playlistItem.AudioBitrate ?? transcodingBitrate);
+
             }
 
             return playlistItem;
         }
 
-        private int? GetBitrateForDirectPlayCheck(MediaSourceInfo item, AudioOptions options)
+        private int? GetBitrateForDirectPlayCheck(MediaSourceInfo item, AudioOptions options, bool isAudio)
         {
             if (item.Protocol == MediaProtocol.File)
             {
                 return options.Profile.MaxStaticBitrate;
             }
 
-            return options.GetMaxBitrate();
+            return options.GetMaxBitrate(isAudio);
         }
 
         private List<PlayMethod> GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
@@ -312,7 +320,7 @@ namespace MediaBrowser.Model.Dlna
             if (directPlayProfile != null)
             {
                 // While options takes the network and other factors into account. Only applies to direct stream
-                if (item.SupportsDirectStream && IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate()) && options.EnableDirectStream)
+                if (item.SupportsDirectStream && IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate(true)) && options.EnableDirectStream)
                 {
                     playMethods.Add(PlayMethod.DirectStream);
                 }
@@ -320,7 +328,7 @@ namespace MediaBrowser.Model.Dlna
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
                 if (item.SupportsDirectPlay &&
-                    IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)) && options.EnableDirectPlay)
+                    IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true)) && options.EnableDirectPlay)
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
@@ -403,8 +411,8 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options, PlayMethod.DirectPlay));
-            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options, PlayMethod.DirectStream));
+            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true), subtitleStream, options, PlayMethod.DirectPlay));
+            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || IsEligibleForDirectPlay(item, options.GetMaxBitrate(false), subtitleStream, options, PlayMethod.DirectStream));
 
             _logger.Info("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
@@ -469,7 +477,6 @@ namespace MediaBrowser.Model.Dlna
 
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
-                playlistItem.ForceLiveStream = transcodingProfile.ForceLiveStream;
                 playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
 
                 if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
@@ -570,10 +577,10 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int audioBitrate = GetAudioBitrate(playlistItem.SubProtocol, options.GetMaxBitrate(), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
+                int audioBitrate = GetAudioBitrate(playlistItem.SubProtocol, options.GetMaxBitrate(false), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
-                int? maxBitrateSetting = options.GetMaxBitrate();
+                int? maxBitrateSetting = options.GetMaxBitrate(false);
                 // Honor max rate
                 if (maxBitrateSetting.HasValue)
                 {
@@ -595,19 +602,16 @@ namespace MediaBrowser.Model.Dlna
 
         private int GetAudioBitrate(string subProtocol, int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            var defaultBitrate = 128000;
-            if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
+            var defaultBitrate = audioStream.BitRate ?? 192000;
+            // Reduce the bitrate if we're downmixing
+            if (targetAudioChannels.HasValue && audioStream != null && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
             {
-                defaultBitrate = 192000;
-            }
-            if (!string.IsNullOrEmpty(targetAudioCodec) && audioStream != null && StringHelper.EqualsIgnoreCase(audioStream.Codec, targetAudioCodec))
-            {
-                defaultBitrate = audioStream.BitRate ?? defaultBitrate;
+                defaultBitrate = StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3") ? 192000 : 128000;
             }
 
             if (targetAudioChannels.HasValue)
             {
-                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1500000)
+                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1200000)
                 {
                     if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
                     {

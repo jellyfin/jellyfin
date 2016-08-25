@@ -85,6 +85,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     Name = "Low",
                     Id = "low"
+                },
+                new SyncQualityOption
+                {
+                    Name = "Custom",
+                    Id = "custom"
                 }
             };
         }
