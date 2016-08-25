@@ -827,6 +827,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         }
                         break;
                     }
+                case "tvmazeid":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.TvMaze, id);
+                        }
+                        break;
+                    }
                 case "audiodbartistid":
                     {
                         var id = reader.ReadElementContentAsString();
