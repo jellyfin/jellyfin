@@ -99,7 +99,10 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public Series Series
         {
-            get { return FindParent<Series>(); }
+            get
+            {
+                return SeriesId.HasValue ? (LibraryManager.GetItemById(SeriesId.Value) as Series) : null;
+            }
         }
 
         [IgnoreDataMember]
@@ -241,7 +244,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public Guid? FindSeriesId()
         {
-            var series = Series;
+            var series = FindParent<Series>();
             return series == null ? (Guid?)null : series.Id;
         }
 
