@@ -60,6 +60,7 @@
 
                 itemsContainer.classList.remove('vertical-list');
                 itemsContainer.classList.add('vertical-wrap');
+                itemsContainer.classList.add('centered');
             }
             itemsContainer.innerHTML = '';
         }
