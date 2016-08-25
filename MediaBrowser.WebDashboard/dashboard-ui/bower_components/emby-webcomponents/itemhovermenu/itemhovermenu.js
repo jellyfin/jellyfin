@@ -156,7 +156,7 @@
 
     function onCardOverlayButtonsClick(e) {
 
-        var button = dom.parentWithTag(e.target, 'BUTTON');
+        var button = dom.parentWithClass(e.target, 'btnUserData');
         if (button) {
             e.stopPropagation();
         }

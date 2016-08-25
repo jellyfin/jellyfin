@@ -16,9 +16,22 @@
         renderNoHealthAlertsMessage(page);
     }
 
+    function onConnectionHelpClick(e) {
+
+        e.preventDefault();
+        return false;
+    }
+
     window.DashboardPage = {
 
         newsStartIndex: 0,
+
+        onPageInit: function () {
+
+            var page = this;
+
+            page.querySelector('#btnConnectionHelp').addEventListener('click', onConnectionHelpClick);
+        },
 
         onPageShow: function () {
 
@@ -1026,7 +1039,7 @@
         }
     };
 
-    $(document).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
+    $(document).on('pageinit', "#dashboardPage", DashboardPage.onPageInit).on('pageshow', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
 
     (function ($, document, window) {
 
