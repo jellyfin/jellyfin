@@ -1,6 +1,8 @@
 {
     "LabelMaxAudioFileBitrate": "Max. Bitrate Audio-Datei:",
     "LabelMaxAudioFileBitrateHelp": "Audio-Dateien mit einer h\u00f6heren Bitrate werden durch den Emby-server konvertiert. W\u00e4hle f\u00fcr eine bessere Qualit\u00e4t einen h\u00f6heren Wert aus, um Speicherplatz zu sparen einen niedrigeren.",
+    "LabelVaapiDevice": "VAAPI Ger\u00e4t:",
+    "LabelVaapiDeviceHelp": "Das ist der Render-Node der f\u00fcr die Hardwarebeschleunigung genutzt wird. F\u00fcr Dual-Grafikkarten-Systeme macht es Sinn :1 oder einen anderen Wert zu setzen.",
     "LabelExit": "Beenden",
     "LabelVisitCommunity": "Besuche die Community",
     "LabelGithub": "Github",

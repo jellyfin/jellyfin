@@ -1,6 +1,8 @@
 {
     "LabelMaxAudioFileBitrate": "Bitrate m\u00e1x arquivos de \u00e1udio:",
     "LabelMaxAudioFileBitrateHelp": "Arquivos de \u00e1udio com um bitrate maior ser\u00e3o convertidos pelo Servidor Emby. Selecione um valor mais alto para melhor qualidade, ou mais baixo para conservar espa\u00e7o no armazenamento local.",
+    "LabelVaapiDevice": "Dispositivo VA API:",
+    "LabelVaapiDeviceHelp": "Este \u00e9 o n\u00f3 de renderiza\u00e7\u00e3o utilizado para acelera\u00e7\u00e3o via hardware. Para sistemas com dupla placa de v\u00eddeo, pode fazer sentido utilizar :1 ou outro valor.",
     "LabelExit": "Sair",
     "LabelVisitCommunity": "Visitar a Comunidade",
     "LabelGithub": "Github",
