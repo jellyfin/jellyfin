@@ -822,6 +822,12 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("tvrageid", externalId);
             }
 
+            externalId = item.GetProviderId(MetadataProviders.TvMaze);
+            if (!string.IsNullOrEmpty(externalId))
+            {
+                writer.WriteElementString("tvmazeid", externalId);
+            }
+
             if (options.SaveImagePathsInNfo)
             {
                 AddImages(item, writer, libraryManager, config);
