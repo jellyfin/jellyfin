@@ -135,7 +135,10 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public Series Series
         {
-            get { return FindParent<Series>(); }
+            get
+            {
+                return SeriesId.HasValue ? (LibraryManager.GetItemById(SeriesId.Value) as Series) : null;
+            }
         }
 
         [IgnoreDataMember]
@@ -143,24 +146,7 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                var season = FindParent<Season>();
-
-                // Episodes directly in series folder
-                if (season == null)
-                {
-                    var series = Series;
-
-                    if (series != null && ParentIndexNumber.HasValue)
-                    {
-                        var findNumber = ParentIndexNumber.Value;
-
-                        season = series.Children
-                            .OfType<Season>()
-                            .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == findNumber);
-                    }
-                }
-
-                return season;
+                return SeasonId.HasValue ? (LibraryManager.GetItemById(SeasonId.Value) as Season) : null;
             }
         }
 
@@ -193,7 +179,23 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public Guid? FindSeasonId()
         {
-            var season = Season;
+            var season = FindParent<Season>();
+
+            // Episodes directly in series folder
+            if (season == null)
+            {
+                var series = Series;
+
+                if (series != null && ParentIndexNumber.HasValue)
+                {
+                    var findNumber = ParentIndexNumber.Value;
+
+                    season = series.Children
+                        .OfType<Season>()
+                        .FirstOrDefault(i => i.IndexNumber.HasValue && i.IndexNumber.Value == findNumber);
+                }
+            }
+
             return season == null ? (Guid?)null : season.Id;
         }
 
@@ -263,7 +265,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public Guid? FindSeriesId()
         {
-            var series = Series;
+            var series = FindParent<Series>();
             return series == null ? (Guid?)null : series.Id;
         }
 
