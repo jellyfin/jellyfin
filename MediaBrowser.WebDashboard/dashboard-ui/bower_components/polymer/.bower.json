@@ -32,14 +32,14 @@
     "iron-component-page": "polymerElements/iron-component-page#^1.1.6"
   },
   "private": true,
-  "homepage": "https://github.com/Polymer/polymer",
+  "homepage": "https://github.com/polymer/polymer",
   "_release": "1.6.1",
   "_resolution": {
     "type": "version",
     "tag": "v1.6.1",
     "commit": "1f197d9d7874b1e5808b2a5c26f34446a7d912fc"
   },
-  "_source": "git://github.com/Polymer/polymer.git",
+  "_source": "git://github.com/polymer/polymer.git",
   "_target": "^1.1.0",
-  "_originalSource": "Polymer/polymer"
+  "_originalSource": "polymer/polymer"
 }

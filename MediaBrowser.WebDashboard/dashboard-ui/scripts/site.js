@@ -1625,14 +1625,22 @@ var AppInfo = {};
                 Dashboard.navigate('home.html?tab=3');
             };
 
-            function showItem(item) {
+            function showItem(item, serverId, options) {
                 if (typeof (item) === 'string') {
                     require(['connectionManager'], function (connectionManager) {
                         var apiClient = connectionManager.currentApiClient();
-                        apiClient.getItem(apiClient.getCurrentUserId(), item).then(showItem);
+                        apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
+                            embyRouter.showItem(item, options);
+                        });
                     });
                 } else {
-                    Emby.Page.show('/' + LibraryBrowser.getHref(item), { item: item });
+
+                    if (arguments.length == 2) {
+                        options = arguments[1];
+                    }
+
+                    var context = options ? options.context : null;
+                    Emby.Page.show('/' + LibraryBrowser.getHref(item, context), { item: item });
                 }
             }
 

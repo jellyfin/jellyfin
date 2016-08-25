@@ -109,7 +109,8 @@
                     shape: "auto",
                     centerText: true,
                     lazy: true,
-                    coverImage: item.Type == 'PhotoAlbum'
+                    coverImage: item.Type == 'PhotoAlbum',
+                    context: 'folders'
                 };
 
                 if (viewStyle == "PosterCard") {

@@ -294,7 +294,9 @@
                 return curr.ChannelId == channel.Id;
             });
 
-            html += '<div class="channelPrograms" data-channelid="' + channel.Id + '">';
+            var cssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
+
+            html += '<div class="' + cssClass + '" data-channelid="' + channel.Id + '">';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
@@ -449,6 +451,10 @@
                 }
 
                 var cssClass = 'channelHeaderCell clearButton itemAction lazy';
+
+                if (layoutManager.tv) {
+                    cssClass += ' channelHeaderCell-tv';
+                }
 
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 

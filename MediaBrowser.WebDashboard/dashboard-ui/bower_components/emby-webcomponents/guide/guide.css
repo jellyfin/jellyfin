@@ -251,7 +251,11 @@
 }
 
 .channelPrograms, .channelHeaderCell {
-    height: 3.8em;
+    height: 4em;
+}
+
+.channelPrograms-tv, .channelHeaderCell-tv {
+    height: 3.2em;
 }
 
 .channelTimeslotHeader {
