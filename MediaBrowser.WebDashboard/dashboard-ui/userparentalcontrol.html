@@ -1,4 +1,4 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmlistview,jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button,emby-collapse">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button,emby-collapse">
 
     <div data-role="content">
         <div class="content-primary">
@@ -10,13 +10,11 @@
             </div>
             <form class="userParentalControlForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <label for="selectMaxParentalRating" class="selectLabel">${LabelMaxParentalRating}</label>
-                        <select name="selectMaxParentalRating" id="selectMaxParentalRating" data-mini="true"></select>
-                        <div class="fieldDescription">${MaxParentalRatingHelp}</div>
-                    </li>
-                </ul>
+                <div>
+                    <label for="selectMaxParentalRating" class="selectLabel">${LabelMaxParentalRating}</label>
+                    <select name="selectMaxParentalRating" id="selectMaxParentalRating" data-mini="true"></select>
+                    <div class="fieldDescription">${MaxParentalRatingHelp}</div>
+                </div>
 
                 <div>
                     <div class="blockUnratedItems">
@@ -68,36 +66,38 @@
 
                     <form class="scheduleForm" style="min-width:210px;">
 
-                        <ul data-role="listview" class="ulForm" style="margin-bottom:10px!important;">
-                            <li>
-                                <label for="selectDay">${LabelAccessDay}</label>
-                                <select id="selectDay" data-mini="true">
-                                    <option value="Sunday">${OptionSunday}</option>
-                                    <option value="Monday">${OptionMonday}</option>
-                                    <option value="Tuesday">${OptionTuesday}</option>
-                                    <option value="Wednesday">${OptionWednesday}</option>
-                                    <option value="Thursday">${OptionThursday}</option>
-                                    <option value="Friday">${OptionFriday}</option>
-                                    <option value="Saturday">${OptionSaturday}</option>
-                                    <option value="Everyday">${OptionEveryday}</option>
-                                    <option value="Weekday">${OptionWeekdays}</option>
-                                    <option value="Weekend">${OptionWeekends}</option>
-                                </select>
-                            </li>
-                            <li>
-                                <label for="selectStart">${LabelAccessStart}</label>
-                                <select class="selectHour" id="selectStart" data-mini="true"></select>
-                            </li>
-                            <li>
-                                <label for="selectEnd">${LabelAccessEnd}</label>
-                                <select class="selectHour" id="selectEnd" data-mini="true"></select>
-                            </li>
-                            <li>
-                                <input type="hidden" id="fldScheduleIndex" />
-                                <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
-                                <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
-                            </li>
-                        </ul>
+                        <div>
+                            <label for="selectDay">${LabelAccessDay}</label>
+                            <select id="selectDay" data-mini="true">
+                                <option value="Sunday">${OptionSunday}</option>
+                                <option value="Monday">${OptionMonday}</option>
+                                <option value="Tuesday">${OptionTuesday}</option>
+                                <option value="Wednesday">${OptionWednesday}</option>
+                                <option value="Thursday">${OptionThursday}</option>
+                                <option value="Friday">${OptionFriday}</option>
+                                <option value="Saturday">${OptionSaturday}</option>
+                                <option value="Everyday">${OptionEveryday}</option>
+                                <option value="Weekday">${OptionWeekdays}</option>
+                                <option value="Weekend">${OptionWeekends}</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectStart">${LabelAccessStart}</label>
+                            <select class="selectHour" id="selectStart" data-mini="true"></select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectEnd">${LabelAccessEnd}</label>
+                            <select class="selectHour" id="selectEnd" data-mini="true"></select>
+                        </div>
+                        <br />
+                        <div>
+                            <input type="hidden" id="fldScheduleIndex" />
+                            <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
+                            <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
+                        </div>
+                        <br />
                     </form>
 
                 </div>

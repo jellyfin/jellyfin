@@ -27,10 +27,6 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         IsFavorite = 5,
         /// <summary>
-        /// The is recently added
-        /// </summary>
-        IsRecentlyAdded = 6,
-        /// <summary>
         /// The item is resumable
         /// </summary>
         IsResumable = 7,

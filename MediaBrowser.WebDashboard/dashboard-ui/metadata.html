@@ -1,4 +1,4 @@
-﻿<div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="jqmlistview,scripts/metadataconfigurationpage,paper-checkbox,emby-button">
+﻿<div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="scripts/metadataconfigurationpage,emby-checkbox,emby-button,emby-select">
 
     <div data-role="content">
 
@@ -6,32 +6,37 @@
 
             <form class="metadataConfigurationForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-checkbox id="chkEnableInternetProviders">${LabelDownloadInternetMetadata}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkSaveLocal">${LabelSaveLocalMetadata}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkDownloadImagesInAdvance">${OptionDownloadImagesInAdvance}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
-                        <br />
-                    </li>
-                    <li>
-                        <label for="selectLanguage" class="selectLabel">${LabelMetadataDownloadLanguage}</label>
-                        <select name="selectLanguage" id="selectLanguage" data-mini="true" required="required"></select>
-                    </li>
-                    <li>
-                        <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
-                        <select name="selectCountry" id="selectCountry" data-mini="true" required="required"></select>
-                    </li>
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    </li>
-                </ul>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkEnableInternetProviders" />
+                        <span>${LabelDownloadInternetMetadata}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkSaveLocal" />
+                        <span>${LabelSaveLocalMetadata}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkDownloadImagesInAdvance" />
+                        <span>${OptionDownloadImagesInAdvance}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectLanguage" label="${LabelMetadataDownloadLanguage}" required="required"></select>
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectCountry" label="${LabelCountry}" required="required"></select>
+                </div>
+                <br />
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                </div>
             </form>
         </div>
 

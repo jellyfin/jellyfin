@@ -1,6 +1,8 @@
 {
     "LabelMaxAudioFileBitrate": "Massimo bitrate per file audio:",
     "LabelMaxAudioFileBitrateHelp": "I file audio con un valore pi\u00f9 alto di bitrate saranno convertiti dal Server Emby. Seleziona un valore pi\u00f9 alto per una qualit\u00e0 migliore, oppure, un valore pi\u00f9 basso per risparmiare spazio di archiviazione.",
+    "LabelVaapiDevice": "VA API Device:",
+    "LabelVaapiDeviceHelp": "This is the render node that is used for hardware acceleration.",
     "LabelExit": "Esci",
     "LabelVisitCommunity": "Visita la Community",
     "LabelGithub": "Github",
@@ -2302,7 +2304,7 @@
     "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
-    "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
+    "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
