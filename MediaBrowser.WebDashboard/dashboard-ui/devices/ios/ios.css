@@ -41,22 +41,11 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-color: #000;
 }
 
-.libraryViewNav .emby-tab-button {
+.emby-tab-button {
     font-weight: 400;
-    text-transform: none;
-}
-
-.emby-tab-button-selection-bar {
-    display: none !important;
-}
-
-.libraryViewNav .emby-tab-button-active {
-    color: #52B54B !important;
-}
-
-.ui-body-b .paperList:not(.criticReviewPaperList) {
-    background-color: transparent;
-    box-shadow: none;
+    text-transform: none!important;
+    border-color: transparent !important;
+    border-width: 0 !important;
 }
 
 .criticReviewPaperList {
@@ -73,10 +62,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
         padding-left: 10px;
         padding-right: 10px;
     }
-}
-
-.btnActiveCast {
-    color: #52B54B !important;
 }
 
 .libraryViewNav {
@@ -126,10 +111,6 @@ h1, h1 a {
 
 .nowPlayingPage {
     padding-top: 50px !important;
-}
-
-.localSyncStatus .labelSyncStatus {
-    display: none !important;
 }
 
 .videoSubtitles {

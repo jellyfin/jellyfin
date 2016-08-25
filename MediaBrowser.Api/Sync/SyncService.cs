@@ -291,7 +291,8 @@ namespace MediaBrowser.Api.Sync
                 {
                     Fields = new List<ItemFields>
                     {
-                        ItemFields.SyncInfo
+                        ItemFields.SyncInfo,
+                        ItemFields.BasicSyncInfo
                     }
                 };
 

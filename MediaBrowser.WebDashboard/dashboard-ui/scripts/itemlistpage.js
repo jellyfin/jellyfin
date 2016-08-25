@@ -60,6 +60,7 @@
 
                 itemsContainer.classList.remove('vertical-list');
                 itemsContainer.classList.add('vertical-wrap');
+                itemsContainer.classList.add('centered');
             }
             itemsContainer.innerHTML = '';
         }
@@ -109,18 +110,11 @@
                     shape: "auto",
                     centerText: true,
                     lazy: true,
-                    coverImage: item.Type == 'PhotoAlbum'
+                    coverImage: item.Type == 'PhotoAlbum',
+                    context: 'folders'
                 };
 
-                if (viewStyle == "Backdrop") {
-
-                    posterOptions.shape = 'backdrop';
-                    posterOptions.showTitle = true;
-                    posterOptions.preferBackdrop = true;
-
-                    html = cardBuilder.getCardsHtml(posterOptions);
-                }
-                else if (viewStyle == "PosterCard") {
+                if (viewStyle == "PosterCard") {
 
                     posterOptions.showTitle = true;
                     posterOptions.showYear = true;
@@ -137,9 +131,11 @@
                     });
                 }
                 else if (viewStyle == "Thumb") {
-
                     posterOptions.preferThumb = true;
+                    posterOptions.showTitle = true;
                     posterOptions.shape = "backdrop";
+                    posterOptions.centerText = true;
+                    posterOptions.overlayText = false;
                     html = cardBuilder.getCardsHtml(posterOptions);
                 } else {
 

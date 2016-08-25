@@ -499,7 +499,7 @@
                     var width = 240;
                     var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
                     chapterHtml += '<div class="cardBox">';
-                    chapterHtml += '<div class="cardScalable">';
+                    chapterHtml += '<div class="cardScalable visualCardBox-cardScalable">';
                     chapterHtml += '<div class="cardPadder cardPadder-backdrop"></div>';
 
                     chapterHtml += '<div class="cardContent">';
@@ -610,7 +610,7 @@
 
         function onPositionSliderChange() {
 
-            var newPercent = parseInt(this.value);
+            var newPercent = parseFloat(this.value);
 
             var newPositionTicks = (newPercent / 100) * getSeekableDuration();
 

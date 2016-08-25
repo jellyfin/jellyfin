@@ -191,7 +191,7 @@
         html += "<div class='card backdropCard scalableCard'>";
 
         html += '<div class="cardBox cardBox-bottompadded visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<div class="cardScalable visualCardBox-cardScalable">';
 
         html += '<div class="cardPadder cardPadder-backdrop"></div>';
 
@@ -217,7 +217,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
 
         html += "<div class='cardText'>";
         html += plugin.name;

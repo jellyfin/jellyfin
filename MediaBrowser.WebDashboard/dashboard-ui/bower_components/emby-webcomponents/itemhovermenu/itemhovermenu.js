@@ -154,6 +154,13 @@
         return html;
     }
 
+    function onCardOverlayButtonsClick(e) {
+
+        var button = dom.parentWithClass(e.target, 'btnUserData');
+        if (button) {
+            e.stopPropagation();
+        }
+    }
 
     function onShowTimerExpired(elem) {
 
@@ -163,6 +170,10 @@
             innerElem = document.createElement('div');
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
+
+            // allow the overlay to be clicked to view the item
+            innerElem.classList.add('itemAction');
+            innerElem.setAttribute('data-action', 'link');
 
             var appendTo = elem.querySelector('div.cardContent') || elem.querySelector('.cardScalable') || elem.querySelector('.cardBox');
 
@@ -203,6 +214,8 @@
             var user = responses[1];
 
             innerElem.innerHTML = getOverlayHtml(apiClient, item, user, dataElement);
+
+            innerElem.querySelector('.cardOverlayButtons').addEventListener('click', onCardOverlayButtonsClick);
         });
 
         slideUpToShow(innerElem);

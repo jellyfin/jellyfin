@@ -36,7 +36,7 @@
         justify-content: center;
     }
 
-    .vertical-wrap .card {
+    .vertical-wrap > .card {
         contain: layout style;
     }
 
@@ -135,17 +135,16 @@
     position: relative;
     background-clip: content-box !important;
     color: #fff;
+    /* This is only needed for scalable cards */
+    height: 100%;
 }
 
 @media all and (min-width: 600px) {
 
     .cardImageContainer {
+        /* Should be 0 with visualCardBox, but not really noticeable */
         border-radius: 2px;
     }
-}
-
-.visualCardBox .cardImageContainer {
-    border-radius: 0;
 }
 
 .chapterCardImageContainer {
@@ -178,16 +177,23 @@
     display: block;
 }
 
-.scalableCard .cardImageContainer {
-    height: 100%;
+.cardImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
 }
 
-.cardImage.coveredImage, .cardImageContainer.coveredImage, .coveredImage .cardImage {
+.coveredImage {
     background-size: 100% 100%;
     background-position: center center;
 }
 
-.coveredImage.noScale, .coveredImage.noScale .cardImage {
+.coveredImage-noScale {
     background-size: cover;
 }
 
@@ -195,11 +201,11 @@
     padding: .5em .3em;
 }
 
-.visualCardBox .cardScalable, .visualCardBox .cardFooter {
+.visualCardBox-cardScalable, .visualCardBox-cardFooter {
     background-color: #222326;
 }
 
-.visualCardBox .cardFooter {
+.visualCardBox-cardFooter {
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
     -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -246,17 +252,6 @@
 
 .cardCenteredText {
     white-space: normal;
-}
-
-.cardImage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center bottom;
 }
 
 .cardImageIcon {

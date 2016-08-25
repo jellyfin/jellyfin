@@ -116,15 +116,8 @@
             configureSwipeTabs: function (ownerpage, tabs) {
 
                 if (!browser.touch) {
-                    //return;
+                    return;
                 }
-
-                //require(['hammer'], function (Hammer) {
-
-                //    var hammertime = new Hammer(ownerpage);
-                //    hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
-
-                //});
 
                 var pageCount = ownerpage.querySelectorAll('.pageTabContent').length;
                 var onSwipeLeft = function (e) {

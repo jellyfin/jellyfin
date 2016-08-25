@@ -1,4 +1,8 @@
 {
+    "LabelMaxAudioFileBitrate": "Tasa de bits m\u00e1xima para archivos de audio:",
+    "LabelMaxAudioFileBitrateHelp": "Archivos de audio con una tasa de bits mas alta ser\u00e1n convertidos por el Servidor Emby. Elija un valor mas alto para una mejor calidad, o uno mas bajo para ahorrar espacio de almacenamiento local.",
+    "LabelVaapiDevice": "Dispositivo VA API:",
+    "LabelVaapiDeviceHelp": "Este es un nodo de renderizado que es usado para aceleraci\u00f3n por hardware. Para sistemas con doble tarjeta de video, tendr\u00eda sentido usar :1  u otro valor.",
     "LabelExit": "Salir",
     "LabelVisitCommunity": "Visitar la Comunidad",
     "LabelGithub": "Github",
@@ -366,7 +370,7 @@
     "LabelAutomaticUpdatesTmdbHelp": "Al habilitarlo, se descargar\u00e1n autom\u00e1ticamente nuevas im\u00e1genes conforme son a\u00f1adidas a TheMovieDB.org. Las im\u00e1genes existentes no ser\u00e1n reemplazadas. Esto ocasionar\u00e1 que la exploraci\u00f3n de la biblioteca tome m\u00e1s tiempo y resultar\u00e1 en mayor actividad del disco.",
     "LabelAutomaticUpdatesTvdbHelp": "Al habilitarlo, se descargar\u00e1n autom\u00e1ticamente nuevas im\u00e1genes conforme son a\u00f1adidas a TheTVDB.com. Las im\u00e1genes existentes no ser\u00e1n reemplazadas. Esto causar\u00e1 que la exploraci\u00f3n de la biblioteca tome m\u00e1s tiempo y resultar\u00e1 en mayor actividad del disco.",
     "LabelFanartApiKey": "Clave api personal:",
-    "LabelFanartApiKeyHelp": "Solicitar fanart sin una clave API personal muestra los resultados que fueron aprobados hace 7 d\u00edas. Con una clave API personal se reduce a 48 horas y si eres miembro VIP de fanart ser\u00e1 alrededor de 10 minutos.",
+    "LabelFanartApiKeyHelp": "Solicitar fanart sin una clave API personal muestra los imagenes que fueron aprobadas hace 7 d\u00edas. Con una clave API personal se reduce a 48 horas y si eres miembro VIP de fanart ser\u00e1 alrededor de 10 minutos.",
     "ExtractChapterImagesHelp": "Extraer las im\u00e1genes de los cap\u00edtulos permitir\u00e1 a sus clientes mostrar gr\u00e1ficamente los men\u00fas de selecci\u00f3n de escenas. El proceso puede ser lento, hacer uso intensivo del cpu y requerir el uso de varios gigabytes de espacio. Se ejecuta como una tarea nocturna programada, aunque puede configurarse en el \u00e1rea de tareas programadas. No se recomienda ejecutarlo durante un horario de uso intensivo.",
     "LabelMetadataDownloadLanguage": "Lenguaje preferido para descargas:",
     "LabelImageSavingConvention": "Convenci\u00f3n de almacenamiento de im\u00e1genes:",
@@ -2108,7 +2112,7 @@
     "LabelSyncJobName": "Nombre del trabajo de sinc:",
     "LabelQuality": "Calidad:",
     "OptionAutomaticallySyncNewContent": "Sincronizar autom\u00e1ticamente nuevos contenidos",
-    "OptionAutomaticallySyncNewContentHelp": "Los contenidos nuevos agregados ser\u00e1n sincronizados autom\u00e1ticamente con el dispositivo.",
+    "OptionAutomaticallySyncNewContentHelp": "Los contenidos nuevos agregados a esta carpeta ser\u00e1n sincronizados autom\u00e1ticamente con el dispositivo.",
     "OptionSyncUnwatchedVideosOnly": "Sincronizar \u00fanicamente videos no vistos",
     "OptionSyncUnwatchedVideosOnlyHelp": "Solamente los videos a\u00fan no vistos ser\u00e1n sincronizados, se eliminar\u00e1n los videos del dispositivo conforme \u00e9stos sean vistos.",
     "LabelItemLimit": "L\u00edmite de \u00cdtems:",
@@ -2247,7 +2251,7 @@
     "ButtonLocalRefresh": "Actualizaci\u00f3n local",
     "ButtonAddMissingData": "S\u00f3lo agregar datos faltantes",
     "ButtonFullRefresh": "Actualizaci\u00f3n completa",
-    "ValueExample": "1:00 PM",
+    "ValueExample": "Ejemplo: {0}",
     "OptionEnableAnonymousUsageReporting": "Habilitar envi\u00f3 de reportes an\u00f3nimo",
     "OptionEnableAnonymousUsageReportingHelp": "Permite a Emby colectar informaci\u00f3n an\u00f3nima como los complementos instalados, el numero de versi\u00f3n de sus apps Emby, etc. Esta informaci\u00f3n sera usada con el \u00fanico prop\u00f3sito de mejorar el software.",
     "LabelFileOrUrl": "Archivo o url:",
@@ -2315,7 +2319,10 @@
     "EnablePhotosHelp": "Las fotograf\u00edas ser\u00e1n detectadas y mostradas junto con otros archivos de medios.",
     "MakeAvailableOffline": "Hacer disponible sin conexi\u00f3n",
     "ConfirmRemoveDownload": "\u00bfEliminar descarga?",
+    "RemoveDownload": "Quitar descarga",
     "SyncToOtherDevices": "Sincronizar a otros dispositivos",
     "ManageOfflineDownloads": "Administrar elementos sin conexi\u00f3n",
-    "MessageDownloadScheduled": "Descarga programada"
+    "MessageDownloadScheduled": "Descarga programada",
+    "RememberMe": "Recuerdame",
+    "HeaderOfflineSync": "Sinc. desconectado"
 }

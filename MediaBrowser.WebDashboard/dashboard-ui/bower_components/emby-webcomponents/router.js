@@ -372,6 +372,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
     function handleBackToDefault() {
 
+        if (!appHost.supports('exitmenu') && appHost.supports('exit')) {
+            appHost.exit();
+            return;
+        }
+
         isDummyBackToHome = true;
         skinManager.loadUserSkin();
 
@@ -517,17 +522,21 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return show(pluginManager.mapRoute(skin, homeRoute));
     }
 
-    function showItem(item, serverId) {
+    function showItem(item, serverId, options) {
 
         if (typeof (item) === 'string') {
             require(['connectionManager'], function (connectionManager) {
                 var apiClient = serverId ? connectionManager.getApiClient(serverId) : connectionManager.currentApiClient();
                 apiClient.getItem(apiClient.getCurrentUserId(), item).then(function (item) {
-                    embyRouter.showItem(item);
+                    embyRouter.showItem(item, options);
                 });
             });
         } else {
-            skinManager.getCurrentSkin().showItem(item);
+
+            if (arguments.length == 2) {
+                options = arguments[1];
+            }
+            skinManager.getCurrentSkin().showItem(item, options);
         }
     }
 
@@ -557,18 +566,33 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         return allRoutes;
     }
 
+    var backdropContainer;
+    var backgroundContainer;
     function setTransparency(level) {
+
+        if (!backdropContainer) {
+            backdropContainer = document.querySelector('.backdropContainer');
+        }
+        if (!backgroundContainer) {
+            backgroundContainer = document.querySelector('.backgroundContainer');
+        }
 
         if (level == 'full' || level == Emby.TransparencyLevel.Full) {
             backdrop.clear(true);
             document.documentElement.classList.add('transparentDocument');
+            backgroundContainer.classList.add('backgroundContainer-transparent');
+            backdropContainer.classList.add('hide');
         }
         else if (level == 'backdrop' || level == Emby.TransparencyLevel.Backdrop) {
             backdrop.externalBackdrop(true);
             document.documentElement.classList.add('transparentDocument');
+            backgroundContainer.classList.add('backgroundContainer-transparent');
+            backdropContainer.classList.add('hide');
         } else {
             backdrop.externalBackdrop(false);
             document.documentElement.classList.remove('transparentDocument');
+            backgroundContainer.classList.remove('backgroundContainer-transparent');
+            backdropContainer.classList.remove('hide');
         }
     }
 

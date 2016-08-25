@@ -212,7 +212,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (isMobileApp && options.sync !== false) {
+            if (options.sync !== false) {
                 if (itemHelper.canSync(user, item)) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#SyncToOtherDevice'),
@@ -425,10 +425,8 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({
-                                items: [
-                                {
-                                    Id: itemId
-                                }]
+                                items: [item],
+                                serverId: serverId
                             });
                         });
                         getResolveFunction(resolve, id)();
@@ -438,10 +436,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({
-                                items: [
-                                {
-                                    Id: itemId
-                                }]
+                                items: [item],
+                                isLocalSync: true,
+                                serverId: serverId
                             });
                         });
                         getResolveFunction(resolve, id)();

@@ -1,5 +1,4 @@
-﻿<div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="emby-collapse,jqmtable,scripts/autoorganizetv,paper-input,paper-checkbox,jqmlistview">
-
+﻿<div id="libraryFileOrganizerPage" data-role="page" class="page type-interior organizePage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize">
     <div data-role="content">
         <div class="content-primary">
 
@@ -8,48 +7,52 @@
                 <p>${AutoOrganizeHelp}</p>
 
                 <p>${AutoOrganizeTvHelp}</p>
-                <ul data-role="listview" class="ulForm" style="margin-bottom: 0!important;">
-                    <li>
-                        <br />
-                        <paper-checkbox id="chkEnableTvSorting">${OptionEnableEpisodeOrganization}</paper-checkbox>
-                    </li>
-                    <li>
-                        <paper-input id="txtWatchFolder" label="${LabelWatchFolder}" style="width:85%;display:inline-block;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectWatchFolder" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
-                        <div class="fieldDescription">
-                            <div>${LabelWatchFolderHelp}</div>
+                <div>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableTvSorting" />
+                        <span>${OptionEnableEpisodeOrganization}</span>
+                    </label>
+                </div>
+                <div class="inputContainer">
+                    <div style="display:flex; align-items:center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtWatchFolder" type="text" label="${LabelWatchFolder}" />
+                            <div class="fieldDescription">${LabelWatchFolderHelp}</div>
                         </div>
-                    </li>
-                    <li>
-                        <paper-input type="number" id="txtMinFileSize" name="txtMinFileSize" label="${LabelMinFileSizeForOrganize}" pattern="[0-9]*" min="0" required></paper-input>
-                        <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="text" id="txtSeasonFolderPattern" name="txtSeasonFolderPattern" label="${LabelSeasonFolderPattern}" required></paper-input>
-                        <div class="fieldDescription seasonFolderFieldDescription"></div>
-                    </li>
-                    <li>
-                        <paper-input type="text" id="txtSeasonZeroName" name="txtSeasonZeroName" label="${LabelSeasonZeroFolderName}" required></paper-input>
-                    </li>
-                </ul><br />
+                        <button type="button" is="emby-button" id="btnSelectWatchFolder" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                    </div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtMinFileSize" type="number" label="${LabelMinFileSizeForOrganize}" pattern="[0-9]*" min="0" required />
+                    <div class="fieldDescription">${LabelMinFileSizeForOrganizeHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtSeasonFolderPattern" type="text" label="${LabelSeasonFolderPattern}" required />
+                    <div class="fieldDescription seasonFolderFieldDescription"></div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtSeasonZeroName" type="text" label="${LabelSeasonZeroFolderName}" required />
+                    <div class="fieldDescription"></div>
+                </div>
+
+                <br />
 
                 <div is="emby-collapse" title="${HeaderEpisodeFilePattern}">
                     <div class="collapseContent">
                         <br />
-                        <div>
-                            <paper-input type="text" id="txtEpisodePattern" name="txtEpisodePattern" label="${LabelEpisodePattern}" required></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtEpisodePattern" type="text" label="${LabelEpisodePattern}" required />
                             <div class="fieldDescription episodePatternDescription"></div>
                         </div>
-                        <br />
-                        <div>
-                            <paper-input type="text" id="txtMultiEpisodePattern" name="txtMultiEpisodePattern" label="${LabelMultiEpisodePattern}" required></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtMultiEpisodePattern" type="text" label="${LabelMultiEpisodePattern}" required />
                             <div class="fieldDescription multiEpisodePatternDescription"></div>
                         </div>
 
                         <br />
                         <p>${HeaderSupportedPatterns}</p>
 
-                        <table data-role="table" id="movie-table" data-mode="reflow" class="ui-responsive">
+                        <table id="movie-table" class="ui-responsive">
                             <thead>
                                 <tr>
                                     <th>${HeaderTerm}</th>
@@ -129,35 +132,33 @@
                 </div>
 
                 <br /><br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <label for="copyOrMoveFile" class="selectLabel">${LabelTransferMethod}</label>
-                        <select id="copyOrMoveFile" data-mini="true">
-                            <option value="true">${OptionCopy}</option>
-                            <option value="false">${OptionMove}</option>
-                        </select>
-                        <div class="fieldDescription">${LabelTransferMethodHelp}</div>
-                    </li>
-                    <li>
-                        <br />
-                        <paper-checkbox type="checkbox" id="chkOverwriteExistingEpisodes">${OptionOverwriteExistingEpisodes}</paper-checkbox>
-                    </li>
-                    <li>
-                        <paper-input type="text" id="txtDeleteLeftOverFiles" name="txtDeleteLeftOverFiles" label="${LabelDeleteLeftOverFiles}"></paper-input>
-                        <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkDeleteEmptyFolders">${LabelDeleteEmptyFolders}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
-                    </li>
-                </ul>
-
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    </li>
-
-                </ul>
+                <div class="selectContainer">
+                    <select is="emby-select" id="copyOrMoveFile" label="${LabelTransferMethod}">
+                        <option value="true">${OptionCopy}</option>
+                        <option value="false">${OptionMove}</option>
+                    </select>
+                    <div class="fieldDescription editorfieldDescription">${LabelTransferMethodHelp}</div>
+                </div>
+                <div>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkOverwriteExistingEpisodes" />
+                        <span>${OptionOverwriteExistingEpisodes}</span>
+                    </label>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtDeleteLeftOverFiles" type="text" label="${LabelDeleteLeftOverFiles}" />
+                    <div class="fieldDescription">${LabelDeleteLeftOverFilesHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkDeleteEmptyFolders" />
+                        <span>${LabelDeleteEmptyFolders}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
+                </div>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                </div>
             </form>
 
         </div>

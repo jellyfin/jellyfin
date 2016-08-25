@@ -1,8 +1,10 @@
-﻿define([], function () {
+﻿define(['appSettings'], function (appSettings) {
 
     function login(page, username, password) {
 
         Dashboard.showLoadingMsg();
+
+        appSettings.enableAutoLogin(true);
 
         ConnectionManager.loginToConnect(username, password).then(function () {
 
@@ -77,16 +79,20 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connect().then(function (result) {
+        ConnectionManager.connect({
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 
         });
     }
 
-    function loadPage(page) {
+    function loadPage(page, params) {
 
-        var mode = getParameterByName('mode') || 'auto';
+        var mode = params.mode || 'auto';
 
         if (mode == 'auto') {
 
@@ -177,7 +183,11 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connectToAddress(host).then(function (result) {
+        ConnectionManager.connectToAddress(host, {
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 
@@ -285,11 +295,11 @@
         });
 
         view.querySelector('.btnCancelSignup').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnCancelManualServer').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnWelcomeNext').addEventListener('click', function () {
@@ -326,7 +336,7 @@
         });
 
         view.addEventListener('viewshow', function () {
-            loadPage(view);
+            loadPage(view, params);
         });
     };
 });

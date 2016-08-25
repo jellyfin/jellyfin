@@ -25,14 +25,14 @@
             <select id="selectSeriesFolder" data-mini="true"></select>
         </div>
     </div>
-    <div style="margin: 1em 0;">
-        <paper-input id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"/>
     </div>
-    <div style="margin: 1em 0;">
-        <paper-input id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}"/>
     </div>
-    <div style="margin: 1em 0;">
-        <paper-input id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}"></paper-input>
+    <div class="inputContainer">
+        <input is="emby-input" id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}"/>
         <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
     </div>
     <div class="fldRemember hide">

@@ -75,7 +75,6 @@
         return html;
     }
 
-    var translateY = '-64px';
     function slideDown(elem) {
 
         if (elem.classList.contains('hide')) {
@@ -93,8 +92,8 @@
 
         requestAnimationFrame(function () {
             var keyframes = [
-              { transform: 'translateY(' + translateY + ')', offset: 0 },
-              { transform: 'none', offset: 1 }];
+              { transform: 'none', offset: 0 },
+              { transform: 'translateY(100%)', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
             elem.animate(keyframes, timing).onfinish = onfinish;
         });
@@ -115,8 +114,8 @@
         requestAnimationFrame(function () {
 
             var keyframes = [
-              { transform: 'none', offset: 0 },
-              { transform: 'translateY(' + translateY + ')', offset: 1 }];
+              { transform: 'translateY(100%)', offset: 0 },
+              { transform: 'none', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
@@ -308,17 +307,18 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['itemShortcuts', 'css!css/nowplayingbar.css', 'emby-slider'], function (itemShortcuts) {
+            require(['appfooter-shared', 'itemShortcuts', 'css!css/nowplayingbar.css', 'emby-slider'], function (appfooter, itemShortcuts) {
 
-                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
+                var parentContainer = appfooter.element;
+                nowPlayingBarElement = parentContainer.querySelector('.nowPlayingBar');
 
                 if (nowPlayingBarElement) {
                     resolve(nowPlayingBarElement);
                     return;
                 }
 
-                document.body.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
-                nowPlayingBarElement = document.querySelector('.nowPlayingBar');
+                parentContainer.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
+                nowPlayingBarElement = parentContainer.querySelector('.nowPlayingBar');
 
                 if (browser.safari && browser.slow) {
                     // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
@@ -424,7 +424,7 @@
             }
         }
 
-        var timeText = datetime.getDisplayRunningTime(playState.PositionTicks);
+        var timeText = playState.PositionTicks == null ? '--:--' : datetime.getDisplayRunningTime(playState.PositionTicks);
 
         if (nowPlayingItem.RunTimeTicks) {
 

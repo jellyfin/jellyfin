@@ -680,7 +680,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.IsNullOrEmpty(state.Options.Profile))
             {
-                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
                 {
                     // not supported by h264_omx
                     param += " -profile:v " + state.Options.Profile;
@@ -737,7 +738,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.Equals(videoCodec, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(videoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;
             }
@@ -887,66 +889,96 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var filters = new List<string>();
 
-            if (state.DeInterlace)
+            if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
+            {
+                filters.Add("format=nv12|vaapi");
+                filters.Add("hwupload");
+            }
+            else if (state.DeInterlace && !string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 filters.Add("yadif=0:-1:0");
             }
 
-            // If fixed dimensions were supplied
-            if (request.Width.HasValue && request.Height.HasValue)
+            if (string.Equals(outputVideoCodec, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
-                var widthParam = request.Width.Value.ToString(UsCulture);
-                var heightParam = request.Height.Value.ToString(UsCulture);
+                // Work around vaapi's reduced scaling features
+                var scaler = "scale_vaapi";
 
-                filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
-            }
+                // Given the input dimensions (inputWidth, inputHeight), determine the output dimensions
+                // (outputWidth, outputHeight). The user may request precise output dimensions or maximum
+                // output dimensions. Output dimensions are guaranteed to be even.
+                decimal inputWidth = Convert.ToDecimal(state.VideoStream.Width);
+                decimal inputHeight = Convert.ToDecimal(state.VideoStream.Height);
+                decimal outputWidth = request.Width.HasValue ? Convert.ToDecimal(request.Width.Value) : inputWidth;
+                decimal outputHeight = request.Height.HasValue ? Convert.ToDecimal(request.Height.Value) : inputHeight;
+                decimal maximumWidth = request.MaxWidth.HasValue ? Convert.ToDecimal(request.MaxWidth.Value) : outputWidth;
+                decimal maximumHeight = request.MaxHeight.HasValue ? Convert.ToDecimal(request.MaxHeight.Value) : outputHeight;
 
-            // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
-            else if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
-            {
-                var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
-                var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
-
-                filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
-            }
-
-            // If a fixed width was requested
-            else if (request.Width.HasValue)
-            {
-                var widthParam = request.Width.Value.ToString(UsCulture);
-
-                filters.Add(string.Format("scale={0}:trunc(ow/a/2)*2", widthParam));
-            }
-
-            // If a fixed height was requested
-            else if (request.Height.HasValue)
-            {
-                var heightParam = request.Height.Value.ToString(UsCulture);
-
-                filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
-            }
-
-            // If a max width was requested
-            else if (request.MaxWidth.HasValue)
-            {
-                var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
-
-                filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
-            }
-
-            // If a max height was requested
-            else if (request.MaxHeight.HasValue)
-            {
-                var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
-
-                filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(ih\\,{0})", maxHeightParam));
-            }
-
-            if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
-            {
-                if (filters.Count > 1)
+                if (outputWidth > maximumWidth || outputHeight > maximumHeight)
                 {
-                    //filters[filters.Count - 1] += ":flags=fast_bilinear";
+                    var scale = Math.Min(maximumWidth / outputWidth, maximumHeight / outputHeight);
+                    outputWidth = Math.Min(maximumWidth, Math.Truncate(outputWidth * scale));
+                    outputHeight = Math.Min(maximumHeight, Math.Truncate(outputHeight * scale));
+                }
+
+                outputWidth = 2 * Math.Truncate(outputWidth / 2);
+                outputHeight = 2 * Math.Truncate(outputHeight / 2);
+
+                if (outputWidth != inputWidth || outputHeight != inputHeight)
+                {
+                    filters.Add(string.Format("{0}=w={1}:h={2}", scaler, outputWidth.ToString(UsCulture), outputHeight.ToString(UsCulture)));
+                }
+            }
+            else
+            {
+                // If fixed dimensions were supplied
+                if (request.Width.HasValue && request.Height.HasValue)
+                {
+                    var widthParam = request.Width.Value.ToString(UsCulture);
+                    var heightParam = request.Height.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", widthParam, heightParam));
+                }
+
+                // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
+                else if (request.MaxWidth.HasValue && request.MaxHeight.HasValue)
+                {
+                    var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
+                    var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
+                }
+
+                // If a fixed width was requested
+                else if (request.Width.HasValue)
+                {
+                    var widthParam = request.Width.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale={0}:trunc(ow/a/2)*2", widthParam));
+                }
+
+                // If a fixed height was requested
+                else if (request.Height.HasValue)
+                {
+                    var heightParam = request.Height.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
+                }
+
+                // If a max width was requested
+                else if (request.MaxWidth.HasValue)
+                {
+                    var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,{0})/2)*2:trunc(ow/dar/2)*2", maxWidthParam));
+                }
+
+                // If a max height was requested
+                else if (request.MaxHeight.HasValue)
+                {
+                    var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
+
+                    filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(max(iw/dar\\,ih)\\,{0})", maxHeightParam));
                 }
             }
 

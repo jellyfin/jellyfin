@@ -11,13 +11,12 @@
     box-sizing: border-box;
     /* Remove select styling */
     /* Font size must the 16px or larger to prevent iOS page zoom on focus */
-    font-size: inherit;
+    font-size: 110%;
     /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;
     color: inherit;
     padding: .35em 0 .3em 0;
-    cursor: pointer;
     outline: none !important;
     width: 100%;
     background-color: transparent;
@@ -35,7 +34,7 @@
 
 .inputLabel-float {
     transform-origin: left top;
-    transform: scale(1.3,1.3) translateY(86%);
+    transform: scale(1.25,1.25) translateY(94%);
 }
 
 .inputLabelFocused {

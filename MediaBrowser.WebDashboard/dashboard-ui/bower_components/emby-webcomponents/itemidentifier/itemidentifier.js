@@ -187,7 +187,7 @@
 
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
         html += '<div class="cardBox visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<div class="cardScalable visualCardBox-cardScalable">';
         html += '<div class="cardPadder-portrait"></div>';
 
         html += '<div class="cardContent searchImage">';
@@ -203,7 +203,7 @@
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="cardFooter cardFooter-visual">';
+        html += '<div class="cardFooter visualCardBox-cardFooter">';
         html += '<div class="cardText cardTextCentered">' + result.Name + '</div>';
 
         html += '<div class="cardText cardText-secondary cardTextCentered">';

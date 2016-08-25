@@ -104,7 +104,7 @@
     }();
 
     function toLocaleDateString(date) {
-        
+
         var currentLocale = globalize.getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
@@ -160,10 +160,20 @@
         return time;
     }
 
+    function isRelativeDay(date, offsetInDays) {
+        var yesterday = new Date();
+        var day = yesterday.getDate() + offsetInDays;
+
+        yesterday.setDate(day); // automatically adjusts month/year appropriately
+
+        return date.getFullYear() == yesterday.getFullYear() && date.getMonth() == yesterday.getMonth() && date.getDate() == day;
+    }
+
     return {
         parseISO8601Date: parseISO8601Date,
         getDisplayRunningTime: getDisplayRunningTime,
         toLocaleDateString: toLocaleDateString,
-        getDisplayTime: getDisplayTime
+        getDisplayTime: getDisplayTime,
+        isRelativeDay: isRelativeDay
     };
 });

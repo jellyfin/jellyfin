@@ -1,26 +1,24 @@
-﻿<div id="liveTvTunerProviderM3UPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-m3u,paper-input,emby-button">
+﻿<div id="liveTvTunerProviderM3UPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvtunerprovider-m3u,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
 
-            <div class="readOnlyContent" style="margin-top: 2em;">
-
+            <form>
                 <h1>M3U Setup</h1>
 
-                <form>
-                    <div>
-                        <div>
-                            <paper-input class="txtDevicePath" label="${LabelFileOrUrl}" required="required" style="width:85%;display:inline-block;"></paper-input>
-                            <button type="button" is="paper-icon-button-light" id="btnSelectPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" class="txtDevicePath" label="${LabelFileOrUrl}" required="required" autocomplete="off" />
                         </div>
-                        <br />
-                        <div>
-                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
-                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectPath" class="autoSize"><i class="md-icon">search</i></button>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

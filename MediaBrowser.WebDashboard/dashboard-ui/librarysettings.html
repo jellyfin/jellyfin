@@ -4,55 +4,42 @@
         <div class="content-primary">
             <form class="librarySettingsForm">
 
-                <ul data-role="listview" class="ulForm">
-                    <li class="fldLibraryMonitor hide">
-                        <label for="selectEnableRealtimeMonitor" class="selectLabel">${LabelEnableRealtimeMonitor}</label>
-                        <select id="selectEnableRealtimeMonitor" data-mini="true">
-                            <option value="Auto">${OptionAuto}</option>
-                            <option value="Enabled">${OptionYes}</option>
-                            <option value="Disabled">${OptionNo}</option>
-                        </select>
-                        <div class="fieldDescription">
-                            ${LabelEnableRealtimeMonitorHelp}
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectDateAdded" data-mini="true" label="${LabelDateAddedBehavior}">
+                        <option value="0">${OptionDateAddedImportTime}</option>
+                        <option value="1">${OptionDateAddedFileTime}</option>
+                    </select>
+                    <div class="fieldDescription">${LabelDateAddedBehaviorHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtMetadataPath" label="${LabelMetadataPath}" autocomplete="off" />
                         </div>
-                    </li>
-                    <li>
-                        <label for="selectDateAdded" class="selectLabel">${LabelDateAddedBehavior}</label>
-                        <select id="selectDateAdded" data-mini="true">
-                            <option value="0">${OptionDateAddedImportTime}</option>
-                            <option value="1">${OptionDateAddedFileTime}</option>
-                        </select>
-                        <div class="fieldDescription">${LabelDateAddedBehaviorHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input id="txtMetadataPath" label="${LabelMetadataPath}" style="width:85%;display:inline-block;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
-                        <div class="fieldDescription">${LabelMetadataPathHelp}</div>
-                        <br />
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${OptionSaveMetadataAsHiddenHelp}</div>
-                        <br />
-                    </li>
-                </ul>
-
+                        <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
+                    </div>
+                    <div class="fieldDescription">${LabelMetadataPathHelp}</div>
+                </div>
+                <div>
+                    <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
+                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSaveMetadataAsHiddenHelp}</div>
+                    <br />
+                </div>
+                <br />
                 <div is="emby-collapse" title="${HeaderChapters}">
                     <div class="collapseContent">
                         <br />
-                        <ul data-role="listview" class="ulForm" style="margin-bottom:0!important;">
-                            <li>
-                                <div class="paperListLabel">${HeaderExtractChapterImagesFor}</div>
-                                <div class="paperCheckboxList">
-                                    <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
+                        <div>
+                            <div class="paperListLabel">${HeaderExtractChapterImagesFor}</div>
+                            <div class="paperCheckboxList">
+                                <paper-checkbox id="chkChaptersMovies">${OptionMovies}</paper-checkbox>
 
-                                    <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
+                                <paper-checkbox id="chkChaptersEpisodes">${OptionEpisodes}</paper-checkbox>
 
-                                    <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
-                                </div>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
-                            </li>
-                        </ul>
+                                <paper-checkbox id="chkChaptersOtherVideos">${OptionOtherVideos}</paper-checkbox>
+                            </div>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${ExtractChapterImagesHelp}</div>
+                        </div>
                         <br />
                         <div>
                             <paper-checkbox id="chkExtractChaptersDuringLibraryScan">${LabelExtractChaptersDuringLibraryScan}</paper-checkbox>
@@ -65,51 +52,46 @@
                 <div is="emby-collapse" title="${HeaderPeople}">
                     <div class="collapseContent">
                         <br />
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <div class="paperListLabel">${HeaderDownloadPeopleMetadataFor}</div>
-                                <div class="paperCheckboxList">
-                                    <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
+                        <div>
+                            <div class="paperListLabel">${HeaderDownloadPeopleMetadataFor}</div>
+                            <div class="paperCheckboxList">
+                                <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
+                                <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
+                                <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
+                                <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
+                                <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
+                                <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
 
-                                    <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
-                                </div>
-                                <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
-                            </li>
-                        </ul>
+                                <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
+                            </div>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                        </div>
                     </div>
                 </div>
 
                 <div is="emby-collapse" title="${HeaderTV}">
                     <div class="collapseContent">
-                        <div>
-                            <paper-input type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required></paper-input>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtSeasonZeroName" label="${LabelSeasonZeroDisplayName}" required />
                         </div>
                     </div>
                 </div>
 
                 <div is="emby-collapse" title="Fanart.tv">
                     <div class="collapseContent">
-                        <ul data-role="listview" class="ulForm">
-                            <li>
-                                <paper-input type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}"></paper-input>
-                                <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
-                                <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
-                            </li>
-                        </ul>
+                        <div class="inputContainer">
+                            <input is="emby-input" type="text" id="txtFanartApiKey" label="${LabelFanartApiKey}" />
+                            <div class="fieldDescription">${LabelFanartApiKeyHelp}</div>
+                            <div class="fieldDescription"><a href="https://fanart.tv/2015/01/personal-api-keys" target="_blank">${ButtonLearnMore}</a></div>
+                        </div>
                     </div>
                 </div>
 
-                <br />
                 <br />
                 <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
 

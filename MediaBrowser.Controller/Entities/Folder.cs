@@ -375,7 +375,7 @@ namespace MediaBrowser.Controller.Entities
 
                     if (currentChildren.TryGetValue(child.Id, out currentChild) && IsValidFromResolver(currentChild, child))
                     {
-                        await UpdateIsOffline(currentChild, false).ConfigureAwait(false);
+                        await currentChild.UpdateIsOffline(false).ConfigureAwait(false);
                         validChildren.Add(currentChild);
 
                         continue;
@@ -404,7 +404,7 @@ namespace MediaBrowser.Controller.Entities
 
                         else if (!string.IsNullOrEmpty(item.Path) && IsPathOffline(item.Path))
                         {
-                            await UpdateIsOffline(item, true).ConfigureAwait(false);
+                            await item.UpdateIsOffline(true).ConfigureAwait(false);
                         }
                         else
                         {
@@ -459,17 +459,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             progress.Report(100);
-        }
-
-        private Task UpdateIsOffline(BaseItem item, bool newValue)
-        {
-            if (item.IsOffline != newValue)
-            {
-                item.IsOffline = newValue;
-                return item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
-            }
-
-            return Task.FromResult(true);
         }
 
         private async Task RefreshMetadataRecursive(MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
@@ -902,16 +891,16 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.ItemIds.Length > 0)
             {
-                var specificItems = query.ItemIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+                var result = LibraryManager.GetItemsResult(query);
 
                 if (query.SortBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
                     // Try to preserve order
-                    specificItems = specificItems.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToList();
+                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
                 }
-                return Task.FromResult(PostFilterAndSort(specificItems, query, true, true));
+                return Task.FromResult(result);
             }
 
             return GetItemsInternal(query);

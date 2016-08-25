@@ -415,7 +415,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 fill: 'both'
             };
 
-            if (!animation.immediate || browser.animate) {
+            if (browser.animate) {
                 animationConfig.easing = 'ease-out';
             }
 
@@ -475,7 +475,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             };
         };
 
-        self.getCenterPosition = function(item) {
+        self.getCenterPosition = function (item) {
 
             var pos = self.getPos(item);
             return within(pos.center, pos.start, pos.end);
@@ -664,11 +664,15 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             // Bind dragging events
             if (isTouch) {
                 dragTouchEvents.forEach(function (eventName) {
-                    document.addEventListener(eventName, dragHandler);
+                    dom.addEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             } else {
                 dragMouseEvents.forEach(function (eventName) {
-                    document.addEventListener(eventName, dragHandler);
+                    dom.addEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             }
 
@@ -753,11 +757,15 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 
             if (dragging.touch) {
                 dragTouchEvents.forEach(function (eventName) {
-                    document.removeEventListener(eventName, dragHandler);
+                    dom.removeEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             } else {
                 dragMouseEvents.forEach(function (eventName) {
-                    document.removeEventListener(eventName, dragHandler);
+                    dom.removeEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             }
 
@@ -853,7 +861,10 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 		 */
         self.destroy = function () {
 
-            window.removeEventListener('resize', onResize, true);
+            dom.removeEventListener(window, 'resize', onResize, {
+                passive: true,
+                capture: true
+            });
 
             // Reset native FRAME element scroll
             dom.removeEventListener(frameElement, 'scroll', resetScroll, {
@@ -934,7 +945,10 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 dragSourceElement.addEventListener('mousedown', dragInitSlidee);
 
                 if (!o.scrollWidth) {
-                    window.addEventListener('resize', onResize, true);
+                    dom.addEventListener(window, 'resize', onResize, {
+                        passive: true,
+                        capture: true
+                    });
                 }
 
                 if (!o.horizontal) {

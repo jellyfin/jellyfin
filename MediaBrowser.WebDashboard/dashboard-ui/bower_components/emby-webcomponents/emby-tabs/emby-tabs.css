@@ -1,6 +1,7 @@
 ﻿.emby-tab-button {
     background: transparent;
-    border: 0 !important;
+    border: 2px solid transparent;
+    border-width: 0 0 2px 0;
     cursor: pointer;
     outline: none !important;
     width: auto;
@@ -29,6 +30,7 @@
 
 .emby-tab-button-active {
     color: #52B54B !important;
+    border-color: #52B54B;
 }
 
 .emby-tabs-slider {
@@ -39,7 +41,7 @@
     position: absolute;
     left: 0;
     /* Need this or it will be partially covered by the drop-shadow on android */
-    bottom: 1px;
+    bottom: 0;
     height: 2px;
     z-index: 1000;
     background: #52B54B;

@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked'], function ($) {
 
     function loadPage(page, config, languages) {
 
@@ -25,7 +25,7 @@
 
             var culture = languages[i];
 
-            html += '<paper-checkbox class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '">' + culture.DisplayName + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkLang" data-lang="' + culture.ThreeLetterISOLanguageName.toLowerCase() + '" /><span>' + culture.DisplayName + '</span></label>';
         }
 
         $('.downloadLanguages', page).html(html);

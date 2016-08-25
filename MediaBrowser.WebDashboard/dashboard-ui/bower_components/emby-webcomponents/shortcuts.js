@@ -79,15 +79,15 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         });
     }
 
-    function showItem(options) {
+    function showItem(item, options) {
 
-        if (options.Type == 'Photo') {
+        if (item.Type == 'Photo') {
 
-            showSlideshow(options.Id, options.ServerId);
+            showSlideshow(item.Id, item.ServerId);
             return;
         }
 
-        embyRouter.showItem(options);
+        embyRouter.showItem(item, options);
     }
 
     function getItem(button) {
@@ -210,7 +210,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var type = item.Type;
 
         if (action == 'link') {
-            showItem(item);
+
+            showItem(item, {
+                context: card.getAttribute('data-context')
+            });
         }
 
         else if (action == 'instantmix') {

@@ -13,10 +13,14 @@
             </div>
 
             <div class="inputContainer">
-                <input is="emby-input" id="txtManualPassword" type="password" label="${LabelPassword}" />
+                <input is="emby-input" id="txtManualPassword" type="password" label="${LabelPassword}"/>
             </div>
 
-            <br />
+            <label class="checkboxContainer">
+                <input is="emby-checkbox" type="checkbox" class="chkRememberLogin" checked />
+                <span>${RememberMe}</span>
+            </label>
+
             <button is="emby-button" type="submit" class="raised accent block">
                 <i class="md-icon">check</i>
                 <span>${ButtonSignIn}</span>

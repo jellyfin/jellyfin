@@ -119,9 +119,11 @@ namespace Emby.Drawing.GDI
                         thumbnailGraph.SmoothingMode = SmoothingMode.HighQuality;
                         thumbnailGraph.InterpolationMode = InterpolationMode.HighQualityBicubic;
                         thumbnailGraph.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                        thumbnailGraph.CompositingMode = !hasPostProcessing ?
-                            CompositingMode.SourceCopy :
-                            CompositingMode.SourceOver;
+
+                        // SourceCopy causes the image to be blank in OSX
+                        //thumbnailGraph.CompositingMode = !hasPostProcessing ?
+                        //    CompositingMode.SourceCopy :
+                        //    CompositingMode.SourceOver;
 
                         SetBackgroundColor(thumbnailGraph, options);
 

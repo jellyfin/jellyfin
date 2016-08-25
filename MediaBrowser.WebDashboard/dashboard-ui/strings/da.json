@@ -1,4 +1,8 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
+    "LabelVaapiDevice": "VA API Device:",
+    "LabelVaapiDeviceHelp": "This is the render node that is used for hardware acceleration.",
     "LabelExit": "Afslut",
     "LabelVisitCommunity": "Bes\u00f8g F\u00e6lleskab",
     "LabelGithub": "Github",
@@ -2108,7 +2112,7 @@
     "LabelSyncJobName": "Navn til synkroniserings job:",
     "LabelQuality": "Kvalitet:",
     "OptionAutomaticallySyncNewContent": "Synkroniser automatisk nyt indhold",
-    "OptionAutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Synkroniser kun usete videoer",
     "OptionSyncUnwatchedVideosOnlyHelp": "Kun usete videoer vil blive synkroniseret, og videoer vil blive fjernet fra enheden n\u00e5r de er blevet set.",
     "LabelItemLimit": "Maks. filer:",
@@ -2247,7 +2251,7 @@
     "ButtonLocalRefresh": "Local refresh",
     "ButtonAddMissingData": "Add missing data only",
     "ButtonFullRefresh": "Full refresh",
-    "ValueExample": "1:00 PM",
+    "ValueExample": "Example: {0}",
     "OptionEnableAnonymousUsageReporting": "Enable anonymous usage reporting",
     "OptionEnableAnonymousUsageReportingHelp": "Allow Emby to collect anonymous data such as installed plugins, the version numbers of your Emby apps, etc. This information is only used for the purpose of improving the software.",
     "LabelFileOrUrl": "File or url:",
@@ -2300,7 +2304,7 @@
     "LabelffmpegVersion": "FFmpeg version:",
     "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
-    "SetupFFmpegHelp": "FFmpeg is a required component and needs to be configured.",
+    "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
@@ -2315,7 +2319,10 @@
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
     "ConfirmRemoveDownload": "Remove download?",
+    "RemoveDownload": "Remove download",
     "SyncToOtherDevices": "Sync to other devices",
     "ManageOfflineDownloads": "Manage offline downloads",
-    "MessageDownloadScheduled": "Download scheduled"
+    "MessageDownloadScheduled": "Download scheduled",
+    "RememberMe": "Remember me",
+    "HeaderOfflineSync": "Offline Sync"
 }

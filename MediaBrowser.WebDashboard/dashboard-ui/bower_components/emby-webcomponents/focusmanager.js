@@ -24,7 +24,7 @@ define(['dom'], function (dom) {
         }
 
         if (defaultToFirst !== false) {
-            element = getFocusableElements(view)[0];
+            element = getFocusableElements(view, 1)[0];
 
             if (element) {
                 focus(element);
@@ -117,7 +117,7 @@ define(['dom'], function (dom) {
         return scopes[0] || document.body;
     }
 
-    function getFocusableElements(parent) {
+    function getFocusableElements(parent, limit) {
         var elems = (parent || getDefaultScope()).querySelectorAll(focusableQuery);
         var focusableElements = [];
 
@@ -127,6 +127,10 @@ define(['dom'], function (dom) {
 
             if (isCurrentlyFocusableInternal(elem)) {
                 focusableElements.push(elem);
+
+                if (limit && focusableElements.length >= limit) {
+                    break;
+                }
             }
         }
 
@@ -171,8 +175,6 @@ define(['dom'], function (dom) {
     function getWindowData(win, documentElement) {
 
         return {
-            pageYOffset: win.pageYOffset,
-            pageXOffset: win.pageXOffset,
             clientTop: documentElement.clientTop,
             clientLeft: documentElement.clientLeft
         };
@@ -180,16 +182,25 @@ define(['dom'], function (dom) {
 
     function getOffset(elem, windowData) {
 
-        var box = { top: 0, left: 0 };
+        var box;
 
         // Support: BlackBerry 5, iOS 3 (original iPhone)
         // If we don't have gBCR, just use 0,0 rather than error
         if (elem.getBoundingClientRect) {
             box = elem.getBoundingClientRect();
+        } else {
+            box = {
+                top: 0,
+                left: 0,
+                width: 0,
+                height: 0
+            };
         }
         return {
-            top: box.top + windowData.pageYOffset - windowData.clientTop,
-            left: box.left + windowData.pageXOffset - windowData.clientLeft
+            top: box.top - windowData.clientTop,
+            left: box.left - windowData.clientLeft,
+            width: box.width,
+            height: box.height
         };
     }
 
@@ -197,11 +208,13 @@ define(['dom'], function (dom) {
 
         var offset = getOffset(elem, windowData);
 
-        var posY = offset.top - windowData.pageYOffset;
-        var posX = offset.left - windowData.pageXOffset;
+        var posY = offset.top;
+        var posX = offset.left;
 
-        var width = elem.offsetWidth;
-        var height = elem.offsetHeight;
+        var width = offset.width;
+        var height = offset.height;
+        //var width = elem.offsetWidth;
+        //var height = elem.offsetHeight;
 
         return {
             left: posX,
@@ -252,6 +265,11 @@ define(['dom'], function (dom) {
             //}
 
             var elementRect = getViewportBoundingClientRect(curr, windowData);
+
+            // not currently visible
+            if (!elementRect.width && !elementRect.height) {
+                continue;
+            }
 
             switch (direction) {
 

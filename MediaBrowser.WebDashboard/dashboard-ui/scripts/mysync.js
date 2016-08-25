@@ -1,4 +1,4 @@
-﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events) {
+﻿define(['apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (appHost, globalize, syncJobList, events, localSync) {
 
     function initSupporterInfo(view, params) {
 
@@ -38,14 +38,7 @@
 
             if (isLocalSyncManagement()) {
 
-                var status = LocalSync.getSyncStatus();
-
-                page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-                if (status == 'Active') {
-                    loading.show();
-                } else {
-                    loading.hide();
-                }
+                var status = localSync.getSyncStatus();
 
                 if (status == "Active") {
                     page.querySelector('.btnSyncNow').classList.add('hide');
@@ -58,7 +51,7 @@
 
         function syncNow(page) {
 
-            LocalSync.sync();
+            localSync.sync();
             require(['toast'], function (toast) {
                 toast(Globalize.translate('MessageSyncStarted'));
             });
@@ -102,8 +95,6 @@
         });
 
         view.addEventListener('viewbeforehide', function () {
-
-            loading.hide();
 
             if (interval) {
                 clearInterval(interval);

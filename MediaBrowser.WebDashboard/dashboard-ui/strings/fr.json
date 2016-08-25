@@ -1,4 +1,8 @@
 {
+    "LabelMaxAudioFileBitrate": "Max audio file bitrate:",
+    "LabelMaxAudioFileBitrateHelp": "Audio files with a higher bitrate will be converted by Emby Server. Select a higher value for better quality, or a lower value to conserve local storage space.",
+    "LabelVaapiDevice": "VA API Device:",
+    "LabelVaapiDeviceHelp": "This is the render node that is used for hardware acceleration.",
     "LabelExit": "Quitter",
     "LabelVisitCommunity": "Visiter la Communaut\u00e9",
     "LabelGithub": "Github",
@@ -1862,7 +1866,7 @@
     "OptionMusicAlbums": "Albums de musique",
     "OptionMusicVideos": "Vid\u00e9oclips",
     "OptionSongs": "Chansons",
-    "OptionHomeVideos": "Vid\u00e9os personnelles",
+    "OptionHomeVideos": "Vid\u00e9os et photos personnelles",
     "OptionBooks": "Livres",
     "ButtonUp": "Haut",
     "ButtonDown": "Bas",
@@ -2315,7 +2319,10 @@
     "EnablePhotosHelp": "Photos will be detected and displayed alongside other media files.",
     "MakeAvailableOffline": "Make available offline",
     "ConfirmRemoveDownload": "Remove download?",
+    "RemoveDownload": "Supprimer le t\u00e9l\u00e9chargement",
     "SyncToOtherDevices": "Sync to other devices",
-    "ManageOfflineDownloads": "Manage offline downloads",
-    "MessageDownloadScheduled": "Download scheduled"
+    "ManageOfflineDownloads": "G\u00e9rer les t\u00e9l\u00e9chargements hors ligne",
+    "MessageDownloadScheduled": "T\u00e9l\u00e9chargement planifi\u00e9e",
+    "RememberMe": "Se souvenir de moi",
+    "HeaderOfflineSync": "Offline Sync"
 }

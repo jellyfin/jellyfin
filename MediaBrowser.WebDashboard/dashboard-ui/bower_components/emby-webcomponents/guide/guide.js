@@ -294,7 +294,9 @@
                 return curr.ChannelId == channel.Id;
             });
 
-            html += '<div class="channelPrograms" data-channelid="' + channel.Id + '">';
+            var cssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
+
+            html += '<div class="' + cssClass + '" data-channelid="' + channel.Id + '">';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
@@ -407,8 +409,7 @@
             // Normally we'd want to just let responsive css handle this,
             // but since mobile browsers are often underpowered, 
             // it can help performance to get them out of the markup
-            var showIndicators = window.innerWidth >= 800;
-            showIndicators = false;
+            var showIndicators = false;
 
             var options = {
                 showHdIcon: showIndicators,
@@ -450,6 +451,10 @@
                 }
 
                 var cssClass = 'channelHeaderCell clearButton itemAction lazy';
+
+                if (layoutManager.tv) {
+                    cssClass += ' channelHeaderCell-tv';
+                }
 
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
