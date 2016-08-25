@@ -137,7 +137,8 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return SeriesId.HasValue ? (LibraryManager.GetItemById(SeriesId.Value) as Series) : null;
+                var seriesId = SeriesId ?? FindSeriesId();
+                return seriesId.HasValue ? (LibraryManager.GetItemById(seriesId.Value) as Series) : null;
             }
         }
 
@@ -146,7 +147,8 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             get
             {
-                return SeasonId.HasValue ? (LibraryManager.GetItemById(SeasonId.Value) as Season) : null;
+                var seasonId = SeasonId ?? FindSeasonId();
+                return seasonId.HasValue ? (LibraryManager.GetItemById(seasonId.Value) as Season) : null;
             }
         }
 

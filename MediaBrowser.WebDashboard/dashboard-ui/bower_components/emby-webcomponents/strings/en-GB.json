@@ -14,7 +14,7 @@
     "LabelItemLimit": "Item limit:",
     "SyncUnwatchedVideosOnlyHelp": "Only unwatched videos will be synced, and videos will be removed from the device as they are watched.",
     "LabelItemLimitHelp": "Optional. Set a limit to the number of items that will be synced.",
-    "AutomaticallySyncNewContentHelp": "New content added to this folder will be automatically synced to the device.",
+    "AutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "Add",
