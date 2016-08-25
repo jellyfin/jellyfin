@@ -33,7 +33,9 @@ namespace Emby.Drawing.GDI
                     graphics.SmoothingMode = SmoothingMode.HighQuality;
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.CompositingMode = CompositingMode.SourceCopy;
+
+                    // SourceCopy causes the image to be blank in OSX
+                    //graphics.CompositingMode = CompositingMode.SourceCopy;
 
                     for (var row = 0; row < rows; row++)
                     {
@@ -44,19 +46,9 @@ namespace Emby.Drawing.GDI
 
                             if (files.Count > index)
                             {
-                                using (var fileStream = fileSystem.GetFileStream(files[index], FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                                using (var imgtemp = Image.FromFile(files[index]))
                                 {
-                                    using (var memoryStream = new MemoryStream())
-                                    {
-                                        fileStream.CopyTo(memoryStream);
-
-                                        memoryStream.Position = 0;
-
-                                        using (var imgtemp = Image.FromStream(memoryStream, true, false))
-                                        {
-                                            graphics.DrawImage(imgtemp, x, y, cellWidth, cellHeight);
-                                        }
-                                    }
+                                    graphics.DrawImage(imgtemp, x, y, cellWidth, cellHeight);
                                 }
                             }
 
@@ -90,7 +82,9 @@ namespace Emby.Drawing.GDI
                     graphics.SmoothingMode = SmoothingMode.HighQuality;
                     graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                     graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.CompositingMode = CompositingMode.SourceCopy;
+
+                    // SourceCopy causes the image to be blank in OSX
+                    //graphics.CompositingMode = CompositingMode.SourceCopy;
 
                     for (var row = 0; row < rows; row++)
                     {
@@ -99,38 +93,16 @@ namespace Emby.Drawing.GDI
                             var x = col * singleSize;
                             var y = row * singleSize;
 
-                            using (var fileStream = fileSystem.GetFileStream(files[index], FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                            using (var imgtemp = Image.FromFile(files[index]))
                             {
-                                using (var memoryStream = new MemoryStream())
-                                {
-                                    fileStream.CopyTo(memoryStream);
-
-                                    memoryStream.Position = 0;
-
-                                    using (var imgtemp = Image.FromStream(memoryStream, true, false))
-                                    {
-                                        graphics.DrawImage(imgtemp, x, y, singleSize, singleSize);
-                                    }
-                                }
+                                graphics.DrawImage(imgtemp, x, y, singleSize, singleSize);
                             }
-
                             index++;
                         }
                     }
                     img.Save(file);
                 }
             }
-        }
-
-        private static Stream GetStream(Image image)
-        {
-            var ms = new MemoryStream();
-
-            image.Save(ms, ImageFormat.Png);
-
-            ms.Position = 0;
-
-            return ms;
         }
     }
 }
