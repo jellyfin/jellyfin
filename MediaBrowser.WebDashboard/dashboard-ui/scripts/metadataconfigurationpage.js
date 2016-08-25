@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked'], function ($) {
 
     function load(page, config, allCultures, allCountries) {
         if (!config || !allCultures || !allCountries) {
