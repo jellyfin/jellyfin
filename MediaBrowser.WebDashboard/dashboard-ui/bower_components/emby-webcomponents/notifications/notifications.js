@@ -128,7 +128,7 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
 
             Recursive: true,
             Limit: 3,
-            IsFolder: false,
+            Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
             Ids: newItems.join(',')
