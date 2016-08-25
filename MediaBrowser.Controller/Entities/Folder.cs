@@ -891,16 +891,16 @@ namespace MediaBrowser.Controller.Entities
         {
             if (query.ItemIds.Length > 0)
             {
-                var specificItems = query.ItemIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
+                var result = LibraryManager.GetItemsResult(query);
 
                 if (query.SortBy.Length == 0)
                 {
                     var ids = query.ItemIds.ToList();
 
                     // Try to preserve order
-                    specificItems = specificItems.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToList();
+                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
                 }
-                return Task.FromResult(PostFilterAndSort(specificItems, query, true, true));
+                return Task.FromResult(result);
             }
 
             return GetItemsInternal(query);
