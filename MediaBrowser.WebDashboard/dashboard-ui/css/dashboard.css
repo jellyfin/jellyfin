@@ -239,7 +239,7 @@ html .ui-bar-a a,
 html .ui-body-a a,
 html body .ui-group-theme-a a {
     color: #388E3C /*{a-link-color}*/;
-    font-weight: bold;
+    font-weight: 500;
 }
 
     .ui-page-theme-a a:visited,
