@@ -111,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                         M3UUrl = info.M3UUrl,
                         IsEnabled = true
 
-                    }).ConfigureAwait(false);
+                    }, true).ConfigureAwait(false);
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     existing.M3UUrl = info.M3UUrl;
                     existing.FriendlyName = info.FriendlyName;
                     existing.Tuners = info.Tuners;
-                    await _liveTvManager.SaveTunerHost(existing).ConfigureAwait(false);
+                    await _liveTvManager.SaveTunerHost(existing, false).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)

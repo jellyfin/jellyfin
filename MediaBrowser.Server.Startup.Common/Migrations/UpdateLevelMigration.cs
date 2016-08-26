@@ -69,7 +69,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 Version version;
                 if (Version.TryParse(release.tag_name, out version))
                 {
-                    if (currentVersion >= version)
+                    if (currentVersion > version)
                     {
                         newUpdateLevel = PackageVersionClass.Beta;
                     }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 Version version;
                 if (Version.TryParse(release.tag_name, out version))
                 {
-                    if (currentVersion >= version)
+                    if (currentVersion > version)
                     {
                         newUpdateLevel = PackageVersionClass.Dev;
                     }
