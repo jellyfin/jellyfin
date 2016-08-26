@@ -66,13 +66,10 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             if (releases.Count >= 1)
             {
                 var release = releases[0];
-                Version version;
-                if (Version.TryParse(release.tag_name, out version))
+                var version = ParseVersion(release.tag_name);
+                if (version != null && currentVersion > version)
                 {
-                    if (currentVersion > version)
-                    {
-                        newUpdateLevel = PackageVersionClass.Beta;
-                    }
+                    newUpdateLevel = PackageVersionClass.Beta;
                 }
             }
 
@@ -80,13 +77,10 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             if (releases.Count >= 2)
             {
                 var release = releases[1];
-                Version version;
-                if (Version.TryParse(release.tag_name, out version))
+                var version = ParseVersion(release.tag_name);
+                if (version != null && currentVersion > version)
                 {
-                    if (currentVersion > version)
-                    {
-                        newUpdateLevel = PackageVersionClass.Dev;
-                    }
+                    newUpdateLevel = PackageVersionClass.Dev;
                 }
             }
 
@@ -95,6 +89,20 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 _config.Configuration.SystemUpdateLevel = newUpdateLevel;
                 _config.SaveConfiguration();
             }
+        }
+
+        private Version ParseVersion(string versionString)
+        {
+            var parts = versionString.Split('.');
+            if (parts.Length == 3)
+            {
+                versionString += ".0";
+            }
+
+            Version version;
+            Version.TryParse(versionString, out version);
+
+            return version;
         }
     }
 }
