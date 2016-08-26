@@ -22,7 +22,8 @@ define(['playbackManager', 'browser'], function (playbackManager, browser) {
             if (enabled(items[0].MediaType)) {
                 playbackManager.play({
                     items: items,
-                    fullscreen: false
+                    fullscreen: false,
+                    enableRemotePlayers: false
                 });
             }
 
