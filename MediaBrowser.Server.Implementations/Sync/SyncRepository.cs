@@ -618,6 +618,8 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var result = new Dictionary<string, SyncedItemProgress>();
 
+            var now = DateTime.UtcNow;
+
             using (var connection = CreateConnection(true).Result)
             {
                 using (var cmd = connection.CreateCommand())
@@ -648,10 +650,12 @@ namespace MediaBrowser.Server.Implementations.Sync
                         .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
                         .Replace("'Synced'", "'Completed','CompletedWithError'");
 
-                    Logger.Debug(cmd.CommandText);
+                    //Logger.Debug(cmd.CommandText);
 
                     using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
                     {
+                        LogQueryTime("GetSyncedItemProgresses", cmd, now);
+
                         while (reader.Read())
                         {
                             AddStatusResult(reader, result, false);
@@ -669,6 +673,32 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return result;
+        }
+
+        private void LogQueryTime(string methodName, IDbCommand cmd, DateTime startDate)
+        {
+            var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
+
+            var slowThreshold = 1000;
+
+#if DEBUG
+            slowThreshold = 50;
+#endif
+
+            if (elapsed >= slowThreshold)
+            {
+                Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
+                    Convert.ToInt32(elapsed),
+                    cmd.CommandText,
+                    methodName);
+            }
+            else
+            {
+                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                //    Convert.ToInt32(elapsed),
+                //    cmd.CommandText,
+                //    methodName);
+            }
         }
 
         private void AddStatusResult(IDataReader reader, Dictionary<string, SyncedItemProgress> result, bool multipleIds)
