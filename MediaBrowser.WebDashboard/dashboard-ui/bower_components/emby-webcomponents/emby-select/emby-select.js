@@ -169,6 +169,13 @@
         arrowContainer.appendChild(arrow);
     };
 
+    EmbySelectPrototype.setLabel = function (text) {
+
+        var label = this.parentNode.querySelector('label');
+
+        label.innerHTML = text;
+    };
+
     document.registerElement('emby-select', {
         prototype: EmbySelectPrototype,
         extends: 'select'
