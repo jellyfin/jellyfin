@@ -1184,7 +1184,7 @@
   "CinemaModeConfigurationHelp": "Cinema mode brings the theater experience straight to your living room with the ability to play trailers and custom intros before the main feature.",
   "OptionTrailersFromMyMovies": "Include trailers from movies in my library",
   "OptionUpcomingMoviesInTheaters": "Include trailers from new and upcoming movies",
-  "LabelLimitIntrosToUnwatchedContent": "Only use trailers from unwatched content",
+  "LabelLimitIntrosToUnwatchedContent": "Only play trailers from unwatched content",
   "LabelEnableIntroParentalControl": "Enable smart parental control",
   "LabelEnableIntroParentalControlHelp": "Trailers will only be selected with a parental rating equal to or less than the content being watched.",
   "LabelTheseFeaturesRequireSubscriptionHelpAndTrailers": "These features require an active Emby Premiere subscription and installation of the Trailer channel plugin.",

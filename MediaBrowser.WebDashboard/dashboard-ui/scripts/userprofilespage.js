@@ -85,7 +85,7 @@
 
         var html = '';
 
-        var cssClass = "card squareCard scalableCard";
+        var cssClass = "card squareCard scalableCard squareCard-scalable";
 
         if (user.Policy.IsDisabled) {
             cssClass += ' grayscale';

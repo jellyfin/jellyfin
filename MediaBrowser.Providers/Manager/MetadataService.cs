@@ -294,6 +294,13 @@ namespace MediaBrowser.Providers.Manager
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
+            var inheritedParentalRatingValue = item.GetInheritedParentalRatingValue() ?? 0;
+            if (inheritedParentalRatingValue != item.InheritedParentalRatingValue)
+            {
+                item.InheritedParentalRatingValue = inheritedParentalRatingValue;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
+
             return updateType;
         }
 

@@ -188,7 +188,7 @@
         }
         var target = plugin.externalUrl ? ' target="_blank"' : '';
 
-        html += "<div class='card backdropCard scalableCard'>";
+        html += "<div class='card backdropCard scalableCard backdropCard-scalable'>";
 
         html += '<div class="cardBox cardBox-bottompadded visualCardBox">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';

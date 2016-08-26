@@ -43,7 +43,7 @@ body:not(.dashboardDocument) .mainDrawerButton {
 
 .emby-tab-button {
     font-weight: 400;
-    text-transform: none!important;
+    text-transform: none !important;
     border-color: transparent !important;
     border-width: 0 !important;
 }
@@ -135,6 +135,6 @@ h1, h1 a {
     margin-right: 5%;
 }
 
-.categorySyncButton {
+.categorySyncButton, .btnSync {
     display: none !important;
 }

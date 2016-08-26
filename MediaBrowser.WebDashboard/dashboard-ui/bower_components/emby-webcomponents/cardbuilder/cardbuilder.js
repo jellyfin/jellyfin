@@ -1014,7 +1014,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var scalable = options.scalable !== false;
             if (scalable) {
-                className += " scalableCard";
+                className += " scalableCard " + options.shape + "Card-scalable";
             }
 
             var imgInfo = getCardImageUrl(item, apiClient, options);
