@@ -781,6 +781,9 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public string OfficialRating { get; set; }
 
+        [IgnoreDataMember]
+        public int InheritedParentalRatingValue { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating.
         /// </summary>

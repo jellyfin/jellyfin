@@ -62,11 +62,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
             var newUpdateLevel = updateLevel;
 
-            if (releases.Count >= 2)
+            // If the current version is later than current stable, set the update level to beta
+            if (releases.Count >= 1)
             {
-                var beta = releases[1];
+                var release = releases[0];
                 Version version;
-                if (Version.TryParse(beta.tag_name, out version))
+                if (Version.TryParse(release.tag_name, out version))
                 {
                     if (currentVersion >= version)
                     {
@@ -75,11 +76,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 }
             }
 
-            if (releases.Count >= 3)
+            // If the current version is later than current beta, set the update level to dev
+            if (releases.Count >= 2)
             {
-                var dev = releases[2];
+                var release = releases[1];
                 Version version;
-                if (Version.TryParse(dev.tag_name, out version))
+                if (Version.TryParse(release.tag_name, out version))
                 {
                     if (currentVersion >= version)
                     {
