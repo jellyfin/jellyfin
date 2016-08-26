@@ -59,5 +59,8 @@ namespace MediaBrowser.Controller.Entities
         string GetPresentationUniqueKey();
         string CreatePresentationUniqueKey();
         bool StopRefreshIfLocalMetadataFound { get; }
+
+        int? GetInheritedParentalRatingValue();
+        int InheritedParentalRatingValue { get; set; }
     }
 }

@@ -1820,7 +1820,7 @@
 
             var item = items[i];
 
-            var cssClass = "card backdropCard scalableCard";
+            var cssClass = "card backdropCard scalableCard backdropCard-scalable";
 
             var href = "itemdetails.html?id=" + item.Id;
 

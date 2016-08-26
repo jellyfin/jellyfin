@@ -30,7 +30,7 @@
 
             var page = this;
 
-            page.querySelector('#btnConnectionHelp').addEventListener('click', onConnectionHelpClick);
+            page.querySelector('.btnConnectionHelp').addEventListener('click', onConnectionHelpClick);
         },
 
         onPageShow: function () {
@@ -322,7 +322,7 @@
 
                 var nowPlayingItem = session.NowPlayingItem;
 
-                var className = nowPlayingItem ? 'scalableCard card activeSession backdropCard' : 'scalableCard card activeSession backdropCard';
+                var className = nowPlayingItem ? 'scalableCard card activeSession backdropCard backdropCard-scalable' : 'scalableCard card activeSession backdropCard backdropCard-scalable';
 
                 if (session.TranscodingInfo && session.TranscodingInfo.CompletionPercentage) {
                     className += ' transcodingSession';

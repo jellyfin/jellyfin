@@ -679,7 +679,8 @@ var Dashboard = {
         if (setQuality) {
             var quality = 90;
 
-            if ((options.type || '').toLowerCase() == 'backdrop') {
+            var isBackdrop = (options.type || '').toLowerCase() == 'backdrop';
+            if (isBackdrop) {
                 quality -= 10;
             }
 
@@ -687,15 +688,9 @@ var Dashboard = {
                 quality -= 40;
             }
 
-            if (AppInfo.hasLowImageBandwidth) {
+            if (AppInfo.hasLowImageBandwidth && !isBackdrop) {
 
-                // The native app can handle a little bit more than safari
-                if (AppInfo.isNativeApp) {
-
-                    quality -= 10;
-                } else {
-                    quality -= 20;
-                }
+                quality -= 10;
             }
             options.quality = quality;
         }
@@ -2806,7 +2801,9 @@ var AppInfo = {};
                 }).then(function (reg) {
 
                     // https://github.com/WICG/BackgroundSync/blob/master/explainer.md
-                    return reg.sync.register('emby-sync');
+                    return reg.sync.register('emby-sync').then(function() {
+                        window.SyncRegistered = Dashboard.isConnectMode();
+                    });
                 });
 
             } catch (err) {
