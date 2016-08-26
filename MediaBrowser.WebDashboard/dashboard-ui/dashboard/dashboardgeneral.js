@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'emby-checkbox', 'emby-collapse', 'emby-textarea', 'emby-input', 'emby-select'], function ($) {
 
     var brandingConfigKey = "branding";
     var currentBrandingOptions;

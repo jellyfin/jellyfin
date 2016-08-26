@@ -1970,7 +1970,6 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardgeneral.html',
-            dependencies: ['emby-collapse', 'emby-textarea', 'emby-input', 'paper-checkbox'],
             controller: 'dashboard/dashboardgeneral',
             autoFocus: false,
             roles: 'admin'

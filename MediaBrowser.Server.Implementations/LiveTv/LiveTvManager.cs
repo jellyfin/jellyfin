@@ -2475,7 +2475,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await _libraryManager.GetNamedView(name, CollectionType.LiveTv, name, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)
+        public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
         {
             info = (TunerHostInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(TunerHostInfo));
 
@@ -2508,7 +2508,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             _config.SaveConfiguration("livetv", config);
 
-            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            if (dataSourceChanged)
+            {
+                _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            }
 
             return info;
         }
