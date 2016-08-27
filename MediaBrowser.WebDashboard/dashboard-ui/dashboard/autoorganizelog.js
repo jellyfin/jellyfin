@@ -205,25 +205,33 @@
         var btnPrevTop = topPaging.querySelector(".btnPreviousPage");
         var btnPrevBottom = bottomPaging.querySelector(".btnPreviousPage");
 
-        btnNextTop.addEventListener('click', function () {
-            query.StartIndex += query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnNextTop) {
+            btnNextTop.addEventListener('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnNextBottom.addEventListener('click', function () {
-            query.StartIndex += query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnNextBottom) {
+            btnNextBottom.addEventListener('click', function () {
+                query.StartIndex += query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnPrevTop.addEventListener('click', function () {
-            query.StartIndex -= query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnPrevTop) {
+            btnPrevTop.addEventListener('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
-        btnPrevBottom.addEventListener('click', function () {
-            query.StartIndex -= query.Limit;
-            reloadItems(page, true);
-        });
+        if (btnPrevBottom) {
+            btnPrevBottom.addEventListener('click', function () {
+                query.StartIndex -= query.Limit;
+                reloadItems(page, true);
+            });
+        }
 
         var btnClearLog = page.querySelector('.btnClearLog');
 
@@ -317,7 +325,12 @@
 
     function onServerEvent(e, apiClient, data) {
 
-        if (data) {
+        if (e.type == 'ScheduledTaskEnded') {
+
+            if (data && data.Key == 'AutoOrganize') {
+                reloadItems(page, false);
+            }
+        } else if (e.type == 'AutoOrganize_ItemUpdated' && data) {
 
             updateItemStatus(page, data);
         } else {
@@ -372,7 +385,11 @@
 
             reloadItems(view, true);
 
-            events.on(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
+            events.on(serverNotifications, 'AutoOrganize_LogReset', onServerEvent);
+            events.on(serverNotifications, 'AutoOrganize_ItemUpdated', onServerEvent);
+            events.on(serverNotifications, 'AutoOrganize_ItemRemoved', onServerEvent);
+            events.on(serverNotifications, 'AutoOrganize_ItemAdded', onServerEvent);
+            events.on(serverNotifications, 'ScheduledTaskEnded', onServerEvent);
 
             // on here
             taskButton({
@@ -388,7 +405,11 @@
 
             currentResult = null;
 
-            events.off(serverNotifications, 'AutoOrganizeUpdate', onServerEvent);
+            events.off(serverNotifications, 'AutoOrganize_LogReset', onServerEvent);
+            events.off(serverNotifications, 'AutoOrganize_ItemUpdated', onServerEvent);
+            events.off(serverNotifications, 'AutoOrganize_ItemRemoved', onServerEvent);
+            events.off(serverNotifications, 'AutoOrganize_ItemAdded', onServerEvent);
+            events.off(serverNotifications, 'ScheduledTaskEnded', onServerEvent);
 
             // off here
             taskButton({
