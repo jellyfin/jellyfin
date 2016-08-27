@@ -62,29 +62,25 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
             var newUpdateLevel = updateLevel;
 
-            if (releases.Count >= 2)
+            // If the current version is later than current stable, set the update level to beta
+            if (releases.Count >= 1)
             {
-                var beta = releases[1];
-                Version version;
-                if (Version.TryParse(beta.tag_name, out version))
+                var release = releases[0];
+                var version = ParseVersion(release.tag_name);
+                if (version != null && currentVersion > version)
                 {
-                    if (currentVersion >= version)
-                    {
-                        newUpdateLevel = PackageVersionClass.Beta;
-                    }
+                    newUpdateLevel = PackageVersionClass.Beta;
                 }
             }
 
-            if (releases.Count >= 3)
+            // If the current version is later than current beta, set the update level to dev
+            if (releases.Count >= 2)
             {
-                var dev = releases[2];
-                Version version;
-                if (Version.TryParse(dev.tag_name, out version))
+                var release = releases[1];
+                var version = ParseVersion(release.tag_name);
+                if (version != null && currentVersion > version)
                 {
-                    if (currentVersion >= version)
-                    {
-                        newUpdateLevel = PackageVersionClass.Dev;
-                    }
+                    newUpdateLevel = PackageVersionClass.Dev;
                 }
             }
 
@@ -93,6 +89,20 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 _config.Configuration.SystemUpdateLevel = newUpdateLevel;
                 _config.SaveConfiguration();
             }
+        }
+
+        private Version ParseVersion(string versionString)
+        {
+            var parts = versionString.Split('.');
+            if (parts.Length == 3)
+            {
+                versionString += ".0";
+            }
+
+            Version version;
+            Version.TryParse(versionString, out version);
+
+            return version;
         }
     }
 }
