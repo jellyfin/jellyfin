@@ -2145,7 +2145,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarydisplay.html',
-            dependencies: ['emby-button', 'paper-checkbox'],
+            dependencies: [],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/librarydisplay'
