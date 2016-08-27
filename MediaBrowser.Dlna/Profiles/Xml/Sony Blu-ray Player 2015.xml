@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Sony Blu-ray Player</Name>
+  <Name>Sony Blu-ray Player 2015</Name>
   <Identification>
-    <FriendlyName>Blu-ray Disc Player</FriendlyName>
-    <Manufacturer>Sony</Manufacturer>
+    <ModelNumber>BDP-2015</ModelNumber>
     <Headers>
-      <HttpHeaderInfo name="X-AV-Client-Info" value="(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)" match="Regex" />
-      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="(Blu-ray Disc Player|Home Theater System|Home Theatre System|Media Player)" match="Regex" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S1500" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S3500" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S6500" match="Substring" />
     </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
@@ -39,16 +39,19 @@
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
   </XmlRootAttributes>
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
-    <DirectPlayProfile container="mpeg" audioCodec="ac3,mp3,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
-    <DirectPlayProfile container="avi,mp4" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
-    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
-    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
-    <DirectPlayProfile container="jpeg" type="Photo" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="mpeg,mpg" audioCodec="ac3,mp3,mp2,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="ac3,aac,pcm,mp3" videoCodec="mpeg4,h264" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="ac3,dca,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
+    <DirectPlayProfile container="m2ts,mts" audioCodec="aac,mp3,ac3,dca,dts" videoCodec="h264,mpeg4,vc1" type="Video" />
+    <DirectPlayProfile container="wmv,asf" type="Video" />
+    <DirectPlayProfile container="mp3,m4a,wma,wav" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="mpeg2video" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mkv" type="Video" videoCodec="h264" audioCodec="ac3,aac,mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles>
@@ -65,8 +68,6 @@
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
-        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
-        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
@@ -76,36 +77,8 @@
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="aac">
-      <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
-      </Conditions>
-      <ApplyConditions />
-    </CodecProfile>
   </CodecProfiles>
-  <ResponseProfiles>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4,vc1" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="avi" type="Video" mimeType="video/mpeg">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="mkv" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="ts" type="Video" mimeType="video/vnd.dlna.mpeg-tts">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="mp4" type="Video" mimeType="video/mpeg">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="mpeg" type="Video" mimeType="video/mpeg">
-      <Conditions />
-    </ResponseProfile>
-    <ResponseProfile container="mp3" type="Audio" mimeType="audio/mpeg">
-      <Conditions />
-    </ResponseProfile>
-  </ResponseProfiles>
+  <ResponseProfiles />
   <SubtitleProfiles>
     <SubtitleProfile format="srt" method="Embed" />
   </SubtitleProfiles>

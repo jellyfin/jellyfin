@@ -26,7 +26,7 @@
   <MaxStreamingBitrate>20000000</MaxStreamingBitrate>
   <MaxStaticBitrate>20000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
-  <MusicSyncBitrate>192000</MusicSyncBitrate>
+  <MaxStaticMusicBitrate xsi:nil="true" />
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <SonyAggregationFlags>10</SonyAggregationFlags>
   <ProtocolInfo>http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000</ProtocolInfo>
@@ -45,9 +45,9 @@
     <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Photo">
@@ -127,5 +127,7 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
 </Profile>
