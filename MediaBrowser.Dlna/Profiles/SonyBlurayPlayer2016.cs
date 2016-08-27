@@ -12,9 +12,17 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"Blu-ray Disc Player",
-                Manufacturer = "Sony",
-                ModelNumber = "BDP-2016"
+                ModelNumber = "BDP-2016",
+
+                Headers = new[]
+                {
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S3700",
+                        Match = HeaderMatchType.Substring
+                    }
+                }
             };
 
             AddXmlRootAttribute("xmlns:av", "urn:schemas-sony-com:av");
@@ -36,9 +44,9 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "ts",
+                    Container = "mkv",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
 

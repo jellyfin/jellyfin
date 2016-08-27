@@ -12,8 +12,6 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"Blu-ray Disc Player",
-                Manufacturer = "Sony",
                 ModelNumber = "BDP-2013"
             };
 
@@ -36,9 +34,9 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "ts",
+                    Container = "mkv",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
 
@@ -53,21 +51,21 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec = "mpeg1video,mpeg2video,h264",
                     AudioCodec = "ac3,aac,mp3,pcm",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mpeg",
+                    Container = "mpeg,mpg",
                     VideoCodec = "mpeg1video,mpeg2video",
                     AudioCodec = "ac3,mp3,mp2,pcm",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4",
+                    Container = "mp4,m4v",
                     VideoCodec = "mpeg4,h264",
                     AudioCodec = "ac3,aac,pcm,mp3",
                     Type = DlnaProfileType.Video
@@ -88,25 +86,24 @@ namespace MediaBrowser.Dlna.Profiles
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp3",
-                    AudioCodec = "mp3",
+                    Container = "m2ts,mts",
+                    VideoCodec = "h264,mpeg4,vc1",
+                    AudioCodec = "aac,mp3,ac3,dca,dts",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "wmv,asf",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp3,m4a,wma,wav",
                     Type = DlnaProfileType.Audio
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4",
-                    AudioCodec = "aac",
-                    Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "asf",
-                    AudioCodec = "wmav2,wmapro,wmavoice",
-                    Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "jpeg",
+                    Container = "jpeg,png,gif",
                     Type = DlnaProfileType.Photo
                 }
             };

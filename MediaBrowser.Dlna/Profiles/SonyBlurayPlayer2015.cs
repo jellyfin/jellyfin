@@ -12,8 +12,6 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"Blu-ray Disc Player",
-                Manufacturer = "Sony",
                 ModelNumber = "BDP-2015"
             };
 
@@ -36,9 +34,9 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "ts",
+                    Container = "mkv",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
 
