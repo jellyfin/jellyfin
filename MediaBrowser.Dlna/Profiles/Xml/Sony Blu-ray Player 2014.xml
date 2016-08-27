@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Sony Blu-ray Player 2013</Name>
+  <Name>Sony Blu-ray Player 2014</Name>
   <Identification>
-    <ModelNumber>BDP-2013</ModelNumber>
+    <ModelNumber>BDP-2014</ModelNumber>
     <Headers />
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>

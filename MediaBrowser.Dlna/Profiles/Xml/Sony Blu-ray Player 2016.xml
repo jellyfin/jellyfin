@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Sony Blu-ray Player 2013</Name>
+  <Name>Sony Blu-ray Player 2016</Name>
   <Identification>
-    <ModelNumber>BDP-2013</ModelNumber>
-    <Headers />
+    <ModelNumber>BDP-2016</ModelNumber>
+    <Headers>
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S3700" match="Substring" />
+    </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
