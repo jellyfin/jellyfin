@@ -51,7 +51,8 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
 
     function buildPersonCard(person, apiClient, serverId, options, className) {
 
-        className += " itemAction scalableCard";
+        className += " itemAction scalableCard personCard-scalable";
+        className += " " + (options.shape || 'portrait') + 'Card-scalable';
 
         var imgUrl = getImgUrl(person, options.width, apiClient);
 

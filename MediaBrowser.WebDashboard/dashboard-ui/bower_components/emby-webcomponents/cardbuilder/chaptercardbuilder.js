@@ -19,6 +19,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemShortcuts', 'layout
         }
 
         className += ' ' + shape + 'Card';
+        className += ' ' + shape + 'Card-scalable';
 
         if (options.block || options.rows) {
             className += ' block';

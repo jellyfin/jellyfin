@@ -982,15 +982,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (min-width: 1000px) {
 
-    .itemDetailPage .scalableCard.portraitCard {
+    .itemDetailPage .portraitCard-scalable {
         width: 25% !important;
     }
 
-    .itemDetailPage .scalableCard.squareCard {
+    .itemDetailPage .squareCard-scalable {
         width: 25% !important;
     }
 
-    .itemDetailPage .scalableCard.backdropCard, .itemDetailPage .scalableCard.smallBackdropCard {
+    .itemDetailPage .backdropCard-scalable, .itemDetailPage .smallBackdropCard-scalable {
         width: 33.3333333333333333% !important;
     }
 
@@ -1003,6 +1003,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: #673AB7 !important;
 }
 
-.btnSyncComplete i {
-    border-radius: 1000px;
-}
+    .btnSyncComplete i {
+        border-radius: 1000px;
+    }

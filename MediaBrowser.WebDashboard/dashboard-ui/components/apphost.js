@@ -151,6 +151,10 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                 features.push('htmlvideoautoplay');
             }
 
+            if (window.SyncRegistered) {
+                //features.push('sync');
+            }
+
             return features.indexOf(command.toLowerCase()) != -1;
         },
         unlockedFeatures: function () {

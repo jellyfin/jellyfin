@@ -1,4 +1,4 @@
-﻿define(['globalize'], function (globalize) {
+﻿define(['globalize', 'emby-checkbox', 'emby-button'], function (globalize) {
 
     function getTabs() {
         return [

@@ -518,6 +518,12 @@
 
         self.play = function (options) {
 
+            if (options.enableRemotePlayers === false) {
+                if (!currentPlayer.isLocalPlayer) {
+                    return;
+                }
+            }
+
             doWithPlaybackValidation(currentPlayer, function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };

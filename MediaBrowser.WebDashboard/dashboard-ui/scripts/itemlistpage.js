@@ -136,12 +136,14 @@
                     posterOptions.shape = "backdrop";
                     posterOptions.centerText = true;
                     posterOptions.overlayText = false;
+                    posterOptions.overlayMoreButton = true;
                     html = cardBuilder.getCardsHtml(posterOptions);
                 } else {
 
                     // Poster
                     posterOptions.showTitle = context == 'photos' ? 'auto' : true;
                     posterOptions.overlayText = context == 'photos';
+                    posterOptions.overlayMoreButton = true;
 
                     html = cardBuilder.getCardsHtml(posterOptions);
                 }

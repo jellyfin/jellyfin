@@ -26,7 +26,7 @@
   <MaxStreamingBitrate>20000000</MaxStreamingBitrate>
   <MaxStaticBitrate>20000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
-  <MusicSyncBitrate>192000</MusicSyncBitrate>
+  <MaxStaticMusicBitrate xsi:nil="true" />
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
   <ProtocolInfo>http-get:*:video/mp2t:*,http-get:*:video/MP1S:*,http-get:*:video/mpeg2:*,http-get:*:video/mp4:*,http-get:*:video/x-matroska:*,http-get:*:audio/mpeg:*,http-get:*:audio/mpeg3:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/mp4a-latm:*,http-get:*:image/jpeg:*</ProtocolInfo>
   <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
@@ -43,9 +43,9 @@
     <DirectPlayProfile container="jpeg" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
-    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
-    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" forceLiveStream="false" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
@@ -86,5 +86,7 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
 </Profile>

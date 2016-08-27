@@ -176,13 +176,13 @@
         var cssClass = "card scalableCard";
 
         if (currentItemType == "Episode") {
-            cssClass += " backdropCard";
+            cssClass += " backdropCard backdropCard-scalable";
         }
         else if (currentItemType == "MusicAlbum" || currentItemType == "MusicArtist") {
-            cssClass += " squareCard";
+            cssClass += " squareCard squareCard-scalable";
         }
         else {
-            cssClass += " portraitCard";
+            cssClass += " portraitCard portraitCard-scalable";
         }
 
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';

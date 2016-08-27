@@ -116,3 +116,7 @@
     display: flex;
     margin: .5em 0;
 }
+
+.checkboxList-paperList {
+    padding: 1em!important;
+}
