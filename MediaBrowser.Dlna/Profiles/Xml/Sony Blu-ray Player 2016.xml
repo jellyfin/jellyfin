@@ -79,5 +79,7 @@
     </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles />
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
 </Profile>
