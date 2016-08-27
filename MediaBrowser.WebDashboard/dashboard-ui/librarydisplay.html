@@ -3,29 +3,36 @@
     <div data-role="content">
         <div class="content-primary">
             <form>
-                <div>
-                    <paper-checkbox class="chkFolderView">${OptionDisplayFolderView}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionDisplayFolderViewHelp}</div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkFolderView" />
+                        <span>${OptionDisplayFolderView}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionDisplayFolderViewHelp}</div>
                 </div>
-                <br />
-                <div>
-                    <paper-checkbox class="chkDisplaySpecialsWithinSeasons">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" class="chkDisplaySpecialsWithinSeasons"/>
+                    <span>${LabelDisplaySpecialsWithinSeasons}</span>
+                </label>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkGroupMoviesIntoCollections" />
+                        <span>${LabelGroupMoviesIntoCollections}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
                 </div>
-                <br /><br />
-                <div>
-                    <paper-checkbox class="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
-                </div>
-                <br />
 
-                <div>
-                    <paper-checkbox class="chkDisplayCollectionView">${LabelDisplayCollectionsView}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkDisplayCollectionView" />
+                        <span>${LabelDisplayCollectionsView}</span>
+                    </label>
+
+                    <div class="fieldDescription checkboxFieldDescription">
                         <div>${LabelDisplayCollectionsViewHelp}</div>
                         <div><a href="https://github.com/MediaBrowser/Wiki/wiki/Collections" target="_blank">${ButtonLearnMore}</a></div>
                     </div>
                 </div>
-                <br />
                 <br />
                 <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
 
