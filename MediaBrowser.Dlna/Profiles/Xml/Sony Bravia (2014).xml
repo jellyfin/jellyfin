@@ -105,5 +105,7 @@
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>
-  <SubtitleProfiles />
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
 </Profile>
