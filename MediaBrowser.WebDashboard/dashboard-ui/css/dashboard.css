@@ -712,7 +712,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     height: 7px;
     width: 100%;
     opacity: .95;
-    z-index: 999;
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
