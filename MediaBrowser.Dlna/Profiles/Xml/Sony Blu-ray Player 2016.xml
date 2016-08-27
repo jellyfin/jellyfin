@@ -4,7 +4,9 @@
   <Identification>
     <ModelNumber>BDP-2016</ModelNumber>
     <Headers>
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S1700" match="Substring" />
       <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S3700" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S6700" match="Substring" />
     </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
