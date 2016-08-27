@@ -221,7 +221,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
                 {
-                    ItemId = mediaInfo.Id,
+                    ItemId = streamInfo.ItemId,
                     SessionId = _session.Id,
                     PositionTicks = positionTicks,
                     MediaSourceId = streamInfo.MediaSourceId
