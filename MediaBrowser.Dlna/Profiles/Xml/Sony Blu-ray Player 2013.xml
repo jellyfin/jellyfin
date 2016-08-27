@@ -3,7 +3,13 @@
   <Name>Sony Blu-ray Player 2013</Name>
   <Identification>
     <ModelNumber>BDP-2013</ModelNumber>
-    <Headers />
+    <Headers>
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S1100" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S3100" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S5100" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S6100" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S7100" match="Substring" />
+    </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
