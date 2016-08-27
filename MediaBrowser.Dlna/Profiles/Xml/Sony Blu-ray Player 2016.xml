@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Name>Sony Blu-ray Player 2013</Name>
+  <Name>Sony Blu-ray Player 2016</Name>
   <Identification>
     <FriendlyName>Blu-ray Disc Player</FriendlyName>
-    <ModelNumber>BDP-2013</ModelNumber>
+    <ModelNumber>BDP-2016</ModelNumber>
     <Manufacturer>Sony</Manufacturer>
     <Headers />
   </Identification>
@@ -37,15 +37,15 @@
     <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
   </XmlRootAttributes>
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
-    <DirectPlayProfile container="mpeg" audioCodec="ac3,mp3,mp2,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="ac3,aac,pcm,mp3" videoCodec="mpeg4,h264" type="Video" />
+    <DirectPlayProfile container="ts,mpegts" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="mpeg,mpg" audioCodec="ac3,mp3,mp2,pcm" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp4,m4v" audioCodec="ac3,aac,pcm,mp3" videoCodec="mpeg4,h264" type="Video" />
     <DirectPlayProfile container="avi" audioCodec="ac3,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
     <DirectPlayProfile container="mkv" audioCodec="ac3,dca,aac,mp3,pcm" videoCodec="mpeg4,h264" type="Video" />
-    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
-    <DirectPlayProfile container="mp4" audioCodec="aac" type="Audio" />
-    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
-    <DirectPlayProfile container="jpeg" type="Photo" />
+    <DirectPlayProfile container="m2ts,mts" audioCodec="aac,mp3,ac3,dca,dts" videoCodec="h264,mpeg4,vc1" type="Video" />
+    <DirectPlayProfile container="wmv,asf" type="Video" />
+    <DirectPlayProfile container="mp3,m4a,wma,wav" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
