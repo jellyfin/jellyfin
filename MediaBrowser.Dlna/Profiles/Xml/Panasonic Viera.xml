@@ -78,6 +78,7 @@
     </ResponseProfile>
   </ResponseProfiles>
   <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
     <SubtitleProfile format="srt" method="External" />
   </SubtitleProfiles>
 </Profile>
