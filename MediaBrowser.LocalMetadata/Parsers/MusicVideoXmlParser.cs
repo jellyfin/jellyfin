@@ -12,8 +12,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public MusicVideoXmlParser(ILogger logger)
-            : base(logger)
+        public MusicVideoXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 
