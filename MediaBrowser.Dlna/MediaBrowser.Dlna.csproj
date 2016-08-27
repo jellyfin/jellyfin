@@ -94,6 +94,9 @@
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
     <Compile Include="Profiles\KodiProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2016.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2015.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2014.cs" />
     <Compile Include="Profiles\SonyBravia2014Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\VlcProfile.cs" />
@@ -137,7 +140,7 @@
     <Compile Include="Profiles\LinksysDMA2100Profile.cs" />
     <Compile Include="Profiles\PanasonicVieraProfile.cs" />
     <Compile Include="Profiles\SamsungSmartTvProfile.cs" />
-    <Compile Include="Profiles\SonyBlurayPlayer2013Profile.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2013.cs" />
     <Compile Include="Profiles\SonyBlurayPlayerProfile.cs" />
     <Compile Include="Profiles\SonyBravia2010Profile.cs" />
     <Compile Include="Profiles\SonyBravia2011Profile.cs" />
@@ -243,6 +246,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2014.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2015.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2016.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
