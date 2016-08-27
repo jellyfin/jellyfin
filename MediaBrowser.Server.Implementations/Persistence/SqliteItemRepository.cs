@@ -937,7 +937,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Album;
 
-                    _saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem || (!item.IsFolder && item.LocationType == LocationType.Virtual);
+                    _saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem;
 
                     var hasSeries = item as IHasSeries;
                     if (hasSeries != null)
