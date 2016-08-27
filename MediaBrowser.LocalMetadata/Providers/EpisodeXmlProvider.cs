@@ -13,11 +13,13 @@ namespace MediaBrowser.LocalMetadata.Providers
     public class EpisodeXmlProvider : BaseXmlProvider<Episode>
     {
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
-        public EpisodeXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public EpisodeXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
+            _providerManager = providerManager;
         }
 
         protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
@@ -25,7 +27,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             var images = new List<LocalImageInfo>();
             var chapters = new List<ChapterInfo>();
 
-            new EpisodeXmlParser(_logger, FileSystem).Fetch(result, images, path, cancellationToken);
+            new EpisodeXmlParser(_logger, FileSystem, _providerManager).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
         }

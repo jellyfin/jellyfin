@@ -15,12 +15,14 @@ namespace MediaBrowser.XbmcMetadata.Providers
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
+        private readonly IProviderManager _providerManager;
 
-        public BaseVideoNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config)
+        public BaseVideoNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
+            _providerManager = providerManager;
         }
 
         protected override void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken)
@@ -29,7 +31,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 Item = result.Item
             };
-            new MovieNfoParser(_logger, _config).Fetch(tmpItem, path, cancellationToken);
+            new MovieNfoParser(_logger, _config, _providerManager).Fetch(tmpItem, path, cancellationToken);
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;
