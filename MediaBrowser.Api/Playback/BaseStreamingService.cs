@@ -989,8 +989,6 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            arg += string.Format(" -ss {0}", MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(1).Ticks)); 
-
             return arg.Trim();
         }
 
