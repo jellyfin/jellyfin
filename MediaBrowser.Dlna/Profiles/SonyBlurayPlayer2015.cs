@@ -12,7 +12,29 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                ModelNumber = "BDP-2015"
+                ModelNumber = "BDP-2015",
+
+                Headers = new[]
+                {
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S1500",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S3500",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S6500",
+                        Match = HeaderMatchType.Substring
+                    }
+                }
             };
 
             AddXmlRootAttribute("xmlns:av", "urn:schemas-sony-com:av");

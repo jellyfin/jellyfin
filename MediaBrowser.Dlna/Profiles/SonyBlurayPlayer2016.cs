@@ -19,7 +19,19 @@ namespace MediaBrowser.Dlna.Profiles
                     new HttpHeaderInfo
                     {
                         Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S1700",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
                         Value = "BDP-S3700",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S6700",
                         Match = HeaderMatchType.Substring
                     }
                 }
