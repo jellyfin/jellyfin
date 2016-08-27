@@ -3,7 +3,11 @@
   <Name>Sony Blu-ray Player 2015</Name>
   <Identification>
     <ModelNumber>BDP-2015</ModelNumber>
-    <Headers />
+    <Headers>
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S1500" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S3500" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Physical-Unit-Info" value="BDP-S6500" match="Substring" />
+    </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
