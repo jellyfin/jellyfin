@@ -59,7 +59,7 @@
             var keyframes = [
               { transform: 'translateY(100%)', offset: 0 },
               { transform: 'none', offset: 1 }];
-            var timing = { duration: 180, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 200, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
     }
