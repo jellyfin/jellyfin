@@ -657,7 +657,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                             _logger.ErrorException("Error getting all media from {0}", ex, i.Name);
                         }
                     }
-                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult { });
+                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult());
                 });
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -811,7 +811,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                             _logger.ErrorException("Error getting all media from {0}", ex, i.Name);
                         }
                     }
-                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult { });
+                    return new Tuple<IChannel, ChannelItemResult>(i, new ChannelItemResult());
                 });
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);

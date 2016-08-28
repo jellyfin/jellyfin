@@ -127,6 +127,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool IsDefaultEncoderPath
+        {
+            get
+            {
+                var path = FFMpegPath;
+
+                var parentPath = Path.Combine(ConfigurationManager.ApplicationPaths.ProgramDataPath, "ffmpeg", "20160410");
+
+                return FileSystem.ContainsSubPath(parentPath, path);
+            }
+        }
+
         private bool IsSystemInstalledPath(string path)
         {
             if (path.IndexOf("/", StringComparison.Ordinal) == -1 && path.IndexOf("\\", StringComparison.Ordinal) == -1)
@@ -343,14 +355,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // If that doesn't pan out, then do a recursive search
             var files = Directory.GetFiles(path);
 
-            var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
-            var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase));
+            var excludeExtensions = new[] { ".c" };
+
+            var ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
+            var ffprobePath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffprobe", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
 
             if (string.IsNullOrWhiteSpace(ffmpegPath) || !File.Exists(ffmpegPath))
             {
                 files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
 
-                ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase));
+                ffmpegPath = files.FirstOrDefault(i => string.Equals(Path.GetFileNameWithoutExtension(i), "ffmpeg", StringComparison.OrdinalIgnoreCase) && !excludeExtensions.Contains(Path.GetExtension(i) ?? string.Empty));
 
                 if (!string.IsNullOrWhiteSpace(ffmpegPath))
                 {
@@ -392,9 +406,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             //_logger.Info("Supported decoders: {0}", string.Join(",", list.ToArray()));
         }
 
-        public bool SupportsEncoder(string decoder)
+        public bool SupportsEncoder(string encoder)
         {
-            return _encoders.Contains(decoder, StringComparer.OrdinalIgnoreCase);
+            return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool SupportsDecoder(string decoder)
@@ -500,7 +514,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     RedirectStandardOutput = true,
                     //RedirectStandardError = true,
-                    RedirectStandardInput = true,
+                    RedirectStandardInput = false,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
                     probeSizeArgument, inputPath).Trim(),
@@ -514,7 +528,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -630,7 +644,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     //RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    RedirectStandardInput = true,
+                    RedirectStandardInput = false,
                     FileName = FFMpegPath,
                     Arguments = string.Format(args, probeSizeArgument, inputPath, videoStream.Index.ToString(CultureInfo.InvariantCulture)).Trim(),
 
@@ -644,7 +658,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
             var idetFoundInterlaced = false;
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 try
                 {
@@ -874,8 +888,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
-                string.Format("-i {0}{3} -threads 1 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
+                string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
 
@@ -898,14 +912,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     FileName = FFMpegPath,
                     Arguments = args,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-                    RedirectStandardInput = true
+                    ErrorDialog = false
                 }
             };
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, false))
             {
                 await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -981,7 +994,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FileSystem.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format("-i {0} -threads 1 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
+            var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
             var probeSize = GetProbeSizeArgument(new[] { inputArgument }, protocol);
 
@@ -1010,7 +1023,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion = false;
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger, true))
             {
                 try
                 {
@@ -1118,13 +1131,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _logger.Info("Killing ffmpeg process");
 
-                try
+                if (process.IsRedirectingStdin)
                 {
-                    process.Process.StandardInput.WriteLine("q");
-                }
-                catch (Exception)
-                {
-                    _logger.Error("Error sending q command to process");
+                    try
+                    {
+                        process.Process.StandardInput.WriteLine("q");
+                    }
+                    catch (Exception)
+                    {
+                        _logger.Error("Error sending q command to process");
+                    }
                 }
 
                 try
@@ -1201,13 +1217,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
             public int? ExitCode;
             private readonly MediaEncoder _mediaEncoder;
             private readonly ILogger _logger;
+            public bool IsRedirectingStdin { get; private set; }
 
-            public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger)
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger, bool isRedirectingStdin)
             {
                 Process = process;
                 _mediaEncoder = mediaEncoder;
                 _logger = logger;
                 Process.Exited += Process_Exited;
+                IsRedirectingStdin = isRedirectingStdin;
             }
 
             void Process_Exited(object sender, EventArgs e)
@@ -1220,7 +1238,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     ExitCode = process.ExitCode;
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 
@@ -1229,11 +1247,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _mediaEncoder._runningProcesses.Remove(this);
                 }
 
+                DisposeProcess(process);
+            }
+
+            private void DisposeProcess(Process process)
+            {
                 try
                 {
                     process.Dispose();
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
             }
@@ -1249,7 +1272,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         if (Process != null)
                         {
                             Process.Exited -= Process_Exited;
-                            Process.Dispose();
+                            DisposeProcess(Process);
                         }
                     }
 

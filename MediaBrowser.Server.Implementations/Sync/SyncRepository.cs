@@ -29,6 +29,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             DbFilePath = Path.Combine(appPaths.DataPath, "sync14.db");
         }
 
+        private class SyncSummary
+        {
+            public Dictionary<string, int> Items { get; set; }
+
+            public SyncSummary()
+            {
+                Items = new Dictionary<string, int>();
+            }
+        }
+
+
         public async Task Initialize()
         {
             using (var connection = await CreateConnection().ConfigureAwait(false))
@@ -36,12 +47,18 @@ namespace MediaBrowser.Server.Implementations.Sync
                 string[] queries = {
 
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Bitrate INT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
-                                "create index if not exists idx_SyncJobs on SyncJobs(Id)",
-                                "create index if not exists idx_SyncJobs1 on SyncJobs(TargetId)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT, ItemDateModifiedTicks BIGINT)",
-                                "create index if not exists idx_SyncJobItems1 on SyncJobItems(Id)",
-                                "create index if not exists idx_SyncJobItems2 on SyncJobItems(TargetId)",
+
+                                "drop index if exists idx_SyncJobItems2",
+                                "drop index if exists idx_SyncJobItems3",
+                                "drop index if exists idx_SyncJobs1",
+                                "drop index if exists idx_SyncJobs",
+                                "drop index if exists idx_SyncJobItems1",
+                                "create index if not exists idx_SyncJobItems4 on SyncJobItems(TargetId,ItemId,Status,Progress,DateCreated)",
+                                "create index if not exists idx_SyncJobItems5 on SyncJobItems(TargetId,Status,ItemId,Progress)",
+
+                                "create index if not exists idx_SyncJobs2 on SyncJobs(TargetId,Status,ItemIds,Progress)",
 
                                 "pragma shrink_memory"
                                };
@@ -400,6 +417,20 @@ namespace MediaBrowser.Server.Implementations.Sync
                         whereClauses.Add("TargetId=@TargetId");
                         cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                     }
+                    if (!string.IsNullOrWhiteSpace(query.ExcludeTargetIds))
+                    {
+                        var excludeIds = (query.ExcludeTargetIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (excludeIds.Length == 1)
+                        {
+                            whereClauses.Add("TargetId<>@ExcludeTargetId");
+                            cmd.Parameters.Add(cmd, "@ExcludeTargetId", DbType.String).Value = excludeIds[0];
+                        }
+                        else if (excludeIds.Length > 1)
+                        {
+                            whereClauses.Add("TargetId<>@ExcludeTargetId");
+                            cmd.Parameters.Add(cmd, "@ExcludeTargetId", DbType.String).Value = excludeIds[0];
+                        }
+                    }
                     if (!string.IsNullOrWhiteSpace(query.UserId))
                     {
                         whereClauses.Add("UserId=@UserId");
@@ -583,9 +614,155 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
+        public Dictionary<string, SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
-            return GetJobItemReader(query, "select ItemId,Status from SyncJobItems", GetSyncedItemProgress);
+            var result = new Dictionary<string, SyncedItemProgress>();
+
+            var now = DateTime.UtcNow;
+
+            using (var connection = CreateConnection(true).Result)
+            {
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "select ItemId,Status,Progress from SyncJobItems";
+
+                    var whereClauses = new List<string>();
+
+                    if (!string.IsNullOrWhiteSpace(query.TargetId))
+                    {
+                        whereClauses.Add("TargetId=@TargetId");
+                        cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                    }
+
+                    if (query.Statuses.Length > 0)
+                    {
+                        var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+
+                        whereClauses.Add(string.Format("Status in ({0})", statuses));
+                    }
+
+                    if (whereClauses.Count > 0)
+                    {
+                        cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                    }
+
+                    cmd.CommandText += ";" + cmd.CommandText
+                        .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
+                        .Replace("'Synced'", "'Completed','CompletedWithError'");
+
+                    //Logger.Debug(cmd.CommandText);
+
+                    using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess))
+                    {
+                        LogQueryTime("GetSyncedItemProgresses", cmd, now);
+
+                        while (reader.Read())
+                        {
+                            AddStatusResult(reader, result, false);
+                        }
+
+                        if (reader.NextResult())
+                        {
+                            while (reader.Read())
+                            {
+                                AddStatusResult(reader, result, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private void LogQueryTime(string methodName, IDbCommand cmd, DateTime startDate)
+        {
+            var elapsed = (DateTime.UtcNow - startDate).TotalMilliseconds;
+
+            var slowThreshold = 1000;
+
+#if DEBUG
+            slowThreshold = 50;
+#endif
+
+            if (elapsed >= slowThreshold)
+            {
+                Logger.Debug("{2} query time (slow): {0}ms. Query: {1}",
+                    Convert.ToInt32(elapsed),
+                    cmd.CommandText,
+                    methodName);
+            }
+            else
+            {
+                //Logger.Debug("{2} query time: {0}ms. Query: {1}",
+                //    Convert.ToInt32(elapsed),
+                //    cmd.CommandText,
+                //    methodName);
+            }
+        }
+
+        private void AddStatusResult(IDataReader reader, Dictionary<string, SyncedItemProgress> result, bool multipleIds)
+        {
+            if (reader.IsDBNull(0))
+            {
+                return;
+            }
+
+            var itemIds = new List<string>();
+
+            var ids = reader.GetString(0);
+
+            if (multipleIds)
+            {
+                itemIds = ids.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            }
+            else
+            {
+                itemIds.Add(ids);
+            }
+
+            if (!reader.IsDBNull(1))
+            {
+                SyncJobItemStatus status;
+                var statusString = reader.GetString(1);
+                if (string.Equals(statusString, "Completed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(statusString, "CompletedWithError", StringComparison.OrdinalIgnoreCase))
+                {
+                    status = SyncJobItemStatus.Synced;
+                }
+                else
+                {
+                    status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), statusString, true);
+                }
+
+                if (status == SyncJobItemStatus.Synced)
+                {
+                    foreach (var itemId in itemIds)
+                    {
+                        result[itemId] = new SyncedItemProgress
+                        {
+                            Status = SyncJobItemStatus.Synced
+                        };
+                    }
+                }
+                else
+                {
+                    double progress = reader.IsDBNull(2) ? 0.0 : reader.GetDouble(2);
+
+                    foreach (var itemId in itemIds)
+                    {
+                        SyncedItemProgress currentStatus;
+                        if (!result.TryGetValue(itemId, out currentStatus) || (currentStatus.Status != SyncJobItemStatus.Synced && progress >= currentStatus.Progress))
+                        {
+                            result[itemId] = new SyncedItemProgress
+                            {
+                                Status = status,
+                                Progress = progress
+                            };
+                        }
+                    }
+                }
+            }
         }
 
         public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
@@ -794,20 +971,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             return info;
-        }
-
-        private SyncedItemProgress GetSyncedItemProgress(IDataReader reader)
-        {
-            var item = new SyncedItemProgress();
-
-            item.ItemId = reader.GetString(0);
-
-            if (!reader.IsDBNull(1))
-            {
-                item.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(1), true);
-            }
-
-            return item;
         }
     }
 }

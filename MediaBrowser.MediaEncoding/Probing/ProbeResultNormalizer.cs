@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
@@ -168,6 +169,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 ExtractTimestamp(info);
+
+                var stereoMode = GetDictionaryValue(tags, "stereo_mode");
+                if (string.Equals(stereoMode, "left_right", StringComparison.OrdinalIgnoreCase))
+                {
+                    info.Video3DFormat = Video3DFormat.FullSideBySide;
+                }
             }
 
             return info;
@@ -398,7 +405,8 @@ namespace MediaBrowser.MediaEncoding.Probing
             // These are mp4 chapters
             if (string.Equals(streamInfo.codec_name, "mov_text", StringComparison.OrdinalIgnoreCase))
             {
-                return null;
+                // Edit: but these are also sometimes subtitles?
+                //return null;
             }
 
             var stream = new MediaStream
@@ -786,7 +794,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             if (!string.IsNullOrWhiteSpace(artists))
             {
                 audio.Artists = SplitArtists(artists, new[] { '/', ';' }, false)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .DistinctNames()
                     .ToList();
             }
             else
@@ -799,7 +807,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 else
                 {
                     audio.Artists = SplitArtists(artist, _nameDelimiters, true)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .DistinctNames()
                         .ToList();
                 }
             }
@@ -821,7 +829,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             else
             {
                 audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .DistinctNames()
                     .ToList();
 
             }

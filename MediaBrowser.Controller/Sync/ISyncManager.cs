@@ -151,7 +151,7 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;System.String&gt;.</returns>
-        QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query);
+        Dictionary<string, SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query);
 
         /// <summary>
         /// Reports the synchronize job item transfer beginning.

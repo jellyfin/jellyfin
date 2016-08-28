@@ -304,7 +304,7 @@ namespace MediaBrowser.Api
             item.EndDate = request.EndDate.HasValue ? NormalizeDateTime(request.EndDate.Value) : (DateTime?)null;
             item.PremiereDate = request.PremiereDate.HasValue ? NormalizeDateTime(request.PremiereDate.Value) : (DateTime?)null;
             item.ProductionYear = request.ProductionYear;
-            item.OfficialRating = request.OfficialRating;
+            item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
             SetProductionLocations(item, request);

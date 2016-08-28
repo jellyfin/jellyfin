@@ -16,13 +16,16 @@ namespace MediaBrowser.Controller.Providers
         private readonly ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>> _cache =
             new ConcurrentDictionary<string, Dictionary<string, FileSystemMetadata>>(StringComparer.OrdinalIgnoreCase);
 
-		public DirectoryService(ILogger logger, IFileSystem fileSystem)
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache =
+        new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+
+        public DirectoryService(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
 			_fileSystem = fileSystem;
         }
 
-		public DirectoryService(IFileSystem fileSystem)
+        public DirectoryService(IFileSystem fileSystem)
             : this(new NullLogger(), fileSystem)
         {
         }
@@ -100,20 +103,19 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata GetFile(string path)
         {
-            var directory = Path.GetDirectoryName(path);
-
-            if (string.IsNullOrWhiteSpace(directory))
+            FileSystemMetadata file;
+            if (!_fileCache.TryGetValue(path, out file))
             {
-                _logger.Debug("Parent path is null for {0}", path);
-                return null;
+                file = _fileSystem.GetFileInfo(path);
+
+                if (file != null)
+                {
+                    _fileCache.TryAdd(path, file);
+                }
             }
 
-            var dict = GetFileSystemDictionary(directory, false);
-
-            FileSystemMetadata entry;
-            dict.TryGetValue(path, out entry);
-
-            return entry;
+            return file;
+            //return _fileSystem.GetFileInfo(path);
         }
 
         public IEnumerable<FileSystemMetadata> GetDirectories(string path)

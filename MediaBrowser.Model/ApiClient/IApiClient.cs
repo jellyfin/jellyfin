@@ -302,6 +302,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetSeasonsAsync(SeasonQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
+        Task<PluginSecurityInfo> GetRegistrationInfo();
+
         /// <summary>
         /// Queries for items
         /// </summary>

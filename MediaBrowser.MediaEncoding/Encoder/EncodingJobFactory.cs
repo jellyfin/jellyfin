@@ -522,10 +522,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the name of the output video codec
         /// </summary>
-        /// <param name="state">The state.</param>
-        /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
-        internal static string GetVideoEncoder(EncodingJob state, EncodingOptions options)
+        internal static string GetVideoEncoder(IMediaEncoder mediaEncoder, EncodingJob state, EncodingOptions options)
         {
             var codec = state.OutputVideoCodec;
 
@@ -533,7 +531,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (string.Equals(codec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    return GetH264Encoder(state, options);
+                    return GetH264Encoder(mediaEncoder, state, options);
                 }
                 if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -554,24 +552,47 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return "copy";
         }
 
-        internal static string GetH264Encoder(EncodingJob state, EncodingOptions options)
+        private static string GetAvailableEncoder(IMediaEncoder mediaEncoder, string preferredEncoder, string defaultEncoder)
         {
-            if (string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(options.HardwareAccelerationType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+            if (mediaEncoder.SupportsEncoder(preferredEncoder))
             {
-                return "h264_qsv";
+                return preferredEncoder;
+            }
+            return defaultEncoder;
+        }
+
+        internal static string GetH264Encoder(IMediaEncoder mediaEncoder, EncodingJob state, EncodingOptions options)
+        {
+            var defaultEncoder = "libx264";
+
+            // Only use alternative encoders for video files.
+            // When using concat with folder rips, if the mfx session fails to initialize, ffmpeg will be stuck retrying and will not exit gracefully
+            // Since transcoding of folder rips is expiremental anyway, it's not worth adding additional variables such as this.
+            if (state.VideoType == VideoType.VideoFile)
+            {
+                var hwType = options.HardwareAccelerationType;
+
+                if (string.Equals(hwType, "qsv", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(hwType, "h264_qsv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetAvailableEncoder(mediaEncoder, "h264_qsv", defaultEncoder);
+                }
+
+                if (string.Equals(hwType, "nvenc", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetAvailableEncoder(mediaEncoder, "h264_nvenc", defaultEncoder);
+                }
+                if (string.Equals(hwType, "h264_omx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return GetAvailableEncoder(mediaEncoder, "h264_omx", defaultEncoder);
+                }
+                if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(options.VaapiDevice))
+                {
+                    return GetAvailableEncoder(mediaEncoder, "h264_vaapi", defaultEncoder);
+                }
             }
 
-            if (string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase))
-            {
-                return "h264_nvenc";
-            }
-            if (string.Equals(options.HardwareAccelerationType, "h264_omx", StringComparison.OrdinalIgnoreCase))
-            {
-                return "h264_omx";
-            }
-
-            return "libx264";
+            return defaultEncoder;
         }
 
         internal static bool CanStreamCopyVideo(EncodingJobOptions request, MediaStream videoStream)

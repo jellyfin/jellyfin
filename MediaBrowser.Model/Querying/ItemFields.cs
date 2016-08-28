@@ -219,6 +219,7 @@
         /// </summary>
         Studios,
 
+        BasicSyncInfo,
         /// <summary>
         /// The synchronize information
         /// </summary>

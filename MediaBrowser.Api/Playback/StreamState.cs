@@ -80,7 +80,10 @@ namespace MediaBrowser.Api.Playback
                     {
                         return 10;
                     }
-                    if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) != -1 ||
+                        userAgent.IndexOf("ipad", StringComparison.OrdinalIgnoreCase) != -1 ||
+                        userAgent.IndexOf("iphone", StringComparison.OrdinalIgnoreCase) != -1 ||
+                        userAgent.IndexOf("ipod", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         return 10;
                     }
@@ -208,7 +211,7 @@ namespace MediaBrowser.Api.Playback
 
         private async void DisposeLiveStream()
         {
-            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId))
+            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId) && !string.IsNullOrWhiteSpace(MediaSource.LiveStreamId))
             {
                 try
                 {

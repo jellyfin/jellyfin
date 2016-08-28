@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Providers;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

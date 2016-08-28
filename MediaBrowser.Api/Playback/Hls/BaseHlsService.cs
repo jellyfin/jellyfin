@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
@@ -281,11 +280,6 @@ namespace MediaBrowser.Api.Playback.Hls
         protected bool IsLiveStream(StreamState state)
         {
             var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
-
-            if (state.VideoRequest.ForceLiveStream)
-            {
-                return true;
-            }
 
             return isLiveStream;
         }

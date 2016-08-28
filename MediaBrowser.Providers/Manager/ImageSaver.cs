@@ -133,6 +133,9 @@ namespace MediaBrowser.Providers.Manager
             source = memoryStream;
 
             var currentImage = GetCurrentImage(item, type, index);
+            var currentImageIsLocalFile = currentImage != null && currentImage.IsLocalFile;
+            var currentImagePath = currentImage == null ? null : currentImage.Path;
+
             var savedPaths = new List<string>();
 
             using (source)
@@ -157,9 +160,9 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
-            if (currentImage != null && currentImage.IsLocalFile && !savedPaths.Contains(currentImage.Path, StringComparer.OrdinalIgnoreCase))
+            if (currentImageIsLocalFile && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase))
             {
-                var currentPath = currentImage.Path;
+                var currentPath = currentImagePath;
 
                 _logger.Debug("Deleting previous image {0}", currentPath);
 

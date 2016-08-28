@@ -99,13 +99,27 @@ namespace MediaBrowser.Dlna.PlayTo
         public void Init(Device device)
         {
             _device = device;
+            _device.OnDeviceUnavailable = OnDeviceUnavailable;
             _device.PlaybackStart += _device_PlaybackStart;
             _device.PlaybackProgress += _device_PlaybackProgress;
             _device.PlaybackStopped += _device_PlaybackStopped;
             _device.MediaChanged += _device_MediaChanged;
+
             _device.Start();
 
             _deviceDiscovery.DeviceLeft += _deviceDiscovery_DeviceLeft;
+        }
+
+        private void OnDeviceUnavailable()
+        {
+            try
+            {
+                _sessionManager.ReportSessionEnded(_session.Id);
+            }
+            catch
+            {
+                // Could throw if the session is already gone
+            }
         }
 
         void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
@@ -125,14 +139,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1 ||
                     nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    try
-                    {
-                        _sessionManager.ReportSessionEnded(_session.Id);
-                    }
-                    catch
-                    {
-                        // Could throw if the session is already gone
-                    }
+                    OnDeviceUnavailable();
                 }
             }
         }
@@ -214,7 +221,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 await _sessionManager.OnPlaybackStopped(new PlaybackStopInfo
                 {
-                    ItemId = mediaInfo.Id,
+                    ItemId = streamInfo.ItemId,
                     SessionId = _session.Id,
                     PositionTicks = positionTicks,
                     MediaSourceId = streamInfo.MediaSourceId
@@ -647,6 +654,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _device.MediaChanged -= _device_MediaChanged;
                 _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
+                _device.OnDeviceUnavailable = null;
 
                 _device.Dispose();
             }

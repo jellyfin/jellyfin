@@ -59,7 +59,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets the maximum bitrate.
         /// </summary>
         /// <returns>System.Nullable&lt;System.Int32&gt;.</returns>
-        public int? GetMaxBitrate()
+        public int? GetMaxBitrate(bool isAudio)
         {
             if (MaxBitrate.HasValue)
             {
@@ -70,6 +70,10 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (Context == EncodingContext.Static)
                 {
+                    if (isAudio && Profile.MaxStaticMusicBitrate.HasValue)
+                    {
+                        return Profile.MaxStaticMusicBitrate;
+                    }
                     return Profile.MaxStaticBitrate;
                 }
 

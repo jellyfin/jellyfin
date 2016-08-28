@@ -227,7 +227,7 @@ namespace MediaBrowser.Api
                         .ToList();
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 //Logger.ErrorException("Error getting plugin list", ex);
                 // Play it safe here

@@ -241,7 +241,7 @@ namespace MediaBrowser.Model.Net
 			}
 			if (StringHelper.EqualsIgnoreCase(ext, ".opus"))
 			{
-				return "audio/opus";
+				return "audio/ogg";
 			}
 
             // Playlists

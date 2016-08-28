@@ -40,7 +40,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             outputStream.RunTimeTicks = TimeSpan.FromSeconds(playlist.TotalLength).Ticks;
 
-            var mediaStreams = new List<MediaStream> { };
+            var mediaStreams = new List<MediaStream>();
 
             foreach (var stream in playlist.SortedStreams)
             {

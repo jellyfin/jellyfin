@@ -5,14 +5,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.ScheduledTasks;
 using Microsoft.Win32;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller;
@@ -40,13 +38,22 @@ namespace MediaBrowser.Server.Implementations.IO
         /// </summary>
         private readonly IReadOnlyList<string> _alwaysIgnoreFiles = new List<string>
         {
-            "thumbs.db",
             "small.jpg",
             "albumart.jpg",
 
             // WMC temp recording directories that will constantly be written to
             "TempRec",
             "TempSBE"
+        };
+
+        private readonly IReadOnlyList<string> _alwaysIgnoreExtensions = new List<string>
+        {
+            // thumbs.db
+            ".db",
+
+            // bts sync files
+            ".bts",
+            ".sync"
         };
 
         /// <summary>
@@ -165,27 +172,29 @@ namespace MediaBrowser.Server.Implementations.IO
             }
         }
 
-        public void Start()
+        private bool IsLibraryMonitorEnabaled(BaseItem item)
         {
-            if (EnableLibraryMonitor)
+            var options = LibraryManager.GetLibraryOptions(item);
+
+            if (options != null && options.SchemaVersion >= 1)
             {
-                StartInternal();
+                return options.EnableRealtimeMonitor;
             }
+
+            return EnableLibraryMonitor;
         }
 
-        /// <summary>
-        /// Starts this instance.
-        /// </summary>
-        private void StartInternal()
+        public void Start()
         {
             LibraryManager.ItemAdded += LibraryManager_ItemAdded;
             LibraryManager.ItemRemoved += LibraryManager_ItemRemoved;
 
-            var pathsToWatch = new List<string> { LibraryManager.RootFolder.Path };
+            var pathsToWatch = new List<string> { };
 
             var paths = LibraryManager
                 .RootFolder
                 .Children
+                .Where(IsLibraryMonitorEnabaled)
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -203,6 +212,14 @@ namespace MediaBrowser.Server.Implementations.IO
             foreach (var path in pathsToWatch)
             {
                 StartWatchingPath(path);
+            }
+        }
+
+        private void StartWatching(BaseItem item)
+        {
+            if (IsLibraryMonitorEnabaled(item))
+            {
+                StartWatchingPath(item.Path);
             }
         }
 
@@ -228,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             if (e.Item.GetParent() is AggregateFolder)
             {
-                StartWatchingPath(e.Item.Path);
+                StartWatching(e.Item);
             }
         }
 
@@ -375,14 +392,6 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
             DisposeWatcher(dw);
-
-            if (ConfigurationManager.Configuration.EnableLibraryMonitor == AutoOnOff.Auto)
-            {
-                Logger.Info("Disabling realtime monitor to prevent future instability");
-
-                ConfigurationManager.Configuration.EnableLibraryMonitor = AutoOnOff.Disabled;
-                Stop();
-            }
         }
 
         /// <summary>
@@ -413,7 +422,9 @@ namespace MediaBrowser.Server.Implementations.IO
 
             var filename = Path.GetFileName(path);
 
-            var monitorPath = !(!string.IsNullOrEmpty(filename) && _alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase));
+            var monitorPath = !string.IsNullOrEmpty(filename) &&
+                !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
+                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
             // Ignore certain files
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();

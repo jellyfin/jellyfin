@@ -11,9 +11,7 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Kodi";
 
             MaxStreamingBitrate = 100000000;
-            MaxStaticBitrate = 100000000;
             MusicStreamingTranscodingBitrate = 1280000;
-            MusicSyncBitrate = 1280000;
 
             TimelineOffsetSeconds = 5;
 

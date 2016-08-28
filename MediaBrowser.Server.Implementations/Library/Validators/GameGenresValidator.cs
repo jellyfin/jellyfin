@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Persistence;
 
 namespace MediaBrowser.Server.Implementations.Library.Validators
 {
@@ -20,11 +20,13 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly IItemRepository _itemRepo;
 
-        public GameGenresValidator(ILibraryManager libraryManager, ILogger logger)
+        public GameGenresValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -35,25 +37,18 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var items = _libraryManager.RootFolder.GetRecursiveChildren(i => i is Game)
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .ToList();
+            var names = _itemRepo.GetGameGenreNames();
 
             var numComplete = 0;
-            var count = items.Count;
+            var count = names.Count;
 
-            var validIds = new List<Guid>();
-
-            foreach (var name in items)
+            foreach (var name in names)
             {
                 try
                 {
-                    var itemByName = _libraryManager.GetGameGenre(name);
+                    var item = _libraryManager.GetGameGenre(name);
 
-                    validIds.Add(itemByName.Id);
-
-                    await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -71,28 +66,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
-            }
-
-            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { typeof(GameGenre).Name }
-            });
-
-            var invalidIds = allIds
-                .Except(validIds)
-                .ToList();
-
-            foreach (var id in invalidIds)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                
-                var item = _libraryManager.GetItemById(id);
-
-                await _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }).ConfigureAwait(false);
             }
 
             progress.Report(100);

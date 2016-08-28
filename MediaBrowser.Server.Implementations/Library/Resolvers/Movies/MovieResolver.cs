@@ -48,6 +48,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             string collectionType,
             IDirectoryService directoryService)
         {
+            if (parent != null && parent.Path != null && parent.Path.IndexOf("disney", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                var b = true;
+                var a = b;
+            }
+
             var result = ResolveMultipleInternal(parent, files, collectionType, directoryService);
 
             if (result != null)

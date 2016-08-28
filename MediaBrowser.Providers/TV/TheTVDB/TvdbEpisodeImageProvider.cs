@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;

@@ -2,9 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.Serialization;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Entities
@@ -125,6 +123,16 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return list;
+        }
+
+        [IgnoreDataMember]
+        public override bool StopRefreshIfLocalMetadataFound
+        {
+            get
+            {
+                // Need people id's from internet metadata
+                return false;
+            }
         }
     }
 }

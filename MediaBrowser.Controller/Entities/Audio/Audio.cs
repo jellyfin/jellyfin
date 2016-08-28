@@ -5,9 +5,11 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 
 namespace MediaBrowser.Controller.Entities.Audio
@@ -47,7 +49,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
-        public override bool EnableForceSaveOnDateModifiedChange
+        public override bool EnableRefreshOnDateModifiedChange
         {
             get { return true; }
         }
@@ -265,6 +267,11 @@ namespace MediaBrowser.Controller.Entities.Audio
                 Container = i.Container,
                 Size = i.Size
             };
+
+            if (info.Protocol == MediaProtocol.File)
+            {
+                info.ETag = i.DateModified.Ticks.ToString(CultureInfo.InvariantCulture).GetMD5().ToString("N");
+            }
 
             if (string.IsNullOrEmpty(info.Container))
             {

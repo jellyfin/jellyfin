@@ -21,7 +21,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected override async Task<string> GetCommandLineArguments(EncodingJob state)
         {
             // Get the output codec name
-            var videoCodec = EncodingJobFactory.GetVideoEncoder(state, GetEncodingOptions());
+            var videoCodec = EncodingJobFactory.GetVideoEncoder(MediaEncoder, state, GetEncodingOptions());
 
             var format = string.Empty;
             var keyFrame = string.Empty;
@@ -84,7 +84,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return args;
             }
 
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 5.ToString(UsCulture));
 
             args += keyFrameArg;
