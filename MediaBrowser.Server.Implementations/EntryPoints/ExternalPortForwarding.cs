@@ -7,9 +7,7 @@ using Mono.Nat;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Net;
-using System.Text;
 using MediaBrowser.Common.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -167,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 CreateRules(device);
             }
-            catch (Exception ex)
+            catch
             {
                 // I think it could be a good idea to log the exception because 
                 //   you are using permanent portmapping here (never expire) and that means that next time

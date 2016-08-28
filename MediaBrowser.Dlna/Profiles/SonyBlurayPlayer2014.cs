@@ -4,17 +4,49 @@ using System.Xml.Serialization;
 namespace MediaBrowser.Dlna.Profiles
 {
     [XmlRoot("Profile")]
-    public class SonyBlurayPlayer2013Profile : DefaultProfile
+    public class SonyBlurayPlayer2014 : DefaultProfile
     {
-        public SonyBlurayPlayer2013Profile()
+        public SonyBlurayPlayer2014()
         {
-            Name = "Sony Blu-ray Player 2013";
+            Name = "Sony Blu-ray Player 2014";
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"Blu-ray Disc Player",
-                Manufacturer = "Sony",
-                ModelNumber = "BDP-2013"
+                ModelNumber = "BDP-2014",
+
+                Headers = new[]
+                {
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S1200",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S3200",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S5200",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S6200",
+                        Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "X-AV-Physical-Unit-Info",
+                        Value = "BDP-S7200",
+                        Match = HeaderMatchType.Substring
+                    }
+                }
             };
 
             AddXmlRootAttribute("xmlns:av", "urn:schemas-sony-com:av");
@@ -36,9 +68,9 @@ namespace MediaBrowser.Dlna.Profiles
 
                 new TranscodingProfile
                 {
-                    Container = "ts",
+                    Container = "mkv",
                     VideoCodec = "h264",
-                    AudioCodec = "ac3",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
 
@@ -53,21 +85,21 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "ts",
+                    Container = "ts,mpegts",
                     VideoCodec = "mpeg1video,mpeg2video,h264",
                     AudioCodec = "ac3,aac,mp3,pcm",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mpeg",
+                    Container = "mpeg,mpg",
                     VideoCodec = "mpeg1video,mpeg2video",
                     AudioCodec = "ac3,mp3,mp2,pcm",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4",
+                    Container = "mp4,m4v",
                     VideoCodec = "mpeg4,h264",
                     AudioCodec = "ac3,aac,pcm,mp3",
                     Type = DlnaProfileType.Video
@@ -88,25 +120,24 @@ namespace MediaBrowser.Dlna.Profiles
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp3",
-                    AudioCodec = "mp3",
+                    Container = "m2ts,mts",
+                    VideoCodec = "h264,mpeg4,vc1",
+                    AudioCodec = "aac,mp3,ac3,dca,dts",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "wmv,asf",
+                    Type = DlnaProfileType.Video
+                },
+                new DirectPlayProfile
+                {
+                    Container = "mp3,m4a,wma,wav",
                     Type = DlnaProfileType.Audio
                 },
                 new DirectPlayProfile
                 {
-                    Container = "mp4",
-                    AudioCodec = "aac",
-                    Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "asf",
-                    AudioCodec = "wmav2,wmapro,wmavoice",
-                    Type = DlnaProfileType.Audio
-                },
-                new DirectPlayProfile
-                {
-                    Container = "jpeg",
+                    Container = "jpeg,png,gif",
                     Type = DlnaProfileType.Photo
                 }
             };
@@ -181,6 +212,17 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                }
+            };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }

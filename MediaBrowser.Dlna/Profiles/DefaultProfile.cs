@@ -33,7 +33,6 @@ namespace MediaBrowser.Dlna.Profiles
             MaxStreamingBitrate = 20000000;
             MaxStaticBitrate = 20000000;
             MusicStreamingTranscodingBitrate = 192000;
-            MusicSyncBitrate = 192000;
 
             EnableAlbumArtInDidl = false;
 
@@ -65,14 +64,35 @@ namespace MediaBrowser.Dlna.Profiles
             {
                 new DirectPlayProfile
                 {
-                    Container = "mp3,wma",
-                    Type = DlnaProfileType.Audio
+                    Container = "m4v,ts,mkv,avi,mpg,mpeg,mp4",
+                    VideoCodec = "h264",
+                    AudioCodec = "aac,mp3,ac3",
+                    Type = DlnaProfileType.Video
                 },
 
                 new DirectPlayProfile
                 {
-                    Container = "avi,mp4",
-                    Type = DlnaProfileType.Video
+                    Container = "mp3,wma,aac,wav",
+                    Type = DlnaProfileType.Audio
+                }
+            };
+
+            SubtitleProfiles = new[]
+            {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                }
+            };
+
+            ResponseProfiles = new[]
+            {
+                new ResponseProfile
+                {
+                    Container = "m4v",
+                    Type = DlnaProfileType.Video,
+                    MimeType = "video/mp4"
                 }
             };
         }

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Plugins;
@@ -57,18 +54,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private async void SendMessage(string name, TimerEventInfo info)
         {
-            var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).ToList();
+            var users = _userManager.Users.Where(i => i.Policy.EnableLiveTvAccess).Select(i => i.Id.ToString("N")).ToList();
 
-            foreach (var user in users)
+            try
             {
-                try
-                {
-                    await _sessionManager.SendMessageToUserSessions<TimerEventInfo>(user.Id.ToString("N"), name, info, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error sending message", ex);
-                }
+                await _sessionManager.SendMessageToUserSessions<TimerEventInfo>(users, name, info, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending message", ex);
             }
         }
 

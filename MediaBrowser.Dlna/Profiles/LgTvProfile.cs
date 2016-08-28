@@ -38,7 +38,7 @@ namespace MediaBrowser.Dlna.Profiles
                new TranscodingProfile
                {
                    Container = "ts",
-                   AudioCodec = "ac3",
+                   AudioCodec = "ac3,aac,mp3",
                    VideoCodec = "h264",
                    Type = DlnaProfileType.Video
                },
@@ -195,9 +195,16 @@ namespace MediaBrowser.Dlna.Profiles
                 new SubtitleProfile
                 {
                     Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+                new SubtitleProfile
+                {
+                    Format = "srt",
                     Method = SubtitleDeliveryMethod.External
                 }
             };
+
+            ResponseProfiles = new ResponseProfile[] { };
         }
     }
 }

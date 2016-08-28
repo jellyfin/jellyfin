@@ -166,12 +166,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 Limit = query.Limit,
-                IncludeItemsByName = true
-
+                IncludeItemsByName = true,
+                IsVirtualItem = false
             });
 
             // Add search hints based on item name
-            hints.AddRange(mediaItems.Where(IncludeInSearch).Select(item =>
+            hints.AddRange(mediaItems.Select(item =>
             {
                 var index = GetIndex(item.Name, searchTerm, terms);
 
@@ -185,20 +185,6 @@ namespace MediaBrowser.Server.Implementations.Library
             });
 
             return Task.FromResult(returnValue);
-        }
-
-        private bool IncludeInSearch(BaseItem item)
-        {
-            var episode = item as Episode;
-
-            if (episode != null)
-            {
-                if (episode.IsMissingEpisode)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
         /// <summary>

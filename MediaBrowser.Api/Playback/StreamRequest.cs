@@ -74,6 +74,7 @@ namespace MediaBrowser.Api.Playback
         public string Params { get; set; }
         public string PlaySessionId { get; set; }
         public string LiveStreamId { get; set; }
+        public string Tag { get; set; }
     }
 
     public class VideoStreamRequest : StreamRequest
@@ -191,8 +192,6 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "CopyTimestamps", Description = "Whether or not to copy timestamps when transcoding with an offset. Defaults to false.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool CopyTimestamps { get; set; }
-
-        public bool ForceLiveStream { get; set; }
 
         public bool EnableSubtitlesInManifest { get; set; }
 

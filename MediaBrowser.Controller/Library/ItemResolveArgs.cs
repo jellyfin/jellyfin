@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -49,6 +51,13 @@ namespace MediaBrowser.Controller.Library
 
                 return dict.Values;
             }
+        }
+
+        public LibraryOptions LibraryOptions { get; set; }
+
+        public LibraryOptions GetLibraryOptions()
+        {
+            return LibraryOptions ?? (LibraryOptions = (Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent)));
         }
 
         /// <summary>

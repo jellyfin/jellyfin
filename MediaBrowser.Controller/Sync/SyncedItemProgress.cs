@@ -4,7 +4,7 @@ namespace MediaBrowser.Controller.Sync
 {
     public class SyncedItemProgress
     {
-        public string ItemId { get; set; }
+        public double Progress { get; set; }
         public SyncJobItemStatus Status { get; set; }
     }
 }

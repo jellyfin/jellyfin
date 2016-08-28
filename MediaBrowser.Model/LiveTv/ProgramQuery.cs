@@ -15,9 +15,11 @@ namespace MediaBrowser.Model.LiveTv
             SortBy = new string[] { };
             Genres = new string[] { };
             EnableTotalRecordCount = true;
+            EnableUserData = true;
         }
 
         public bool EnableTotalRecordCount { get; set; }
+        public bool EnableUserData { get; set; }
 
         /// <summary>
         /// Fields to return within the items, in addition to basic information

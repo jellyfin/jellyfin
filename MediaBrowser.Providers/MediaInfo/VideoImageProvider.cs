@@ -10,7 +10,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -195,10 +194,13 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            var file = directoryService.GetFile(item.Path);
-            if (file != null && file.LastWriteTimeUtc != item.DateModified)
+            if (item.EnableRefreshOnDateModifiedChange && !string.IsNullOrWhiteSpace(item.Path) && item.LocationType == LocationType.FileSystem)
             {
-                return true;
+                var file = directoryService.GetFile(item.Path);
+                if (file != null && file.LastWriteTimeUtc != item.DateModified)
+                {
+                    return true;
+                }
             }
 
             return false;

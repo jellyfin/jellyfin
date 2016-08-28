@@ -192,7 +192,8 @@ namespace MediaBrowser.Api.Movies
                 SortOrder = SortOrder.Descending,
                 Limit = 7,
                 ParentId = parentIdGuid,
-                Recursive = true
+                Recursive = true,
+                IsPlayed = true
             };
 
             var recentlyPlayedMovies = _libraryManager.GetItemList(query).ToList();
