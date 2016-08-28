@@ -1,333 +1,340 @@
-﻿// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function (from, to) {
-    var rest = this.slice((to || from) + 1 || this.length);
-    this.length = from < 0 ? this.length + from : from;
-    return this.push.apply(this, rest);
-};
+﻿define(['jQuery'], function ($) {
 
-var ScheduledTaskPage = {
+    // Array Remove - By John Resig (MIT Licensed)
+    Array.prototype.remove = function (from, to) {
+        var rest = this.slice((to || from) + 1 || this.length);
+        this.length = from < 0 ? this.length + from : from;
+        return this.push.apply(this, rest);
+    };
 
-    refreshScheduledTask: function () {
-        Dashboard.showLoadingMsg();
+    window.ScheduledTaskPage = {
 
-        var id = getParameterByName('id');
+        refreshScheduledTask: function () {
+            Dashboard.showLoadingMsg();
+
+            var id = getParameterByName('id');
 
 
-        ApiClient.getScheduledTask(id).then(ScheduledTaskPage.loadScheduledTask);
-    },
+            ApiClient.getScheduledTask(id).then(ScheduledTaskPage.loadScheduledTask);
+        },
 
-    loadScheduledTask: function (task) {
+        loadScheduledTask: function (task) {
 
-        var page = $($.mobile.activePage)[0];
+            var page = $($.mobile.activePage)[0];
 
-        $('.taskName', page).html(task.Name);
+            $('.taskName', page).html(task.Name);
 
-        $('#pTaskDescription', page).html(task.Description);
+            $('#pTaskDescription', page).html(task.Description);
 
-        require(['paper-fab', 'paper-item-body', 'paper-icon-item'], function () {
-            ScheduledTaskPage.loadTaskTriggers(page, task);
-        });
+            require(['listViewStyle'], function () {
+                ScheduledTaskPage.loadTaskTriggers(page, task);
+            });
 
-        Dashboard.hideLoadingMsg();
-    },
+            Dashboard.hideLoadingMsg();
+        },
 
-    loadTaskTriggers: function (context, task) {
+        loadTaskTriggers: function (context, task) {
 
-        var html = '';
+            var html = '';
 
-        html += '<div class="paperList">';
+            html += '<div class="paperList">';
 
-        for (var i = 0, length = task.Triggers.length; i < length; i++) {
+            for (var i = 0, length = task.Triggers.length; i < length; i++) {
 
-            var trigger = task.Triggers[i];
+                var trigger = task.Triggers[i];
 
-            html += '<paper-icon-item>';
+                html += '<div class="listItem">';
 
-            html += '<paper-fab mini icon="schedule" class="blue" item-icon></paper-fab>';
+                html += '<i class="md-icon listItemIcon">schedule</i>';
 
-            html += '<paper-item-body two-line>';
-
-            html += "<div>" + ScheduledTaskPage.getTriggerFriendlyName(trigger) + "</div>";
-
-            if (trigger.MaxRuntimeMs) {
-                html += '<div secondary>';
-
-                var hours = trigger.MaxRuntimeMs / 3600000;
-
-                if (hours == 1) {
-                    html += Globalize.translate('ValueTimeLimitSingleHour');
+                if (trigger.MaxRuntimeMs) {
+                    html += '<div class="listItemBody two-line">';
                 } else {
-                    html += Globalize.translate('ValueTimeLimitMultiHour', hours);
+                    html += '<div class="listItemBody">';
                 }
+
+                html += "<div class='listItemBodyText'>" + ScheduledTaskPage.getTriggerFriendlyName(trigger) + "</div>";
+
+                if (trigger.MaxRuntimeMs) {
+                    html += '<div class="listItemBodyText secondary">';
+
+                    var hours = trigger.MaxRuntimeMs / 3600000;
+
+                    if (hours == 1) {
+                        html += Globalize.translate('ValueTimeLimitSingleHour');
+                    } else {
+                        html += Globalize.translate('ValueTimeLimitMultiHour', hours);
+                    }
+                    html += '</div>';
+                }
+
+                html += '</div>';
+
+                html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"><i class="md-icon">delete</i></button>';
+
                 html += '</div>';
             }
 
-            html += '</paper-item-body>';
+            html += '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" title="' + Globalize.translate('ButtonDelete') + '" onclick="ScheduledTaskPage.confirmDeleteTrigger(' + i + ');"><iron-icon icon="delete"></iron-icon></button>';
+            context.querySelector('.taskTriggers').innerHTML = html;
+        },
 
-            html += '</paper-icon-item>';
-        }
+        getTriggerFriendlyName: function (trigger) {
 
-        html += '</div>';
-
-        context.querySelector('.taskTriggers').innerHTML = html;
-    },
-
-    getTriggerFriendlyName: function (trigger) {
-
-        if (trigger.Type == 'DailyTrigger') {
-            return 'Daily at ' + ScheduledTaskPage.getDisplayTime(trigger.TimeOfDayTicks);
-        }
-
-        if (trigger.Type == 'WeeklyTrigger') {
-
-            return trigger.DayOfWeek + 's at ' + ScheduledTaskPage.getDisplayTime(trigger.TimeOfDayTicks);
-        }
-
-        if (trigger.Type == 'SystemEventTrigger') {
-
-            if (trigger.SystemEvent == 'WakeFromSleep') {
-                return 'On wake from sleep';
-            }
-        }
-
-        if (trigger.Type == 'IntervalTrigger') {
-
-            var hours = trigger.IntervalTicks / 36000000000;
-
-            if (hours == .25) {
-                return "Every 15 minutes";
-            }
-            if (hours == .5) {
-                return "Every 30 minutes";
-            }
-            if (hours == .75) {
-                return "Every 45 minutes";
-            }
-            if (hours == 1) {
-                return "Every hour";
+            if (trigger.Type == 'DailyTrigger') {
+                return 'Daily at ' + ScheduledTaskPage.getDisplayTime(trigger.TimeOfDayTicks);
             }
 
-            return 'Every ' + hours + ' hours';
-        }
+            if (trigger.Type == 'WeeklyTrigger') {
 
-        if (trigger.Type == 'StartupTrigger') {
-            return 'On application startup';
-        }
+                return trigger.DayOfWeek + 's at ' + ScheduledTaskPage.getDisplayTime(trigger.TimeOfDayTicks);
+            }
 
-        return trigger.Type;
-    },
+            if (trigger.Type == 'SystemEventTrigger') {
 
-    getDisplayTime: function (ticks) {
+                if (trigger.SystemEvent == 'WakeFromSleep') {
+                    return 'On wake from sleep';
+                }
+            }
 
-        var hours = ticks / 36000000000;
+            if (trigger.Type == 'IntervalTrigger') {
 
-        if (hours < 1) {
-            hours = 0;
-        }
+                var hours = trigger.IntervalTicks / 36000000000;
 
-        hours = Math.floor(hours);
+                if (hours == .25) {
+                    return "Every 15 minutes";
+                }
+                if (hours == .5) {
+                    return "Every 30 minutes";
+                }
+                if (hours == .75) {
+                    return "Every 45 minutes";
+                }
+                if (hours == 1) {
+                    return "Every hour";
+                }
 
-        ticks -= (hours * 36000000000);
+                return 'Every ' + hours + ' hours';
+            }
 
-        var minutes = Math.floor((ticks / 600000000));
+            if (trigger.Type == 'StartupTrigger') {
+                return 'On application startup';
+            }
 
-        var suffix = "am";
+            return trigger.Type;
+        },
 
-        if (hours > 11) {
-            suffix = "pm";
-        }
+        getDisplayTime: function (ticks) {
 
-        hours = hours % 12;
+            var hours = ticks / 36000000000;
 
-        if (hours == 0) {
-            hours = 12;
-        }
+            if (hours < 1) {
+                hours = 0;
+            }
 
-        if (minutes < 10) {
-            minutes = '0' + minutes;
-        }
+            hours = Math.floor(hours);
 
-        return hours + ':' + minutes + ' ' + suffix;
-    },
+            ticks -= (hours * 36000000000);
 
-    showAddTriggerPopup: function () {
+            var minutes = Math.floor((ticks / 600000000));
 
-        var page = $.mobile.activePage;
+            var suffix = "am";
 
-        $('#selectTriggerType', page).val('DailyTrigger').trigger('change');
+            if (hours > 11) {
+                suffix = "pm";
+            }
 
-        $('#popupAddTrigger', page).on("popupafteropen", function () {
-            $('#addTriggerForm input:first', this).focus();
-        }).popup("open").on("popupafterclose", function () {
+            hours = hours % 12;
 
-            $('#addTriggerForm', page).off("submit");
-            $(this).off("popupafterclose");
-        });
-    },
+            if (hours == 0) {
+                hours = 12;
+            }
 
-    confirmDeleteTrigger: function (index) {
+            if (minutes < 10) {
+                minutes = '0' + minutes;
+            }
 
-        require(['confirm'], function (confirm) {
-            confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger')).then(function () {
-                ScheduledTaskPage.deleteTrigger(index);
+            return hours + ':' + minutes + ' ' + suffix;
+        },
+
+        showAddTriggerPopup: function () {
+
+            var page = $.mobile.activePage;
+
+            $('#selectTriggerType', page).val('DailyTrigger').trigger('change');
+
+            $('#popupAddTrigger', page).on("popupafteropen", function () {
+                $('#addTriggerForm input:first', this).focus();
+            }).popup("open").on("popupafterclose", function () {
+
+                $('#addTriggerForm', page).off("submit");
+                $(this).off("popupafterclose");
             });
-        });
-    },
+        },
 
-    deleteTrigger: function (index) {
+        confirmDeleteTrigger: function (index) {
 
-        Dashboard.showLoadingMsg();
+            require(['confirm'], function (confirm) {
+                confirm(Globalize.translate('MessageDeleteTaskTrigger'), Globalize.translate('HeaderDeleteTaskTrigger')).then(function () {
+                    ScheduledTaskPage.deleteTrigger(index);
+                });
+            });
+        },
 
-        var id = getParameterByName('id');
+        deleteTrigger: function (index) {
+
+            Dashboard.showLoadingMsg();
+
+            var id = getParameterByName('id');
 
 
-        ApiClient.getScheduledTask(id).then(function (task) {
+            ApiClient.getScheduledTask(id).then(function (task) {
 
-            task.Triggers.remove(index);
+                task.Triggers.remove(index);
 
-            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
+                ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
 
-                ScheduledTaskPage.refreshScheduledTask();
+                    ScheduledTaskPage.refreshScheduledTask();
+
+                });
 
             });
+        },
 
-        });
-    },
+        refreshTriggerFields: function (triggerType) {
 
-    refreshTriggerFields: function (triggerType) {
+            var page = $.mobile.activePage;
 
-        var page = $.mobile.activePage;
+            if (triggerType == 'DailyTrigger') {
 
-        if (triggerType == 'DailyTrigger') {
+                $('#fldTimeOfDay', page).show();
+                $('#fldDayOfWeek', page).hide();
+                $('#fldSelectSystemEvent', page).hide();
+                $('#fldSelectInterval', page).hide();
+                $('#txtTimeOfDay', page).attr('required', 'required');
+            }
 
-            $('#fldTimeOfDay', page).show();
-            $('#fldDayOfWeek', page).hide();
-            $('#fldSelectSystemEvent', page).hide();
-            $('#fldSelectInterval', page).hide();
-            $('#txtTimeOfDay', page).attr('required', 'required');
+            else if (triggerType == 'WeeklyTrigger') {
+                $('#fldTimeOfDay', page).show();
+                $('#fldDayOfWeek', page).show();
+                $('#fldSelectSystemEvent', page).hide();
+                $('#fldSelectInterval', page).hide();
+                $('#txtTimeOfDay', page).attr('required', 'required');
+            }
+
+            else if (triggerType == 'SystemEventTrigger') {
+                $('#fldTimeOfDay', page).hide();
+                $('#fldDayOfWeek', page).hide();
+                $('#fldSelectSystemEvent', page).show();
+                $('#fldSelectInterval', page).hide();
+                $('#txtTimeOfDay', page).removeAttr('required');
+            }
+
+            else if (triggerType == 'IntervalTrigger') {
+                $('#fldTimeOfDay', page).hide();
+                $('#fldDayOfWeek', page).hide();
+                $('#fldSelectSystemEvent', page).hide();
+                $('#fldSelectInterval', page).show();
+                $('#txtTimeOfDay', page).removeAttr('required');
+            }
+
+            else if (triggerType == 'StartupTrigger') {
+                $('#fldTimeOfDay', page).hide();
+                $('#fldDayOfWeek', page).hide();
+                $('#fldSelectSystemEvent', page).hide();
+                $('#fldSelectInterval', page).hide();
+                $('#txtTimeOfDay', page).removeAttr('required');
+            }
+        },
+
+        getTriggerToAdd: function () {
+
+            var page = $.mobile.activePage;
+
+            var trigger = {
+                Type: $('#selectTriggerType', page).val()
+            };
+
+            if (trigger.Type == 'DailyTrigger') {
+                trigger.TimeOfDayTicks = ScheduledTaskPage.getTimeOfDayTicks($('#txtTimeOfDay', page).val());
+            }
+
+            else if (trigger.Type == 'WeeklyTrigger') {
+                trigger.DayOfWeek = $('#selectDayOfWeek', page).val();
+                trigger.TimeOfDayTicks = ScheduledTaskPage.getTimeOfDayTicks($('#txtTimeOfDay', page).val());
+            }
+
+            else if (trigger.Type == 'SystemEventTrigger') {
+                trigger.SystemEvent = $('#selectSystemEvent', page).val();
+            }
+
+            else if (trigger.Type == 'IntervalTrigger') {
+                trigger.IntervalTicks = $('#selectInterval', page).val();
+            }
+
+            var timeLimit = $('#txtTimeLimit', page).val() || '0';
+            timeLimit = parseFloat(timeLimit) * 3600000;
+
+            trigger.MaxRuntimeMs = timeLimit || null;
+
+            return trigger;
+        },
+
+        getTimeOfDayTicks: function (val) {
+
+            var vals = val.split(':');
+
+            var hours = vals[0];
+            var minutes = vals[1].split(' ')[0];
+
+            // Add hours
+            var ticks = hours * 60 * 60 * 1000 * 10000;
+
+            ticks += minutes * 60 * 1000 * 10000;
+
+            return ticks;
         }
+    };
 
-        else if (triggerType == 'WeeklyTrigger') {
-            $('#fldTimeOfDay', page).show();
-            $('#fldDayOfWeek', page).show();
-            $('#fldSelectSystemEvent', page).hide();
-            $('#fldSelectInterval', page).hide();
-            $('#txtTimeOfDay', page).attr('required', 'required');
-        }
+    (function () {
 
-        else if (triggerType == 'SystemEventTrigger') {
-            $('#fldTimeOfDay', page).hide();
-            $('#fldDayOfWeek', page).hide();
-            $('#fldSelectSystemEvent', page).show();
-            $('#fldSelectInterval', page).hide();
-            $('#txtTimeOfDay', page).removeAttr('required');
-        }
+        function onSubmit() {
 
-        else if (triggerType == 'IntervalTrigger') {
-            $('#fldTimeOfDay', page).hide();
-            $('#fldDayOfWeek', page).hide();
-            $('#fldSelectSystemEvent', page).hide();
-            $('#fldSelectInterval', page).show();
-            $('#txtTimeOfDay', page).removeAttr('required');
-        }
+            Dashboard.showLoadingMsg();
 
-        else if (triggerType == 'StartupTrigger') {
-            $('#fldTimeOfDay', page).hide();
-            $('#fldDayOfWeek', page).hide();
-            $('#fldSelectSystemEvent', page).hide();
-            $('#fldSelectInterval', page).hide();
-            $('#txtTimeOfDay', page).removeAttr('required');
-        }
-    },
+            var id = getParameterByName('id');
 
-    getTriggerToAdd: function () {
+            ApiClient.getScheduledTask(id).then(function (task) {
 
-        var page = $.mobile.activePage;
+                task.Triggers.push(ScheduledTaskPage.getTriggerToAdd());
 
-        var trigger = {
-            Type: $('#selectTriggerType', page).val()
-        };
+                ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
 
-        if (trigger.Type == 'DailyTrigger') {
-            trigger.TimeOfDayTicks = ScheduledTaskPage.getTimeOfDayTicks($('#txtTimeOfDay', page).val());
-        }
+                    $('#popupAddTrigger').popup('close');
 
-        else if (trigger.Type == 'WeeklyTrigger') {
-            trigger.DayOfWeek = $('#selectDayOfWeek', page).val();
-            trigger.TimeOfDayTicks = ScheduledTaskPage.getTimeOfDayTicks($('#txtTimeOfDay', page).val());
-        }
+                    ScheduledTaskPage.refreshScheduledTask();
 
-        else if (trigger.Type == 'SystemEventTrigger') {
-            trigger.SystemEvent = $('#selectSystemEvent', page).val();
-        }
-
-        else if (trigger.Type == 'IntervalTrigger') {
-            trigger.IntervalTicks = $('#selectInterval', page).val();
-        }
-
-        var timeLimit = $('#txtTimeLimit', page).val() || '0';
-        timeLimit = parseFloat(timeLimit) * 3600000;
-
-        trigger.MaxRuntimeMs = timeLimit || null;
-
-        return trigger;
-    },
-
-    getTimeOfDayTicks: function (val) {
-
-        var vals = val.split(':');
-
-        var hours = vals[0];
-        var minutes = vals[1].split(' ')[0];
-
-        // Add hours
-        var ticks = hours * 60 * 60 * 1000 * 10000;
-
-        ticks += minutes * 60 * 1000 * 10000;
-
-        return ticks;
-    }
-};
-
-(function () {
-
-    function onSubmit() {
-
-        Dashboard.showLoadingMsg();
-
-        var id = getParameterByName('id');
-
-        ApiClient.getScheduledTask(id).then(function (task) {
-
-            task.Triggers.push(ScheduledTaskPage.getTriggerToAdd());
-
-            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).then(function () {
-
-                $('#popupAddTrigger').popup('close');
-
-                ScheduledTaskPage.refreshScheduledTask();
+                });
 
             });
 
+            return false;
+        }
+
+        $(document).on('pageinit', "#scheduledTaskPage", function () {
+
+            var page = this;
+
+            $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
+
+            page.querySelector('.timeFieldExample').innerHTML = Globalize.translate('ValueExample', '1:00 PM');
+
+        }).on('pageshow', "#scheduledTaskPage", function () {
+
+            ScheduledTaskPage.refreshScheduledTask();
         });
 
-        return false;
-    }
+    })();
 
-    $(document).on('pageinit', "#scheduledTaskPage", function () {
-
-        var page = this;
-
-        $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
-
-        page.querySelector('.timeFieldExample').innerHTML = Globalize.translate('ValueExample', '1:00 PM');
-
-    }).on('pageshow', "#scheduledTaskPage", function () {
-
-        ScheduledTaskPage.refreshScheduledTask();
-    });
-
-})();
-
+});

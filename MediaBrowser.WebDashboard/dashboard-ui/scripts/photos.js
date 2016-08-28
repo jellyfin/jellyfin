@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'cardBuilder', 'emby-itemscontainer'], function ($, cardBuilder) {
 
     var view = 'Poster';
 
@@ -13,7 +13,7 @@
                 query: {
                     SortBy: "IsFolder,SortName",
                     SortOrder: "Ascending",
-                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio,SortName",
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary",
                     StartIndex: 0,
@@ -58,7 +58,7 @@
 
             if (view == "Poster") {
                 // Poster
-                html = LibraryBrowser.getPosterViewHtml({
+                html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: "square",
                     context: getParameterByName('context') || 'photos',

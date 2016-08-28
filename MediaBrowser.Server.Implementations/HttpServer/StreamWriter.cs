@@ -75,8 +75,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
         }
 
-        // 256k
-        private const int BufferSize = 262144;
+        private const int BufferSize = 81920;
 
         /// <summary>
         /// Writes to.

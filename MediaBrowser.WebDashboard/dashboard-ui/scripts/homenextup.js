@@ -1,11 +1,11 @@
-﻿define(['components/categorysyncbuttons', 'emby-itemscontainer'], function (categorysyncbuttons) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
     function getNextUpPromise() {
 
         var query = {
 
             Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb"
@@ -25,7 +25,7 @@
 
             var html = '';
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: "backdrop",
                 showTitle: true,

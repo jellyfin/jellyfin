@@ -1,12 +1,12 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
 
     function loadMediaFolders(page, mediaFolders) {
 
         var html = '';
 
-        html += '<div class="paperListLabel">' + Globalize.translate('HeaderLibraries') + '</div>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderLibraries') + '</h3>';
 
-        html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
+        html += '<div class="checkboxList paperList" style="padding:.5em 1em;">';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
@@ -14,7 +14,7 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<paper-checkbox class="chkFolder" data-id="' + folder.Id + '"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkFolder" data-id="' + folder.Id + '"' + checkedAttribute + '/><span>' + folder.Name + '</span></label>';
         }
 
         html += '</div>';
@@ -28,9 +28,9 @@
 
         var html = '';
 
-        html += '<div class="paperListLabel">' + Globalize.translate('HeaderChannels') + '</div>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderChannels') + '</h3>';
 
-        html += '<div class="paperCheckboxList paperList" style="padding:.5em 1em;">';
+        html += '<div class="checkboxList paperList" style="padding:.5em 1em;">';
 
         for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -38,7 +38,7 @@
 
             var checkedAttribute = ' checked="checked"';
 
-            html += '<paper-checkbox class="chkChannel" data-id="' + folder.Id + '"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkChannel" data-id="' + folder.Id + '"' + checkedAttribute + '/><span>' + folder.Name + '</span></label>';
         }
 
         html += '</div>';

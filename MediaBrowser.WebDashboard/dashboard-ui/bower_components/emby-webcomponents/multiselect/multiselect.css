@@ -5,7 +5,7 @@
     right: 0;
     top: 0;
     background-color: rgba(0, 0, 0, .3);
-    z-index: 999;
+    z-index: 99998;
     border: 1px solid #43A047;
 }
 
@@ -15,11 +15,11 @@
     left: 0;
     right: 0;
     background: #43A047;
-    z-index: 1000;
     padding: .5em;
     display: flex;
     align-items: center;
     color: #fff;
+    z-index: 99999;
 }
 
 .itemSelectionCount {
@@ -30,7 +30,11 @@
     padding-top: 1px;
 }
 
-.itemSelectionPanel .checkboxOutline {
+.multiSelectCheckboxOutline {
     top: 0 !important;
     border-radius: 0 !important;
+}
+
+.withMultiSelect {
+    position: relative;
 }

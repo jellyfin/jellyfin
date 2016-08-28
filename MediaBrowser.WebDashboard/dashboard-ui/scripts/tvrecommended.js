@@ -1,18 +1,8 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, categorysyncbuttons) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
 
     return function (view, params) {
 
         var self = this;
-
-        function getView() {
-
-            return 'Thumb';
-        }
-
-        function getResumeView() {
-
-            return 'Poster';
-        }
 
         function reload() {
 
@@ -27,7 +17,7 @@
             var query = {
 
                 Limit: 24,
-                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
                 UserId: Dashboard.getCurrentUserId(),
                 ImageTypeLimit: 1,
                 EnableImageTypes: "Primary,Backdrop,Thumb"
@@ -43,41 +33,19 @@
                     view.querySelector('.noNextUpItems').classList.remove('hide');
                 }
 
-                var viewStyle = getView();
-                var html = '';
+                var container = view.querySelector('#nextUpItems');
+                cardBuilder.buildCards(result.Items, {
+                    itemsContainer: container,
+                    preferThumb: true,
+                    shape: "backdrop",
+                    scalable: true,
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: false,
+                    centerText: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts
+                });
 
-                if (viewStyle == 'ThumbCard') {
-
-                    html += libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "backdrop",
-                        showTitle: true,
-                        preferThumb: true,
-                        showParentTitle: true,
-                        lazy: true,
-                        cardLayout: true,
-                        showDetailsMenu: true
-                    });
-
-                } else if (viewStyle == 'Thumb') {
-
-                    html += libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: "backdrop",
-                        showTitle: true,
-                        showParentTitle: true,
-                        overlayText: false,
-                        lazy: true,
-                        preferThumb: true,
-                        showDetailsMenu: true,
-                        centerText: true,
-                        overlayPlayButton: AppInfo.enableAppLayouts
-                    });
-                }
-
-                var elem = view.querySelector('#nextUpItems');
-                elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
                 Dashboard.hideLoadingMsg();
             });
         }
@@ -104,7 +72,7 @@
                 Filters: "IsResumable",
                 Limit: limit,
                 Recursive: true,
-                Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
+                Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,BasicSyncInfo",
                 ExcludeLocationTypes: "Virtual",
                 ParentId: parentId,
                 ImageTypeLimit: 1,
@@ -120,50 +88,36 @@
                     view.querySelector('#resumableSection').classList.add('hide');
                 }
 
-                var viewStyle = getResumeView();
-                var html = '';
+                var allowBottomPadding = !enableScrollX();
 
-                if (viewStyle == 'PosterCard') {
-
-                    html += libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: getThumbShape(),
-                        showTitle: true,
-                        showParentTitle: true,
-                        lazy: true,
-                        cardLayout: true,
-                        showDetailsMenu: true,
-                        preferThumb: true
-                    });
-
-                } else if (viewStyle == 'Poster') {
-
-                    html += libraryBrowser.getPosterViewHtml({
-                        items: result.Items,
-                        shape: getThumbShape(),
-                        showTitle: true,
-                        showParentTitle: true,
-                        lazy: true,
-                        showDetailsMenu: true,
-                        overlayPlayButton: true,
-                        preferThumb: true,
-                        centerText: true
-                    });
-                }
-
-                var elem = view.querySelector('#resumableItems');
-                elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
+                var container = view.querySelector('#resumableItems');
+                cardBuilder.buildCards(result.Items, {
+                    itemsContainer: container,
+                    preferThumb: true,
+                    shape: getThumbShape(),
+                    scalable: true,
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: false,
+                    centerText: true,
+                    overlayPlayButton: true,
+                    allowBottomPadding: allowBottomPadding
+                });
             });
         }
 
         self.initTab = function () {
 
             var tabContent = self.tabContent;
+
+            var resumableItemsContainer = tabContent.querySelector('#resumableItems');
+
             if (enableScrollX()) {
-                tabContent.querySelector('#resumableItems').classList.add('hiddenScrollX');
+                resumableItemsContainer.classList.add('hiddenScrollX');
+                resumableItemsContainer.classList.remove('vertical-wrap');
             } else {
-                tabContent.querySelector('#resumableItems').classList.remove('hiddenScrollX');
+                resumableItemsContainer.classList.remove('hiddenScrollX');
+                resumableItemsContainer.classList.add('vertical-wrap');
             }
 
             categorysyncbuttons.init(tabContent);
@@ -248,25 +202,15 @@
             });
         }
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
         function onPlaybackStop(e, state) {
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
                 renderedTabs = [];
-                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
-                    }
-                }));
+                viewTabs.triggerTabChange();
             }
-        }
-
-        var baseUrl = 'tv.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
         }
 
         if (enableScrollX()) {
@@ -274,12 +218,12 @@
         } else {
             view.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 4, 5, 6]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 4, 5, 6]);
 
-        mdlTabs.addEventListener('beforetabchange', function (e) {
+        viewTabs.addEventListener('beforetabchange', function (e) {
             preLoadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -328,8 +272,18 @@
             Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
         view.addEventListener('viewdestroy', function (e) {
 
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
             tabControllers.forEach(function (t) {
                 if (t.destroy) {
                     t.destroy();

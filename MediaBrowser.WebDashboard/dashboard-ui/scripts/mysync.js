@@ -1,46 +1,68 @@
-﻿define(['loading', 'localsync'], function (loading) {
+﻿define(['apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (appHost, globalize, syncJobList, events, localSync) {
 
-    function refreshSyncStatus(page) {
+    function initSupporterInfo(view, params) {
 
-        if (LocalSync.isSupported()) {
+        view.querySelector('.btnSyncSupporter').addEventListener('click', function () {
 
-            var status = LocalSync.getSyncStatus();
-
-            page.querySelector('.labelSyncStatus').innerHTML = Globalize.translate('LabelLocalSyncStatusValue', status);
-            if (status == 'Active') {
-                loading.show();
-            } else {
-                loading.hide();
-            }
-
-            if (status == "Active") {
-                page.querySelector('.btnSyncNow').classList.add('hide');
-            }
-            else {
-                page.querySelector('.btnSyncNow').classList.remove('hide');
-            }
-
-        }
-    }
-
-    function syncNow(page) {
-
-        LocalSync.sync();
-        require(['toast'], function (toast) {
-            toast(Globalize.translate('MessageSyncStarted'));
+            requirejs(["registrationservices"], function (registrationServices) {
+                registrationServices.validateFeature('sync');
+            });
         });
-        refreshSyncStatus(page);
+
+        view.querySelector('.supporterPromotion .mainText').innerHTML = globalize.translate('HeaderSyncRequiresSupporterMembership');
+
+        var apiClient = ApiClient;
+        apiClient.getPluginSecurityInfo().then(function (regInfo) {
+
+            if (regInfo.IsMBSupporter) {
+                view.querySelector('.supporterPromotionContainer').classList.add('hide');
+            } else {
+                view.querySelector('.supporterPromotionContainer').classList.remove('hide');
+            }
+
+        }, function () {
+
+            view.querySelector('.supporterPromotionContainer').classList.remove('hide');
+        });
     }
 
     return function (view, params) {
 
         var interval;
 
+        function isLocalSyncManagement() {
+            return appHost.supports('sync') && params.mode == 'offline';
+        }
+
+        function refreshSyncStatus(page) {
+
+            if (isLocalSyncManagement()) {
+
+                var status = localSync.getSyncStatus();
+
+                if (status == "Active") {
+                    page.querySelector('.btnSyncNow').classList.add('hide');
+                }
+                else {
+                    page.querySelector('.btnSyncNow').classList.remove('hide');
+                }
+            }
+        }
+
+        function syncNow(page) {
+
+            localSync.sync();
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('MessageSyncStarted'));
+            });
+            refreshSyncStatus(page);
+        }
+
         view.querySelector('.btnSyncNow').addEventListener('click', function () {
             syncNow(view);
         });
 
-        if (LocalSync.isSupported()) {
+        if (isLocalSyncManagement()) {
 
             view.querySelector('.localSyncStatus').classList.remove('hide');
 
@@ -48,25 +70,41 @@
             view.querySelector('.localSyncStatus').classList.add('hide');
         }
 
+        initSupporterInfo(view, params);
+        var mySyncJobList = new syncJobList({
+            isLocalSync: params.mode === 'offline',
+            serverId: ApiClient.serverId(),
+            userId: params.mode === 'offline' ? null : ApiClient.getCurrentUserId(),
+            element: view.querySelector('.syncActivity')
+        });
+
+        events.on(mySyncJobList, 'jobedit', function (e, jobId, serverId) {
+
+            Dashboard.navigate('mysyncjob.html?id=' + jobId);
+        });
+
         view.addEventListener('viewbeforeshow', function () {
-            var page = this;
 
-            refreshSyncStatus(page);
+            refreshSyncStatus(view);
 
-            interval = setInterval(function () {
-                refreshSyncStatus(page);
-            }, 5000);
+            if (appHost.supports('sync')) {
+                interval = setInterval(function () {
+                    refreshSyncStatus(view);
+                }, 5000);
+            }
         });
 
         view.addEventListener('viewbeforehide', function () {
-            var page = this;
-
-            loading.hide();
 
             if (interval) {
                 clearInterval(interval);
                 interval = null;
             }
+        });
+
+        view.addEventListener('viewdestroy', function () {
+
+            mySyncJobList.destroy();
         });
     };
 });

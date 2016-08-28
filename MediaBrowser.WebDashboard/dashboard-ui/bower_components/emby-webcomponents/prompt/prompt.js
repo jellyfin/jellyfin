@@ -4,7 +4,7 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./s
 
         var tabIndex = canFocus ? '' : ' tabindex="-1"';
         autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon">' + icon + '</i></button>';
+        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon promptExitIcon">' + icon + '</i></button>';
     }
 
     return function (options) {

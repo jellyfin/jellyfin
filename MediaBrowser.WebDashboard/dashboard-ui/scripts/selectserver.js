@@ -1,4 +1,4 @@
-﻿define(['paper-icon-button-light'], function () {
+﻿define(['appSettings', 'paper-icon-button-light'], function (appSettings) {
 
     function updatePageStyle(page) {
 
@@ -98,7 +98,11 @@
 
             Dashboard.showLoadingMsg();
 
-            ConnectionManager.connectToServer(server).then(function (result) {
+            ConnectionManager.connectToServer(server, {
+
+                enableAutoLogin: appSettings.enableAutoLogin()
+
+            }).then(function (result) {
 
                 Dashboard.hideLoadingMsg();
 

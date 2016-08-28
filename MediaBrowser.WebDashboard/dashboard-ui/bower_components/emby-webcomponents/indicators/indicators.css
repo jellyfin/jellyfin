@@ -1,6 +1,7 @@
 .itemProgressBar {
     background: rgba(0,0,0,.5);
     position: relative;
+    height: .35em;
 }
 
 .itemProgressBarForeground {
@@ -11,12 +12,30 @@
     background-color: #52B54B;
 }
 
+.indicator {
+    border-radius: 500px;
+    display: -ms-flex;
+    display: -webkit-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    width: 2em;
+    height: 2em;
+}
+
 .timerIndicator {
     color: #CB272A;
 }
 
 .indicator + .indicator {
     margin-left: .25em;
+}
+
+.indicatorIcon {
+    width: auto;
+    height: auto;
+    font-size: 1.6em;
 }
 
 .countIndicator {
@@ -42,28 +61,16 @@
     color: #fff;
 }
 
-.countIndicator, .playedIndicator {
-    width: 28px;
-    height: 28px;
+.syncIndicator {
+    color: #fff;
+    border-radius: 500px;
 }
 
-    .playedIndicator i {
-        width: 22px;
-        height: 22px;
-        font-size: 22px;
-    }
-
-.layout-tv .countIndicator, .layout-tv .playedIndicator {
-    width: 3.8vh;
-    height: 3.8vh;
+.emptySyncIndicator {
+    background: #ccc;
+    color: #333;
 }
 
-.layout-tv .countIndicator {
-    font-size: 80%;
-}
-
-.layout-tv .playedIndicator i {
-    width: 2.6vh;
-    height: 2.6vh;
-    font-size: 2.6vh;
+.fullSyncIndicator {
+    background: rgba(82,181,75,1);
 }

@@ -1,4 +1,4 @@
-﻿define(['datetime'], function (datetime) {
+﻿define(['datetime', 'cardBuilder'], function (datetime, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -78,10 +78,10 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: group.items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -89,7 +89,7 @@
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
-                defaultAction: 'edit'
+                action: 'edit'
 
             });
             html += '</div>';

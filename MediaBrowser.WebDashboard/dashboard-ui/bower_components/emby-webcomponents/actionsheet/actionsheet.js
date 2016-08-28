@@ -34,8 +34,9 @@
 
     function getPosition(options, dlg) {
 
-        var windowHeight = window.innerHeight;
-        var windowWidth = window.innerWidth;
+        var windowSize = dom.getWindowSize();
+        var windowHeight = windowSize.innerHeight;
+        var windowWidth = windowSize.innerWidth;
 
         if (windowHeight < 540) {
             return null;
@@ -71,10 +72,10 @@
         return pos;
     }
 
-    function addCenterFocus(dlg) {
-
+    function centerFocus(elem, horiz, on) {
         require(['scrollHelper'], function (scrollHelper) {
-            scrollHelper.centerFocus.on(dlg.querySelector('.actionSheetScroller'), false);
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
         });
     }
 
@@ -91,9 +92,11 @@
         };
 
         var backButton = false;
+        var isFullscreen;
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
+            isFullscreen = true;
             backButton = true;
             dialogOptions.autoFocus = true;
         } else {
@@ -106,14 +109,47 @@
 
         var dlg = dialogHelper.createDialog(dialogOptions);
 
+        if (isFullscreen) {
+            dlg.classList.add('actionsheet-fullscreen');
+        }
+
         if (!layoutManager.tv) {
-            dlg.classList.add('extraSpacing');
+            dlg.classList.add('actionsheet-extraSpacing');
         }
 
         dlg.classList.add('actionSheet');
 
         var html = '';
-        html += '<div class="actionSheetContent">';
+
+        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
+        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
+
+        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
+        if (options.items.length > 20) {
+            var minWidth = dom.getWindowSize().innerWidth >= 300 ? 240 : 200;
+            style += "min-width:" + minWidth + "px;";
+        }
+
+        var i, length, option;
+        var renderIcon = false;
+        for (i = 0, length = options.items.length; i < length; i++) {
+
+            option = options.items[i];
+            option.icon = option.selected ? 'check' : null;
+
+            if (option.icon) {
+                renderIcon = true;
+            }
+        }
+
+        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
+        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
+
+        if (center) {
+            html += '<div class="actionSheetContent actionSheetContent-centered">';
+        } else {
+            html += '<div class="actionSheetContent">';
+        }
 
         if (options.title) {
 
@@ -133,43 +169,16 @@
             html += '</p>';
         }
 
-        var scrollType = layoutManager.desktop ? 'smoothScrollY' : 'hiddenScrollY';
-        var style = (browser.noFlex || browser.firefox) ? 'max-height:400px;' : '';
-
-        // Admittedly a hack but right now the scrollbar is being factored into the width which is causing truncation
-        if (options.items.length > 20) {
-            var minWidth = window.innerWidth >= 300 ? 240 : 200;
-            style += "min-width:" + minWidth + "px;";
-        }
         html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
 
-        var i, length, option;
-        var renderIcon = false;
-        for (i = 0, length = options.items.length; i < length; i++) {
-
-            option = options.items[i];
-            option.icon = option.selected ? 'check' : null;
-
-            if (option.icon) {
-                renderIcon = true;
-            }
-        }
-
-        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
-        var center = options.title && (!renderIcon /*|| itemsWithIcons.length != options.items.length*/);
-
-        if (center) {
-            dlg.classList.add('centered');
-        }
-
-        var itemTagName = 'button';
+        var menuItemClass = browser.noFlex || browser.firefox ? 'actionSheetMenuItem actionSheetMenuItem-noflex' : 'actionSheetMenuItem';
 
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
 
             var autoFocus = option.selected ? ' autoFocus' : '';
-            html += '<' + itemTagName + autoFocus + ' is="emby-button" type="button" class="actionSheetMenuItem" data-id="' + (option.id || option.value) + '">';
+            html += '<button' + autoFocus + ' is="emby-button" type="button" class="' + menuItemClass + '" data-id="' + (option.id || option.value) + '">';
 
             if (option.icon) {
                 html += '<i class="actionSheetItemIcon md-icon">' + option.icon + '</i>';
@@ -178,7 +187,7 @@
                 html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
             html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
-            html += '</' + itemTagName + '>';
+            html += '</button>';
         }
 
         if (options.showCancel) {
@@ -191,7 +200,7 @@
         dlg.innerHTML = html;
 
         if (layoutManager.tv) {
-            addCenterFocus(dlg);
+            centerFocus(dlg.querySelector('.actionSheetScroller'), false, true);
         }
 
         if (options.showCancel) {
@@ -227,6 +236,10 @@
         return new Promise(function (resolve, reject) {
 
             dlg.addEventListener('close', function () {
+
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.actionSheetScroller'), false, false);
+                }
 
                 if (timeout) {
                     clearTimeout(timeout);

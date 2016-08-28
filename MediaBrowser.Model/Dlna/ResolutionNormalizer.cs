@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -59,8 +60,8 @@ namespace MediaBrowser.Model.Dlna
 
         private static double GetVideoBitrateScaleFactor(string codec)
         {
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            if (StringHelper.EqualsIgnoreCase(codec, "h265") ||
+                StringHelper.EqualsIgnoreCase(codec, "hevc"))
             {
                 return .5;
             }

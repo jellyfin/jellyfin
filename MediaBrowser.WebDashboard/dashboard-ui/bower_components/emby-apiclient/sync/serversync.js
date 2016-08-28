@@ -1,6 +1,6 @@
-﻿(function (globalScope) {
+﻿define([], function () {
 
-    function serverSync(connectionManager) {
+    return function (connectionManager) {
 
         var self = this;
 
@@ -9,10 +9,7 @@
             if (!server.AccessToken && !server.ExchangeToken) {
 
                 console.log('Skipping sync to server ' + server.Id + ' because there is no saved authentication information.');
-                return new Promise(function (resolve, reject) {
-
-                    resolve();
-                });
+                return Promise.resolve();
             }
 
             var connectionOptions = {
@@ -55,9 +52,9 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['contentuploader'], function () {
+                require(['contentuploader'], function (ContentUploader) {
 
-                    new MediaBrowser.ContentUploader(connectionManager).uploadImages(server).then(function () {
+                    new ContentUploader(connectionManager).uploadImages(server).then(function () {
 
                         console.log("ContentUploaded succeeded to server: " + server.Id);
 
@@ -81,22 +78,17 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['offlineusersync'], function () {
+                require(['offlineusersync'], function (OfflineUserSync) {
 
                     var apiClient = connectionManager.getApiClient(server.Id);
 
-                    new MediaBrowser.OfflineUserSync().sync(apiClient, server).then(function () {
+                    new OfflineUserSync().sync(apiClient, server).then(function () {
 
                         console.log("OfflineUserSync succeeded to server: " + server.Id);
 
                         syncMedia(server, options).then(resolve, reject);
 
-                    }, function () {
-
-                        console.log("OfflineUserSync failed to server: " + server.Id);
-
-                        reject();
-                    });
+                    }, reject);
                 });
             });
         }
@@ -105,31 +97,13 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['mediasync'], function () {
+                require(['mediasync'], function (MediaSync) {
 
                     var apiClient = connectionManager.getApiClient(server.Id);
 
-                    new MediaBrowser.MediaSync().sync(apiClient, server, options).then(function () {
-
-                        console.log("MediaSync succeeded to server: " + server.Id);
-
-                        resolve();
-
-                    }, function () {
-
-                        console.log("MediaSync failed to server: " + server.Id);
-
-                        reject();
-                    });
+                    new MediaSync().sync(apiClient, server, options).then(resolve, reject);
                 });
             });
         }
-    }
-
-    if (!globalScope.MediaBrowser) {
-        globalScope.MediaBrowser = {};
-    }
-
-    globalScope.MediaBrowser.ServerSync = serverSync;
-
-})(this);
+    };
+});

@@ -1,8 +1,10 @@
-﻿define([], function () {
+﻿define(['appSettings'], function (appSettings) {
 
     function login(page, username, password) {
 
         Dashboard.showLoadingMsg();
+
+        appSettings.enableAutoLogin(true);
 
         ConnectionManager.loginToConnect(username, password).then(function () {
 
@@ -77,16 +79,20 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connect().then(function (result) {
+        ConnectionManager.connect({
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 
         });
     }
 
-    function loadPage(page) {
+    function loadPage(page, params) {
 
-        var mode = getParameterByName('mode') || 'auto';
+        var mode = params.mode || 'auto';
 
         if (mode == 'auto') {
 
@@ -139,10 +145,10 @@
     }
 
     function supportInAppSignup() {
-        return AppInfo.isNativeApp;
         return AppInfo.isNativeApp || window.location.href.toLowerCase().indexOf('https') == 0;
     }
 
+    var greWidgetId;
     function initSignup(page) {
 
         if (!supportInAppSignup()) {
@@ -153,8 +159,16 @@
             return;
         }
 
-        require(['https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit'], function () {
+        require(['https://www.google.com/recaptcha/api.js?render=explicit'], function () {
 
+            setTimeout(function () {
+                var recaptchaContainer = page.querySelector('.recaptchaContainer');
+
+                greWidgetId = grecaptcha.render(recaptchaContainer, {
+                    'sitekey': '6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po',
+                    'theme': 'dark'
+                });
+            }, 100);
         });
     }
 
@@ -169,7 +183,11 @@
 
         Dashboard.showLoadingMsg();
 
-        ConnectionManager.connectToAddress(host).then(function (result) {
+        ConnectionManager.connectToAddress(host, {
+
+            enableAutoLogin: appSettings.enableAutoLogin()
+
+        }).then(function (result) {
 
             handleConnectionResult(page, result);
 
@@ -214,7 +232,17 @@
 
             var page = view;
 
-            ConnectionManager.signupForConnect(page.querySelector('#txtSignupEmail', page).value, page.querySelector('#txtSignupUsername', page).value, page.querySelector('#txtSignupPassword', page).value, page.querySelector('#txtSignupPasswordConfirm', page).value).then(function () {
+            var greResponse = greWidgetId ? grecaptcha.getResponse(greWidgetId) : null;
+
+            ConnectionManager.signupForConnect({
+
+                email: page.querySelector('#txtSignupEmail', page).value,
+                username: page.querySelector('#txtSignupUsername', page).value,
+                password: page.querySelector('#txtSignupPassword', page).value,
+                passwordConfirm: page.querySelector('#txtSignupPasswordConfirm', page).value,
+                grecaptcha: greResponse
+
+            }).then(function () {
 
                 Dashboard.alert({
                     message: Globalize.translate('MessageThankYouForConnectSignUp'),
@@ -267,11 +295,11 @@
         });
 
         view.querySelector('.btnCancelSignup').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnCancelManualServer').addEventListener('click', function () {
-            history.back();
+            Emby.Page.back();
         });
 
         view.querySelector('.btnWelcomeNext').addEventListener('click', function () {
@@ -308,7 +336,7 @@
         });
 
         view.addEventListener('viewshow', function () {
-            loadPage(view);
+            loadPage(view, params);
         });
     };
 });

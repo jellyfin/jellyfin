@@ -1,0 +1,69 @@
+﻿.emby-tab-button {
+    background: transparent;
+    border: 2px solid transparent;
+    border-width: 0 0 2px 0;
+    cursor: pointer;
+    outline: none !important;
+    width: auto;
+    font-family: inherit;
+    font-size: inherit;
+    color: #aaa !important;
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 1.2em .9em;
+    transition: none !important;
+    position: relative;
+    text-transform: uppercase;
+    font-weight: bold !important;
+    height: auto;
+    min-width: initial;
+    line-height: initial;
+    border-radius: 0 !important;
+    overflow: hidden;
+}
+
+    .emby-tab-button:focus {
+        font-weight: bold !important;
+    }
+
+.emby-tab-button-active {
+    color: #52B54B !important;
+    border-color: #52B54B;
+}
+
+.emby-tabs-slider {
+    position: relative;
+}
+
+.emby-tabs-selection-bar {
+    position: absolute;
+    left: 0;
+    /* Need this or it will be partially covered by the drop-shadow on android */
+    bottom: 0;
+    height: 2px;
+    z-index: 1000;
+    background: #52B54B;
+    width: 0;
+}
+
+.emby-tab-button-selection-bar {
+    position: absolute;
+    left: 0;
+    border: 0;
+    /* Need this or it will be partially covered by the drop-shadow on android */
+    bottom: 1px;
+    height: 2px;
+    right: 0;
+    border-radius: 0;
+    z-index: 1000;
+}
+
+.emby-tab-button-selection-bar-active {
+    background: #52B54B;
+}
+
+.emby-tab-button-ripple-effect {
+    background: #141414 !important;
+}

@@ -1,5 +1,10 @@
 define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager', 'embyRouter'], function (connectionManager, playbackManager, events, inputManager, focusManager, embyRouter) {
 
+    function notifyApp() {
+
+        inputManager.notify();
+    }
+
     function displayMessage(cmd) {
 
         var args = cmd.Arguments;
@@ -35,76 +40,79 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
 
             case 'Select':
                 inputManager.trigger('select');
-                break;
+                return;
             case 'Back':
                 inputManager.trigger('back');
-                break;
+                return;
             case 'MoveUp':
                 inputManager.trigger('up');
-                break;
+                return;
             case 'MoveDown':
                 inputManager.trigger('down');
-                break;
+                return;
             case 'MoveLeft':
                 inputManager.trigger('left');
-                break;
+                return;
             case 'MoveRight':
                 inputManager.trigger('right');
-                break;
+                return;
             case 'PageUp':
                 inputManager.trigger('pageup');
-                break;
+                return;
             case 'PageDown':
                 inputManager.trigger('pagedown');
-                break;
+                return;
             case 'SetRepeatMode':
                 playbackManager.setRepeatMode(cmd.Arguments.RepeatMode);
                 break;
             case 'VolumeUp':
                 inputManager.trigger('volumeup');
-                break;
+                return;
             case 'VolumeDown':
                 inputManager.trigger('volumedown');
-                break;
+                return;
             case 'ChannelUp':
                 inputManager.trigger('channelup');
-                break;
+                return;
             case 'ChannelDown':
                 inputManager.trigger('channeldown');
-                break;
+                return;
             case 'Mute':
                 inputManager.trigger('mute');
-                break;
+                return;
             case 'Unmute':
                 inputManager.trigger('unmute');
-                break;
+                return;
             case 'ToggleMute':
                 inputManager.trigger('togglemute');
-                break;
+                return;
             case 'SetVolume':
+                notifyApp();
                 playbackManager.volume(cmd.Arguments.Volume);
                 break;
             case 'SetAudioStreamIndex':
+                notifyApp();
                 playbackManager.setAudioStreamIndex(parseInt(cmd.Arguments.Index));
                 break;
             case 'SetSubtitleStreamIndex':
+                notifyApp();
                 playbackManager.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index));
                 break;
             case 'ToggleFullscreen':
                 inputManager.trigger('togglefullscreen');
-                break;
+                return;
             case 'GoHome':
                 inputManager.trigger('home');
-                break;
+                return;
             case 'GoToSettings':
                 inputManager.trigger('settings');
-                break;
+                return;
             case 'DisplayContent':
                 displayContent(cmd, apiClient);
                 break;
             case 'GoToSearch':
                 inputManager.trigger('search');
-                break;
+                return;
             case 'DisplayMessage':
                 displayMessage(cmd);
                 break;
@@ -128,6 +136,8 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
                 console.log('processGeneralCommand does not recognize: ' + cmd.Name);
                 break;
         }
+
+        notifyApp();
     }
 
     function onWebSocketMessageReceived(e, msg) {
@@ -136,6 +146,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
 
         if (msg.MessageType === "Play") {
 
+            notifyApp();
             var serverId = apiClient.serverInfo().Id;
 
             if (msg.Data.PlayCommand == "PlayNext") {
@@ -147,6 +158,7 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
             else {
                 playbackManager.play({ ids: msg.Data.ItemIds, startPositionTicks: msg.Data.StartPositionTicks, serverId: serverId });
             }
+
         }
         else if (msg.MessageType === "Playstate") {
 
@@ -167,6 +179,8 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
             }
             else if (msg.Data.Command === 'PreviousTrack') {
                 inputManager.trigger('previous');
+            } else {
+                notifyApp();
             }
         }
         else if (msg.MessageType === "GeneralCommand") {

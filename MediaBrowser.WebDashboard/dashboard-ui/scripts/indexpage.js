@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'emby-tabs', 'emby-button'], function (libraryBrowser) {
 
     var defaultFirstSection = 'smalllibrarytiles';
 
@@ -248,9 +248,9 @@
             loadHomeTab(view, tabContent);
         };
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 3]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 3]);
 
         var tabControllers = [];
         var renderedTabs = [];
@@ -319,11 +319,11 @@
             });
         }
 
-        mdlTabs.addEventListener('beforetabchange', function (e) {
+        viewTabs.addEventListener('beforetabchange', function (e) {
             preLoadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -343,11 +343,7 @@
 
             if (state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
 
-                mdlTabs.dispatchEvent(new CustomEvent("tabchange", {
-                    detail: {
-                        selectedTabIndex: libraryBrowser.selectedTab(mdlTabs)
-                    }
-                }));
+                viewTabs.triggerTabChange();
             }
         }
 
@@ -373,6 +369,19 @@
         view.addEventListener('viewbeforehide', function (e) {
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
             Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+        });
+
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
+        view.addEventListener('viewdestroy', function (e) {
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
         });
     };
 });

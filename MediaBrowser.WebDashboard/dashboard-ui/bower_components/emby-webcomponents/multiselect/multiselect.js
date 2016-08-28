@@ -16,7 +16,10 @@
             selectedElements = [];
             var elems = document.querySelectorAll('.itemSelectionPanel');
             for (var i = 0, length = elems.length; i < length; i++) {
-                elems[i].parentNode.removeChild(elems[i]);
+
+                var parent = elems[i].parentNode;
+                parent.removeChild(elems[i]);
+                parent.classList.remove('withMultiSelect');
             }
         }
     }
@@ -75,7 +78,7 @@
 
     function updateItemSelection(chkItemSelect, selected) {
 
-        var id = dom.parentWithClass(chkItemSelect, 'card').getAttribute('data-id');
+        var id = dom.parentWithAttribute(chkItemSelect, 'data-id').getAttribute('data-id');
 
         if (selected) {
 
@@ -120,7 +123,9 @@
             itemSelectionPanel = document.createElement('div');
             itemSelectionPanel.classList.add('itemSelectionPanel');
 
-            item.querySelector('.cardContent,.cardBox').appendChild(itemSelectionPanel);
+            var parent = item.querySelector('.cardBox') || item.querySelector('.cardContent');
+            parent.classList.add('withMultiSelect');
+            parent.appendChild(itemSelectionPanel);
 
             var cssClass = 'chkItemSelect';
             if (isChecked && !browser.firefox) {
@@ -129,29 +134,9 @@
                 cssClass += ' checkedInitial';
             }
             var checkedAttribute = isChecked ? ' checked' : '';
-            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>';
+            itemSelectionPanel.innerHTML = '<label class="checkboxContainer"><input type="checkbox" is="emby-checkbox" data-outlineclass="multiSelectCheckboxOutline" class="' + cssClass + '"' + checkedAttribute + '/><span></span></label>';
             var chkItemSelect = itemSelectionPanel.querySelector('.chkItemSelect');
             chkItemSelect.addEventListener('change', onSelectionChange);
-        }
-    }
-
-    function shake(elem, iterations) {
-        var keyframes = [
-          { transform: 'translate3d(0, 0, 0)', offset: 0 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.1 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.2 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.3 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.4 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.5 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.6 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.7 },
-          { transform: 'translate3d(10px, 0, 0)', offset: 0.8 },
-          { transform: 'translate3d(-10px, 0, 0)', offset: 0.9 },
-          { transform: 'translate3d(0, 0, 0)', offset: 1 }];
-        var timing = { duration: 900, iterations: iterations };
-
-        if (elem.animate) {
-            elem.animate(keyframes, timing);
         }
     }
 
@@ -184,10 +169,6 @@
             var btnSelectionPanelOptions = selectionCommandsPanel.querySelector('.btnSelectionPanelOptions');
 
             btnSelectionPanelOptions.addEventListener('click', showMenuForSelectedItems);
-
-            if (!browser.mobile) {
-                shake(btnSelectionPanelOptions, 1);
-            }
         }
     }
 
@@ -195,23 +176,22 @@
 
         return new Promise(function (resolve, reject) {
 
-            var msg = globalize.translate('ConfirmDeleteItem');
-            var title = globalize.translate('HeaderDeleteItem');
+            var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
+            var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
 
             if (itemIds.length > 1) {
-                msg = globalize.translate('ConfirmDeleteItems');
-                title = globalize.translate('HeaderDeleteItems');
+                msg = globalize.translate('sharedcomponents#ConfirmDeleteItems');
+                title = globalize.translate('sharedcomponents#HeaderDeleteItems');
             }
 
             require(['confirm'], function (confirm) {
 
                 confirm(msg, title).then(function () {
-
                     var promises = itemIds.map(function (itemId) {
                         apiClient.deleteItem(itemId);
                     });
 
-                    resolve();
+                    Promise.all(promises).then(resolve);
                 }, reject);
 
             });
@@ -260,6 +240,13 @@
                 ironIcon: 'call-merge'
             });
 
+            if (user.Policy.EnableSync && appHost.supports('sync')) {
+                menuItems.push({
+                    name: globalize.translate('sharedcomponents#MakeAvailableOffline'),
+                    id: 'synclocal'
+                });
+            }
+
             menuItems.push({
                 name: globalize.translate('sharedcomponents#MarkPlayed'),
                 id: 'markplayed'
@@ -272,16 +259,16 @@
 
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Refresh'),
-                id: 'refresh',
-                ironIcon: 'refresh'
+                id: 'refresh'
             });
 
-            menuItems.push({
-                name: globalize.translate('sharedcomponents#Sync'),
-                id: 'sync',
-                ironIcon: 'sync'
-            });
-            dispatchNeedsRefresh();
+            if (user.Policy.EnableSync) {
+                menuItems.push({
+                    name: globalize.translate('sharedcomponents#SyncToOtherDevice'),
+                    id: 'sync'
+                });
+            }
+
             require(['actionsheet'], function (actionsheet) {
 
                 actionsheet.show({
@@ -303,6 +290,7 @@
                                     });
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'playlist':
                                 require(['playlistEditor'], function (playlistEditor) {
@@ -312,12 +300,14 @@
                                     });
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'delete':
-                                deleteItems(items).then(function () {
+                                deleteItems(apiClient, items).then(function () {
                                     embyRouter.goHome();
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'groupvideos':
                                 combineVersions(apiClient, items);
@@ -327,12 +317,14 @@
                                     apiClient.markPlayed(apiClient.getCurrentUserId(), itemId);
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'markunplayed':
                                 items.forEach(function (itemId) {
                                     apiClient.markUnplayed(apiClient.getCurrentUserId(), itemId);
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'refresh':
                                 require(['refreshDialog'], function (refreshDialog) {
@@ -342,6 +334,7 @@
                                     }).show();
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             case 'sync':
                                 require(['syncDialog'], function (syncDialog) {
@@ -350,10 +343,27 @@
                                             return {
                                                 Id: i
                                             };
-                                        })
+                                        }),
+                                        serverId: serverId
                                     });
                                 });
                                 hideSelections();
+                                dispatchNeedsRefresh();
+                                break;
+                            case 'synclocal':
+                                require(['syncDialog'], function (syncDialog) {
+                                    syncDialog.showMenu({
+                                        items: items.map(function (i) {
+                                            return {
+                                                Id: i
+                                            };
+                                        }),
+                                        isLocalSync: true,
+                                        serverId: serverId
+                                    });
+                                });
+                                hideSelections();
+                                dispatchNeedsRefresh();
                                 break;
                             default:
                                 break;
@@ -483,7 +493,7 @@
         function initTapHold(element) {
 
             // mobile safari doesn't allow contextmenu override
-            if (browser.mobile && !browser.safari) {
+            if (browser.touch && !browser.safari) {
                 container.addEventListener('contextmenu', onTapHold);
             } else {
                 require(['hammer'], function (Hammer) {

@@ -1,9 +1,8 @@
-﻿<div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="jqmtable,scripts/autoorganizelog,scripts/taskbutton,detailtablecss">
+﻿<div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize">
     <div data-role="content">
         <div class="content-primary">
 
             <div>
-
                 <div style="text-align:right;" class="organizeTaskPanel hide">
                     <button is="emby-button" type="button" class="btnClearLog raised subdued">
                         <i class="md-icon">clear_all</i><span>${ButtonClear}</span>
@@ -13,28 +12,32 @@
                 </div>
                 <div class="listTopPaging">
                 </div>
-            </div>
-            <table data-role="table" data-mode="reflow" class="tblOrganizationResults stripedTable ui-responsive table-stroke">
-                <thead>
-                    <tr>
-                        <th data-priority="2">${HeaderDate}</th>
-                        <th data-priority="1">${HeaderSource}</th>
-                        <th data-priority="3">${HeaderDestination}</th>
-                        <th data-priority="1"></th>
-                    </tr>
-                </thead>
-                <tbody class="resultBody"></tbody>
-            </table>
-            <br />
-            <div style="text-align: right;vertical-align:middle;" class="legend">
-                <div style="display: inline-block; height: 10px; width: 10px; background: green;margin-right:1px;"></div>
-                <span>${LabelCompleted}</span>
-                <div style="display: inline-block; height: 10px; width: 10px; background: red; margin-left: 1em;margin-right:1px;"></div>
-                <span>${LabelFailed}</span>
-                <div style="display: inline-block; height: 10px; width: 10px; background: blue; margin-left: 1em;margin-right:1px;"></div>
-                <span>${LabelSkipped}</span>
-            </div>
-            <div class="listBottomPaging">
+
+                <div class="autoorganizetable">
+                    <table class="tblOrganizationResults table" style="border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th data-priority="1"></th>
+                                <th data-priority="2">${HeaderDate}</th>
+                                <th data-priority="1">${HeaderSource}</th>
+                                <th data-priority="3">${HeaderDestination}</th>
+                                <th data-priority="1"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="resultBody"></tbody>
+                    </table>
+                </div>
+                <br />
+                <div style="text-align: right;vertical-align:middle;" class="legend">
+                    <div style="display: inline-block; height: 10px; width: 10px; background: green;margin-right:1px;"></div>
+                    <span>${LabelCompleted}</span>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: red; margin-left: 1em;margin-right:1px;"></div>
+                    <span>${LabelFailed}</span>
+                    <div style="display: inline-block; height: 10px; width: 10px; background: blue; margin-left: 1em;margin-right:1px;"></div>
+                    <span>${LabelSkipped}</span>
+                </div>
+                <div class="listBottomPaging">
+                </div>
             </div>
         </div>
     </div>

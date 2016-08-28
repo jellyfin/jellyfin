@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Persistence;
 
 namespace MediaBrowser.Server.Implementations.Library.Validators
 {
@@ -23,16 +25,18 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
+        private readonly IItemRepository _itemRepo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        public ArtistsValidator(ILibraryManager libraryManager, ILogger logger)
+        public ArtistsValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
+            _itemRepo = itemRepo;
         }
 
         /// <summary>
@@ -43,36 +47,38 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var allSongs = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => !i.IsFolder && i is IHasArtist)
-                .Cast<IHasArtist>()
-                .ToList();
-
-            var allArtists = _libraryManager.GetArtists(allSongs).ToList();
+            var names = _itemRepo.GetAllArtistNames();
 
             var numComplete = 0;
-            var numArtists = allArtists.Count;
+            var count = names.Count;
 
-            foreach (var artistItem in allArtists)
+            foreach (var name in names)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 try
                 {
-                    await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    var item = _libraryManager.GetArtist(name);
+
+                    await item.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
-                catch (IOException ex)
+                catch (OperationCanceledException)
                 {
-                    _logger.ErrorException("Error validating Artist {0}", ex, artistItem.Name);
+                    // Don't clutter the log
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing {0}", ex, name);
                 }
 
-                // Update progress
                 numComplete++;
                 double percent = numComplete;
-                percent /= numArtists;
+                percent /= count;
+                percent *= 100;
 
-                progress.Report(100 * percent);
+                progress.Report(percent);
             }
+
+            progress.Report(100);
         }
     }
 }

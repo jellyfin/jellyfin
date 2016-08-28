@@ -79,15 +79,15 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         });
     }
 
-    function showItem(options) {
+    function showItem(item, options) {
 
-        if (options.Type == 'Photo') {
+        if (item.Type == 'Photo') {
 
-            showSlideshow(options.Id, options.ServerId);
+            showSlideshow(item.Id, item.ServerId);
             return;
         }
 
-        embyRouter.showItem(options);
+        embyRouter.showItem(item, options);
     }
 
     function getItem(button) {
@@ -125,7 +125,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                     queue: true,
                     playAllFromHere: !item.IsFolder,
                     queueAllFromHere: !item.IsFolder,
-                    identify: false,
                     playlistId: playlistId,
                     collectionId: collectionId
 
@@ -163,12 +162,14 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         });
     }
 
-    function showPlayMenu(card, target) {
+    function getItemInfoFromCard(card) {
 
-        var item = {
+        return {
             Type: card.getAttribute('data-type'),
             Id: card.getAttribute('data-id'),
+            CollectionType: card.getAttribute('data-collectiontype'),
             ChannelId: card.getAttribute('data-channelid'),
+            SeriesId: card.getAttribute('data-seriesid'),
             ServerId: card.getAttribute('data-serverid'),
             MediaType: card.getAttribute('data-mediatype'),
             IsFolder: card.getAttribute('data-isfolder') == 'true',
@@ -176,6 +177,11 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                 PlaybackPositionTicks: parseInt(card.getAttribute('data-positionticks') || '0')
             }
         };
+    }
+
+    function showPlayMenu(card, target) {
+
+        var item = getItemInfoFromCard(card);
 
         require(['playMenu'], function (playMenu) {
 
@@ -198,16 +204,15 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             id = card.getAttribute('data-id');
         }
 
-        var serverId = card.getAttribute('data-serverid');
-        var type = card.getAttribute('data-type');
-        var isfolder = card.getAttribute('data-isfolder') == 'true';
+        var item = getItemInfoFromCard(card);
+
+        var serverId = item.ServerId;
+        var type = item.Type;
 
         if (action == 'link') {
-            showItem({
-                Id: id,
-                Type: type,
-                IsFolder: isfolder,
-                ServerId: serverId
+
+            showItem(item, {
+                context: card.getAttribute('data-context')
             });
         }
 
@@ -255,7 +260,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             } :
             {};
 
-            options.identify = false;
             options.positionTo = target;
 
             showContextMenu(card, options);

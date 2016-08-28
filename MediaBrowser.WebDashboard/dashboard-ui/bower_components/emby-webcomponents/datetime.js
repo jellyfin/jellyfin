@@ -104,12 +104,21 @@
     }();
 
     function toLocaleDateString(date) {
-        
+
         var currentLocale = globalize.getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
             date.toLocaleDateString(currentLocale) :
             date.toLocaleDateString();
+    }
+
+    function toLocaleTimeString(date) {
+
+        var currentLocale = globalize.getCurrentLocale();
+
+        return currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleTimeString(currentLocale) :
+            date.toLocaleTimeString();
     }
 
     function getDisplayTime(date) {
@@ -124,11 +133,7 @@
             }
         }
 
-        var currentLocale = globalize.getCurrentLocale();
-
-        var time = currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale) :
-            date.toLocaleTimeString();
+        var time = toLocaleTimeString(date);
 
         var timeLower = time.toLowerCase();
 
@@ -160,10 +165,20 @@
         return time;
     }
 
+    function isRelativeDay(date, offsetInDays) {
+        var yesterday = new Date();
+        var day = yesterday.getDate() + offsetInDays;
+
+        yesterday.setDate(day); // automatically adjusts month/year appropriately
+
+        return date.getFullYear() == yesterday.getFullYear() && date.getMonth() == yesterday.getMonth() && date.getDate() == day;
+    }
+
     return {
         parseISO8601Date: parseISO8601Date,
         getDisplayRunningTime: getDisplayRunningTime,
         toLocaleDateString: toLocaleDateString,
-        getDisplayTime: getDisplayTime
+        getDisplayTime: getDisplayTime,
+        isRelativeDay: isRelativeDay
     };
 });

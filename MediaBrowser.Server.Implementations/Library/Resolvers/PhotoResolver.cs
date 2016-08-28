@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -32,15 +34,16 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.GetCollectionType();
 
+
                 if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
+                    (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
                 {
                     if (IsImageFile(args.Path, _imageProcessor))
                     {
                         var filename = Path.GetFileNameWithoutExtension(args.Path);
 
                         // Make sure the image doesn't belong to a video file
-                        if (args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(i, filename)))
+                        if (args.DirectoryService.GetFiles(Path.GetDirectoryName(args.Path)).Any(i => IsOwnedByMedia(args.GetLibraryOptions(), i, filename)))
                         {
                             return null;
                         }
@@ -56,9 +59,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        private bool IsOwnedByMedia(FileSystemMetadata file, string imageFilename)
+        private bool IsOwnedByMedia(LibraryOptions libraryOptions, FileSystemMetadata file, string imageFilename)
         {
-            if (_libraryManager.IsVideoFile(file.FullName) && imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file.Name), StringComparison.OrdinalIgnoreCase))
+            if (_libraryManager.IsVideoFile(file.FullName, libraryOptions) && imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file.Name), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

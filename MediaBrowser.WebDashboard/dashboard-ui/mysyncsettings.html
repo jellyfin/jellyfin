@@ -4,13 +4,13 @@
         <form class="userProfileSettingsForm" style="margin: 0 auto;">
 
             <h1>
-                ${HeaderSync}
+                ${HeaderOfflineSync}
             </h1>
 
             <br />
             <div class="inputContainer fldSyncPath hide">
                 <div style="display: flex; align-items: center;">
-                    <div style="flex-grow:1;">
+                    <div style="flex-grow: 1;">
                         <input is="emby-input" id="txtSyncPath" class="txtSyncPath" label="${LabelSyncPath}" autocomplete="off" readonly />
                     </div>
                     <button type="button" is="paper-icon-button-light" id="btnSelectSyncPath" class="autoSize">
@@ -19,27 +19,22 @@
                 </div>
             </div>
 
-            <label class="checkboxContainer">
-                <input type="checkbox" is="emby-checkbox" id="chkWifi"/>
-                <span>${OptionSyncOnlyOnWifi}</span>
-            </label>
-
-            <h1>
-                ${HeaderCameraUpload}
-            </h1>
-
-            <p>${SelectCameraUploadServers}</p>
-
-            <br />
-            <div class="checkboxList uploadServerList">
+            <div class="selectContainer">
+                <select is="emby-select" class="selectAudioBitrate" label="${LabelMaxAudioFileBitrate}">
+                    <option value="">${OptionNone}</option>
+                    <option value="320000">320K</option>
+                    <option value="256000">256K</option>
+                    <option value="192000">192K</option>
+                    <option value="128000">128K</option>
+                    <option value="64000">64K</option>
+                </select>
+                <div class="fieldDescription">${LabelMaxAudioFileBitrateHelp}</div>
             </div>
 
-            <br />
-            <br />
-            <button is="emby-button" type="submit" class="raised submit block">
-                <i class="md-icon">check</i>
-                <span>${ButtonSave}</span>
-            </button>
+            <label class="checkboxContainer">
+                <input type="checkbox" is="emby-checkbox" id="chkWifi" />
+                <span>${OptionSyncOnlyOnWifi}</span>
+            </label>
         </form>
     </div>
 </div>

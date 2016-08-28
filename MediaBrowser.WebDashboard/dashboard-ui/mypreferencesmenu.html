@@ -1,74 +1,77 @@
-﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,listViewStyle">
+﻿<div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}">
 
     <div data-role="content">
         <div class="readOnlyContent" style="margin: 0 auto;">
-            <h1 class="settingsMenuHeader">${HeaderSettings}</h1>
+            <h1 class="settingsMenuHeader" style="padding-left:.25em;">${HeaderSettings}</h1>
             <div>
                 <a href="#" class="clearLink lnkDisplayPreferences">
                     <div class="listItem">
-                        <button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">tv</i></button>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonDisplaySettings}</div>
-                            <div class="secondary">${ButtonDisplaySettingsHelp}</div>
+                        <i class="md-icon listItemIcon" style="background-color: #03a9f4;">tv</i>
+                        <div class="listItemBody">
+                            <div>${HeaderDisplay}</div>
                         </div>
                     </div>
                 </a>
 
                 <a href="#" class="clearLink lnkHomeScreenPreferences">
                     <div class="listItem">
-                        <button type="button" is="emby-button" class="fab mini autoSize red" item-icon><i class="md-icon">home</i></button>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonHomeScreenSettings}</div>
-                            <div class="secondary">${ButtonHomeScreenSettingsHelp}</div>
+                        <i class="md-icon listItemIcon" style="background-color: #e57373;">home</i>
+                        <div class="listItemBody">
+                            <div>${TabHomeScreen}</div>
                         </div>
                     </div>
                 </a>
 
                 <a href="#" class="clearLink lnkLanguagePreferences">
                     <div class="listItem">
-                        <button type="button" is="emby-button" class="fab mini autoSize green" item-icon><i class="md-icon">play_circle_filled</i></button>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonPlaybackSettings}</div>
-                            <div class="secondary">${ButtonPlaybackSettingsHelp}</div>
+                        <i class="md-icon listItemIcon" style="background-color: #81c784;">play_circle_filled</i>
+                        <div class="listItemBody">
+                            <div>${TitlePlayback}</div>
                         </div>
                     </div>
                 </a>
 
                 <a href="#" class="clearLink lnkMyProfile">
                     <div class="listItem">
-                        <button type="button" is="emby-button" class="fab mini autoSize orange" item-icon><i class="md-icon">person</i></button>
-                        <div class="listItemBody two-line">
+                        <i class="md-icon listItemIcon" style="background-color: #ffd54f;">person</i>
+                        <div class="listItemBody">
                             <div>${ButtonProfile}</div>
-                            <div class="secondary">${ButtonProfileHelp}</div>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="#" class="clearLink lnkCameraUpload hide">
+                    <div class="listItem">
+                        <i class="md-icon listItemIcon" style="background-color: #673AB7;">photo</i>
+                        <div class="listItemBody">
+                            <div>${TabCameraUpload}</div>
                         </div>
                     </div>
                 </a>
 
                 <a href="#" class="clearLink lnkSync hide">
                     <div class="listItem">
-                        <button type="button" is="emby-button" class="fab mini autoSize" style="background-color: #673AB7;" item-icon><i class="md-icon">sync</i></button>
-                        <div class="listItemBody two-line">
-                            <div>${ButtonSyncSettings}</div>
-                            <div class="secondary">${ButtonSyncSettingsHelp}</div>
+                        <i class="md-icon listItemIcon">file_download</i>
+                        <div class="listItemBody">
+                            <div>${HeaderOfflineSync}</div>
                         </div>
                     </div>
                 </a>
             </div>
             <div>
-                <br />
-                <h1 class="headerUser"></h1>
+                <h1 class="headerUser" style="padding-left:.25em;"></h1>
                 <div>
                     <a href="selectserver.html" class="clearLink selectServer hide">
                         <div class="listItem">
-                            <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">wifi</i></button>
-                            <div class="listItemBody two-line">
+                            <i class="md-icon listItemIcon">wifi</i>
+                            <div class="listItemBody">
                                 <div>${HeaderSelectServer}</div>
                             </div>
                         </div>
                     </a>
                     <div class="listItem btnLogout">
-                        <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">lock</i></button>
-                        <div class="listItemBody two-line">
+                        <i class="md-icon listItemIcon" style="background-color:#444;">lock</i>
+                        <div class="listItemBody">
                             <div>${ButtonSignOut}</div>
                         </div>
                     </div>
@@ -76,13 +79,12 @@
             </div>
 
             <div class="adminSection hide">
-                <br />
-                <h1>${HeaderAdmin}</h1>
+                <h1 style="padding-left:.25em;">${HeaderAdmin}</h1>
                 <div>
                     <a href="dashboard.html" class="clearLink">
                         <div class="listItem">
-                            <button type="button" is="emby-button" class="fab mini autoSize"><i class="md-icon">settings</i></button>
-                            <div class="listItemBody two-line">
+                            <i class="md-icon listItemIcon">settings</i>
+                            <div class="listItemBody">
                                 <div>${ButtonServerDashboard}</div>
                             </div>
                         </div>

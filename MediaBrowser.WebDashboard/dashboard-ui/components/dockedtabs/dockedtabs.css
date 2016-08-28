@@ -1,0 +1,28 @@
+﻿.dockedtabs-tabs {
+    flex-grow: 1;
+    display: flex;
+    padding: .5em 0;
+}
+
+.dockedtabs-tab-button {
+    flex-grow: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-transform: none !important;
+    font-size: 12px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center;
+    border-color: transparent !important;
+    border-width: 0 !important;
+}
+
+.dockedtabs-tab-button, .dockedtabs-tab-button-foreground {
+    font-weight: normal !important;
+}
+
+.dockedtabs-tab-button-icon {
+    margin-bottom: .25em;
+    font-size: 20px;
+}

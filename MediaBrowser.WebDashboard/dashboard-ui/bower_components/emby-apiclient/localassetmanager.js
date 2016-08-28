@@ -1,113 +1,77 @@
-﻿(function () {
+﻿define([], function () {
 
     function getLocalMediaSource(serverId, itemId) {
-        return new Promise(function (resolve, reject) {
-            resolve(null);
-        });
+        return Promise.resolve(null);
     }
 
     function saveOfflineUser(user) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function deleteOfflineUser(id) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function getCameraPhotos() {
-        return new Promise(function (resolve, reject) {
-            resolve([]);
-        });
+        return Promise.resolve([]);
     }
 
     function getOfflineActions(serverId) {
-        return new Promise(function (resolve, reject) {
-            resolve([]);
-        });
+        return Promise.resolve([]);
     }
 
     function deleteOfflineActions(actions) {
-        return new Promise(function (resolve, reject) {
-            resolve([]);
-        });
+        return Promise.resolve([]);
     }
 
     function getServerItemIds(serverId) {
-        return new Promise(function (resolve, reject) {
-            resolve([]);
-        });
+        return Promise.resolve([]);
     }
 
     function removeLocalItem(itemId, serverId) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function getLocalItem(itemId, serverId) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function addOrUpdateLocalItem(localItem) {
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function createLocalItem(libraryItem, serverInfo, originalFileName) {
 
-        return new Promise(function (resolve, reject) {
-            resolve({});
-        });
+        return Promise.resolve({});
     }
 
     function downloadFile(url, localPath) {
 
-        return new Promise(function (resolve, reject) {
-            resolve();
-        });
+        return Promise.resolve();
     }
 
     function downloadSubtitles(url, localItem, subtitleStreamh) {
 
-        return new Promise(function (resolve, reject) {
-            resolve("");
-        });
+        return Promise.resolve('');
     }
 
     function hasImage(serverId, itemId, imageTag) {
-        return new Promise(function (resolve, reject) {
-            resolve(false);
-        });
+        return Promise.resolve(false);
     }
 
     function downloadImage(url, serverId, itemId, imageTag) {
-        return new Promise(function (resolve, reject) {
-            resolve(false);
-        });
+        return Promise.resolve(false);
     }
 
     function fileExists(path) {
-
-        return new Promise(function (resolve, reject) {
-            resolve(false);
-        });
+        return Promise.resolve(false);
     }
 
     function translateFilePath(path) {
-
-        return new Promise(function (resolve, reject) {
-            resolve(path);
-        });
+        return Promise.resolve(path);
     }
 
-    window.LocalAssetManager = {
+    return {
         getLocalMediaSource: getLocalMediaSource,
         saveOfflineUser: saveOfflineUser,
         deleteOfflineUser: deleteOfflineUser,
@@ -126,5 +90,4 @@
         fileExists: fileExists,
         translateFilePath: translateFilePath
     };
-
-})();
+});

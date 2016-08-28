@@ -1001,7 +1001,8 @@ namespace MediaBrowser.Server.Implementations.Session
                     var series = episode.Series;
                     if (series != null)
                     {
-                        var episodes = series.GetEpisodes(user, false, false)
+                        var episodes = series.GetEpisodes(user)
+                            .Where(i => !i.IsVirtualItem)
                             .SkipWhile(i => i.Id != episode.Id)
                             .ToList();
 
@@ -1868,10 +1869,17 @@ namespace MediaBrowser.Server.Implementations.Session
             return GetSessionByAuthenticationToken(info, deviceId, remoteEndpoint, null);
         }
 
-        public Task SendMessageToUserSessions<T>(string userId, string name, T data,
+        public Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken)
+        {
+            var adminUserIds = _userManager.Users.Where(i => i.Policy.IsAdministrator).Select(i => i.Id.ToString("N")).ToList();
+
+            return SendMessageToUserSessions(adminUserIds, name, data, cancellationToken);
+        }
+
+        public Task SendMessageToUserSessions<T>(List<string> userIds, string name, T data,
             CancellationToken cancellationToken)
         {
-            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && i.ContainsUser(userId)).ToList();
+            var sessions = Sessions.Where(i => i.IsActive && i.SessionController != null && userIds.Any(i.ContainsUser)).ToList();
 
             var tasks = sessions.Select(session => Task.Run(async () =>
             {

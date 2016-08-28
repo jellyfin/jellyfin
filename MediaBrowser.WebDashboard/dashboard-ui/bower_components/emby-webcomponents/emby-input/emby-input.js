@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'browser', 'css!./emby-input', 'registerElement'], function (layoutManager, browser) {
+﻿define(['layoutManager', 'browser', 'dom', 'css!./emby-input', 'registerElement'], function (layoutManager, browser, dom) {
 
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 
@@ -36,20 +36,19 @@
 
     EmbyInputPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embyinput') == 'true') {
+        if (this.classList.contains('emby-input')) {
             return;
         }
 
-        this.setAttribute('data-embyinput', 'true');
+        this.classList.add('emby-input');
 
         var parentNode = this.parentNode;
         var label = this.ownerDocument.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
+        label.classList.add('inputLabelUnfocused');
 
-        if (!supportsFloatingLabel || this.type == 'date') {
-            label.classList.add('nofloat');
-        }
+        var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date' && this.type != 'time';
 
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
@@ -60,24 +59,40 @@
 
         function onChange() {
             if (this.value) {
-                label.classList.remove('blank');
+                label.classList.remove('inputLabel-float');
             } else {
-                label.classList.add('blank');
+
+                if (instanceSupportsFloat) {
+                    label.classList.add('inputLabel-float');
+                }
             }
         }
 
-        this.addEventListener('focus', function () {
+        dom.addEventListener(this, 'focus', function () {
             onChange.call(this);
-            label.classList.add('focused');
-        });
-        this.addEventListener('blur', function () {
-            onChange.call(this);
-            label.classList.remove('focused');
+            label.classList.add('inputLabelFocused');
+            label.classList.remove('inputLabelUnfocused');
+        }, {
+            passive: true
         });
 
-        this.addEventListener('change', onChange);
-        this.addEventListener('input', onChange);
-        this.addEventListener('valueset', onChange);
+        dom.addEventListener(this, 'blur', function () {
+            onChange.call(this);
+            label.classList.remove('inputLabelFocused');
+            label.classList.add('inputLabelUnfocused');
+        }, {
+            passive: true
+        });
+
+        dom.addEventListener(this, 'change', onChange, {
+            passive: true
+        });
+        dom.addEventListener(this, 'input', onChange, {
+            passive: true
+        });
+        dom.addEventListener(this, 'valueset', onChange, {
+            passive: true
+        });
 
         onChange.call(this);
 

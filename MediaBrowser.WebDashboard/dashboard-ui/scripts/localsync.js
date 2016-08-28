@@ -1,12 +1,8 @@
-﻿define(['appSettings'], function (appSettings) {
+﻿define(['appSettings', 'connectionManager'], function (appSettings, connectionManager) {
 
     var syncPromise;
 
-    window.LocalSync = {
-
-        isSupported: function () {
-            return AppInfo.isNativeApp && Dashboard.capabilities().SupportsSync;
-        },
+    return {
 
         sync: function (options) {
 
@@ -16,15 +12,13 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['multiserversync'], function () {
+                require(['multiserversync'], function (MultiServerSync) {
 
                     options = options || {};
 
-                    LocalSync.normalizeSyncOptions(options);
-
                     options.cameraUploadServers = appSettings.cameraUploadServers();
 
-                    syncPromise = new MediaBrowser.MultiServerSync(ConnectionManager).sync(options).then(function () {
+                    syncPromise = new MultiServerSync(connectionManager).sync(options).then(function () {
 
                         syncPromise = null;
                         resolve();
@@ -36,10 +30,6 @@
                 });
 
             });
-        },
-
-        normalizeSyncOptions: function (options) {
-
         },
 
         getSyncStatus: function () {

@@ -1,4 +1,4 @@
-﻿define(['emby-itemscontainer'], function () {
+﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -14,7 +14,8 @@
                     query: {
                         StartIndex: 0,
                         EnableFavoriteSorting: true,
-                        Limit: LibraryBrowser.getDefaultPageSize()
+                        Limit: LibraryBrowser.getDefaultPageSize(),
+                        Fields: "PrimaryImageAspectRatio"
                     }
                 };
 
@@ -38,13 +39,14 @@
 
         function getChannelsHtml(channels) {
 
-            return LibraryBrowser.getPosterViewHtml({
+            return cardBuilder.getCardsHtml({
                 items: channels,
                 shape: "square",
                 showTitle: true,
                 lazy: true,
                 cardLayout: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                showCurrentProgram: true
             });
         }
 

@@ -1,4 +1,4 @@
-﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="jqmlistview,emby-collapse,scripts/metadataimagespage,paper-checkbox,paper-input,paper-fab,paper-icon-item,paper-item-body,emby-button">
+﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="emby-collapse,scripts/metadataimagespage,paper-checkbox,emby-button,emby-input,emby-select">
 
     <div data-role="content">
 
@@ -6,11 +6,9 @@
 
             <div class="tabContent">
                 <form class="metadataImagesConfigurationForm">
-                    <div>
-                        <label for="selectItemType" class="selectLabel">${LabelCustomizeOptionsPerMediaType}</label>
-                        <select id="selectItemType" data-mini="true"></select>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectItemType" data-mini="true" label="${LabelCustomizeOptionsPerMediaType}"></select>
                     </div>
-                    <br />
                     <br />
                     <div class="metadataReaders" style="margin-bottom: 2em;">
                     </div>
@@ -24,22 +22,21 @@
                     <div is="emby-collapse" title="${HeaderImageSettings}">
                         <div class="collapseContent">
                             <div class="backdropFields" style="margin-bottom: 2em; display: none;">
-                                <div>
-                                    <paper-input type="number" id="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" label="${LabelMaxBackdropsPerItem}"></paper-input>
+                                <div class="inputContainer">
+                                    <input is="emby-input" type="number" id="txtMaxBackdrops" pattern="[0-9]*" required="required" min="0" label="${LabelMaxBackdropsPerItem}"/>
                                 </div>
-                                <br />
-                                <div>
-                                    <paper-input type="number" id="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinBackdropDownloadWidth}"></paper-input>
+                                <div class="inputContainer">
+                                    <input is="emby-input" type="number" id="txtMinBackdropDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinBackdropDownloadWidth}"/>
                                 </div>
                             </div>
 
                             <div class="screenshotFields" style="margin-bottom: 2em; display: none;">
-                                <div>
-                                    <paper-input type="number" id="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" label="${LabelMaxScreenshotsPerItem}"></paper-input>
+                                <div class="inputContainer">
+                                    <input is="emby-input" type="number" id="txtMaxScreenshots" pattern="[0-9]*" required="required" min="0" label="${LabelMaxScreenshotsPerItem}"/>
                                 </div>
 
-                                <div>
-                                    <paper-input type="number" id="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinScreenshotDownloadWidth}"></paper-input>
+                                <div class="inputContainer">
+                                    <input is="emby-input" type="number" id="txtMinScreenshotDownloadWidth" pattern="[0-9]*" required="required" min="0" label="${LabelMinScreenshotDownloadWidth}"/>
                                 </div>
                             </div>
 
@@ -62,11 +59,7 @@
 
                     <br />
                     <br />
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                        </li>
-                    </ul>
+                    <div><button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button></div>
                 </form>
             </div>
 

@@ -35,7 +35,8 @@
         require(['syncDialog'], function (syncDialog) {
             syncDialog.showMenu({
                 ParentId: parentId,
-                Category: category
+                Category: category,
+                serverId: ApiClient.serverId()
             });
         });
     }

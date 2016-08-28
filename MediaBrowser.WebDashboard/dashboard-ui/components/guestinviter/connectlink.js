@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'paper-checkbox', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'paper-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
 
     function updateUserInfo(user, newConnectUsername, actionCallback, noActionCallback) {
         var currentConnectUsername = user.ConnectUserName || '';

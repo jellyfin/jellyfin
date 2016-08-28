@@ -8,6 +8,10 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
     function enableAnimation() {
 
+        if (browser.animate) {
+            return true;
+        }
+
         if (browser.tv) {
             return false;
         }
@@ -16,7 +20,7 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
             return false;
         }
 
-        return true;
+        return browser.edge && !browser.mobile;
     }
 
     function loadView(options) {
@@ -247,7 +251,10 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
     }
 
     function triggerDestroy(view) {
-        view.dispatchEvent(new CustomEvent("viewdestroy", {}));
+
+        view.dispatchEvent(new CustomEvent('viewdestroy', {
+            cancelable: false
+        }));
     }
 
     function reset() {
@@ -258,7 +265,7 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
         selectedPageIndex = -1;
     }
 
-    if (enableAnimation() && !document.documentElement.animate) {
+    if (enableAnimation()) {
         require(['webAnimations']);
     }
 

@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -26,11 +25,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Power;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
@@ -58,8 +56,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public static EmbyTV Current;
 
-        public event EventHandler DataSourceChanged;
-        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged;
+        public event EventHandler DataSourceChanged { add { } remove { } }
+        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged { add { } remove { } }
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
@@ -146,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, pathsToCreate.ToArray(), true);
+                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, pathsToCreate.ToArray(), new LibraryOptions(), true);
                 }
                 catch (Exception ex)
                 {
@@ -1141,7 +1139,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                         var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
 
-                        var result = await organize.OrganizeEpisodeFile(path, CancellationToken.None).ConfigureAwait(false);
+                        var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {

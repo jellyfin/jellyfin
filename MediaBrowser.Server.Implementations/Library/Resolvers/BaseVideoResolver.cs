@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                     return null;
                 }
 
-                if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub)
+                if (LibraryManager.IsVideoFile(args.Path, args.GetLibraryOptions()) || videoInfo.IsStub)
                 {
                     var path = args.Path;
 

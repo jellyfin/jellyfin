@@ -1,4 +1,13 @@
-﻿/* Links */
+﻿.backgroundContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    contain: layout style;
+}
+
+/* Links */
 .ui-body-b a {
     color: #52B54B /*{b-link-color}*/;
     font-weight: 500;
@@ -88,7 +97,7 @@ h2 {
 }
 
 h3 {
-    font-weight: 500;
+    font-weight: 400;
 }
 
 a, a:active, a:hover {
@@ -107,7 +116,7 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
-input:not(.paper-input):not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
+input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -188,22 +197,18 @@ div[data-role='page'] {
  * Adding them is left as an exercise for the reader.
  */
 .headroom {
-    -webkit-transition: transform 200ms linear;
-    transition: transform 200ms linear;
+    transition: transform 180ms linear;
 }
 
 .headroom--pinned {
-    -webkit-transform: translateY(0%);
-    transform: translateY(0%);
+    transform: none;
 }
 
 .headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-100%);
     transform: translateY(-100%);
 }
 
 .libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-210%);
     transform: translateY(-210%);
 }
 
@@ -302,8 +307,12 @@ textarea {
     margin-top: 5px;
 }
 
-.background-theme-a, .dialog.background-theme-a {
+.background-theme-a .backgroundContainer {
     background-color: #f5f5f5;
+}
+
+.dialog.background-theme-a {
+    background-color: #f0f0f0;
 }
 
 .dialog:not(.background-theme-a):not(.background-theme-b) {
@@ -380,32 +389,6 @@ textarea {
     .page:not(.standalonePage) .header {
         padding-top: 0;
     }
-}
-
-/* Footer */
-#footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    /* Above everything, except for the video player and popup overlays */
-    z-index: 1097;
-    color: #fff;
-    border: 0 !important;
-    background-color: rgba(26,26,26,.94);
-}
-
-.footerNotification {
-    padding: .75em 1em;
-    margin: 0;
-    font-weight: normal;
-    border-top: 1px solid #555;
-}
-
-.notificationIcon {
-    height: 24px;
-    margin-right: 1em;
-    vertical-align: middle;
 }
 
 /*
@@ -550,29 +533,9 @@ progress {
         }
 }
 
-.nativeApp *:not(input):not(select):not(textarea) {
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-    -moz-touch-callout: none;
-    -ms-touch-callout: none;
-    touch-callout: none;
-    -webkit-user-drag: none;
-    -moz-user-drag: none;
-    -ms-user-drag: none;
-    user-drag: none;
-}
-
 .syncActivityForTarget {
     margin: 0 0 3em 0;
 }
-
-    .syncActivityForTarget paper-fab {
-        border-radius: 0;
-    }
 
 @media all and (min-width: 800px) {
 
@@ -614,7 +577,6 @@ progress {
 
 .ui-body-b .emby-collapsible-content, .ui-body-b .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #222;
 }
 
@@ -634,26 +596,38 @@ progress {
 }
 
 .ui-body-a .emby-collapsible-title {
-    margin: .25em 0;
-    color: #000;
+    margin: .15em 0;
+    color: #333;
     padding: 0 0 0 .5em;
     font-weight: 500;
 }
 
 .ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
     border-width: 0;
-    padding: 1em 1.25em;
     background-color: #fff;
 }
 
-.ui-body-a .inputLabel, .ui-body-a .textareaLabel {
+.ui-body-a .inputLabelUnfocused, .ui-body-a .textareaLabel {
     color: #555;
 }
 
-    .ui-body-a .inputLabel.focused:not(.blank), .ui-body-a .textareaLabel.focused:not(.blank) {
-        color: green;
-    }
+.ui-body-a .inputLabelFocused, .ui-body-a .textareaLabelFocused, .ui-body-a .selectLabelFocused {
+    color: green;
+}
 
-.ui-body-a .selectLabel, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
+.ui-body-a .selectLabelUnfocused, .ui-body-a .paperListLabel, .ui-body-a .fieldDescription {
     color: #555;
+}
+
+
+.ui-body-a .visualCardBox-cardScalable, .ui-body-a .visualCardBox-cardFooter {
+    background-color: #fff;
+}
+
+.ui-body-a .cardFooter .cardText + .cardText {
+    opacity: .8;
+}
+
+.ui-body-a .listItem .secondary {
+    color: #737373;
 }

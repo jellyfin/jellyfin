@@ -21,8 +21,8 @@ namespace MediaBrowser.Dlna.Profiles
                     new HttpHeaderInfo
                     {
                         Name = "User-Agent",
-                        Value = @".*(SEC_HHP_\[TV\] [A-Z]{2}\d{2}J[A-Z]?\d{3,4})*.",
-                        Match = HeaderMatchType.Regex
+                        Value = @"SEC_",
+                        Match = HeaderMatchType.Substring
                     }
                 }
             };
@@ -340,6 +340,11 @@ namespace MediaBrowser.Dlna.Profiles
 
             SubtitleProfiles = new[]
             {
+                new SubtitleProfile
+                {
+                    Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
                 new SubtitleProfile
                 {
                     Format = "srt",

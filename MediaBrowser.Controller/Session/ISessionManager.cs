@@ -172,15 +172,21 @@ namespace MediaBrowser.Controller.Session
         Task SendPlaystateCommand(string controllingSessionId, string sessionId, PlaystateRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the message to user sessions.
+        /// Sends the message to admin sessions.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="userId">The user identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(string userId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Sends the message to user sessions.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>Task.</returns>
+        Task SendMessageToUserSessions<T>(List<string> userIds, string name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.

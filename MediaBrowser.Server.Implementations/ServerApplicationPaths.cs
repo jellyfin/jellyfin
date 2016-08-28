@@ -88,6 +88,14 @@ namespace MediaBrowser.Server.Implementations
             }
         }
 
+        public string ArtistsPath
+        {
+            get
+            {
+                return Path.Combine(ItemsByNamePath, "artists");
+            }
+        }
+
         /// <summary>
         /// Gets the path to the Genre directory
         /// </summary>

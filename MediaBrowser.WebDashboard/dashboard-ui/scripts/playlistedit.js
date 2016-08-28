@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'jQuery', 'listView'], function (appStorage, $, listView) {
+﻿define(['jQuery', 'listView'], function ($, listView) {
 
     var data = {};
     function getPageData() {
@@ -8,12 +8,12 @@
         if (!pageData) {
             pageData = data[key] = {
                 query: {
-                    Fields: "PrimaryImageAspectRatio,SyncInfo",
+                    Fields: "PrimaryImageAspectRatio",
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
                     Limit: 200
                 },
-                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('List', 'List')
+                view: LibraryBrowser.getSavedView(key) || 'List'
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();
@@ -56,24 +56,21 @@
 
             });
 
-            var view = getPageData().view;
-
-            if (view == "List") {
-
-                html = listView.getListViewHtml({
-                    items: result.Items,
-                    sortBy: query.SortBy,
-                    showIndex: false,
-                    showRemoveFromPlaylist: true,
-                    playFromHere: true,
-                    action: 'playallfromhere',
-                    smallIcon: true,
-                    dragHandle: true,
-                    playlistId: item.Id
-                });
-            }
+            html += listView.getListViewHtml({
+                items: result.Items,
+                sortBy: query.SortBy,
+                showIndex: false,
+                showRemoveFromPlaylist: true,
+                playFromHere: true,
+                action: 'playallfromhere',
+                smallIcon: true,
+                dragHandle: true,
+                playlistId: item.Id
+            });
 
             var elem = page.querySelector('#childrenContent .itemsContainer');
+            elem.classList.add('vertical-list');
+            elem.classList.remove('vertical-wrap');
             elem.innerHTML = html;
 
             ImageLoader.lazyChildren(elem);

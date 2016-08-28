@@ -1,4 +1,4 @@
-﻿<div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage librarySectionPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/medialibrarypage,scripts/taskbutton">
+﻿<div id="mediaLibraryPage" data-role="page" class="page type-interior mediaLibraryPage librarySectionPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/medialibrarypage">
 
     <div data-role="content">
         <div class="content-primary">
@@ -6,7 +6,10 @@
             <br />
             <div>
 
-                <button is="emby-button" type="button" class="raised btnRefresh subdued"><iron-icon icon="refresh"></iron-icon><span>${ButtonScanLibrary}</span></button>
+                <button is="emby-button" type="button" class="raised btnRefresh subdued">
+                    <i class="md-icon">refresh</i>
+                    <span>${ButtonScanLibrary}</span>
+                </button>
                 <progress max="100" min="0" style="display: inline-block; vertical-align: middle;" class="refreshProgress"></progress>
             </div>
         </div>

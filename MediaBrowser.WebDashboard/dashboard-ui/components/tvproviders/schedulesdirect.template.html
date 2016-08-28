@@ -13,15 +13,15 @@
     <!-- Terrible, but this hidden field prevents the yellow background in chrome -->
     <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
     <div>
-        <div>
-            <paper-input class="txtUser" label="${LabelUsername}" required="required" autocomplete="off"></paper-input>
+        <br/>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtUser" label="${LabelUsername}" required="required" autocomplete="off"/>
         </div>
-        <div>
-            <paper-input class="txtPass" label="${LabelPassword}" required="required" autocomplete="off" type="password"></paper-input>
+        <div class="inputContainer">
+            <input is="emby-input" class="txtPass" label="${LabelPassword}" required="required" autocomplete="off" type="password"/>
         </div>
         <div>
             <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-
         </div>
     </div>
 </form>
@@ -39,21 +39,17 @@
     </div>
     <form class="formListings">
         <div>
-            <div>
+            <div class="selectContainer">
                 <br />
-                <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
-                <select id="selectCountry" data-mini="true" required="required"></select>
+                <select is="emby-select" id="selectCountry" data-mini="true" required="required" label="${LabelCountry}"></select>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" class="txtZipCode" label="${LabelZipCode}" required="required"/>
+            </div>
+            <div class="selectContainer">
+                <select is="emby-select" id="selectListing" data-mini="true" required="required" label="${LabelLineup}"></select>
             </div>
             <div>
-                <paper-input class="txtZipCode" label="${LabelZipCode}" required="required"></paper-input>
-            </div>
-            <div>
-                <br />
-                <label for="selectListing" class="selectLabel">${LabelLineup}</label>
-                <select id="selectListing" data-mini="true" required="required"></select>
-            </div>
-            <div>
-                <br />
                 <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
                 <div class="selectTunersSection hide">
                     <br /><br />

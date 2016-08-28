@@ -32,9 +32,9 @@
 
         requestAnimationFrame(function () {
             var keyframes = [
-              { transform: 'translateY(0)', offset: 0 },
+              { transform: 'none', offset: 0 },
               { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 180, iterations: 1, fill: 'forwards', easing: 'ease-out' };
+            var timing = { duration: 140, iterations: 1, fill: 'forwards', easing: 'ease-out' };
 
             elem.animate(keyframes, timing).onfinish = function () {
                 elem.classList.add('hide');
@@ -58,7 +58,7 @@
 
             var keyframes = [
               { transform: 'translateY(100%)', offset: 0 },
-              { transform: 'translateY(0)', offset: 1 }];
+              { transform: 'none', offset: 1 }];
             var timing = { duration: 200, iterations: 1, fill: 'forwards', easing: 'ease-out' };
             elem.animate(keyframes, timing);
         });
@@ -127,22 +127,24 @@
 
         if (playbackManager.canPlay(item)) {
 
-            html += '<button is="emby-button" class="itemAction autoSize fab mini" data-action="playmenu"><i class="md-icon">&#xE037;</i></button>';
+            html += '<button is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="playmenu"><i class="md-icon cardOverlayFab-md-icon">&#xE037;</i></button>';
             buttonCount++;
         }
 
         if (item.LocalTrailerCount) {
-            html += '<button title="' + globalize.translate('sharedcomponents#Trailer') + '" is="emby-button" class="itemAction autoSize fab mini" data-action="playtrailer"><i class="md-icon">&#xE04B;</i></button>';
+            html += '<button title="' + globalize.translate('sharedcomponents#Trailer') + '" is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="playtrailer"><i class="md-icon cardOverlayFab-md-icon">&#xE04B;</i></button>';
             buttonCount++;
         }
 
         var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
-        html += '<button is="emby-button" class="itemAction autoSize fab mini" data-action="menu" data-playoptions="false"><i class="md-icon">' + moreIcon + '</i></button>';
+        html += '<button is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="menu" data-playoptions="false"><i class="md-icon cardOverlayFab-md-icon">' + moreIcon + '</i></button>';
         buttonCount++;
 
         html += userdataButtons.getIconsHtml({
             item: item,
-            style: 'fab-mini'
+            style: 'fab-mini',
+            cssClass: 'cardOverlayFab',
+            iconCssClass: 'cardOverlayFab-md-icon'
         });
 
         html += '</div>';
@@ -152,6 +154,13 @@
         return html;
     }
 
+    function onCardOverlayButtonsClick(e) {
+
+        var button = dom.parentWithClass(e.target, 'btnUserData');
+        if (button) {
+            e.stopPropagation();
+        }
+    }
 
     function onShowTimerExpired(elem) {
 
@@ -162,12 +171,21 @@
             innerElem.classList.add('hide');
             innerElem.classList.add('cardOverlayTarget');
 
-            var appendTo;
-            if (elem.classList.contains('cardImageContainer')) {
-                appendTo = dom.parentWithClass(elem, 'cardBox');
-            } else {
-                appendTo = elem.parentNode;
+            // allow the overlay to be clicked to view the item
+            innerElem.classList.add('itemAction');
+            innerElem.setAttribute('data-action', 'link');
+
+            var appendTo = elem.querySelector('div.cardContent') || elem.querySelector('.cardScalable') || elem.querySelector('.cardBox');
+
+            //if (appendTo && appendTo.tagName == 'BUTTON') {
+            //    appendTo = dom.parentWithClass(elem, 'cardScalable');
+            //}
+
+            if (!appendTo) {
+                appendTo = elem;
             }
+
+            appendTo.classList.add('withHoverMenu');
             appendTo.appendChild(innerElem);
         }
 
@@ -196,6 +214,8 @@
             var user = responses[1];
 
             innerElem.innerHTML = getOverlayHtml(apiClient, item, user, dataElement);
+
+            innerElem.querySelector('.cardOverlayButtons').addEventListener('click', onCardOverlayButtonsClick);
         });
 
         slideUpToShow(innerElem);
@@ -204,7 +224,7 @@
     function onHoverIn(e) {
 
         var elem = e.target;
-        var card = dom.parentWithClass(elem, 'cardImageContainer') || dom.parentWithClass(elem, 'cardImage');
+        var card = dom.parentWithClass(elem, 'cardBox');
 
         if (!card) {
             return;
@@ -236,7 +256,9 @@
 
         this.parent.addEventListener('mouseenter', onHoverIn, true);
         this.parent.addEventListener('mouseleave', onHoverOut, true);
-        this.parent.addEventListener("touchstart", preventTouchHover);
+        dom.addEventListener(this.parent, "touchstart", preventTouchHover, {
+            passive: true
+        });
     }
 
     ItemHoverMenu.prototype = {
@@ -246,7 +268,10 @@
         destroy: function () {
             this.parent.removeEventListener('mouseenter', onHoverIn, true);
             this.parent.removeEventListener('mouseleave', onHoverOut, true);
-            this.parent.removeEventListener("touchstart", preventTouchHover);
+
+            dom.removeEventListener(this.parent, "touchstart", preventTouchHover, {
+                passive: true
+            });
         }
     }
 

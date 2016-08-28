@@ -1,21 +1,19 @@
-﻿define(['appStorage', 'jQuery', 'emby-button'], function (appStorage, $) {
+﻿define(['appStorage', 'emby-button'], function (appStorage) {
 
-    $.fn.taskButton = function (options) {
+    return function (options) {
 
-        function pollTasks(button) {
+        var button = options.button;
+
+        function pollTasks() {
 
             ApiClient.getScheduledTasks({
 
                 IsEnabled: true
 
-            }).then(function (tasks) {
-
-                updateTasks(button, tasks);
-            });
-
+            }).then(updateTasks);
         }
 
-        function updateTasks(button, tasks) {
+        function updateTasks(tasks) {
 
             var task = tasks.filter(function (t) {
 
@@ -36,12 +34,12 @@
             }
 
             if (task.State == 'Idle') {
-                $(button).removeAttr('disabled');
+                button.removeAttribute('disabled');
             } else {
-                $(button).attr('disabled', 'disabled');
+                button.setAttribute('disabled', 'disabled');
             }
 
-            $(button).attr('data-taskid', task.Id);
+            button.setAttribute('data-taskid', task.Id);
 
             var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
@@ -72,11 +70,8 @@
             }
         }
 
-        function onScheduledTaskMessageConfirmed(instance, id) {
-            ApiClient.startScheduledTask(id).then(function () {
-
-                pollTasks(instance);
-            });
+        function onScheduledTaskMessageConfirmed(id) {
+            ApiClient.startScheduledTask(id).then(pollTasks);
         }
 
         function onButtonClick() {
@@ -88,7 +83,7 @@
             var expectedValue = new Date().getMonth() + '6';
 
             if (appStorage.getItem(key) == expectedValue) {
-                onScheduledTaskMessageConfirmed(button, id);
+                onScheduledTaskMessageConfirmed(id);
             } else {
 
                 var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
@@ -107,7 +102,7 @@
 
                     }).then(function () {
                         appStorage.setItem(key, expectedValue);
-                        onScheduledTaskMessageConfirmed(button, id);
+                        onScheduledTaskMessageConfirmed(id);
                     });
 
                 });
@@ -123,17 +118,16 @@
 
                 var tasks = msg.Data;
 
-                updateTasks(self, tasks);
+                updateTasks(tasks);
             }
         }
 
-        var self = this;
         var pollInterval;
 
         function onPollIntervalFired() {
 
             if (!ApiClient.isWebSocketOpen()) {
-                pollTasks(self);
+                pollTasks();
             }
         }
 
@@ -162,23 +156,21 @@
 
         if (options.mode == 'off') {
 
-            this.off('click', onButtonClick);
+            button.removeEventListener('click', onButtonClick);
             Events.off(ApiClient, 'websocketmessage', onSocketMessage);
             Events.off(ApiClient, 'websocketopen', onSocketOpen);
             stopInterval();
 
-        } else if (this.length) {
+        } else  {
 
-            this.on('click', onButtonClick);
+            button.addEventListener('click', onButtonClick);
 
-            pollTasks(self);
+            pollTasks();
 
             startInterval();
 
             Events.on(ApiClient, 'websocketmessage', onSocketMessage);
             Events.on(ApiClient, 'websocketopen', onSocketOpen);
         }
-
-        return this;
     };
 });

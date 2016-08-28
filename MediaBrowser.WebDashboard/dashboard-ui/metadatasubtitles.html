@@ -1,4 +1,4 @@
-﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="jqmlistview,scripts/metadatasubtitles,paper-input,paper-checkbox,emby-button">
+﻿<div id="metadataSubtitlesPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadatasubtitles,emby-input,emby-checkbox,emby-button">
 
     <div data-role="content">
 
@@ -6,48 +6,64 @@
 
             <form class="metadataSubtitlesForm">
 
+                <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
+
                 <div style="display: none;">
                     <input type="text" id="PreventChromeAutocomplete" name="PreventChromeAutocomplete" autocomplete="address-level4" />
                 </div>
 
-                <div class="paperListLabel">${HeaderDownloadSubtitlesFor}</div>
-                <div class="paperCheckboxList">
-                    <paper-checkbox id="chkSubtitlesMovies">${OptionMovies}</paper-checkbox>
-                    <paper-checkbox id="chkSubtitlesEpisodes">${OptionEpisodes}</paper-checkbox>
+                <h3 class="checkboxListLabel">${HeaderDownloadSubtitlesFor}</h3>
+                <div class="checkboxList">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkSubtitlesMovies" />
+                        <span>${OptionMovies}</span>
+                    </label>
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkSubtitlesEpisodes" />
+                        <span>${OptionEpisodes}</span>
+                    </label>
                 </div>
                 <br />
                 <div>
-                    <div class="paperListLabel">${LabelDownloadLanguages}</div>
-                    <div class="downloadLanguages paperList paperCheckboxList" style="max-height: 150px; overflow-y: auto; padding: .5em 1em;">
+                    <h3 class="checkboxListLabel">${LabelDownloadLanguages}</h3>
+                    <div class="downloadLanguages paperList checkboxList" style="max-height: 150px; overflow-y: auto; padding: .5em 1em;">
                     </div>
                 </div>
                 <br /><br />
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <paper-checkbox id="chkRequirePerfectMatch">${OptionRequirePerfectSubtitleMatch}</paper-checkbox>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkSkipIfAudioTrackPresent">${LabelSkipIfAudioTrackPresent}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkSkipIfGraphicalSubsPresent">${LabelSkipIfGraphicalSubsPresent}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
-                    </li>
-                    <li>
-                        <paper-input type="text" id="txtOpenSubtitleUsername" autocomplete="off" label="${LabelOpenSubtitlesUsername}"></paper-input>
-                        <div class="fieldDescription"><a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a></div>
-                    </li>
-                    <li>
-                        <paper-input type="password" id="txtOpenSubtitlePassword" autocomplete="off" label="${LabelOpenSubtitlesPassword}"></paper-input>
-                    </li>
-                </ul>
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    </li>
-                </ul>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="chkRequirePerfectMatch"/>
+                    <span>${OptionRequirePerfectSubtitleMatch}</span>
+                </label>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkSkipIfAudioTrackPresent" />
+                        <span>${LabelSkipIfAudioTrackPresent}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelSkipIfAudioTrackPresentHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" id="chkSkipIfGraphicalSubsPresent" />
+                        <span>${LabelSkipIfGraphicalSubsPresent}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelSkipIfGraphicalSubsPresentHelp}</div>
+                </div>
+                <br />
+                <div class="inputContainer">
+                    <input is="emby-input" type="text" id="txtOpenSubtitleUsername" autocomplete="off" label="${LabelOpenSubtitlesUsername}" />
+                    <div class="fieldDescription">
+                        <a target="_blank" href="http://www.opensubtitles.org/">${ButtonRegister}</a>
+                    </div>
+                </div>
+
+                <div class="inputContainer">
+                    <input is="emby-input" type="password" id="txtOpenSubtitlePassword" autocomplete="off" label="${LabelOpenSubtitlesPassword}" />
+                </div>
+
+                <div>
+                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                </div>
             </form>
         </div>
 

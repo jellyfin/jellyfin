@@ -144,6 +144,10 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             mediaSource.Id = item.Id;
             mediaSource.SupportsTranscoding = false;
+            if (mediaSource.Protocol == Model.MediaInfo.MediaProtocol.File)
+            {
+                mediaSource.ETag = item.Id;
+            }
         }
 
         public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)

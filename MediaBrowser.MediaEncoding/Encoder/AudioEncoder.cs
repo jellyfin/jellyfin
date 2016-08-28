@@ -51,7 +51,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var metadata = string.Empty;
             var vn = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(state.AlbumCoverPath))
+            var hasArt = !string.IsNullOrWhiteSpace(state.AlbumCoverPath);
+            hasArt = false;
+
+            if (hasArt)
             {
                 albumCoverInput = " -i \"" + state.AlbumCoverPath + "\"";
                 mapArgs = " -map 0:a -map 1:v -c:v copy";
