@@ -33,6 +33,7 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         private static bool _isRunningAsService = false;
+        private static bool _canRestartService = false;
         private static bool _appHostDisposed;
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -45,6 +46,7 @@ namespace MediaBrowser.ServerApplication
         {
             var options = new StartupOptions();
             _isRunningAsService = options.ContainsOption("-service");
+            _canRestartService = CanRestartWindowsService();
 
             var currentProcess = Process.GetCurrentProcess();
 
@@ -239,7 +241,14 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                return !_isRunningAsService;
+                if (_isRunningAsService)
+                {
+                    return _canRestartService;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
@@ -251,7 +260,14 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                return !_isRunningAsService;
+                if (_isRunningAsService)
+                {
+                    return _canRestartService;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
@@ -593,7 +609,11 @@ namespace MediaBrowser.ServerApplication
         {
             DisposeAppHost();
 
-            if (!_isRunningAsService)
+            if (_isRunningAsService)
+            {
+                RestartWindowsService();
+            }
+            else
             {
                 //_logger.Info("Hiding server notify icon");
                 //_serverNotifyIcon.Visible = false;
@@ -639,6 +659,47 @@ namespace MediaBrowser.ServerApplication
             if (service.Status == ServiceControllerStatus.Running)
             {
                 service.Stop();
+            }
+        }
+
+        private static void RestartWindowsService()
+        {
+            _logger.Info("Restarting background service");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false,
+                Arguments = String.Format("/c sc stop {0} & sc start {0}", BackgroundService.GetExistingServiceName())
+            };
+            Process.Start(startInfo);
+        }
+
+        private static bool CanRestartWindowsService()
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false,
+                Arguments = String.Format("/c sc query {0}", BackgroundService.GetExistingServiceName())
+            };
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit();
+                if (process.ExitCode == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
