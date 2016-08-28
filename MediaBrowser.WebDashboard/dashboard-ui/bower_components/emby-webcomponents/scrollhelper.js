@@ -18,7 +18,7 @@ define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
 
         var offset = horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
         var size = horizontal ? itemOffset.width : itemOffset.height;
-        if (!size) {
+        if (!size && size !== 0) {
             size = item[horizontal ? 'offsetWidth' : 'offsetHeight'];
         }
 

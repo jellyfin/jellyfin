@@ -98,11 +98,11 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             html += '<i class="md-icon listItemIcon">dvr</i>';
 
             html += '<div class="listItemBody two-line">';
-            html += '<h3>';
+            html += '<h3 class="listItemBodyText">';
             html += channel.Name;
             html += '</h3>';
 
-            html += '<div class="secondary">';
+            html += '<div class="secondary listItemBodyText">';
             if (channel.ProviderChannelNumber || channel.ProviderChannelName) {
                 html += getMappingSecondaryName(channel, providerName);
             }

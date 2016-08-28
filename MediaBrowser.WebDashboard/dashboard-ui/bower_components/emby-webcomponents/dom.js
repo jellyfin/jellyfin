@@ -73,7 +73,6 @@ define([], function () {
     var windowSize;
     var windowSizeEventsBound;
     function clearWindowSize() {
-        console.log('clearWindowSize');
         windowSize = null;
     }
 

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Server.Core</id>
-        <version>3.0.655</version>
+        <version>3.0.656</version>
         <title>Media Browser.Server.Core</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -12,7 +12,7 @@
         <description>Contains core components required to build plugins for Emby Server.</description>
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.655" />
+            <dependency id="MediaBrowser.Common" version="3.0.656" />
 			<dependency id="Interfaces.IO" version="1.0.0.5" />
         </dependencies>
     </metadata>

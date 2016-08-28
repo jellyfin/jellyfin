@@ -112,6 +112,15 @@
             date.toLocaleDateString();
     }
 
+    function toLocaleTimeString(date) {
+
+        var currentLocale = globalize.getCurrentLocale();
+
+        return currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleTimeString(currentLocale) :
+            date.toLocaleTimeString();
+    }
+
     function getDisplayTime(date) {
 
         if ((typeof date).toString().toLowerCase() === 'string') {
@@ -124,11 +133,7 @@
             }
         }
 
-        var currentLocale = globalize.getCurrentLocale();
-
-        var time = currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale) :
-            date.toLocaleTimeString();
+        var time = toLocaleTimeString(date);
 
         var timeLower = time.toLowerCase();
 

@@ -452,7 +452,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 
             var offset = o.horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
             var size = o.horizontal ? itemOffset.width : itemOffset.height;
-            if (!size) {
+            if (!size && size !== 0) {
                 size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
             }
 
