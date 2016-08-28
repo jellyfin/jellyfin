@@ -45,7 +45,11 @@ namespace MediaBrowser.ServerApplication
         {
             var options = new StartupOptions();
             _isRunningAsService = options.ContainsOption("-service");
-            _canRestartService = CanRestartWindowsService();
+
+            if (_isRunningAsService)
+            {
+                _canRestartService = CanRestartWindowsService();
+            }
 
             var currentProcess = Process.GetCurrentProcess();
 
