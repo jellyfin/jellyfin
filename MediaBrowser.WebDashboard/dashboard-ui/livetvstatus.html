@@ -1,4 +1,4 @@
-﻿<div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,scripts/taskbutton,paper-fab,paper-item-body,paper-icon-item,paper-checkbox,emby-button">
+﻿<div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -31,7 +31,10 @@
                         </div>
                         <div>
 
-                            <button is="emby-button" type="button" class="raised btnRefresh block subdued"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefreshGuideData}</span></button>
+                            <button is="emby-button" type="button" class="raised btnRefresh block subdued">
+                                <i class="md-icon">refresh</i>
+                                <span>${ButtonRefreshGuideData}</span>
+                            </button>
                             <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
                         </div>
                     </div>

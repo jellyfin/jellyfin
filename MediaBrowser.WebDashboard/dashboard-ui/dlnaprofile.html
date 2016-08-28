@@ -1,4 +1,4 @@
-﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jQuery,jqmlistview,emby-collapse,jqmpopup,scripts/dlnaprofile,jqmcheckbox,emby-button">
+﻿<div id="dlnaProfilePage" data-role="page" class="page type-interior dlnaPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20profiles" data-require="jQuery,emby-collapse,jqmpopup,scripts/dlnaprofile,jqmcheckbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -17,20 +17,17 @@
                 <br />
                 <div class="tabContent tabInfo">
 
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="txtName">${LabelName}</label>
-                            <input type="text" id="txtName" required="required" />
-                        </li>
-                    </ul>
-
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="selectUser">${LabelUserLibrary}</label>
-                            <select id="selectUser" data-mini="true"></select>
-                            <div class="fieldDescription">${LabelUserLibraryHelp}</div>
-                        </li>
-                    </ul>
+                    <div>
+                        <label for="txtName">${LabelName}</label>
+                        <input type="text" id="txtName" required="required" />
+                    </div>
+                    <br />
+                    <div>
+                        <label for="selectUser">${LabelUserLibrary}</label>
+                        <select id="selectUser" data-mini="true"></select>
+                        <div class="fieldDescription">${LabelUserLibraryHelp}</div>
+                    </div>
+                    <br />
 
                     <fieldset data-role="controlgroup">
                         <legend>${LabelSupportedMediaTypes}</legend>
@@ -51,53 +48,60 @@
                             <br />
                             <p>${HeaderIdentificationCriteriaHelp}</p>
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
-                                    <input type="text" id="txtIdFriendlyName" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdManufacturer">${LabelManufacturer}</label>
-                                    <input type="text" id="txtIdManufacturer" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
-                                    <input type="text" id="txtIdManufacturerUrl" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdModelName">${LabelModelName}</label>
-                                    <input type="text" id="txtIdModelName" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdModelNumber">${LabelModelNumber}</label>
-                                    <input type="text" id="txtIdModelNumber" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdModelDesription">${LabelModelDescription}</label>
-                                    <input type="text" id="txtIdModelDesription" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdModelUrl">${LabelModelUrl}</label>
-                                    <input type="text" id="txtIdModelUrl" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
-                                    <input type="text" id="txtIdSerialNumber" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
-                                    <input type="text" id="txtIdDeviceDescription" />
-                                    <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
+                                <input type="text" id="txtIdFriendlyName" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdManufacturer">${LabelManufacturer}</label>
+                                <input type="text" id="txtIdManufacturer" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
+                                <input type="text" id="txtIdManufacturerUrl" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdModelName">${LabelModelName}</label>
+                                <input type="text" id="txtIdModelName" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdModelNumber">${LabelModelNumber}</label>
+                                <input type="text" id="txtIdModelNumber" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdModelDesription">${LabelModelDescription}</label>
+                                <input type="text" id="txtIdModelDesription" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdModelUrl">${LabelModelUrl}</label>
+                                <input type="text" id="txtIdModelUrl" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
+                                <input type="text" id="txtIdSerialNumber" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
+                                <input type="text" id="txtIdDeviceDescription" />
+                                <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
+                            </div>
+                            <br />
 
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
@@ -113,84 +117,87 @@
                     <div is="emby-collapse" title="${HeaderDisplaySettings}">
                         <div class="collapseContent">
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
-                                    <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
-                                    <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
-                                    <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
-                                    <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
+                                <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
+                                <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
+                                <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
+                                <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
+                            </div>
                         </div>
                     </div>
 
                     <div is="emby-collapse" title="${HeaderImageSettings}">
                         <div class="collapseContent">
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
-                                    <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
-                                    <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="chkEnableSingleImageLimit">${LabelEnableSingleImageInDidlLimit}</label>
-                                    <input type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
-                                    <div class="fieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
-                                    <input type="text" id="txtAlbumArtPn" />
-                                    <div class="fieldDescription">${LabelAlbumArtHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
-                                    <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
-                                    <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
-                                    <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
-                                    <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="chkEnableAlbumArtInDidl">${LabelEmbedAlbumArtDidl}</label>
+                                <input type="checkbox" id="chkEnableAlbumArtInDidl" data-mini="true" />
+                                <div class="fieldDescription">${LabelEmbedAlbumArtDidlHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="chkEnableSingleImageLimit">${LabelEnableSingleImageInDidlLimit}</label>
+                                <input type="checkbox" id="chkEnableSingleImageLimit" data-mini="true" />
+                                <div class="fieldDescription">${LabelEnableSingleImageInDidlLimitHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtAlbumArtPn">${LabelAlbumArtPN}</label>
+                                <input type="text" id="txtAlbumArtPn" />
+                                <div class="fieldDescription">${LabelAlbumArtHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtAlbumArtMaxWidth">${LabelAlbumArtMaxWidth}</label>
+                                <input type="number" id="txtAlbumArtMaxWidth" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelAlbumArtMaxWidthHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtAlbumArtMaxHeight">${LabelAlbumArtMaxHeight}</label>
+                                <input type="number" id="txtAlbumArtMaxHeight" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelAlbumArtMaxHeightHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIconMaxWidth">${LabelIconMaxWidth}</label>
+                                <input type="number" id="txtIconMaxWidth" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelIconMaxWidthHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
+                                <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
+                            </div>
                         </div>
                     </div>
 
                     <div is="emby-collapse" title="${HeaderPlaybackSettings}">
                         <div class="collapseContent">
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
-                                    <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
-                                    <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
-                                    <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
-                                    <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
-                                    <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
+                                <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
+                                <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
+                                <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
+                            </div>
+                            <br />
+                            <div style="display:none;">
+                                <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
+                                <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
+                                <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
+                            </div>
                         </div>
                     </div>
 
@@ -198,60 +205,69 @@
                         <div class="collapseContent">
                             <p>${HeaderProfileServerSettingsHelp}</p>
                             <br />
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
-                                    <input type="text" id="txtInfoFriendlyName" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoManufacturer">${LabelManufacturer}</label>
-                                    <input type="text" id="txtInfoManufacturer" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
-                                    <input type="text" id="txtInfoManufacturerUrl" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoModelName">${LabelModelName}</label>
-                                    <input type="text" id="txtInfoModelName" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoModelNumber">${LabelModelNumber}</label>
-                                    <input type="text" id="txtInfoModelNumber" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoModelDesription">${LabelModelDescription}</label>
-                                    <input type="text" id="txtInfoModelDesription" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoModelUrl">${LabelModelUrl}</label>
-                                    <input type="text" id="txtInfoModelUrl" />
-                                </li>
-                                <li>
-                                    <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
-                                    <input type="text" id="txtInfoSerialNumber" />
-                                </li>
-                                <li>
-                                    <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
-                                    <input type="text" id="txtProtocolInfo" />
-                                    <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
-                                    <input type="text" id="txtXDlnaCap" />
-                                    <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
-                                    <input type="text" id="txtXDlnaDoc" />
-                                    <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
-                                </li>
-                                <li>
-                                    <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
-                                    <input type="text" id="txtSonyAggregationFlags" />
-                                    <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
-                                </li>
-                            </ul>
+                            <div>
+                                <label for="txtInfoFriendlyName">${LabelFriendlyName}</label>
+                                <input type="text" id="txtInfoFriendlyName" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoManufacturer">${LabelManufacturer}</label>
+                                <input type="text" id="txtInfoManufacturer" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoManufacturerUrl">${LabelManufacturerUrl}</label>
+                                <input type="text" id="txtInfoManufacturerUrl" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoModelName">${LabelModelName}</label>
+                                <input type="text" id="txtInfoModelName" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoModelNumber">${LabelModelNumber}</label>
+                                <input type="text" id="txtInfoModelNumber" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoModelDesription">${LabelModelDescription}</label>
+                                <input type="text" id="txtInfoModelDesription" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoModelUrl">${LabelModelUrl}</label>
+                                <input type="text" id="txtInfoModelUrl" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtInfoSerialNumber">${LabelSerialNumber}</label>
+                                <input type="text" id="txtInfoSerialNumber" />
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtProtocolInfo">${LabelProtocolInfo}</label>
+                                <input type="text" id="txtProtocolInfo" />
+                                <div class="fieldDescription">${LabelProtocolInfoHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtXDlnaCap">${LabelXDlnaCap}</label>
+                                <input type="text" id="txtXDlnaCap" />
+                                <div class="fieldDescription">${LabelXDlnaCapHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtXDlnaDoc">${LabelXDlnaDoc}</label>
+                                <input type="text" id="txtXDlnaDoc" />
+                                <div class="fieldDescription">${LabelXDlnaDocHelp}</div>
+                            </div>
+                            <br />
+                            <div>
+                                <label for="txtSonyAggregationFlags">${LabelSonyAggregationFlags}</label>
+                                <input type="text" id="txtSonyAggregationFlags" />
+                                <div class="fieldDescription">${LabelSonyAggregationFlagsHelp}</div>
+                            </div>
                         </div>
                     </div>
 

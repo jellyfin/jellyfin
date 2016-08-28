@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'scrollHelper', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, scrollHelper, appStorage, connectionManager, loading, focusManager, dom, appHost) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, appStorage, connectionManager, loading, focusManager, dom, appHost) {
 
     var currentItem;
     var hasChanges;
@@ -107,7 +107,7 @@
             html += '<h1>' + globalize.translate('sharedcomponents#MySubtitles') + '</h1>';
 
             if (layoutManager.tv) {
-                html += '<div class="paperList clear">';
+                html += '<div class="paperList paperList-clear">';
             } else {
                 html += '<div class="paperList">';
             }
@@ -118,6 +118,12 @@
 
                 var tagName = layoutManager.tv ? 'button' : 'div';
                 var className = layoutManager.tv && s.Path ? 'listItem btnDelete' : 'listItem';
+
+                if (layoutManager.tv) {
+                    className += ' listItem-focusscale listItem-button';
+                }
+
+                className += ' listItem-noborder';
 
                 itemHtml += '<' + tagName + ' class="' + className + '" data-index="' + s.Index + '">';
 
@@ -138,7 +144,7 @@
 
                 if (!layoutManager.tv) {
                     if (s.Path) {
-                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete"><i class="md-icon">delete</i></button>';
+                        itemHtml += '<button is="paper-icon-button-light" data-index="' + s.Index + '" title="' + globalize.translate('sharedcomponents#Delete') + '" class="btnDelete listItemButton"><i class="md-icon">delete</i></button>';
                     }
                 }
 
@@ -225,7 +231,7 @@
                 }
                 html += '<h1>' + provider + '</h1>';
                 if (layoutManager.tv) {
-                    html += '<div class="paperList clear">';
+                    html += '<div class="paperList paperList-clear">';
                 } else {
                     html += '<div class="paperList">';
                 }
@@ -234,6 +240,9 @@
 
             var tagName = layoutManager.tv ? 'button' : 'div';
             var className = layoutManager.tv ? 'listItem btnOptions' : 'listItem';
+            if (layoutManager.tv) {
+                className += ' listItem-focusscale listItem-button';
+            }
 
             html += '<' + tagName + ' class="' + className + '" data-subid="' + result.Id + '">';
 
@@ -254,10 +263,10 @@
 
             html += '</div>';
 
-            html += '<div class="secondary">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
+            html += '<div class="secondary listItemAside">' + /*(result.CommunityRating || 0) + ' / ' +*/ (result.DownloadCount || 0) + '</div>';
 
             if (!layoutManager.tv) {
-                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions"><i class="md-icon">' + moreIcon + '</i></button>';
+                html += '<button type="button" is="paper-icon-button-light" data-subid="' + result.Id + '" class="btnOptions listItemButton"><i class="md-icon">' + moreIcon + '</i></button>';
             }
 
             html += '</' + tagName + '>';
@@ -333,7 +342,7 @@
 
         var lang = form.querySelector('#selectLanguage', form).value;
 
-        searchForSubtitles(dom.parentWithClass(form, 'dialogContent'), lang);
+        searchForSubtitles(dom.parentWithClass(form, 'formDialogContent'), lang);
 
         e.preventDefault();
         return false;
@@ -389,6 +398,13 @@
         });
     }
 
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
     function showEditorInternal(itemId, serverId, template) {
 
         hasChanges = false;
@@ -397,7 +413,8 @@
         return apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(function (item) {
 
             var dialogOptions = {
-                removeOnClose: true
+                removeOnClose: true,
+                scrollY: false
             };
 
             if (layoutManager.tv) {
@@ -414,20 +431,20 @@
             dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
             document.body.appendChild(dlg);
 
-            dlg.querySelector('.originalFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
+            dlg.querySelector('.originalSubtitleFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
 
             dlg.querySelector('.subtitleSearchForm').addEventListener('submit', onSearchSubmit);
 
             var btnSubmit = dlg.querySelector('.btnSubmit');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg.querySelector('.dialogContent'), false);
+                centerFocus(dlg.querySelector('.formDialogContent'), false, true);
                 dlg.querySelector('.btnSearchSubtitles').classList.add('hide');
             } else {
                 btnSubmit.classList.add('hide');
             }
 
-            var editorContent = dlg.querySelector('.dialogContent');
+            var editorContent = dlg.querySelector('.formDialogContent');
 
             dlg.querySelector('.subtitleList').addEventListener('click', onSubtitleListClick);
             dlg.querySelector('.subtitleResults').addEventListener('click', onSubtitleResultsClick);
@@ -445,6 +462,10 @@
             return new Promise(function (resolve, reject) {
 
                 dlg.addEventListener('close', function () {
+
+                    if (layoutManager.tv) {
+                        centerFocus(dlg.querySelector('.formDialogContent'), false, false);
+                    }
 
                     if (hasChanges) {
                         resolve();

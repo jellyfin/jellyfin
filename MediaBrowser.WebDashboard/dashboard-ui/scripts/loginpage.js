@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['appSettings', 'cardStyle', 'emby-checkbox'], function (appSettings) {
 
     function getApiClient() {
 
@@ -82,6 +82,8 @@
 
     function showManualForm(context, showCancel, focusPassword) {
 
+        context.querySelector('.chkRememberLogin').checked = appSettings.enableAutoLogin();
+
         context.querySelector('.manualLoginForm').classList.remove('hide');
         context.querySelector('.visualLoginForm').classList.add('hide');
 
@@ -98,17 +100,42 @@
         }
     }
 
+    var metroColors = ["#6FBD45", "#4BB3DD", "#4164A5", "#E12026", "#800080", "#E1B222", "#008040", "#0094FF", "#FF00C7", "#FF870F", "#7F0037"];
+
+    function getRandomMetroColor() {
+
+        var index = Math.floor(Math.random() * (metroColors.length - 1));
+
+        return metroColors[index];
+    }
+
+    function getMetroColor(str) {
+
+        if (str) {
+            var character = String(str.substr(0, 1).charCodeAt());
+            var sum = 0;
+            for (var i = 0; i < character.length; i++) {
+                sum += parseInt(character.charAt(i));
+            }
+            var index = String(sum).substr(-1);
+
+            return metroColors[index];
+        } else {
+            return getRandomMetroColor();
+        }
+    }
+
     function loadUserList(context, apiClient, users) {
         var html = "";
 
         for (var i = 0, length = users.length; i < length; i++) {
             var user = users[i];
 
-            html += '<div class="card squareCard bottomPaddedCard"><div class="cardBox visualCardBox">';
+            html += '<div class="card squareCard scalableCard squareCard-scalable"><div class="cardBox cardBox-bottompadded visualCardBox">';
 
-            html += '<div class="cardScalable">';
+            html += '<div class="cardScalable visualCardBox-cardScalable">';
 
-            html += '<div class="cardPadder"></div>';
+            html += '<div class="cardPadder cardPadder-square"></div>';
             html += '<a class="cardContent" href="#" data-ajax="false" data-haspw="' + user.HasPassword + '" data-username="' + user.Name + '" data-userid="' + user.Id + '">';
 
             var imgUrl;
@@ -121,24 +148,24 @@
                     type: "Primary"
                 });
 
-                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+                html += '<div class="cardImageContainer coveredImage coveredImage-noScale" style="background-image:url(\'' + imgUrl + '\');"></div>';
             }
             else {
 
-                var background = libraryBrowser.getMetroColor(user.Id);
+                var background = getMetroColor(user.Id);
 
                 imgUrl = 'css/images/logindefault.png';
 
-                html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
+                html += '<div class="cardImageContainer coveredImage coveredImage-noScale" style="background-image:url(\'' + imgUrl + '\');background-color:' + background + ';"></div>';
             }
 
             html += '</a>';
             html += '</div>';
 
-            html += '<div class="cardFooter">';
+            html += '<div class="cardFooter visualCardBox-cardFooter">';
             html += '<div class="cardText">' + user.Name + '</div>';
 
-            html += '<div class="cardText">';
+            html += '<div class="cardText cardText-secondary">';
             var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
@@ -173,7 +200,7 @@
 
         var self = this;
 
-        view.querySelector('#divUsers').addEventListener('click', function(e) {
+        view.querySelector('#divUsers').addEventListener('click', function (e) {
             var cardContent = parentWithClass(e.target, 'cardContent');
 
             if (cardContent) {
@@ -199,6 +226,8 @@
         });
 
         view.querySelector('.manualLoginForm').addEventListener('submit', function (e) {
+
+            appSettings.enableAutoLogin(view.querySelector('.chkRememberLogin').checked);
 
             var apiClient = getApiClient();
             LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);

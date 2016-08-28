@@ -1,5 +1,4 @@
-﻿using System;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;

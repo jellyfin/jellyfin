@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
 
     function showSlideshowMenu(context) {
         require(['scripts/slideshow'], function () {
@@ -194,7 +194,7 @@
 
             // This should be outside of the IF
             // But for now, if you change songs but keep the same artist, the backdrop will flicker because in-between songs it clears out the image
-            if (!browser.mobile) {
+            if (!browser.slow) {
                 // Exclude from mobile because it just doesn't perform well
                 require(['backdrop'], function (backdrop) {
                     backdrop.setBackdrop(backdropUrl);
@@ -399,7 +399,7 @@
             //    SortOrder: "Ascending",
             //    IncludeItemTypes: "Audio",
             //    Recursive: true,
-            //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,SyncInfo",
+            //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount",
             //    StartIndex: 0,
             //    ImageTypeLimit: 1,
             //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -541,7 +541,7 @@
 
             } else {
 
-                btnCast.querySelector('i').innerHTML = 'cast-connected';
+                btnCast.querySelector('i').innerHTML = 'cast_connected';
                 btnCast.classList.add('btnActiveCast');
                 context.querySelector('.nowPlayingSelectedPlayer').innerHTML = info.deviceName || info.name;
             }

@@ -11,26 +11,26 @@
     margin: 0 !important;
 }
 
-.promptDialog.fullscreen .promptDialogContent {
+.promptDialog-fullscreen .promptDialogContent {
     padding: 0;
     width: 50%;
 }
 
-.promptDialog.fullscreen .btnSubmit {
+.promptDialog-fullscreen .btnSubmit {
     display: flex;
     width: 100%;
     align-items: center;
     justify-content: center;
 }
 
-.promptDialog.fullscreen .btnPromptExit {
+.promptDialog-fullscreen .btnPromptExit {
     z-index: 1002;
     position: absolute;
     top: .5em;
     left: .5em;
 }
 
-    .promptDialog.fullscreen .btnPromptExit i {
+    .promptDialog-fullscreen .promptExitIcon {
         width: 4.4vh;
         height: 4.4vh;
         font-size: 4.4vh;

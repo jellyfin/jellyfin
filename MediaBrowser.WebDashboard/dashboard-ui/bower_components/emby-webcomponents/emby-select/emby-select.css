@@ -1,4 +1,4 @@
-[is="emby-select"] {
+.emby-select {
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
@@ -11,7 +11,7 @@
     box-sizing: border-box;
     /* Remove select styling */
     /* Font size must the 16px or larger to prevent iOS page zoom on focus */
-    font-size: inherit;
+    font-size: 110%;
     /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;
@@ -25,7 +25,7 @@
     appearance: none;
 }
 
-    [is="emby-select"] option {
+    .emby-select option {
         color: initial;
     }
 
@@ -64,7 +64,7 @@
     transform-origin: center center;
 }
 
-[is="emby-select"]:focus + .emby-select-selectionbar {
+.emby-select:focus + .emby-select-selectionbar {
     background-color: #52B54B;
     transform: none;
 }

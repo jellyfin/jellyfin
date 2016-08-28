@@ -499,8 +499,8 @@
                     var width = 240;
                     var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
                     chapterHtml += '<div class="cardBox">';
-                    chapterHtml += '<div class="cardScalable">';
-                    chapterHtml += '<div class="cardPadder"></div>';
+                    chapterHtml += '<div class="cardScalable visualCardBox-cardScalable">';
+                    chapterHtml += '<div class="cardPadder cardPadder-backdrop"></div>';
 
                     chapterHtml += '<div class="cardContent">';
 
@@ -610,7 +610,7 @@
 
         function onPositionSliderChange() {
 
-            var newPercent = parseInt(this.value);
+            var newPercent = parseFloat(this.value);
 
             var newPositionTicks = (newPercent / 100) * getSeekableDuration();
 
@@ -771,7 +771,7 @@
             html += '<input type="range" is="emby-slider" pin step="1" min="0" max="100" value="0" class="videoVolumeSlider"/>';
             html += '</div>'; // guide
 
-            html += '<button is="paper-icon-button-light" class="mediaButton castButton autoSize" onclick="MediaController.showPlayerSelection(this, false);" style="height:32px;width:32px;"><i class="md-icon">cast</i></button>';
+            html += '<button is="paper-icon-button-light" class="mediaButton castButton autoSize" onclick="MediaController.showPlayerSelection(this, false);"><i class="md-icon">cast</i></button>';
             html += '<button is="paper-icon-button-light" class="mediaButton fullscreenButton autoSize" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"><i class="md-icon">fullscreen</i></button>';
             html += '<button is="paper-icon-button-light" class="mediaButton infoButton autoSize" onclick="MediaPlayer.toggleInfo();"><i class="md-icon">info</i></button>';
 
@@ -997,6 +997,13 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
+            if (browserInfo.msie) {
+
+                if (!window.MediaSource || !mediaSource.RunTimeTicks) {
+                    alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
+                }
+            }
+
             // TODO: remove dependency on nowplayingbar
             requirejs(['videorenderer', 'css!css/nowplayingbar.css', 'css!css/mediaplayer-video.css', 'emby-slider'], function () {
 
@@ -1070,7 +1077,7 @@
 
             elem.classList.remove('hide');
 
-            if (!browserInfo.animate || browserInfo.mobile) {
+            if (!browserInfo.animate || browserInfo.slow) {
                 return;
             }
 

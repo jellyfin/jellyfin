@@ -8,7 +8,10 @@
             <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
                 <h2 class="username" style="margin: 0;"></h2>
                 <br />
-                <button is="emby-button" type="button" class="raised cancel hide" id="btnDeleteImage"><iron-icon icon="delete"></iron-icon><span>${ButtonDeleteImage}</span></button>
+                <button is="emby-button" type="button" class="raised cancel hide" id="btnDeleteImage">
+                    <i class="md-icon">delete</i>
+                    <span>${ButtonDeleteImage}</span>
+                </button>
             </div>
         </div>
 
@@ -59,7 +62,10 @@
                 </div>
                 <div>
                     <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    <button is="emby-button" type="button" id="btnResetPassword" class="raised cancel block hide"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></button>
+                    <button is="emby-button" type="button" id="btnResetPassword" class="raised cancel block hide">
+                        <i class="md-icon">lock</i>
+                        <span>${ButtonResetPassword}</span>
+                    </button>
                 </div>
             </div>
         </form>
@@ -74,7 +80,7 @@
                 <div class="inputContainer">
                     <input is="emby-input" type="number" id="txtEasyPassword" label="${LabelEasyPinCode}" autocomplete="off" pattern="[0-9]*" step="1" maxlength="5" />
                 </div>
-                <div class="checkboxContainer">
+                <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input type="checkbox" is="emby-checkbox" class="chkEnableLocalEasyPassword" />
                         <span>${LabelInNetworkSignInWithEasyPassword}</span>
@@ -82,8 +88,13 @@
                     <div class="fieldDescription checkboxFieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
                 </div>
                 <div>
-                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></button>
+                    <button is="emby-button" type="submit" class="raised submit block">
+                        <i class="md-icon">check</i><span>${ButtonSave}</span>
+                    </button>
+                    <button is="emby-button" type="button" id="btnResetEasyPassword" class="raised cancel block hide">
+                        <i class="md-icon">lock</i>
+                        <span>${ButtonResetEasyPassword}</span>
+                    </button>
                 </div>
             </div>
         </form>

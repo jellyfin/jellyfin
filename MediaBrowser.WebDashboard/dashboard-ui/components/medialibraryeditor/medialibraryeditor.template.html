@@ -1,8 +1,20 @@
-﻿<div>
-    <h1 style="display:inline-block;vertical-align:middle;">${HeadersFolders}</h1>
-    <button is="emby-button" type="button" class="raised btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-        <i class="md-icon">add</i>
-        <span>${ButtonAdd}</span>
-    </button>
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="formDialogHeaderTitle">
+    </div>
 </div>
-<div class="paperList folderList" style="padding:.7em 0;"></div>
+
+<div class="formDialogContent smoothScrollY" style="padding-top:2em;">
+    <div class="dialogContentInner dialog-content-centered">
+        <div style="display: flex; align-items: center;">
+            <h1 style="margin: .5em 0;">${HeadersFolders}</h1>
+            <button is="emby-button" type="button" class="raised btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                <i class="md-icon">add</i>
+                <span>${ButtonAdd}</span>
+            </button>
+        </div>
+        <div class="paperList folderList" style="padding:.7em 0;"></div>
+        <br />
+        <div class="libraryOptions"></div>
+    </div>
+</div>

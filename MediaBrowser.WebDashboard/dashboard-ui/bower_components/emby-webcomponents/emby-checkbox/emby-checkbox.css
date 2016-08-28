@@ -7,13 +7,13 @@
     width: 100%;
     margin: 0;
     padding: 0;
-    padding-left: 36px;
+    padding-left: 2.6em;
     align-items: center;
-    height: 32px;
+    height: 2.3em;
 }
 
 .checkboxFieldDescription {
-    padding-left: 36px;
+    padding-left: 2.6em;
 }
 
 .checkboxContainer {
@@ -21,14 +21,15 @@
     display: flex;
 }
 
-div.checkboxContainer {
-    display: block;
+.checkboxContainer-withDescription {
+    flex-direction: column;
 }
 
 .mdl-checkbox__input {
     position: absolute;
-    width: 0;
-    height: 0;
+    /* 1px is for focusing purposes, so the focusManager doesn't skip over it */
+    width: 1px;
+    height: 1px;
     margin: 0;
     padding: 0;
     opacity: 0;
@@ -45,8 +46,8 @@ div.checkboxContainer {
     left: 0;
     display: inline-block;
     box-sizing: border-box;
-    width: 24px;
-    height: 24px;
+    width: 1.83em;
+    height: 1.83em;
     margin: 0;
     cursor: pointer;
     overflow: hidden;
@@ -66,10 +67,10 @@ div.checkboxContainer {
 
 .mdl-checkbox__focus-helper {
     position: absolute;
-    top: -12px;
-    left: -12px;
-    width: 48px;
-    height: 48px;
+    top: -0.915em;
+    left: -0.915em;
+    width: 3.66em;
+    height: 3.66em;
     display: inline-block;
     box-sizing: border-box;
     margin: 3px 0 0 0;
@@ -117,23 +118,6 @@ div.checkboxContainer {
     margin: .5em 0;
 }
 
-.layout-tv .mdl-checkbox {
-    height: 4.6vh;
-    padding-left: 6vh;
-}
-
-.layout-tv .checkboxFieldDescription {
-    padding-left: 6vh;
-}
-
-.layout-tv .checkboxOutline {
-    width: 4.6vh;
-    height: 4.6vh;
-}
-
-.layout-tv .mdl-checkbox__focus-helper {
-    top: -3.7vh;
-    left: -3.7vh;
-    width: 12vh;
-    height: 12vh;
+.checkboxList-paperList {
+    padding: 1em !important;
 }

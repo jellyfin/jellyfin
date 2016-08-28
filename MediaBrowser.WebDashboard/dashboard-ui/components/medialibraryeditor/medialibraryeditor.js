@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-button', 'paper-item-body', 'paper-icon-item', 'paper-icon-button-light'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'dom', 'components/libraryoptionseditor/libraryoptionseditor', 'emby-button', 'listViewStyle', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, dom, libraryoptionseditor) {
 
     var currentDeferred;
     var hasChanges;
@@ -41,7 +41,7 @@
                 ApiClient.removeMediaPath(virtualFolder.Name, location, refreshAfterChange).then(function () {
 
                     hasChanges = true;
-                    refreshLibraryFromServer($(button).parents('.editorContent')[0]);
+                    refreshLibraryFromServer(dom.parentWithClass(button, 'dlg-libraryeditor'));
 
                 }, function () {
 
@@ -57,17 +57,19 @@
 
         var html = '';
 
-        html += '<paper-icon-item role="menuitem" class="lnkPath">';
+        html += '<div class="listItem lnkPath">';
 
-        html += '<button type="button" is="emby-button" style="background:#52B54B;" class="fab mini" item-icon><iron-icon icon="folder"></iron-icon></button>';
+        html += '<i class="listItemIcon md-icon">folder</i>';
 
-        html += '<paper-item-body>';
+        html += '<div class="listItemBody">';
+        html += '<h3 class="listItemBodyText">';
         html += path;
-        html += '</paper-item-body>';
+        html += '</h3>';
+        html += '</div>';
 
-        html += '<button is="paper-icon-button-light" class="btnRemovePath" data-index="' + index + '"><iron-icon icon="remove-circle"></iron-icon></button>';
+        html += '<button is="paper-icon-button-light" class="listItemButton btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
 
-        html += '</paper-icon-item>';
+        html += '</div>';
 
         return html;
     }
@@ -94,12 +96,15 @@
 
         page.querySelector('.folderList').innerHTML = foldersHtml;
 
-        $(page.querySelectorAll('.btnRemovePath')).on('click', onRemoveClick);
+        var btnRemovePath = page.querySelectorAll('.btnRemovePath');
+        for (var i = 0, length = btnRemovePath.length; i < length; i++) {
+            btnRemovePath[i].addEventListener('click', onRemoveClick);
+        }
     }
 
     function onAddButtonClick() {
 
-        var page = $(this).parents('.editorContent')[0];
+        var page = dom.parentWithClass(this, 'dlg-libraryeditor');
 
         require(['directorybrowser'], function (directoryBrowser) {
 
@@ -119,15 +124,25 @@
         });
     }
 
-    function initEditor(page, options) {
-        renderLibrary(page, options);
+    function initEditor(dlg, options) {
+        renderLibrary(dlg, options);
 
-        $('.btnAddFolder', page).on('click', onAddButtonClick);
+        dlg.querySelector('.btnAddFolder').addEventListener('click', onAddButtonClick);
+
+        libraryoptionseditor.embed(dlg.querySelector('.libraryOptions'), options.library.CollectionType, options.library.LibraryOptions);
+    }
+
+    function onDialogClosing() {
+
+        var dlg = this;
+
+        var libraryOptions = libraryoptionseditor.getLibraryOptions(dlg.querySelector('.libraryOptions'));
+
+        ApiClient.updateVirtualFolderOptions(currentOptions.library.ItemId, libraryOptions);
     }
 
     function onDialogClosed() {
 
-        $(this).remove();
         Dashboard.hideLoadingMsg();
         currentDeferred.resolveWith(null, [hasChanges]);
     }
@@ -154,40 +169,33 @@
                     size: 'small',
 
                     // In (at least) chrome this is causing the text field to not be editable
-                    modal: false
+                    modal: false,
+                    removeOnClose: true
                 });
 
+                dlg.classList.add('dlg-libraryeditor');
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
-                dlg.classList.add('popupEditor');
 
-                var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>';
+                dlg.innerHTML = Globalize.translateDocument(template);
 
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + options.library.Name + '</div>';
-                html += '</h2>';
+                dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.library.Name;
 
-                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                html += Globalize.translateDocument(template);
-                html += '</div>';
-
-                dlg.innerHTML = html;
                 document.body.appendChild(dlg);
 
-                var editorContent = dlg.querySelector('.editorContent');
-                initEditor(editorContent, options);
+                initEditor(dlg, options);
 
-                $(dlg).on('close', onDialogClosed);
+                dlg.addEventListener('closing', onDialogClosing);
+                dlg.addEventListener('close', onDialogClosed);
 
                 dialogHelper.open(dlg);
 
-                $('.btnCloseDialog', dlg).on('click', function () {
+                dlg.querySelector('.btnCancel').addEventListener('click', function () {
 
                     dialogHelper.close(dlg);
                 });
 
-                refreshLibraryFromServer(editorContent);
+                refreshLibraryFromServer(dlg);
             }
 
             xhr.send();

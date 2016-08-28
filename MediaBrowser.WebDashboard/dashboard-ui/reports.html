@@ -15,6 +15,13 @@
         .ui-panel fieldset + fieldset {
             margin-top: 2em;
         }
+
+        .ui-panel .ui-panel-inner {
+            overflow: auto;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;  
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
     <div data-role="content">
         <div style="text-align: center;">
@@ -157,15 +164,16 @@
                             <label for="chkMissingTvdbId">${OptionMissingTvdbId}</label>
                         </div>
                     </div>
-                    <fieldset data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupStatus">
-                        <legend>
-                            ${HeaderStatus}
-                        </legend>
-                        <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-filter="Continuing">
-                        <label for="chkStatusContinuing">${OptionContinuing}</label>
-                        <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-filter="Ended">
-                        <label for="chkStatusEnded">${OptionEnded}</label>
-                    </fieldset>
+
+                    <div data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupStatus">
+                        <h2>${HeaderStatus}</h2>
+                        <div>
+                            <input class="chkStatus" type="checkbox" name="chkStatusContinuing" id="chkStatusContinuing" data-filter="Continuing">
+                            <label for="chkStatusContinuing">${OptionContinuing}</label>
+                            <input class="chkStatus" type="checkbox" name="chkStatusEnded" id="chkStatusEnded" data-filter="Ended">
+                            <label for="chkStatusEnded">${OptionEnded}</label>
+                        </div>
+                    </div>
 
                     <div data-role="collapsible" data-collapsed="true" data-mini="true" id="GroupAirDays">
                         <h2>${HeaderAirDays}</h2>

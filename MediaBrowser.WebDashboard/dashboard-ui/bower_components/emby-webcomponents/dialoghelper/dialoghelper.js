@@ -1,4 +1,4 @@
-﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'scrollHelper', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, scrollHelper, dom) {
+﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, dom) {
 
     var globalOnOpenCallback;
 
@@ -13,6 +13,18 @@
         }
 
         return false;
+    }
+
+    function removeCenterFocus(dlg) {
+
+        if (layoutManager.tv) {
+            if (dlg.classList.contains('smoothScrollX')) {
+                centerFocus(dlg, true, false);
+            }
+            else if (dlg.classList.contains('smoothScrollY')) {
+                centerFocus(dlg, false, false);
+            }
+        }
     }
 
     function dialogHashHandler(dlg, hash, resolve) {
@@ -70,6 +82,7 @@
             activeElement.focus();
 
             if (dlg.getAttribute('data-removeonclose') == 'true') {
+                removeCenterFocus(dlg);
                 dlg.parentNode.removeChild(dlg);
             }
 
@@ -85,7 +98,7 @@
 
         dlg.addEventListener('close', onDialogClosed);
 
-        var center = !dlg.classList.contains('fixedSize');
+        var center = !dlg.classList.contains('dialog-fixedSize');
         if (center) {
             dlg.classList.add('centeredDialog');
         }
@@ -171,7 +184,7 @@
 
         // Doing this immediately causes the opacity to jump immediately without animating
         setTimeout(function () {
-            backdrop.classList.add('opened');
+            backdrop.classList.add('dialogBackdropOpened');
         }, 0);
 
         backdrop.addEventListener('click', function () {
@@ -270,7 +283,14 @@
 
         if (!dlg.classList.contains('hide')) {
 
+            dlg.dispatchEvent(new CustomEvent('closing', {
+                bubbles: false,
+                cancelable: false
+            }));
+
             var onAnimationFinish = function () {
+                focusManager.popScope(dlg);
+
                 dlg.classList.add('hide');
                 if (dlg.close) {
                     dlg.close();
@@ -306,6 +326,7 @@
     function animateDialogOpen(dlg) {
 
         var onAnimationFinish = function () {
+            focusManager.pushScope(dlg);
             if (dlg.getAttribute('data-autofocus') == 'true') {
                 autoFocus(dlg);
             }
@@ -334,7 +355,11 @@
             return true;
         }
 
-        return browser.mobile;
+        if (options.size) {
+            return true;
+        }
+
+        return browser.touch;
     }
 
     function centerDialog(dlg) {
@@ -350,7 +375,7 @@
         if (backdrop) {
             dlg.backdrop = null;
 
-            backdrop.classList.remove('opened');
+            backdrop.classList.remove('dialogBackdropOpened');
 
             setTimeout(function () {
                 backdrop.parentNode.removeChild(backdrop);
@@ -358,20 +383,21 @@
         }
     }
 
+    function centerFocus(elem, horiz, on) {
+        require(['scrollHelper'], function (scrollHelper) {
+            var fn = on ? 'on' : 'off';
+            scrollHelper.centerFocus[fn](elem, horiz);
+        });
+    }
+
     function createDialog(options) {
 
         options = options || {};
 
-        var dlg = document.createElement('dialog');
-
         // If there's no native dialog support, use a plain div
         // Also not working well in samsung tizen browser, content inside not clickable
-        if (!dlg.showModal || browser.tv) {
-            dlg = document.createElement('div');
-        } else {
-            // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
-            dlg = document.createElement('div');
-        }
+        // Just go ahead and always use a plain div because we're seeing issues overlaying absoltutely positioned content over a modal dialog
+        var dlg = document.createElement('div');
 
         dlg.classList.add('focuscontainer');
         dlg.classList.add('hide');
@@ -402,8 +428,8 @@
         var exitAnimation = options.exitAnimation || defaultExitAnimation;
 
         // If it's not fullscreen then lower the default animation speed to make it open really fast
-        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 200 : 300);
-        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 200 : 300);
+        var entryAnimationDuration = options.entryAnimationDuration || (options.size ? 180 : 280);
+        var exitAnimationDuration = options.exitAnimationDuration || (options.size ? 180 : 280);
 
         dlg.animationConfig = {
             // scale up
@@ -438,14 +464,14 @@
             dlg.classList.add('smoothScrollX');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg, true);
+                centerFocus(dlg, true, true);
             }
         }
         else if (options.scrollY !== false) {
             dlg.classList.add('smoothScrollY');
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(dlg, false);
+                centerFocus(dlg, false, true);
             }
         }
 
@@ -454,8 +480,8 @@
         }
 
         if (options.size) {
-            dlg.classList.add('fixedSize');
-            dlg.classList.add(options.size);
+            dlg.classList.add('dialog-fixedSize');
+            dlg.classList.add('dialog-' + options.size);
         }
 
         return dlg;

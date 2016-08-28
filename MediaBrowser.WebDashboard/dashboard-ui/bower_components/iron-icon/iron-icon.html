@@ -69,6 +69,7 @@ The following custom properties are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
+`--iron-icon` | Mixin applied to the icon | {}
 `--iron-icon-width` | Width of the icon | `24px`
 `--iron-icon-height` | Height of the icon | `24px`
 `--iron-icon-fill-color` | Fill color of the svg icon | `currentcolor`
@@ -96,6 +97,7 @@ Custom property | Description | Default
 
         width: var(--iron-icon-width, 24px);
         height: var(--iron-icon-height, 24px);
+        @apply(--iron-icon);
       }
     </style>
   </template>

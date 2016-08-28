@@ -169,13 +169,9 @@ namespace MediaBrowser.Controller.Entities.Audio
             list.Add("Artist-" + (item.Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
-
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
-            {
-                return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
-            }
+            return "Artist-" + (Name ?? string.Empty).RemoveDiacritics();
         }
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
@@ -273,6 +269,55 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return false;
             }
+        }
+
+        public static string GetPath(string name, bool normalizeName = true)
+        {
+            // Trim the period at the end because windows will have a hard time with that
+            var validName = normalizeName ?
+                FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
+                name;
+
+            return System.IO.Path.Combine(ConfigurationManager.ApplicationPaths.ArtistsPath, validName);
+        }
+
+        private string GetRebasedPath()
+        {
+            return GetPath(System.IO.Path.GetFileName(Path), false);
+        }
+
+        public override bool RequiresRefresh()
+        {
+            if (IsAccessedByName)
+            {
+                var newPath = GetRebasedPath();
+                if (!string.Equals(Path, newPath, StringComparison.Ordinal))
+                {
+                    Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
+                    return true;
+                }
+            }
+            return base.RequiresRefresh();
+        }
+
+        /// <summary>
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// </summary>
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            if (IsAccessedByName)
+            {
+                var newPath = GetRebasedPath();
+                if (!string.Equals(Path, newPath, StringComparison.Ordinal))
+                {
+                    Path = newPath;
+                    hasChanges = true;
+                }
+            }
+
+            return hasChanges;
         }
     }
 }

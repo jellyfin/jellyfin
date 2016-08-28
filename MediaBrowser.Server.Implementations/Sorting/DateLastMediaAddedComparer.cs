@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
 using System;
-using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {

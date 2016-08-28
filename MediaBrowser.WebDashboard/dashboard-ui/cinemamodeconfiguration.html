@@ -1,4 +1,4 @@
-﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration,paper-checkbox,paper-input,emby-button">
+﻿<div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="dashboard/cinemamodeconfiguration,emby-checkbox,emby-input,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -7,64 +7,88 @@
 
                 <p>${CinemaModeConfigurationHelp}</p>
                 <div style="margin-top: 2em;">
-                    <div class="paperListLabel">${LabelEnableCinemaModeFor}</div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkMovies">${OptionMovies}</paper-checkbox>
-                        <paper-checkbox class="chkEpisodes">${OptionEpisodes}</paper-checkbox>
+                    <h3 class="checkboxListLabel">${LabelEnableCinemaModeFor}</h3>
+                    <div class="paperList checkboxList-paperList">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkMovies" />
+                            <span>${OptionMovies}</span>
+                        </label>
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkEpisodes" />
+                            <span>${OptionEpisodes}</span>
+                        </label>
                     </div>
                 </div>
                 <br />
                 <div>
-                    <div class="paperListLabel">${LabelSelectInternetTrailersForCinemaMode}</div>
-                    <div class="paperCheckboxList">
-                        <paper-checkbox class="chkUpcomingTheaterTrailers">${OptionUpcomingMoviesInTheaters}</paper-checkbox>
-                        <paper-checkbox class="chkUpcomingDvdTrailers">${OptionUpcomingDvdMovies}</paper-checkbox>
-                        <paper-checkbox class="chkUpcomingStreamingTrailers">${OptionUpcomingStreamingMovies}</paper-checkbox>
-                        <paper-checkbox class="chkOtherTrailers">${OptionOtherTrailers}</paper-checkbox>
+                    <h3 class="checkboxListLabel">${LabelSelectInternetTrailersForCinemaMode}</h3>
+                    <div class="paperList checkboxList-paperList">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkUpcomingTheaterTrailers" />
+                            <span>${OptionUpcomingMoviesInTheaters}</span>
+                        </label>
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkUpcomingDvdTrailers" />
+                            <span>${OptionUpcomingDvdMovies}</span>
+                        </label>
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkUpcomingStreamingTrailers" />
+                            <span>${OptionUpcomingStreamingMovies}</span>
+                        </label>
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" class="chkOtherTrailers" />
+                            <span>${OptionOtherTrailers}</span>
+                        </label>
                     </div>
-                    <div class="fieldDescription paperCheckboxFieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</a></div>
+                    <div class="fieldDescription"><a class="lnkSupporterLearnMore" href="http://emby.media/premiere" target="_blank">${LabelTheseFeaturesRequireSubscriptionHelpAndTrailers}</a></div>
                 </div>
-                <br />
-                <div>
-                    <paper-checkbox class="chkMyMovieTrailers">${OptionTrailersFromMyMovies}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
-                    <div class="fieldDescription paperCheckboxFieldDescription">
+                <br /><br />
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" class="chkMyMovieTrailers" />
+                        <span>${OptionTrailersFromMyMovies}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionTrailersFromMyMoviesHelp}</div>
+                    <div class="fieldDescription checkboxFieldDescription">
                         <a href="http://emby.media/community/index.php?/topic/674-media-files-folders-structure/" target="_blank">${ButtonLearnMore}</a>
                     </div>
                 </div>
                 <br />
-                <div>
-                    <paper-input type="number" id="txtNumTrailers" min="1" max="10" step="1" label="${LabelNumberTrailerToPlay}"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtNumTrailers" min="1" max="10" step="1" label="${LabelNumberTrailerToPlay}" />
                 </div>
-                <br />
-                <div>
-                    <paper-checkbox class="chkEnableParentalControl">${LabelEnableIntroParentalControl}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableIntroParentalControlHelp}</div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input is="emby-checkbox" type="checkbox" class="chkEnableParentalControl" />
+                        <span>${LabelEnableIntroParentalControl}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelEnableIntroParentalControlHelp}</div>
                 </div>
-                <br />
-                <div>
-                    <paper-checkbox class="chkUnwatchedOnly">${LabelLimitIntrosToUnwatchedContent}</paper-checkbox>
-                </div>
-                <br />
-                <div>
-                    <div>
-                        <paper-input type="text" label="${LabelCustomIntrosPath}" id="txtCustomIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectCustomIntrosPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" class="chkUnwatchedOnly" />
+                    <span>${LabelLimitIntrosToUnwatchedContent}</span>
+                </label>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtCustomIntrosPath" label="${LabelCustomIntrosPath}" required="required" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCustomIntrosPath" class="autoSize" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">${LabelCustomIntrosPathHelp}</div>
                 </div>
-                <br />
-                <div>
-                    <div>
-                        <paper-input type="text" label="${LabelCodecIntrosPath}" id="txtCodecIntrosPath" style="display: inline-block; width: 85%;"></paper-input>
-                        <button type="button" is="paper-icon-button-light" id="btnSelectCodecIntrosPath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                <div class="inputContainer">
+                    <div style="display: flex; align-items: center;">
+                        <div style="flex-grow:1;">
+                            <input is="emby-input" id="txtCodecIntrosPath" label="${LabelCodecIntrosPath}" required="required" autocomplete="off" />
+                        </div>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectCodecIntrosPath" class="autoSize" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">
                         <div>${LabelCodecIntrosPathHelp}</div>
                         <div style="margin-top:.5em;"><a href="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" target="_blank">${ButtonLearnMore}</a></div>
                     </div>
                 </div>
-                <br />
                 <br />
                 <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                 <p>${CinemaModeConfigurationHelp2}</p>

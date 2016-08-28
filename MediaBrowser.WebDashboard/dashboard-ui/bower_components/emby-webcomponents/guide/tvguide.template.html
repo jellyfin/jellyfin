@@ -12,10 +12,22 @@
     </div>
 </div>
 
-<div class="guideRequiresUnlock readOnlyContent hide" style="margin:1em auto;text-align:center;padding:1em;flex-shrink:0;">
+<div class="guideRequiresUnlock readOnlyContent hide" style="margin: 1em auto; text-align: center; padding: 1em; flex-shrink: 0;">
     <p class="unlockText"></p>
     <button is="emby-button" type="button" class="raised secondary block btnUnlockGuide">
         <i class="md-icon">check</i>
         <span>${UnlockGuide}</span>
+    </button>
+</div>
+
+<div style="padding:.25em .5em;" class="guidePaging hide">
+    <button is="paper-icon-button-light" type="button" class="btnSelectDateIcon">
+        <i class="md-icon">date_range</i>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnPreviousPage">
+        <i class="md-icon">arrow_back</i>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnNextPage">
+        <i class="md-icon">arrow_forward</i>
     </button>
 </div>

@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.XbmcMetadata.Savers;
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;

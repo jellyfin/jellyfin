@@ -1,4 +1,4 @@
-﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jQuery,jqmpopup,scripts/scheduledtaskpage,paper-input,emby-button,jqmlistview">
+﻿<div id="scheduledTaskPage" data-role="page" class="page type-interior scheduledTasksConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Scheduled%20tasks" data-require="jQuery,jqmpopup,scripts/scheduledtaskpage,emby-input,emby-button,emby-select">
     <div data-role="content">
         <div class="content-primary">
 
@@ -25,67 +25,60 @@
                 <h3>${HeaderAddScheduledTaskTrigger}</h3>
             </div>
             <div data-role="content">
-                <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <label for="selectTriggerType" class="selectLabel">${LabelTriggerType}</label>
-                        <select id="selectTriggerType" name="selectTriggerType" onchange="ScheduledTaskPage.refreshTriggerFields(this.value);">
-                            <option value="DailyTrigger">${OptionDaily}</option>
-                            <option value="WeeklyTrigger">${OptionWeekly}</option>
-                            <option value="IntervalTrigger">${OptionOnInterval}</option>
-                            <option value="StartupTrigger">${OptionOnAppStartup}</option>
-                            <option value="SystemEventTrigger">${OptionAfterSystemEvent}</option>
-                        </select>
-                    </li>
-                    <li id="fldDayOfWeek">
-                        <label for="selectDayOfWeek" class="selectLabel">${LabelDay}</label>
-                        <select id="selectDayOfWeek" name="selectDayOfWeek">
-                            <option value="Sunday">${OptionSunday}</option>
-                            <option value="Monday">${OptionMonday}</option>
-                            <option value="Tuesday">${OptionTuesday}</option>
-                            <option value="Wednesday">${OptionWednesday}</option>
-                            <option value="Thursday">${OptionThursday}</option>
-                            <option value="Friday">${OptionFriday}</option>
-                            <option value="Saturday">${OptionSaturday}</option>
-                        </select>
-                    </li>
-                    <li id="fldTimeOfDay">
-                        <paper-input type="time" id="txtTimeOfDay" name="txtTimeOfDay" required="required" label="${LabelTime}"></paper-input>
-                        <div class="fieldDescription timeFieldExample"></div>
-                    </li>
-                    <li id="fldSelectSystemEvent">
-                        <label for="selectSystemEvent" class="selectLabel">${LabelEvent}</label>
-                        <select id="selectSystemEvent" name="selectSystemEvent">
-                            <option value="WakeFromSleep">${OptionWakeFromSleep}</option>
-                        </select>
-                    </li>
-                    <li id="fldSelectInterval">
-                        <label for="selectInterval" class="selectLabel">${LabelEveryXMinutes}</label>
-                        <select id="selectInterval">
-                            <option value="9000000000">15 minutes</option>
-                            <option value="18000000000">30 minutes</option>
-                            <option value="27000000000">45 minutes</option>
-                            <option value="36000000000">1 hour</option>
-                            <option value="72000000000">2 hours</option>
-                            <option value="108000000000">3 hours</option>
-                            <option value="144000000000">4 hours</option>
-                            <option value="216000000000">6 hours</option>
-                            <option value="288000000000">8 hours</option>
-                            <option value="432000000000">12 hours</option>
-                        </select>
-                    </li>
-                    <li>
-                        <paper-input id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" label="${LabelTimeLimitHours}"></paper-input>
-                    </li>
-                    <li>
-                        <button type="submit" data-theme="b" data-icon="check">
-                            ${ButtonAdd}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
-                            ${ButtonCancel}
-                        </button>
-                    </li>
-                </ul>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectTriggerType" name="selectTriggerType" label="${LabelTriggerType}" onchange="ScheduledTaskPage.refreshTriggerFields(this.value);">
+                        <option value="DailyTrigger">${OptionDaily}</option>
+                        <option value="WeeklyTrigger">${OptionWeekly}</option>
+                        <option value="IntervalTrigger">${OptionOnInterval}</option>
+                        <option value="StartupTrigger">${OptionOnAppStartup}</option>
+                        <option value="SystemEventTrigger">${OptionAfterSystemEvent}</option>
+                    </select>
+                </div>
+                <div id="fldDayOfWeek" class="selectContainer">
+                    <select is="emby-select" id="selectDayOfWeek" name="selectDayOfWeek" label="${LabelDay}">
+                        <option value="Sunday">${OptionSunday}</option>
+                        <option value="Monday">${OptionMonday}</option>
+                        <option value="Tuesday">${OptionTuesday}</option>
+                        <option value="Wednesday">${OptionWednesday}</option>
+                        <option value="Thursday">${OptionThursday}</option>
+                        <option value="Friday">${OptionFriday}</option>
+                        <option value="Saturday">${OptionSaturday}</option>
+                    </select>
+                </div>
+                <div id="fldTimeOfDay" class="inputContainer">
+                    <input is="emby-input" type="time" id="txtTimeOfDay" name="txtTimeOfDay" required="required" label="${LabelTime}"/>
+                    <div class="fieldDescription timeFieldExample"></div>
+                </div>
+                <div id="fldSelectSystemEvent" class="selectContainer">
+                    <select is="emby-select" id="selectSystemEvent" name="selectSystemEvent" label="${LabelEvent}">
+                        <option value="WakeFromSleep">${OptionWakeFromSleep}</option>
+                    </select>
+                </div>
+                <div id="fldSelectInterval" class="selectContainer">
+                    <select is="emby-select" id="selectInterval" label="${LabelEveryXMinutes}">
+                        <option value="9000000000">15 minutes</option>
+                        <option value="18000000000">30 minutes</option>
+                        <option value="27000000000">45 minutes</option>
+                        <option value="36000000000">1 hour</option>
+                        <option value="72000000000">2 hours</option>
+                        <option value="108000000000">3 hours</option>
+                        <option value="144000000000">4 hours</option>
+                        <option value="216000000000">6 hours</option>
+                        <option value="288000000000">8 hours</option>
+                        <option value="432000000000">12 hours</option>
+                    </select>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" id="txtTimeLimit" type="number" pattern="[0-9]*" min="1" step=".5" label="${LabelTimeLimitHours}"/>
+                </div>
+                <div>
+                    <button type="submit" data-theme="b" data-icon="check">
+                        ${ButtonAdd}
+                    </button>
+                    <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');">
+                        ${ButtonCancel}
+                    </button>
+                </div>
             </div>
         </form>
     </div>

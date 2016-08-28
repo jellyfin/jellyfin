@@ -63,6 +63,15 @@ namespace MediaBrowser.Api
 
             Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
+            _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+        }
+
+        private void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
+            {
+                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
+            }
         }
 
         void _sessionManager_PlaybackProgress(object sender, PlaybackProgressEventArgs e)
@@ -126,9 +135,10 @@ namespace MediaBrowser.Api
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool dispose)
         {
-            var jobCount = _activeTranscodingJobs.Count;
+            var list = _activeTranscodingJobs.ToList();
+            var jobCount = list.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, false, path => true));
+            Parallel.ForEach(list, j => KillTranscodingJob(j, false, path => true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -182,13 +192,13 @@ namespace MediaBrowser.Api
 
                 _activeTranscodingJobs.Add(job);
 
-                ReportTranscodingProgress(job, state, null, null, null, null);
+                ReportTranscodingProgress(job, state, null, null, null, null, null);
 
                 return job;
             }
         }
 
-        public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded)
+        public void ReportTranscodingProgress(TranscodingJob job, StreamState state, TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             var ticks = transcodingPosition.HasValue ? transcodingPosition.Value.Ticks : (long?)null;
 
@@ -198,6 +208,7 @@ namespace MediaBrowser.Api
                 job.CompletionPercentage = percentComplete;
                 job.TranscodingPositionTicks = ticks;
                 job.BytesTranscoded = bytesTranscoded;
+                job.BitRate = bitRate;
             }
 
             var deviceId = state.Request.DeviceId;
@@ -209,7 +220,7 @@ namespace MediaBrowser.Api
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
-                    Bitrate = state.TotalOutputBitrate,
+                    Bitrate = bitRate ?? state.TotalOutputBitrate,
                     AudioCodec = audioCodec,
                     VideoCodec = videoCodec,
                     Container = state.OutputContainer,
@@ -348,7 +359,7 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            var timerDuration = 1000;
+            var timerDuration = 10000;
 
             if (job.Type != TranscodingJobType.Progressive)
             {
@@ -400,7 +411,7 @@ namespace MediaBrowser.Api
                 }
             }
 
-            Logger.Debug("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            Logger.Info("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             KillTranscodingJob(job, true, path => true);
         }
@@ -558,13 +569,13 @@ namespace MediaBrowser.Api
             {
 
             }
-            catch (IOException ex)
+            catch (IOException)
             {
                 //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
 
                 DeletePartialStreamFiles(path, jobType, retryCount + 1, 500);
             }
-            catch (Exception ex)
+            catch
             {
                 //Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, path);
             }
@@ -684,6 +695,7 @@ namespace MediaBrowser.Api
 
         public long? BytesDownloaded { get; set; }
         public long? BytesTranscoded { get; set; }
+        public int? BitRate { get; set; }
 
         public long? TranscodingPositionTicks { get; set; }
         public long? DownloadPositionTicks { get; set; }

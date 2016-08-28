@@ -283,7 +283,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
                 Limit = limit * 5,
-                ExcludeSourceTypes = parentIds.Length == 0 ? new[] { SourceType.Channel, SourceType.LiveTV } : new SourceType[] { },
+                SourceTypes = parentIds.Length == 0 ? new[] { SourceType.Library } : new SourceType[] { },
                 IsPlayed = request.IsPlayed
 
             }, parentIds);

@@ -19,7 +19,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonIO.Windows;
-using Emby.Drawing.ImageMagick;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Server.Implementations.Logging;
@@ -166,7 +165,7 @@ namespace MediaBrowser.ServerApplication
             {
                 _logger.Info("Found a duplicate process. Giving it time to exit.");
 
-                if (!duplicate.WaitForExit(15000))
+                if (!duplicate.WaitForExit(20000))
                 {
                     _logger.Info("The duplicate process did not exit.");
                     return true;
@@ -639,6 +638,12 @@ namespace MediaBrowser.ServerApplication
 
         private static void ShutdownWindowsApplication()
         {
+            if (_serverNotifyIcon != null)
+            {
+                _serverNotifyIcon.Dispose();
+                _serverNotifyIcon = null;
+            }
+
             //_logger.Info("Calling Application.Exit");
             //Application.Exit();
 

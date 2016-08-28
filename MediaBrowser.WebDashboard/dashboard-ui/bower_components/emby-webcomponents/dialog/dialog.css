@@ -1,0 +1,33 @@
+.promptDialog {
+    border-radius: .25em !important;
+}
+
+.promptDialogContent {
+    padding: 1em 1.6em;
+}
+
+.promptDialogButtons {
+    position: relative;
+    padding: 0 !important;
+    margin: 1em 0;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -ms-flex-pack: end;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+}
+
+.promptDialogButton {
+    color: #52B54B;
+    padding: 0.35em 1em;
+    margin: 0;
+}
+
+    .promptDialogButton:focus {
+        color: #fff;
+        background-color: #52B54B;
+    }

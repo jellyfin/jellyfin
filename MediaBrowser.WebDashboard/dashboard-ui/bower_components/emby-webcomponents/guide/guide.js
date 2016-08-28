@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'scrollHelper', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button'], function (require, browser, globalize, connectionManager, serverNotifications, loading, scrollHelper, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
 
     function Guide(options) {
 
@@ -14,6 +14,8 @@
         var totalRendererdMs = msPerDay;
 
         var currentDate;
+        var currentStartIndex = 0;
+        var currentChannelLimit = 0;
 
         var channelQuery = {
 
@@ -37,6 +39,7 @@
             events.off(serverNotifications, 'SeriesTimerCancelled', onSeriesTimerCancelled);
 
             clearCurrentTimeUpdateInterval();
+            setScrollEvents(options.element, false);
             itemShortcuts.off(options.element);
             items = {};
         };
@@ -118,7 +121,7 @@
 
             return registrationServices.validateFeature('livetv').then(function () {
 
-                var limit = browser.mobile ? 100 : 400;
+                var limit = browser.slow ? 100 : 500;
 
                 context.querySelector('.guideRequiresUnlock').classList.add('hide');
 
@@ -143,10 +146,15 @@
 
             getChannelLimit(context).then(function (channelLimit) {
 
+                currentChannelLimit = channelLimit;
+
                 showLoading();
 
+                channelQuery.StartIndex = currentStartIndex;
                 channelQuery.Limit = channelLimit;
                 channelQuery.AddCurrentProgram = false;
+                channelQuery.EnableUserData = false;
+                channelQuery.EnableImageTypes = "Primary";
 
                 channelsPromise = channelsPromise || apiClient.getLiveTvChannels(channelQuery);
 
@@ -160,6 +168,25 @@
                 console.log(nextDay);
                 channelsPromise.then(function (channelsResult) {
 
+                    if (channelsResult.TotalRecordCount > channelLimit) {
+                        context.querySelector('.guidePaging').classList.remove('hide');
+
+                        if (channelQuery.StartIndex) {
+                            context.querySelector('.btnPreviousPage').disabled = false;
+                        } else {
+                            context.querySelector('.btnPreviousPage').disabled = true;
+                        }
+
+                        if ((channelQuery.StartIndex + channelLimit) < channelsResult.TotalRecordCount) {
+                            context.querySelector('.btnNextPage').disabled = false;
+                        } else {
+                            context.querySelector('.btnNextPage').disabled = true;
+                        }
+
+                    } else {
+                        context.querySelector('.guidePaging').classList.add('hide');
+                    }
+
                     apiClient.getLiveTvPrograms({
                         UserId: apiClient.getCurrentUserId(),
                         MaxStartDate: nextDay.toISOString(),
@@ -168,9 +195,11 @@
                             return c.Id;
                         }).join(','),
                         ImageTypeLimit: 1,
-                        EnableImageTypes: "Primary,Backdrop",
+                        EnableImages: false,
+                        //EnableImageTypes: layoutManager.tv ? "Primary,Backdrop" : "Primary",
                         SortBy: "StartDate",
-                        EnableTotalRecordCount: false
+                        EnableTotalRecordCount: false,
+                        EnableUserData: false
 
                     }).then(function (programsResult) {
 
@@ -265,7 +294,9 @@
                 return curr.ChannelId == channel.Id;
             });
 
-            html += '<div class="channelPrograms" data-channelid="' + channel.Id + '">';
+            var cssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
+
+            html += '<div class="' + cssClass + '" data-channelid="' + channel.Id + '">';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
@@ -340,18 +371,27 @@
                 html += '</div>';
 
                 if (program.IsHD && options.showHdIcon) {
-                    html += '<i class="guideHdIcon md-icon">hd</i>';
+                    html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
                 }
 
                 if (program.SeriesTimerId) {
-                    html += '<i class="seriesTimerIcon md-icon">fiber_smart_record</i>';
+                    html += '<i class="seriesTimerIcon md-icon programIcon">fiber_smart_record</i>';
                 }
                 else if (program.TimerId) {
-                    html += '<i class="timerIcon md-icon">fiber_manual_record</i>';
+                    html += '<i class="timerIcon md-icon programIcon">fiber_manual_record</i>';
                 }
 
                 if (addAccent) {
-                    html += '<div class="programAccent"></div>';
+
+                    if (program.IsKids) {
+                        html += '<div class="programAccent childAccent"></div>';
+                    } else if (program.IsSports) {
+                        html += '<div class="programAccent sportsAccent"></div>';
+                    } else if (program.IsNews) {
+                        html += '<div class="programAccent newsAccent"></div>';
+                    } else if (program.IsMovie) {
+                        html += '<div class="programAccent movieAccent"></div>';
+                    }
                 }
 
                 html += '</button>';
@@ -369,8 +409,7 @@
             // Normally we'd want to just let responsive css handle this,
             // but since mobile browsers are often underpowered, 
             // it can help performance to get them out of the markup
-            var showIndicators = window.innerWidth >= 800;
-            showIndicators = false;
+            var showIndicators = false;
 
             var options = {
                 showHdIcon: showIndicators,
@@ -412,13 +451,19 @@
                 }
 
                 var cssClass = 'channelHeaderCell clearButton itemAction lazy';
-                if (hasChannelImage) {
-                    cssClass += ' withImage';
+
+                if (layoutManager.tv) {
+                    cssClass += ' channelHeaderCell-tv';
                 }
 
                 html += '<button type="button" class="' + cssClass + '"' + dataSrc + ' data-action="link" data-isfolder="' + channel.IsFolder + '" data-id="' + channel.Id + '" data-serverid="' + channel.ServerId + '" data-type="' + channel.Type + '">';
 
-                html += '<div class="guideChannelNumber">' + channel.Number + '</div>';
+                cssClass = 'guideChannelNumber';
+                if (hasChannelImage) {
+                    cssClass += ' guideChannelNumberWithImage';
+                }
+
+                html += '<div class="' + cssClass + '">' + channel.Number + '</div>';
 
                 if (!hasChannelImage) {
                     html += '<div class="guideChannelName">' + channel.Name + '</div>';
@@ -669,14 +714,15 @@
             });
         }
 
-        function createVerticalScroller(view, pageInstance) {
+        function setScrollEvents(view, enabled) {
 
             if (layoutManager.tv) {
-                scrollHelper.centerFocus.on(view.querySelector('.smoothScrollY'), false);
+                require(['scrollHelper'], function (scrollHelper) {
 
-                var programGrid = view.querySelector('.programGrid');
-
-                scrollHelper.centerFocus.on(programGrid, true);
+                    var fn = enabled ? 'on' : 'off';
+                    scrollHelper.centerFocus[fn](view.querySelector('.smoothScrollY'), false);
+                    scrollHelper.centerFocus[fn](view.querySelector('.programGrid'), true);
+                });
             }
         }
 
@@ -723,32 +769,6 @@
                     }]);
                 }
             }
-        }
-
-        var supportsCaptureOption = false;
-        try {
-            var opts = Object.defineProperty({}, 'capture', {
-                get: function () {
-                    supportsCaptureOption = true;
-                }
-            });
-            window.addEventListener("test", null, opts);
-        } catch (e) { }
-
-        function addEventListenerWithOptions(target, type, handler, options) {
-            var optionsOrCapture = options;
-            if (!supportsCaptureOption) {
-                optionsOrCapture = options.capture;
-            }
-            target.addEventListener(type, handler, optionsOrCapture);
-        }
-
-        function removeEventListenerWithOptions(target, type, handler, options) {
-            var optionsOrCapture = options;
-            if (!supportsCaptureOption) {
-                optionsOrCapture = options.capture;
-            }
-            target.removeEventListener(type, handler, optionsOrCapture);
         }
 
         function onTimerCreated(e, apiClient, data) {
@@ -813,13 +833,13 @@
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
 
-            addEventListenerWithOptions(programGrid, 'scroll', function (e) {
+            dom.addEventListener(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
             }, {
                 passive: true
             });
 
-            addEventListenerWithOptions(timeslotHeaders, 'scroll', function () {
+            dom.addEventListener(timeslotHeaders, 'scroll', function () {
                 onTimeslotHeadersScroll(context, this, programGrid);
             }, {
                 passive: true
@@ -829,13 +849,31 @@
                 selectDate(context);
             });
 
+            context.querySelector('.btnSelectDateIcon').addEventListener('click', function () {
+                selectDate(context);
+            });
+
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
+                currentStartIndex = 0;
+                channelsPromise = null;
+                reloadPage(context);
+            });
+
+            context.querySelector('.btnNextPage').addEventListener('click', function () {
+                currentStartIndex += currentChannelLimit;
+                channelsPromise = null;
+                reloadPage(context);
+            });
+
+            context.querySelector('.btnPreviousPage').addEventListener('click', function () {
+                currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
+                channelsPromise = null;
                 reloadPage(context);
             });
 
             context.classList.add('tvguide');
 
-            createVerticalScroller(context, self);
+            setScrollEvents(context, true);
             itemShortcuts.on(context);
 
             events.trigger(self, 'load');

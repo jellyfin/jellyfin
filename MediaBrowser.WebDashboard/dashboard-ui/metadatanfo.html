@@ -1,4 +1,4 @@
-﻿<div id="metadataNfoPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="jqmlistview,scripts/metadatanfo,paper-checkbox,emby-button">
+﻿<div id="metadataNfoPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="scripts/metadatanfo,emby-checkbox,emby-button,emby-select">
 
     <div data-role="content">
 
@@ -7,44 +7,42 @@
 
                 <p>${HeaderKodiMetadataHelp}</p>
                 <br />
-                <ul class="ulForm" data-role="listview">
+                <div class="selectContainer">
+                    <select is="emby-select" name="selectUser" id="selectUser" label="${LabelKodiMetadataUser}"></select>
+                    <div class="fieldDescription">${LabelKodiMetadataUserHelp}</div>
+                </div>
 
-                    <li>
-                        <label for="selectUser" class="selectLabel">${LabelKodiMetadataUser}</label>
-                        <select name="selectUser" id="selectUser" data-mini="true"></select>
-                        <div class="fieldDescription">${LabelKodiMetadataUserHelp}</div>
-                    </li>
-
-                    <li>
-                        <label for="selectReleaseDateFormat" class="selectLabel">${LabelKodiMetadataDateFormat}</label>
-                        <select name="selectReleaseDateFormat" id="selectReleaseDateFormat" data-mini="true">
-                            <option value="yyyy-MM-dd">yyyy-MM-dd</option>
-                        </select>
-                        <div class="fieldDescription">${LabelKodiMetadataDateFormatHelp}</div>
-                    </li>
-                    <li>
-                        <br />
-                        <paper-checkbox id="chkSaveImagePaths">${LabelKodiMetadataSaveImagePaths}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelKodiMetadataSaveImagePathsHelp}</div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnablePathSubstitution">${LabelKodiMetadataEnablePathSubstitution}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">
-                            <div>${LabelKodiMetadataEnablePathSubstitutionHelp}</div>
-                            <div style="margin-top: .5em;"><a href="librarypathmapping.html">${LabelKodiMetadataEnablePathSubstitutionHelp2}</a></div>
-                        </div>
-                    </li>
-                    <li>
-                        <paper-checkbox id="chkEnableExtraThumbs">${LabelKodiMetadataEnableExtraThumbs}</paper-checkbox>
-                        <div class="fieldDescription paperCheckboxFieldDescription">${LabelKodiMetadataEnableExtraThumbsHelp}</div>
-                    </li>
-                </ul>
-                <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                    </li>
-                </ul>
+                <div class="selectContainer">
+                    <select is="emby-select" name="selectReleaseDateFormat" id="selectReleaseDateFormat" label="${LabelKodiMetadataDateFormat}">
+                        <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+                    </select>
+                    <div class="fieldDescription">${LabelKodiMetadataDateFormatHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkSaveImagePaths" />
+                        <span>${LabelKodiMetadataSaveImagePaths}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelKodiMetadataSaveImagePathsHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkEnablePathSubstitution" />
+                        <span>${LabelKodiMetadataEnablePathSubstitution}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">
+                        <div>${LabelKodiMetadataEnablePathSubstitutionHelp}</div>
+                        <div style="margin-top: .5em;"><a href="librarypathmapping.html">${LabelKodiMetadataEnablePathSubstitutionHelp2}</a></div>
+                    </div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableExtraThumbs" />
+                        <span>${LabelKodiMetadataEnableExtraThumbs}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelKodiMetadataEnableExtraThumbsHelp}</div>
+                </div>
+                <div><button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button></div>
             </form>
         </div>
 

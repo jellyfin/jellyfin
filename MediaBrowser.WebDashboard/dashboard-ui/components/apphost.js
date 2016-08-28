@@ -21,12 +21,13 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     function generateDeviceId() {
         return new Promise(function (resolve, reject) {
 
-            require(['fingerprintjs2'], function (Fingerprint2) {
+            require(["cryptojs-sha1"], function () {
 
-                new Fingerprint2().get(function (result, components) {
-                    console.log('Generated device id: ' + result); //a hash, representing your device fingerprint
-                    resolve(result);
-                });
+                var keys = [];
+                keys.push(navigator.userAgent);
+                keys.push(new Date().getTime());
+
+                resolve(CryptoJS.SHA1(keys.join('|')).toString());
             });
         });
     }
@@ -48,7 +49,17 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     function getDeviceName() {
         var deviceName;
 
-        if (browser.chrome) {
+        if (browser.tizen) {
+            deviceName = "Samsung Smart TV";
+        } else if (browser.web0S) {
+            deviceName = "LG Smart TV";
+        } else if (browser.operaTv) {
+            deviceName = "Opera TV";
+        } else if (browser.xboxOne) {
+            deviceName = "Xbox One";
+        } else if (browser.ps4) {
+            deviceName = "Sony PS4";
+        } else if (browser.chrome) {
             deviceName = "Chrome";
         } else if (browser.edge) {
             deviceName = "Edge";
@@ -76,6 +87,11 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     }
 
     function supportsVoiceInput() {
+
+        if (browser.tv) {
+            return false;
+        }
+
         return window.SpeechRecognition ||
                window.webkitSpeechRecognition ||
                window.mozSpeechRecognition ||
@@ -94,23 +110,60 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             alert('setWindowState is not supported and should not be called');
         },
         exit: function () {
-            alert('exit is not supported and should not be called');
+
+            if (browser.tizen) {
+                try {
+                    tizen.application.getCurrentApplication().exit();
+                } catch (err) {
+                    console.log('error closing application: ' + err);
+                }
+                return;
+            }
+
+            window.close();
         },
         supports: function (command) {
 
             var features = [
                 'filedownload',
-                'externalpremium',
-                'sharing'
+                'sharing',
+                'externalpremium'
             ];
 
-            features.push('externallinks');
+            if (browser.operaTv || browser.tizen || browser.web0s) {
+                features.push('exit');
+            } else {
+                features.push('exitmenu');
+            }
+
+            if (!browser.operaTv) {
+                features.push('externallinks');
+            }
 
             if (supportsVoiceInput()) {
                 features.push('voiceinput');
             }
 
+            var userAgent = navigator.userAgent.toLowerCase();
+
+            if (!browser.mobile || userAgent.indexOf('msapphost') != -1) {
+                features.push('htmlaudioautoplay');
+                features.push('htmlvideoautoplay');
+            }
+
+            if (window.SyncRegistered) {
+                //features.push('sync');
+            }
+
             return features.indexOf(command.toLowerCase()) != -1;
+        },
+        unlockedFeatures: function () {
+
+            var features = [];
+
+            features.push('playback');
+
+            return features;
         },
         appInfo: function () {
 

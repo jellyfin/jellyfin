@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['dom'], function (dom) {
 
     /**
    * Copyright 2012, Digital Fusion
@@ -19,10 +19,7 @@
             return true;
         }
 
-        windowSize = windowSize || {
-            innerHeight: window.innerHeight,
-            innerWidth: window.innerWidth
-        };
+        windowSize = windowSize || dom.getWindowSize();
 
         var vpWidth = windowSize.innerWidth,
             vpHeight = windowSize.innerHeight;

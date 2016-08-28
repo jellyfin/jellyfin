@@ -1,6 +1,6 @@
 {
   "name": "polymer",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "main": [
     "polymer.html",
     "polymer-mini.html",
@@ -28,7 +28,8 @@
     "webcomponentsjs": "^0.7.20"
   },
   "devDependencies": {
-    "web-component-tester": "*"
+    "web-component-tester": "*",
+    "iron-component-page": "polymerElements/iron-component-page#^1.1.6"
   },
   "private": true
 }

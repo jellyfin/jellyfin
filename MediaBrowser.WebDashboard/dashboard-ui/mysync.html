@@ -1,8 +1,22 @@
 ﻿<div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}">
 
+    <style>
+        .status-text-icon {
+            font-size: 94%;
+            background-color: #444;
+            display: inline-flex;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .zeroProgressStatus {
+            background-color: #444;
+        }
+    </style>
     <div data-role="content">
 
-        <div class="supporterPromotionContainer" style="display:none;text-align: right;">
+        <div class="supporterPromotionContainer hide" style="text-align: right; position: static;">
             <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
                 <button is="emby-button" type="button" class="raised accent block btnSyncSupporter">
                     <div class="mainText">
@@ -16,7 +30,6 @@
         <div class="ehsContent" style="clear:both;">
             <br />
             <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
-                <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus"></span>
                 <button type="button" is="emby-button" class="btnSyncNow mini accent fab autoSize" style="margin-right:.5em;"><i class="md-icon">sync</i></button>
             </div>
             <div class="syncActivity">

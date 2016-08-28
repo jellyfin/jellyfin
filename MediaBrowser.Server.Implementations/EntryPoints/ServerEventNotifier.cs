@@ -11,6 +11,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Sync;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
@@ -164,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         private async void SendMessageToUserSession<T>(User user, string name, T data)
         {
-            await _sessionManager.SendMessageToUserSessions(user.Id.ToString("N"), name, data, CancellationToken.None);
+            await _sessionManager.SendMessageToUserSessions(new List<string> { user.Id.ToString("N") }, name, data, CancellationToken.None);
         }
 
         /// <summary>

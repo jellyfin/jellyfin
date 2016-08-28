@@ -87,7 +87,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (isMobileApp && options.identify !== false) {
+            if (options.identify !== false) {
                 if (itemHelper.canIdentify(user, item.Type)) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Identify'),
@@ -105,14 +105,23 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.open !== false) {
-                if (item.Type != 'Timer' && item.Type != 'Audio') {
+            if (appHost.supports('sync') && options.syncLocal !== false) {
+                if (itemHelper.canSync(user, item)) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#Open'),
-                        id: 'open'
+                        name: globalize.translate('sharedcomponents#MakeAvailableOffline'),
+                        id: 'synclocal'
                     });
                 }
             }
+
+            //if (options.open !== false) {
+            //    if (item.Type != 'Timer' && item.Type != 'Audio') {
+            //        commands.push({
+            //            name: globalize.translate('sharedcomponents#Open'),
+            //            id: 'open'
+            //        });
+            //    }
+            //}
 
             if (canPlay) {
                 if (options.play !== false) {
@@ -136,7 +145,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     });
                 }
 
-                if (playbackManager.canQueueMediaType(item.MediaType)) {
+                if (playbackManager.canQueue(item)) {
                     if (options.queue !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#Queue'),
@@ -203,10 +212,10 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (isMobileApp && options.sync !== false) {
+            if (options.sync !== false) {
                 if (itemHelper.canSync(user, item)) {
                     commands.push({
-                        name: globalize.translate('sharedcomponents#Sync'),
+                        name: globalize.translate('sharedcomponents#SyncToOtherDevice'),
                         id: 'sync'
                     });
                 }
@@ -298,7 +307,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['subtitleEditor'], function (subtitleEditor) {
 
-                            var serverId = apiClient.serverInfo().Id;
                             subtitleEditor.show(itemId, serverId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
@@ -318,9 +326,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     }
                 case 'identify':
                     {
-                        require(['components/itemidentifier/itemidentifier'], function (itemidentifier) {
+                        require(['itemIdentifier'], function (itemIdentifier) {
 
-                            itemidentifier.show(itemId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
+                            itemIdentifier.show(itemId, serverId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
                     }
@@ -417,10 +425,20 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     {
                         require(['syncDialog'], function (syncDialog) {
                             syncDialog.showMenu({
-                                items: [
-                                {
-                                    Id: itemId
-                                }]
+                                items: [item],
+                                serverId: serverId
+                            });
+                        });
+                        getResolveFunction(resolve, id)();
+                        break;
+                    }
+                case 'synclocal':
+                    {
+                        require(['syncDialog'], function (syncDialog) {
+                            syncDialog.showMenu({
+                                items: [item],
+                                isLocalSync: true,
+                                serverId: serverId
                             });
                         });
                         getResolveFunction(resolve, id)();

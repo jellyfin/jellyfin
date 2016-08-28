@@ -1,0 +1,29 @@
+.cardBox-round {
+    border: .7em solid transparent !important;
+}
+
+.cardBox-focustransform {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+.cardImageContainer-round {
+    border: .15em solid transparent;
+}
+
+.cardImageContainer-round, .card-round:focus .cardImageContainer {
+    border-color: #fff;
+}
+
+.card-round:focus > .cardBox-focustransform {
+    transform: scale(1.34, 1.34);
+}
+
+.cardContent-round {
+    overflow: visible;
+}
+
+.cardImageContainer-round, .card-round .cardImage {
+    border-radius: 1000px;
+}

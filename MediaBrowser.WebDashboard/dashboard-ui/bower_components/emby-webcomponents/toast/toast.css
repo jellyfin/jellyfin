@@ -20,7 +20,7 @@
     transform: translateY(200px);
 }
 
-    .toast.visible {
-        -webkit-transform: none;
-        transform: none;
-    }
+.toastVisible {
+    -webkit-transform: none;
+    transform: none;
+}

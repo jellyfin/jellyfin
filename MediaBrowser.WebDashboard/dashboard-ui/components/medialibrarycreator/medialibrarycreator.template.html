@@ -1,33 +1,39 @@
-﻿<div class="dialogHeader" style="margin:0 0 2em;">
-    <button is="paper-icon-button-light" class="btnCancel" tabindex="-1"><iron-icon icon="arrow-back"></iron-icon></button>
-    <div class="dialogHeaderTitle">
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <div class="formDialogHeaderTitle">
         ${ButtonAddMediaLibrary}
     </div>
 </div>
 
-<form style="margin:auto;">
-    <div id="fldCollectionType" class="selectContainer">
-        <select is="emby-select" id="selectCollectionType" data-mini="true" required="required" label="${LabelContentType}"></select>
-        <div class="collectionTypeFieldDescription fieldDescription">
-        </div>
-    </div>
-    <div class="inputContainer">
-        <input is="emby-input" type="text" id="txtValue" required="required" label="${LabelDisplayName}" />
-    </div>
-    <div>
-        <h1 style="display:inline-block;vertical-align:middle;">${HeadersFolders}</h1>
-        <button is="emby-button" type="button" class="raised btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
-            <i class="md-icon">add</i>
-            <span>${ButtonAdd}</span>
-        </button>
-    </div>
-    <div class="paperList folderList hide" style="padding: .7em 0;"></div>
+<div class="formDialogContent smoothScrollY" style="padding-top:2em;">
+    <div class="dialogContentInner dialog-content-centered">
+        <form style="margin:auto;">
+            <div id="fldCollectionType" class="selectContainer">
+                <select is="emby-select" id="selectCollectionType" data-mini="true" required="required" label="${LabelContentType}"></select>
+                <div class="collectionTypeFieldDescription fieldDescription">
+                </div>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="text" id="txtValue" required="required" label="${LabelDisplayName}"/>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <h1 style="margin: .5em 0;">${HeadersFolders}</h1>
+                <button is="emby-button" type="button" class="raised btnAddFolder submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                    <i class="md-icon">add</i>
+                    <span>${ButtonAdd}</span>
+                </button>
+            </div>
+            <div class="paperList folderList hide" style="padding: .7em 0;"></div>
 
-    <br />
-    <div>
-        <button is="emby-button" type="submit" class="raised submit block">
-            <i class="md-icon">check</i>
-            <span>${ButtonOk}</span>
-        </button>
+            <br />
+            <div class="libraryOptions"></div>
+            <br />
+            <div>
+                <button is="emby-button" type="submit" class="raised submit block">
+                    <i class="md-icon">check</i>
+                    <span>${ButtonOk}</span>
+                </button>
+            </div>
+        </form>
     </div>
-</form>
+</div>

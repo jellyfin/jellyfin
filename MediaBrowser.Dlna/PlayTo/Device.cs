@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,6 +92,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IServerConfigurationManager _config;
 
         public DateTime DateLastActivity { get; private set; }
+        public Action OnDeviceUnavailable { get; set; }
 
         public Device(DeviceInfo deviceProperties, IHttpClient httpClient, ILogger logger, IServerConfigurationManager config)
         {
@@ -134,6 +136,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private async void RefreshVolume()
         {
+            if (_disposed)
+                return;
+
             try
             {
                 await GetVolume().ConfigureAwait(false);
@@ -149,6 +154,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private bool _timerActive;
         private void RestartTimer()
         {
+            if (_disposed)
+                return;
+
             if (!_timerActive)
             {
                 lock (_timerLock)
@@ -169,6 +177,9 @@ namespace MediaBrowser.Dlna.PlayTo
         /// </summary>
         private void RestartTimerInactive()
         {
+            if (_disposed)
+                return;
+
             if (_timerActive)
             {
                 lock (_timerLock)
@@ -398,6 +409,7 @@ namespace MediaBrowser.Dlna.PlayTo
         #region Get data
 
         private int _successiveStopCount;
+        private int _connectFailureCount;
         private async void TimerCallback(object sender)
         {
             if (_disposed)
@@ -435,6 +447,8 @@ namespace MediaBrowser.Dlna.PlayTo
                         }
                     }
 
+                    _connectFailureCount = 0;
+
                     if (_disposed)
                         return;
 
@@ -455,8 +469,33 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                 }
             }
+            catch (WebException ex)
+            {
+                if (_disposed)
+                    return;
+
+                _logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
+
+                _successiveStopCount++;
+                _connectFailureCount++;
+
+                if (_connectFailureCount >= 3)
+                {
+                    if (OnDeviceUnavailable != null)
+                    {
+                        OnDeviceUnavailable();
+                    }
+                }
+                if (_successiveStopCount >= maxSuccessiveStopReturns)
+                {
+                    RestartTimerInactive();
+                }
+            }
             catch (Exception ex)
             {
+                if (_disposed)
+                    return;
+
                 _logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
 
                 _successiveStopCount++;

@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 UserId = request.UserId,
                 UnwatchedOnly = request.UnwatchedOnly,
                 ItemLimit = request.ItemLimit,
-                RequestedItemIds = request.ItemIds ?? new List<string> { },
+                RequestedItemIds = request.ItemIds ?? new List<string>(),
                 DateCreated = DateTime.UtcNow,
                 DateLastModified = DateTime.UtcNow,
                 SyncNewContent = request.SyncNewContent,
@@ -646,6 +646,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             dtoOptions.Fields.Remove(ItemFields.SeriesGenres);
             dtoOptions.Fields.Remove(ItemFields.Settings);
             dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
 
             syncedItem.Item = _dtoService().GetBaseItemDto(libraryItem, dtoOptions);
 
@@ -1123,7 +1124,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
 
-        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
+        public Dictionary<string, SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
             return _repo.GetSyncedItemProgresses(query);
         }

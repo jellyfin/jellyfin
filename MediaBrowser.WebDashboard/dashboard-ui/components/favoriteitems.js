@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, dom) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -25,20 +25,20 @@
             { name: 'HeaderFavoriteGames', types: "Game", id: "favoriteGames", shape: getSquareShape(), preferThumb: false, showTitle: true },
             { name: 'HeaderFavoriteArtists', types: "MusicArtist", id: "favoriteArtists", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
             { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
-            { name: 'HeaderFavoriteSongs', types: "Audio", id: "favoriteSongs", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayMoreButton: true, defaultAction: 'instantmix' }
+            { name: 'HeaderFavoriteSongs', types: "Audio", id: "favoriteSongs", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayMoreButton: true, action: 'instantmix' }
         ];
     }
 
     function loadSection(elem, userId, topParentId, section, isSingleSection) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
         var options = {
 
             SortBy: "SortName",
             SortOrder: "Ascending",
             Filters: "IsFavorite",
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual",
             EnableTotalRecordCount: false
@@ -85,23 +85,21 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
 
-                html += libraryBrowser.getPosterViewHtml({
-                    items: result.Items,
+                html += cardBuilder.getCardsHtml(result.Items, {
                     preferThumb: section.preferThumb,
                     shape: section.shape,
+                    centerText: section.centerText,
                     overlayText: section.overlayText !== false,
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    centerText: section.centerText,
+                    scalable: true,
                     overlayPlayButton: section.overlayPlayButton,
                     overlayMoreButton: section.overlayMoreButton,
-                    context: 'home-favorites',
-                    defaultAction: section.defaultAction
+                    action: section.action,
+                    allowBottomPadding: !enableScrollX()
                 });
 
                 html += '</div>';

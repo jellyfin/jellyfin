@@ -1,8 +1,8 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom) {
 
     function itemsPerRow() {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         return screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 12 : (screenWidth >= 1000 ? 10 : 8));
     }
@@ -24,7 +24,7 @@
         var options = {
             IncludeItemTypes: "Audio",
             Limit: itemsPerRow(),
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -34,7 +34,7 @@
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
-            elem.innerHTML = libraryBrowser.getPosterViewHtml({
+            elem.innerHTML = cardBuilder.getCardsHtml({
                 items: items,
                 showUnplayedIndicator: false,
                 showLatestItemsPopup: false,
@@ -43,7 +43,8 @@
                 showParentTitle: true,
                 lazy: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(elem);
@@ -61,7 +62,7 @@
             IncludeItemTypes: "Audio",
             Limit: itemsPerRow(),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -80,16 +81,17 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -107,7 +109,7 @@
             IncludeItemTypes: "Audio",
             Limit: itemsPerRow(),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,AudioInfo",
             Filters: "IsPlayed",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -126,16 +128,17 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
-                defaultAction: 'instantmix',
+                action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -152,7 +155,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "Playlist",
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete",
             StartIndex: 0,
             Limit: itemsPerRow(),
             EnableTotalRecordCount: false
@@ -169,7 +172,7 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = libraryBrowser.getPosterViewHtml({
+            itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -177,7 +180,8 @@
                 coverImage: true,
                 showItemCounts: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: !enableScrollX()
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -243,10 +247,6 @@
             return browserInfo.mobile && AppInfo.enableAppLayouts;
         }
 
-        function getThumbShape() {
-            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
-        }
-
         self.initTab = function () {
 
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
@@ -255,8 +255,10 @@
             for (var i = 0, length = containers.length; i < length; i++) {
                 if (enableScrollX()) {
                     containers[i].classList.add('hiddenScrollX');
+                    containers[i].classList.remove('vertical-wrap');
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
+                    containers[i].classList.add('vertical-wrap');
                 }
             }
         };
@@ -347,25 +349,29 @@
             });
         }
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        var baseUrl = 'music.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5, 6]);
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 4, 5, 6]);
-
-        mdlTabs.addEventListener('beforetabchange', function (e) {
+        viewTabs.addEventListener('beforetabchange', function (e) {
             preLoadTab(view, parseInt(e.detail.selectedTabIndex));
         });
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
         view.addEventListener('viewdestroy', function (e) {
 
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
             tabControllers.forEach(function (t) {
                 if (t.destroy) {
                     t.destroy();

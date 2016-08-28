@@ -17,7 +17,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Audio",
                         Recursive: true,
-                        Fields: "AudioInfo,ParentId,SyncInfo",
+                        Fields: "AudioInfo,ParentId",
                         Limit: 100,
                         StartIndex: 0,
                         ImageTypeLimit: 1,

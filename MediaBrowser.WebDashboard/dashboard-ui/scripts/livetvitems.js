@@ -1,6 +1,4 @@
-﻿define(['emby-itemscontainer'], function () {
-
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
 
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -37,33 +35,18 @@
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            if (view == "Poster") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: query.IsMovie ? 'portrait' : "auto",
-                    context: 'livetv',
-                    showTitle: false,
-                    centerText: true,
-                    lazy: true,
-                    showStartDateIndex: true,
-                    overlayText: false,
-                    showProgramAirInfo: true,
-                    overlayMoreButton: true
-                });
-            }
-            else if (view == "PosterCard") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'livetv',
-                    showTitle: true,
-                    showStartDateIndex: true,
-                    lazy: true,
-                    cardLayout: true,
-                    showProgramAirInfo: true,
-                    overlayMoreButton: true
-                });
-            }
+            html = cardBuilder.getCardsHtml({
+                items: result.Items,
+                shape: query.IsMovie ? 'portrait' : "auto",
+                context: 'livetv',
+                showTitle: false,
+                centerText: true,
+                lazy: true,
+                showStartDateIndex: true,
+                overlayText: false,
+                showProgramAirInfo: true,
+                overlayMoreButton: true
+            });
 
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html + pagingHtml;

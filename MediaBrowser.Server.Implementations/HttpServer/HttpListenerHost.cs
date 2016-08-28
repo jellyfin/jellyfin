@@ -67,6 +67,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public override void Configure(Container container)
         {
             HostConfig.Instance.DefaultRedirectPath = DefaultRedirectPath;
+            HostConfig.Instance.LogUnobservedTaskExceptions = false;
 
             HostConfig.Instance.MapExceptionToStatusCode = new Dictionary<Type, int>
             {
@@ -80,7 +81,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (ApplicationException), 500}
             };
 
-            HostConfig.Instance.DebugMode = true;
+            HostConfig.Instance.GlobalResponseHeaders = new Dictionary<string, string>();
+            HostConfig.Instance.DebugMode = false;
 
             HostConfig.Instance.LogFactory = LogManager.LogFactory;
 
@@ -250,7 +252,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 httpRes.Close();
             }
-            catch (Exception errorEx)
+            catch
             {
                 //_logger.ErrorException("Error this.ProcessRequest(context)(Exception while writing error to the response)", errorEx);
             }
@@ -329,6 +331,46 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return url;
         }
 
+        private string NormalizeConfiguredLocalAddress(string address)
+        {
+            var index = address.Trim('/').IndexOf('/');
+
+            if (index != -1)
+            {
+                address = address.Substring(index + 1);
+            }
+
+            return address.Trim('/');
+        }
+
+        private bool ValidateHost(Uri url)
+        {
+            var hosts = _config
+                .Configuration
+                .LocalNetworkAddresses
+                .Select(NormalizeConfiguredLocalAddress)
+                .ToList();
+
+            if (hosts.Count == 0)
+            {
+                return true;
+            }
+
+            var host = url.Host ?? string.Empty;
+
+            _logger.Debug("Validating host {0}", host);
+
+            if (_networkManager.IsInPrivateAddressSpace(host))
+            {
+                hosts.Add("localhost");
+                hosts.Add("127.0.0.1");
+
+                return hosts.Any(i => host.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1);
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Overridable method that can be used to implement a custom hnandler
         /// </summary>
@@ -346,6 +388,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 httpRes.StatusCode = 503;
                 httpRes.Close();
                 return ;
+            }
+
+            if (!ValidateHost(url))
+            {
+                httpRes.StatusCode = 400;
+                httpRes.ContentType = "text/plain";
+                httpRes.Write("Invalid host");
+
+                httpRes.Close();
+                return;
             }
 
             var operationName = httpReq.OperationName;
@@ -376,8 +428,24 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase) ||
-                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1 ||
-                localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1)
+                localPath.IndexOf("mediabrowser/web", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                httpRes.StatusCode = 200;
+                httpRes.ContentType = "text/html";
+                var newUrl = urlString.Replace("mediabrowser", "emby", StringComparison.OrdinalIgnoreCase)
+                    .Replace("/dashboard/", "/web/", StringComparison.OrdinalIgnoreCase);
+
+                if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
+                {
+                    httpRes.Write("<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" + newUrl + "\">" + newUrl + "</a></body></html>");
+
+                    httpRes.Close();
+                    return;
+                }
+            }
+
+            if (localPath.IndexOf("dashboard/", StringComparison.OrdinalIgnoreCase) != -1 && 
+                localPath.IndexOf("web/dashboard", StringComparison.OrdinalIgnoreCase) == -1)
             {
                 httpRes.StatusCode = 200;
                 httpRes.ContentType = "text/html";

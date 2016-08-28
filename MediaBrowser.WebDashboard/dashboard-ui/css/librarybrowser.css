@@ -7,10 +7,15 @@
     margin-left: .5em;
 }
 
-.background-theme-b, .dialog.background-theme-b {
+.background-theme-b .backgroundContainer, .dialog.background-theme-b {
     background-color: #121314;
     /*background: radial-gradient(circle, #282828, #141414);*/
 }
+
+    .background-theme-b .backgroundContainer.withBackdrop {
+        background-color: rgba(6, 6,6, .9);
+        /*background: radial-gradient(circle, #282828, #141414);*/
+    }
 
 .ui-body-b {
     /* Need the important tag for paper dialogs with this class */
@@ -28,21 +33,6 @@
     right: 0;
     bottom: 0;
     z-index: -1;
-}
-
-.pageBackground {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-}
-
-.withBackdrop .pageBackground {
-    background-color: rgba(6, 6,6, .9);
-    display: block;
 }
 
 .pageWithAbsoluteTabs neon-animatable {
@@ -263,13 +253,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 
-.userDataIcons paper-fab {
-    background: #444;
-    width: 40px;
-    height: 40px;
-    padding: 8px;
-}
-
 .itemBackdrop {
     background-size: cover;
     background-position: center 15%;
@@ -292,7 +275,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0 !important;
 }
 
-.withBackdrop .noBackdrop {
+.withBackdrop + .mainDrawerPanel .noBackdrop {
     background-color: transparent;
 }
 
@@ -416,11 +399,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-bottom: .5em;
 }
 
-.detailButtonsContainer {
-    font-size: 90%;
-}
-
-[is="emby-button"].detailFloatingButton {
+.emby-button.detailFloatingButton {
     width: 56px !important;
     height: 56px !important;
     top: -28px;
@@ -429,7 +408,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: #52B54B !important;
 }
 
-[is="emby-button"].btnFloatingRecord {
+.emby-button.btnFloatingRecord {
     background-color: #cc3333 !important;
 }
 
@@ -540,15 +519,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0;
 }
 
-    .detailPageCollabsible .ui-collapsible-heading a {
-        background-color: #141414 !important;
-        font-size: 16px;
-        font-weight: 400 !important;
-        border-radius: 4px;
-        padding-top: .75em;
-        padding-bottom: .75em;
-    }
-
 .detailSection h1 {
     margin-bottom: .25em;
     position: relative;
@@ -566,11 +536,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: relative;
 }
 
-    .detailSectionHeader, .detailSectionHeader h3 {
-        font-size: 17px;
-        font-weight: 400;
-    }
-
 .ui-body-a .detailSectionHeader {
     border: 1px solid #ddd;
     border-width: 0 0 1px 0;
@@ -583,6 +548,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSectionHeader, .detailSectionHeader h3 {
     font-size: 20px;
+    font-weight: 400;
 }
 
     .detailSectionHeader button {
@@ -595,17 +561,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 2px;
-    right: 0;
-    left: 0;
+    bottom: 4px;
+    right: 1px;
+    left: 1px;
     text-align: center;
 }
-
-    .detailImageProgressContainer progress {
-        width: 100%;
-        margin: 0 auto;
-        height: 6px;
-    }
 
 .viewControls, .listTopPaging {
     display: inline-block;
@@ -824,7 +784,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: block;
     color: #fff;
     margin-bottom: 1em;
-    font-size: 120%;
 }
 
 .mediaInfoAttribute {
@@ -864,134 +823,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background: rgba(248, 58, 34, .8);
 }
 
-.syncIndicator {
-    display: block;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    color: #fff;
-    line-height: 19px;
-    background-color: #52B54B;
-}
-
-.seriesTimerIndicator {
-    color: #cc3333;
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 200%;
-}
-
-.playedIndicator + .syncIndicator, .countIndicator + .syncIndicator {
-    top: 32px;
-}
-
-.card .playedIndicator, .card .countIndicator {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
-
-.syncIndicator i {
-    font-size: 180%;
-}
-
-.mediaSourceIndicator {
-    display: block;
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    text-align: center;
-    vertical-align: middle;
-    width: 22px;
-    height: 19px;
-    padding-top: 3px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(51, 136, 204);
-    background: rgba(51, 136, 204, .9);
-    line-height: 1.2;
-}
-
-.itemProgress {
-    vertical-align: top;
-    font-size: 19px;
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-/* All HTML5 progress enabled browsers */
-.itemProgressBar {
-    /* Turns off styling - not usually needed, but good to know. */
-    appearance: none;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    /* gets rid of default border in Firefox and Opera. */
-    border: 0;
-    margin: 0;
-    height: 14px;
-    border: 0 solid #222;
-    border-radius: 0;
-    width: 50px;
-    margin-right: 5px;
-}
-
-/* Undo these to original */
-.listItem .itemProgressBar {
-    width: auto;
-    margin: 0;
-    height: .56vh;
-}
-
-/* Polyfill */
-.itemProgressBar[role]:after {
-    background-image: none; /* removes default background from polyfill */
-}
-
-/*
- * Background of the progress bar background
- */
-
-/* Firefox and Polyfill */
-.itemProgressBar {
-    background: #000 !important; /* !important only needed in polyfill */
-}
-
-    /* Chrome */
-    .itemProgressBar::-webkit-progress-bar {
-        background: #000;
-    }
-
-.pare
-/*
- * Background of the progress bar value
- */
-/* Firefox */
-.itemProgressBar::-moz-progress-bar {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
-/* Chrome */
-.itemProgressBar::-webkit-progress-value {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
-/* Polyfill */
-.itemProgressBar[aria-valuenow]:before {
-    border-radius: 0;
-    background-image: none;
-    background-color: #52B54B;
-}
-
 .recordingProgressBar::-moz-progress-bar {
     background-color: #cc3333;
 }
@@ -1004,12 +835,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: #cc3333;
 }
 
-.tileItem .itemProgressBar {
-    top: 2px;
-    width: 40px;
-    margin-right: 1em;
-}
-
 .timelineHeader {
     margin-bottom: .25em;
     line-height: 1.25em;
@@ -1018,7 +843,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemsContainer {
     margin: 0 auto;
-    line-height: 0;
 }
 
 .alphabetPicker {
@@ -1070,7 +894,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-height: 700px) {
 
-    .vertical.alphabetPicker .alphaPickerButton {
+    .alphaPicker-vertical .alphaPickerButton {
         padding-top: 1px !important;
         padding-bottom: 1px !important;
     }
@@ -1078,7 +902,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-height: 600px) {
 
-    .vertical.alphabetPicker .alphaPickerButton {
+    .alphaPicker-vertical .alphaPickerButton {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
     }
@@ -1153,4 +977,32 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: inline-block;
         vertical-align: top;
         margin: 0 4px 0 0;
+    }
+
+
+@media all and (min-width: 1000px) {
+
+    .itemDetailPage .portraitCard-scalable {
+        width: 25% !important;
+    }
+
+    .itemDetailPage .squareCard-scalable {
+        width: 25% !important;
+    }
+
+    .itemDetailPage .backdropCard-scalable, .itemDetailPage .smallBackdropCard-scalable {
+        width: 33.3333333333333333% !important;
+    }
+
+    .itemDetailPage .personCard.portraitCard {
+        width: 16.666666666666666666666666666667% !important;
+    }
+}
+
+.btnSyncComplete {
+    background: #673AB7 !important;
+}
+
+    .btnSyncComplete i {
+        border-radius: 1000px;
     }

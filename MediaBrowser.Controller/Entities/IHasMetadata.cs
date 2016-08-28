@@ -32,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The date last refreshed.</value>
         DateTime DateLastRefreshed { get; set; }
-        
+
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made
         /// </summary>
@@ -52,6 +52,15 @@ namespace MediaBrowser.Controller.Entities
 
         bool RequiresRefresh();
 
-        bool EnableForceSaveOnDateModifiedChange { get; }
+        bool EnableRefreshOnDateModifiedChange { get; }
+
+        string PresentationUniqueKey { get; set; }
+
+        string GetPresentationUniqueKey();
+        string CreatePresentationUniqueKey();
+        bool StopRefreshIfLocalMetadataFound { get; }
+
+        int? GetInheritedParentalRatingValue();
+        int InheritedParentalRatingValue { get; set; }
     }
 }

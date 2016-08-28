@@ -191,6 +191,11 @@ namespace MediaBrowser.Dlna.Profiles
                 new SubtitleProfile
                 {
                     Format = "srt",
+                    Method = SubtitleDeliveryMethod.Embed
+                },
+                new SubtitleProfile
+                {
+                    Format = "srt",
                     Method = SubtitleDeliveryMethod.External
                 }
             };

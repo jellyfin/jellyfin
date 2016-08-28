@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -99,7 +99,7 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
-        var html = libraryBrowser.getPosterViewHtml({
+        var html = cardBuilder.getCardsHtml({
             items: items,
             shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
@@ -108,7 +108,8 @@
             overlayText: false,
             lazy: true,
             overlayMoreButton: overlayButton != 'play',
-            overlayPlayButton: overlayButton == 'play'
+            overlayPlayButton: overlayButton == 'play',
+            allowBottomPadding: !enableScrollX()
         });
 
         var elem = page.querySelector('.' + sectionClass);
@@ -130,8 +131,10 @@
             for (var i = 0, length = containers.length; i < length; i++) {
                 if (enableScrollX()) {
                     containers[i].classList.add('hiddenScrollX');
+                    containers[i].classList.remove('vertical-wrap');
                 } else {
                     containers[i].classList.remove('hiddenScrollX');
+                    containers[i].classList.add('vertical-wrap');
                 }
             }
         };
@@ -195,17 +198,11 @@
             });
         }
 
-        var mdlTabs = view.querySelector('.libraryViewNav');
+        var viewTabs = view.querySelector('.libraryViewNav');
 
-        var baseUrl = 'tv.html';
-        var topParentId = params.topParentId;
-        if (topParentId) {
-            baseUrl += '?topParentId=' + topParentId;
-        }
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
 
-        libraryBrowser.configurePaperLibraryTabs(view, mdlTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
-
-        mdlTabs.addEventListener('tabchange', function (e) {
+        viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
@@ -214,8 +211,18 @@
             document.body.classList.remove('autoScrollY');
         });
 
+        if (AppInfo.enableHeadRoom) {
+            require(["headroom-window"], function (headroom) {
+                headroom.add(viewTabs);
+                self.headroom = headroom;
+            });
+        }
+
         view.addEventListener('viewdestroy', function (e) {
 
+            if (self.headroom) {
+                self.headroom.remove(viewTabs);
+            }
             tabControllers.forEach(function (t) {
                 if (t.destroy) {
                     t.destroy();

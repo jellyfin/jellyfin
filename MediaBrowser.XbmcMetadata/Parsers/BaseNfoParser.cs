@@ -231,7 +231,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             DateTime added;
                             if (DateTime.TryParseExact(val, BaseNfoSaver.DateAddedFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
                             {
-                                item.EndDate = added.ToUniversalTime();
+                                item.DateCreated = added.ToUniversalTime();
                             }
                             else if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
                             {
@@ -824,6 +824,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(id))
                         {
                             item.SetProviderId(MetadataProviders.TvRage, id);
+                        }
+                        break;
+                    }
+                case "tvmazeid":
+                    {
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(MetadataProviders.TvMaze, id);
                         }
                         break;
                     }

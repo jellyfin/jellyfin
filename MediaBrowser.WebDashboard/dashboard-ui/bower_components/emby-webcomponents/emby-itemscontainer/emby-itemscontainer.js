@@ -41,7 +41,6 @@
             //}
 
             itemShortcuts.showContextMenu(card, {
-                identify: false,
                 positionTo: target,
                 itemsContainer: itemsContainer
             });
@@ -179,7 +178,7 @@
 
         this.addEventListener('click', onClick);
 
-        if (browser.mobile) {
+        if (browser.touch) {
             this.addEventListener('contextmenu', disableEvent);
         } else {
             this.addEventListener('contextmenu', onContextMenu);

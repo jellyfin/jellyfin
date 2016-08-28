@@ -1,30 +1,4 @@
-define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutManager) {
-
-    var supportsCaptureOption = false;
-    try {
-        var opts = Object.defineProperty({}, 'capture', {
-            get: function () {
-                supportsCaptureOption = true;
-            }
-        });
-        window.addEventListener("test", null, opts);
-    } catch (e) { }
-
-    function addEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.addEventListener(type, handler, optionsOrCapture);
-    }
-
-    function removeEventListenerWithOptions(target, type, handler, options) {
-        var optionsOrCapture = options;
-        if (!supportsCaptureOption) {
-            optionsOrCapture = options.capture;
-        }
-        target.removeEventListener(type, handler, optionsOrCapture);
-    }
+define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, layoutManager, dom) {
 
     /**
 * Return type of the value.
@@ -102,13 +76,9 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
     var namespace = pluginName;
 
     // Other global values
-    var dragInitEventNames = ['touchstart', 'mousedown'];
-    var dragInitEvents = 'touchstart.' + namespace + ' mousedown.' + namespace;
     var dragMouseEvents = ['mousemove', 'mouseup'];
     var dragTouchEvents = ['touchmove', 'touchend'];
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
-    var clickEvent = 'click.' + namespace;
-    var mouseDownEvent = 'mousedown.' + namespace;
     var interactiveElements = ['INPUT', 'SELECT', 'TEXTAREA'];
     var tmpArray = [];
     var time;
@@ -132,7 +102,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             scrollSource: null, // Element for catching the mouse wheel scrolling. Default is FRAME.
             scrollBy: 0, // Pixels or items to move per one mouse scroll. 0 to disable scrolling.
             scrollHijack: 300, // Milliseconds since last wheel event after which it is acceptable to hijack global scroll.
-            scrollTrap: false, // Don't bubble scrolling when hitting scrolling limits.
 
             // Dragging
             dragSource: null, // Selector or DOM element for catching dragging events. Default is FRAME.
@@ -140,7 +109,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             touchDragging: 1, // Enable navigation by dragging the SLIDEE with touch events.
             releaseSwing: false, // Ease out on dragging swing release.
             swingSpeed: 0.2, // Swing synchronization speed, where: 1 = instant, 0 = infinite.
-            elasticBounds: false, // Stretch SLIDEE position limits when dragging past FRAME boundaries.
             dragThreshold: 3, // Distance in pixels before Sly recognizes dragging.
             intervactive: null, // Selector for special interactive elements.
 
@@ -162,10 +130,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // no scrolling supported
             options.enableNativeScroll = false;
         }
-        else if (browser.edge && !browser.xboxOne) {
-            // no scrolling supported
-            options.enableNativeScroll = false;
-        }
         else if (isSmoothScrollSupported && browser.firefox) {
             // native smooth scroll
             options.enableNativeScroll = true;
@@ -175,9 +139,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // transform is the only way to guarantee animation
             options.enableNativeScroll = false;
         }
-        else if (layoutManager.mobile ||
-           layoutManager.desktop ||
-           !browser.animate) {
+        else if (layoutManager.desktop || !browser.animate) {
 
             options.enableNativeScroll = true;
         }
@@ -388,16 +350,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
 		 */
         function slideTo(newPos, immediate) {
 
-            // Handle overflowing position limits
-            if (dragging.init && dragging.slidee && o.elasticBounds) {
-                if (newPos > pos.end) {
-                    newPos = pos.end + (newPos - pos.end) / 6;
-                } else if (newPos < pos.start) {
-                    newPos = pos.start + (newPos - pos.start) / 6;
-                }
-            } else {
-                newPos = within(newPos, pos.start, pos.end);
-            }
+            newPos = within(newPos, pos.start, pos.end);
 
             if (!transform) {
 
@@ -424,10 +377,6 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
         var scrollEvent = new CustomEvent("scroll");
 
         function renderAnimate() {
-
-            if (!transform) {
-                return;
-            }
 
             var obj = getComputedStyle(slideeElement, null).getPropertyValue('transform').match(/([-+]?(?:\d*\.)?\d+)\D*, ([-+]?(?:\d*\.)?\d+)\D*\)/);
             if (obj) {
@@ -466,7 +415,7 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 fill: 'both'
             };
 
-            if (!animation.immediate || browser.animate) {
+            if (browser.animate) {
                 animationConfig.easing = 'ease-out';
             }
 
@@ -478,66 +427,34 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             };
         }
 
-        function getOffsets(elems) {
+        function getBoundingClientRect(elem) {
 
-            var doc = document;
-            var results = [];
-
-            if (!doc) {
-                return results;
+            // Support: BlackBerry 5, iOS 3 (original iPhone)
+            // If we don't have gBCR, just use 0,0 rather than error
+            if (elem.getBoundingClientRect) {
+                return elem.getBoundingClientRect();
+            } else {
+                return { top: 0, left: 0 };
             }
-
-            var docElem = doc.documentElement;
-            var docElemValues = {
-                clientTop: docElem.clientTop,
-                clientLeft: docElem.clientLeft
-            };
-
-            var win = doc.defaultView;
-            var winValues = {
-                pageXOffset: win.pageXOffset,
-                pageYOffset: win.pageYOffset
-            };
-
-            var box;
-            var elem;
-
-            for (var i = 0, length = elems.length; i < length; i++) {
-
-                elem = elems[i];
-                // Support: BlackBerry 5, iOS 3 (original iPhone)
-                // If we don't have gBCR, just use 0,0 rather than error
-                if (elem.getBoundingClientRect) {
-                    box = elem.getBoundingClientRect();
-                } else {
-                    box = { top: 0, left: 0 };
-                }
-
-                results[i] = {
-                    top: box.top + winValues.pageYOffset - docElemValues.clientTop,
-                    left: box.left + winValues.pageXOffset - docElemValues.clientLeft
-                };
-            }
-
-            return results;
         }
 
         /**
-		 * Returns the position object.
-		 *
-		 * @param {Mixed} item
-		 *
-		 * @return {Object}
-		 */
+         * Returns the position object.
+         *
+         * @param {Mixed} item
+         *
+         * @return {Object}
+         */
         self.getPos = function (item) {
 
-            var offsets = getOffsets([slideeElement, item]);
-
-            var slideeOffset = offsets[0];
-            var itemOffset = offsets[1];
+            var slideeOffset = getBoundingClientRect(slideeElement);
+            var itemOffset = getBoundingClientRect(item);
 
             var offset = o.horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
-            var size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
+            var size = o.horizontal ? itemOffset.width : itemOffset.height;
+            if (!size) {
+                size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
+            }
 
             var centerOffset = o.centerOffset || 0;
 
@@ -556,6 +473,12 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 end: offset - frameSize + size,
                 size: size
             };
+        };
+
+        self.getCenterPosition = function (item) {
+
+            var pos = self.getPos(item);
+            return within(pos.center, pos.start, pos.end);
         };
 
         /**
@@ -741,11 +664,15 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             // Bind dragging events
             if (isTouch) {
                 dragTouchEvents.forEach(function (eventName) {
-                    document.addEventListener(eventName, dragHandler);
+                    dom.addEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             } else {
                 dragMouseEvents.forEach(function (eventName) {
-                    document.addEventListener(eventName, dragHandler);
+                    dom.addEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             }
 
@@ -830,11 +757,15 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
 
             if (dragging.touch) {
                 dragTouchEvents.forEach(function (eventName) {
-                    document.removeEventListener(eventName, dragHandler);
+                    dom.removeEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             } else {
                 dragMouseEvents.forEach(function (eventName) {
-                    document.removeEventListener(eventName, dragHandler);
+                    dom.removeEventListener(document, eventName, dragHandler, {
+                        passive: true
+                    });
                 });
             }
 
@@ -901,19 +832,24 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
                 return;
             }
             var delta = normalizeWheelDelta(event);
-            // Trap scrolling only when necessary and/or requested
-            if (o.scrollTrap || delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
-                stopDefault(event, 1);
-            }
 
             if (transform) {
+                // Trap scrolling only when necessary and/or requested
+                if (delta > 0 && pos.dest < pos.end || delta < 0 && pos.dest > pos.start) {
+                    //stopDefault(event, 1);
+                }
+
                 self.slideBy(o.scrollBy * delta);
             } else {
 
+                if (isSmoothScrollSupported) {
+                    delta *= 12;
+                }
+
                 if (o.horizontal) {
-                    slideeElement.scrollLeft += 12 * delta;
+                    slideeElement.scrollLeft += delta;
                 } else {
-                    slideeElement.scrollTop += 12 * delta;
+                    slideeElement.scrollTop += delta;
                 }
             }
         }
@@ -925,14 +861,25 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
 		 */
         self.destroy = function () {
 
-            window.removeEventListener('resize', onResize, true);
+            dom.removeEventListener(window, 'resize', onResize, {
+                passive: true,
+                capture: true
+            });
 
             // Reset native FRAME element scroll
-            removeEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+            dom.removeEventListener(frameElement, 'scroll', resetScroll, {
                 passive: true
             });
 
-            scrollSource.removeEventListener(wheelEvent, scrollHandler);
+            dom.removeEventListener(scrollSource, wheelEvent, scrollHandler, {
+                passive: true
+            });
+
+            dom.removeEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
+                passive: true
+            });
+
+            dragSourceElement.removeEventListener('mousedown', dragInitSlidee);
 
             // Reset initialized status and return the instance
             self.initialized = 0;
@@ -991,29 +938,38 @@ define(['browser', 'layoutManager', 'scrollStyles'], function (browser, layoutMa
             }
 
             if (transform) {
-                dragInitEventNames.forEach(function (eventName) {
-                    dragSourceElement.addEventListener(eventName, dragInitSlidee);
+
+                dom.addEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
+                    passive: true
                 });
+                dragSourceElement.addEventListener('mousedown', dragInitSlidee);
 
                 if (!o.scrollWidth) {
-                    window.addEventListener('resize', onResize, true);
+                    dom.addEventListener(window, 'resize', onResize, {
+                        passive: true,
+                        capture: true
+                    });
                 }
 
                 if (!o.horizontal) {
-                    addEventListenerWithOptions(frameElement, 'scroll', resetScroll, {
+                    dom.addEventListener(frameElement, 'scroll', resetScroll, {
                         passive: true
                     });
                 }
 
                 // Scrolling navigation
-                scrollSource.addEventListener(wheelEvent, scrollHandler);
+                dom.addEventListener(scrollSource, wheelEvent, scrollHandler, {
+                    passive: true
+                });
 
             } else if (o.horizontal) {
 
                 // Don't bind to mouse events with vertical scroll since the mouse wheel can handle this natively
 
                 // Scrolling navigation
-                scrollSource.addEventListener(wheelEvent, scrollHandler);
+                dom.addEventListener(scrollSource, wheelEvent, scrollHandler, {
+                    passive: true
+                });
             }
 
             // Mark instance as initialized

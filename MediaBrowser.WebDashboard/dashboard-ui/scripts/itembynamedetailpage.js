@@ -1,8 +1,15 @@
-﻿define(['listView', 'emby-itemscontainer'], function (listView) {
+﻿define(['listView', 'cardBuilder', 'emby-itemscontainer'], function (listView, cardBuilder) {
 
     function renderItems(page, item) {
 
         var sections = [];
+
+        if (item.ArtistCount) {
+            sections.push({
+                name: Globalize.translate('TabArtists'),
+                type: 'MusicArtist'
+            });
+        }
 
         if (item.MovieCount) {
 
@@ -109,7 +116,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -124,7 +131,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayPlayButton: true
@@ -139,7 +146,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -154,7 +161,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayPlayButton: true
@@ -169,7 +176,7 @@
                     ArtistIds: "",
                     Limit: 10
                 }, {
-                    shape: "detailPagePortrait",
+                    shape: "portrait",
                     showTitle: true,
                     centerText: true,
                     overlayMoreButton: true
@@ -184,10 +191,29 @@
                     ArtistIds: "",
                     Limit: 8
                 }, {
-                    shape: "detailPageSquare",
+                    shape: "square",
                     playFromHere: true,
                     showTitle: true,
                     showParentTitle: true,
+                    coverImage: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
+                break;
+
+            case 'MusicArtist':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "MusicArtist",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 8
+                }, {
+                    shape: "square",
+                    playFromHere: true,
+                    showTitle: true,
+                    showParentTitle: true,
+                    coverImage: true,
                     centerText: true,
                     overlayPlayButton: true
                 });
@@ -201,7 +227,7 @@
                     ArtistIds: "",
                     Limit: 6
                 }, {
-                    shape: "detailPage169",
+                    shape: "backdrop",
                     showTitle: true,
                     showParentTitle: true,
                     centerText: true,
@@ -246,14 +272,18 @@
             }
 
             listOptions.items = result.Items;
+            var itemsContainer = element.querySelector('.itemsContainer');
 
             if (type == 'Audio') {
                 html = listView.getListViewHtml(listOptions);
+                itemsContainer.classList.remove('vertical-wrap');
+                itemsContainer.classList.add('vertical-list');
             } else {
-                html = LibraryBrowser.getPosterViewHtml(listOptions);
+                html = cardBuilder.getCardsHtml(listOptions);
+                itemsContainer.classList.add('vertical-wrap');
+                itemsContainer.classList.remove('vertical-list');
             }
 
-            var itemsContainer = element.querySelector('.itemsContainer');
             itemsContainer.innerHTML = html;
 
             ImageLoader.lazyChildren(itemsContainer);
@@ -295,7 +325,7 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "",
             Recursive: true,
-            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,SyncInfo",
+            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,BasicSyncInfo",
             Limit: LibraryBrowser.getDefaultPageSize(),
             StartIndex: 0,
             CollapseBoxSetItems: false

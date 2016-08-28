@@ -1,0 +1,68 @@
+﻿.autoorganizetable > .table {
+    width: 100%;
+}
+
+    .autoorganizetable > .table > tbody > tr > td {
+        padding: 0.4em;
+    }
+
+.autoorganizetable .fileCell {
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.autoorganizetable > .table > thead > th {
+    text-align: left;
+}
+
+.autoorganizetable tbody tr:nth-child(odd) td,
+.autoorganizetable tbody tr:nth-child(odd) th {
+    background-color: #eeeeee; /* non-RGBA fallback  */
+    background-color: rgba(0,0,0,.04);
+}
+
+
+@media screen and (max-width: 800px) {
+    .autoorganizetable > .table {
+        margin-bottom: 0;
+        background-color: transparent;
+    }
+
+    .autoorganizetable .spinnerCell {
+        display: none !important;
+    }
+
+    .autoorganizetable > .table > thead,
+    .autoorganizetable > .table > tfoot {
+        display: none;
+    }
+
+    .autoorganizetable > .table > tbody {
+        display: block;
+    }
+
+        .autoorganizetable > .table > tbody > tr {
+            display: block;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 1.6rem;
+        }
+
+            .autoorganizetable > .table > tbody > tr > td {
+                background-color: #eeeeee; /* non-RGBA fallback  */
+                background-color: rgba(0,0,0,.04);
+                display: block;
+                vertical-align: middle;
+                text-align: left;
+                text-overflow: ellipsis;
+                padding: 0.4em;
+            }
+
+                .autoorganizetable > .table > tbody > tr > td[data-title]:before {
+                    content: attr(data-title);
+                    float: left;
+                    font-size: inherit;
+                    font-weight: bold;
+                    min-width: 20%;
+                }
+}

@@ -1,4 +1,4 @@
-﻿define(['datetime', 'emby-itemscontainer', 'scrollStyles'], function (datetime) {
+﻿define(['datetime', 'cardBuilder', 'emby-itemscontainer', 'scrollStyles'], function (datetime, cardBuilder) {
 
     function getUpcomingPromise() {
 
@@ -7,7 +7,7 @@
         var query = {
 
             Limit: 40,
-            Fields: "AirTime,UserData,SyncInfo",
+            Fields: "AirTime,UserData",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -64,7 +64,7 @@
 
                     var premiereDate = datetime.parseISO8601Date(item.PremiereDate, true);
 
-                    if (premiereDate.getDate() == new Date().getDate() - 1) {
+                    if (datetime.isRelativeDay(premiereDate, -1)) {
                         dateText = Globalize.translate('Yesterday');
                     } else {
                         dateText = LibraryBrowser.getFutureDateText(premiereDate, true);
@@ -99,13 +99,16 @@
             html += '<div class="homePageSection">';
             html += '<h1 class="listHeader">' + group.name + '</h1>';
 
+            var allowBottomPadding = true;
+
             if (enableScrollX()) {
+                allowBottomPadding = false;
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),
@@ -116,7 +119,8 @@
                 centerText: true,
                 context: 'home-upcoming',
                 overlayMoreButton: true,
-                showParentTitle: true
+                showParentTitle: true,
+                allowBottomPadding: allowBottomPadding
 
             });
             html += '</div>';

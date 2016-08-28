@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 var changes = _changedItems.ToList();
                 _changedItems.Clear();
 
-                SendNotifications(changes, CancellationToken.None);
+                var task = SendNotifications(changes, CancellationToken.None);
 
                 if (UpdateTimer != null)
                 {

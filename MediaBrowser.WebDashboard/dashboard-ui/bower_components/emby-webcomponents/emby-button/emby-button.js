@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
+﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -6,7 +6,9 @@
 
         var div = document.createElement('div');
 
-        div.classList.add('ripple-effect');
+        for (var i = 0, length = btn.classList.length; i < length; i++) {
+            div.classList.add(btn.classList[i] + '-ripple-effect');
+        }
 
         var offsetX = e.offsetX || 0;
         var offsetY = e.offsetY || 0;
@@ -16,7 +18,12 @@
             div.style.top = offsetY + 'px';
         }
 
-        btn.appendChild(div);
+        var firstChild = btn.firstChild;
+        if (firstChild) {
+            btn.insertBefore(div, btn.firstChild);
+        } else {
+            btn.appendChild(div);
+        }
 
         div.addEventListener("animationend", function () {
             div.parentNode.removeChild(div);
@@ -53,24 +60,30 @@
         return true;
     }
 
-    EmbyButtonPrototype.attachedCallback = function () {
+    EmbyButtonPrototype.createdCallback = function () {
 
-        if (this.getAttribute('data-embybutton') == 'true') {
+        if (this.classList.contains('emby-button')) {
             return;
         }
 
-        this.setAttribute('data-embybutton', 'true');
+        this.classList.add('emby-button');
 
         if (browser.safari || browser.firefox || browser.noFlex) {
-            this.classList.add('noflex');
+            this.classList.add('emby-button-noflex');
         }
 
         if (enableAnimation()) {
-            this.addEventListener('keydown', onKeyDown);
+            dom.addEventListener(this, 'keydown', onKeyDown, {
+                passive: true
+            });
             if (browser.safari) {
-                this.addEventListener('click', animateButton);
+                dom.addEventListener(this, 'click', animateButton, {
+                    passive: true
+                });
             } else {
-                this.addEventListener('mousedown', onMouseDown);
+                dom.addEventListener(this, 'mousedown', onMouseDown, {
+                    passive: true
+                });
                 //this.addEventListener('touchstart', animateButton);
             }
         }

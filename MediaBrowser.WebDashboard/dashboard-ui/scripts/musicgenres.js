@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser'], function (libraryBrowser) {
+﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
 
     return function (view, params, tabContent) {
 
@@ -16,10 +16,10 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Audio,MusicAlbum",
                         Recursive: true,
-                        Fields: "DateCreated,SyncInfo,ItemCounts",
+                        Fields: "DateCreated,ItemCounts",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || libraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard')
+                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -57,7 +57,7 @@
                 var viewStyle = self.getCurrentViewStyle();
 
                 if (viewStyle == "Thumb") {
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -71,7 +71,7 @@
                 }
                 else if (viewStyle == "ThumbCard") {
 
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
@@ -83,7 +83,7 @@
                     });
                 }
                 else if (viewStyle == "PosterCard") {
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "auto",
                         context: 'music',
@@ -94,7 +94,7 @@
                     });
                 }
                 else if (viewStyle == "Poster") {
-                    html = libraryBrowser.getPosterViewHtml({
+                    html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "auto",
                         context: 'music',

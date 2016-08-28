@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter) {
+﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'cardBuilder', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter, cardBuilder) {
 
     function loadSuggestions(page) {
 
@@ -112,7 +112,7 @@
                 return i;
             });
 
-            var html = libraryBrowser.getPosterViewHtml({
+            var html = cardBuilder.getCardsHtml({
                 items: hints,
                 shape: "auto",
                 lazy: true,
@@ -121,7 +121,7 @@
                 centerImage: true,
                 centerText: true,
                 textLines: getAdditionalTextLines,
-                overlayPlayButton: true,
+                overlayMoreButton: true,
                 serverId: ApiClient.serverInfo().Id
             });
 
@@ -191,14 +191,12 @@
 
         view.addEventListener('viewbeforeshow', function (e) {
             document.body.classList.add('hiddenViewMenuBar');
-            document.body.classList.add('hiddenNowPlayingBar');
             LibraryMenu.setMenuButtonVisible(false);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
             document.body.classList.remove('hiddenViewMenuBar');
-            document.body.classList.remove('hiddenNowPlayingBar');
             LibraryMenu.setMenuButtonVisible(true);
         });
 

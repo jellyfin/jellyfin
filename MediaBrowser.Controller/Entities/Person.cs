@@ -26,13 +26,9 @@ namespace MediaBrowser.Controller.Entities
             list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
             return list;
         }
-
-        public override string PresentationUniqueKey
+        public override string CreatePresentationUniqueKey()
         {
-            get
-            {
-                return GetUserDataKeys()[0];
-            }
+            return GetUserDataKeys()[0];
         }
 
         public PersonLookupInfo GetLookupInfo()
@@ -125,6 +121,64 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+        }
+
+        public static string GetPath(string name, bool normalizeName = true)
+        {
+            // Trim the period at the end because windows will have a hard time with that
+            var validFilename = normalizeName ?
+                FileSystem.GetValidFilename(name).Trim().TrimEnd('.') :
+                name;
+
+            string subFolderPrefix = null;
+
+            foreach (char c in validFilename)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    subFolderPrefix = c.ToString();
+                    break;
+                }
+            }
+
+            var path = ConfigurationManager.ApplicationPaths.PeoplePath;
+
+            return string.IsNullOrEmpty(subFolderPrefix) ?
+                System.IO.Path.Combine(path, validFilename) :
+                System.IO.Path.Combine(path, subFolderPrefix, validFilename);
+        }
+
+        private string GetRebasedPath()
+        {
+            return GetPath(System.IO.Path.GetFileName(Path), false);
+        }
+
+        public override bool RequiresRefresh()
+        {
+            var newPath = GetRebasedPath();
+            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
+            {
+                Logger.Debug("{0} path has changed from {1} to {2}", GetType().Name, Path, newPath);
+                return true;
+            }
+            return base.RequiresRefresh();
+        }
+
+        /// <summary>
+        /// This is called before any metadata refresh and returns true or false indicating if changes were made
+        /// </summary>
+        public override bool BeforeMetadataRefresh()
+        {
+            var hasChanges = base.BeforeMetadataRefresh();
+
+            var newPath = GetRebasedPath();
+            if (!string.Equals(Path, newPath, StringComparison.Ordinal))
+            {
+                Path = newPath;
+                hasChanges = true;
+            }
+
+            return hasChanges;
         }
     }
 

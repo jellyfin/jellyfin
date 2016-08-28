@@ -22,22 +22,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 <body>
 
-  <div class="vertical-section vertical-section-container centered">
+  <div class="vertical-section centered">
     <h1>&lt;iron-meta&gt;</h1>
+    <h2>Key Query</h2>
+
     <iron-meta key="info" value="foo/bar"></iron-meta>
+
     The <code>value</code> stored at <code>key="info"</code> is <code><meta-test></meta-test></code>.
   </div>
 
+  <div class="vertical-section centered">
+    <h2>Type Query</h2>
+
+    <iron-meta type="type1" key="a" value="Polymer"></iron-meta>
+    <iron-meta type="type1" key="b" value="is"></iron-meta>
+    <iron-meta type="type2" key="a" value="wonderful"></iron-meta>
+    <iron-meta type="type2" key="b" value="<3"></iron-meta>
+
+    The <code>value(s)</code> stored at <code>type="type1"</code> are:<br><code><type-one></type-one></code>.<br><br>The <code>value(s)</code> stored at <code>type="type2"</code> are:<br><code><type-two></type-two></code>.
+  </div>
+
   <script>
+    document.addEventListener('WebComponentsReady', function() {
+      Polymer({
+        is: 'meta-test',
+        ready: function() {
+          this.textContent = new Polymer.IronMetaQuery({key: 'info'}).value;
+        }
+      });
+    });
 
     Polymer({
-
-      is: 'meta-test',
+      is: 'type-one',
 
       ready: function() {
-        this.textContent = new Polymer.IronMetaQuery({key: 'info'}).value;
+        var resultList = new Polymer.IronMetaQuery({type: "type1"}).list;
+        this.textContent = JSON.stringify(resultList);
       }
+    });
 
+    Polymer({
+      is: 'type-two',
+
+      ready: function() {
+        var resultList = new Polymer.IronMetaQuery({type: "type2"}).list;
+        this.textContent = JSON.stringify(resultList);
+      }
     });
 
   </script>

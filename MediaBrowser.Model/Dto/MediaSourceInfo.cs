@@ -20,6 +20,7 @@ namespace MediaBrowser.Model.Dto
 
         public string Name { get; set; }
 
+        public string ETag { get; set; }
         public long? RunTimeTicks { get; set; }
         public bool ReadAtNativeFramerate { get; set; }
         public bool SupportsTranscoding { get; set; }

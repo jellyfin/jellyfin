@@ -92,10 +92,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteImagesCommand;
         private IDbCommand _saveImagesCommand;
 
-        private IDbCommand _updateInheritedRatingCommand;
         private IDbCommand _updateInheritedTagsCommand;
 
-        public const int LatestSchemaVersion = 108;
+        public const int LatestSchemaVersion = 109;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -211,7 +210,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "ProductionYear", "INT");
             _connection.AddColumn(Logger, "TypedBaseItems", "ParentId", "GUID");
             _connection.AddColumn(Logger, "TypedBaseItems", "Genres", "Text");
-            _connection.AddColumn(Logger, "TypedBaseItems", "ParentalRatingValue", "INT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SchemaVersion", "INT");
             _connection.AddColumn(Logger, "TypedBaseItems", "SortName", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "RunTimeTicks", "BIGINT");
@@ -412,7 +410,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeasonName",
             "SeasonId",
             "SeriesId",
-            "SeriesSortName"
+            "SeriesSortName",
+            "PresentationUniqueKey",
+            "InheritedParentalRatingValue"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -487,7 +487,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ProductionYear",
                 "ParentId",
                 "Genres",
-                "ParentalRatingValue",
                 "InheritedParentalRatingValue",
                 "SchemaVersion",
                 "SortName",
@@ -611,11 +610,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 _saveStreamCommand.Parameters.Add(_saveStreamCommand, "@" + col);
             }
-
-            _updateInheritedRatingCommand = _connection.CreateCommand();
-            _updateInheritedRatingCommand.CommandText = "Update TypedBaseItems set InheritedParentalRatingValue=@InheritedParentalRatingValue where Guid=@Guid";
-            _updateInheritedRatingCommand.Parameters.Add(_updateInheritedRatingCommand, "@Guid");
-            _updateInheritedRatingCommand.Parameters.Add(_updateInheritedRatingCommand, "@InheritedParentalRatingValue");
 
             _updateInheritedTagsCommand = _connection.CreateCommand();
             _updateInheritedTagsCommand.CommandText = "Update TypedBaseItems set InheritedTags=@InheritedTags where Guid=@Guid";
@@ -794,7 +788,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
-                    _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue() ?? 0;
                     _saveItemCommand.GetParameter(index++).Value = item.GetInheritedParentalRatingValue() ?? 0;
 
                     _saveItemCommand.GetParameter(index++).Value = LatestSchemaVersion;
@@ -915,10 +908,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     }
                     else
                     {
-                        _saveItemCommand.GetParameter(index++).Value = item.Name.RemoveDiacritics();
+                        _saveItemCommand.GetParameter(index++).Value = GetCleanValue(item.Name);
                     }
 
-                    _saveItemCommand.GetParameter(index++).Value = item.PresentationUniqueKey;
+                    _saveItemCommand.GetParameter(index++).Value = item.GetPresentationUniqueKey();
                     _saveItemCommand.GetParameter(index++).Value = item.SlugName;
                     _saveItemCommand.GetParameter(index++).Value = item.OriginalTitle;
 
@@ -944,7 +937,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Album;
 
-                    _saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem || (!item.IsFolder && item.LocationType == LocationType.Virtual);
+                    _saveItemCommand.GetParameter(index++).Value = item.IsVirtualItem;
 
                     var hasSeries = item as IHasSeries;
                     if (hasSeries != null)
@@ -1451,6 +1444,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     hasSeries.SeriesSortName = reader.GetString(index);
                 }
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.PresentationUniqueKey = reader.GetString(index);
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.InheritedParentalRatingValue = reader.GetInt32(index);
             }
             index++;
 
@@ -2145,7 +2150,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     if (query.User != null)
                     {
-                        query.SortBy = new[] { ItemSortBy.IsPlayed, "SimilarityScore", ItemSortBy.Random };
+                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.Random };
                     }
                     else
                     {
@@ -2230,7 +2235,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("ParentalRatingValue", false);
+                return new Tuple<string, bool>("InheritedParentalRatingValue", false);
             }
             if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
@@ -2763,13 +2768,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!string.IsNullOrWhiteSpace(query.Name))
             {
                 whereClauses.Add("CleanName=@Name");
-                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = query.Name.RemoveDiacritics();
+                cmd.Parameters.Add(cmd, "@Name", DbType.String).Value = GetCleanValue(query.Name);
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
                 whereClauses.Add("CleanName like @NameContains");
-                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains.RemoveDiacritics() + "%";
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + GetCleanValue(query.NameContains) + "%";
             }
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
@@ -2877,7 +2882,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var artist in query.ArtistNames)
                 {
                     clauses.Add("@ArtistName" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
-                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = artist.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@ArtistName" + index, DbType.String).Value = GetCleanValue(artist);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2894,7 +2899,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     if (artistItem != null)
                     {
                         clauses.Add("@ExcludeArtistName" + index + " not in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
-                        cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = artistItem.Name.RemoveDiacritics();
+                        cmd.Parameters.Add(cmd, "@ExcludeArtistName" + index, DbType.String).Value = GetCleanValue(artistItem.Name);
                         index++;
                     }
                 }
@@ -2915,7 +2920,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Genres)
                 {
                     clauses.Add("@Genre" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=2)");
-                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Genre" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2929,7 +2934,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Tags)
                 {
                     clauses.Add("@Tag" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=4)");
-                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Tag" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2949,7 +2954,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Studios)
                 {
                     clauses.Add("@Studio" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=3)");
-                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Studio" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -2963,7 +2968,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 foreach (var item in query.Keywords)
                 {
                     clauses.Add("@Keyword" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=5)");
-                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = item.RemoveDiacritics();
+                    cmd.Parameters.Add(cmd, "@Keyword" + index, DbType.String).Value = GetCleanValue(item);
                     index++;
                 }
                 var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
@@ -3088,6 +3093,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     whereClauses.Add("LocationType<>'Virtual'");
                 }
             }
+            if (query.IsSpecialSeason.HasValue)
+            {
+                if (query.IsSpecialSeason.Value)
+                {
+                    whereClauses.Add("IndexNumber = 0");
+                }
+                else
+                {
+                    whereClauses.Add("IndexNumber <> 0");
+                }
+            }
             if (query.IsUnaired.HasValue)
             {
                 if (query.IsUnaired.Value)
@@ -3134,17 +3150,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             if (query.ItemIds.Length > 0)
             {
-                var excludeIds = new List<string>();
+                var includeIds = new List<string>();
 
                 var index = 0;
                 foreach (var id in query.ItemIds)
                 {
-                    excludeIds.Add("Guid = @IncludeId" + index);
+                    includeIds.Add("Guid = @IncludeId" + index);
                     cmd.Parameters.Add(cmd, "@IncludeId" + index, DbType.Guid).Value = new Guid(id);
                     index++;
                 }
 
-                whereClauses.Add(string.Join(" OR ", excludeIds.ToArray()));
+                whereClauses.Add(string.Join(" OR ", includeIds.ToArray()));
             }
             if (query.ExcludeItemIds.Length > 0)
             {
@@ -3298,6 +3314,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return whereClauses;
         }
 
+        private string GetCleanValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            return value.RemoveDiacritics().ToLower();
+        }
+
         private bool EnableGroupByPresentationUniqueKey(InternalItemsQuery query)
         {
             if (!query.GroupByPresentationUniqueKey)
@@ -3377,7 +3403,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public async Task UpdateInheritedValues(CancellationToken cancellationToken)
         {
-            await UpdateInheritedParentalRating(cancellationToken).ConfigureAwait(false);
             await UpdateInheritedTags(cancellationToken).ConfigureAwait(false);
         }
 
@@ -3422,82 +3447,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _updateInheritedTagsCommand.Transaction = transaction;
                     _updateInheritedTagsCommand.ExecuteNonQuery();
-                }
-
-                transaction.Commit();
-            }
-            catch (OperationCanceledException)
-            {
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            catch (Exception e)
-            {
-                Logger.ErrorException("Error running query:", e);
-
-                if (transaction != null)
-                {
-                    transaction.Rollback();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (transaction != null)
-                {
-                    transaction.Dispose();
-                }
-
-                WriteLock.Release();
-            }
-        }
-
-        private async Task UpdateInheritedParentalRating(CancellationToken cancellationToken)
-        {
-            var newValues = new List<Tuple<Guid, int>>();
-
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "select Guid,InheritedParentalRatingValue,(select Max(ParentalRatingValue, (select COALESCE(MAX(ParentalRatingValue),0) from TypedBaseItems where guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid)))) as NewInheritedParentalRatingValue from typedbaseitems as Outer where InheritedParentalRatingValue <> NewInheritedParentalRatingValue";
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
-                {
-                    while (reader.Read())
-                    {
-                        var id = reader.GetGuid(0);
-                        var newValue = reader.GetInt32(2);
-
-                        newValues.Add(new Tuple<Guid, int>(id, newValue));
-                    }
-                }
-            }
-
-            Logger.Debug("UpdateInheritedParentalRatings - {0} rows", newValues.Count);
-            if (newValues.Count == 0)
-            {
-                return;
-            }
-
-            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            IDbTransaction transaction = null;
-
-            try
-            {
-                transaction = _connection.BeginTransaction();
-
-                foreach (var item in newValues)
-                {
-                    _updateInheritedRatingCommand.GetParameter(0).Value = item.Item1;
-                    _updateInheritedRatingCommand.GetParameter(1).Value = item.Item2;
-
-                    _updateInheritedRatingCommand.Transaction = transaction;
-                    _updateInheritedRatingCommand.ExecuteNonQuery();
                 }
 
                 transaction.Commit();
@@ -3776,6 +3725,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("Name like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
+            if (query.SourceTypes.Length == 1)
+            {
+                whereClauses.Add("(select sourcetype from typedbaseitems where guid=ItemId) = @SourceTypes");
+                cmd.Parameters.Add(cmd, "@SourceTypes", DbType.String).Value = query.SourceTypes[0].ToString();
+            }
 
             return whereClauses;
         }
@@ -3812,37 +3766,119 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        public QueryResult<Tuple<BaseItem, ItemCounts>> GetAllArtists(InternalItemsQuery query)
+        {
+            return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
+        }
+
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetArtists(InternalItemsQuery query)
         {
-            return GetItemValues(query, 0, typeof(MusicArtist).FullName);
+            return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetAlbumArtists(InternalItemsQuery query)
         {
-            return GetItemValues(query, 1, typeof(MusicArtist).FullName);
+            return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetStudios(InternalItemsQuery query)
         {
-            return GetItemValues(query, 3, typeof(Studio).FullName);
+            return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(Genre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(GameGenre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(GameGenre).FullName);
         }
 
         public QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query)
         {
-            return GetItemValues(query, 2, typeof(MusicGenre).FullName);
+            return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
 
-        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int itemValueType, string returnType)
+        public List<string> GetStudioNames()
+        {
+            return GetItemValueNames(new[] { 3 }, new List<string>(), new List<string>());
+        }
+
+        public List<string> GetAllArtistNames()
+        {
+            return GetItemValueNames(new[] { 0, 1 }, new List<string>(), new List<string>());
+        }
+
+        public List<string> GetMusicGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" }, new List<string>());
+        }
+
+        public List<string> GetGameGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string> { "Game" }, new List<string>());
+        }
+
+        public List<string> GetGenreNames()
+        {
+            return GetItemValueNames(new[] { 2 }, new List<string>(), new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist", "Game", "GameSystem" });
+        }
+
+        private List<string> GetItemValueNames(int[] itemValueTypes, List<string> withItemTypes, List<string> excludeItemTypes)
+        {
+            CheckDisposed();
+
+            withItemTypes = withItemTypes.SelectMany(MapIncludeItemTypes).ToList();
+            excludeItemTypes = excludeItemTypes.SelectMany(MapIncludeItemTypes).ToList();
+
+            var now = DateTime.UtcNow;
+
+            var typeClause = itemValueTypes.Length == 1 ?
+                ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
+
+            var list = new List<string>();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "Select Value From ItemValues where " + typeClause;
+
+                if (withItemTypes.Count > 0)
+                {
+                    var typeString = string.Join(",", withItemTypes.Select(i => "'" + i + "'").ToArray());
+                    cmd.CommandText += " AND ItemId In (select guid from typedbaseitems where type in (" + typeString + "))";
+                }
+                if (excludeItemTypes.Count > 0)
+                {
+                    var typeString = string.Join(",", excludeItemTypes.Select(i => "'" + i + "'").ToArray());
+                    cmd.CommandText += " AND ItemId not In (select guid from typedbaseitems where type in (" + typeString + "))";
+                }
+
+                cmd.CommandText += " Group By CleanValue";
+
+                var commandBehavior = CommandBehavior.SequentialAccess | CommandBehavior.SingleResult;
+
+                using (var reader = cmd.ExecuteReader(commandBehavior))
+                {
+                    LogQueryTime("GetItemValueNames", cmd, now);
+
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(0))
+                        {
+                            list.Add(reader.GetString(0));
+                        }
+                    }
+                }
+
+            }
+
+            return list;
+        }
+
+        private QueryResult<Tuple<BaseItem, ItemCounts>> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -3857,6 +3893,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             CheckDisposed();
 
             var now = DateTime.UtcNow;
+
+            var typeClause = itemValueTypes.Length == 1 ?
+                ("Type=" + itemValueTypes[0].ToString(CultureInfo.InvariantCulture)) :
+                ("Type in (" + string.Join(",", itemValueTypes.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray()) + ")");
 
             using (var cmd = _connection.CreateCommand())
             {
@@ -3882,7 +3922,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     };
                     var whereClauses = GetWhereClauses(typeSubQuery, cmd, "itemTypes");
 
-                    whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND Type=@ItemValueType)");
+                    whereClauses.Add("guid in (select ItemId from ItemValues where ItemValues.CleanValue=A.CleanName AND " + typeClause + ")");
 
                     var typeWhereText = whereClauses.Count == 0 ?
                         string.Empty :
@@ -3924,12 +3964,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (typesToCount.Count == 0)
                 {
-                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where " + typeClause + " AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
                 }
                 else
                 {
                     //whereText += " And itemTypes not null";
-                    whereText += " And CleanName In (Select CleanValue from ItemValues where Type=@ItemValueType AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
+                    whereText += " And CleanName In (Select CleanValue from ItemValues where " + typeClause + " AND ItemId in (select guid from TypedBaseItems" + innerWhereText + "))";
                 }
 
                 var outerQuery = new InternalItemsQuery(query.User)
@@ -3944,7 +3984,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     AlbumArtistStartsWithOrGreater = query.AlbumArtistStartsWithOrGreater,
                     Tags = query.Tags,
                     OfficialRatings = query.OfficialRatings,
-                    Genres = query.GenreIds,
+                    GenreIds = query.GenreIds,
+                    Genres = query.Genres,
                     Years = query.Years
                 };
 
@@ -3959,7 +4000,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.CommandText += " group by PresentationUniqueKey";
 
                 cmd.Parameters.Add(cmd, "@SelectType", DbType.String).Value = returnType;
-                cmd.Parameters.Add(cmd, "@ItemValueType", DbType.Int32).Value = itemValueType;
 
                 if (EnableJoinUserData(query))
                 {
@@ -4098,6 +4138,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     counts.AlbumCount = value;
                 }
+                else if (string.Equals(typeName, typeof(MusicArtist).FullName, StringComparison.OrdinalIgnoreCase))
+                {
+                    counts.ArtistCount = value;
+                }
                 else if (string.Equals(typeName, typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
                 {
                     counts.SongCount = value;
@@ -4163,6 +4207,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var index = 0;
             foreach (var image in images)
             {
+                if (string.IsNullOrWhiteSpace(image.Path))
+                {
+                    // Invalid
+                    continue;
+                }
+
                 _saveImagesCommand.GetParameter(0).Value = itemId;
                 _saveImagesCommand.GetParameter(1).Value = image.Type;
                 _saveImagesCommand.GetParameter(2).Value = image.Path;
@@ -4255,7 +4305,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 else
                 {
-                    _saveItemValuesCommand.GetParameter(3).Value = pair.Item2.RemoveDiacritics();
+                    _saveItemValuesCommand.GetParameter(3).Value = GetCleanValue(pair.Item2);
                 }
                 _saveItemValuesCommand.Transaction = transaction;
 

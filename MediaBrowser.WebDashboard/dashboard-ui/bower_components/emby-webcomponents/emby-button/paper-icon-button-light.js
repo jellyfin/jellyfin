@@ -1,4 +1,4 @@
-﻿define(['browser', 'css!./emby-button', 'registerElement'], function (browser) {
+﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -14,7 +14,9 @@
 
         var div = document.createElement('div');
 
-        div.classList.add('ripple-effect');
+        for (var i = 0, length = btn.classList.length; i < length; i++) {
+            div.classList.add(btn.classList[i] + '-ripple-effect');
+        }
 
         var offsetX = e.offsetX || 0;
         var offsetY = e.offsetY || 0;
@@ -46,17 +48,21 @@
         }
     }
 
-    EmbyButtonPrototype.attachedCallback = function () {
+    EmbyButtonPrototype.createdCallback = function () {
 
-        if (this.getAttribute('data-embybutton') == 'true') {
+        if (this.classList.contains('paper-icon-button-light')) {
             return;
         }
 
-        this.setAttribute('data-embybutton', 'true');
+        this.classList.add('paper-icon-button-light');
 
         if (enableAnimation()) {
-            this.addEventListener('keydown', onKeyDown);
-            this.addEventListener('click', animateButton);
+            dom.addEventListener(this, 'keydown', onKeyDown, {
+                passive: true
+            });
+            dom.addEventListener(this, 'click', animateButton, {
+                passive: true
+            });
         }
     };
 

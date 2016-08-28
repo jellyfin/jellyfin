@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'appSettings', 'components/groupedcards', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (LibraryBrowser, appSettings, groupedcards) {
+﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'dom', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, appSettings, groupedcards, dom) {
 
     function getUserViews(userId) {
 
@@ -46,51 +46,40 @@
             var item = items[i];
 
             var icon;
-            var backgroundColor = 'rgba(82, 181, 75, 0.9)';
 
             switch (item.CollectionType) {
                 case "movies":
                     icon = "local_movies";
-                    backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "music":
                     icon = "library_music";
-                    backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "photos":
                     icon = "photo";
-                    backgroundColor = 'rgba(127, 0, 0, 0.9)';
                     break;
                 case "livetv":
                     icon = "live_tv";
-                    backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "tvshows":
                     icon = "live_tv";
-                    backgroundColor = 'rgba(77, 88, 164, 0.9)';
                     break;
                 case "games":
                     icon = "folder";
-                    backgroundColor = 'rgba(183, 202, 72, 0.9)';
                     break;
                 case "trailers":
                     icon = "local_movies";
-                    backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "homevideos":
                     icon = "video_library";
-                    backgroundColor = 'rgba(110, 52, 32, 0.9)';
                     break;
                 case "musicvideos":
                     icon = "video_library";
-                    backgroundColor = 'rgba(143, 54, 168, 0.9)';
                     break;
                 case "books":
                     icon = "folder";
                     break;
                 case "channels":
                     icon = "folder";
-                    backgroundColor = 'rgba(51, 136, 204, 0.9)';
                     break;
                 case "playlists":
                     icon = "folder";
@@ -106,15 +95,15 @@
                 cssClass += ' ' + item.CollectionType + 'buttonCard';
             }
 
-            var href = item.url || LibraryBrowser.getHref(item);
+            var href = item.url || libraryBrowser.getHref(item);
             var onclick = item.onclick ? ' onclick="' + item.onclick + '"' : '';
 
             icon = item.icon || icon;
 
-            html += '<a' + onclick + ' data-id="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
-            html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
+            html += '<a' + onclick + ' data-id="' + item.Id + '" class="' + cssClass + '" href="' + href + '" style="min-width:12.5%;">';
+            html += '<div class="cardBox ' + cardBuilder.getDefaultColorClass(item.Name) + '" style="margin:4px;">';
 
-            html += "<div class='cardText' style='padding:8px 10px;color:#fff;'>";
+            html += "<div class='cardText'>";
             html += '<i class="md-icon">' + icon + '</i>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
@@ -136,7 +125,7 @@
             if (index) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
             }
-            html += '<div>';
+            html += '<div style="display:flex;flex-wrap:wrap;">';
             html += getLibraryButtonsHtml(items);
             html += '</div>';
 
@@ -203,7 +192,7 @@
     function getCard(img, target, shape) {
 
         shape = shape || 'backdropCard';
-        var html = '<div class="card ' + shape + '"><div class="cardBox"><div class="cardScalable"><div class="cardPadder"></div>';
+        var html = '<div class="card scalableCard ' + shape + ' ' + shape + '-scalable"><div class="cardBox"><div class="cardScalable"><div class="cardPadder cardPadder-backdrop"></div>';
 
         if (target) {
             html += '<a class="cardContent" href="' + target + '" target="_blank">';
@@ -232,7 +221,7 @@
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
         html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
-        html += '<div class="itemsContainer">';
+        html += '<div class="itemsContainer vertical-wrap">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/download');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/download');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater3.png', 'https://emby.media/download');
@@ -252,7 +241,7 @@
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
 
         html += '<p>Design beautiful Cover Art, enjoy free access to Emby apps, and more. ' + learnMoreText + '</p>';
-        html += '<div class="itemsContainer">';
+        html += '<div class="itemsContainer vertical-wrap">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', cardTarget);
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', cardTarget);
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater3.png', cardTarget);
@@ -271,7 +260,7 @@
         var learnMoreText = AppInfo.isNativeApp ? '' : '<a href="https://emby.media/premiere" target="_blank">Learn more</a>';
 
         html += '<p>Combined horizontal and vertical swiping, better detail layouts, and more. ' + learnMoreText + '</p>';
-        html += '<div class="itemsContainer">';
+        html += '<div class="itemsContainer vertical-wrap">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/ms1.png', cardTarget, 'portraitCard');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/ms2.png', cardTarget, 'portraitCard');
         html += '</div>';
@@ -285,7 +274,7 @@
         var options = {
 
             Limit: 20,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb"
         };
@@ -302,9 +291,9 @@
 
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     preferThumb: true,
                     shape: 'backdrop',
@@ -331,7 +320,7 @@
         var options = {
 
             Limit: 12,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb",
             IncludeItemTypes: "Movie"
@@ -348,9 +337,9 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: getPortraitShape(),
                     showUnplayedIndicator: false,
@@ -373,7 +362,7 @@
         var options = {
 
             Limit: 12,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Thumb",
             IncludeItemTypes: "Episode"
@@ -390,10 +379,10 @@
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
 
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -413,12 +402,12 @@
 
     function loadLatestChannelMedia(elem, userId) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 
             Limit: screenWidth >= 2400 ? 10 : (screenWidth >= 1600 ? 10 : (screenWidth >= 1440 ? 8 : (screenWidth >= 800 ? 7 : 6))),
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             Filters: "IsUnplayed",
             UserId: userId
         };
@@ -429,8 +418,9 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestChannelMedia') + '</h1>';
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
-                html += LibraryBrowser.getPosterViewHtml({
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
+
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: 'auto',
                     showTitle: true,
@@ -461,7 +451,7 @@
 
             if (items.length) {
 
-                var screenWidth = window.innerWidth;
+                var screenWidth = dom.getWindowSize().innerWidth;
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
@@ -471,11 +461,11 @@
                 var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
 
                 if (scrollX) {
-                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer homeTopViews">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
@@ -505,7 +495,7 @@
 
     function loadResume(elem, userId) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 
@@ -515,7 +505,7 @@
             Filters: "IsResumable",
             Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
             Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             CollapseBoxSetItems: false,
             ExcludeLocationTypes: "Virtual",
             ImageTypeLimit: 1,
@@ -532,9 +522,9 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -561,7 +551,7 @@
         var query = {
 
             Limit: 20,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
             UserId: userId,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
@@ -576,9 +566,9 @@
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
-                html += LibraryBrowser.getPosterViewHtml({
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
                     shape: getThumbShape(),
@@ -631,12 +621,12 @@
 
     function loadLatestChannelItemsFromChannel(page, channel, index) {
 
-        var screenWidth = window.innerWidth;
+        var screenWidth = dom.getWindowSize().innerWidth;
 
         var options = {
 
             Limit: screenWidth >= 1600 ? 10 : (screenWidth >= 1440 ? 5 : (screenWidth >= 800 ? 6 : 6)),
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             Filters: "IsUnplayed",
             UserId: Dashboard.getCurrentUserId(),
             ChannelIds: channel.Id
@@ -656,8 +646,8 @@
                 html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
 
-                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer">';
-                html += LibraryBrowser.getPosterViewHtml({
+                html += '<div is="emby-itemscontainer" is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
+                html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: 'autohome',
                     defaultShape: 'square',
@@ -683,7 +673,7 @@
 
             userId: userId,
             limit: 5,
-            Fields: "PrimaryImageAspectRatio,SyncInfo",
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             IsInProgress: false,
             EnableTotalRecordCount: false
 
@@ -704,9 +694,9 @@
             if (enableScrollX()) {
                 html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
-            html += LibraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: enableScrollX() ? 'autooverflow' : 'auto',
                 showTitle: true,

@@ -1,4 +1,4 @@
-﻿<div id="wizardTunerPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvtuner,paper-input,emby-button">
+﻿<div id="wizardTunerPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvtuner,emby-input,emby-button">
 
     <div data-role="content">
 
@@ -21,11 +21,10 @@
                     <div class="fieldDescription">${AdditionalLiveTvProvidersCanBeInstalledLater}</div>
                 </div>
                 <br />
-                <div>
-                    <paper-input class="txtDevicePath" label="${LabelTunerIpAddress}" required="required"></paper-input>
+                <div class="inputContainer">
+                    <input is="emby-input" class="txtDevicePath" label="${LabelTunerIpAddress}" required="required" />
                     <div class="fieldDescription">${HelpMoreTunersCanBeAdded}</div>
                 </div>
-                <br />
                 <br />
                 <div class="wizardNavigation">
                     <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><i class="md-icon">arrow_back</i><span>${LabelPrevious}</span></button>

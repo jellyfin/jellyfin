@@ -1,4 +1,4 @@
-[is="emby-textarea"] {
+.emby-textarea {
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
@@ -33,7 +33,7 @@
     transition: all .2s ease-out;
 }
 
-.textareaLabel.focused:not(.blank) {
+.textareaLabelFocused {
     color: #52B54B;
 }
 
@@ -48,7 +48,7 @@
     transform-origin: center center;
 }
 
-[is="emby-textarea"]:focus + .emby-textarea-selectionbar {
+.emby-textarea:focus + .emby-textarea-selectionbar {
     background-color: #52B54B;
     transform: none;
 }

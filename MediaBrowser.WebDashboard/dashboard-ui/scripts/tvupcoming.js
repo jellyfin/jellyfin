@@ -1,4 +1,4 @@
-﻿define(['datetime', 'libraryBrowser', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser) {
+﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder) {
 
     function getUpcomingPromise(context, params) {
 
@@ -7,7 +7,7 @@
         var query = {
 
             Limit: 40,
-            Fields: "AirTime,UserData,SyncInfo",
+            Fields: "AirTime,UserData",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
@@ -66,7 +66,7 @@
 
                     var premiereDate = datetime.parseISO8601Date(item.PremiereDate, true);
 
-                    if (premiereDate.getDate() == new Date().getDate() - 1) {
+                    if (datetime.isRelativeDay(premiereDate, -1)) {
                         dateText = Globalize.translate('Yesterday');
                     } else {
                         dateText = libraryBrowser.getFutureDateText(premiereDate, true);
@@ -101,13 +101,16 @@
             html += '<div class="homePageSection">';
             html += '<h1 class="listHeader">' + group.name + '</h1>';
 
+            var allowBottomPadding = true;
+
             if (enableScrollX()) {
+                allowBottomPadding = false;
                 html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX">';
             } else {
-                html += '<div is="emby-itemscontainer" class="itemsContainer">';
+                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
-            html += libraryBrowser.getPosterViewHtml({
+            html += cardBuilder.getCardsHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
                 shape: getThumbShape(),
@@ -117,7 +120,8 @@
                 showDetailsMenu: true,
                 centerText: true,
                 overlayMoreButton: true,
-                showParentTitle: true
+                showParentTitle: true,
+                allowBottomPadding: allowBottomPadding
 
             });
             html += '</div>';
