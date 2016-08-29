@@ -1398,6 +1398,7 @@ var AppInfo = {};
 
         define('fetch', [bowerPath + '/fetch/fetch']);
 
+        define('raf', [embyWebComponentsBowerPath + '/polyfills/raf']);
         define('functionbind', [embyWebComponentsBowerPath + '/polyfills/bind']);
         define('arraypolyfills', [embyWebComponentsBowerPath + '/polyfills/array']);
         define('objectassign', [embyWebComponentsBowerPath + '/polyfills/objectassign']);
@@ -1794,6 +1795,10 @@ var AppInfo = {};
 
         if (!Function.prototype.bind) {
             list.push('functionbind');
+        }
+
+        if (!window.requestAnimationFrame) {
+            list.push('raf');
         }
 
         require(list, function () {

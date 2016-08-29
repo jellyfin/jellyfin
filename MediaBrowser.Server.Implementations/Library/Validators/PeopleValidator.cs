@@ -165,10 +165,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             progress.Report(100);
 
             _logger.Info("People validation complete");
-
-            // Bad practice, i know. But we keep a lot in memory, unfortunately.
-            GC.Collect(2, GCCollectionMode.Forced, true);
-            GC.Collect(2, GCCollectionMode.Forced, true);
         }
     }
 }

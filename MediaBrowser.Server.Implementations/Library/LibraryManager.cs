@@ -1088,10 +1088,6 @@ namespace MediaBrowser.Server.Implementations.Library
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
-
-            // Bad practice, i know. But we keep a lot in memory, unfortunately.
-            GC.Collect(2, GCCollectionMode.Forced, true);
-            GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
         /// <summary>

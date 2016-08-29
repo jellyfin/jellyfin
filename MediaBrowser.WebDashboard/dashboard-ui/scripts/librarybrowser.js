@@ -303,7 +303,7 @@
                     }
                 }
                 else if (item.IsFolder) {
-                    if (item.Type != "BoxSet") {
+                    if (item.Type != "BoxSet" && item.Type != "Series") {
                         return id ? "itemlist.html?parentId=" + id : "#";
                     }
                 }
