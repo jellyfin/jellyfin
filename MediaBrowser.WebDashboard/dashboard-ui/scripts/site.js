@@ -2804,14 +2804,12 @@ var AppInfo = {};
                     return navigator.serviceWorker.ready;
                 }).then(function (reg) {
 
-                    if (!reg.sync) {
-                        return Promise.resovle();
+                    if (reg.sync) {
+                        // https://github.com/WICG/BackgroundSync/blob/master/explainer.md
+                        return reg.sync.register('emby-sync').then(function () {
+                            window.SyncRegistered = Dashboard.isConnectMode();
+                        });
                     }
-
-                    // https://github.com/WICG/BackgroundSync/blob/master/explainer.md
-                    return reg.sync.register('emby-sync').then(function () {
-                        window.SyncRegistered = Dashboard.isConnectMode();
-                    });
                 });
 
             } catch (err) {
