@@ -873,7 +873,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
             }
 
-            if (showTitle && forceName && overlayText && lines.length == 1) {
+            if ((showTitle || !imgUrl) && forceName && overlayText && lines.length == 1) {
                 lines = [];
             }
 
@@ -1205,6 +1205,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 actionAttribute = '';
             }
 
+            className += ' card-withuserdata';
+
             var positionTicksData = item.UserData && item.UserData.PlaybackPositionTicks ? (' data-positionticks="' + item.UserData.PlaybackPositionTicks + '"') : '';
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
             var playlistIdData = options.playlistId ? (' data-playlistid="' + options.playlistId + '"') : '';
@@ -1398,7 +1400,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
         function onUserDataChanged(userData) {
 
-            var cards = document.querySelectorAll('.card[data-id="' + userData.ItemId + '"]');
+            var cards = document.querySelectorAll('.card-withuserdata[data-id="' + userData.ItemId + '"]');
 
             for (var i = 0, length = cards.length; i < length; i++) {
                 updateUserData(cards[i], userData);

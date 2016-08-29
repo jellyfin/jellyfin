@@ -73,6 +73,7 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
         options.data = options.data || {};
         options.data.serverId = apiClient.serverInfo().Id;
         options.icon = options.icon || getIconUrl();
+        options.badge = options.badge || getIconUrl('badge.png');
 
         resetRegistration();
 

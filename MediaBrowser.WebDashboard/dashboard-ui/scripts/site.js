@@ -1229,7 +1229,7 @@ var AppInfo = {};
             inputManager: embyWebComponentsBowerPath + "/inputmanager",
             qualityoptions: embyWebComponentsBowerPath + "/qualityoptions",
             hammer: bowerPath + "/hammerjs/hammer.min",
-            pageJs: embyWebComponentsBowerPath + '/page.js/page',
+            pageJs: embyWebComponentsBowerPath + '/pagejs/page',
             focusManager: embyWebComponentsBowerPath + "/focusmanager",
             datetime: embyWebComponentsBowerPath + "/datetime",
             globalize: embyWebComponentsBowerPath + "/globalize",
@@ -2799,8 +2799,12 @@ var AppInfo = {};
                     return navigator.serviceWorker.ready;
                 }).then(function (reg) {
 
+                    if (!reg.sync) {
+                        return Promise.resovle();
+                    }
+
                     // https://github.com/WICG/BackgroundSync/blob/master/explainer.md
-                    return reg.sync.register('emby-sync').then(function() {
+                    return reg.sync.register('emby-sync').then(function () {
                         window.SyncRegistered = Dashboard.isConnectMode();
                     });
                 });

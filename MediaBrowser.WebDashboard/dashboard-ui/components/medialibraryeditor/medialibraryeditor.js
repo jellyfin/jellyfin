@@ -144,6 +144,10 @@
     function onDialogClosed() {
 
         Dashboard.hideLoadingMsg();
+
+        // hardcoding this to true for now until libraryOptions are taken into account
+        hasChanges = true;
+
         currentDeferred.resolveWith(null, [hasChanges]);
     }
 
