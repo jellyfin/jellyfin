@@ -55,6 +55,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     name += " " + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
                 }
+                else
+                {
+                    name += " " + DateTime.Now.ToString("yyyy-MM-dd");
+                }
 
                 if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
                 {

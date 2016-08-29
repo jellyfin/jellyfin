@@ -176,7 +176,6 @@ namespace MediaBrowser.Model.Configuration
         public string UICulture { get; set; }
 
         public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
-        public bool FindInternetTrailers { get; set; }
 
         public bool SaveMetadataHidden { get; set; }
 
@@ -243,7 +242,6 @@ namespace MediaBrowser.Model.Configuration
             LibraryMonitorDelay = 60;
 
             EnableInternetProviders = true;
-            FindInternetTrailers = true;
 
             PathSubstitutions = new PathSubstitution[] { };
             ContentTypes = new NameValuePair[] { };
