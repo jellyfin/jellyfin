@@ -70,7 +70,6 @@
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
     <Compile Include="INativeApp.cs" />
     <Compile Include="MbLinkShortcutHandler.cs" />
-    <Compile Include="Migrations\CollectionsViewMigration.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\DbMigration.cs" />
     <Compile Include="Migrations\MovieDbEpisodeProviderMigration.cs" />

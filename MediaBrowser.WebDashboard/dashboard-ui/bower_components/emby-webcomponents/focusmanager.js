@@ -200,22 +200,10 @@ define(['dom'], function (dom) {
 
         var offset = getOffset(elem);
 
-        var posY = offset.top;
-        var posX = offset.left;
+        offset.right = offset.left + offset.width;
+        offset.bottom = offset.top + offset.height;
 
-        var width = offset.width;
-        var height = offset.height;
-        //var width = elem.offsetWidth;
-        //var height = elem.offsetHeight;
-
-        return {
-            left: posX,
-            top: posY,
-            width: width,
-            height: height,
-            right: posX + width,
-            bottom: posY + height
-        };
+        return offset;
     }
 
     function nav(activeElement, direction) {

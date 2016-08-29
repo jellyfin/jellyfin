@@ -1,48 +1,50 @@
-﻿<div class="formDialogHeader" style="margin:0 0 2em;">
-    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
-        <i class="md-icon">&#xE5C4;</i>
-    </button>
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
     <div class="formDialogHeaderTitle">
     </div>
 </div>
 
-<form class="episodeCorrectionForm" style="margin:auto;">
+<div class="formDialogContent smoothScrollY">
+    <div class="dialogContentInner dialog-content-centered">
+        <form class="episodeCorrectionForm">
 
-    <p><span class="inputFile"></span></p>
+            <p><span class="inputFile"></span></p>
 
-    <div style="margin: 1em 0 1em;">
-        <div style="width:85%;display:inline-block;">
-            <label for="selectSeries" class="selectLabel">${LabelSeries}</label>
-            <select id="selectSeries" data-mini="true" required="required"></select>
-        </div>
-        <button type="button" is="paper-icon-button-light" id="btnNewSeries" class="autoSize" title="${ButtonNew}">
-            <i class="md-icon">add</i>
-        </button>
+            <div style="margin: 1em 0 1em;">
+                <div style="width:85%;display:inline-block;">
+                    <label for="selectSeries" class="selectLabel">${LabelSeries}</label>
+                    <select id="selectSeries" data-mini="true" required="required"></select>
+                </div>
+                <button type="button" is="paper-icon-button-light" id="btnNewSeries" class="autoSize" title="${ButtonNew}">
+                    <i class="md-icon">add</i>
+                </button>
+            </div>
+            <div class="fldSelectSeriesFolder hide" style="margin: 1em 0 1em;">
+                <div style="width:100%;display:inline-block;">
+                    <label for="selectSeriesFolder" class="selectLabel">Series Root Folder</label>
+                    <select id="selectSeriesFolder" data-mini="true"></select>
+                </div>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}" />
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}" />
+                <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
+            </div>
+            <div class="fldRemember hide">
+                <br />
+                <paper-checkbox type="checkbox" id="chkRememberCorrection">${OptionRememberOrganizeCorrection} <span class="extractedName" style="font-weight: bold; font-style: italic" /></paper-checkbox>
+            </div>
+            <br />
+            <button is="emby-button" type="submit" class="raised submit block">
+                <i class="md-icon">check</i>
+                <span>${ButtonOk}</span>
+            </button>
+            <input id="hfResultId" type="hidden" />
+        </form>
     </div>
-    <div class="fldSelectSeriesFolder hide" style="margin: 1em 0 1em;">
-        <div style="width:100%;display:inline-block;">
-            <label for="selectSeriesFolder" class="selectLabel">Series Root Folder</label>
-            <select id="selectSeriesFolder" data-mini="true"></select>
-        </div>
-    </div>
-    <div class="inputContainer">
-        <input is="emby-input" id="txtSeason" type="number" pattern="[0-9]*" required min="0" label="${LabelSeasonNumber}"/>
-    </div>
-    <div class="inputContainer">
-        <input is="emby-input" id="txtEpisode" type="number" pattern="[0-9]*" required min="0" label="${LabelEpisodeNumber}"/>
-    </div>
-    <div class="inputContainer">
-        <input is="emby-input" id="txtEndingEpisode" type="number" pattern="[0-9]*" min="0" label="${LabelEndingEpisodeNumber}"/>
-        <div class="fieldDescription">${LabelEndingEpisodeNumberHelp}</div>
-    </div>
-    <div class="fldRemember hide">
-        <br />
-        <paper-checkbox type="checkbox" id="chkRememberCorrection">${OptionRememberOrganizeCorrection} <span class="extractedName" style="font-weight: bold; font-style: italic" /></paper-checkbox>
-    </div>
-    <br />
-    <button is="emby-button" type="submit" class="raised submit block">
-        <i class="md-icon">check</i>
-        <span>${ButtonOk}</span>
-    </button>
-    <input id="hfResultId" type="hidden" />
-</form>
+</div>

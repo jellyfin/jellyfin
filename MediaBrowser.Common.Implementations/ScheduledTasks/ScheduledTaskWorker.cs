@@ -423,10 +423,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             CurrentProgress = null;
 
             OnTaskCompleted(startTime, endTime, status, failureException);
-
-            // Bad practice, i know. But we keep a lot in memory, unfortunately.
-            GC.Collect(2, GCCollectionMode.Forced, true);
-            GC.Collect(2, GCCollectionMode.Forced, true);
         }
 
         /// <summary>

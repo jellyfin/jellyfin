@@ -740,7 +740,6 @@
         }
 
         var selectedMediaInfoTimeout;
-        var focusedElement;
         function onProgramGridFocus(e) {
 
             var programCell = parentWithClass(e.target, 'programCell');
@@ -749,25 +748,15 @@
                 return;
             }
 
-            focusedElement = e.target;
-            if (selectedMediaInfoTimeout) {
-                clearTimeout(selectedMediaInfoTimeout);
-            }
-            selectedMediaInfoTimeout = setTimeout(onSelectedMediaInfoTimeout, 700);
-        }
+            var focused = e.target;
+            var id = focused.getAttribute('data-id');
+            var item = items[id];
 
-        function onSelectedMediaInfoTimeout() {
-            var focused = focusedElement
-            if (focused && document.activeElement == focused) {
-                var id = focused.getAttribute('data-id');
-                var item = items[id];
-
-                if (item) {
-                    events.trigger(self, 'focus', [
-                    {
-                        item: item
-                    }]);
-                }
+            if (item) {
+                events.trigger(self, 'focus', [
+                {
+                    item: item
+                }]);
             }
         }
 

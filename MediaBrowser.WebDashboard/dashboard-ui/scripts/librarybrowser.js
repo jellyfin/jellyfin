@@ -303,7 +303,9 @@
                     }
                 }
                 else if (item.IsFolder) {
-                    return id ? "itemlist.html?parentId=" + id : "#";
+                    if (item.Type != "BoxSet" && item.Type != "Series") {
+                        return id ? "itemlist.html?parentId=" + id : "#";
+                    }
                 }
 
                 if (item.Type == 'CollectionFolder') {
