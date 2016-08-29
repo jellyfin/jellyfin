@@ -216,7 +216,8 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             return allIntros
-                .Where(i => IsMatch(i.Path, codec));
+                .Where(i => IsMatch(i.Path, codec))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private IEnumerable<IntroInfo> GetMediaInfoIntrosByAudioStream(List<IntroInfo> allIntros, MediaStream stream)
@@ -229,13 +230,15 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             return allIntros
-                .Where(i => IsAudioMatch(i.Path, stream));
+                .Where(i => IsAudioMatch(i.Path, stream))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private IEnumerable<IntroInfo> GetMediaInfoIntrosByTags(List<IntroInfo> allIntros, List<string> tags)
         {
             return allIntros
-                .Where(i => tags.Any(t => IsMatch(i.Path, t)));
+                .Where(i => tags.Any(t => IsMatch(i.Path, t)))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private bool IsMatch(string file, string attribute)

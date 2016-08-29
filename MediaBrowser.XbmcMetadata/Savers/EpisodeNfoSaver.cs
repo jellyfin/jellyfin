@@ -72,19 +72,23 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteElementString("airsbefore_episode", episode.AirsBeforeEpisodeNumber.Value.ToString(UsCulture));
             }
-            if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
-            {
-                writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(UsCulture));
-            }
             if (episode.AirsBeforeSeasonNumber.HasValue && episode.AirsBeforeSeasonNumber.Value != -1)
             {
                 writer.WriteElementString("airsbefore_season", episode.AirsBeforeSeasonNumber.Value.ToString(UsCulture));
             }
 
-            var season = episode.AiredSeasonNumber;
-            if (season.HasValue && season.Value != -1)
+            if (episode.ParentIndexNumber.HasValue && episode.ParentIndexNumber.Value == 0)
             {
-                writer.WriteElementString("displayseason", season.Value.ToString(UsCulture));
+                if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
+                {
+                    writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(UsCulture));
+                }
+
+                var specialSeason = episode.AiredSeasonNumber;
+                if (specialSeason.HasValue && specialSeason.Value != -1)
+                {
+                    writer.WriteElementString("displayseason", specialSeason.Value.ToString(UsCulture));
+                }
             }
 
             if (episode.DvdEpisodeNumber.HasValue)
