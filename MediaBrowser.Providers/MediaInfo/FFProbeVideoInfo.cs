@@ -261,11 +261,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 NormalizeChapterNames(chapters);
 
+                var libraryOptions = _libraryManager.GetLibraryOptions(video);
+                var extractDuringScan = chapterOptions.ExtractDuringLibraryScan;
+                if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
+                {
+                    extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
+                }
+
                 await _encodingManager.RefreshChapterImages(new ChapterImageRefreshOptions
                 {
                     Chapters = chapters,
                     Video = video,
-                    ExtractImages = chapterOptions.ExtractDuringLibraryScan,
+                    ExtractImages = extractDuringScan,
                     SaveChapters = false
 
                 }, cancellationToken).ConfigureAwait(false);
