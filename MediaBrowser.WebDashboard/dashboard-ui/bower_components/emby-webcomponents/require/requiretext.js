@@ -4,7 +4,7 @@ define(function () {
 
         load: function (url, req, load, config) {
 
-            if (url.indexOf('http') != 0 && url.indexOf('file:') != 0) {
+            if (url.indexOf('://') == -1) {
                 url = config.baseUrl + url;
             }
 

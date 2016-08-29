@@ -104,8 +104,6 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         }
     }
 
-    var htmlCache = {};
-    var cacheParam = new Date().getTime();
     function loadContentUrl(ctx, next, route, request) {
 
         var url = route.contentPath || route.path;
@@ -125,32 +123,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             url += '?' + ctx.querystring;
         }
 
-        if (route.enableCache !== false) {
-            var cachedHtml = htmlCache[url];
-            if (cachedHtml) {
-                loadContent(ctx, route, cachedHtml, request);
-                return;
-            }
-        }
+        require(['text!' + url], function (html) {
 
-        url += url.indexOf('?') == -1 ? '?' : '&';
-        url += 'v=' + cacheParam;
-
-        var xhr = new XMLHttpRequest();
-        xhr.onload = xhr.onerror = function () {
-            if (this.status < 400) {
-                var html = this.response;
-                if (route.enableCache !== false) {
-                    htmlCache[url.split('?')[0]] = html;
-                }
-                loadContent(ctx, route, html, request);
-            } else {
-                next();
-            }
-        };
-        xhr.onerror = next;
-        xhr.open('GET', url, true);
-        xhr.send();
+            loadContent(ctx, route, html, request);
+        });
     }
 
     function handleRoute(ctx, next, route) {

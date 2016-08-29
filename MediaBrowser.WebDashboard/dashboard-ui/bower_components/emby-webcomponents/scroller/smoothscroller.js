@@ -48,17 +48,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
     }
 
     /**
-	 * Check if variable is a number.
-	 *
-	 * @param {Mixed} value
-	 *s
-	 * @return {Boolean}
-	 */
-    function isNumber(value) {
-        return !isNaN(parseFloat(value)) && isFinite(value);
-    }
-
-    /**
 	 * Make sure that number is within the limits.
 	 *
 	 * @param {Number} number
@@ -70,10 +59,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
     function within(number, min, max) {
         return number < min ? min : number > max ? max : number;
     }
-
-    var pluginName = 'sly';
-    var className = 'Sly';
-    var namespace = pluginName;
 
     // Other global values
     var dragMouseEvents = ['mousemove', 'mouseup'];
@@ -107,7 +92,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             dragSource: null, // Selector or DOM element for catching dragging events. Default is FRAME.
             mouseDragging: 1, // Enable navigation by dragging the SLIDEE with mouse cursor.
             touchDragging: 1, // Enable navigation by dragging the SLIDEE with touch events.
-            releaseSwing: false, // Ease out on dragging swing release.
             swingSpeed: 0.2, // Swing synchronization speed, where: 1 = instant, 0 = infinite.
             dragThreshold: 3, // Distance in pixels before Sly recognizes dragging.
             intervactive: null, // Selector for special interactive elements.
@@ -168,11 +152,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             cur: 0
         };
 
-        // Items
-        var rel = {
-            activeItem: null
-        };
-
         // Miscellaneous
         var scrollSource = o.scrollSource ? o.scrollSource : frameElement;
         var dragSourceElement = o.dragSource ? o.dragSource : frameElement;
@@ -185,7 +164,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             delta: 0,
             resetTime: 200
         };
-        var historyID = 0;
+
         var i, l;
 
         // Normalizing frame
@@ -452,7 +431,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 
             var offset = o.horizontal ? itemOffset.left - slideeOffset.left : itemOffset.top - slideeOffset.top;
             var size = o.horizontal ? itemOffset.width : itemOffset.height;
-            if (!size) {
+            if (!size && size !== 0) {
                 size = item[o.horizontal ? 'offsetWidth' : 'offsetHeight'];
             }
 
@@ -587,21 +566,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
         }
 
         /**
-		 * Keeps track of a dragging delta history.
-		 *
-		 * @return {Void}
-		 */
-        function draggingHistoryTick() {
-            // Looking at this, I know what you're thinking :) But as we need only 4 history states, doing it this way
-            // as opposed to a proper loop is ~25 bytes smaller (when minified with GCC), a lot faster, and doesn't
-            // generate garbage. The loop version would create 2 new variables on every tick. Unexaptable!
-            dragging.history[0] = dragging.history[1];
-            dragging.history[1] = dragging.history[2];
-            dragging.history[2] = dragging.history[3];
-            dragging.history[3] = dragging.delta;
-        }
-
-        /**
 		 * Initialize continuous movement.
 		 *
 		 * @return {Void}
@@ -649,16 +613,15 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             dragging.init = 0;
             dragging.source = event.target;
             dragging.touch = isTouch;
-            dragging.pointer = isTouch ? event.touches[0] : event;
-            dragging.initX = dragging.pointer.pageX;
-            dragging.initY = dragging.pointer.pageY;
+            var pointer = isTouch ? event.touches[0] : event;
+            dragging.initX = pointer.pageX;
+            dragging.initY = pointer.pageY;
             dragging.initPos = isSlidee ? pos.cur : hPos.cur;
             dragging.start = +new Date();
             dragging.time = 0;
             dragging.path = 0;
             dragging.delta = 0;
             dragging.locked = 0;
-            dragging.history = [0, 0, 0, 0];
             dragging.pathToLock = isSlidee ? isTouch ? 30 : 10 : 0;
 
             // Bind dragging events
@@ -680,12 +643,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             if (isSlidee) {
                 slideeElement.classList.add(o.draggedClass);
             }
-
-            // Keep track of a dragging path history. This is later used in the
-            // dragging release swing calculation when dragging SLIDEE.
-            if (isSlidee) {
-                historyID = setInterval(draggingHistoryTick, 10);
-            }
         }
 
         /**
@@ -697,9 +654,9 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 		 */
         function dragHandler(event) {
             dragging.released = event.type === 'mouseup' || event.type === 'touchend';
-            dragging.pointer = dragging.touch ? event[dragging.released ? 'changedTouches' : 'touches'][0] : event;
-            dragging.pathX = dragging.pointer.pageX - dragging.initX;
-            dragging.pathY = dragging.pointer.pageY - dragging.initY;
+            var pointer = dragging.touch ? event[dragging.released ? 'changedTouches' : 'touches'][0] : event;
+            dragging.pathX = pointer.pageX - dragging.initX;
+            dragging.pathY = pointer.pageY - dragging.initY;
             dragging.path = sqrt(pow(dragging.pathX, 2) + pow(dragging.pathY, 2));
             dragging.delta = o.horizontal ? dragging.pathX : dragging.pathY;
 
@@ -734,13 +691,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
             // Cancel dragging on release
             if (dragging.released) {
                 dragEnd();
-
-                // Adjust path with a swing on mouse release
-                if (o.releaseSwing && dragging.slidee) {
-                    dragging.swing = (dragging.delta - dragging.history[0]) / 40 * 300;
-                    dragging.delta += dragging.swing;
-                    dragging.tweese = abs(dragging.swing) > 10;
-                }
             }
 
             slideTo(dragging.slidee ? round(dragging.initPos - dragging.delta) : handleToSlidee(dragging.initPos + dragging.delta));
@@ -752,7 +702,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 		 * @return {Void}
 		 */
         function dragEnd() {
-            clearInterval(historyID);
             dragging.released = true;
 
             if (dragging.touch) {
@@ -825,8 +774,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 		 */
         function scrollHandler(event) {
 
-            event[namespace] = self;
-
             // Ignore if there is no scrolling to be done
             if (!o.scrollBy || pos.start === pos.end) {
                 return;
@@ -862,8 +809,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
         self.destroy = function () {
 
             dom.removeEventListener(window, 'resize', onResize, {
-                passive: true,
-                capture: true
+                passive: true
             });
 
             // Reset native FRAME element scroll
@@ -946,8 +892,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 
                 if (!o.scrollWidth) {
                     dom.addEventListener(window, 'resize', onResize, {
-                        passive: true,
-                        capture: true
+                        passive: true
                     });
                 }
 

@@ -2884,6 +2884,11 @@
             return self.getJSON(self.getUrl("Channels", query || {}));
         };
 
+        self.getLatestChannelItems = function (query) {
+
+            return self.getJSON(self.getUrl("Channels/Items/Latest", query));
+        };
+
         self.getUserViews = function (options, userId) {
 
             options = options || {};

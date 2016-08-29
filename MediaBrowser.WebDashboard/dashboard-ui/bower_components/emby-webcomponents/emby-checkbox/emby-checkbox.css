@@ -27,8 +27,9 @@
 
 .mdl-checkbox__input {
     position: absolute;
-    width: 0;
-    height: 0;
+    /* 1px is for focusing purposes, so the focusManager doesn't skip over it */
+    width: 1px;
+    height: 1px;
     margin: 0;
     padding: 0;
     opacity: 0;
@@ -118,5 +119,5 @@
 }
 
 .checkboxList-paperList {
-    padding: 1em!important;
+    padding: 1em !important;
 }

@@ -172,15 +172,7 @@ define(['dom'], function (dom) {
         return elem;
     }
 
-    function getWindowData(win, documentElement) {
-
-        return {
-            clientTop: documentElement.clientTop,
-            clientLeft: documentElement.clientLeft
-        };
-    }
-
-    function getOffset(elem, windowData) {
+    function getOffset(elem) {
 
         var box;
 
@@ -197,33 +189,21 @@ define(['dom'], function (dom) {
             };
         }
         return {
-            top: box.top - windowData.clientTop,
-            left: box.left - windowData.clientLeft,
+            top: box.top,
+            left: box.left,
             width: box.width,
             height: box.height
         };
     }
 
-    function getViewportBoundingClientRect(elem, windowData) {
+    function getViewportBoundingClientRect(elem) {
 
-        var offset = getOffset(elem, windowData);
+        var offset = getOffset(elem);
 
-        var posY = offset.top;
-        var posX = offset.left;
+        offset.right = offset.left + offset.width;
+        offset.bottom = offset.top + offset.height;
 
-        var width = offset.width;
-        var height = offset.height;
-        //var width = elem.offsetWidth;
-        //var height = elem.offsetHeight;
-
-        return {
-            left: posX,
-            top: posY,
-            width: width,
-            height: height,
-            right: posX + width,
-            bottom: posY + height
-        };
+        return offset;
     }
 
     function nav(activeElement, direction) {
@@ -243,9 +223,7 @@ define(['dom'], function (dom) {
 
         var focusableContainer = dom.parentWithClass(activeElement, 'focusable');
 
-        var doc = activeElement.ownerDocument;
-        var windowData = getWindowData(doc.defaultView, doc.documentElement);
-        var rect = getViewportBoundingClientRect(activeElement, windowData);
+        var rect = getViewportBoundingClientRect(activeElement);
         var focusableElements = [];
 
         var focusable = container.querySelectorAll(focusableQuery);
@@ -264,7 +242,7 @@ define(['dom'], function (dom) {
             //    continue;
             //}
 
-            var elementRect = getViewportBoundingClientRect(curr, windowData);
+            var elementRect = getViewportBoundingClientRect(curr);
 
             // not currently visible
             if (!elementRect.width && !elementRect.height) {

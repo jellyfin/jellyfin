@@ -45,7 +45,8 @@
                 showTitle: true,
                 lazy: true,
                 cardLayout: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                showCurrentProgram: true
             });
         }
 

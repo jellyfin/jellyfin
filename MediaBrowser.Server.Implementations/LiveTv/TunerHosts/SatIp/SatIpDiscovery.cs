@@ -284,19 +284,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     var capabilitiesElement = deviceElement.Element(n1 + "X_SATIPCAP");
                         if (capabilitiesElement != null)
                         {
-                            _capabilities = capabilitiesElement.Value;
-                            if (capabilitiesElement.Value.Contains(','))
-                            {
-                                string[] capabilities = capabilitiesElement.Value.Split(',');
-                                foreach (var capability in capabilities)
-                                {
-                                    ReadCapability(capability);
-                                }
-                            }
-                            else
-                            {
-                                ReadCapability(capabilitiesElement.Value);
-                            }
+                            //_capabilities = capabilitiesElement.Value;
+                            //if (capabilitiesElement.Value.Contains(','))
+                            //{
+                            //    string[] capabilities = capabilitiesElement.Value.Split(',');
+                            //    foreach (var capability in capabilities)
+                            //    {
+                            //        ReadCapability(capability);
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    ReadCapability(capabilitiesElement.Value);
+                            //}
                         }
                         else
                         {
