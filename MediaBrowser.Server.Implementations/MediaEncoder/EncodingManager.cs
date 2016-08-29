@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Server.Implementations.MediaEncoder
 {
@@ -24,6 +25,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         private readonly ILogger _logger;
         private readonly IMediaEncoder _encoder;
         private readonly IChapterManager _chapterManager;
+        private readonly ILibraryManager _libraryManager;
 
         public EncodingManager(IFileSystem fileSystem, 
             ILogger logger, 
@@ -57,27 +59,38 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 return false;
             }
 
-            var options = _chapterManager.GetConfiguration();
-
-            if (video is Movie)
+            var libraryOptions = _libraryManager.GetLibraryOptions(video);
+            if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
             {
-                if (!options.EnableMovieChapterImageExtraction)
-                {
-                    return false;
-                }
-            }
-            else if (video is Episode)
-            {
-                if (!options.EnableEpisodeChapterImageExtraction)
+                if (!libraryOptions.EnableChapterImageExtraction)
                 {
                     return false;
                 }
             }
             else
             {
-                if (!options.EnableOtherVideoChapterImageExtraction)
+                var options = _chapterManager.GetConfiguration();
+
+                if (video is Movie)
                 {
-                    return false;
+                    if (!options.EnableMovieChapterImageExtraction)
+                    {
+                        return false;
+                    }
+                }
+                else if (video is Episode)
+                {
+                    if (!options.EnableEpisodeChapterImageExtraction)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!options.EnableOtherVideoChapterImageExtraction)
+                    {
+                        return false;
+                    }
                 }
             }
 
