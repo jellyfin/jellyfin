@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'globalize', 'scrollHelper', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, globalize, scrollHelper, require) {
+﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, globalize, scrollHelper, imageLoader, require) {
 
     var currentItem;
     var hasChanges = false;
@@ -182,7 +182,7 @@
         }
 
         elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+        imageLoader.lazyChildren(elem);
 
         addListeners(elem.querySelectorAll('.btnSearchImages'), 'click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype'));
@@ -197,7 +197,7 @@
 
                 confirm(globalize.translate('sharedcomponents#ConfirmDeleteImage')).then(function () {
 
-                    ApiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
+                    apiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
 
                         hasChanges = true;
                         reload(page);
@@ -211,7 +211,7 @@
             var type = this.getAttribute('data-imagetype');
             var index = parseInt(this.getAttribute('data-index'));
             var newIndex = parseInt(this.getAttribute('data-newindex'));
-            ApiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
+            apiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
 
                 hasChanges = true;
                 reload(page);
