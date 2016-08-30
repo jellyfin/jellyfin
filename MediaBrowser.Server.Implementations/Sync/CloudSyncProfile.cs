@@ -23,7 +23,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (supportsDca)
             {
-                mkvAudio += ",dca";
+                mkvAudio += ",dca,dts";
             }
 
             var videoProfile = "high|main|baseline|constrained baseline";
