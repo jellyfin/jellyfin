@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, globalize, scrollHelper, imageLoader, require) {
+﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'focusManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, focusManager, globalize, scrollHelper, imageLoader, require) {
 
     var currentItem;
     var hasChanges = false;
@@ -12,7 +12,7 @@
         return options;
     }
 
-    function reload(page, item) {
+    function reload(page, item, focusContext) {
 
         loading.show();
 
@@ -20,13 +20,13 @@
 
         if (item) {
             apiClient = connectionManager.getApiClient(item.ServerId);
-            reloadItem(page, item, apiClient);
+            reloadItem(page, item, apiClient, focusContext);
         }
         else {
 
             apiClient = connectionManager.getApiClient(currentItem.ServerId);
             apiClient.getItem(apiClient.getCurrentUserId(), currentItem.Id).then(function (item) {
-                reloadItem(page, item, apiClient);
+                reloadItem(page, item, apiClient, focusContext);
             });
         }
     }
@@ -41,7 +41,7 @@
         });
     }
 
-    function reloadItem(page, item, apiClient) {
+    function reloadItem(page, item, apiClient, focusContext) {
 
         currentItem = item;
 
@@ -64,6 +64,10 @@
                 renderBackdrops(page, apiClient, item, imageInfos, providers);
                 renderScreenshots(page, apiClient, item, imageInfos, providers);
                 loading.hide();
+
+                if (layoutManager.tv) {
+                    focusManager.autoFocus((focusContext || page));
+                }
             });
         });
     }
@@ -88,11 +92,11 @@
         return apiClient.getScaledImageUrl(item.Id || item.ItemId, options);
     }
 
-    function getCardHtml(image, index, apiClient, imageProviders, imageSize, tagName, enableFooterButtons) {
+    function getCardHtml(image, index, numImages, apiClient, imageProviders, imageSize, tagName, enableFooterButtons) {
 
         var html = '';
 
-        var cssClass = "card scalableCard";
+        var cssClass = "card scalableCard imageEditorCard";
         var cardBoxCssClass = 'cardBox visualCardBox';
 
         cssClass += " backdropCard backdropCard-scalable";
@@ -106,7 +110,7 @@
             html += '<div class="' + cssClass + '"';
         }
 
-        html += ' data-id="' + currentItem.Id + '" data-serverid="' + apiClient.serverId() + '" data-index="' + index + '" data-imagetype="' + image.ImageType + '" data-providers="' + imageProviders.length + '"';
+        html += ' data-id="' + currentItem.Id + '" data-serverid="' + apiClient.serverId() + '" data-index="' + index + '" data-numimages="' + numImages + '" data-imagetype="' + image.ImageType + '" data-providers="' + imageProviders.length + '"';
 
         html += '>';
 
@@ -146,7 +150,7 @@
                     html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 }
 
-                if (index < length - 1) {
+                if (index < numImages - 1) {
                     html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 } else {
                     html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
@@ -192,6 +196,15 @@
         });
     }
 
+    function moveImage(context, apiClient, itemId, type, index, newIndex, focusContext) {
+
+        apiClient.updateItemImageIndex(itemId, type, index, newIndex).then(function () {
+
+            hasChanges = true;
+            reload(context, null, focusContext);
+        });
+    }
+
     function renderImages(page, item, apiClient, images, imageProviders, elem) {
 
         var html = '';
@@ -209,7 +222,7 @@
 
             var image = images[i];
 
-            html += getCardHtml(image, i, apiClient, imageProviders, imageSize, tagName, enableFooterButtons);
+            html += getCardHtml(image, i, length, apiClient, imageProviders, imageSize, tagName, enableFooterButtons);
         }
 
         elem.innerHTML = html;
@@ -229,14 +242,9 @@
 
         addListeners(elem, 'btnMoveImage', 'click', function () {
             var type = this.getAttribute('data-imagetype');
-            var index = parseInt(this.getAttribute('data-index'));
-            var newIndex = parseInt(this.getAttribute('data-newindex'));
-            apiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
-
-                hasChanges = true;
-                reload(page);
-
-            });
+            var index = this.getAttribute('data-index');
+            var newIndex = this.getAttribute('data-newindex');
+            moveImage(page, apiClient, currentItem.Id, type, index, newIndex, dom.parentWithClass(this, 'itemsContainer'));
         });
     }
 
@@ -303,6 +311,7 @@
         var type = imageCard.getAttribute('data-imagetype');
         var index = parseInt(imageCard.getAttribute('data-index'));
         var providerCount = parseInt(imageCard.getAttribute('data-providers'));
+        var numImages = parseInt(imageCard.getAttribute('data-numimages'));
 
         require(['actionsheet'], function (actionSheet) {
 
@@ -312,6 +321,22 @@
                 name: globalize.translate('sharedcomponents#Delete'),
                 id: 'delete'
             });
+
+            if (type == 'Backdrop' || type == 'Screenshot') {
+                if (index > 0) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#MoveLeft'),
+                        id: 'moveleft'
+                    });
+                }
+
+                if (index < numImages - 1) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#MoveRight'),
+                        id: 'moveright'
+                    });
+                }
+            }
 
             if (providerCount) {
                 commands.push({
@@ -334,6 +359,12 @@
                         break;
                     case 'search':
                         showImageDownloader(context, type);
+                        break;
+                    case 'moveleft':
+                        moveImage(context, apiClient, itemId, type, index, index - 1, dom.parentWithClass(imageCard, 'itemsContainer'));
+                        break;
+                    case 'moveright':
+                        moveImage(context, apiClient, itemId, type, index, index + 1, dom.parentWithClass(imageCard, 'itemsContainer'));
                         break;
                     default:
                         break;
