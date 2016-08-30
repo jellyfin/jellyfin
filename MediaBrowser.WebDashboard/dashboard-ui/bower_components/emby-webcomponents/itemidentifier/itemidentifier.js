@@ -174,6 +174,7 @@
 
         var html = '';
         var cssClass = "card scalableCard";
+        var cardBoxCssClass = 'cardBox visualCardBox';
         var padderClass;
 
         if (currentItemType == "Episode") {
@@ -189,8 +190,13 @@
             padderClass = 'cardPadder-portrait';
         }
 
+        if (layoutManager.tv) {
+            cssClass += ' card-focusscale';
+            cardBoxCssClass += ' cardBox-focustransform cardBox-focustransform-transition';
+        }
+
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
-        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';
         html += '<div class="' + padderClass + '"></div>';
 

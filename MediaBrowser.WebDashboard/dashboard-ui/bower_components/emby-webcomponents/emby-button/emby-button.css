@@ -1,6 +1,6 @@
 .emby-button {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     align-items: center;
     box-sizing: border-box;
     margin: 0 .29em;
@@ -89,7 +89,7 @@
         transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .emby-button i + span {
+    .emby-button > i + span {
         margin-left: .5em;
     }
 
@@ -97,12 +97,12 @@
         margin-left: .5em;
     }
 
-    .emby-button.iconRight i {
+    .emby-button.iconRight > i {
         margin-left: auto;
         margin-right: .25em;
     }
 
-.emby-button-noflex.iconRight i {
+.emby-button-noflex.iconRight > i {
     position: absolute;
     right: 0;
     top: 25%;

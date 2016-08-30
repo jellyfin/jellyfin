@@ -300,7 +300,7 @@
             style += "min-width:33.3%;";
         }
 
-        html += '<div class="card midBackdropCard scalableCard midBackdropCard-scalable" style="' + style + '" data-index="' + index + '">';
+        html += '<div class="card backdropCard scalableCard backdropCard-scalable" style="' + style + '" data-index="' + index + '">';
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';
