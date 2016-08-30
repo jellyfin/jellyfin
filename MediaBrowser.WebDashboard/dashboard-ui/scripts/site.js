@@ -1291,6 +1291,7 @@ var AppInfo = {};
         define("itemIdentifier", [embyWebComponentsBowerPath + "/itemidentifier/itemidentifier"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
+        define("imageEditor", [embyWebComponentsBowerPath + "/imageeditor/imageeditor"], returnFirstDependency);
         define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
         define("layoutManager", [embyWebComponentsBowerPath + "/layoutmanager"], getLayoutManager);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);

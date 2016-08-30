@@ -2179,9 +2179,14 @@
         function editImages() {
             return new Promise(function (resolve, reject) {
 
-                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+                require(['imageEditor'], function (imageEditor) {
 
-                    ImageEditor.show(currentItem.Id).then(resolve, reject);
+                    imageEditor.show({
+
+                        itemId: currentItem.Id,
+                        serverId: currentItem.ServerId
+
+                    }).then(resolve, reject);
                 });
             });
         }

@@ -30,12 +30,13 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
         public EncodingManager(IFileSystem fileSystem, 
             ILogger logger, 
             IMediaEncoder encoder, 
-            IChapterManager chapterManager)
+            IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _fileSystem = fileSystem;
             _logger = logger;
             _encoder = encoder;
             _chapterManager = chapterManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
