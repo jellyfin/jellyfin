@@ -116,12 +116,6 @@ button.emby-button.mini:not(.fab) {
     padding: 0.4em 0.7em;
 }
 
-button.emby-button.notext {
-    min-width: 2.8em;
-    padding-left: .25em !important;
-    padding-right: .25em !important;
-}
-
 .ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused, .ui-body-b .textareaLabelUnfocused {
     color: #ccc;
 }
