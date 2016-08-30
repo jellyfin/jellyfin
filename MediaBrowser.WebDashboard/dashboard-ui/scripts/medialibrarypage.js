@@ -227,10 +227,13 @@
 
     function editImages(page, virtualFolder) {
 
-        require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+        require(['imageEditor'], function (imageEditor) {
 
-            ImageEditor.show(virtualFolder.ItemId, {
-                theme: 'a'
+            imageEditor.show({
+                
+                itemId: virtualFolder.ItemId,
+                serverId: ApiClient.serverId()
+
             }).then(function () {
                 reloadLibrary(page);
             });
@@ -297,7 +300,7 @@
             style += "min-width:33.3%;";
         }
 
-        html += '<div class="card backdropCard scalableCard backdropCard-scalable" style="' + style + '" data-index="' + index + '">';
+        html += '<div class="card midBackdropCard scalableCard midBackdropCard-scalable" style="' + style + '" data-index="' + index + '">';
 
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';

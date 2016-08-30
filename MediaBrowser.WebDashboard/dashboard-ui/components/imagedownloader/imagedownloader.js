@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
+﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light', 'css!css/metadataeditor.css'], function (dialogHelper) {
 
     var currentItemId;
     var currentItemType;

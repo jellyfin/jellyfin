@@ -159,12 +159,12 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
 
             if (item.IsLive) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributeLive') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Live') + '</div>'
                 });
             }
             else if (item.IsPremiere) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributePremiere') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Premiere') + '</div>'
                 });
             }
             else if (item.IsSeries && !item.IsRepeat) {
@@ -172,8 +172,17 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
                     html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributeNew') + '</div>'
                 });
             }
+            else if (item.IsSeries && item.IsRepeat) {
+                miscInfo.push({
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Repeat') + '</div>'
+                });
+            }
 
-            if (item.PremiereDate) {
+            if (item.IsSeries && item.EpisodeTitle) {
+                miscInfo.push(item.EpisodeTitle);
+            }
+
+            else if (item.PremiereDate) {
 
                 try {
                     date = datetime.parseISO8601Date(item.PremiereDate);
@@ -438,9 +447,6 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
         if (options.interactive == null) {
             options.interactive = false;
         }
-        if (item.Type == 'Program') {
-            return getProgramInfoHtml(item, options);
-        }
 
         return getMediaInfoHtml(item, options);
     }
@@ -452,7 +458,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             options.interactive = false;
         }
         if (item.Type == 'Program') {
-            return getMediaInfoHtml(item, options);
+            return getProgramInfoHtml(item, options);
         }
 
         return '';

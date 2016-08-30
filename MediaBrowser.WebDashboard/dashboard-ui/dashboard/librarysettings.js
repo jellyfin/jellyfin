@@ -35,17 +35,6 @@
         $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
-    function loadChapters(page, config, providers) {
-
-        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction);
-        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction);
-        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction);
-
-        $('#chkExtractChaptersDuringLibraryScan', page).checked(config.ExtractDuringLibraryScan);
-
-        Dashboard.hideLoadingMsg();
-    }
-
     function saveFanart(form) {
 
         ApiClient.getNamedConfiguration("fanart").then(function (config) {
@@ -63,20 +52,6 @@
             config.UseFileCreationTimeForDateAdded = $('#selectDateAdded', form).val() == '1';
 
             ApiClient.updateNamedConfiguration("metadata", config);
-        });
-    }
-
-    function saveChapters(form) {
-
-        ApiClient.getNamedConfiguration("chapters").then(function (config) {
-
-            config.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
-            config.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
-            config.EnableOtherVideoChapterImageExtraction = $('#chkChaptersOtherVideos', form).checked();
-
-            config.ExtractDuringLibraryScan = $('#chkExtractChaptersDuringLibraryScan', form).checked();
-
-            ApiClient.updateNamedConfiguration("chapters", config);
         });
     }
 
@@ -108,7 +83,6 @@
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
-        saveChapters(form);
         saveMetadata(form);
         saveFanart(form);
 
@@ -184,14 +158,6 @@
             ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
 
                 loadFanartConfig(page, metadata);
-            });
-
-            var promise1 = ApiClient.getNamedConfiguration("chapters");
-            var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
-
-            Promise.all([promise1, promise2]).then(function (responses) {
-
-                loadChapters(page, responses[0], responses[1]);
             });
         });
     };

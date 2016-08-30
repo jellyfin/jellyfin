@@ -10,7 +10,6 @@
         var programInfo = item.ProgramInfo || {};
 
         context.querySelector('.itemName').innerHTML = item.Name;
-        context.querySelector('.itemEpisodeName').innerHTML = programInfo.EpisodeTitle || '';
 
         context.querySelector('.itemGenres').innerHTML = (programInfo.Genres || []).join(' / ');
         context.querySelector('.itemOverview').innerHTML = programInfo.Overview || '';

@@ -32,7 +32,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
                 return getProgressHtml(item.CompletionPercentage, options);
             }
 
-            var userData = item.UserData;
+            var userData = options ? (options.userData || item.UserData) : item.UserData;
             if (userData) {
                 var pct = userData.PlayedPercentage;
 

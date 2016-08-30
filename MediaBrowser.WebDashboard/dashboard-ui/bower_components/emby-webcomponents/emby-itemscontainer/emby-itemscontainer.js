@@ -1,4 +1,4 @@
-﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'loading', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom, loading) {
+﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'loading', 'serverNotifications', 'events', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom, loading, serverNotifications, events) {
 
     var ItemsContainerProtoType = Object.create(HTMLDivElement.prototype);
 
@@ -174,6 +174,15 @@
         });
     };
 
+    function onUserDataChanged(e, apiClient, userData) {
+
+        var itemsContainer = this;
+
+        require(['cardBuilder'], function (cardBuilder) {
+            cardBuilder.onUserDataChanged(userData, itemsContainer);
+        });
+    }
+
     ItemsContainerProtoType.attachedCallback = function () {
 
         this.addEventListener('click', onClick);
@@ -193,6 +202,10 @@
         }
 
         itemShortcuts.on(this, getShortcutOptions());
+
+        var userDataHandler = onUserDataChanged.bind(this);
+        events.on(serverNotifications, 'UserDataChanged', userDataHandler);
+        this.userDataHandler = userDataHandler;
     };
 
     ItemsContainerProtoType.detachedCallback = function () {
@@ -204,6 +217,12 @@
         this.removeEventListener('contextmenu', onContextMenu);
         this.removeEventListener('contextmenu', disableEvent);
         itemShortcuts.off(this, getShortcutOptions());
+
+        var userDataHandler = this.userDataHandler;
+        if (userDataHandler) {
+            events.off(serverNotifications, 'UserDataChanged', userDataHandler);
+            this.userDataHandler = null;
+        }
     };
 
     document.registerElement('emby-itemscontainer', {

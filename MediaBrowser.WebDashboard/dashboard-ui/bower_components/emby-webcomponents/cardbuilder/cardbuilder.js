@@ -1398,9 +1398,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
         }
 
-        function onUserDataChanged(userData) {
+        function onUserDataChanged(userData, scope) {
 
-            var cards = document.querySelectorAll('.card-withuserdata[data-id="' + userData.ItemId + '"]');
+            var cards = (scope || document.body).querySelectorAll('.card-withuserdata[data-id="' + userData.ItemId + '"]');
 
             for (var i = 0, length = cards.length; i < length; i++) {
                 updateUserData(cards[i], userData);

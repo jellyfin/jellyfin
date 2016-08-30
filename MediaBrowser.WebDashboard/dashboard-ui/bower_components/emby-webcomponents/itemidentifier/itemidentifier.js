@@ -174,21 +174,25 @@
 
         var html = '';
         var cssClass = "card scalableCard";
+        var padderClass;
 
         if (currentItemType == "Episode") {
             cssClass += " backdropCard backdropCard-scalable";
+            padderClass = 'cardPadder-backdrop';
         }
         else if (currentItemType == "MusicAlbum" || currentItemType == "MusicArtist") {
             cssClass += " squareCard squareCard-scalable";
+            padderClass = 'cardPadder-square';
         }
         else {
             cssClass += " portraitCard portraitCard-scalable";
+            padderClass = 'cardPadder-portrait';
         }
 
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
         html += '<div class="cardBox visualCardBox">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';
-        html += '<div class="cardPadder-portrait"></div>';
+        html += '<div class="' + padderClass + '"></div>';
 
         html += '<div class="cardContent searchImage">';
 

@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         private async Task CheckVersion(Version currentVersion, PackageVersionClass updateLevel, CancellationToken cancellationToken)
         {
-            var releases = await new GithubUpdater(_httpClient, _jsonSerializer, TimeSpan.FromMinutes(5))
+            var releases = await new GithubUpdater(_httpClient, _jsonSerializer, TimeSpan.FromMinutes(3))
                 .GetLatestReleases("MediaBrowser", "Emby", _releaseAssetFilename, cancellationToken).ConfigureAwait(false);
 
             var newUpdateLevel = updateLevel;

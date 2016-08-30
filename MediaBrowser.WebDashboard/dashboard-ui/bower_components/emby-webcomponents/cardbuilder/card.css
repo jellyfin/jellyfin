@@ -327,6 +327,10 @@
     width: 50%;
 }
 
+.midBackdropCard-scalable {
+    width: 100%;
+}
+
 .squareCard-scalable {
     width: 50%;
 }
@@ -352,6 +356,10 @@
 @media all and (min-width: 420px) {
 
     .backdropCard-scalable {
+        width: 50%;
+    }
+
+    .midBackdropCard-scalable {
         width: 50%;
     }
 }
@@ -383,6 +391,10 @@
 
     .overflowSquareCard-scalable {
         width: 30%;
+    }
+
+    .midBackdropCard-scalable {
+        width: 33.333333333333333333333333333333%;
     }
 }
 
@@ -418,6 +430,10 @@
 
     .squareCard-scalable {
         width: 20%;
+    }
+
+    .midBackdropCard-scalable {
+        width: 25%;
     }
 }
 
@@ -461,6 +477,10 @@
 
     .smallBackdropCard-scalable {
         width: 16.666666666666666666666666666667%;
+    }
+
+    .midBackdropCard-scalable {
+        width: 20%;
     }
 }
 
