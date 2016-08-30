@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'css!css/metadataeditor.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
+﻿define(['dialogHelper', 'loading', 'css!css/metadataeditor.css', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, loading) {
 
     var currentItem;
     var hasChanges = false;
@@ -14,13 +14,13 @@
 
     function reload(page, item) {
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         if (item) {
             reloadItem(page, item);
         }
         else {
-            ApiClient.getItem(Dashboard.getCurrentUserId(), currentItem.Id).then(function (item) {
+            ApiClient.getItem(ApiClient.getCurrentUserId(), currentItem.Id).then(function (item) {
                 reloadItem(page, item);
             });
         }
@@ -56,7 +56,7 @@
                 renderStandardImages(page, item, imageInfos, providers);
                 renderBackdrops(page, item, imageInfos, providers);
                 renderScreenshots(page, item, imageInfos, providers);
-                Dashboard.hideLoadingMsg();
+                loading.hide();
             });
         });
     }
@@ -264,7 +264,7 @@
 
         options = options || {};
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', 'components/imageeditor/imageeditor.template.html', true);
@@ -272,7 +272,7 @@
         xhr.onload = function (e) {
 
             var template = this.response;
-            ApiClient.getItem(Dashboard.getCurrentUserId(), itemId).then(function (item) {
+            ApiClient.getItem(ApiClient.getCurrentUserId(), itemId).then(function (item) {
 
                 var dlg = dialogHelper.createDialog({
                     size: 'fullscreen-border',
@@ -302,7 +302,7 @@
                 // Has to be assigned a z-index after the call to .open() 
                 dlg.addEventListener('close', function () {
 
-                    Dashboard.hideLoadingMsg();
+                    loading.hide();
 
                     if (hasChanges) {
                         resolve();

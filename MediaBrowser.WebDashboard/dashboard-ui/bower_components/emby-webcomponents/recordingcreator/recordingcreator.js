@@ -269,7 +269,6 @@
     function renderRecording(context, defaultTimer, program, apiClient) {
 
         context.querySelector('.itemName').innerHTML = program.Name;
-        context.querySelector('.itemEpisodeName').innerHTML = program.EpisodeTitle || '';
 
         context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
