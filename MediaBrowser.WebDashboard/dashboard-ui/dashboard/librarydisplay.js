@@ -37,6 +37,7 @@
                 config.DisplaySpecialsWithinSeasons = form.querySelector('.chkDisplaySpecialsWithinSeasons').checked;
                 config.DisplayCollectionsView = form.querySelector('.chkDisplayCollectionView').checked;
                 config.EnableChannelView = !form.querySelector('.chkDisplayChannelsInline').checked;
+                config.EnableExternalContentInSuggestions = form.querySelector('.chkExternalContentInSuggestions').checked;
 
                 ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
             });
@@ -52,6 +53,7 @@
                 view.querySelector('.chkDisplaySpecialsWithinSeasons').checked = config.DisplaySpecialsWithinSeasons;
                 view.querySelector('.chkDisplayCollectionView').checked = config.DisplayCollectionsView;
                 view.querySelector('.chkDisplayChannelsInline').checked = !(config.EnableChannelView || false);
+                view.querySelector('.chkExternalContentInSuggestions').checked = config.EnableExternalContentInSuggestions;
             });
         }
 

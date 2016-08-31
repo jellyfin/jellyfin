@@ -2227,5 +2227,7 @@
   "HowToConnectFromEmbyApps": "How to Connect from Emby apps",
   "MessageFolderRipPlaybackExperimental": "Support for playback of folder rips and ISOs in this app is only expirimental. For best results, try an Emby app that supports these formats natively, or use plain video files.",
   "OptionExtractChapterImage": "Enable chapter image extraction",
-  "Downloads": "Downloads"
+  "Downloads": "Downloads",
+  "OptionEnableExternalContentInSuggestions": "Enable external content in suggestions",
+  "OptionEnableExternalContentInSuggestionsHelp": "Allow internet trailers and live tv programs to be included within suggested content."
 }
