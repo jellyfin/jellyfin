@@ -204,6 +204,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayCollectionsView { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
         public string[] CodecsUsed { get; set; }
+        public bool EnableChannelView { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

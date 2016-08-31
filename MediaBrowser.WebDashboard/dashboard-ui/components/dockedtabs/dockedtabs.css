@@ -6,7 +6,6 @@
 
 .dockedtabs-tab-button {
     flex-grow: 1;
-    display: flex !important;
     align-items: center;
     justify-content: center;
     text-transform: none !important;
@@ -16,6 +15,14 @@
     text-align: center;
     border-color: transparent !important;
     border-width: 0 !important;
+}
+
+    .dockedtabs-tab-button:not(.hide) {
+        display: flex !important;
+    }
+
+.dockedtabs-tab-button-noflex:not(.hide) {
+    display: block !important;
 }
 
 .dockedtabs-tab-button, .dockedtabs-tab-button-foreground {
