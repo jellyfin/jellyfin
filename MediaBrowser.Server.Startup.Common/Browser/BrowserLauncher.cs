@@ -28,6 +28,11 @@ namespace MediaBrowser.Server.Startup.Common.Browser
             OpenUrl(appHost, "http://emby.media/community");
         }
 
+        public static void OpenEmbyPremiere(IServerApplicationHost appHost)
+        {
+            OpenDashboardPage("supporterkey.html", appHost);
+        }
+
         /// <summary>
         /// Opens the web client.
         /// </summary>
