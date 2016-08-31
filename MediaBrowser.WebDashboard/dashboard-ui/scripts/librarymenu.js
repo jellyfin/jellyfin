@@ -1,8 +1,13 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'navdrawer', 'libraryBrowser', 'apphost', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, navdrawer, libraryBrowser, appHost) {
+﻿define(['imageLoader', 'layoutManager', 'viewManager', 'libraryBrowser', 'apphost', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, libraryBrowser, appHost) {
 
-    var navDrawerElement = document.querySelector('.mainDrawer');
-    var navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
+    var enableBottomTabs = AppInfo.isNativeApp;
+    var enableLibraryNavDrawer = !enableBottomTabs;
+
+    var navDrawerElement;
+    var navDrawerScrollContainer;
     var navDrawerInstance;
+
+    var mainDrawerButton;
 
     function renderHeader() {
 
@@ -11,10 +16,10 @@
         html += '<div class="primaryIcons">';
         var backIcon = browserInfo.safari ? 'chevron_left' : '&#xE5C4;';
 
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide autoSize"><i class="md-icon">' + backIcon + '</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerButtonLeft headerBackButton hide"><i class="md-icon">' + backIcon + '</i></button>';
 
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">menu</i></button>';
-        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft autoSize"><i class="md-icon">home</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft hide"><i class="md-icon">menu</i></button>';
+        html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><i class="md-icon">home</i></button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
@@ -179,7 +184,7 @@
 
     function bindMenuEvents() {
 
-        var mainDrawerButton = document.querySelector('.mainDrawerButton');
+        mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
             mainDrawerButton.addEventListener('click', toggleMainDrawer);
@@ -331,11 +336,13 @@
 
     function refreshDashboardInfoInDrawer(page, user) {
 
-        if (!navDrawerScrollContainer.querySelector('.adminDrawerLogo')) {
-            createDashboardMenu(page);
-        } else {
-            updateDashboardMenuSelectedItem();
-        }
+        loadNavDrawer().then(function () {
+            if (!navDrawerScrollContainer.querySelector('.adminDrawerLogo')) {
+                createDashboardMenu(page);
+            } else {
+                updateDashboardMenuSelectedItem();
+            }
+        });
     }
 
     function updateDashboardMenuSelectedItem() {
@@ -707,18 +714,6 @@
             }
         },
 
-        setMenuButtonVisible: function (visible) {
-
-            var mainDrawerButton = document.querySelector('.mainDrawerButton');
-
-            if (mainDrawerButton) {
-                if (!visible && browserInfo.mobile) {
-                    mainDrawerButton.classList.remove('hide');
-                } else {
-                    mainDrawerButton.classList.remove('hide');
-                }
-            }
-        },
         setTransparentMenu: function (transparent) {
 
             var viewMenuBar = document.querySelector('.viewMenuBar');
@@ -861,9 +856,21 @@
         var isDashboardPage = page.classList.contains('type-interior');
 
         if (isDashboardPage) {
+            if (mainDrawerButton) {
+                mainDrawerButton.classList.remove('hide');
+            }
             refreshDashboardInfoInDrawer(page);
         } else {
-            if (navDrawerElement.classList.contains('adminDrawer')) {
+
+            if (mainDrawerButton) {
+                if (enableLibraryNavDrawer) {
+                    mainDrawerButton.classList.remove('hide');
+                } else {
+                    mainDrawerButton.classList.add('hide');
+                }
+            }
+
+            if ((navDrawerElement && navDrawerElement.classList.contains('adminDrawer')) || (!navDrawerElement && enableLibraryNavDrawer)) {
                 refreshLibraryDrawer();
             }
         }
@@ -974,24 +981,34 @@
             admin = true;
         }
 
-        if (admin) {
-            navDrawerElement.classList.add('adminDrawer');
-            navDrawerElement.classList.remove('darkDrawer');
-        } else {
-            navDrawerElement.classList.add('darkDrawer');
-            navDrawerElement.classList.remove('adminDrawer');
+        var enableNavDrawer = admin || enableLibraryNavDrawer;
+        if (enableNavDrawer) {
+            loadNavDrawer().then(function () {
+                if (admin) {
+                    navDrawerElement.classList.add('adminDrawer');
+                    navDrawerElement.classList.remove('darkDrawer');
+                } else {
+                    navDrawerElement.classList.add('darkDrawer');
+                    navDrawerElement.classList.remove('adminDrawer');
+                }
+            });
         }
     }
 
     function refreshLibraryDrawer(user) {
 
-        var promise = user ? Promise.resolve(user) : ConnectionManager.user(window.ApiClient);
+        if (!enableLibraryNavDrawer) {
+            return;
+        }
 
-        promise.then(function (user) {
-            refreshLibraryInfoInDrawer(user);
+        loadNavDrawer().then(function () {
+            var promise = user ? Promise.resolve(user) : ConnectionManager.user(window.ApiClient);
 
-            document.dispatchEvent(new CustomEvent("libraryMenuCreated", {}));
-            updateLibraryMenu(user.localUser);
+            promise.then(function (user) {
+                refreshLibraryInfoInDrawer(user);
+
+                updateLibraryMenu(user.localUser);
+            });
         });
     }
 
@@ -1020,8 +1037,25 @@
         };
     }
 
-    navDrawerInstance = new navdrawer(getNavDrawerOptions());
-    navDrawerElement.classList.remove('hide');
+    function loadNavDrawer() {
+
+        if (navDrawerInstance) {
+            return Promise.resolve(navDrawerInstance);
+        }
+
+        return new Promise(function (resolve, reject) {
+
+            navDrawerElement = document.querySelector('.mainDrawer');
+            navDrawerScrollContainer = navDrawerElement.querySelector('.scrollContainer');
+
+            require(['navdrawer'], function (navdrawer) {
+                navDrawerInstance = new navdrawer(getNavDrawerOptions());
+                navDrawerElement.classList.remove('hide');
+                resolve(navDrawerInstance);
+            });
+        });
+    }
+
     renderHeader();
 
     Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
@@ -1041,9 +1075,11 @@
 
     setDrawerClass();
 
-    //require(['appfooter-shared', 'dockedtabs'], function (footer, dockedtabs) {
-    //    new dockedtabs({
-    //        appFooter: footer
-    //    });
-    //});
+    if (enableBottomTabs) {
+        require(['appfooter-shared', 'dockedtabs'], function (footer, dockedtabs) {
+            new dockedtabs({
+                appFooter: footer
+            });
+        });
+    }
 });

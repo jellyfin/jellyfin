@@ -44,7 +44,10 @@
 
         var pos = getOffsets([options.positionTo])[0];
 
-        pos.top += options.positionTo.offsetHeight / 2;
+        if (options.positionY != 'top') {
+            pos.top += options.positionTo.offsetHeight / 2;
+        }
+
         pos.left += options.positionTo.offsetWidth / 2;
 
         var height = dlg.offsetHeight || 300;
@@ -64,6 +67,9 @@
         if (overflowY > 0) {
             pos.top -= (overflowY + 20);
         }
+
+        pos.top += (options.offsetTop || 0);
+        pos.left += (options.offsetLeft || 0);
 
         // Do some boundary checking
         pos.top = Math.max(pos.top, 10);
@@ -88,7 +94,9 @@
         var dialogOptions = {
             removeOnClose: true,
             enableHistory: options.enableHistory,
-            scrollY: false
+            scrollY: false,
+            entryAnimation: options.entryAnimation,
+            exitAnimation: options.exitAnimation
         };
 
         var backButton = false;
@@ -102,8 +110,8 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 140;
-            dialogOptions.exitAnimationDuration = 180;
+            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 140;
+            dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 180;
             dialogOptions.autoFocus = false;
         }
 
@@ -118,6 +126,10 @@
         }
 
         dlg.classList.add('actionSheet');
+
+        if (options.dialogClass) {
+            dlg.classList.add(options.dialogClass);
+        }
 
         var html = '';
 
@@ -172,6 +184,10 @@
         html += '<div class="actionSheetScroller ' + scrollType + '" style="' + style + '">';
 
         var menuItemClass = browser.noFlex || browser.firefox ? 'actionSheetMenuItem actionSheetMenuItem-noflex' : 'actionSheetMenuItem';
+
+        if (options.menuItemClass) {
+            menuItemClass += ' ' + options.menuItemClass;
+        }
 
         for (i = 0, length = options.items.length; i < length; i++) {
 

@@ -101,6 +101,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
+    margin-left: 1em;
 }
 
 .viewMenuBar {
@@ -228,7 +229,7 @@
     background-color: #1D1D20;
 }
 
-@media all and (max-width: 400px) {
+@media all and (max-width: 360px) {
 
     .libraryMenuButtonText {
         display: none;

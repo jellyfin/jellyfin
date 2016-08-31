@@ -35,10 +35,6 @@
     z-index: -1;
 }
 
-.pageWithAbsoluteTabs neon-animatable {
-    z-index: 2;
-}
-
 .libraryPage .header {
     padding-bottom: 0;
 }
