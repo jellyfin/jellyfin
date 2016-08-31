@@ -1248,6 +1248,8 @@ var AppInfo = {};
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery";
         }
 
+        define("webActionSheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
+
         if (Dashboard.isRunningInCordova()) {
             paths.sharingMenu = "cordova/sharingwidget";
             paths.wakeonlan = "cordova/wakeonlan";
@@ -1256,7 +1258,7 @@ var AppInfo = {};
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
             define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);
-            define("actionsheet", [embyWebComponentsBowerPath + "/actionsheet/actionsheet"], returnFirstDependency);
+            define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
@@ -1619,7 +1621,11 @@ var AppInfo = {};
             };
 
             embyRouter.showFavorites = function () {
-                Dashboard.navigate('home.html?tab=3');
+                Dashboard.navigate('favorites.html');
+            };
+
+            embyRouter.showSettings = function () {
+                Dashboard.navigate('mypreferencesmenu.html');
             };
 
             function showItem(item, serverId, options) {
@@ -2767,11 +2773,6 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('scripts/nowplayingbar');
-
-            if (AppInfo.isNativeApp && browserInfo.safari) {
-
-                postInitDependencies.push('cordova/ios/tabbar');
-            }
 
             postInitDependencies.push('components/remotecontrolautoplay');
 

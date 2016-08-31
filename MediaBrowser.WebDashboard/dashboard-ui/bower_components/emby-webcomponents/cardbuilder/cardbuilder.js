@@ -618,7 +618,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     tag: item.ImageTags.Thumb
                 });
 
-            } else if (item.SeriesThumbImageTag) {
+            } else if (item.SeriesThumbImageTag && options.inheritThumb !== false) {
 
                 imgUrl = apiClient.getScaledImageUrl(item.SeriesId, {
                     type: "Thumb",
@@ -626,9 +626,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     tag: item.SeriesThumbImageTag
                 });
 
-            } else if (item.ParentThumbItemId) {
+            } else if (item.ParentThumbItemId && options.inheritThumb !== false) {
 
-                imgUrl = apiClient.getThumbImageUrl(item.ParentThumbItemId, {
+                imgUrl = apiClient.getScaledImageUrl(item.ParentThumbItemId, {
                     type: "Thumb",
                     maxWidth: width,
                     tag: item.ParentThumbImageTag

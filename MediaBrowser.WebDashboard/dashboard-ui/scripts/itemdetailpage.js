@@ -101,7 +101,6 @@
         var context = params.context;
 
         LibraryMenu.setBackButtonVisible(true);
-        LibraryMenu.setMenuButtonVisible(false);
 
         LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
         LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
@@ -1142,7 +1141,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {

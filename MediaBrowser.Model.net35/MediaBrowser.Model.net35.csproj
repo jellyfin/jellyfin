@@ -51,7 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\mediabrowser.model\activity\ActivityLogEntry.cs">
+    <Compile Include="..\MediaBrowser.Model\Activity\ActivityLogEntry.cs">
       <Link>Activity\ActivityLogEntry.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\ApiHelpers.cs">
@@ -249,7 +249,7 @@
     <Compile Include="..\MediaBrowser.Model\Connect\PinStatusResult.cs">
       <Link>Connect\PinStatusResult.cs</Link>
     </Compile>
-    <Compile Include="..\mediabrowser.model\connect\UserLinkType.cs">
+    <Compile Include="..\MediaBrowser.Model\Connect\UserLinkType.cs">
       <Link>Connect\UserLinkType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Devices\ContentUploadHistory.cs">
@@ -948,7 +948,7 @@
     <Compile Include="..\MediaBrowser.Model\Querying\UserQuery.cs">
       <Link>Querying\UserQuery.cs</Link>
     </Compile>
-    <Compile Include="..\mediabrowser.model\registration\RegistrationInfo.cs">
+    <Compile Include="..\MediaBrowser.Model\Registration\RegistrationInfo.cs">
       <Link>Registration\RegistrationInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Search\SearchHint.cs">
@@ -1020,7 +1020,7 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
-    <Compile Include="..\mediabrowser.model\social\SocialShareInfo.cs">
+    <Compile Include="..\MediaBrowser.Model\Social\SocialShareInfo.cs">
       <Link>Social\SocialShareInfo.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\CompleteSyncJobInfo.cs">

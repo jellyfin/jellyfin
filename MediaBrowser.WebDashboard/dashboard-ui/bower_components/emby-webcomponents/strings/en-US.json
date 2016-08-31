@@ -275,5 +275,6 @@
   "Screenshots": "Screenshots",
   "MoveRight": "Move right",
   "MoveLeft": "Move left",
-  "ConfirmDeleteImage": "Delete image?"
+  "ConfirmDeleteImage": "Delete image?",
+  "HeaderEditImages": "Edit Images"
 }

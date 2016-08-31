@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, globalize, scrollHelper, imageLoader, require) {
+﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'focusManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, focusManager, globalize, scrollHelper, imageLoader, require) {
 
     var currentItem;
     var hasChanges = false;
@@ -12,7 +12,7 @@
         return options;
     }
 
-    function reload(page, item) {
+    function reload(page, item, focusContext) {
 
         loading.show();
 
@@ -20,26 +20,28 @@
 
         if (item) {
             apiClient = connectionManager.getApiClient(item.ServerId);
-            reloadItem(page, item, apiClient);
+            reloadItem(page, item, apiClient, focusContext);
         }
         else {
 
             apiClient = connectionManager.getApiClient(currentItem.ServerId);
             apiClient.getItem(apiClient.getCurrentUserId(), currentItem.Id).then(function (item) {
-                reloadItem(page, item, apiClient);
+                reloadItem(page, item, apiClient, focusContext);
             });
         }
     }
 
-    function addListeners(elems, eventName, fn) {
+    function addListeners(container, className, eventName, fn) {
 
-        for (var i = 0, length = elems.length; i < length; i++) {
-
-            elems[i].addEventListener(eventName, fn);
-        }
+        container.addEventListener(eventName, function (e) {
+            var elem = dom.parentWithClass(e.target, className);
+            if (elem) {
+                fn.call(elem, e);
+            }
+        });
     }
 
-    function reloadItem(page, item, apiClient) {
+    function reloadItem(page, item, apiClient, focusContext) {
 
         currentItem = item;
 
@@ -62,6 +64,10 @@
                 renderBackdrops(page, apiClient, item, imageInfos, providers);
                 renderScreenshots(page, apiClient, item, imageInfos, providers);
                 loading.hide();
+
+                if (layoutManager.tv) {
+                    focusManager.autoFocus((focusContext || page));
+                }
             });
         });
     }
@@ -84,24 +90,31 @@
 
         // For search hints
         return apiClient.getScaledImageUrl(item.Id || item.ItemId, options);
-
     }
 
-
-    function getCardHtml(image, index, apiClient, imageProviders, imageSize, tagName, enableFooterButtons) {
+    function getCardHtml(image, index, numImages, apiClient, imageProviders, imageSize, tagName, enableFooterButtons) {
 
         var html = '';
 
-        var cssClass = "card scalableCard";
-        cssClass += " midBackdropCard midBackdropCard-scalable";
+        var cssClass = "card scalableCard imageEditorCard";
+        var cardBoxCssClass = 'cardBox visualCardBox';
+
+        cssClass += " backdropCard backdropCard-scalable";
 
         if (tagName == 'button') {
-            html += '<button type="button" class="' + cssClass + '">';
+            cssClass += ' card-focusscale btnImageCard';
+            cardBoxCssClass += ' cardBox-focustransform cardBox-focustransform-transition';
+
+            html += '<button type="button" class="' + cssClass + '"';
         } else {
-            html += '<div class="' + cssClass + '">';
+            html += '<div class="' + cssClass + '"';
         }
 
-        html += '<div class="cardBox visualCardBox">';
+        html += ' data-id="' + currentItem.Id + '" data-serverid="' + apiClient.serverId() + '" data-index="' + index + '" data-numimages="' + numImages + '" data-imagetype="' + image.ImageType + '" data-providers="' + imageProviders.length + '"';
+
+        html += '>';
+
+        html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable visualCardBox-cardScalable" style="background-color:transparent;">';
         html += '<div class="cardPadder-backdrop"></div>';
 
@@ -137,7 +150,7 @@
                     html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 }
 
-                if (index < length - 1) {
+                if (index < numImages - 1) {
                     html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 } else {
                     html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
@@ -161,6 +174,37 @@
         return html;
     }
 
+    function deleteImage(context, itemId, type, index, apiClient, enableConfirmation) {
+
+        var afterConfirm = function () {
+            apiClient.deleteItemImage(itemId, type, index).then(function () {
+
+                hasChanges = true;
+                reload(context);
+
+            });
+        };
+
+        if (!enableConfirmation) {
+            afterConfirm();
+            return;
+        }
+
+        require(['confirm'], function (confirm) {
+
+            confirm(globalize.translate('sharedcomponents#ConfirmDeleteImage')).then(afterConfirm);
+        });
+    }
+
+    function moveImage(context, apiClient, itemId, type, index, newIndex, focusContext) {
+
+        apiClient.updateItemImageIndex(itemId, type, index, newIndex).then(function () {
+
+            hasChanges = true;
+            reload(context, null, focusContext);
+        });
+    }
+
     function renderImages(page, item, apiClient, images, imageProviders, elem) {
 
         var html = '';
@@ -178,45 +222,29 @@
 
             var image = images[i];
 
-            html += getCardHtml(image, i, apiClient, imageProviders, imageSize, tagName, enableFooterButtons);
+            html += getCardHtml(image, i, length, apiClient, imageProviders, imageSize, tagName, enableFooterButtons);
         }
 
         elem.innerHTML = html;
         imageLoader.lazyChildren(elem);
 
-        addListeners(elem.querySelectorAll('.btnSearchImages'), 'click', function () {
+        addListeners(elem, 'btnSearchImages', 'click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype'));
         });
 
-        addListeners(elem.querySelectorAll('.btnDeleteImage'), 'click', function () {
+        addListeners(elem, 'btnDeleteImage', 'click', function () {
             var type = this.getAttribute('data-imagetype');
             var index = this.getAttribute('data-index');
             index = index == "null" ? null : parseInt(index);
 
-            require(['confirm'], function (confirm) {
-
-                confirm(globalize.translate('sharedcomponents#ConfirmDeleteImage')).then(function () {
-
-                    apiClient.deleteItemImage(currentItem.Id, type, index).then(function () {
-
-                        hasChanges = true;
-                        reload(page);
-
-                    });
-                });
-            });
+            deleteImage(page, currentItem.Id, type, index, apiClient, true);
         });
 
-        addListeners(elem.querySelectorAll('.btnMoveImage'), 'click', function () {
+        addListeners(elem, 'btnMoveImage', 'click', function () {
             var type = this.getAttribute('data-imagetype');
-            var index = parseInt(this.getAttribute('data-index'));
-            var newIndex = parseInt(this.getAttribute('data-newindex'));
-            apiClient.updateItemImageIndex(currentItem.Id, type, index, newIndex).then(function () {
-
-                hasChanges = true;
-                reload(page);
-
-            });
+            var index = this.getAttribute('data-index');
+            var newIndex = this.getAttribute('data-newindex');
+            moveImage(page, apiClient, currentItem.Id, type, index, newIndex, dom.parentWithClass(this, 'itemsContainer'));
         });
     }
 
@@ -274,9 +302,81 @@
         });
     }
 
+    function showActionSheet(context, imageCard) {
+
+        var itemId = imageCard.getAttribute('data-id');
+        var serverId = imageCard.getAttribute('data-serverid');
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        var type = imageCard.getAttribute('data-imagetype');
+        var index = parseInt(imageCard.getAttribute('data-index'));
+        var providerCount = parseInt(imageCard.getAttribute('data-providers'));
+        var numImages = parseInt(imageCard.getAttribute('data-numimages'));
+
+        require(['actionsheet'], function (actionSheet) {
+
+            var commands = [];
+
+            commands.push({
+                name: globalize.translate('sharedcomponents#Delete'),
+                id: 'delete'
+            });
+
+            if (type == 'Backdrop' || type == 'Screenshot') {
+                if (index > 0) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#MoveLeft'),
+                        id: 'moveleft'
+                    });
+                }
+
+                if (index < numImages - 1) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#MoveRight'),
+                        id: 'moveright'
+                    });
+                }
+            }
+
+            if (providerCount) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#Search'),
+                    id: 'search'
+                });
+            }
+
+            actionSheet.show({
+
+                items: commands,
+                positionTo: imageCard
+
+            }).then(function (id) {
+
+                switch (id) {
+
+                    case 'delete':
+                        deleteImage(context, itemId, type, index, apiClient, false);
+                        break;
+                    case 'search':
+                        showImageDownloader(context, type);
+                        break;
+                    case 'moveleft':
+                        moveImage(context, apiClient, itemId, type, index, index - 1, dom.parentWithClass(imageCard, 'itemsContainer'));
+                        break;
+                    case 'moveright':
+                        moveImage(context, apiClient, itemId, type, index, index + 1, dom.parentWithClass(imageCard, 'itemsContainer'));
+                        break;
+                    default:
+                        break;
+                }
+
+            });
+        });
+    }
+
     function initEditor(page, options) {
 
-        addListeners(page.querySelectorAll('.btnOpenUploadMenu'), 'click', function () {
+        addListeners(page, 'btnOpenUploadMenu', 'click', function () {
             var imageType = this.getAttribute('data-imagetype');
 
             require(['components/imageuploader/imageuploader'], function (imageUploader) {
@@ -296,8 +396,12 @@
             });
         });
 
-        addListeners(page.querySelectorAll('.btnBrowseAllImages'), 'click', function () {
+        addListeners(page, 'btnBrowseAllImages', 'click', function () {
             showImageDownloader(page, this.getAttribute('data-imagetype') || 'Primary');
+        });
+
+        addListeners(page, 'btnImageCard', 'click', function () {
+            showActionSheet(page, this);
         });
     }
 
@@ -327,7 +431,6 @@
                 dlg.classList.add('formDialog');
 
                 dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
-                dlg.querySelector('.formDialogHeaderTitle').innerHTML = item.Name;
 
                 document.body.appendChild(dlg);
 

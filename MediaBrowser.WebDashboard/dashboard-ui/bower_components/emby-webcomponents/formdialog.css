@@ -31,3 +31,11 @@
 .dialogContentTitle {
     margin-top: 1em;
 }
+
+@media all and (min-width: 1280px) {
+
+    .dialogContentInner {
+        padding-left: 2em;
+        padding-right: 2em;
+    }
+}
