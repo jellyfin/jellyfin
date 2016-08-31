@@ -851,29 +851,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordPath = RecordingPath;
             var config = GetConfiguration();
 
-            if (info.IsMovie)
-            {
-                var customRecordingPath = config.MovieRecordingPath;
-                var allowSubfolder = true;
-                if (!string.IsNullOrWhiteSpace(customRecordingPath))
-                {
-                    allowSubfolder = string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase);
-                    recordPath = customRecordingPath;
-                }
-
-                if (allowSubfolder && config.EnableRecordingSubfolders)
-                {
-                    recordPath = Path.Combine(recordPath, "Movies");
-                }
-
-                var folderName = _fileSystem.GetValidFilename(info.Name).Trim();
-                if (info.ProductionYear.HasValue)
-                {
-                    folderName += " (" + info.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
-                }
-                recordPath = Path.Combine(recordPath, folderName);
-            }
-            else if (info.IsSeries)
+            if (info.IsSeries)
             {
                 var customRecordingPath = config.SeriesRecordingPath;
                 var allowSubfolder = true;
@@ -909,6 +887,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     folderName = string.Format("Season {0}", info.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture));
                     recordPath = Path.Combine(recordPath, folderName);
                 }
+            }
+            else if (info.IsMovie)
+            {
+                var customRecordingPath = config.MovieRecordingPath;
+                var allowSubfolder = true;
+                if (!string.IsNullOrWhiteSpace(customRecordingPath))
+                {
+                    allowSubfolder = string.Equals(customRecordingPath, recordPath, StringComparison.OrdinalIgnoreCase);
+                    recordPath = customRecordingPath;
+                }
+
+                if (allowSubfolder && config.EnableRecordingSubfolders)
+                {
+                    recordPath = Path.Combine(recordPath, "Movies");
+                }
+
+                var folderName = _fileSystem.GetValidFilename(info.Name).Trim();
+                if (info.ProductionYear.HasValue)
+                {
+                    folderName += " (" + info.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
+                }
+                recordPath = Path.Combine(recordPath, folderName);
             }
             else if (info.IsKids)
             {

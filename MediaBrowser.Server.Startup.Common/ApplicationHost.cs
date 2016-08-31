@@ -382,7 +382,6 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager),
                 new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
@@ -947,7 +946,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!CanSelfRestart)
             {
-                throw new InvalidOperationException("The server is unable to self-restart. Please restart manually.");
+                throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
             }
 
             try
