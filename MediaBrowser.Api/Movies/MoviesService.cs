@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
 
 namespace MediaBrowser.Api.Movies
@@ -88,6 +89,7 @@ namespace MediaBrowser.Api.Movies
 
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MoviesService" /> class.
@@ -97,13 +99,14 @@ namespace MediaBrowser.Api.Movies
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <param name="dtoService">The dto service.</param>
-        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public MoviesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IServerConfigurationManager config)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _config = config;
         }
 
         /// <summary>
@@ -146,15 +149,17 @@ namespace MediaBrowser.Api.Movies
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
+            var itemTypes = new List<string> { typeof(Movie).Name };
+            if (_config.Configuration.EnableExternalContentInSuggestions)
+            {
+                itemTypes.Add(typeof(Trailer).Name);
+                itemTypes.Add(typeof(LiveTvProgram).Name);
+            }
+
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 Limit = request.Limit,
-                IncludeItemTypes = new[]
-                {
-                        typeof(Movie).Name,
-                        typeof(Trailer).Name,
-                        typeof(LiveTvProgram).Name
-                },
+                IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 SimilarTo = item,
                 EnableGroupByMetadataKey = true
@@ -198,14 +203,16 @@ namespace MediaBrowser.Api.Movies
 
             var recentlyPlayedMovies = _libraryManager.GetItemList(query).ToList();
 
+            var itemTypes = new List<string> { typeof(Movie).Name };
+            if (_config.Configuration.EnableExternalContentInSuggestions)
+            {
+                itemTypes.Add(typeof(Trailer).Name);
+                itemTypes.Add(typeof(LiveTvProgram).Name);
+            }
+
             var likedMovies = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[]
-                {
-                   typeof(Movie).Name,
-                   typeof(Trailer).Name,
-                   typeof(LiveTvProgram).Name
-                },
+                IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 SortBy = new[] { ItemSortBy.Random },
                 SortOrder = SortOrder.Descending,
@@ -278,6 +285,13 @@ namespace MediaBrowser.Api.Movies
 
         private IEnumerable<RecommendationDto> GetWithDirector(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
+            var itemTypes = new List<string> { typeof(Movie).Name };
+            if (_config.Configuration.EnableExternalContentInSuggestions)
+            {
+                itemTypes.Add(typeof(Trailer).Name);
+                itemTypes.Add(typeof(LiveTvProgram).Name);
+            }
+
             foreach (var name in names)
             {
                 var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -286,12 +300,7 @@ namespace MediaBrowser.Api.Movies
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = itemLimit + 2,
                     PersonTypes = new[] { PersonType.Director },
-                    IncludeItemTypes = new[]
-                    {
-                        typeof(Movie).Name,
-                        typeof(Trailer).Name,
-                        typeof(LiveTvProgram).Name
-                    },
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     EnableGroupByMetadataKey = true
 
@@ -314,6 +323,13 @@ namespace MediaBrowser.Api.Movies
 
         private IEnumerable<RecommendationDto> GetWithActor(User user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
+            var itemTypes = new List<string> { typeof(Movie).Name };
+            if (_config.Configuration.EnableExternalContentInSuggestions)
+            {
+                itemTypes.Add(typeof(Trailer).Name);
+                itemTypes.Add(typeof(LiveTvProgram).Name);
+            }
+
             foreach (var name in names)
             {
                 var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -321,12 +337,7 @@ namespace MediaBrowser.Api.Movies
                     Person = name,
                     // Account for duplicates by imdb id, since the database doesn't support this yet
                     Limit = itemLimit + 2,
-                    IncludeItemTypes = new[]
-                    {
-                        typeof(Movie).Name,
-                        typeof(Trailer).Name,
-                        typeof(LiveTvProgram).Name
-                    },
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     EnableGroupByMetadataKey = true
 
@@ -349,17 +360,19 @@ namespace MediaBrowser.Api.Movies
 
         private IEnumerable<RecommendationDto> GetSimilarTo(User user, List<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
+            var itemTypes = new List<string> { typeof(Movie).Name };
+            if (_config.Configuration.EnableExternalContentInSuggestions)
+            {
+                itemTypes.Add(typeof(Trailer).Name);
+                itemTypes.Add(typeof(LiveTvProgram).Name);
+            }
+
             foreach (var item in baselineItems)
             {
                 var similar = _libraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Limit = itemLimit,
-                    IncludeItemTypes = new[]
-                    {
-                        typeof(Movie).Name,
-                        typeof(Trailer).Name,
-                        typeof(LiveTvProgram).Name
-                    },
+                    IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     SimilarTo = item,
                     EnableGroupByMetadataKey = true
