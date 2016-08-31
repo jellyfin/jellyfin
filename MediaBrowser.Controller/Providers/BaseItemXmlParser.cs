@@ -768,6 +768,7 @@ namespace MediaBrowser.Controller.Providers
                     break;
 
                 case "TMDbCollectionId":
+                case "CollectionNumber":
                     var tmdbCollection = reader.ReadElementContentAsString();
                     if (!string.IsNullOrWhiteSpace(tmdbCollection))
                     {
