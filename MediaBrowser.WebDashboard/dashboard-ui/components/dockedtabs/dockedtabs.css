@@ -17,12 +17,12 @@
     border-width: 0 !important;
 }
 
-    .dockedtabs-tab-button:not(.hide) {
-        display: flex !important;
-    }
+.dockedtabs-tab-button {
+    display: flex;
+}
 
-.dockedtabs-tab-button-noflex:not(.hide) {
-    display: block !important;
+.dockedtabs-tab-button-noflex {
+    display: block;
 }
 
 .dockedtabs-tab-button, .dockedtabs-tab-button-foreground {

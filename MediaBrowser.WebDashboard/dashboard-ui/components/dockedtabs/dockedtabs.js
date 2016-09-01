@@ -1,4 +1,7 @@
-﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'css!./dockedtabs', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser) {
+﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'require', 'dom', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser, require, dom) {
+
+    // Make sure this is pulled in after button and tab css
+    require(['css!./dockedtabs']);
 
     var currentUser = {};
     var currentUserViews = [];
@@ -31,7 +34,7 @@
                 Dashboard.navigate('reports.html');
                 break;
             case 'metadatamanager':
-                Dashboard.navigate('metadatamanager.html');
+                Dashboard.navigate('edititemmetadata.html');
                 break;
             case 'manageserver':
                 Dashboard.navigate('dashboard.html');
@@ -45,7 +48,7 @@
         }
     }
 
-    function showMenu(menuItems, button) {
+    function showMenu(menuItems, button, tabIndex) {
 
         var actionSheetType = browser.safari ? 'actionsheet' : 'webActionSheet';
 
@@ -59,12 +62,19 @@
                 exitAnimation: 'fadeout',
                 entryAnimationDuration: 160,
                 exitAnimationDuration: 100,
-                offsetTop: -30,
+                offsetTop: -35,
                 positionY: 'top',
                 dialogClass: 'dockedtabs-dlg',
                 menuItemClass: 'dockedtabs-dlg-menuitem'
 
-            }).then(executeCommand);
+            }).then(function (id) {
+
+                executeCommand(id);
+                if (id) {
+                    var tabs = dom.parentWithClass(button, 'dockedtabs-tabs');
+                    tabs.selectedIndex(tabIndex, false);
+                }
+            });
         });
     }
 
@@ -78,7 +88,7 @@
             };
         });
 
-        showMenu(commands, button);
+        showMenu(commands, button, 1);
     }
 
     function showMoreMenu(button) {
@@ -91,10 +101,14 @@
                 name: globalize.translate('ButtonManageServer'),
                 id: 'manageserver'
             });
-            commands.push({
-                name: globalize.translate('MetadataManager'),
-                id: 'metadatamanager'
-            });
+
+            if (dom.getWindowSize().innerWidth >= 800) {
+                commands.push({
+                    name: globalize.translate('MetadataManager'),
+                    id: 'metadatamanager'
+                });
+            }
+
             commands.push({
                 name: globalize.translate('ButtonReports'),
                 id: 'reports'
@@ -125,7 +139,7 @@
             id: 'signout'
         });
 
-        showMenu(commands, button);
+        showMenu(commands, button, 5);
     }
 
     function onTabClick(e) {
@@ -163,7 +177,7 @@
 
     function addNoFlexClass(buttons) {
 
-        setTimeout(function() {
+        setTimeout(function () {
             for (var i = 0, length = buttons.length; i < length; i++) {
 
                 var button = buttons[i];
