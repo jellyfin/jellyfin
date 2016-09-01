@@ -204,6 +204,8 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayCollectionsView { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
         public string[] CodecsUsed { get; set; }
+        public bool EnableChannelView { get; set; }
+        public bool EnableExternalContentInSuggestions { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -217,6 +219,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
+            EnableExternalContentInSuggestions = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
             PublicPort = 8096;

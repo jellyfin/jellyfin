@@ -920,8 +920,8 @@
   "LabelKodiMetadataEnablePathSubstitution": "Enable path substitution",
   "LabelKodiMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
   "LabelKodiMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-  "OptionDisplayChannelsInline": "Display channels inline within my views",
-  "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+  "OptionDisplayChannelsInline": "Display channels as media folders",
+  "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other media libraries. If disabled, they'll be displayed within a separate Channels folder.",
   "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
   "LabelDisplayCollectionsViewHelp": "This will create a separate view to display movie collections. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
   "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
@@ -2227,5 +2227,7 @@
   "HowToConnectFromEmbyApps": "How to Connect from Emby apps",
   "MessageFolderRipPlaybackExperimental": "Support for playback of folder rips and ISOs in this app is only expirimental. For best results, try an Emby app that supports these formats natively, or use plain video files.",
   "OptionExtractChapterImage": "Enable chapter image extraction",
-  "Downloads": "Downloads"
+  "Downloads": "Downloads",
+  "OptionEnableExternalContentInSuggestions": "Enable external content in suggestions",
+  "OptionEnableExternalContentInSuggestionsHelp": "Allow internet trailers and live tv programs to be included within suggested content."
 }

@@ -1,4 +1,7 @@
-﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'css!./dockedtabs', 'emby-tabs'], function (appHost, connectionManager, events, globalize) {
+﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'require', 'dom', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser, require, dom) {
+
+    // Make sure this is pulled in after button and tab css
+    require(['css!./dockedtabs']);
 
     var currentUser = {};
     var currentUserViews = [];
@@ -31,7 +34,7 @@
                 Dashboard.navigate('reports.html');
                 break;
             case 'metadatamanager':
-                Dashboard.navigate('metadatamanager.html');
+                Dashboard.navigate('edititemmetadata.html');
                 break;
             case 'manageserver':
                 Dashboard.navigate('dashboard.html');
@@ -45,9 +48,11 @@
         }
     }
 
-    function showMenu(menuItems, button) {
+    function showMenu(menuItems, button, tabIndex) {
 
-        require(['webActionSheet'], function (actionSheet) {
+        var actionSheetType = browser.safari ? 'actionsheet' : 'webActionSheet';
+
+        require([actionSheetType], function (actionSheet) {
 
             actionSheet.show({
 
@@ -57,12 +62,19 @@
                 exitAnimation: 'fadeout',
                 entryAnimationDuration: 160,
                 exitAnimationDuration: 100,
-                offsetTop: -30,
+                offsetTop: -35,
                 positionY: 'top',
                 dialogClass: 'dockedtabs-dlg',
                 menuItemClass: 'dockedtabs-dlg-menuitem'
 
-            }).then(executeCommand);
+            }).then(function (id) {
+
+                executeCommand(id);
+                if (id) {
+                    var tabs = dom.parentWithClass(button, 'dockedtabs-tabs');
+                    tabs.selectedIndex(tabIndex, false);
+                }
+            });
         });
     }
 
@@ -76,7 +88,7 @@
             };
         });
 
-        showMenu(commands, button);
+        showMenu(commands, button, 1);
     }
 
     function showMoreMenu(button) {
@@ -89,10 +101,14 @@
                 name: globalize.translate('ButtonManageServer'),
                 id: 'manageserver'
             });
-            commands.push({
-                name: globalize.translate('MetadataManager'),
-                id: 'metadatamanager'
-            });
+
+            if (dom.getWindowSize().innerWidth >= 800) {
+                commands.push({
+                    name: globalize.translate('MetadataManager'),
+                    id: 'metadatamanager'
+                });
+            }
+
             commands.push({
                 name: globalize.translate('ButtonReports'),
                 id: 'reports'
@@ -123,7 +139,7 @@
             id: 'signout'
         });
 
-        showMenu(commands, button);
+        showMenu(commands, button, 5);
     }
 
     function onTabClick(e) {
@@ -157,6 +173,20 @@
             default:
                 break;
         }
+    }
+
+    function addNoFlexClass(buttons) {
+
+        setTimeout(function () {
+            for (var i = 0, length = buttons.length; i < length; i++) {
+
+                var button = buttons[i];
+
+                if (button.classList.contains('emby-button-noflex')) {
+                    button.classList.add('dockedtabs-tab-button-noflex');
+                }
+            }
+        }, 300);
     }
 
     function render(options) {
@@ -209,8 +239,11 @@
 
         var buttons = elem.querySelectorAll('.emby-tab-button');
         for (var i = 0, length = buttons.length; i < length; i++) {
-            buttons[i].addEventListener('click', onTabClick);
+
+            var button = buttons[i];
+            button.addEventListener('click', onTabClick);
         }
+        addNoFlexClass(buttons);
 
         options.appFooter.add(elem);
 

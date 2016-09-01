@@ -16,7 +16,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
+    /* If this is raised, make sure it does not overlap bottom footer */
+    z-index: 1;
     margin: 0 !important;
     width: 100% !important;
     /* Page needs to supply padding */

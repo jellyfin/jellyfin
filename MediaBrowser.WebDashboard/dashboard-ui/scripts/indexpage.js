@@ -4,7 +4,7 @@
 
     function getDefaultSection(index) {
 
-        if (AppInfo.isNativeApp && browserInfo.safari) {
+        if (AppInfo.isNativeApp) {
 
             switch (index) {
 
@@ -24,7 +24,6 @@
                     return '';
             }
         }
-
         switch (index) {
 
             case 0:
@@ -250,7 +249,7 @@
 
         var viewTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 3]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 1, 2, 3], AppInfo.enableHomeTabs);
 
         var tabControllers = [];
         var renderedTabs = [];
@@ -371,12 +370,10 @@
             Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
-        if (AppInfo.enableHeadRoom) {
-            require(["headroom-window"], function (headroom) {
-                headroom.add(viewTabs);
-                self.headroom = headroom;
-            });
-        }
+        require(["headroom-window"], function (headroom) {
+            headroom.add(viewTabs);
+            self.headroom = headroom;
+        });
 
         view.addEventListener('viewdestroy', function (e) {
             if (self.headroom) {
