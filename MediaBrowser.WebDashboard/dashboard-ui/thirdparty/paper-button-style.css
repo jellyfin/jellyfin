@@ -143,14 +143,10 @@ div.dialogHeader {
 }
 
 .ui-body-b div.formDialogHeader {
-    background-color: #101010;
+    background-color: #222326;
 }
 
 .formDialogHeader button {
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.formDialog.background-theme-b {
-    background-color: #181818;
 }

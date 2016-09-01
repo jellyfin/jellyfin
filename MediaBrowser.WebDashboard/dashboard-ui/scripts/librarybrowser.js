@@ -150,9 +150,9 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs, enableSwipe) {
 
-                if (!browser.safari) {
+                if (!browser.safari && enableSwipe !== false) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 

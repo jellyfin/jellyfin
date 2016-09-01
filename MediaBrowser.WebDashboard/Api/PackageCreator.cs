@@ -346,7 +346,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval' data: gap: file: filesystem:;\">");
+                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval' data: gap://ready file: filesystem:;\">");
             }
 
             sb.Append("<link rel=\"manifest\" href=\"manifest.json\">");
