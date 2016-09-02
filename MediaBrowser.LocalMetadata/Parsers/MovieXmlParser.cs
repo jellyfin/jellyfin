@@ -12,8 +12,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class BaseVideoXmlParser<T> : BaseItemXmlParser<T>
         where T : Video
     {
-        public BaseVideoXmlParser(ILogger logger)
-            : base(logger)
+        public BaseVideoXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 
@@ -50,15 +50,15 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
     public class MovieXmlParser : BaseVideoXmlParser<Movie>
     {
-        public MovieXmlParser(ILogger logger) : base(logger)
+        public MovieXmlParser(ILogger logger, IProviderManager providerManager) : base(logger, providerManager)
         {
         }
     }
 
     public class VideoXmlParser : BaseVideoXmlParser<Video>
     {
-        public VideoXmlParser(ILogger logger)
-            : base(logger)
+        public VideoXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
     }

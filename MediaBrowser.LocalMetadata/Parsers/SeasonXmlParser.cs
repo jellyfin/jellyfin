@@ -7,8 +7,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class SeasonXmlParser : BaseItemXmlParser<Season>
     {
-        public SeasonXmlParser(ILogger logger)
-            : base(logger)
+        public SeasonXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 
