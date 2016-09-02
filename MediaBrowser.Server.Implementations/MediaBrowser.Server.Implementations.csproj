@@ -251,6 +251,18 @@
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpAppPacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpByePacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpListener.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpPacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpReceiverReportPacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpSenderReportPacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpSourceDescriptionPacket.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\SourceDescriptionBlock.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\SourceDescriptionItem.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtp\RtpListener.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Rtp\RtpPacket.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspMethod.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspRequest.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspResponse.cs" />
@@ -258,6 +270,8 @@
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspStatusCode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\TransmissionMode.cs" />
+    <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
