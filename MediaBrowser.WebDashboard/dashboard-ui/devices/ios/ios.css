@@ -76,19 +76,6 @@ h1, h1 a {
     font-weight: 400;
 }
 
-.libraryMenuButtonText {
-    font-weight: 500 !important;
-    position: absolute;
-    left: 100px;
-    right: 100px;
-    top: 12px;
-    text-align: center;
-    font-size: 16px;
-    margin: 0 auto !important;
-    padding: 0 !important;
-    justify-content: center;
-}
-
 .noSecondaryNavPage .itemBackdrop {
     margin-top: 0;
 }
@@ -119,10 +106,6 @@ h1, h1 a {
 
 .alphabetPicker {
     right: 5px !important;
-}
-
-.searchBackButton {
-    display: none !important;
 }
 
 .txtSearch {

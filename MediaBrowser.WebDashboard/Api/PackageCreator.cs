@@ -346,11 +346,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval' data: gap://ready file: filesystem:;\">");
+                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: file: filesystem:; connect-src ws: *\">");
+            }
+            else
+            {
+                sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             }
 
             sb.Append("<link rel=\"manifest\" href=\"manifest.json\">");
-            sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
             sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width\">");

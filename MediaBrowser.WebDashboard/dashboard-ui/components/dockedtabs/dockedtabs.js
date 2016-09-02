@@ -170,6 +170,9 @@
                 e.preventDefault();
                 e.stopPropagation();
                 break;
+            case 6:
+                Dashboard.navigate('dashboard.html');
+                break;
             default:
                 break;
         }
@@ -206,7 +209,7 @@
         var html = '';
 
         var liveTVButtonClass = appHost.supports('sync') ? ' dockedtab-midsize' : '';
-
+        
         html += '    <div is="emby-tabs" class="dockedtabs-tabs" data-selectionbar="false">\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button emby-tab-button-active" data-index="0">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">home</i><div>' + globalize.translate('TabHome') + '</div></div>\
@@ -214,7 +217,7 @@
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="1">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">dvr</i><div>' + globalize.translate('HeaderLibraries') + '</div></div>\
             </button>\
-            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button docked-tab-livetv' + liveTVButtonClass + '" data-index="2">\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button docked-tab-livetv hide' + liveTVButtonClass + '" data-index="2">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">live_tv</i><div>' + globalize.translate('HeaderLiveTV') + '</div></div>\
             </button>\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button homeFavoritesTab" data-index="3">\
@@ -228,6 +231,11 @@
             </button>\
             ';
         }
+
+        html += '<button is="emby-button" class="dockedtabs-tab-button emby-tab-button docked-tab-manageserver hide dockedtab-midsize" data-index="6">\
+                <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">dashboard</i><div>' + globalize.translate('ButtonManageServer') + '</div></div>\
+            </button>\
+            ';
 
         html += '<button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="5">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">menu</i><div>' + globalize.translate('ButtonMore') + '</div></div>\
@@ -260,6 +268,12 @@
             element.querySelector('.docked-tab-livetv').classList.remove('hide');
         } else {
             element.querySelector('.docked-tab-livetv').classList.add('hide');
+        }
+
+        if (user.Policy.IsAdministrator) {
+            element.querySelector('.docked-tab-manageserver').classList.remove('hide');
+        } else {
+            element.querySelector('.docked-tab-manageserver').classList.add('hide');
         }
     }
 
