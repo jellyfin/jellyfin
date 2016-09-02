@@ -591,16 +591,6 @@ var Dashboard = {
         }
     },
 
-    setPageTitle: function (title, documentTitle) {
-
-        LibraryMenu.setTitle(title || 'Emby');
-
-        documentTitle = documentTitle || title;
-        if (documentTitle) {
-            document.title = documentTitle;
-        }
-    },
-
     getSupportedRemoteCommands: function () {
 
         // Full list
@@ -965,8 +955,6 @@ var AppInfo = {};
         AppInfo.supportsFileInput = !(AppInfo.isNativeApp && isAndroid);
 
         AppInfo.hasPhysicalVolumeButtons = isCordova || browserInfo.mobile;
-
-        AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -2111,7 +2099,8 @@ var AppInfo = {};
             dependencies: [],
             autoFocus: false,
             controller: 'scripts/indexpage',
-            transition: 'fade'
+            transition: 'fade',
+            type: 'home'
         });
 
         defineRoute({

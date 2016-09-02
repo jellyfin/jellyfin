@@ -423,7 +423,7 @@
                     includeParentInfo: false
                 });
 
-                Dashboard.setPageTitle(name);
+                LibraryMenu.setTitle(name);
 
                 if (linkToElement) {
                     nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';

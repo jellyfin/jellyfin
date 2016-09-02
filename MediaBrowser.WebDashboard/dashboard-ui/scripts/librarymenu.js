@@ -368,7 +368,7 @@
 
                 var documentTitle = secondaryTitle;
 
-                Dashboard.setPageTitle(title, documentTitle);
+                LibraryMenu.setTitle(title, documentTitle);
 
             } else {
                 link.classList.remove('selectedSidebarLink');
@@ -697,19 +697,8 @@
             if (libraryMenuButtonText) {
                 libraryMenuButtonText.innerHTML = html;
             }
-        },
 
-        setBackButtonVisible: function (visible) {
-
-            var backButton = document.querySelector('.headerBackButton');
-
-            if (backButton) {
-                if (visible) {
-                    backButton.classList.remove('hide');
-                } else {
-                    backButton.classList.add('hide');
-                }
-            }
+            document.title = title;
         },
 
         setTransparentMenu: function (transparent) {
@@ -908,15 +897,8 @@
     });
 
     function updateTitle(page) {
-        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
 
-        if (!title) {
-            var titleKey = getParameterByName('titlekey');
-
-            if (titleKey) {
-                title = Globalize.translate(titleKey);
-            }
-        }
+        var title = page.getAttribute('data-title');
 
         if (title) {
             LibraryMenu.setTitle(title);
@@ -925,18 +907,10 @@
 
     function updateBackButton(page) {
 
-        var canGoBack = !page.classList.contains('homePage') && history.length > 0;
-
         var backButton = document.querySelector('.headerBackButton');
 
-        var showBackButton = AppInfo.enableBackButton;
-
-        if (!showBackButton) {
-            showBackButton = page.getAttribute('data-backbutton') == 'true';
-        }
-
         if (backButton) {
-            if (canGoBack && showBackButton) {
+            if (Emby.Page.canGoBack()) {
                 backButton.classList.remove('hide');
             } else {
                 backButton.classList.add('hide');

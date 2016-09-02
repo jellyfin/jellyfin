@@ -91,7 +91,7 @@
 
 .libraryMenuButtonText {
     text-decoration: none;
-    font-weight: 500 !important;
+    font-weight: 400 !important;
     display: inline-flex;
     vertical-align: middle;
     padding-left: 0 !important;
@@ -102,7 +102,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
-    margin-left: .5em;
+    margin-left: .75em;
     font-size: 108%;
 }
 

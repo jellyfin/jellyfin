@@ -15,7 +15,7 @@
             uploadUserImage.value = '';
             uploadUserImage.dispatchEvent(new CustomEvent('change', {}));
 
-            Dashboard.setPageTitle(user.Name);
+            LibraryMenu.setTitle(user.Name);
 
             var imageUrl;
 

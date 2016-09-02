@@ -2,7 +2,7 @@
 
     function loadUser(page, user) {
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         if (user.ConnectLinkType == 'Guest') {
 

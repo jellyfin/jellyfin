@@ -303,23 +303,23 @@
 
         if (context == 'sync') {
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Sync');
-            Dashboard.setPageTitle(Globalize.translate('TitleSync'));
+            LibraryMenu.setTitle(Globalize.translate('TitleSync'));
         }
         else if (context == 'livetv') {
 
-            Dashboard.setPageTitle(Globalize.translate('TitleLiveTV'));
+            LibraryMenu.setTitle(Globalize.translate('TitleLiveTV'));
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Live%20TV');
         }
         else if (context == 'notifications') {
 
             $('.notificationsTabs', page).show();
 
-            Dashboard.setPageTitle(Globalize.translate('TitleNotifications'));
+            LibraryMenu.setTitle(Globalize.translate('TitleNotifications'));
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
         else {
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Plugins');
-            Dashboard.setPageTitle(Globalize.translate('TitlePlugins'));
+            LibraryMenu.setTitle(Globalize.translate('TitlePlugins'));
         }
 
     });

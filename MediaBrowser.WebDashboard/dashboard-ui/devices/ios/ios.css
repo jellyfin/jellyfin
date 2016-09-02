@@ -72,6 +72,10 @@ h1, h1 a {
     font-weight: 400 !important;
 }
 
+.libraryMenuButtonText {
+    font-weight: 500 !important;
+}
+
 .btnNotificationsInner {
     font-weight: 400;
 }

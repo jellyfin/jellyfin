@@ -100,8 +100,6 @@
 
         var context = params.context;
 
-        LibraryMenu.setBackButtonVisible(true);
-
         LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
         LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
         LibraryMenu.setTitle(item.SeriesName || item.Name);
