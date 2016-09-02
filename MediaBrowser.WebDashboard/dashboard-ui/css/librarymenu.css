@@ -102,7 +102,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
-    margin-left: 1em;
+    margin-left: .75em;
+    font-size: 108%;
 }
 
 .viewMenuBar {
@@ -228,13 +229,6 @@
 
 .ui-panel.ui-body-b {
     background-color: #1D1D20;
-}
-
-@media all and (max-width: 360px) {
-
-    .libraryMenuButtonText {
-        display: none;
-    }
 }
 
 @media all and (max-width: 800px) {

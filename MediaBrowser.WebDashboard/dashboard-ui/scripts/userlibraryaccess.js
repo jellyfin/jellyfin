@@ -90,7 +90,7 @@
 
         $(page).trigger('userloaded', [user]);
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         loadChannels(page, user, channels);
         loadMediaFolders(page, user, mediaFolders);

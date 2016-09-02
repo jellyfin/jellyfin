@@ -5,6 +5,10 @@ define(['browser'], function (browser) {
         return !!(v.canPlayType && v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"').replace(/no/, ''));
     }
 
+    function canPlayH265() {
+        return false;
+    }
+
     var _supportsTextTracks;
     function supportsTextTracks() {
 
@@ -257,7 +261,7 @@ define(['browser'], function (browser) {
 
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
-        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') || isEdgeUniversal()) {
+        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') || isEdgeUniversal() || browser.tizen) {
             // safari is lying
             if (!browser.safari) {
                 videoAudioCodecs.push('ac3');
@@ -293,20 +297,29 @@ define(['browser'], function (browser) {
             //videoAudioCodecs.push('truehd');
         }
 
+        var mp4VideoCodecs = [];
         if (canPlayH264()) {
+            mp4VideoCodecs.push('h264');
+        }
+        if (canPlayH265()) {
+            mp4VideoCodecs.push('h265');
+            mp4VideoCodecs.push('hevc');
+        }
+
+        if (mp4VideoCodecs.length) {
             profile.DirectPlayProfiles.push({
                 Container: 'mp4,m4v',
                 Type: 'Video',
-                VideoCodec: 'h264',
+                VideoCodec: mp4VideoCodecs.join(','),
                 AudioCodec: videoAudioCodecs.join(',')
             });
         }
 
-        if (canPlayMkv) {
+        if (canPlayMkv && mp4VideoCodecs.length) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
-                VideoCodec: 'h264',
+                VideoCodec: mp4VideoCodecs.join(','),
                 AudioCodec: videoAudioCodecs.join(',')
             });
 

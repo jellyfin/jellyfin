@@ -4,10 +4,10 @@
 }
 
 .formDialogHeader {
-    padding: .7em .5em;
+    padding: .8em .5em;
     display: flex;
     align-items: center;
-    background-color: #101010;
+    background-color: #222326;
     flex-shrink: 0;
 }
 

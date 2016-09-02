@@ -1,4 +1,8 @@
-﻿@media all and (min-width: 300px) {
+﻿.libraryMenuButtonText {
+    font-weight: 500 !important;
+}
+
+@media all and (min-width: 300px) {
 
     .libraryViewNav, .emby-tabs-slider {
         display: flex;

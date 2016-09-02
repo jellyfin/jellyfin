@@ -361,7 +361,6 @@
         view.addEventListener('viewbeforeshow', function (e) {
             reloadItems(view);
             updateFilterControls();
-            LibraryMenu.setBackButtonVisible(params.context);
         });
 
         view.addEventListener('viewdestroy', function (e) {

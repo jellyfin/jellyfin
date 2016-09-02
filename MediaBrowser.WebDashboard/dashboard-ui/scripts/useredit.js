@@ -22,7 +22,7 @@
 
         $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesmenu.html?userId=' + user.Id);
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         $('#txtUserName', page).val(user.Name);
         $('#txtConnectUserName', page).val(currentUser.ConnectUserName);

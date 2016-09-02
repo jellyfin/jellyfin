@@ -203,7 +203,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             return;
             //}
         }
-        viewManager.tryRestoreView(currentRequest).then(function () {
+        viewManager.tryRestoreView(currentRequest, function () {
 
             // done
             currentRouteInfo = {
@@ -211,7 +211,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 path: ctx.path
             };
 
-        }, onNewViewNeeded);
+        }).catch(function (result) {
+
+            if (!result || !result.cancelled) {
+                onNewViewNeeded();
+            }
+        });
     }
 
     var firstConnectionResult;
