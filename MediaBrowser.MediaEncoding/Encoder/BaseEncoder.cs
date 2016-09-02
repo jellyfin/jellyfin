@@ -481,6 +481,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
+            if (state.IsVideoRequest)
+            {
+                var encodingOptions = GetEncodingOptions();
+                var videoEncoder = EncodingJobFactory.GetVideoEncoder(MediaEncoder, state, encodingOptions);
+                if (videoEncoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    arg = "-hwaccel vaapi -hwaccel_output_format vaapi -vaapi_device " + encodingOptions.VaapiDevice + " " + arg;
+                }
+            }
+
             return arg.Trim();
         }
 
