@@ -27,8 +27,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        private static readonly Dictionary<string, string> CommonTags = new[] {     
-               
+        private static readonly Dictionary<string, string> CommonTags = new[] {
+
                     "plot",
                     "customrating",
                     "lockdata",
@@ -428,6 +428,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <returns>Task.</returns>
         public static void AddCommonNodes(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataRepo, IFileSystem fileSystem, IServerConfigurationManager config)
         {
+            var writtenProviderIds = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
             var overview = (item.Overview ?? string.Empty)
                 .StripHtml()
                 .Replace("&quot;", "'");
@@ -572,6 +574,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(rt))
             {
                 writer.WriteElementString("rottentomatoesid", rt);
+                writtenProviderIds.Add(MetadataProviders.RottenTomatoes.ToString());
             }
 
             var tmdbCollection = item.GetProviderId(MetadataProviders.TmdbCollection);
@@ -579,6 +582,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(tmdbCollection))
             {
                 writer.WriteElementString("collectionnumber", tmdbCollection);
+                writtenProviderIds.Add(MetadataProviders.TmdbCollection.ToString());
             }
 
             var imdb = item.GetProviderId(MetadataProviders.Imdb);
@@ -592,6 +596,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("imdbid", imdb);
                 }
+                writtenProviderIds.Add(MetadataProviders.Imdb.ToString());
             }
 
             // Series xml saver already saves this
@@ -601,6 +606,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 if (!string.IsNullOrEmpty(tvdb))
                 {
                     writer.WriteElementString("tvdbid", tvdb);
+                    writtenProviderIds.Add(MetadataProviders.Tvdb.ToString());
                 }
             }
 
@@ -608,12 +614,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(tmdb))
             {
                 writer.WriteElementString("tmdbid", tmdb);
+                writtenProviderIds.Add(MetadataProviders.Tmdb.ToString());
             }
 
             var tvcom = item.GetProviderId(MetadataProviders.Tvcom);
             if (!string.IsNullOrEmpty(tvcom))
             {
                 writer.WriteElementString("tvcomid", tvcom);
+                writtenProviderIds.Add(MetadataProviders.Tvcom.ToString());
             }
 
             if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
@@ -766,6 +774,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("audiodbartistid", externalId);
+                writtenProviderIds.Add(MetadataProviders.AudioDbArtist.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.AudioDbAlbum);
@@ -773,6 +782,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("audiodbalbumid", externalId);
+                writtenProviderIds.Add(MetadataProviders.AudioDbAlbum.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.Zap2It);
@@ -780,6 +790,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("zap2itid", externalId);
+                writtenProviderIds.Add(MetadataProviders.Zap2It.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
@@ -787,6 +798,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("musicbrainzalbumid", externalId);
+                writtenProviderIds.Add(MetadataProviders.MusicBrainzAlbum.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
@@ -794,6 +806,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("musicbrainzalbumartistid", externalId);
+                writtenProviderIds.Add(MetadataProviders.MusicBrainzAlbumArtist.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
@@ -801,6 +814,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("musicbrainzartistid", externalId);
+                writtenProviderIds.Add(MetadataProviders.MusicBrainzArtist.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
@@ -808,24 +822,33 @@ namespace MediaBrowser.XbmcMetadata.Savers
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("musicbrainzreleasegroupid", externalId);
+                writtenProviderIds.Add(MetadataProviders.MusicBrainzReleaseGroup.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.Gamesdb);
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("gamesdbid", externalId);
+                writtenProviderIds.Add(MetadataProviders.Gamesdb.ToString());
             }
 
             externalId = item.GetProviderId(MetadataProviders.TvRage);
             if (!string.IsNullOrEmpty(externalId))
             {
                 writer.WriteElementString("tvrageid", externalId);
+                writtenProviderIds.Add(MetadataProviders.TvRage.ToString());
             }
 
-            externalId = item.GetProviderId(MetadataProviders.TvMaze);
-            if (!string.IsNullOrEmpty(externalId))
+            if (item.ProviderIds != null)
             {
-                writer.WriteElementString("tvmazeid", externalId);
+                foreach (var providerKey in item.ProviderIds.Keys)
+                {
+                    var providerId = item.ProviderIds[providerKey];
+                    if (!string.IsNullOrEmpty(providerId) && !writtenProviderIds.Contains(providerKey))
+                    {
+                        writer.WriteElementString(providerKey.ToLower() + "id", providerId);
+                    }
+                }
             }
 
             if (options.SaveImagePathsInNfo)
