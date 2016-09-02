@@ -43,10 +43,6 @@
                 return;
             }
 
-            if (Dashboard.lastSystemInfo) {
-                page.querySelector('.serverNameHeader').innerHTML = Dashboard.lastSystemInfo.ServerName;
-            }
-
             DashboardPage.newsStartIndex = 0;
 
             Dashboard.showLoadingMsg();
@@ -118,7 +114,6 @@
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
                 page.querySelector('.serverNameHeader').innerHTML = systemInfo.ServerName;
-                Dashboard.updateSystemInfo(systemInfo);
 
                 $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
 

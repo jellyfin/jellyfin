@@ -51,7 +51,6 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             AddMessageResponder("who is EmbyServer?", RespondToV2Message);
             AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
         }
 
         private void AddMessageResponder(string message, Action<string, Encoding> responder)
@@ -91,31 +90,6 @@ namespace MediaBrowser.Server.Implementations.Udp
                 {
                     _logger.ErrorException("Error in OnMessageReceived", ex);
                 }
-            }
-        }
-
-        private async void RespondToV1Message(string endpoint, Encoding encoding)
-        {
-            var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
-
-            if (!string.IsNullOrEmpty(localUrl))
-            {
-                // This is how we did the old v1 search, so need to strip off the protocol
-                var index = localUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-
-                if (index != -1)
-                {
-                    localUrl = localUrl.Substring(index + 3);
-                }
-
-                // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowserServer|{0}", localUrl);
-
-                await SendAsync(Encoding.UTF8.GetBytes(response), endpoint);
-            }
-            else
-            {
-                _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
             }
         }
 
