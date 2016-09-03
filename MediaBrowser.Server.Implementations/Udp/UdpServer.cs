@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
                 await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint).ConfigureAwait(false);
                 
-                 if (parts.Length > 1)
+                if (parts.Length > 1)
                 {
                     _appHost.EnableLoopback(parts[1]);
                 }
