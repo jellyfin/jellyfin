@@ -71,14 +71,6 @@ h1, h1 a {
     font-weight: 400 !important;
 }
 
-.nowPlayingPage .libraryViewNav {
-    top: 0 !important;
-}
-
-.nowPlayingPage {
-    padding-top: 50px !important;
-}
-
 .videoSubtitles {
     font-size: 200% !important;
 }
