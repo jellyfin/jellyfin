@@ -220,7 +220,7 @@
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button docked-tab-livetv hide' + liveTVButtonClass + '" data-index="2">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">live_tv</i><div>' + globalize.translate('HeaderLiveTV') + '</div></div>\
             </button>\
-            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button homeFavoritesTab" data-index="3">\
+            <button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="3">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">favorite</i><div>' + globalize.translate('TabFavorites') + '</div></div>\
             </button>\
 ';

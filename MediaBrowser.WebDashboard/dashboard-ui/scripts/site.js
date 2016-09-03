@@ -882,7 +882,6 @@ var AppInfo = {};
 
         var isCordova = Dashboard.isRunningInCordova();
 
-        AppInfo.enableHomeFavorites = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.touch;
@@ -898,8 +897,6 @@ var AppInfo = {};
             AppInfo.hasLowImageBandwidth = true;
 
             if (isCordova) {
-                //AppInfo.enableSectionTransitions = true;
-                AppInfo.enableHomeFavorites = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
             }
         }
@@ -1058,10 +1055,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableSupporterMembership) {
             elem.classList.add('supporterMembershipDisabled');
-        }
-
-        if (!AppInfo.enableHomeFavorites) {
-            elem.classList.add('homeFavoritesDisabled');
         }
     }
 

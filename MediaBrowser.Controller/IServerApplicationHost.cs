@@ -89,5 +89,7 @@ namespace MediaBrowser.Controller
         string GetLocalApiUrl(IPAddress ipAddress);
 
         void LaunchUrl(string url);
+
+        void EnableLoopback(string appName);
     }
 }

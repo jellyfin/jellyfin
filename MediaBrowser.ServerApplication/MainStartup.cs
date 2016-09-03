@@ -292,15 +292,6 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-            try
-            {
-                LoopUtil.Run();
-            }
-            catch (Exception ex)
-            {
-                logManager.GetLogger("LoopUtil").ErrorException("Error in LoopUtil", ex);
-            }
-
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
 

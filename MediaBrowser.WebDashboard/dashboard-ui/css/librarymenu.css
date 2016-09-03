@@ -87,6 +87,9 @@
     align-items: center;
     margin-left: .75em;
     font-size: 108%;
+
+    /* Avoid pushing right header off the screen */
+    flex-shrink: 1;
 }
 
 .viewMenuBar {

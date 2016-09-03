@@ -957,10 +957,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.homeFavoritesDisabled .homeFavoritesTab {
-    display: none !important;
-}
-
 #criticReviewsContent.hiddenScrollX {
     white-space: nowrap;
 }

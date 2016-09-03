@@ -192,12 +192,12 @@ namespace MediaBrowser.ServerApplication.Native
             return hasChanges;
         }
 
-        public static void Run()
+        public static void Run(string appName)
         {
             var util = new LoopUtil();
             util.LoadApps();
 
-            var hasChanges = util.CreateExcemptions("Emby");
+            var hasChanges = util.CreateExcemptions(appName);
 
             if (hasChanges)
             {

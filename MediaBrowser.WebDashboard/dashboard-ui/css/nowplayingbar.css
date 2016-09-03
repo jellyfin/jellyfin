@@ -102,12 +102,12 @@
     }
 
     .nowPlayingImage img {
-        height: 56px;
+        height: 64px;
     }
 
 .nowPlayingBar .nowPlayingImage {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     background-position: center center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -161,7 +161,7 @@
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
-    margin-top: 3px;
+    margin-top: 6px;
     /* Need this to make sure it's on top of nowPlayingBarPositionContainer so that buttons are fully clickable */
     z-index: 2;
     position: absolute;
@@ -172,7 +172,7 @@
 
 .nowPlayingBarPositionContainer {
     position: absolute !important;
-    left: 56px;
+    left: 64px;
     top: -8px;
     right: 0;
     z-index: 1;

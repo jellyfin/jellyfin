@@ -1392,5 +1392,10 @@ namespace MediaBrowser.Server.Startup.Common
         {
             NativeApp.LaunchUrl(url);
         }
+
+        public void EnableLoopback(string appName)
+        {
+            NativeApp.EnableLoopback(appName);
+        }
     }
 }
