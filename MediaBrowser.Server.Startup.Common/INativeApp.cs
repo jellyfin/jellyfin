@@ -107,5 +107,7 @@ namespace MediaBrowser.Server.Startup.Common
         void LaunchUrl(string url);
 
         IDbConnector GetDbConnector();
+
+        void EnableLoopback(string appName);
     }
 }

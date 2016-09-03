@@ -14,16 +14,18 @@ namespace MediaBrowser.LocalMetadata.Providers
     public class SeriesXmlProvider : BaseXmlProvider<Series>, IHasOrder
     {
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
-        public SeriesXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public SeriesXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
+            _providerManager = providerManager;
         }
 
         protected override void Fetch(MetadataResult<Series> result, string path, CancellationToken cancellationToken)
         {
-            new SeriesXmlParser(_logger).Fetch(result, path, cancellationToken);
+            new SeriesXmlParser(_logger, _providerManager).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)

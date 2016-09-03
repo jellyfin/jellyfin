@@ -10,8 +10,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        public MovieNfoParser(ILogger logger, IConfigurationManager config)
-            : base(logger, config)
+        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+            : base(logger, config, providerManager)
         {
         }
 
