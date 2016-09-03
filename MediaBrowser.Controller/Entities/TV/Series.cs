@@ -209,7 +209,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var seriesKey = GetUniqueSeriesKey(this);
 
-            Logger.Debug("GetSeasons SeriesKey: {0}", seriesKey);
             var query = new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = seriesKey,
@@ -267,7 +266,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public IEnumerable<Episode> GetEpisodes(User user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
-            Logger.Debug("GetEpisodes seriesKey: {0}", seriesKey);
 
             var query = new InternalItemsQuery(user)
             {
@@ -290,8 +288,6 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             var allItems = LibraryManager.GetItemList(query).ToList();
-
-            Logger.Debug("GetEpisodes return {0} items from database", allItems.Count);
 
             var allSeriesEpisodes = allItems.OfType<Episode>().ToList();
 
@@ -376,7 +372,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public IEnumerable<Episode> GetSeasonEpisodes(Season parentSeason, User user)
         {
             var seriesKey = GetUniqueSeriesKey(this);
-            Logger.Debug("GetSeasonEpisodes seriesKey: {0}", seriesKey);
 
             var query = new InternalItemsQuery(user)
             {
@@ -410,11 +405,9 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             if (allSeriesEpisodes == null)
             {
-                Logger.Debug("GetSeasonEpisodes allSeriesEpisodes is null");
                 return GetSeasonEpisodes(parentSeason, user);
             }
 
-            Logger.Debug("GetSeasonEpisodes FilterEpisodesBySeason");
             var episodes = FilterEpisodesBySeason(allSeriesEpisodes, parentSeason, ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons);
 
             var sortBy = (parentSeason.IndexNumber ?? -1) == 0 ? ItemSortBy.SortName : ItemSortBy.AiredEpisodeOrder;

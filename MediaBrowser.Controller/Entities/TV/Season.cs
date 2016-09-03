@@ -85,9 +85,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override int GetChildCount(User user)
         {
-            Logger.Debug("Season {0} getting child cound", (Path ?? Name));
             var result = GetChildren(user, true).Count();
-            Logger.Debug("Season {0} child cound: ", result);
 
             return result;
         }
@@ -158,13 +156,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
             var id = Guid.NewGuid().ToString("N");
 
-            Logger.Debug("Season.GetItemsInternal entering GetEpisodes. Request id: " + id);
             var items = GetEpisodes(user).Where(filter);
 
-            Logger.Debug("Season.GetItemsInternal entering PostFilterAndSort. Request id: " + id);
             var result = PostFilterAndSort(items, query, false, false);
 
-            Logger.Debug("Season.GetItemsInternal complete. Request id: " + id);
             return Task.FromResult(result);
         }
 
