@@ -102,7 +102,7 @@
 
         LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
         LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
-        LibraryMenu.setTitle(item.SeriesName || item.Name);
+        LibraryMenu.setTitle('');
 
         Dashboard.getCurrentUser().then(function (user) {
 

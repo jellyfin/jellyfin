@@ -4,22 +4,7 @@
 
         return ApiClient.getUserViews({}, userId).then(function (result) {
 
-            var items = result.Items;
-
-            var list = [];
-
-            for (var i = 0, length = items.length; i < length; i++) {
-
-                var view = items[i];
-
-                if (AppInfo.isNativeApp && browserInfo.safari && view.CollectionType == 'livetv') {
-                    continue;
-                }
-
-                list.push(view);
-            }
-
-            return list;
+            return result.Items;
         });
     }
 

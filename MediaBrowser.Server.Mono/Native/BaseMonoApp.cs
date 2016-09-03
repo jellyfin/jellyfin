@@ -278,6 +278,11 @@ namespace MediaBrowser.Server.Mono.Native
 
             return info;
         }
+
+        public void EnableLoopback(string appName)
+        {
+
+        }
     }
 
     public class NullPowerManagement : IPowerManagement

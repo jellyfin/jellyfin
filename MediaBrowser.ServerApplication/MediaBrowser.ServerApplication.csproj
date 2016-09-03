@@ -119,6 +119,7 @@
     <Compile Include="MainStartup.cs" />
     <Compile Include="Native\LnkShortcutHandler.cs" />
     <Compile Include="Native\DbConnector.cs" />
+    <Compile Include="Native\LoopbackUtil.cs" />
     <Compile Include="Native\Standby.cs" />
     <Compile Include="Native\ServerAuthorization.cs" />
     <Compile Include="Native\WindowsApp.cs" />

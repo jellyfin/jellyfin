@@ -366,9 +366,7 @@
                 var secondaryTitle = (link.innerText || link.textContent).trim();
                 title += secondaryTitle;
 
-                var documentTitle = secondaryTitle;
-
-                LibraryMenu.setTitle(title, documentTitle);
+                LibraryMenu.setTitle(title);
 
             } else {
                 link.classList.remove('selectedSidebarLink');
@@ -698,7 +696,7 @@
                 libraryMenuButtonText.innerHTML = html;
             }
 
-            document.title = title;
+            document.title = title || 'Emby';
         },
 
         setTransparentMenu: function (transparent) {

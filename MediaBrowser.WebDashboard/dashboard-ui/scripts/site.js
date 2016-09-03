@@ -144,25 +144,6 @@ var Dashboard = {
         }
     },
 
-    updateSystemInfo: function (info) {
-
-        Dashboard.lastSystemInfo = info;
-
-        if (!Dashboard.initialServerVersion) {
-            Dashboard.initialServerVersion = info.Version;
-        }
-
-        if (info.HasPendingRestart) {
-
-        } else {
-
-            if (Dashboard.initialServerVersion != info.Version && !AppInfo.isNativeApp) {
-
-                window.location.reload(true);
-            }
-        }
-    },
-
     getConfigurationPageUrl: function (name) {
         return "configurationpage?name=" + encodeURIComponent(name);
     },
@@ -579,18 +560,6 @@ var Dashboard = {
 
     },
 
-    onWebSocketMessageReceived: function (e, data) {
-
-        var msg = data;
-
-        if (msg.MessageType === "SystemInfo") {
-            Dashboard.updateSystemInfo(msg.Data);
-        }
-        else if (msg.MessageType === "RestartRequired") {
-            Dashboard.updateSystemInfo(msg.Data);
-        }
-    },
-
     getSupportedRemoteCommands: function () {
 
         // Full list
@@ -913,7 +882,6 @@ var AppInfo = {};
 
         var isCordova = Dashboard.isRunningInCordova();
 
-        AppInfo.enableHomeFavorites = true;
         AppInfo.enableHomeTabs = true;
         AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.touch;
@@ -929,8 +897,6 @@ var AppInfo = {};
             AppInfo.hasLowImageBandwidth = true;
 
             if (isCordova) {
-                //AppInfo.enableSectionTransitions = true;
-                AppInfo.enableHomeFavorites = false;
                 AppInfo.enableNowPlayingPageBottomTabs = false;
             }
         }
@@ -975,9 +941,6 @@ var AppInfo = {};
         }
 
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
-
-        Events.off(apiClient, 'websocketmessage', Dashboard.onWebSocketMessageReceived);
-        Events.on(apiClient, 'websocketmessage', Dashboard.onWebSocketMessageReceived);
 
         Events.off(apiClient, 'requestfail', Dashboard.onRequestFail);
         Events.on(apiClient, 'requestfail', Dashboard.onRequestFail);
@@ -1092,10 +1055,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableSupporterMembership) {
             elem.classList.add('supporterMembershipDisabled');
-        }
-
-        if (!AppInfo.enableHomeFavorites) {
-            elem.classList.add('homeFavoritesDisabled');
         }
     }
 
@@ -1523,6 +1482,9 @@ var AppInfo = {};
                 },
                 stop: function () {
                     return MediaController.stop();
+                },
+                seek: function (ticks) {
+                    return MediaController.seek(ticks);
                 }
             };
         });

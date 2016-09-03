@@ -9,8 +9,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
     {
-        public BoxSetXmlParser(ILogger logger)
-            : base(logger)
+        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 

@@ -203,5 +203,10 @@ namespace MediaBrowser.ServerApplication.Native
         {
             ((Process)sender).Dispose();
         }
+
+        public void EnableLoopback(string appName)
+        {
+            LoopUtil.Run(appName);
+        }
     }
 }

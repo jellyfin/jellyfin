@@ -11,16 +11,18 @@ namespace MediaBrowser.LocalMetadata.Providers
     public class GameSystemXmlProvider : BaseXmlProvider<GameSystem>
     {
         private readonly ILogger _logger;
+        private readonly IProviderManager _providerManager;
 
-        public GameSystemXmlProvider(IFileSystem fileSystem, ILogger logger)
+        public GameSystemXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
+            _providerManager = providerManager;
         }
 
         protected override void Fetch(MetadataResult<GameSystem> result, string path, CancellationToken cancellationToken)
         {
-            new GameSystemXmlParser(_logger).Fetch(result, path, cancellationToken);
+            new GameSystemXmlParser(_logger, _providerManager).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)

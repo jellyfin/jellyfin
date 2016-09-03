@@ -58,14 +58,7 @@
 }
 
 .headerButton {
-    margin: 0 5px;
-    background-color: transparent;
-    vertical-align: middle;
-    text-align: center;
-    border: 0 !important;
-    outline: none;
-    cursor: pointer;
-    display: inline-block;
+    flex-shrink: 0;
 }
 
 .menuArrow {
@@ -74,16 +67,6 @@
     width: 24px;
     display: inline-block;
 }
-
-.headerButtonRight {
-    border-width: 0 !important;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-    .headerButtonRight:first-child {
-        border-width: 0 !important;
-    }
 
 .hideMainDrawer .mainDrawerButton {
     display: none;
@@ -104,6 +87,9 @@
     align-items: center;
     margin-left: .75em;
     font-size: 108%;
+
+    /* Avoid pushing right header off the screen */
+    flex-shrink: 1;
 }
 
 .viewMenuBar {

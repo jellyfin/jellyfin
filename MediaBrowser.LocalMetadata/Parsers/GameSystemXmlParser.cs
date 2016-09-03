@@ -10,8 +10,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class GameSystemXmlParser : BaseItemXmlParser<GameSystem>
     {
-        public GameSystemXmlParser(ILogger logger)
-            : base(logger)
+        public GameSystemXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 

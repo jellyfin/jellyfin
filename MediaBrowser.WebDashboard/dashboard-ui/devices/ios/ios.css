@@ -23,22 +23,9 @@ body:not(.dashboardDocument) .mainDrawerButton {
     background-attachment: initial;
 }
 
-.background-theme-b .backgroundContainer:not(.withBackdrop), .dialog.background-theme-b {
-    background: #181818;
-}
-
 .viewMenuBar {
     /* It needs this in order to retain height since we're positioning the contents absolutely */
     height: 50px;
-}
-
-.libraryDocument .viewMenuBar, .libraryViewNav {
-    background-color: #000 !important;
-    box-shadow: none !important;
-}
-
-.viewMenuBar.semiTransparent {
-    background-color: #000;
 }
 
 .emby-tab-button {
@@ -54,14 +41,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
 
 .settingsMenuHeader {
     display: none;
-}
-
-@media all and (max-width: 600px) {
-
-    .libraryViewNav a {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
 }
 
 .libraryViewNav {
@@ -90,10 +69,6 @@ h1, h1 a {
 
 .sidebarLinkText {
     font-weight: 400 !important;
-}
-
-.nowPlayingPageBackButton {
-    display: none !important;
 }
 
 .nowPlayingPage .libraryViewNav {

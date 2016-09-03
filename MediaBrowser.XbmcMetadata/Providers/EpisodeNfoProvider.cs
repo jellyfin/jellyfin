@@ -14,19 +14,21 @@ namespace MediaBrowser.XbmcMetadata.Providers
     {
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
+        private readonly IProviderManager _providerManager;
 
-        public EpisodeNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config)
+        public EpisodeNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
+            _providerManager = providerManager;
         }
 
         protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
             var images = new List<LocalImageInfo>();
 
-            new EpisodeNfoParser(_logger, _config).Fetch(result, images, path, cancellationToken);
+            new EpisodeNfoParser(_logger, _config, _providerManager).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
         }

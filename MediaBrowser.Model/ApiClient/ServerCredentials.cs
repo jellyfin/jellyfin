@@ -67,7 +67,7 @@ namespace MediaBrowser.Model.ApiClient
                 }
                 if (!string.IsNullOrEmpty(server.ManualAddress))
                 {
-                    existing.LocalAddress = server.ManualAddress;
+                    existing.ManualAddress = server.ManualAddress;
                 }
                 if (!string.IsNullOrEmpty(server.Name))
                 {

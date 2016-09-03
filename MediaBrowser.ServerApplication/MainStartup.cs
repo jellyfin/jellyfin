@@ -292,7 +292,6 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
 
