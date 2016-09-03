@@ -185,34 +185,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetEpisodes(Series series, User user, IEnumerable<Episode> allSeriesEpisodes)
         {
-            return series.GetSeasonEpisodes(user, this, allSeriesEpisodes);
+            return series.GetSeasonEpisodes(this, user, allSeriesEpisodes);
         }
 
         public IEnumerable<Episode> GetEpisodes()
         {
-            var episodes = GetRecursiveChildren().OfType<Episode>();
-            var series = Series;
-
-            if (series != null && series.ContainsEpisodesWithoutSeasonFolders)
-            {
-                var seasonNumber = IndexNumber;
-                var list = episodes.ToList();
-
-                if (seasonNumber.HasValue)
-                {
-                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
-                        .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == seasonNumber.Value));
-                }
-                else
-                {
-                    list.AddRange(series.GetRecursiveChildren().OfType<Episode>()
-                        .Where(i => !i.ParentIndexNumber.HasValue));
-                }
-
-                episodes = list.DistinctBy(i => i.Id);
-            }
-
-            return episodes;
+            return Series.GetSeasonEpisodes(this, null, null);
         }
 
         public override IEnumerable<BaseItem> GetChildren(User user, bool includeLinkedChildren)
