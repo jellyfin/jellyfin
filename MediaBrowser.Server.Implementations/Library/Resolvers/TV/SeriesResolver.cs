@@ -54,14 +54,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             if (args.IsDirectory)
             {
+                if (args.HasParent<Series>())
+                {
+                    return null;
+                }
+
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (args.HasParent<Series>())
-                    {
-                        return null;
-                    }
-
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
@@ -76,11 +76,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 {
                     if (string.IsNullOrWhiteSpace(collectionType))
                     {
-                        if (args.HasParent<Series>())
-                        {
-                            return null;
-                        }
-
                         if (args.Parent.IsRoot)
                         {
                             return null;
