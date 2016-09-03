@@ -144,10 +144,6 @@
         browser[matched.platform] = true;
     }
 
-    if (!browser.chrome && !browser.msie && !browser.edge && !browser.opera && userAgent.toLowerCase().indexOf("webkit") != -1) {
-        browser.safari = true;
-    }
-
     if (userAgent.toLowerCase().indexOf("playstation 4") != -1) {
         browser.ps4 = true;
         browser.tv = true;

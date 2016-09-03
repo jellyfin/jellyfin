@@ -261,16 +261,14 @@ define(['browser'], function (browser) {
 
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
-        if (videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') || isEdgeUniversal() || browser.tizen) {
-            // safari is lying
-            if (!browser.safari) {
-                videoAudioCodecs.push('ac3');
+        // safari is lying
+        if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || isEdgeUniversal() || browser.tizen) {
+            videoAudioCodecs.push('ac3');
 
-                // This works in edge desktop, but not mobile
-                // TODO: Retest this on mobile
-                if (!browser.edge || !browser.touch) {
-                    hlsVideoAudioCodecs.push('ac3');
-                }
+            // This works in edge desktop, but not mobile
+            // TODO: Retest this on mobile
+            if (!browser.edge || !browser.touch) {
+                hlsVideoAudioCodecs.push('ac3');
             }
         }
 

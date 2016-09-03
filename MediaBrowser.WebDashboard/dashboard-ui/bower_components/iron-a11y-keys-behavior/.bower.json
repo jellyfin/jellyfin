@@ -1,6 +1,6 @@
 {
   "name": "iron-a11y-keys-behavior",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "A behavior that enables keybindings for greater a11y.",
   "keywords": [
     "web-components",
@@ -31,11 +31,11 @@
   },
   "ignore": [],
   "homepage": "https://github.com/PolymerElements/iron-a11y-keys-behavior",
-  "_release": "1.1.7",
+  "_release": "1.1.8",
   "_resolution": {
     "type": "version",
-    "tag": "v1.1.7",
-    "commit": "cde403dee704a1d3ea5f7cb49067f0eab31a8afa"
+    "tag": "v1.1.8",
+    "commit": "078d64750538735c27e1c68ade907a6b58aceb43"
   },
   "_source": "git://github.com/PolymerElements/iron-a11y-keys-behavior.git",
   "_target": "^1.0.0",

@@ -121,7 +121,8 @@
             dlg.classList.add('actionsheet-fullscreen');
         }
 
-        if (!layoutManager.tv) {
+        var extraSpacing = !layoutManager.tv;
+        if (extraSpacing) {
             dlg.classList.add('actionsheet-extraSpacing');
         }
 
@@ -189,6 +190,12 @@
             menuItemClass += ' ' + options.menuItemClass;
         }
 
+        var actionSheetItemTextClass = 'actionSheetItemText';
+
+        if (extraSpacing) {
+            actionSheetItemTextClass += ' actionSheetItemText-extraspacing';
+        }
+
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
@@ -202,7 +209,7 @@
             else if (renderIcon && !center) {
                 html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
-            html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
+            html += '<div class="' + actionSheetItemTextClass + '">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</button>';
         }
 
