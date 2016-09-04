@@ -352,16 +352,16 @@ namespace MediaBrowser.Api.Playback
             {
                 if (!string.IsNullOrWhiteSpace(encodingOptions.H264Preset))
                 {
-                    param = "-preset " + encodingOptions.H264Preset;
+                    param += "-preset " + encodingOptions.H264Preset;
                 }
                 else
                 {
-                    param = "-preset superfast";
+                    param += "-preset superfast";
                 }
 
                 if (encodingOptions.H264Crf >= 0 && encodingOptions.H264Crf <= 51)
                 {
-                    param = " -crf " + encodingOptions.H264Crf.ToString(CultureInfo.InvariantCulture);
+                    param += " -crf " + encodingOptions.H264Crf.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -371,7 +371,7 @@ namespace MediaBrowser.Api.Playback
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset fast";
+                param += "-preset fast";
 
                 param += " -crf 28";
             }
@@ -379,14 +379,14 @@ namespace MediaBrowser.Api.Playback
             // h264 (h264_qsv)
             else if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset 7 -look_ahead 0";
+                param += "-preset 7 -look_ahead 0";
 
             }
 
             // h264 (h264_nvenc)
             else if (string.Equals(videoCodec, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset default";
+                param += "-preset default";
             }
 
             // webm
@@ -410,7 +410,7 @@ namespace MediaBrowser.Api.Playback
                 profileScore = Math.Min(profileScore, 2);
 
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param = string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
+                param += string.Format("-speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
                     profileScore.ToString(UsCulture),
                     crf,
                     qmin,
@@ -419,18 +419,18 @@ namespace MediaBrowser.Api.Playback
 
             else if (string.Equals(videoCodec, "mpeg4", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
+                param += "-mbd rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -bf 2";
             }
 
             // asf/wmv
             else if (string.Equals(videoCodec, "wmv2", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-qmin 2";
+                param += "-qmin 2";
             }
 
             else if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-mbd 2";
+                param += "-mbd 2";
             }
 
             param += GetVideoBitrateParam(state, videoCodec);
