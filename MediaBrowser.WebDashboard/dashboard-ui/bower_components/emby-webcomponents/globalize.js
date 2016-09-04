@@ -81,6 +81,11 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
             return 'ca';
         }
 
+        // normalize Swedish
+        if (lower == 'sv-se') {
+            return 'sv';
+        }
+
         return lower;
     }
 
