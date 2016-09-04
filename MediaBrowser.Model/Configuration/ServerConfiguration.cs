@@ -207,6 +207,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
 
+        public int ImageExtractionTimeoutMs { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -216,6 +217,7 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
             CodecsUsed = new string[] { };
             SqliteCacheSize = 0;
+            ImageExtractionTimeoutMs = 10000;
 
             EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
