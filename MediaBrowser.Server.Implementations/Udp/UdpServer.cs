@@ -109,11 +109,6 @@ namespace MediaBrowser.Server.Implementations.Udp
         {
             var parts = messageText.Split('|');
 
-            if (parts.Length > 1)
-            {
-                _appHost.EnableLoopback(parts[1]);
-            }
-
             var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
@@ -126,6 +121,11 @@ namespace MediaBrowser.Server.Implementations.Udp
                 };
 
                 await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint).ConfigureAwait(false);
+                
+                if (parts.Length > 1)
+                {
+                    _appHost.EnableLoopback(parts[1]);
+                }
             }
             else
             {
