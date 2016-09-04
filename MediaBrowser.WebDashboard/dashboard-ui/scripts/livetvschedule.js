@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
+﻿define(['scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function () {
 
     function renderTimers(context, timers, options) {
 
@@ -40,8 +40,7 @@
 
         var self = this;
 
-        categorysyncbuttons.init(tabContent);
-        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
+        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });
 
