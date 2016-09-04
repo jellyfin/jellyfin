@@ -86,11 +86,6 @@
         display: none !important;
     }
 
-    .dashboardDocument .libraryMenuButtonText {
-        font-size: 125%;
-        margin-left: 0;
-    }
-
     .dashboardDocument .mainDrawerPanelContent {
         position: absolute;
         top: 0;

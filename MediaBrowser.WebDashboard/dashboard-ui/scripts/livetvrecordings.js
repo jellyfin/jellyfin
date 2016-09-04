@@ -155,21 +155,10 @@
         });
     }
 
-    function renderUpcomingRecordings(context) {
-
-        ApiClient.getLiveTvTimers({
-            IsActive: false
-        }).then(function (result) {
-
-            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
-        });
-    }
-
     function reload(context) {
 
         Dashboard.showLoadingMsg();
 
-        renderUpcomingRecordings(context);
         renderActiveRecordings(context);
         renderLatestRecordings(context);
 
@@ -189,9 +178,6 @@
 
         categorysyncbuttons.init(tabContent);
         tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
-        });
-        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });
 

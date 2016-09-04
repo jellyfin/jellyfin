@@ -346,11 +346,27 @@ namespace MediaBrowser.Api.Playback
             var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
+            var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
+
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
-                param = "-preset superfast";
+                if (!string.IsNullOrWhiteSpace(encodingOptions.H264Preset))
+                {
+                    param = "-preset " + encodingOptions.H264Preset;
+                }
+                else
+                {
+                    param = "-preset superfast";
+                }
 
-                param += " -crf 23";
+                if (encodingOptions.H264Crf >= 0 && encodingOptions.H264Crf <= 51)
+                {
+                    param = " -crf " + encodingOptions.H264Crf.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    param += " -crf 23";
+                }
             }
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))

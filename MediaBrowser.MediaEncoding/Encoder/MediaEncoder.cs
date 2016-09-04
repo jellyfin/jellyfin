@@ -928,7 +928,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     StartProcess(processWrapper);
 
-                    ranToCompletion = process.WaitForExit(10000);
+                    var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
+                    if (timeoutMs <= 0)
+                    {
+                        timeoutMs = 10000;
+                    }
+                    ranToCompletion = process.WaitForExit(timeoutMs);
 
                     if (!ranToCompletion)
                     {

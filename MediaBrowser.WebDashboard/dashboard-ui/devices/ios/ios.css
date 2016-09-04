@@ -43,10 +43,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
     display: none;
 }
 
-.libraryViewNav {
-    font-size: 12px;
-}
-
 h1, h1 a {
     font-weight: 400 !important;
 }

@@ -2,6 +2,8 @@
     flex-grow: 1;
     display: flex;
     padding: .5em 0;
+    /* Override size from librarymenu */
+    font-size: inherit;
 }
 
 .dockedtabs-tab-button {

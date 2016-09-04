@@ -1036,7 +1036,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (options.coverImage || imgInfo.coverImage) {
                 cardImageContainerClass += ' coveredImage';
 
-                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
+                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program') {
                     cardImageContainerClass += ' coveredImage-noScale';
                 }
             }
