@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'events'], function (appStorage, events) {
+﻿define(['appStorage', 'events', 'browser'], function (appStorage, events, browser) {
 
     var currentDisplayInfo;
     var datetime;
@@ -103,17 +103,22 @@
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
-                    enableHistory: enableHistory !== false,
-                    callback: function (id) {
 
-                        var target = targets.filter(function (t) {
-                            return t.id == id;
-                        })[0];
+                    // Unfortunately we can't allow the url to change or chromecast will throw a security error
+                    // Might be able to solve this in the future by moving the dialogs to hashbangs
+                    enableHistory: enableHistory !== false && !browser.chrome,
+                    resolveOnClick: true
 
-                        MediaController.trySetActivePlayer(target.playerName, target);
+                }).then(function (id) {
 
-                        mirrorIfEnabled();
-                    }
+                    var target = targets.filter(function (t) {
+                        return t.id == id;
+                    })[0];
+
+                    MediaController.trySetActivePlayer(target.playerName, target);
+
+                    mirrorIfEnabled();
+
                 });
             });
         });
@@ -313,6 +318,11 @@
                 console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
                 triggerPlayerChange(player, targetInfo, previousPlayer);
+            }, function () {
+
+                if (currentPairingId == targetInfo.id) {
+                    currentPairingId = null;
+                }
             });
         };
 

@@ -1,64 +1,10 @@
 ﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
-    function getRecordingGroupHtml(group) {
-
-        var html = '';
-
-        html += '<div class="listItem">';
-
-        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
-
-        html += '<div class="listItemBody two-line">';
-        html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
-
-        html += '<div>';
-        html += group.Name;
-        html += '</div>';
-
-        html += '<div class="secondary">';
-        if (group.RecordingCount == 1) {
-            html += Globalize.translate('ValueItemCount', group.RecordingCount);
-        } else {
-            html += Globalize.translate('ValueItemCountPlural', group.RecordingCount);
-        }
-        html += '</div>';
-
-        html += '</a>';
-        html += '</div>';
-        html += '</div>';
-
-        return html;
-    }
-
-    function renderRecordingGroups(context, groups) {
-
-        if (groups.length) {
-            context.querySelector('#recordingGroups').classList.remove('hide');
-        } else {
-            context.querySelector('#recordingGroups').classList.add('hide');
-        }
-
-        var html = '';
-
-        html += '<div class="paperList">';
-
-        for (var i = 0, length = groups.length; i < length; i++) {
-
-            html += getRecordingGroupHtml(groups[i]);
-        }
-
-        html += '</div>';
-
-        context.querySelector('#recordingGroupItems').innerHTML = html;
-
-        Dashboard.hideLoadingMsg();
-    }
-
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
-    function renderRecordings(elem, recordings) {
+    function renderRecordings(elem, recordings, cardOptions) {
 
         if (recordings.length) {
             elem.classList.remove('hide');
@@ -76,7 +22,7 @@
             recordingItems.classList.add('vertical-wrap');
         }
 
-        recordingItems.innerHTML = cardBuilder.getCardsHtml({
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
@@ -85,7 +31,7 @@
             lazy: true,
             cardLayout: true,
             allowBottomPadding: !enableScrollX()
-        });
+        }, cardOptions || {}));
 
         ImageLoader.lazyChildren(recordingItems);
     }
@@ -125,15 +71,75 @@
 
         ApiClient.getLiveTvRecordings({
 
-            userId: Dashboard.getCurrentUserId(),
-            limit: enableScrollX() ? 12 : 4,
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
             IsInProgress: false,
-            Fields: 'CanDelete,PrimaryImageAspectRatio',
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
             EnableTotalRecordCount: false
 
         }).then(function (result) {
 
             renderRecordings(context.querySelector('#latestRecordings'), result.Items);
+
+            Dashboard.hideLoadingMsg();
+        });
+    }
+
+    function renderMovieRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            IsMovie: true
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#movieRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
+        });
+    }
+
+    function renderEpisodeRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            IsSeries: true
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#episodeRecordings'), result.Items);
+        });
+    }
+
+    function renderProgramRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            IsMovie: false,
+            IsSeries: false
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#programRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
         });
     }
 
@@ -155,32 +161,37 @@
         });
     }
 
-    function renderUpcomingRecordings(context) {
-
-        ApiClient.getLiveTvTimers({
-            IsActive: false
-        }).then(function (result) {
-
-            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
-        });
-    }
-
     function reload(context) {
 
         Dashboard.showLoadingMsg();
 
-        renderUpcomingRecordings(context);
         renderActiveRecordings(context);
         renderLatestRecordings(context);
+        renderMovieRecordings(context);
+        renderEpisodeRecordings(context);
+        renderProgramRecordings(context);
+    }
 
-        ApiClient.getLiveTvRecordingGroups({
+    function onMoreClick(e) {
 
-            userId: Dashboard.getCurrentUserId()
+        var type = this.getAttribute('data-type');
 
-        }).then(function (result) {
-
-            renderRecordingGroups(context, result.Items);
-        });
+        switch(type) {
+            case 'latest':
+                Dashboard.navigate('livetvitems.html?type=Recordings');
+                break;
+            case 'movies':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsMovie=true');
+                break;
+            case 'episodes':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=true');
+                break;
+            case 'programs':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=false&IsMovie=false');
+                break;
+            default:
+                break;
+        }
     }
 
     return function (view, params, tabContent) {
@@ -188,10 +199,12 @@
         var self = this;
 
         categorysyncbuttons.init(tabContent);
+
+        var moreButtons = tabContent.querySelectorAll('.more');
+        for (var i = 0, length = moreButtons.length; i < length; i++) {
+            moreButtons[i].addEventListener('click', onMoreClick);
+        }
         tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
-        });
-        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
             reload(tabContent);
         });
 

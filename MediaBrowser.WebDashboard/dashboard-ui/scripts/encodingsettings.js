@@ -11,6 +11,9 @@
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
         $('#txtVaapiDevice', page).val(config.VaapiDevice || '');
 
+        page.querySelector('#selectH264Preset').value = config.H264Preset || '';
+        page.querySelector('#txtH264Crf').value = config.H264Crf || '';
+
         var selectEncoderPath = page.querySelector('#selectEncoderPath');
 
         selectEncoderPath.value = systemInfo.EncoderLocationType;
@@ -70,6 +73,9 @@
                 config.EncodingThreadCount = $('#selectThreadCount', form).val();
                 config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
                 config.VaapiDevice = $('#txtVaapiDevice', form).val();
+
+                config.H264Preset = form.querySelector('#selectH264Preset').value;
+                config.H264Crf = parseInt(form.querySelector('#txtH264Crf').value || '0');
 
                 config.EnableThrottling = form.querySelector('#chkEnableThrottle').checked;
 

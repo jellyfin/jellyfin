@@ -1096,7 +1096,8 @@ namespace MediaBrowser.Server.Startup.Common
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
-                SystemArchitecture = NativeApp.Environment.SystemArchitecture
+                SystemArchitecture = NativeApp.Environment.SystemArchitecture,
+                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel
             };
         }
 

@@ -883,7 +883,6 @@ var AppInfo = {};
         var isCordova = Dashboard.isRunningInCordova();
 
         AppInfo.enableHomeTabs = true;
-        AppInfo.enableNowPlayingPageBottomTabs = true;
         AppInfo.enableAutoSave = browserInfo.touch;
         AppInfo.enableHashBang = Dashboard.isRunningInCordova();
 
@@ -895,10 +894,6 @@ var AppInfo = {};
         if (isIOS) {
 
             AppInfo.hasLowImageBandwidth = true;
-
-            if (isCordova) {
-                AppInfo.enableNowPlayingPageBottomTabs = false;
-            }
         }
 
         AppInfo.supportsExternalPlayers = true;
@@ -2142,7 +2137,8 @@ var AppInfo = {};
         defineRoute({
             path: '/livetvitems.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/livetvitems'
         });
 
         defineRoute({

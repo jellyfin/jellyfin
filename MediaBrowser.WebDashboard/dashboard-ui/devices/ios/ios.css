@@ -43,10 +43,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
     display: none;
 }
 
-.libraryViewNav {
-    font-size: 12px;
-}
-
 h1, h1 a {
     font-weight: 400 !important;
 }
@@ -69,14 +65,6 @@ h1, h1 a {
 
 .sidebarLinkText {
     font-weight: 400 !important;
-}
-
-.nowPlayingPage .libraryViewNav {
-    top: 0 !important;
-}
-
-.nowPlayingPage {
-    padding-top: 50px !important;
 }
 
 .videoSubtitles {

@@ -121,7 +121,8 @@
             dlg.classList.add('actionsheet-fullscreen');
         }
 
-        if (!layoutManager.tv) {
+        var extraSpacing = !layoutManager.tv;
+        if (extraSpacing) {
             dlg.classList.add('actionsheet-extraSpacing');
         }
 
@@ -189,6 +190,12 @@
             menuItemClass += ' ' + options.menuItemClass;
         }
 
+        var actionSheetItemTextClass = 'actionSheetItemText';
+
+        if (extraSpacing) {
+            actionSheetItemTextClass += ' actionSheetItemText-extraspacing';
+        }
+
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
@@ -202,7 +209,7 @@
             else if (renderIcon && !center) {
                 html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
-            html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
+            html += '<div class="' + actionSheetItemTextClass + '">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</button>';
         }
 
@@ -231,17 +238,6 @@
         //var eventName = browser.firefox ? 'mousedown' : 'click';
         var selectedId;
 
-        dlg.addEventListener('click', function (e) {
-
-            var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
-
-            if (actionSheetMenuItem) {
-                selectedId = actionSheetMenuItem.getAttribute('data-id');
-                dialogHelper.close(dlg);
-            }
-
-        });
-
         var timeout;
         if (options.timeout) {
             timeout = setTimeout(function () {
@@ -250,6 +246,25 @@
         }
 
         return new Promise(function (resolve, reject) {
+
+            var isResolved;
+
+            dlg.addEventListener('click', function (e) {
+
+                var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
+
+                if (actionSheetMenuItem) {
+                    selectedId = actionSheetMenuItem.getAttribute('data-id');
+
+                    if (options.resolveOnClick) {
+                        resolve(selectedId);
+                        isResolved = true;
+                    }
+
+                    dialogHelper.close(dlg);
+                }
+
+            });
 
             dlg.addEventListener('close', function () {
 
@@ -262,14 +277,16 @@
                     timeout = null;
                 }
 
-                if (selectedId != null) {
-                    if (options.callback) {
-                        options.callback(selectedId);
-                    }
+                if (!isResolved) {
+                    if (selectedId != null) {
+                        if (options.callback) {
+                            options.callback(selectedId);
+                        }
 
-                    resolve(selectedId);
-                } else {
-                    reject();
+                        resolve(selectedId);
+                    } else {
+                        reject();
+                    }
                 }
             });
 

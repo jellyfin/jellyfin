@@ -42,11 +42,15 @@
 }
 
 .actionSheetItemText {
-    padding: .8em 0;
+    padding: .7em 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
+}
+
+.actionSheetItemText-extraspacing {
+    padding: .8em 0;
 }
 
 .emby-button-noflex .actionSheetItemText {

@@ -20,17 +20,17 @@ button.emby-button.submit {
     color: #52B54B;
 }
 
-button.emby-button.raised.submit, button.emby-button.raised:not(.subdued):not(.cancel) {
+button.emby-button.raised.submit, button.emby-button.raised:not(.subdued):not(.cancel):not(.more) {
     background: #52B54B;
     color: #fff;
 }
 
 button.emby-button.more {
-    color: #EC407A;
+    color: #3388cc;
 }
 
 button.emby-button.raised.more {
-    background: #EC407A;
+    background: #3388cc;
     color: #fff;
 }
 

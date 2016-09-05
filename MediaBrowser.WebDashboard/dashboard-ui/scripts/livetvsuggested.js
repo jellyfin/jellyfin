@@ -101,7 +101,7 @@
 
         var html = cardBuilder.getCardsHtml({
             items: items,
-            shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
+            shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showTitle: true,
             centerText: true,
             coverImage: true,
@@ -109,7 +109,8 @@
             lazy: true,
             overlayMoreButton: overlayButton != 'play',
             overlayPlayButton: overlayButton == 'play',
-            allowBottomPadding: !enableScrollX()
+            allowBottomPadding: !enableScrollX(),
+            showProgramAirInfo: true
         });
 
         var elem = page.querySelector('.' + sectionClass);
@@ -170,6 +171,10 @@
                     break;
                 case 4:
                     document.body.classList.remove('autoScrollY');
+                    depends.push('scripts/livetvschedule');
+                    break;
+                case 5:
+                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvseriestimers');
                     break;
                 default:
@@ -200,7 +205,7 @@
 
         var viewTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4, 5]);
 
         viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

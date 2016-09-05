@@ -757,11 +757,7 @@
 
             var mdlTabs = context.querySelector('.libraryViewNav');
 
-            if (AppInfo.enableNowPlayingPageBottomTabs) {
-                context.querySelector('.libraryViewNav').classList.add('bottom');
-            } else {
-                context.querySelector('.libraryViewNav').classList.remove('bottom');
-            }
+            context.querySelector('.libraryViewNav').classList.add('bottom');
 
             libraryBrowser.configurePaperLibraryTabs(ownerView, mdlTabs, ownerView.querySelectorAll('.pageTabContent'));
 
@@ -796,11 +792,6 @@
         self.init = function (ownerView, context) {
 
             dlg = context;
-
-            if (!AppInfo.enableNowPlayingPageBottomTabs) {
-                context.querySelector('.btnExitRemoteControl').style.position = 'relative';
-                context.querySelector('.topRightContainer').style.position = 'relative';
-            }
 
             init(ownerView, dlg);
         };

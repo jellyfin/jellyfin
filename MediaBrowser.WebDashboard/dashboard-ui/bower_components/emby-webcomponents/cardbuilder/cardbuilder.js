@@ -861,10 +861,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 if (options.showProgramAirInfo) {
 
-                    var date = datetime.parseISO8601Date(item.StartDate, true);
-
                     var text = item.StartDate ?
-                        date.toLocaleString() :
+                        datetime.toLocaleString(datetime.parseISO8601Date(item.StartDate, true)) :
                         '';
 
                     lines.push(text || '&nbsp;');
@@ -1036,7 +1034,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (options.coverImage || imgInfo.coverImage) {
                 cardImageContainerClass += ' coveredImage';
 
-                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder') {
+                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program') {
                     cardImageContainerClass += ' coveredImage-noScale';
                 }
             }

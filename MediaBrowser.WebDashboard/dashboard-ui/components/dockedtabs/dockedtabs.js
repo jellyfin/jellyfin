@@ -226,7 +226,7 @@
 ';
 
         if (appHost.supports('sync')) {
-            html += '<button is="emby-button" class="dockedtabs-tab-button emby-tab-button" data-index="4">\
+            html += '<button is="emby-button" class="dockedtabs-tab-button docked-tab-syncdownloads emby-tab-button hide" data-index="4">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">file_download</i><div>' + globalize.translate('Downloads') + '</div></div>\
             </button>\
             ';
@@ -268,6 +268,15 @@
             element.querySelector('.docked-tab-livetv').classList.remove('hide');
         } else {
             element.querySelector('.docked-tab-livetv').classList.add('hide');
+        }
+
+        var downloadsTab = element.querySelector('.docked-tab-syncdownloads');
+        if (downloadsTab) {
+            if (user.Policy.EnableSync) {
+                downloadsTab.classList.remove('hide');
+            } else {
+                downloadsTab.classList.add('hide');
+            }
         }
 
         if (user.Policy.IsAdministrator) {

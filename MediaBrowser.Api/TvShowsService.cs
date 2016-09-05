@@ -478,7 +478,7 @@ namespace MediaBrowser.Api
                 }
                 else
                 {
-                    episodes = series.GetSeasonEpisodes(user, season);
+                    episodes = series.GetSeasonEpisodes(season, user);
                 }
             }
             else

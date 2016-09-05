@@ -559,6 +559,11 @@ define([], function () {
     }
 
     page.pushState = function (state, title, url) {
+
+        if (hashbang) {
+            url = '#!' + url;
+        }
+
         history.pushState(state, title, url);
         previousPopState = state;
     };

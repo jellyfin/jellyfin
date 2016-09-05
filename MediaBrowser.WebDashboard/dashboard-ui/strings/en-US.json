@@ -310,7 +310,7 @@
   "TitleAdvanced": "Advanced",
   "OptionRelease": "Official Release",
   "OptionBeta": "Beta",
-  "OptionDev": "Dev (Unstable)",
+  "OptionDev": "Dev",
   "LabelAllowServerAutoRestart": "Allow the server to restart automatically to apply updates",
   "LabelAllowServerAutoRestartHelp": "The server will only restart during idle periods, when no users are active.",
   "LabelRunServerAtStartup": "Run server at startup",
@@ -2126,6 +2126,13 @@
   "MessageFolderRipPlaybackExperimental": "Support for playback of folder rips and ISOs in this app is only expirimental. For best results, try an Emby app that supports these formats natively, or use plain video files.",
   "OptionExtractChapterImage": "Enable chapter image extraction",
   "Downloads": "Downloads",
+  "LabelEnableDebugLogging": "Enable debug logging",
   "OptionEnableExternalContentInSuggestions": "Enable external content in suggestions",
-  "OptionEnableExternalContentInSuggestionsHelp": "Allow internet trailers and live tv programs to be included within suggested content."
+  "OptionEnableExternalContentInSuggestionsHelp": "Allow internet trailers and live tv programs to be included within suggested content.",
+  "LabelH264EncodingPreset": "H264 encoding preset:",
+  "H264EncodingPresetHelp": "Choose a faster value to improve performance, or a slower value to improve quality.",
+  "LabelH264Crf": "H264 encoding CRF:",
+  "H264CrfHelp": "The Constant Rate Factor (CRF) is the default quality setting for the x264 encoder. You can set the values between 0 and 51, where lower values would result in better quality (at the expense of higher file sizes). Sane values are between 18 and 28. The default for x264 is 23, so you can use this as a starting point.",
+  "HeaderRecordedMovies": "Recorded Movies",
+  "HeaderRecordedEpisodes": "Recorded Episodes"
 }
