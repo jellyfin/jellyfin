@@ -53,11 +53,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
+            if (mediaSource.Path.IndexOf("m3u8", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                await RecordWithoutTempFile(mediaSource, targetFile, duration, onStarted, cancellationToken)
+                        .ConfigureAwait(false);
+
+                return;
+            }
+
             var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
 
             try
             {
-                await RecordInternal(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
+                await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
                         .ConfigureAwait(false);
             }
             finally
@@ -73,7 +81,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async Task RecordInternal(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordWithoutTempFile(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
+
+            _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private async Task RecordWithTempFile(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions()
             {

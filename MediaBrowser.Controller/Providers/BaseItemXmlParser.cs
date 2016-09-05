@@ -790,20 +790,25 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 default:
-                    if (_validProviderIds.ContainsKey(reader.Name))
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
+                {
+                        string readerName = reader.Name;
+                        string providerIdValue;
+                        if (_validProviderIds.TryGetValue(readerName, out providerIdValue))
                         {
-                            item.SetProviderId(_validProviderIds[reader.Name], id);
+                            var id = reader.ReadElementContentAsString();
+                            if (!string.IsNullOrWhiteSpace(id))
+                            {
+                                item.SetProviderId(providerIdValue, id);
+                            }
                         }
-                    }
-                    else
-                    {
-                        reader.Skip();
-                    }
+                        else
+                        {
+                            reader.Skip();
+                        }
 
-                    break;
+                        break;
+
+                    }
             }
         }
 
