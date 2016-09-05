@@ -395,7 +395,7 @@ define(['browser'], function (browser) {
                 Container: 'mkv',
                 Type: 'Video',
                 AudioCodec: videoAudioCodecs.join(','),
-                VideoCodec: 'h264',
+                VideoCodec: 'copy',
                 Context: 'Streaming',
                 CopyTimestamps: copyTimestamps
             });

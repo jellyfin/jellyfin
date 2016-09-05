@@ -109,7 +109,8 @@
             lazy: true,
             overlayMoreButton: overlayButton != 'play',
             overlayPlayButton: overlayButton == 'play',
-            allowBottomPadding: !enableScrollX()
+            allowBottomPadding: !enableScrollX(),
+            showProgramAirInfo: true
         });
 
         var elem = page.querySelector('.' + sectionClass);

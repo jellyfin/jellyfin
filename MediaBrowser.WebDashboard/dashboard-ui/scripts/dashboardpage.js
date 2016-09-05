@@ -115,7 +115,12 @@
 
                 page.querySelector('.serverNameHeader').innerHTML = systemInfo.ServerName;
 
-                $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
+                var localizedVersion = Globalize.translate('LabelVersionNumber', systemInfo.Version);
+                if (systemInfo.SystemUpdateLevel && systemInfo.SystemUpdateLevel != 'Release') {
+                    localizedVersion += " " + Globalize.translate('Option' + systemInfo.SystemUpdateLevel).toLowerCase();
+                }
+
+                $('#appVersionNumber', page).html(localizedVersion);
 
                 if (systemInfo.SupportsHttps) {
                     $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', '<b>' + systemInfo.HttpServerPortNumber + '</b>', '<b>' + systemInfo.HttpsPortNumber + '</b>'));

@@ -843,6 +843,7 @@
 
         self.tryPair = function (target) {
 
+            castPlayer.launchApp();
             return new Promise(function (resolve, reject) {
                 if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
 
@@ -866,6 +867,7 @@
         castPlayer = new CastPlayer();
 
         var registeredPlayer = new chromecastPlayer();
+        window.CCastPlayer = registeredPlayer;
         MediaController.registerPlayer(registeredPlayer);
 
         // To allow the native android app to override

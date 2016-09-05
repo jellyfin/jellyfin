@@ -2137,7 +2137,8 @@ var AppInfo = {};
         defineRoute({
             path: '/livetvitems.html',
             dependencies: [],
-            autoFocus: false
+            autoFocus: false,
+            controller: 'scripts/livetvitems'
         });
 
         defineRoute({

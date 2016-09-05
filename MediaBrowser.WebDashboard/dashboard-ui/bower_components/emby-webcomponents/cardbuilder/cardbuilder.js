@@ -861,10 +861,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 if (options.showProgramAirInfo) {
 
-                    var date = datetime.parseISO8601Date(item.StartDate, true);
-
                     var text = item.StartDate ?
-                        date.toLocaleString() :
+                        datetime.toLocaleString(datetime.parseISO8601Date(item.StartDate, true)) :
                         '';
 
                     lines.push(text || '&nbsp;');

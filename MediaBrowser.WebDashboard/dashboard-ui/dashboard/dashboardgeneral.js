@@ -36,10 +36,8 @@
 
         if (systemInfo.CanSelfUpdate) {
             $('.fldAutomaticUpdates', page).show();
-            page.querySelector('#selectAutomaticUpdateLevel').setLabel(Globalize.translate('LabelAutomaticUpdateLevel'));
         } else {
             $('.fldAutomaticUpdates', page).hide();
-            page.querySelector('#selectAutomaticUpdateLevel').setLabel(Globalize.translate('LabelAutomaticUpdateLevelForPlugins'));
         }
 
         $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
@@ -50,8 +48,6 @@
         } else {
             $('#fldEnableAutomaticRestart', page).hide();
         }
-
-        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
 
         $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
         $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
@@ -82,7 +78,6 @@
             config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
             config.RunAtStartup = $('#chkRunAtStartup', form).checked();
 
-            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
             config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
 
@@ -116,16 +111,6 @@
     }
 
     return function (view, params) {
-
-        $('#selectAutomaticUpdateLevel', view).on('change', function () {
-
-            if (this.value == "Dev") {
-                $('#devBuildWarning', view).show();
-            } else {
-                $('#devBuildWarning', view).hide();
-            }
-
-        });
 
         $('#btnSelectCachePath', view).on("click.selectDirectory", function () {
 
