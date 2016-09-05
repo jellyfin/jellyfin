@@ -455,6 +455,7 @@
                     shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
                     centerText: true,
+                    overlayText: false,
                     lazy: true,
                     autoThumb: true,
                     transition: false,

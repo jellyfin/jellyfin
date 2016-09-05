@@ -49,6 +49,12 @@
             $('#fldEnableAutomaticRestart', page).hide();
         }
 
+        if (systemInfo.CanSelfRestart || systemInfo.CanSelfUpdate) {
+            $('.autoUpdatesContainer', page).removeClass('hide');
+        } else {
+            $('.autoUpdatesContainer', page).addClass('hide');
+        }
+
         $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
         $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
         $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');

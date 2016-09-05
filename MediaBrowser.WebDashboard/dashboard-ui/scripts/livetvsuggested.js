@@ -24,7 +24,8 @@
             limit: getLimit() * 2,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary",
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -47,7 +48,8 @@
             IsSports: false,
             IsKids: false,
             IsSeries: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -61,7 +63,8 @@
             HasAired: false,
             limit: getLimit(),
             IsMovie: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -75,7 +78,8 @@
             HasAired: false,
             limit: getLimit(),
             IsSports: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -89,7 +93,8 @@
             HasAired: false,
             limit: getLimit(),
             IsKids: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -101,6 +106,7 @@
 
         var html = cardBuilder.getCardsHtml({
             items: items,
+            preferThumb: !shape,
             shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showTitle: true,
             centerText: true,
@@ -111,6 +117,7 @@
             overlayPlayButton: overlayButton == 'play',
             allowBottomPadding: !enableScrollX(),
             showProgramAirInfo: true
+            //cardFooterAside: 'logo'
         });
 
         var elem = page.querySelector('.' + sectionClass);

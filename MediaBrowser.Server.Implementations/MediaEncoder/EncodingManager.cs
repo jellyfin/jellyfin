@@ -149,16 +149,16 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             }
                         }
 
-                        // Add some time for the first chapter to make sure we don't end up with a black image
-                        var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(FirstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
-
-                        var protocol = MediaProtocol.File;
-
-                        var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
-
                         try
                         {
-							_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+                            // Add some time for the first chapter to make sure we don't end up with a black image
+                            var time = chapter.StartPositionTicks == 0 ? TimeSpan.FromTicks(Math.Min(FirstChapterTicks, video.RunTimeTicks ?? 0)) : TimeSpan.FromTicks(chapter.StartPositionTicks);
+
+                            var protocol = MediaProtocol.File;
+
+                            var inputPath = MediaEncoderHelpers.GetInputArgument(_fileSystem, video.Path, protocol, null, video.PlayableStreamFileNames);
+
+                            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                             var tempFile = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             File.Copy(tempFile, path, true);
@@ -178,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorException("Error extracting chapter images for {0}", ex, string.Join(",", inputPath));
+                            _logger.ErrorException("Error extracting chapter images for {0}", ex, string.Join(",", video.Path));
                             success = false;
                             break;
                         }

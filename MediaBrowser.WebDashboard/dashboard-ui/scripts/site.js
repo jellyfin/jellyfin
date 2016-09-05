@@ -2142,12 +2142,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/livetvrecordinglist.html',
-            dependencies: [],
-            autoFocus: false
-        });
-
-        defineRoute({
             path: '/livetvseriestimer.html',
             dependencies: ['emby-checkbox', 'emby-input', 'emby-button', 'emby-collapse', 'scripts/livetvcomponents', 'scripts/livetvseriestimer', 'livetvcss'],
             autoFocus: false,

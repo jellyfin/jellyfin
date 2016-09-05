@@ -1791,8 +1791,7 @@ namespace MediaBrowser.Api.Playback
                 if (!string.IsNullOrWhiteSpace(state.VideoRequest.VideoCodec))
                 {
                     state.SupportedVideoCodecs = state.VideoRequest.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-                    state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i))
-                        ?? state.SupportedVideoCodecs.FirstOrDefault();
+                    state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault();
                 }
             }
 

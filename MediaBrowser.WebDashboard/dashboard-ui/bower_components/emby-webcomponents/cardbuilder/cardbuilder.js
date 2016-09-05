@@ -669,7 +669,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return 'defaultCardColor' + getDefaultColorIndex(str);
         }
 
-        function getCardTextLines(lines, cssClass, forceLines, addSecondaryClass) {
+        function getCardTextLines(lines, cssClass, forceLines, isOuterFooter, cardLayout) {
 
             var html = '';
 
@@ -680,8 +680,12 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 var text = lines[i];
 
-                if (i == 1 && addSecondaryClass) {
+                if (i == 1 && isOuterFooter) {
                     cssClass += ' cardText-secondary';
+                }
+
+                if (isOuterFooter && cardLayout) {
+                    cssClass += ' cardText-rightmargin';
                 }
 
                 if (text) {
@@ -702,15 +706,21 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
-        function getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter) {
+        function getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter) {
 
             var html = '';
 
             var showOtherText = isOuterFooter ? !overlayText : overlayText;
 
             if (isOuterFooter && options.cardLayout && !layoutManager.tv) {
-                var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
-                html += '<button is="paper-icon-button-light" class="itemAction btnCardOptions autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+
+                if (options.cardFooterAside == 'logo') {
+
+                }
+                else if (options.cardFooterAside != 'none') {
+                    var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+                    html += '<button is="paper-icon-button-light" class="itemAction btnCardOptions autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+                }
             }
 
             var cssClass = options.centerText && !options.cardLayout ? "cardText cardTextCentered" : "cardText";
@@ -867,7 +877,33 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     lines.push(text || '&nbsp;');
 
-                    lines.push(item.ChannelName || '&nbsp;');
+                    if (item.ChannelId) {
+
+                        var channelText = item.ChannelName;
+                        //var logoHeight = 32;
+
+                        //if (item.ChannelPrimaryImageTag) {
+                        //    channelText = '<img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" class="lazy cardFooterLogo" style="height:' + logoHeight + 'px" data-src="' + apiClient.getScaledImageUrl(item.ChannelId, {
+                        //        type: "Primary",
+                        //        height: logoHeight,
+                        //        tag: item.ChannelPrimaryImageTag
+                        //    }) + '" />' + channelText;
+                        //} else {
+                        //    channelText += '<div style="height:' + logoHeight + 'px;width:0;"></div>';
+                        //}
+
+                        lines.push(getTextActionButton({
+
+                            Id: item.ChannelId,
+                            Name: item.ChannelName,
+                            Type: 'TvChannel',
+                            MediaType: item.MediaType,
+                            IsFolder: false
+
+                        }, channelText));
+                    } else {
+                        lines.push(item.ChannelName || '&nbsp;');
+                    }
                 }
             }
 
@@ -875,7 +911,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 lines = [];
             }
 
-            html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter);
+            html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter, options.cardLayout);
 
             if (progressHtml) {
                 html += progressHtml;
@@ -1062,7 +1098,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
-                innerCardFooter += getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false);
+                innerCardFooter += getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1081,7 +1117,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter visualCardBox-cardFooter' : 'cardFooter transparent';
-                outerCardFooter = getCardFooterText(item, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true);
+                outerCardFooter = getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true);
             }
 
             if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {
