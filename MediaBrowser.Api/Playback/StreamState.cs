@@ -112,6 +112,7 @@ namespace MediaBrowser.Api.Playback
         public string OutputVideoSync = "-1";
 
         public List<string> SupportedAudioCodecs { get; set; }
+        public List<string> SupportedVideoCodecs { get; set; }
         public string UserAgent { get; set; }
 
         public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger)
@@ -119,6 +120,7 @@ namespace MediaBrowser.Api.Playback
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
             SupportedAudioCodecs = new List<string>();
+            SupportedVideoCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }

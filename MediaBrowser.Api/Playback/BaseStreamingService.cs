@@ -1786,6 +1786,16 @@ namespace MediaBrowser.Api.Playback
             //    state.SegmentLength = 6;
             //}
 
+            if (state.VideoRequest != null)
+            {
+                if (!string.IsNullOrWhiteSpace(state.VideoRequest.VideoCodec))
+                {
+                    state.SupportedVideoCodecs = state.VideoRequest.VideoCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                    state.VideoRequest.VideoCodec = state.SupportedVideoCodecs.FirstOrDefault(i => MediaEncoder.CanEncodeToAudioCodec(i))
+                        ?? state.SupportedVideoCodecs.FirstOrDefault();
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(request.AudioCodec))
             {
                 state.SupportedAudioCodecs = request.AudioCodec.Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
@@ -2028,7 +2038,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // Source and target codecs must match
-            if (!string.Equals(request.VideoCodec, videoStream.Codec, StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(videoStream.Codec) || !state.SupportedVideoCodecs.Contains(videoStream.Codec, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
             }
