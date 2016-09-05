@@ -13,6 +13,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.UserViews
 {
@@ -109,4 +113,62 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
         }
     }
+
+    public class ManualCollectionFolderImageProvider : BaseDynamicImageProvider<ManualCollectionsFolder>
+    {
+        private readonly ILibraryManager _libraryManager;
+
+        public ManualCollectionFolderImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+        {
+            _libraryManager = libraryManager;
+        }
+
+        public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        {
+            return new List<ImageType>
+                {
+                    ImageType.Primary
+                };
+        }
+
+        protected override async Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+        {
+            var view = (ManualCollectionsFolder)item;
+
+            var recursive = !new[] { CollectionType.Playlists, CollectionType.Channels }.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+
+            var items = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                Recursive = recursive,
+                IncludeItemTypes = new[] { typeof(BoxSet).Name },
+                Limit = 20,
+                SortBy = new[] { ItemSortBy.Random }
+            });
+
+            return GetFinalItems(items.Where(i => i.HasImage(ImageType.Primary) || i.HasImage(ImageType.Thumb)).ToList(), 8);
+        }
+
+        protected override bool Supports(IHasImages item)
+        {
+            return item is ManualCollectionsFolder;
+        }
+
+        protected override async Task<string> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPathWithoutExtension, ImageType imageType, int imageIndex)
+        {
+            var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ".png");
+
+            if (imageType == ImageType.Primary)
+            {
+                if (itemsWithImages.Count == 0)
+                {
+                    return null;
+                }
+
+                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);
+            }
+
+            return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
+        }
+    }
+
 }

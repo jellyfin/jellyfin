@@ -113,8 +113,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var standaloneTypes = new List<string>
             {
-                CollectionType.Playlists,
-                CollectionType.BoxSets
+                CollectionType.Playlists
             };
 
             var collectionFolder = folder as ICollectionFolder;

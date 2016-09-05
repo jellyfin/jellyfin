@@ -638,13 +638,6 @@
                 return;
             }
 
-            if (browser.edge || browser.msie) {
-                fetchSubtitles(track).then(function (data) {
-                    currentTrackEvents = data.TrackEvents;
-                });
-                return;
-            }
-
             var trackElement = null;
             var expectedId = 'manualTrack' + track.index;
 

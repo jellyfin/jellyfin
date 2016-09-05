@@ -47,12 +47,13 @@
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: query.IsMovie ? 'portrait' : "backdrop",
+                    preferThumb: !query.IsMovie,
                     context: 'livetv',
                     centerText: true,
                     lazy: true,
                     overlayText: false,
                     showTitle: true,
-                    showParentTitle: query.IsSeries !== false && !query.IsMovie,
+                    //showParentTitle: query.IsSeries !== false && !query.IsMovie,
                     showProgramAirInfo: params.type != 'Recordings',
                     overlayMoreButton: true,
                     showYear: query.IsMovie && params.type == 'Recordings'
