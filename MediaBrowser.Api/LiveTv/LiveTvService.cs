@@ -155,6 +155,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public bool? IsMovie { get; set; }
+        public bool? IsSeries { get; set; }
+
         public GetRecordings()
         {
             EnableTotalRecordCount = true;
@@ -863,7 +866,9 @@ namespace MediaBrowser.Api.LiveTv
                 Status = request.Status,
                 SeriesTimerId = request.SeriesTimerId,
                 IsInProgress = request.IsInProgress,
-                EnableTotalRecordCount = request.EnableTotalRecordCount
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                IsMovie = request.IsMovie,
+                IsSeries = request.IsSeries
 
             }, options, CancellationToken.None).ConfigureAwait(false);
 

@@ -31,6 +31,8 @@ using CommonIO;
 using IniParser;
 using IniParser.Model;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
@@ -1423,6 +1425,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return new QueryResult<BaseItem>();
             }
 
+            var includeItemTypes = new List<string>();
+            var excludeItemTypes = new List<string>();
+
+            if (query.IsMovie.HasValue)
+            {
+                if (query.IsMovie.Value)
+                {
+                    includeItemTypes.Add(typeof (Movie).Name);
+                }
+                else
+                {
+                    excludeItemTypes.Add(typeof(Movie).Name);
+                }
+            }
+            if (query.IsSeries.HasValue)
+            {
+                if (query.IsSeries.Value)
+                {
+                    includeItemTypes.Add(typeof(Episode).Name);
+                }
+                else
+                {
+                    excludeItemTypes.Add(typeof(Episode).Name);
+                }
+            }
+
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 MediaTypes = new[] { MediaType.Video },
@@ -1433,7 +1461,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Limit = Math.Min(200, query.Limit ?? int.MaxValue),
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
-                EnableTotalRecordCount = query.EnableTotalRecordCount
+                EnableTotalRecordCount = query.EnableTotalRecordCount,
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                ExcludeItemTypes = excludeItemTypes.ToArray()
             });
         }
 
@@ -1490,6 +1520,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var val = query.Status.Value;
                 recordings = recordings.Where(i => i.Status == val);
+            }
+
+            if (query.IsMovie.HasValue)
+            {
+                var val = query.IsMovie.Value;
+                recordings = recordings.Where(i => i.IsMovie == val);
+            }
+
+            if (query.IsSeries.HasValue)
+            {
+                var val = query.IsSeries.Value;
+                recordings = recordings.Where(i => i.IsSeries == val);
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
@@ -1950,16 +1992,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.Number = channel.Number;
                 dto.ChannelNumber = channel.Number;
                 dto.ChannelType = channel.ChannelType;
-                dto.ServiceName = GetService(channel).Name;
+                dto.ServiceName = channel.ServiceName;
 
                 if (options.Fields.Contains(ItemFields.MediaSources))
                 {
                     dto.MediaSources = channel.GetMediaSources(true).ToList();
                 }
 
-                var channelIdString = channel.Id.ToString("N");
                 if (options.AddCurrentProgram)
                 {
+                    var channelIdString = channel.Id.ToString("N");
                     var currentProgram = programs.FirstOrDefault(i => string.Equals(i.ChannelId, channelIdString));
 
                     if (currentProgram != null)
