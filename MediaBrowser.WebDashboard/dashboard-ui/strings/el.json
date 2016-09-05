@@ -1,5 +1,11 @@
 {
     "Downloads": "Downloads",
+    "OptionEnableExternalContentInSuggestionsHelp": "Allow internet trailers and live tv programs to be included within suggested content.",
+    "OptionEnableExternalContentInSuggestions": "Enable external content in suggestions",
+    "H264EncodingPresetHelp": "Choose a faster value to improve performance, or a slower value to improve quality.",
+    "LabelH264EncodingPreset": "H264 encoding preset:",
+    "LabelH264Crf": "H264 encoding CRF:",
+    "H264CrfHelp": "The Constant Rate Factor (CRF) is the default quality setting for the x264 encoder. You can set the values between 0 and 51, where lower values would result in better quality (at the expense of higher file sizes). Sane values are between 18 and 28. The default for x264 is 23, so you can use this as a starting point.",
     "LabelExit": "\u0388\u03be\u03bf\u03b4\u03bf\u03c2",
     "LabelVisitCommunity": "\u039a\u03bf\u03b9\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1",
     "LabelStandard": "\u03a0\u03c1\u03cc\u03c4\u03c5\u03c0\u03bf",
