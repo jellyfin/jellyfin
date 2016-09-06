@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Library
         }
     }
 
-    class TextComparer : IComparer<string>, IEqualityComparer<string>
+    public class DistinctNameComparer : IComparer<string>, IEqualityComparer<string>
     {
         public int Compare(string x, string y)
         {
@@ -63,7 +63,7 @@ namespace MediaBrowser.Controller.Library
                 return 0;
             }
 
-            return string.Compare(x, y, CultureInfo.InvariantCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace);
+            return string.Compare(x.RemoveDiacritics(), y.RemoveDiacritics(), StringComparison.OrdinalIgnoreCase);
         }
 
         public bool Equals(string x, string y)

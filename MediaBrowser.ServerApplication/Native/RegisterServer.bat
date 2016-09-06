@@ -20,7 +20,9 @@ netsh advfirewall firewall add rule name="Port %3" dir=in action=allow protocol=
 
 if [%4]==[] GOTO DONE
 
+netsh advfirewall firewall delete rule name="mediabrowser.serverapplication.exe"
 netsh advfirewall firewall delete rule name="Emby Server"
+
 netsh advfirewall firewall add rule name="Emby Server" dir=in action=allow protocol=TCP program=%4 enable=yes
 netsh advfirewall firewall add rule name="Emby Server" dir=in action=allow protocol=UDP program=%4 enable=yes
 
