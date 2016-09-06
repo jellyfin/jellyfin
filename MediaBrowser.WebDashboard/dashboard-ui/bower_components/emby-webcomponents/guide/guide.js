@@ -807,7 +807,7 @@
             // find guide cells by timer id, remove timer icon
             var cells = options.element.querySelectorAll('.programCell[data-timerid="' + id + '"]');
             for (var i = 0, length = cells.length; i < length; i++) {
-                var cells = cells[i];
+                var cell = cells[i];
                 var icon = cell.querySelector('.timerIcon');
                 if (icon) {
                     icon.parentNode.removeChild(icon);
@@ -821,7 +821,7 @@
             // find guide cells by timer id, remove timer icon
             var cells = options.element.querySelectorAll('.programCell[data-seriestimerid="' + id + '"]');
             for (var i = 0, length = cells.length; i < length; i++) {
-                var cells = cells[i];
+                var cell = cells[i];
                 var icon = cell.querySelector('.seriesTimerIcon');
                 if (icon) {
                     icon.parentNode.removeChild(icon);
@@ -833,6 +833,13 @@
         require(['text!./tvguide.template.html'], function (template) {
             var context = options.element;
             context.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
+
+            if (layoutManager.desktop) {
+                var visibleGuideScrollers = context.querySelectorAll('.guideScroller');
+                for (var i = 0, length = visibleGuideScrollers.length; i < length; i++) {
+                    visibleGuideScrollers[i].classList.add('visibleGuideScroller');
+                }
+            }
 
             var programGrid = context.querySelector('.programGrid');
             var timeslotHeaders = context.querySelector('.timeslotHeaders');

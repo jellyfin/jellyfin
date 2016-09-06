@@ -240,9 +240,9 @@ namespace MediaBrowser.ServerApplication.Native
                 {
                     var data = process.StandardOutput.ReadToEnd() ?? string.Empty;
 
-                    //_logger.Debug("Found windows firewall rule: " + data);
                     if (data.IndexOf("Block", StringComparison.OrdinalIgnoreCase) != -1)
                     {
+                        _logger.Info("Found windows firewall rule: " + data);
                         return Confirm();
                     }
 

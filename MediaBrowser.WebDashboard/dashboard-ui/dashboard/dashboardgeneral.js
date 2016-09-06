@@ -55,10 +55,6 @@
             $('.autoUpdatesContainer', page).addClass('hide');
         }
 
-        $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
-        $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
-        $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');
-
         Dashboard.hideLoadingMsg();
     }
 
@@ -86,10 +82,6 @@
 
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
             config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
-
-            config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
-            config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
-            config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
 
             ApiClient.updateServerConfiguration(config).then(function () {
 
@@ -137,25 +129,6 @@
                     header: Globalize.translate('HeaderSelectServerCachePath'),
 
                     instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
-                });
-            });
-        });
-
-        $('#btnSelectDashboardSourcePath', view).on("click.selectDirectory", function () {
-
-            require(['directorybrowser'], function (directoryBrowser) {
-
-                var picker = new directoryBrowser();
-
-                picker.show({
-
-                    callback: function (path) {
-
-                        if (path) {
-                            view.querySelector('#txtDashboardSourcePath').value = path;
-                        }
-                        picker.close();
-                    }
                 });
             });
         });

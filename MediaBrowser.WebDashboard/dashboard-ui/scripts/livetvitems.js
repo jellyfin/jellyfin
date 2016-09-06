@@ -108,19 +108,19 @@
             if (params.IsMovie == 'true') {
                 query.IsMovie = true;
             }
-            else if (params.IsMovie == 'true') {
+            else if (params.IsMovie == 'false') {
                 query.IsMovie = false;
             }
             if (params.IsSports == 'true') {
                 query.IsSports = true;
             }
-            else if (params.IsSports == 'true') {
+            else if (params.IsSports == 'false') {
                 query.IsSports = false;
             }
             if (params.IsKids == 'true') {
                 query.IsKids = true;
             }
-            else if (params.IsKids == 'true') {
+            else if (params.IsKids == 'false') {
                 query.IsKids = false;
             }
 

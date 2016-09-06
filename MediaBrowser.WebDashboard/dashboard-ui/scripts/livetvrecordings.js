@@ -53,18 +53,6 @@
                 indexByDate: false
             });
         });
-
-        //ApiClient.getLiveTvRecordings({
-
-        //    userId: Dashboard.getCurrentUserId(),
-        //    IsInProgress: true,
-        //    Fields: 'CanDelete'
-
-        //}).then(function (result) {
-
-        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
-
-        //});
     }
 
     function renderLatestRecordings(context) {
@@ -107,7 +95,7 @@
 
     function renderEpisodeRecordings(context) {
 
-        ApiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvRecordingSeries({
 
             UserId: Dashboard.getCurrentUserId(),
             Limit: enableScrollX() ? 12 : 8,
@@ -118,11 +106,14 @@
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#episodeRecordings'), result.Items);
+            renderRecordings(context.querySelector('#episodeRecordings'), result.Items, {
+                showItemCounts: true,
+                showParentTitle: false
+            });
         });
     }
 
-    function renderProgramRecordings(context) {
+    function renderSportsRecordings(context) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -131,12 +122,31 @@
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
             EnableTotalRecordCount: false,
-            IsMovie: false,
-            IsSeries: false
+            IsSports: true
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#programRecordings'), result.Items, {
+            renderRecordings(context.querySelector('#sportsRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
+        });
+    }
+
+    function renderKidsRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            IsKids: true
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#kidsRecordings'), result.Items, {
                 showYear: true,
                 showParentTitle: false
             });
@@ -169,7 +179,8 @@
         renderLatestRecordings(context);
         renderMovieRecordings(context);
         renderEpisodeRecordings(context);
-        renderProgramRecordings(context);
+        renderSportsRecordings(context);
+        renderKidsRecordings(context);
     }
 
     function onMoreClick(e) {
@@ -188,6 +199,12 @@
                 break;
             case 'programs':
                 Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=false&IsMovie=false');
+                break;
+            case 'kids':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsKids=true');
+                break;
+            case 'sports':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSports=true');
                 break;
             default:
                 break;
