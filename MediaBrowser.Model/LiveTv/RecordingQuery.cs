@@ -70,6 +70,8 @@ namespace MediaBrowser.Model.LiveTv
         public bool? EnableImages { get; set; }
         public bool? IsMovie { get; set; }
         public bool? IsSeries { get; set; }
+        public bool? IsKids { get; set; }
+        public bool? IsSports { get; set; }
         public int? ImageTypeLimit { get; set; }
         public ImageType[] EnableImageTypes { get; set; }
 

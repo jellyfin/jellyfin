@@ -1430,6 +1430,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var includeItemTypes = new List<string>();
             var excludeItemTypes = new List<string>();
+            var genres = new List<string>();
 
             if (query.IsMovie.HasValue)
             {
@@ -1453,6 +1454,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     excludeItemTypes.Add(typeof(Episode).Name);
                 }
             }
+            if (query.IsSports.HasValue)
+            {
+                if (query.IsSports.Value)
+                {
+                    genres.Add("Sports");
+                }
+            }
+            if (query.IsKids.HasValue)
+            {
+                if (query.IsKids.Value)
+                {
+                    genres.Add("Kids");
+                    genres.Add("Children");
+                    genres.Add("Family");
+                }
+            }
 
             return _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
@@ -1461,13 +1478,73 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
                 IsFolder = false,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
-                Limit = Math.Min(200, query.Limit ?? int.MaxValue),
+                Limit = query.Limit,
+                SortBy = new[] { ItemSortBy.DateCreated },
+                SortOrder = SortOrder.Descending,
+                EnableTotalRecordCount = query.EnableTotalRecordCount,
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                ExcludeItemTypes = excludeItemTypes.ToArray(),
+                Genres = genres.ToArray()
+            });
+        }
+
+        public async Task<QueryResult<BaseItemDto>> GetRecordingSeries(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
+        {
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
+            if (user != null && !IsLiveTvEnabled(user))
+            {
+                return new QueryResult<BaseItemDto>();
+            }
+
+            if (_services.Count > 1)
+            {
+                return new QueryResult<BaseItemDto>();
+            }
+
+            if (user == null || (query.IsInProgress ?? false))
+            {
+                return new QueryResult<BaseItemDto>();
+            }
+
+            var folders = EmbyTV.EmbyTV.Current.GetRecordingFolders()
+                .SelectMany(i => i.Locations)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(i => _libraryManager.FindByPath(i, true))
+                .Where(i => i != null)
+                .Where(i => i.IsVisibleStandalone(user))
+                .ToList();
+
+            if (folders.Count == 0)
+            {
+                return new QueryResult<BaseItemDto>();
+            }
+
+            var includeItemTypes = new List<string>();
+            var excludeItemTypes = new List<string>();
+
+            includeItemTypes.Add(typeof(Series).Name);
+
+            var internalResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                AncestorIds = folders.Select(i => i.Id.ToString("N")).ToArray(),
+                Limit = query.Limit,
                 SortBy = new[] { ItemSortBy.DateCreated },
                 SortOrder = SortOrder.Descending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray()
             });
+
+            RemoveFields(options);
+
+            var returnArray = (await _dtoService.GetBaseItemDtos(internalResult.Items, options, user).ConfigureAwait(false)).ToArray();
+
+            return new QueryResult<BaseItemDto>
+            {
+                Items = returnArray,
+                TotalRecordCount = internalResult.TotalRecordCount
+            };
         }
 
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)
@@ -1535,6 +1612,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var val = query.IsSeries.Value;
                 recordings = recordings.Where(i => i.IsSeries == val);
+            }
+
+            if (query.IsKids.HasValue)
+            {
+                var val = query.IsKids.Value;
+                recordings = recordings.Where(i => i.IsKids == val);
+            }
+
+            if (query.IsSports.HasValue)
+            {
+                var val = query.IsSports.Value;
+                recordings = recordings.Where(i => i.IsSports == val);
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
