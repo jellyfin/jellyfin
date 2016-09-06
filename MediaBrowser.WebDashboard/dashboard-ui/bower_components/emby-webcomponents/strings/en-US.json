@@ -276,5 +276,8 @@
   "MoveRight": "Move right",
   "MoveLeft": "Move left",
   "ConfirmDeleteImage": "Delete image?",
-  "HeaderEditImages": "Edit Images"
+  "HeaderEditImages": "Edit Images",
+  "Settings": "Settings",
+  "ShowIndicatorsFor": "Show indicators for:",
+  "NewEpisodes": "New episodes"
 }

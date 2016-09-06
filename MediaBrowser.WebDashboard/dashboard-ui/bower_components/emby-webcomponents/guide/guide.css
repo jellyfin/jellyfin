@@ -221,8 +221,9 @@
 }
 
 .btnSelectDate {
-    color: #fff;
     padding-left: .5em;
+    text-transform: none;
+    font-weight: normal;
 }
 
 .channelHeaderCell {
@@ -233,10 +234,6 @@
 }
 
 @media all and (max-width: 800px) {
-
-    .guideCurrentDay {
-        display: none;
-    }
 
     .newTvProgram, .liveTvProgram, .premiereTvProgram, .guideHdIcon {
         display: none;
@@ -267,7 +264,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 3.5em;
+    height: 3em;
 }
 
 .pointerInput .channelHeaderCell:hover {
@@ -401,4 +398,11 @@
 .visibleGuideScroller::-webkit-scrollbar-thumb:vertical, .visibleGuideScroller::-webkit-scrollbar-thumb:horizontal {
     -webkit-border-radius: 2px;
     background: #888 no-repeat center;
+}
+
+.guideOptions {
+    color: #eee;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }

@@ -520,7 +520,7 @@ namespace MediaBrowser.Server.Startup.Common
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager, ProviderManager);
             RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, SecurityManager);
             RegisterSingleInstance(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
@@ -773,7 +773,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         protected override void FindParts()
         {
-            if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
+            var isAuthorized = ServerConfigurationManager.Configuration.IsPortAuthorized;
+            if (isAuthorized)
+            {
+                try
+                {
+                    isAuthorized = !NativeApp.PortsRequireAuthorization(ConfigurationManager.CommonApplicationPaths.ApplicationPath);
+                }
+                catch
+                {
+                    
+                }
+            }
+            if (!isAuthorized)
             {
                 RegisterServerWithAdministratorAccess();
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;

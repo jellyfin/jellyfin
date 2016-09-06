@@ -208,5 +208,60 @@ namespace MediaBrowser.ServerApplication.Native
         {
             LoopUtil.Run(appName);
         }
+
+        public bool PortsRequireAuthorization(string applicationPath)
+        {
+            var appNameSrch = Path.GetFileName(applicationPath);
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "netsh",
+
+                Arguments = "advfirewall firewall show rule \"" + appNameSrch + "\"",
+
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                ErrorDialog = false,
+                RedirectStandardOutput = true
+            };
+
+            using (var process = Process.Start(startInfo))
+            {
+                process.Start();
+
+                try
+                {
+                    var data = process.StandardOutput.ReadToEnd() ?? string.Empty;
+
+                    //_logger.Debug("Found windows firewall rule: " + data);
+                    if (data.IndexOf("Block", StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return true;
+                    }
+
+                    //var parts = data.Split('\n');
+
+                    //return parts.Length > 4;
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error querying windows firewall", ex);
+
+                    // Hate having to do this
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (Exception ex1)
+                    {
+                        _logger.ErrorException("Error killing process", ex1);
+                    }
+
+                    throw;
+                }
+            }
+        }
     }
 }

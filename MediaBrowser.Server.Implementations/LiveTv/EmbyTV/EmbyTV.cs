@@ -33,7 +33,7 @@ using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, ISupportsNewTimerIds, IHasRegistrationInfo, IDisposable
+    public class EmbyTV : ILiveTvService, ISupportsNewTimerIds, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
@@ -46,7 +46,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private readonly LiveTvManager _liveTvManager;
         private readonly IFileSystem _fileSystem;
-        private readonly ISecurityManager _security;
 
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
@@ -62,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder, IPowerManagement powerManagement)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder, IPowerManagement powerManagement)
         {
             Current = this;
 
@@ -71,7 +70,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _httpClient = httpClient;
             _config = config;
             _fileSystem = fileSystem;
-            _security = security;
             _libraryManager = libraryManager;
             _libraryMonitor = libraryMonitor;
             _providerManager = providerManager;
@@ -1114,7 +1112,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (config.EnableRecordingEncoding)
             {
-                var regInfo = await _security.GetRegistrationStatus("embytvrecordingconversion").ConfigureAwait(false);
+                var regInfo = await _liveTvManager.GetRegistrationInfo("embytvrecordingconversion").ConfigureAwait(false);
 
                 if (regInfo.IsValid)
                 {
@@ -1171,8 +1169,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool deleteInvalidTimers)
         {
             var newTimers = GetTimersForSeries(seriesTimer, epgData, true).ToList();
-
-            var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
+            
+            var registration = await _liveTvManager.GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
 
             if (registration.IsValid)
             {
@@ -1347,20 +1345,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 pair.Value.CancellationTokenSource.Cancel();
             }
-        }
-
-        public Task<MBRegistrationRecord> GetRegistrationInfo(string feature)
-        {
-            if (string.Equals(feature, "seriesrecordings", StringComparison.OrdinalIgnoreCase))
-            {
-                return _security.GetRegistrationStatus("embytvseriesrecordings");
-            }
-
-            return Task.FromResult(new MBRegistrationRecord
-            {
-                IsValid = true,
-                IsRegistered = true
-            });
         }
 
         public List<VirtualFolderInfo> GetRecordingFolders()

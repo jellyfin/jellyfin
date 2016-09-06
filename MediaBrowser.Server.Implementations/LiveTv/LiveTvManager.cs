@@ -31,6 +31,7 @@ using CommonIO;
 using IniParser;
 using IniParser.Model;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ITaskManager _taskManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IProviderManager _providerManager;
+        private readonly ISecurityManager _security;
 
         private readonly IDtoService _dtoService;
         private readonly ILocalizationManager _localization;
@@ -73,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
 
-        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem)
+        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem, ISecurityManager security)
         {
             _config = config;
             _logger = logger;
@@ -85,6 +87,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _jsonSerializer = jsonSerializer;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
+            _security = security;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
@@ -2133,6 +2136,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task CreateSeriesTimer(SeriesTimerInfoDto timer, CancellationToken cancellationToken)
         {
+            var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
+
+            if (!registration.IsValid)
+            {
+                _logger.Info("Creating series recordings requires an active Emby Premiere subscription.");
+                return;
+            }
+
             var service = GetService(timer.ServiceName);
 
             var info = await _tvDtoService.GetSeriesTimerInfo(timer, true, this, cancellationToken).ConfigureAwait(false);
@@ -2695,33 +2706,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public Task<MBRegistrationRecord> GetRegistrationInfo(string channelId, string programId, string feature)
+        public Task<MBRegistrationRecord> GetRegistrationInfo(string feature)
         {
-            ILiveTvService service;
-
-            if (string.IsNullOrWhiteSpace(programId))
+            if (string.Equals(feature, "seriesrecordings", StringComparison.OrdinalIgnoreCase))
             {
-                var channel = GetInternalChannel(channelId);
-                service = GetService(channel);
-            }
-            else
-            {
-                var program = GetInternalProgram(programId);
-                service = GetService(program);
+                feature = "embytvseriesrecordings";
             }
 
-            var hasRegistration = service as IHasRegistrationInfo;
-
-            if (hasRegistration != null)
-            {
-                return hasRegistration.GetRegistrationInfo(feature);
-            }
-
-            return Task.FromResult(new MBRegistrationRecord
-            {
-                IsValid = true,
-                IsRegistered = true
-            });
+            return _security.GetRegistrationStatus(feature);
         }
 
         public List<NameValuePair> GetSatIniMappings()
