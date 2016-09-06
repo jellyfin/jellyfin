@@ -1,6 +1,21 @@
-﻿<div class="tvGuideHeader">
+﻿<div class="guideOptions">
+    <button is="emby-button" type="button" class="btnSelectDate">
+        <i class="md-icon">&#xE916;</i>
+        <span class="dateText"></span>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnViewSettings">
+        <i class="md-icon">&#xE42A;</i>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnPreviousPage hide">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnNextPage hide">
+        <i class="md-icon">&#xE5C8;</i>
+    </button>
+</div>
+
+<div class="tvGuideHeader">
     <div class="channelTimeslotHeader">
-        <button class="btnSelectDate clearButton" style="display:block;"></button>
     </div>
     <div class="timeslotHeaders smoothScrollX visibleGuideScroller" style="scroll-behavior: auto;"></div>
 </div>
@@ -17,17 +32,5 @@
     <button is="emby-button" type="button" class="raised secondary block btnUnlockGuide">
         <i class="md-icon">check</i>
         <span>${UnlockGuide}</span>
-    </button>
-</div>
-
-<div style="padding:.25em .5em;" class="guidePaging hide">
-    <button is="paper-icon-button-light" type="button" class="btnSelectDateIcon">
-        <i class="md-icon">date_range</i>
-    </button>
-    <button is="paper-icon-button-light" type="button" class="btnPreviousPage">
-        <i class="md-icon">arrow_back</i>
-    </button>
-    <button is="paper-icon-button-light" type="button" class="btnNextPage">
-        <i class="md-icon">arrow_forward</i>
     </button>
 </div>

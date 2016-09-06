@@ -99,13 +99,12 @@
         return false;
     }
 
-    function getRegistration(programId, apiClient) {
+    function getRegistration(apiClient) {
 
         loading.show();
 
         return apiClient.getJSON(apiClient.getUrl('LiveTv/Registration', {
 
-            ProgramId: programId,
             Feature: 'seriesrecordings'
 
         })).then(function (result) {
@@ -140,7 +139,7 @@
         showSeriesDays(context);
         context.querySelector('.btnSubmit').classList.remove('hide');
 
-        getRegistration(currentProgramId, apiClient).then(function (regInfo) {
+        getRegistration(apiClient).then(function (regInfo) {
 
             if (regInfo.IsValid) {
                 context.querySelector('.btnSubmit').classList.remove('hide');
@@ -288,12 +287,8 @@
 
         selectDays(context, defaultTimer.Days);
 
-        if (program.ServiceName == 'Emby') {
-            context.querySelector('.convertRecordingsContainer').classList.remove('hide');
-            showConvertRecordingsUnlockMessage(context, apiClient);
-        } else {
-            context.querySelector('.convertRecordingsContainer').classList.add('hide');
-        }
+        context.querySelector('.convertRecordingsContainer').classList.remove('hide');
+        showConvertRecordingsUnlockMessage(context, apiClient);
 
         loading.hide();
     }

@@ -1,4 +1,13 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+
+    function showViewSettings(instance) {
+
+        require(['guide-settings-dialog'], function (guideSettingsDialog) {
+            guideSettingsDialog.show().then(function () {
+                instance.refresh();
+            });
+        });
+    }
 
     function Guide(options) {
 
@@ -168,8 +177,13 @@
                 console.log(nextDay);
                 channelsPromise.then(function (channelsResult) {
 
+                    var btnPreviousPage = context.querySelector('.btnPreviousPage');
+                    var btnNextPage = context.querySelector('.btnNextPage');
+
                     if (channelsResult.TotalRecordCount > channelLimit) {
-                        context.querySelector('.guidePaging').classList.remove('hide');
+
+                        btnPreviousPage.classList.remove('hide');
+                        btnNextPage.classList.remove('hide');
 
                         if (channelQuery.StartIndex) {
                             context.querySelector('.btnPreviousPage').disabled = false;
@@ -178,13 +192,14 @@
                         }
 
                         if ((channelQuery.StartIndex + channelLimit) < channelsResult.TotalRecordCount) {
-                            context.querySelector('.btnNextPage').disabled = false;
+                            btnNextPage.disabled = false;
                         } else {
-                            context.querySelector('.btnNextPage').disabled = true;
+                            btnNextPage.disabled = true;
                         }
 
                     } else {
-                        context.querySelector('.guidePaging').classList.add('hide');
+                        btnPreviousPage.classList.add('hide');
+                        btnNextPage.classList.add('hide');
                     }
 
                     apiClient.getLiveTvPrograms({
@@ -415,7 +430,7 @@
                 showHdIcon: showIndicators,
                 showLiveIndicator: showIndicators,
                 showPremiereIndicator: showIndicators,
-                showNewIndicator: showIndicators
+                showNewIndicator: userSettings.get('guide-indicator-new') == 'true'
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {
@@ -611,13 +626,13 @@
         function getFutureDateText(date) {
 
             var weekday = [];
-            weekday[0] = globalize.translate('sharedcomponents#OptionSundayShort');
-            weekday[1] = globalize.translate('sharedcomponents#OptionMondayShort');
-            weekday[2] = globalize.translate('sharedcomponents#OptionTuesdayShort');
-            weekday[3] = globalize.translate('sharedcomponents#OptionWednesdayShort');
-            weekday[4] = globalize.translate('sharedcomponents#OptionThursdayShort');
-            weekday[5] = globalize.translate('sharedcomponents#OptionFridayShort');
-            weekday[6] = globalize.translate('sharedcomponents#OptionSaturdayShort');
+            weekday[0] = globalize.translate('sharedcomponents#Sunday');
+            weekday[1] = globalize.translate('sharedcomponents#Monday');
+            weekday[2] = globalize.translate('sharedcomponents#Tuesday');
+            weekday[3] = globalize.translate('sharedcomponents#Wednesday');
+            weekday[4] = globalize.translate('sharedcomponents#Thursday');
+            weekday[5] = globalize.translate('sharedcomponents#Friday');
+            weekday[6] = globalize.translate('sharedcomponents#Saturday');
 
             var day = weekday[date.getDay()];
             date = datetime.toLocaleDateString(date);
@@ -638,9 +653,7 @@
 
             reloadGuide(page, newStartDate);
 
-            var text = getFutureDateText(date);
-            text = '<span class="guideCurrentDay">' + text.replace(' ', ' </span>');
-            page.querySelector('.btnSelectDate').innerHTML = text;
+            page.querySelector('.dateText').innerHTML = getFutureDateText(date);
         }
 
         var dateOptions = [];
@@ -698,6 +711,11 @@
 
         function selectDate(page) {
 
+            var selectedDate = currentDate || new Date();
+            dateOptions.forEach(function (d) {
+                d.selected = new Date(d.id).getDate() == selectedDate.getDate();
+            });
+
             require(['actionsheet'], function (actionsheet) {
 
                 actionsheet.show({
@@ -739,7 +757,6 @@
             return elem;
         }
 
-        var selectedMediaInfoTimeout;
         function onProgramGridFocus(e) {
 
             var programCell = parentWithClass(e.target, 'programCell');
@@ -838,10 +855,6 @@
                 selectDate(context);
             });
 
-            context.querySelector('.btnSelectDateIcon').addEventListener('click', function () {
-                selectDate(context);
-            });
-
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
                 channelsPromise = null;
@@ -858,6 +871,10 @@
                 currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
                 channelsPromise = null;
                 reloadPage(context);
+            });
+
+            context.querySelector('.btnViewSettings').addEventListener('click', function () {
+                showViewSettings(self);
             });
 
             context.classList.add('tvguide');

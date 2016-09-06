@@ -538,12 +538,6 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetLiveTvRegistrationInfo : IReturn<MBRegistrationRecord>
     {
-        [ApiMember(Name = "ChannelId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ChannelId { get; set; }
-
-        [ApiMember(Name = "ProgramId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ProgramId { get; set; }
-
         [ApiMember(Name = "Feature", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Feature { get; set; }
     }
@@ -595,7 +589,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetLiveTvRegistrationInfo request)
         {
-            var result = await _liveTvManager.GetRegistrationInfo(request.ChannelId, request.ProgramId, request.Feature).ConfigureAwait(false);
+            var result = await _liveTvManager.GetRegistrationInfo(request.Feature).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }

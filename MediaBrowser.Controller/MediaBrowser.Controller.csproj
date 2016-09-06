@@ -199,7 +199,6 @@
     <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
-    <Compile Include="LiveTv\IHasRegistrationInfo.cs" />
     <Compile Include="LiveTv\IListingsProvider.cs" />
     <Compile Include="LiveTv\ITunerHost.cs" />
     <Compile Include="LiveTv\RecordingGroup.cs" />

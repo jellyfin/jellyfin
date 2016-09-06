@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
+define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, dom, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -481,11 +481,25 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             }
         }
 
-        page.show(path, options);
         return new Promise(function (resolve, reject) {
-            setTimeout(resolve, 500);
+
+            resolveOnNextShow = resolve;
+            page.show(path, options);
         });
     }
+
+    var resolveOnNextShow;
+    dom.addEventListener(document, 'viewshow', function () {
+
+        var resolve = resolveOnNextShow;
+        if (resolve) {
+            resolveOnNextShow = null;
+            resolve();
+        }
+    }, {
+        passive: true,
+        once: true
+    });
 
     var currentRouteInfo;
     function current() {

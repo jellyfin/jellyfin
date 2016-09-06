@@ -965,7 +965,7 @@ var AppInfo = {};
     }
 
     var localApiClient;
-    function bindConnectionManagerEvents(connectionManager, events) {
+    function bindConnectionManagerEvents(connectionManager, events, userSettings) {
 
         window.Events = events;
         events.on(ConnectionManager, 'apiclientcreated', onApiClientCreated);
@@ -987,9 +987,15 @@ var AppInfo = {};
         //    newApiClient.normalizeImageOptions = normalizeImageOptions;
         //});
 
-        events.on(connectionManager, 'localusersignedin', function (e, user) {
+        // Use this instead of the event because it will fire and wait for the promise before firing events to all listeners
+        connectionManager.onLocalUserSignedIn = function (user) {
             localApiClient = connectionManager.getApiClient(user.ServerId);
             window.ApiClient = localApiClient;
+            return userSettings.setUserInfo(user.Id, localApiClient);
+        };
+
+        events.on(connectionManager, 'localusersignedout', function () {
+            userSettings.setUserInfo(null, null);
         });
     }
 
@@ -1000,7 +1006,7 @@ var AppInfo = {};
 
             return new Promise(function (resolve, reject) {
 
-                require(['connectionManagerFactory', 'apphost', 'credentialprovider', 'events'], function (connectionManagerExports, apphost, credentialProvider, events) {
+                require(['connectionManagerFactory', 'apphost', 'credentialprovider', 'events', 'userSettings'], function (connectionManagerExports, apphost, credentialProvider, events, userSettings) {
 
                     window.MediaBrowser = Object.assign(window.MediaBrowser || {}, connectionManagerExports);
 
@@ -1014,7 +1020,7 @@ var AppInfo = {};
                         connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
 
                         defineConnectionManager(connectionManager);
-                        bindConnectionManagerEvents(connectionManager, events);
+                        bindConnectionManagerEvents(connectionManager, events, userSettings);
 
                         if (Dashboard.isConnectMode()) {
 
@@ -1245,6 +1251,7 @@ var AppInfo = {};
         define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
 
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
+        define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);

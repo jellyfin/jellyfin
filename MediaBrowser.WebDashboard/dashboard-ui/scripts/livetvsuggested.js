@@ -17,11 +17,16 @@
 
         Dashboard.showLoadingMsg();
 
+        var limit = getLimit();
+        if (enableScrollX()) {
+            limit *= 2;
+        }
+
         ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: getLimit() * 2,
+            limit: limit,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary",
             EnableTotalRecordCount: false,
