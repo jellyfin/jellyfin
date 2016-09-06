@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Windows.Forms;
 using CommonIO;
 using MediaBrowser.Controller.Power;
 using MediaBrowser.Model.System;
@@ -209,6 +210,11 @@ namespace MediaBrowser.ServerApplication.Native
             LoopUtil.Run(appName);
         }
 
+        private bool Confirm()
+        {
+            return MessageBox.Show("Emby has detected that Windows Firewall has been configured in a way that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
+        }
+
         public bool PortsRequireAuthorization(string applicationPath)
         {
             var appNameSrch = Path.GetFileName(applicationPath);
@@ -237,12 +243,13 @@ namespace MediaBrowser.ServerApplication.Native
                     //_logger.Debug("Found windows firewall rule: " + data);
                     if (data.IndexOf("Block", StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        return true;
+                        return Confirm();
                     }
 
                     //var parts = data.Split('\n');
 
                     //return parts.Length > 4;
+                    //return Confirm();
                     return false;
                 }
                 catch (Exception ex)
