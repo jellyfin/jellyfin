@@ -251,7 +251,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
     function enableHistory() {
 
-        if (browser.xboxOne) {
+        if (browser.xboxOne || browser.edgeUwp) {
             return false;
         }
 

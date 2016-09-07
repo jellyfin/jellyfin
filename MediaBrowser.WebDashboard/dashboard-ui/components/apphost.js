@@ -135,9 +135,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             features.push('voiceinput');
         }
 
-        var userAgent = navigator.userAgent.toLowerCase();
-
-        if (!browser.mobile || userAgent.indexOf('msapphost') != -1) {
+        if (!browser.mobile || browser.edgeUwp) {
             features.push('htmlaudioautoplay');
             features.push('htmlvideoautoplay');
         }

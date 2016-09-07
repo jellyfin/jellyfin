@@ -908,7 +908,7 @@
         var backButton = document.querySelector('.headerBackButton');
 
         if (backButton) {
-            if (Emby.Page.canGoBack()) {
+            if (page.getAttribute('data-backbutton') == 'true' && Emby.Page.canGoBack()) {
                 backButton.classList.remove('hide');
             } else {
                 backButton.classList.add('hide');

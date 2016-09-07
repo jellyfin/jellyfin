@@ -57,7 +57,7 @@ define(['browser'], function (browser) {
             if (browser.tizen) {
                 return true;
             }
-            if (isEdgeUniversal()) {
+            if (browser.edgeUwp) {
                 return true;
             }
         }
@@ -66,7 +66,7 @@ define(['browser'], function (browser) {
             if (browser.tizen) {
                 return true;
             }
-            if (isEdgeUniversal()) {
+            if (browser.edgeUwp) {
                 return true;
             }
         }
@@ -89,19 +89,6 @@ define(['browser'], function (browser) {
 
         if (document.createElement('audio').canPlayType(typeString).replace(/no/, '')) {
             return true;
-        }
-
-        return false;
-    }
-
-    function isEdgeUniversal() {
-
-        if (browser.edge) {
-
-            var userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.indexOf('msapphost') != -1) {
-                return true;
-            }
         }
 
         return false;
@@ -136,7 +123,7 @@ define(['browser'], function (browser) {
             return true;
         }
 
-        if (isEdgeUniversal()) {
+        if (browser.edgeUwp) {
 
             return true;
         }
@@ -157,15 +144,15 @@ define(['browser'], function (browser) {
         switch (container) {
 
             case 'asf':
-                supported = browser.tizen || isEdgeUniversal();
+                supported = browser.tizen || browser.edgeUwp;
                 videoAudioCodecs = [];
                 break;
             case 'avi':
-                supported = isEdgeUniversal();
+                supported = browser.edgeUwp;
                 break;
             case 'mpg':
             case 'mpeg':
-                supported = isEdgeUniversal();
+                supported = browser.edgeUwp;
                 break;
             case '3gp':
             case 'flv':
@@ -176,17 +163,17 @@ define(['browser'], function (browser) {
                 supported = browser.tizen;
                 break;
             case 'mov':
-                supported = browser.chrome || isEdgeUniversal();
+                supported = browser.chrome || browser.edgeUwp;
                 break;
             case 'm2ts':
-                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                supported = browser.tizen || browser.web0s || browser.edgeUwp;
                 break;
             case 'wmv':
-                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                supported = browser.tizen || browser.web0s || browser.edgeUwp;
                 videoAudioCodecs = [];
                 break;
             case 'ts':
-                supported = browser.tizen || browser.web0s || isEdgeUniversal();
+                supported = browser.tizen || browser.web0s || browser.edgeUwp;
                 profileContainer = 'ts,mpegts';
                 break;
             default:
@@ -207,7 +194,7 @@ define(['browser'], function (browser) {
     function getMaxBitrate() {
 
         // 10mbps
-        if (browser.xboxOne) {
+        if (browser.xboxOne || browser.edgeUwp) {
             return 10000000;
         }
 
@@ -262,7 +249,7 @@ define(['browser'], function (browser) {
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
         // safari is lying
-        if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || isEdgeUniversal() || browser.tizen) {
+        if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || browser.edgeUwp || browser.tizen) {
             videoAudioCodecs.push('ac3');
 
             // This works in edge desktop, but not mobile
@@ -289,7 +276,7 @@ define(['browser'], function (browser) {
             hlsVideoAudioCodecs.push('mp3');
         }
 
-        if (isEdgeUniversal()) {
+        if (browser.edgeUwp) {
             //videoAudioCodecs.push('dca');
             //videoAudioCodecs.push('dts');
             //videoAudioCodecs.push('truehd');
@@ -321,7 +308,7 @@ define(['browser'], function (browser) {
                 AudioCodec: videoAudioCodecs.join(',')
             });
 
-            if (isEdgeUniversal()) {
+            if (browser.edgeUwp) {
                 profile.DirectPlayProfiles.push({
                     Container: 'mkv',
                     Type: 'Video',
