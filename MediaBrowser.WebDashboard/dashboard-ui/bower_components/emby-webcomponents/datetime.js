@@ -111,6 +111,36 @@
             date.toLocaleString();
     }
 
+    function getLocaleDateStringParts(date) {
+
+        var day = getDayName(date);
+        date = toLocaleDateString(date);
+
+        var parts = [];
+
+        if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
+            parts.push(day);
+        }
+
+        parts.push(date);
+
+        return parts;
+    }
+
+    function getDayName(date) {
+
+        var weekday = [];
+        weekday[0] = globalize.translate('sharedcomponents#Sunday');
+        weekday[1] = globalize.translate('sharedcomponents#Monday');
+        weekday[2] = globalize.translate('sharedcomponents#Tuesday');
+        weekday[3] = globalize.translate('sharedcomponents#Wednesday');
+        weekday[4] = globalize.translate('sharedcomponents#Thursday');
+        weekday[5] = globalize.translate('sharedcomponents#Friday');
+        weekday[6] = globalize.translate('sharedcomponents#Saturday');
+
+        return weekday[date.getDay()];
+    }
+
     function toLocaleDateString(date) {
 
         var currentLocale = globalize.getCurrentLocale();
@@ -188,6 +218,7 @@
         toLocaleDateString: toLocaleDateString,
         toLocaleString: toLocaleString,
         getDisplayTime: getDisplayTime,
-        isRelativeDay: isRelativeDay
+        isRelativeDay: isRelativeDay,
+        getLocaleDateStringParts: getLocaleDateStringParts
     };
 });

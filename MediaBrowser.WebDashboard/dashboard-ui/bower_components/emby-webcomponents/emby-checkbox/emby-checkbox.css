@@ -121,3 +121,7 @@
 .checkboxList-paperList {
     padding: 1em !important;
 }
+
+.checkboxListLabel {
+    opacity: .7;
+}

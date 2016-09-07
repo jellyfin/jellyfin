@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "Add": "Toevoegen",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Op elk tijdstip opnemen",
     "RecordOnlyNewEpisodes": "Alleen nieuwe afleveringen opnemen",
     "HeaderBecomeProjectSupporter": "Verkrijg Emby Premiere",
-    "HeaderEnjoyDayTrial": "Geniet van een 14-daagse gratis proefversie",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Er is een actief Emby Premiere abonnement benodigd om een automatische serie opname aan te maken.",
     "OptionConvertRecordingsToStreamingFormat": "Opnamen automatisch converteren naar een streaming formaat",
     "OptionConvertRecordingsToStreamingFormatHelp": "Opnames zullen direct worden omgezet naar MP4 voor het eenvoudig afspelen op uw apparaten.",
@@ -278,5 +275,12 @@
     "MoveRight": "Move right",
     "MoveLeft": "Move left",
     "ConfirmDeleteImage": "Delete image?",
-    "HeaderEditImages": "Edit Images"
+    "HeaderEditImages": "Edit Images",
+    "Settings": "Instellingen",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }

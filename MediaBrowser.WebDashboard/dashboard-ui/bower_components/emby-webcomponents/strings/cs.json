@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "P\u0159idat",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Nahr\u00e1vat kdykoliv",
     "RecordOnlyNewEpisodes": "Nahr\u00e1vat pouze nov\u00e9 epizody",
     "HeaderBecomeProjectSupporter": "Z\u00edskat Emby Premiere",
-    "HeaderEnjoyDayTrial": "U\u017eijte si 14 denn\u00ed zku\u0161ebn\u00ed verzi zdarma",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere je zapot\u0159eb\u00ed pro vytvo\u0159en\u00ed automatick\u00e9ho nahr\u00e1v\u00e1n\u00ed \u0159ad.",
     "OptionConvertRecordingsToStreamingFormat": "Automaticky prov\u00e1d\u011bt konverzi do podporovan\u00fdch streamov\u00fdch form\u00e1t\u016f",
     "OptionConvertRecordingsToStreamingFormatHelp": "Nahr\u00e1vky budou p\u0159i p\u0159ehr\u00e1v\u00e1n\u00ed p\u0159eved\u011bny do MP4 pro snadn\u00e9 p\u0159ehr\u00e1v\u00e1n\u00ed na va\u0161ich za\u0159\u00edzen\u00edch.",
@@ -278,5 +275,12 @@
     "MoveRight": "Move right",
     "MoveLeft": "Move left",
     "ConfirmDeleteImage": "Delete image?",
-    "HeaderEditImages": "Edit Images"
+    "HeaderEditImages": "Edit Images",
+    "Settings": "Nastaven\u00ed",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }

@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Sp\u00e9cial - {0}",
     "Share": "Partager",
     "Add": "Ajouter",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Enregistrer \u00e0 n'importe quelle heure\/journ\u00e9e",
     "RecordOnlyNewEpisodes": "Enregistrer seulement les nouveaux \u00e9pisodes",
     "HeaderBecomeProjectSupporter": "Obtenez Emby Premiere",
-    "HeaderEnjoyDayTrial": "Profitez d'une p\u00e9riode d'essai de 14 jours",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Une souscription Emby Premiere active est n\u00e9cessaire pour cr\u00e9er des enregistrements automatiques de s\u00e9ries.",
     "OptionConvertRecordingsToStreamingFormat": "Convertir automatiquement les enregistrements a un format facilement diffusable.",
     "OptionConvertRecordingsToStreamingFormatHelp": "Les enregistrements seront convertis \u00e0 la vol\u00e9e en MP4 afin faciliter la lecture sur tous vos appareils.",
@@ -278,5 +275,12 @@
     "MoveRight": "D\u00e9placer \u00e0 droite",
     "MoveLeft": "D\u00e9placer \u00e0 gauche",
     "ConfirmDeleteImage": "Supprimer l'image ?",
-    "HeaderEditImages": "Modifier les images"
+    "HeaderEditImages": "Modifier les images",
+    "Settings": "Param\u00e8tres",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }

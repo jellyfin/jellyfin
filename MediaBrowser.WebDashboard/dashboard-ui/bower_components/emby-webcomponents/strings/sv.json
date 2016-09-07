@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Specialavsnitt - {0}",
     "Share": "Dela",
     "Add": "L\u00e4gg till",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Spela in n\u00e4r som helst",
     "RecordOnlyNewEpisodes": "Spela bara in nya avsnitt",
     "HeaderBecomeProjectSupporter": "Skaffa Emby Premium",
-    "HeaderEnjoyDayTrial": "Upplev en 14-dagars pr\u00f6voperiod",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Ett aktivt Emby Premium-medlemskap kr\u00e4vs f\u00f6r att skapa automatiska TV-serieinspelningar.",
     "OptionConvertRecordingsToStreamingFormat": "Konvertera inspelningar automatiskt till ett str\u00f6mningsv\u00e4nligt format",
     "OptionConvertRecordingsToStreamingFormatHelp": "Inspelningar omkodas till MP4 f\u00f6r problemfri str\u00f6mning till dina enheter.",
@@ -278,5 +275,12 @@
     "MoveRight": "Move right",
     "MoveLeft": "Move left",
     "ConfirmDeleteImage": "Delete image?",
-    "HeaderEditImages": "Edit Images"
+    "HeaderEditImages": "Edit Images",
+    "Settings": "Inst\u00e4llningar",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }

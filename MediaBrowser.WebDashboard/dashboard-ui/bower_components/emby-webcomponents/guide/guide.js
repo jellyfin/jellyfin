@@ -374,13 +374,16 @@
                 html += '<div class="' + guideProgramNameClass + '">';
 
                 if (program.IsLive && options.showLiveIndicator) {
-                    html += '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeLive') + '</span>';
+                    html += '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Live') + '</span>';
                 }
                 else if (program.IsPremiere && options.showPremiereIndicator) {
-                    html += '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributePremiere') + '</span>';
+                    html += '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Premiere') + '</span>';
                 }
                 else if (program.IsSeries && !program.IsRepeat && options.showNewIndicator) {
                     html += '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
+                }
+                else if (program.IsSeries && program.IsRepeat && options.showRepeatIndicator) {
+                    html += '<span class="repeatTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#Repeat') + '</span>';
                 }
 
                 html += program.Name;
@@ -431,7 +434,8 @@
                 showHdIcon: allowIndicators && userSettings.get('guide-indicator-hd') == 'true',
                 showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') == 'true',
                 showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') == 'true',
-                showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') == 'true'
+                showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') == 'true',
+                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') == 'true'
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {
@@ -624,31 +628,6 @@
             }
         }
 
-        function getFutureDateText(date) {
-
-            var weekday = [];
-            weekday[0] = globalize.translate('sharedcomponents#Sunday');
-            weekday[1] = globalize.translate('sharedcomponents#Monday');
-            weekday[2] = globalize.translate('sharedcomponents#Tuesday');
-            weekday[3] = globalize.translate('sharedcomponents#Wednesday');
-            weekday[4] = globalize.translate('sharedcomponents#Thursday');
-            weekday[5] = globalize.translate('sharedcomponents#Friday');
-            weekday[6] = globalize.translate('sharedcomponents#Saturday');
-
-            var day = weekday[date.getDay()];
-            date = datetime.toLocaleDateString(date);
-
-            var parts = [];
-
-            if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
-                parts.push(day);
-            }
-
-            parts.push(date);
-
-            return parts;
-        }
-
         function changeDate(page, date) {
 
             clearCurrentTimeUpdateInterval();
@@ -658,7 +637,7 @@
 
             reloadGuide(page, newStartDate);
 
-            var dateText = getFutureDateText(date);
+            var dateText = datetime.getLocaleDateStringParts(date);
 
             if (dateText.length == 1) {
                 dateText = dateText[0];
@@ -692,7 +671,7 @@
             while (start <= end) {
 
                 dateOptions.push({
-                    name: getFutureDateText(start).join(' '),
+                    name: datetime.getLocaleDateStringParts(start).join(' '),
                     id: start.getTime()
                 });
 

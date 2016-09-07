@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "\u6dfb\u52a0",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Record at any time",
     "RecordOnlyNewEpisodes": "\u53ea\u5f55\u5236\u65b0\u5267\u96c6",
     "HeaderBecomeProjectSupporter": "Get Emby Premiere",
-    "HeaderEnjoyDayTrial": "\u4eab\u53d714\u5929\u514d\u8d39\u8bd5\u7528",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "An active Emby Premiere subscription is required in order to create automated series recordings.",
     "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
     "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
@@ -278,5 +275,12 @@
     "MoveRight": "Move right",
     "MoveLeft": "Move left",
     "ConfirmDeleteImage": "Delete image?",
-    "HeaderEditImages": "Edit Images"
+    "HeaderEditImages": "Edit Images",
+    "Settings": "Settings",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }

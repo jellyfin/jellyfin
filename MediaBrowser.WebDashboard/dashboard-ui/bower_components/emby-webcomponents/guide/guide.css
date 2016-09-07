@@ -59,15 +59,19 @@
 }
 
 .newTvProgram {
-    background: #64A239;
+    background: #43A047;
 }
 
 .liveTvProgram {
-    background: #2196F3;
+    background: #EC407A;
 }
 
 .premiereTvProgram {
     background: #EF6C00;
+}
+
+.repeatTvProgram {
+    background: #009688;
 }
 
 .programAccent {
@@ -372,7 +376,7 @@
 
 .programIcon {
     margin-left: auto;
-    margin-right: .5em;
+    margin-right: .25em;
     height: auto;
     width: auto;
     font-size: 1.6em;

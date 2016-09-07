@@ -1,6 +1,4 @@
 {
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Del",
     "Add": "Tilf\u00f8j",
@@ -47,7 +45,6 @@
     "RecordAnytime": "Optag p\u00e5 ethverts tidspunkt",
     "RecordOnlyNewEpisodes": "Optag kun nye episoder",
     "HeaderBecomeProjectSupporter": "F\u00e5 Emby Premiere",
-    "HeaderEnjoyDayTrial": "Nyd en 14-dages gratis pr\u00f8veperiode",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Et aktivt Emby Premiere abonnement er n\u00f8dvendigt for at oprette automatiserede optagelser af serier.",
     "OptionConvertRecordingsToStreamingFormat": "Konverter automatisk optagelser til et streamingvenligt format",
     "OptionConvertRecordingsToStreamingFormatHelp": "Optagelser vil l\u00f8bende blive konverteret   til MP4 for nemmere afspilning p\u00e5 dine enheder.",
@@ -278,5 +275,12 @@
     "MoveRight": "Move right",
     "MoveLeft": "Move left",
     "ConfirmDeleteImage": "Delete image?",
-    "HeaderEditImages": "Edit Images"
+    "HeaderEditImages": "Edit Images",
+    "Settings": "Indstillinger",
+    "ShowIndicatorsFor": "Show indicators for:",
+    "NewEpisodes": "New episodes",
+    "HDPrograms": "HD programs",
+    "LiveBroadcasts": "Live broadcasts",
+    "Premieres": "Premieres",
+    "RepeatEpisodes": "Repeat episodes"
 }
