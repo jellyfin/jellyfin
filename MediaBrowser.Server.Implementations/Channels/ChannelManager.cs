@@ -530,6 +530,19 @@ namespace MediaBrowser.Server.Implementations.Channels
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
         }
 
+        public bool SupportsSync(string channelId)
+        {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
+            //var channel = GetChannel(channelId);
+            var channelProvider = GetChannelProvider(channelId);
+
+            return channelProvider.GetChannelFeatures().SupportsContentDownloading;
+        }
+
         public ChannelFeatures GetChannelFeaturesDto(Channel channel,
             IChannel provider,
             InternalChannelFeatures features)
@@ -1445,6 +1458,24 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (result == null)
             {
                 throw new ResourceNotFoundException("No channel provider found for channel " + channel.Name);
+            }
+
+            return result;
+        }
+
+        internal IChannel GetChannelProvider(string internalChannelId)
+        {
+            if (internalChannelId == null)
+            {
+                throw new ArgumentNullException("internalChannelId");
+            }
+
+            var result = GetAllChannels()
+                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), internalChannelId, StringComparison.OrdinalIgnoreCase));
+
+            if (result == null)
+            {
+                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
             }
 
             return result;
