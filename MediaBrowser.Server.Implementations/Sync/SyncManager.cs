@@ -541,6 +541,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return true;
             }
 
+            if (item.SourceType == SourceType.Channel)
+            {
+                return BaseItem.ChannelManager.SupportsSync(item.ChannelId);
+            }
+
             return item.LocationType == LocationType.FileSystem || item is Season;
         }
 
