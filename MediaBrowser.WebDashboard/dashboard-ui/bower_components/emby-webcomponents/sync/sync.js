@@ -408,9 +408,9 @@
 
             html += '<div class="formFields"></div>';
 
-            html += '<p>';
-            html += '<button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">sync</i><span>' + globalize.translate('sharedcomponents#Sync') + '</span></button>';
-            html += '</p>';
+            html += '<div class="formDialogFooter">';
+            html += '<button is="emby-button" type="submit" class="raised submit block formDialogFooterItem"><i class="md-icon">sync</i><span>' + globalize.translate('sharedcomponents#Sync') + '</span></button>';
+            html += '</div>';
 
             html += '</form>';
 

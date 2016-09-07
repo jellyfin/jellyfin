@@ -1,5 +1,59 @@
 ﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
+    function getRecordingGroupHtml(group) {
+
+        var html = '';
+
+        html += '<div class="listItem">';
+
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
+
+        html += '<div class="listItemBody two-line">';
+        html += '<a href="livetvitems.html?type=Recordings&groupid=' + group.Id + '" class="clearLink">';
+
+        html += '<div>';
+        html += group.Name;
+        html += '</div>';
+
+        html += '<div class="secondary">';
+        if (group.RecordingCount == 1) {
+            html += Globalize.translate('ValueItemCount', group.RecordingCount);
+        } else {
+            html += Globalize.translate('ValueItemCountPlural', group.RecordingCount);
+        }
+        html += '</div>';
+
+        html += '</a>';
+        html += '</div>';
+        html += '</div>';
+
+        return html;
+    }
+
+    function renderRecordingGroups(context, groups) {
+
+        if (groups.length) {
+            context.querySelector('#recordingGroups').classList.remove('hide');
+        } else {
+            context.querySelector('#recordingGroups').classList.add('hide');
+        }
+
+        var html = '';
+
+        html += '<div class="paperList">';
+
+        for (var i = 0, length = groups.length; i < length; i++) {
+
+            html += getRecordingGroupHtml(groups[i]);
+        }
+
+        html += '</div>';
+
+        context.querySelector('#recordingGroupItems').innerHTML = html;
+
+        Dashboard.hideLoadingMsg();
+    }
+
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
@@ -53,18 +107,6 @@
                 indexByDate: false
             });
         });
-
-        //ApiClient.getLiveTvRecordings({
-
-        //    userId: Dashboard.getCurrentUserId(),
-        //    IsInProgress: true,
-        //    Fields: 'CanDelete'
-
-        //}).then(function (result) {
-
-        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
-
-        //});
     }
 
     function renderLatestRecordings(context) {
@@ -107,7 +149,7 @@
 
     function renderEpisodeRecordings(context) {
 
-        ApiClient.getLiveTvRecordings({
+        ApiClient.getLiveTvRecordingSeries({
 
             UserId: Dashboard.getCurrentUserId(),
             Limit: enableScrollX() ? 12 : 8,
@@ -118,11 +160,14 @@
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#episodeRecordings'), result.Items);
+            renderRecordings(context.querySelector('#episodeRecordings'), result.Items, {
+                showItemCounts: true,
+                showParentTitle: false
+            });
         });
     }
 
-    function renderProgramRecordings(context) {
+    function renderSportsRecordings(context) {
 
         ApiClient.getLiveTvRecordings({
 
@@ -131,12 +176,31 @@
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
             EnableTotalRecordCount: false,
-            IsMovie: false,
-            IsSeries: false
+            IsSports: true
 
         }).then(function (result) {
 
-            renderRecordings(context.querySelector('#programRecordings'), result.Items, {
+            renderRecordings(context.querySelector('#sportsRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
+        });
+    }
+
+    function renderKidsRecordings(context) {
+
+        ApiClient.getLiveTvRecordings({
+
+            UserId: Dashboard.getCurrentUserId(),
+            Limit: enableScrollX() ? 12 : 8,
+            IsInProgress: false,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            IsKids: true
+
+        }).then(function (result) {
+
+            renderRecordings(context.querySelector('#kidsRecordings'), result.Items, {
                 showYear: true,
                 showParentTitle: false
             });
@@ -169,7 +233,17 @@
         renderLatestRecordings(context);
         renderMovieRecordings(context);
         renderEpisodeRecordings(context);
-        renderProgramRecordings(context);
+        renderSportsRecordings(context);
+        renderKidsRecordings(context);
+
+        ApiClient.getLiveTvRecordingGroups({
+
+            userId: Dashboard.getCurrentUserId()
+
+        }).then(function (result) {
+
+            renderRecordingGroups(context, result.Items);
+        });
     }
 
     function onMoreClick(e) {
@@ -184,10 +258,16 @@
                 Dashboard.navigate('livetvitems.html?type=Recordings&IsMovie=true');
                 break;
             case 'episodes':
-                Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=true');
+                Dashboard.navigate('livetvitems.html?type=RecordingSeries');
                 break;
             case 'programs':
                 Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=false&IsMovie=false');
+                break;
+            case 'kids':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsKids=true');
+                break;
+            case 'sports':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSports=true');
                 break;
             default:
                 break;

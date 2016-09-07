@@ -1,5 +1,24 @@
 ﻿define(['scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function () {
 
+    function renderActiveRecordings(context) {
+
+        ApiClient.getLiveTvTimers({
+
+            IsActive: true
+
+        }).then(function (result) {
+
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
+
+            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
+                indexByDate: false
+            });
+        });
+    }
+    
     function renderTimers(context, timers, options) {
 
         LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
@@ -33,6 +52,7 @@
 
         Dashboard.showLoadingMsg();
 
+        renderActiveRecordings(context);
         renderUpcomingRecordings(context);
     }
 

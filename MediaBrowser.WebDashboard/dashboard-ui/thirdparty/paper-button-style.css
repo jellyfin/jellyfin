@@ -20,9 +20,23 @@ button.emby-button.submit {
     color: #52B54B;
 }
 
-button.emby-button.raised.submit, button.emby-button.raised:not(.subdued):not(.cancel):not(.more) {
+.ui-body-a .emby-button.raised {
     background: #52B54B;
     color: #fff;
+}
+
+.ui-body-b .emby-button.raised {
+    background: #404040;
+    color: #fff;
+}
+
+.ui-body-a .emby-button.raised.subdued {
+    background: #fff;
+    color: inherit;
+}
+
+.ui-body-b .emby-button.raised.subdued {
+    background: #262626;
 }
 
 button.emby-button.more {
@@ -140,13 +154,4 @@ div.dialogHeader {
 .ui-body-a .formDialogHeader a {
     color: #fff !important;
     text-transform: uppercase;
-}
-
-.ui-body-b div.formDialogHeader {
-    background-color: #222326;
-}
-
-.formDialogHeader button {
-    margin-top: 0;
-    margin-bottom: 0;
 }

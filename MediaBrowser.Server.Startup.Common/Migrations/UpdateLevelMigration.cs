@@ -42,12 +42,6 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             {
                 var updateLevel = _config.Configuration.SystemUpdateLevel;
 
-                if (updateLevel == PackageVersionClass.Dev)
-                {
-                    // It's already dev, there's nothing to check
-                    return;
-                }
-
                 await CheckVersion(currentVersion, updateLevel, CancellationToken.None).ConfigureAwait(false);
             }
             catch

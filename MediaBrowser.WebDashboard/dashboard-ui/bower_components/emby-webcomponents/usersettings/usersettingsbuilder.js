@@ -23,8 +23,16 @@ define(['appSettings', 'events'], function (appsettings, events) {
             });
         };
 
-        function saveServerPreferences() {
+        var saveTimeout;
+        function onSaveTimeout() {
+            saveTimeout = null;
             currentApiClient.updateDisplayPreferences('usersettings', displayPrefs, currentUserId, 'emby');
+        }
+        function saveServerPreferences() {
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+            saveTimeout = setTimeout(onSaveTimeout, 50);
         }
 
         self.set = function (name, value, enableOnServer) {

@@ -90,32 +90,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div is="emby-collapse" title="${HeaderDeveloperOptions}">
-                    <div class="collapseContent">
-                        <br />
-                        <label class="checkboxContainer">
-                            <input is="emby-checkbox" type="checkbox" id="chkEnableDashboardResponseCache" />
-                            <span>${OptionEnableWebClientResponseCache}</span>
-                        </label>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
-                            <label>
-                                <input is="emby-checkbox" type="checkbox" id="chkEnableMinification" />
-                                <span>${OptionEnableWebClientResourceMinification}</span>
-                            </label>
-                            <div class="fieldDescription checkboxFieldDescription">${OptionDisableForDevelopmentHelp}</div>
-                        </div>
-                        <div class="inputContainer">
-                            <div style="display: flex; align-items: center;">
-                                <div style="flex-grow:1;">
-                                    <input is="emby-input" id="txtDashboardSourcePath" label="${LabelDashboardSourcePath}" autocomplete="off" />
-                                </div>
-                                <button type="button" is="paper-icon-button-light" id="btnSelectDashboardSourcePath" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
-                            </div>
-                            <div class="fieldDescription">${LabelDashboardSourcePathHelp}</div>
-                        </div>
-                    </div>
-                </div>
                 <br />
                 <div>
                     <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>

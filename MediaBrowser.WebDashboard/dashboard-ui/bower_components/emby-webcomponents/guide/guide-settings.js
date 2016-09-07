@@ -73,6 +73,10 @@
                     }
                 });
 
+                dlg.querySelector('.btnCancel').addEventListener('click', function () {
+                    dialogHelper.close(dlg);
+                });
+
                 if (layoutManager.tv) {
                     scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }

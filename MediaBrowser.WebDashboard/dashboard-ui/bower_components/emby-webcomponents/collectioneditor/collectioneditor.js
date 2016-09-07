@@ -166,8 +166,8 @@
         // newCollectionInfo
         html += '</div>';
 
-        html += '<div>';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';

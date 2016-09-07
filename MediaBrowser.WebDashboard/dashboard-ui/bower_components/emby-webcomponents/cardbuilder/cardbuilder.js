@@ -970,8 +970,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 if (item.MovieCount) {
 
                     childText = item.MovieCount == 1 ?
-                    globalize.translate('ValueOneMovie') :
-                    globalize.translate('ValueMovieCount', item.MovieCount);
+                    globalize.translate('sharedcomponents#ValueOneMovie') :
+                    globalize.translate('sharedcomponents#ValueMovieCount', item.MovieCount);
 
                     counts.push(childText);
                 }
@@ -979,24 +979,24 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 if (item.SeriesCount) {
 
                     childText = item.SeriesCount == 1 ?
-                    globalize.translate('ValueOneSeries') :
-                    globalize.translate('ValueSeriesCount', item.SeriesCount);
+                    globalize.translate('sharedcomponents#ValueOneSeries') :
+                    globalize.translate('sharedcomponents#ValueSeriesCount', item.SeriesCount);
 
                     counts.push(childText);
                 }
                 if (item.EpisodeCount) {
 
                     childText = item.EpisodeCount == 1 ?
-                    globalize.translate('ValueOneEpisode') :
-                    globalize.translate('ValueEpisodeCount', item.EpisodeCount);
+                    globalize.translate('sharedcomponents#ValueOneEpisode') :
+                    globalize.translate('sharedcomponents#ValueEpisodeCount', item.EpisodeCount);
 
                     counts.push(childText);
                 }
                 if (item.GameCount) {
 
                     childText = item.GameCount == 1 ?
-                    globalize.translate('ValueOneGame') :
-                    globalize.translate('ValueGameCount', item.GameCount);
+                    globalize.translate('sharedcomponents#ValueOneGame') :
+                    globalize.translate('sharedcomponents#ValueGameCount', item.GameCount);
 
                     counts.push(childText);
                 }
@@ -1037,6 +1037,14 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     counts.push(childText);
                 }
+
+            } else if (item.Type == 'Series') {
+
+                childText = item.RecursiveItemCount == 1 ?
+                globalize.translate('sharedcomponents#ValueOneEpisode') :
+                globalize.translate('sharedcomponents#ValueEpisodeCount', item.RecursiveItemCount);
+
+                counts.push(childText);
             }
 
             return counts.join(', ');

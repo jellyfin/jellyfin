@@ -11,6 +11,14 @@
 
         if (params.type == 'Recordings') {
             query.IsInProgress = false;
+
+            if (params.groupid) {
+                query.GroupId = params.groupid;
+            }
+
+        } else if (params.type == 'RecordingSeries') {
+            query.SortOrder = 'SortName';
+            query.SortOrder = 'Ascending';
         } else {
             query.HasAired = false;
             query.SortBy = 'StartDate,SortName';
@@ -27,6 +35,8 @@
 
             var promise = params.type == 'Recordings' ?
                 ApiClient.getLiveTvRecordings(query) :
+                params.type == 'RecordingSeries' ?
+                ApiClient.getLiveTvRecordingSeries(query) :
                 ApiClient.getLiveTvPrograms(query);
 
             promise.then(function (result) {
@@ -46,15 +56,15 @@
 
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
-                    shape: query.IsMovie ? 'portrait' : "backdrop",
-                    preferThumb: !query.IsMovie,
+                    shape: query.IsMovie || params.type == 'RecordingSeries' ? 'portrait' : "backdrop",
+                    preferThumb: !query.IsMovie && params.type != 'RecordingSeries',
                     context: 'livetv',
                     centerText: true,
                     lazy: true,
                     overlayText: false,
                     showTitle: true,
                     //showParentTitle: query.IsSeries !== false && !query.IsMovie,
-                    showProgramAirInfo: params.type != 'Recordings',
+                    showProgramAirInfo: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     overlayMoreButton: true,
                     showYear: query.IsMovie && params.type == 'Recordings'
                 });
@@ -108,19 +118,19 @@
             if (params.IsMovie == 'true') {
                 query.IsMovie = true;
             }
-            else if (params.IsMovie == 'true') {
+            else if (params.IsMovie == 'false') {
                 query.IsMovie = false;
             }
             if (params.IsSports == 'true') {
                 query.IsSports = true;
             }
-            else if (params.IsSports == 'true') {
+            else if (params.IsSports == 'false') {
                 query.IsSports = false;
             }
             if (params.IsKids == 'true') {
                 query.IsKids = true;
             }
-            else if (params.IsKids == 'true') {
+            else if (params.IsKids == 'false') {
                 query.IsKids = false;
             }
 

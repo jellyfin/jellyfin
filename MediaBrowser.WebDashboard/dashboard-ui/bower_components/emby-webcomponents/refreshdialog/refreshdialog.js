@@ -37,12 +37,12 @@
         html += globalize.translate('sharedcomponents#RefreshDialogHelp');
         html += '</div>';
 
-        html += '<br />';
-        html += '<div>';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block" autofocus>' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
-        html += '</div>';
-
         html += '<input type="hidden" class="fldSelectedItemIds" />';
+
+        html += '<br />';
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '</div>';
 
         html += '</form>';
         html += '</div>';

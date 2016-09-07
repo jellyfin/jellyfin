@@ -1,29 +1,23 @@
-﻿<div class="guideOptions">
-    <button is="emby-button" type="button" class="btnSelectDate">
-        <i class="md-icon">&#xE916;</i>
-        <span class="dateText"></span>
-    </button>
-    <button is="paper-icon-button-light" type="button" class="btnViewSettings">
-        <i class="md-icon">&#xE42A;</i>
-    </button>
-    <button is="paper-icon-button-light" type="button" class="btnPreviousPage hide">
-        <i class="md-icon">&#xE5C4;</i>
-    </button>
-    <button is="paper-icon-button-light" type="button" class="btnNextPage hide">
-        <i class="md-icon">&#xE5C8;</i>
-    </button>
-</div>
-
-<div class="tvGuideHeader">
+﻿<div class="tvGuideHeader">
     <div class="channelTimeslotHeader">
+        <button is="emby-button" type="button" class="btnSelectDate block">
+            <div class="btnSelectDateContent">
+                <div class="guideDateText">
+                </div>
+                <i class="md-icon selectDateIcon">&#xE5C5;</i>
+            </div>
+        </button>
+        <button is="paper-icon-button-light" type="button" class="btnGuideViewSettings">
+            <i class="md-icon btnGuideViewSettingsIcon">&#xE42A;</i>
+        </button>
     </div>
-    <div class="timeslotHeaders smoothScrollX visibleGuideScroller" style="scroll-behavior: auto;"></div>
+    <div class="timeslotHeaders smoothScrollX guideScroller" style="scroll-behavior: auto;"></div>
 </div>
 
-<div class="smoothScrollY guideVerticalScroller programContainer visibleGuideScroller" style="flex-grow: 1;">
+<div class="smoothScrollY guideVerticalScroller programContainer guideScroller" style="flex-grow: 1;">
     <div class="channelList"></div>
 
-    <div class="programGridContainer programGrid smoothScrollX visibleGuideScroller" style="white-space: nowrap;">
+    <div class="programGridContainer programGrid smoothScrollX guideScroller" style="white-space: nowrap;">
     </div>
 </div>
 
@@ -32,5 +26,14 @@
     <button is="emby-button" type="button" class="raised secondary block btnUnlockGuide">
         <i class="md-icon">check</i>
         <span>${UnlockGuide}</span>
+    </button>
+</div>
+
+<div class="guideOptions hide">
+    <button is="paper-icon-button-light" type="button" class="btnPreviousPage">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
+    <button is="paper-icon-button-light" type="button" class="btnNextPage">
+        <i class="md-icon">&#xE5C8;</i>
     </button>
 </div>
