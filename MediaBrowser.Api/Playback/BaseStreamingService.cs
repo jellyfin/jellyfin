@@ -1176,17 +1176,21 @@ namespace MediaBrowser.Api.Playback
                 await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
-            if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive)
+            if (state.IsInputVideo && transcodingJob.Type == TranscodingJobType.Progressive && !transcodingJob.HasExited)
             {
                 await Task.Delay(1000, cancellationTokenSource.Token).ConfigureAwait(false);
 
-                if (state.ReadInputAtNativeFramerate)
+                if (state.ReadInputAtNativeFramerate && !transcodingJob.HasExited)
                 {
                     await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
 
-            StartThrottler(state, transcodingJob);
+            if (!transcodingJob.HasExited)
+            {
+                StartThrottler(state, transcodingJob);
+            }
+
             ReportUsage(state);
 
             return transcodingJob;
