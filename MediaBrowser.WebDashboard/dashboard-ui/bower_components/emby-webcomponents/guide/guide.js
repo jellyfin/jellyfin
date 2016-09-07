@@ -425,13 +425,13 @@
             // Normally we'd want to just let responsive css handle this,
             // but since mobile browsers are often underpowered, 
             // it can help performance to get them out of the markup
-            var showIndicators = true;
+            var allowIndicators = dom.getWindowSize().innerWidth >= 600;
 
             var options = {
-                showHdIcon: showIndicators,
-                showLiveIndicator: showIndicators,
-                showPremiereIndicator: showIndicators,
-                showNewIndicator: userSettings.get('guide-indicator-new') == 'true'
+                showHdIcon: allowIndicators && userSettings.get('guide-indicator-hd') == 'true',
+                showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') == 'true',
+                showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') == 'true',
+                showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') == 'true'
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {

@@ -214,17 +214,19 @@
 
                 var template = this.response;
                 var dlg = dialogHelper.createDialog({
-                    size: 'small',
+                    size: 'medium',
 
                     // In (at least) chrome this is causing the text field to not be editable
                     modal: false,
 
-                    removeOnClose: true
+                    removeOnClose: true,
+                    scrollY: false
                 });
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
                 dlg.classList.add('dlg-librarycreator');
+                dlg.classList.add('formDialog');
 
                 dlg.innerHTML = Globalize.translateDocument(template);
                 document.body.appendChild(dlg);

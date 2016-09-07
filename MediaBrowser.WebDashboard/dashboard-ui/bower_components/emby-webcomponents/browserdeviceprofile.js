@@ -6,6 +6,11 @@ define(['browser'], function (browser) {
     }
 
     function canPlayH265() {
+
+        if (browser.tizen) {
+            return true;
+        }
+
         return false;
     }
 
@@ -193,8 +198,12 @@ define(['browser'], function (browser) {
 
     function getMaxBitrate() {
 
+        if (browser.edgeUwp) {
+            return 14000000;
+        }
+
         // 10mbps
-        if (browser.xboxOne || browser.edgeUwp) {
+        if (browser.xboxOne) {
             return 10000000;
         }
 
