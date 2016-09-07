@@ -78,7 +78,7 @@
             <div>
                 <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderLatestRecordings}</h1>
                 <button is="emby-button" type="button" class="raised more mini" data-type="latest">${ButtonMore}</button>
-                <button is="emby-button" type="button" class="raised submit mini categorySyncButton" data-category="Latest">
+                <button is="emby-button" type="button" class="raised submit mini accent categorySyncButton" data-category="Latest">
                     <span>${ButtonSync}</span>
                 </button>
             </div>
@@ -116,6 +116,12 @@
             </div>
             <div is="emby-itemscontainer" class="recordingItems itemsContainer"></div>
             <br />
+        </div>
+        <div id="recordingGroups" class="hide homePageSection">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderRecordingGroups}</h1>
+            </div>
+            <div id="recordingGroupItems"></div>
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="scheduleTab" data-index="4">

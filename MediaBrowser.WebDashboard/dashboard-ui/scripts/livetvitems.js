@@ -11,6 +11,14 @@
 
         if (params.type == 'Recordings') {
             query.IsInProgress = false;
+
+            if (params.groupid) {
+                query.GroupId = params.groupid;
+            }
+
+        } else if (params.type == 'RecordingSeries') {
+            query.SortOrder = 'SortName';
+            query.SortOrder = 'Ascending';
         } else {
             query.HasAired = false;
             query.SortBy = 'StartDate,SortName';

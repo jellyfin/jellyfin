@@ -44,19 +44,30 @@
     color: #fff;
 }
 
-.newTvProgram {
-    color: yellow;
+.guideProgramIndicator {
     text-transform: uppercase;
+    border-radius: .3em;
+    margin-right: .5em;
+    color: #fff;
+    font-size: 82%;
+    padding: .25em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+}
+
+.newTvProgram {
+    background: #64A239;
 }
 
 .liveTvProgram {
-    color: #64A239;
-    text-transform: uppercase;
+    background: #2196F3;
 }
 
 .premiereTvProgram {
-    color: orange;
-    text-transform: uppercase;
+    background: #EF6C00;
 }
 
 .programAccent {
@@ -224,6 +235,47 @@
     padding-left: .5em;
     text-transform: none;
     font-weight: normal;
+}
+
+.btnSelectDateContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guideDateText {
+    font-size: 80%;
+}
+
+@media all and (min-width: 1600px) {
+
+    .guideDateText {
+        display: flex;
+    }
+
+    .guideDateTextDate {
+        margin-left: .25em;
+    }
+}
+
+.btnGuideViewSettings {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.btnGuideViewSettingsIcon {
+    font-size: 1.5em !important;
+}
+
+@media all and (max-width: 1280px) {
+
+    .btnGuideViewSettings {
+        display: none;
+    }
+}
+
+.selectDateIcon {
+    flex-shrink: 0;
 }
 
 .channelHeaderCell {

@@ -182,6 +182,8 @@
 
                     if (channelsResult.TotalRecordCount > channelLimit) {
 
+                        context.querySelector('.guideOptions').classList.remove('hide');
+
                         btnPreviousPage.classList.remove('hide');
                         btnNextPage.classList.remove('hide');
 
@@ -198,8 +200,7 @@
                         }
 
                     } else {
-                        btnPreviousPage.classList.add('hide');
-                        btnNextPage.classList.add('hide');
+                        context.querySelector('.guideOptions').classList.add('hide');
                     }
 
                     apiClient.getLiveTvPrograms({
@@ -373,13 +374,13 @@
                 html += '<div class="' + guideProgramNameClass + '">';
 
                 if (program.IsLive && options.showLiveIndicator) {
-                    html += '<span class="liveTvProgram">' + globalize.translate('sharedcomponents#AttributeLive') + '&nbsp;</span>';
+                    html += '<span class="liveTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeLive') + '</span>';
                 }
                 else if (program.IsPremiere && options.showPremiereIndicator) {
-                    html += '<span class="premiereTvProgram">' + globalize.translate('sharedcomponents#AttributePremiere') + '&nbsp;</span>';
+                    html += '<span class="premiereTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributePremiere') + '</span>';
                 }
                 else if (program.IsSeries && !program.IsRepeat && options.showNewIndicator) {
-                    html += '<span class="newTvProgram">' + globalize.translate('sharedcomponents#AttributeNew') + '&nbsp;</span>';
+                    html += '<span class="newTvProgram guideProgramIndicator">' + globalize.translate('sharedcomponents#AttributeNew') + '</span>';
                 }
 
                 html += program.Name;
@@ -424,7 +425,7 @@
             // Normally we'd want to just let responsive css handle this,
             // but since mobile browsers are often underpowered, 
             // it can help performance to get them out of the markup
-            var showIndicators = false;
+            var showIndicators = true;
 
             var options = {
                 showHdIcon: showIndicators,
@@ -637,11 +638,15 @@
             var day = weekday[date.getDay()];
             date = datetime.toLocaleDateString(date);
 
+            var parts = [];
+
             if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
-                return day + " " + date;
+                parts.push(day);
             }
 
-            return date;
+            parts.push(date);
+
+            return parts;
         }
 
         function changeDate(page, date) {
@@ -653,7 +658,14 @@
 
             reloadGuide(page, newStartDate);
 
-            page.querySelector('.dateText').innerHTML = getFutureDateText(date);
+            var dateText = getFutureDateText(date);
+
+            if (dateText.length == 1) {
+                dateText = dateText[0];
+            } else {
+                dateText = '<div>' + dateText[0] + '</div><div class="guideDateTextDate">' + dateText[1] + '</div>';
+            }
+            page.querySelector('.guideDateText').innerHTML = dateText;
         }
 
         var dateOptions = [];
@@ -680,7 +692,7 @@
             while (start <= end) {
 
                 dateOptions.push({
-                    name: getFutureDateText(start),
+                    name: getFutureDateText(start).join(' '),
                     id: start.getTime()
                 });
 
@@ -880,7 +892,7 @@
                 reloadPage(context);
             });
 
-            context.querySelector('.btnViewSettings').addEventListener('click', function () {
+            context.querySelector('.btnGuideViewSettings').addEventListener('click', function () {
                 showViewSettings(self);
             });
 

@@ -1,5 +1,59 @@
 ﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
 
+    function getRecordingGroupHtml(group) {
+
+        var html = '';
+
+        html += '<div class="listItem">';
+
+        html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
+
+        html += '<div class="listItemBody two-line">';
+        html += '<a href="livetvitems.html?type=Recordings&groupid=' + group.Id + '" class="clearLink">';
+
+        html += '<div>';
+        html += group.Name;
+        html += '</div>';
+
+        html += '<div class="secondary">';
+        if (group.RecordingCount == 1) {
+            html += Globalize.translate('ValueItemCount', group.RecordingCount);
+        } else {
+            html += Globalize.translate('ValueItemCountPlural', group.RecordingCount);
+        }
+        html += '</div>';
+
+        html += '</a>';
+        html += '</div>';
+        html += '</div>';
+
+        return html;
+    }
+
+    function renderRecordingGroups(context, groups) {
+
+        if (groups.length) {
+            context.querySelector('#recordingGroups').classList.remove('hide');
+        } else {
+            context.querySelector('#recordingGroups').classList.add('hide');
+        }
+
+        var html = '';
+
+        html += '<div class="paperList">';
+
+        for (var i = 0, length = groups.length; i < length; i++) {
+
+            html += getRecordingGroupHtml(groups[i]);
+        }
+
+        html += '</div>';
+
+        context.querySelector('#recordingGroupItems').innerHTML = html;
+
+        Dashboard.hideLoadingMsg();
+    }
+
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
@@ -181,6 +235,15 @@
         renderEpisodeRecordings(context);
         renderSportsRecordings(context);
         renderKidsRecordings(context);
+
+        ApiClient.getLiveTvRecordingGroups({
+
+            userId: Dashboard.getCurrentUserId()
+
+        }).then(function (result) {
+
+            renderRecordingGroups(context, result.Items);
+        });
     }
 
     function onMoreClick(e) {
