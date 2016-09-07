@@ -993,6 +993,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
 
+                _libraryManager.RegisterIgnoredPath(recordPath);
                 _libraryMonitor.ReportFileSystemChangeBeginning(recordPath);
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(recordPath));
                 activeRecordingInfo.Path = recordPath;
@@ -1044,6 +1045,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     semaphore.Release();
                 }
 
+                _libraryManager.UnRegisterIgnoredPath(recordPath);
                 _libraryMonitor.ReportFileSystemChangeComplete(recordPath, true);
 
                 ActiveRecordingInfo removed;

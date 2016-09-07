@@ -4,10 +4,6 @@
         ${Edit}
     </div>
     <div style="margin-left: auto; display: flex; align-items: center; justify-content: center;">
-        <button is="emby-button" type="button" class="btnHeaderSave accent autoSize" tabindex="-1">
-            <i class="md-icon">check</i>
-            <span>${Save}</span>
-        </button>
         <button is="paper-icon-button-light" class="btnMore autoSize" tabindex="-1">
             <i class="md-icon">more_vert</i>
         </button>
@@ -308,9 +304,12 @@
                 </div>
             </div>
             <br />
-            <button is="emby-button" type="submit" class="raised submit block btnSave">
-                <span>${Save}</span>
-            </button>
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised submit block btnSave formDialogFooterItem">
+                    <span>${Save}</span>
+                </button>
+            </div>
+
         </div>
         <br />
         <br />

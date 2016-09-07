@@ -20,12 +20,12 @@
             <div class="identifyProviderIds">
             </div>
 
-            <p>
-                <button is="emby-button" type="submit" class="raised submit block">
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised submit block formDialogFooterItem">
                     <i class="md-icon">search</i>
                     <span>${Search}</span>
                 </button>
-            </p>
+            </div>
         </form>
         <div class="identificationSearchResults hide">
 
@@ -42,10 +42,13 @@
                 <input type="checkbox" is="emby-checkbox" id="chkIdentifyReplaceImages" />
                 <span>${ReplaceExistingImages}</span>
             </label>
-            <button is="emby-button" type="submit" class="raised submit block btnSubmit">
-                <i class="md-icon">check</i>
-                <span>${ButtonOk}</span>
-            </button>
+
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised submit block btnSubmit formDialogFooterItem">
+                    <i class="md-icon">check</i>
+                    <span>${ButtonOk}</span>
+                </button>
+            </div>
         </form>
     </div>
 </div>

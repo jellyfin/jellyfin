@@ -246,7 +246,7 @@
                 itemBirthday.classList.add('hide');
             }
 
-            var itemDeathDate = page.querySelector('#itemBirthday');
+            var itemDeathDate = page.querySelector('#itemDeathDate');
             if (item.Type == "Person" && item.EndDate) {
 
                 try {

@@ -195,7 +195,7 @@
                 Dashboard.navigate('livetvitems.html?type=Recordings&IsMovie=true');
                 break;
             case 'episodes':
-                Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=true');
+                Dashboard.navigate('livetvitems.html?type=RecordingSeries');
                 break;
             case 'programs':
                 Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=false&IsMovie=false');

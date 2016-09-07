@@ -41,6 +41,13 @@
         right: 10% !important;
     }
 
+    .dialog-medium-tall {
+        top: 5% !important;
+        bottom: 5% !important;
+        left: 10% !important;
+        right: 10% !important;
+    }
+
     .dialog-small {
         top: 10% !important;
         bottom: 10% !important;

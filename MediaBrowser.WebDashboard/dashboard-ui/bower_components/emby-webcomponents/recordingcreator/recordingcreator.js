@@ -141,25 +141,13 @@
 
         getRegistration(apiClient).then(function (regInfo) {
 
-            if (regInfo.IsValid) {
-                context.querySelector('.btnSubmit').classList.remove('hide');
-            } else {
-                context.querySelector('.btnSubmit').classList.add('hide');
-            }
-
             if (regInfo.IsRegistered) {
-
+                context.querySelector('.btnSubmit').classList.remove('hide');
                 context.querySelector('.supporterContainer').classList.add('hide');
 
             } else {
-
                 context.querySelector('.supporterContainer').classList.remove('hide');
-
-                if (regInfo.TrialVersion) {
-                    context.querySelector('.supporterTrial').classList.remove('hide');
-                } else {
-                    context.querySelector('.supporterTrial').classList.add('hide');
-                }
+                context.querySelector('.btnSubmit').classList.add('hide');
             }
         });
     }

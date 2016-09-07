@@ -27,6 +27,8 @@
 
             var promise = params.type == 'Recordings' ?
                 ApiClient.getLiveTvRecordings(query) :
+                params.type == 'RecordingSeries' ?
+                ApiClient.getLiveTvRecordingSeries(query) :
                 ApiClient.getLiveTvPrograms(query);
 
             promise.then(function (result) {
@@ -46,15 +48,15 @@
 
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
-                    shape: query.IsMovie ? 'portrait' : "backdrop",
-                    preferThumb: !query.IsMovie,
+                    shape: query.IsMovie || params.type == 'RecordingSeries' ? 'portrait' : "backdrop",
+                    preferThumb: !query.IsMovie && params.type != 'RecordingSeries',
                     context: 'livetv',
                     centerText: true,
                     lazy: true,
                     overlayText: false,
                     showTitle: true,
                     //showParentTitle: query.IsSeries !== false && !query.IsMovie,
-                    showProgramAirInfo: params.type != 'Recordings',
+                    showProgramAirInfo: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     overlayMoreButton: true,
                     showYear: query.IsMovie && params.type == 'Recordings'
                 });
