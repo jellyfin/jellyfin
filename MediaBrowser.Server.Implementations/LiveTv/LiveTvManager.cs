@@ -2803,15 +2803,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 feature = "embytvseriesrecordings";
             }
 
-            var config = GetConfiguration();
-            if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
-                config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
+            if (string.Equals(feature, "dvr", StringComparison.OrdinalIgnoreCase))
             {
-                return Task.FromResult(new MBRegistrationRecord
+                var config = GetConfiguration();
+                if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
+                    config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
                 {
-                    IsRegistered = true,
-                    IsValid = true
-                });
+                    return Task.FromResult(new MBRegistrationRecord
+                    {
+                        IsRegistered = true,
+                        IsValid = true
+                    });
+                }
             }
 
             return _security.GetRegistrationStatus(feature);

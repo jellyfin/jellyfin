@@ -348,7 +348,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             if (programInfo.audioProperties != null)
             {
-                if (programInfo.audioProperties.Exists(item => string.Equals(item, "dd 5.1", StringComparison.OrdinalIgnoreCase)))
+                if (programInfo.audioProperties.Exists(item => string.Equals(item, "atmos", StringComparison.OrdinalIgnoreCase)))
+                {
+                    audioType = ProgramAudio.Atmos;
+                }
+                else if (programInfo.audioProperties.Exists(item => string.Equals(item, "dd 5.1", StringComparison.OrdinalIgnoreCase)))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
@@ -405,6 +409,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             if (programInfo.videoProperties != null)
             {
                 info.IsHD = programInfo.videoProperties.Contains("hdtv", StringComparer.OrdinalIgnoreCase);
+                info.Is3D = programInfo.videoProperties.Contains("3d", StringComparer.OrdinalIgnoreCase);
             }
 
             if (details.contentRating != null && details.contentRating.Count > 0)
