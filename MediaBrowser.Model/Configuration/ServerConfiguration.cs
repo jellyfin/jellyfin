@@ -234,6 +234,7 @@ namespace MediaBrowser.Model.Configuration
             EnableAnonymousUsageReporting = true;
 
             EnableAutomaticRestart = true;
+            EnableFolderView = true;
 
             EnableUPnP = true;
             SharingExpirationDays = 30;

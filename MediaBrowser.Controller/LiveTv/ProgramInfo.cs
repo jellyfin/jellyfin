@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -66,6 +67,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
         public bool? IsHD { get; set; }
 
+        public bool? Is3D { get; set; }
+
         /// <summary>
         /// Gets or sets the audio.
         /// </summary>
@@ -83,6 +86,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is repeat; otherwise, <c>false</c>.</value>
         public bool IsRepeat { get; set; }
+
+        public bool IsSubjectToBlackout { get; set; }
 
         /// <summary>
         /// Gets or sets the episode title.
@@ -143,6 +148,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         public bool IsKids { get; set; }
+
+        public bool IsEducational { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is premiere.
