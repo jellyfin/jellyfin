@@ -27,8 +27,6 @@
 
         dlg.innerHTML = html;
 
-        document.body.appendChild(dlg);
-
         var isShared = false;
 
         var shareInfo = options.share;

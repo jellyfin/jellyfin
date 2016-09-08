@@ -262,7 +262,6 @@
             html += getEditorHtml();
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             initEditor(dlg, items);
 
@@ -282,6 +281,7 @@
                 }
 
                 dlg.addEventListener('close', resolve);
+
                 dialogHelper.open(dlg);
             });
         };

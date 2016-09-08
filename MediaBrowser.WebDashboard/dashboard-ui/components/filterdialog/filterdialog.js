@@ -564,7 +564,6 @@
                     dlg.innerHTML = Globalize.translateDocument(template);
 
                     setVisibility(dlg, options);
-                    document.body.appendChild(dlg);
 
                     dialogHelper.open(dlg);
 

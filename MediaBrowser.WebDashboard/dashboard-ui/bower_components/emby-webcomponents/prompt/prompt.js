@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
+define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
 
     function setInputProperties(dlg, options) {
         var txtInput = dlg.querySelector('#txtInput');
@@ -6,7 +6,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
         txtInput.label(options.label || '');
     }
 
-    function showPrompt(options, template) {
+    function showDialog(options, template) {
 
         var dialogOptions = {
             removeOnClose: true,
@@ -16,7 +16,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
         } else {
-            dialogOptions.size = 'mini';
+            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
@@ -27,6 +27,8 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
         if (layoutManager.tv) {
             scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
+        } else {
+            dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
         }
 
         dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
@@ -42,8 +44,6 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
         }
 
         setInputProperties(dlg, options);
-
-        document.body.appendChild(dlg);
 
         var submitValue;
 
@@ -62,6 +62,11 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
         });
 
         return dialogHelper.open(dlg).then(function () {
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
+            }
+
             var value = submitValue;
 
             if (value) {
@@ -83,7 +88,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
                         text: options
                     };
                 }
-                showPrompt(options, template).then(resolve, reject);
+                showDialog(options, template).then(resolve, reject);
             });
         });
     };

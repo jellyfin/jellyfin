@@ -229,7 +229,6 @@
                 dlg.classList.add('formDialog');
 
                 dlg.innerHTML = Globalize.translateDocument(template);
-                document.body.appendChild(dlg);
 
                 initEditor(dlg, options.collectionTypeOptions);
 

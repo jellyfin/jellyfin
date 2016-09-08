@@ -658,13 +658,8 @@
                     html += '</div>';
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
-                    // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
-                    var delay = browser.animate ? 0 : 100;
-                    setTimeout(function () {
-                        dialogHelper.open(dlg);
-                    }, delay);
+                    dialogHelper.open(dlg);
 
                     function onSortByChange() {
                         var newValue = this.value;

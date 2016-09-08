@@ -31,13 +31,11 @@
 
     <div class="is-active pageTabContent ehsContent" id="suggestionsTab" data-index="0">
         <div id="activePrograms" class="homePageSection">
-            <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderWhatsOnTV}</h1>
+                <a href="livetvitems.html?type=Programs&IsAiring=true" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
+            </div>
             <div is="emby-itemscontainer" class="activeProgramItems itemsContainer"></div>
-            <br />
-        </div>
-        <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
-            <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
-            <div is="emby-itemscontainer" class="upcomingProgramItems itemsContainer"></div>
             <br />
         </div>
         <div id="upcomingTvMovies" class="homePageSection" style="margin-top: 1em;">
@@ -62,6 +60,14 @@
                 <a href="livetvitems.html?type=Programs&IsKids=true" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
             </div>
             <div is="emby-itemscontainer" class="upcomingKidsItems itemsContainer"></div>
+            <br />
+        </div>
+        <div id="upcomingPrograms" class="homePageSection" style="margin-top: 1em;">
+            <div>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderUpcomingPrograms}</h1>
+                <a href="livetvitems.html?type=Programs&IsKids=false&IsMovie=false&IsSports=false" class="clearLink" style="margin-left: 1em; vertical-align: middle;"><button is="emby-button" type="button" class="raised more mini noIcon">${ButtonMoreItems}</button></a>
+            </div>
+            <div is="emby-itemscontainer" class="upcomingProgramItems itemsContainer"></div>
             <br />
         </div>
     </div>

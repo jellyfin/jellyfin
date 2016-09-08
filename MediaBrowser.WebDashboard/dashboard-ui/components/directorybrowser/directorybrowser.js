@@ -256,7 +256,6 @@
                 html += getEditorHtml(options, systemInfo);
 
                 dlg.innerHTML = html;
-                document.body.appendChild(dlg);
 
                 initEditor(dlg, options, fileOptions);
 

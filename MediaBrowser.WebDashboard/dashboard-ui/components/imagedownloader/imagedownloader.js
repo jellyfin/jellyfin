@@ -327,7 +327,6 @@
             html += '</div>';
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
             dlg.addEventListener('close', onDialogClosed);

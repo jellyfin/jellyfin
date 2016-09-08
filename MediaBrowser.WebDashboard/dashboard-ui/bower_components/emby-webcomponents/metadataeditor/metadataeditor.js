@@ -1168,7 +1168,6 @@
             html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             if (layoutManager.tv) {
                 centerFocus(dlg.querySelector('.formDialogContent'), false, true);

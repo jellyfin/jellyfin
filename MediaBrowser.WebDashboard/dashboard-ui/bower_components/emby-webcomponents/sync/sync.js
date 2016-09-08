@@ -421,7 +421,6 @@
 
             dlg.querySelector('.lnkHelp').addEventListener('click', onHelpLinkClick);
 
-            document.body.appendChild(dlg);
             var submitted = false;
 
             dlg.querySelector('form').addEventListener('submit', function (e) {

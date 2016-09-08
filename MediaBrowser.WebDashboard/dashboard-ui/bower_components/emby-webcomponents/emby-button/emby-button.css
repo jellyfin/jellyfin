@@ -186,9 +186,13 @@
         opacity: 0;
     }
 
-    .paper-icon-button-light:focus:after {
-        opacity: .2;
+    .paper-icon-button-light:focus {
+        color: #52B54B;
     }
+
+        .paper-icon-button-light:focus:after {
+            opacity: .2;
+        }
 
 .emby-button-ripple-effect, .paper-icon-button-light-ripple-effect {
     position: absolute;

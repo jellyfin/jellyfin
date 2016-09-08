@@ -157,7 +157,6 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             html += '</div>';
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             dialogHelper.open(dlg);
             currentDialog = dlg;
