@@ -429,7 +429,6 @@
             dlg.classList.add('subtitleEditorDialog');
 
             dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
-            document.body.appendChild(dlg);
 
             dlg.querySelector('.originalSubtitleFileLabel').innerHTML = globalize.translate('sharedcomponents#File');
 

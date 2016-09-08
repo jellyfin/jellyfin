@@ -1,4 +1,4 @@
-define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
 
     function showTvDialog(options) {
         return new Promise(function (resolve, reject) {
@@ -16,59 +16,49 @@ define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, 
         });
     }
 
-    function showDialogInternal(options, dialogHelper, resolve, reject) {
+    function showDialog(options, template) {
 
         var dialogOptions = {
-            removeOnClose: true
+            removeOnClose: true,
+            scrollY: false
         };
-
-        var backButton = false;
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
-            backButton = true;
-            dialogOptions.autoFocus = true;
         } else {
-
-            dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 160;
-            dialogOptions.autoFocus = true;
+            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
 
-        dlg.classList.add('promptDialog');
+        dlg.classList.add('formDialog');
 
-        var html = '';
+        dlg.innerHTML = globalize.translateHtml(template, 'sharedcomponents');
 
-        html += '<div class="promptDialogContent">';
-
-        if (options.title) {
-            html += '<h2>' + options.title + '</h2>';
+        if (layoutManager.tv) {
+            scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
+        } else {
+            dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
         }
 
-        var text = options.html || options.text;
+        //dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
+        //    dialogHelper.close(dlg);
+        //});
 
-        if (text) {
-            html += '<div style="margin:1em 0;">' + text + '</div>';
-        }
+        dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
 
-        html += '<div class="promptDialogButtons">';
+        dlg.querySelector('.text').innerHTML = options.html || options.text || '';
 
         var i, length;
+        var html = '';
         for (i = 0, length = options.buttons.length; i < length; i++) {
 
             var item = options.buttons[i];
             var autoFocus = i == 0 ? ' autofocus' : '';
-            html += '<button is="emby-button" type="button" class="btnOption promptDialogButton" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
+            html += '<button is="emby-button" type="button" class="btnOption raised block formDialogFooterItem" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
         }
 
-        html += '</div>';
-        html += '</div>';
-
-        dlg.innerHTML = html;
-        document.body.appendChild(dlg);
+        dlg.querySelector('.formDialogFooter').innerHTML = html;
 
         var dialogResult;
         function onButtonClick() {
@@ -77,26 +67,21 @@ define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, 
         }
 
         var buttons = dlg.querySelectorAll('.btnOption');
-        for (i = 0, length = options.buttons.length; i < length; i++) {
+        for (i = 0, length = buttons.length; i < length; i++) {
             buttons[i].addEventListener('click', onButtonClick);
         }
 
-        dialogHelper.open(dlg).then(function () {
+        return dialogHelper.open(dlg).then(function () {
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
+            }
 
             if (dialogResult) {
-                resolve(dialogResult);
+                return dialogResult;
             } else {
-                reject();
+                return Promise.reject();
             }
-        });
-    }
-
-    function showDialog(options) {
-        return new Promise(function (resolve, reject) {
-
-            require(['dialogHelper', 'emby-button'], function (dialogHelper) {
-                showDialogInternal(options, dialogHelper, resolve, reject);
-            });
         });
     }
 
@@ -116,6 +101,10 @@ define(['layoutManager', 'globalize', 'css!./dialog'], function (layoutManager, 
             return showTvDialog(options);
         }
 
-        return showDialog(options);
+        return new Promise(function (resolve, reject) {
+            require(['text!./dialog.template.html'], function (template) {
+                showDialog(options, template).then(resolve, reject);
+            });
+        });
     };
 });

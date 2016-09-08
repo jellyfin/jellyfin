@@ -187,8 +187,6 @@
 
                 dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.library.Name;
 
-                document.body.appendChild(dlg);
-
                 initEditor(dlg, options);
 
                 dlg.addEventListener('closing', onDialogClosing);

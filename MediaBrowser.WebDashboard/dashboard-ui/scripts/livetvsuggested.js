@@ -29,7 +29,6 @@
             limit: limit,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary",
-            EnableTotalRecordCount: false,
             Fields: "ChannelInfo"
 
         }).then(function (result) {

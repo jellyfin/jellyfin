@@ -180,8 +180,6 @@
         html += '</div>';
         dlg.innerHTML = html;
 
-        document.body.appendChild(dlg);
-
         var chkMirror = dlg.querySelector('.chkMirror');
 
         if (chkMirror) {

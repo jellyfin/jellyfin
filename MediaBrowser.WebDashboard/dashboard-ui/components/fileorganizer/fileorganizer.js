@@ -214,7 +214,6 @@
                     html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
                     dlg.querySelector('.formDialogHeaderTitle').innerHTML = Globalize.translate('FileOrganizeManually');
 

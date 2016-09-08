@@ -432,8 +432,6 @@
 
                 dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
-                document.body.appendChild(dlg);
-
                 if (layoutManager.tv) {
                     scrollHelper.centerFocus.on(dlg, false);
                 }

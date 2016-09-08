@@ -11,7 +11,7 @@
 }
 
 .formDialogHeader, .formDialogFooter {
-    background-color: #222326;
+    background-color: #1D1E21;
 }
 
 .formDialogHeaderTitle {
@@ -23,7 +23,11 @@
 }
 
 .dialogContentInner {
-    padding: .5em 1.5em 30vh 1.5em;
+    padding: .5em 1.5em 20em 1.5em;
+}
+
+.dialogContentInner-mini {
+    padding-bottom: 10em;
 }
 
 .dialog-content-centered {

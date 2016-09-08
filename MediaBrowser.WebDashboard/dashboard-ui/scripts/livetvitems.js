@@ -37,6 +37,8 @@
                 ApiClient.getLiveTvRecordings(query) :
                 params.type == 'RecordingSeries' ?
                 ApiClient.getLiveTvRecordingSeries(query) :
+                params.IsAiring == 'true' ?
+                ApiClient.getLiveTvRecommendedPrograms(query) :
                 ApiClient.getLiveTvPrograms(query);
 
             promise.then(function (result) {
@@ -66,7 +68,8 @@
                     showParentTitle: query.IsSeries !== false && !query.IsMovie,
                     showProgramAirInfo: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     overlayMoreButton: true,
-                    showYear: query.IsMovie && params.type == 'Recordings'
+                    showYear: query.IsMovie && params.type == 'Recordings',
+                    coverImage: true
                 });
 
                 var elem = page.querySelector('.itemsContainer');
@@ -133,14 +136,20 @@
             else if (params.IsKids == 'false') {
                 query.IsKids = false;
             }
+            if (params.IsAiring == 'true') {
+                query.IsAiring = true;
+            }
+            else if (params.IsAiring == 'false') {
+                query.IsAiring = false;
+            }
 
             if (params.type == 'Recordings') {
 
-                if (params.IsMovie) {
+                if (params.IsMovie == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('TabMovies'));
-                } else if (params.IsSports) {
+                } else if (params.IsSports == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('Sports'));
-                } else if (params.IsKids) {
+                } else if (params.IsKids == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('HeaderForKids'));
                 } else {
                     LibraryMenu.setTitle(Globalize.translate('TabRecordings'));
@@ -151,12 +160,14 @@
                 LibraryMenu.setTitle(Globalize.translate('TabSeries'));
             } else {
 
-                if (params.IsMovie) {
+                if (params.IsMovie == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingMovies'));
-                } else if (params.IsSports) {
+                } else if (params.IsSports == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingSports'));
-                } else if (params.IsKids) {
+                } else if (params.IsKids == 'true') {
                     LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingForKids'));
+                } else if (params.IsAiring == 'true') {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderWhatsOnTV'));
                 } else {
                     LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingPrograms'));
                 }

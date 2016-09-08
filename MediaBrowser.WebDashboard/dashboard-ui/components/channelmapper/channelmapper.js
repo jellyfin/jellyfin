@@ -181,7 +181,6 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
             html += getEditorHtml();
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             initEditor(dlg, options);
 

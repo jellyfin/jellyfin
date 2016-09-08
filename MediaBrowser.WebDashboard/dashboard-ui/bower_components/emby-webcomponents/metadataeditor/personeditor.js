@@ -33,7 +33,6 @@
                 html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
-                document.body.appendChild(dlg);
 
                 dlg.querySelector('.txtPersonName', dlg).value = person.Name || '';
                 dlg.querySelector('.selectPersonType', dlg).value = person.Type || '';
