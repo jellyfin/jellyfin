@@ -432,8 +432,8 @@
 
             var options = {
                 showHdIcon: allowIndicators && userSettings.get('guide-indicator-hd') == 'true',
-                showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') == 'true',
-                showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') == 'true',
+                showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') != 'false',
+                showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') != 'false',
                 showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') == 'true',
                 showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') == 'true'
             };

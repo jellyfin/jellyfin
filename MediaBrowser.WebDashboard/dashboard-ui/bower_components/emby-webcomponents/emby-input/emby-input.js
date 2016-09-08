@@ -31,42 +31,26 @@
         if (!this.id) {
             this.id = 'embyinput' + inputId;
             inputId++;
-        }
-    };
-
-    EmbyInputPrototype.attachedCallback = function () {
-
-        if (this.classList.contains('emby-input')) {
+        } if (this.classList.contains('emby-input')) {
             return;
         }
 
         this.classList.add('emby-input');
 
         var parentNode = this.parentNode;
-        var label = this.ownerDocument.createElement('label');
+        var document = this.ownerDocument;
+        var label = document.createElement('label');
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('inputLabel');
         label.classList.add('inputLabelUnfocused');
 
-        var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date' && this.type != 'time';
-
         label.htmlFor = this.id;
         parentNode.insertBefore(label, this);
+        this.labelElement = label;
 
         var div = document.createElement('div');
         div.classList.add('emby-input-selectionbar');
         parentNode.insertBefore(div, this.nextSibling);
-
-        function onChange() {
-            if (this.value) {
-                label.classList.remove('inputLabel-float');
-            } else {
-
-                if (instanceSupportsFloat) {
-                    label.classList.add('inputLabel-float');
-                }
-            }
-        }
 
         dom.addEventListener(this, 'focus', function () {
             onChange.call(this);
@@ -93,12 +77,32 @@
         dom.addEventListener(this, 'valueset', onChange, {
             passive: true
         });
+    };
+
+    function onChange() {
+
+        var label = this.labelElement;
+        if (this.value) {
+            label.classList.remove('inputLabel-float');
+        } else {
+
+            var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date' && this.type != 'time';
+
+            if (instanceSupportsFloat) {
+                label.classList.add('inputLabel-float');
+            }
+        }
+    }
+
+    EmbyInputPrototype.attachedCallback = function () {
+
+        this.labelElement.htmlFor = this.id;
 
         onChange.call(this);
+    };
 
-        this.label = function (text) {
-            label.innerHTML = text;
-        };
+    EmbyInputPrototype.label = function (text) {
+        this.labelElement.innerHTML = text;
     };
 
     document.registerElement('emby-input', {

@@ -282,5 +282,6 @@
     "HDPrograms": "HD programs",
     "LiveBroadcasts": "Live broadcasts",
     "Premieres": "Premieres",
-    "RepeatEpisodes": "Repeat episodes"
+    "RepeatEpisodes": "Repeat episodes",
+    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription."
 }

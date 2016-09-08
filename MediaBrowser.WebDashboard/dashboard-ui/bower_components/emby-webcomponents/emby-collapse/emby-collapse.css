@@ -22,6 +22,7 @@
     border: 0;
     text-transform: none;
     border-bottom: 1px solid #333;
+    padding-left: .1em;
 }
 
 .emby-collapse-expandIcon {

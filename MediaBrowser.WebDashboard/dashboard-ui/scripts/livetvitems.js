@@ -134,6 +134,34 @@
                 query.IsKids = false;
             }
 
+            if (params.type == 'Recordings') {
+
+                if (params.IsMovie) {
+                    LibraryMenu.setTitle(Globalize.translate('TabMovies'));
+                } else if (params.IsSports) {
+                    LibraryMenu.setTitle(Globalize.translate('Sports'));
+                } else if (params.IsKids) {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderForKids'));
+                } else {
+                    LibraryMenu.setTitle(Globalize.translate('TabRecordings'));
+                }
+
+            } else if (params.type == 'RecordingSeries') {
+
+                LibraryMenu.setTitle(Globalize.translate('TabSeries'));
+            } else {
+
+                if (params.IsMovie) {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingMovies'));
+                } else if (params.IsSports) {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingSports'));
+                } else if (params.IsKids) {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingForKids'));
+                } else {
+                    LibraryMenu.setTitle(Globalize.translate('HeaderUpcomingPrograms'));
+                }
+            }
+
             var viewkey = getSavedQueryKey();
 
             LibraryBrowser.loadSavedQueryValues(viewkey, query);
