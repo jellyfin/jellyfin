@@ -33,11 +33,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
             dialogHelper.close(dlg);
         });
 
-        if (options.title) {
-            dlg.querySelector('.dialogContentTitle').innerHTML = options.title;
-        } else {
-            dlg.querySelector('.dialogContentTitle').classList.add('hide');
-        }
+        dlg.querySelector('.dialogContentTitle').innerHTML = options.title || '';
 
         if (options.description) {
             dlg.querySelector('.fieldDescription').innerHTML = options.description;
