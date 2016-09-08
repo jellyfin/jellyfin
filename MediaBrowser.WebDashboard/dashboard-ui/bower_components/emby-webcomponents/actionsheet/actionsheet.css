@@ -89,3 +89,9 @@
 .actionsheet-extraSpacing {
     font-size: 108%;
 }
+
+.btnCloseActionSheet {
+    position: fixed;
+    top: .75em;
+    left: .5em;
+}

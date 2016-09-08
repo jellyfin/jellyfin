@@ -151,6 +151,12 @@ div.dialogHeader {
     color: #fff;
 }
 
+.ui-body-a div.formDialogFooter {
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    color: inherit;
+}
+
 .ui-body-a .formDialogHeader a {
     color: #fff !important;
     text-transform: uppercase;

@@ -17,7 +17,12 @@
         for (var i = 0, length = chkIndicators.length; i < length; i++) {
 
             var type = chkIndicators[i].getAttribute('data-type');
-            chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) == 'true';
+
+            if (chkIndicators[i].getAttribute('data-default') == 'true') {
+                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) != 'false';
+            } else {
+                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) == 'true';
+            }
         }
     }
 
@@ -35,7 +40,7 @@
                 };
 
                 if (layoutManager.tv) {
-                    dialogOptions.size = 'fullscreen';
+                    dialogOptions.size = 'medium';
                 } else {
                     dialogOptions.size = 'small';
                 }

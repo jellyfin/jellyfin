@@ -212,7 +212,12 @@ namespace MediaBrowser.ServerApplication.Native
 
         private bool Confirm()
         {
-            return MessageBox.Show("Emby has detected that Windows Firewall has been configured in a way that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
+            if (MainStartup._splash == null)
+            {
+                return false;
+            }
+
+            return MessageBox.Show(MainStartup._splash, "Emby has detected that Windows Firewall has been configured in a way that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
         }
 
         public bool PortsRequireAuthorization(string applicationPath)
@@ -242,7 +247,7 @@ namespace MediaBrowser.ServerApplication.Native
 
                     if (data.IndexOf("Block", StringComparison.OrdinalIgnoreCase) != -1)
                     {
-                        _logger.Info("Found windows firewall rule: " + data);
+                        _logger.Info("Found potential windows firewall rule blocking Emby Server: " + data);
                         return Confirm();
                     }
 

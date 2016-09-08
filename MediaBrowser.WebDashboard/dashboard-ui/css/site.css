@@ -562,24 +562,6 @@ progress {
     background-color: #e8e8e8;
 }
 
-.ui-body-b .emby-collapsible-button {
-    border: 0;
-    background-color: #333;
-    text-transform: none;
-}
-
-.ui-body-b .emby-collapsible-title {
-    margin: 0;
-    color: #fff;
-    padding: 0 0 0 .5em;
-    font-weight: 500;
-}
-
-.ui-body-b .emby-collapsible-content, .ui-body-b .collapseContent {
-    border-width: 0;
-    background-color: #222;
-}
-
 .ui-body-a select {
     background: none;
     border-color: #757575;
@@ -590,20 +572,10 @@ progress {
     }
 
 .ui-body-a .emby-collapsible-button {
-    border: 0;
-    background-color: #e8e8e8;
-    text-transform: none;
+    border-color: #ddd;
 }
 
-.ui-body-a .emby-collapsible-title {
-    margin: .15em 0;
-    color: #333;
-    padding: 0 0 0 .5em;
-    font-weight: 500;
-}
-
-.ui-body-a .emby-collapsible-content, .ui-body-a .collapseContent {
-    border-width: 0;
+.ui-body-a .collapseContent {
     background-color: #fff;
 }
 

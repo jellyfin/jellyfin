@@ -11,7 +11,6 @@
     align-items: center;
     text-align: left;
     padding: .25em 1.15em;
-    line-height: 160%;
     cursor: pointer;
     overflow: hidden;
 }
@@ -64,6 +63,20 @@
     min-height: 3.44em;
 }
 
+.listItemBody-nogrow {
+    flex-grow: initial;
+    flex-shrink: 0;
+    width: 9em;
+    opacity: .7;
+}
+
+@media all and (max-width: 800px) {
+
+    .listItemBody-nogrow {
+        width: 4em;
+    }
+}
+
 .two-line {
     min-height: 5.15em;
     padding-top: 0;
@@ -78,7 +91,7 @@
 
 .listItemBodyText {
     margin: 0;
-    padding: 0;
+    padding: .25em 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -150,10 +163,6 @@
 .paperList-clear {
     box-shadow: none !important;
     background-color: transparent !important;
-}
-
-.listItemMediaInfo-padded {
-    margin: .5em 0;
 }
 
 .listItemMediaInfo {

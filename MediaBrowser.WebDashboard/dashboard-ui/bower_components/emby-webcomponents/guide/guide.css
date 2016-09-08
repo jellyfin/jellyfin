@@ -46,11 +46,11 @@
 
 .guideProgramIndicator {
     text-transform: uppercase;
-    border-radius: .3em;
+    border-radius: 2px;
     margin-right: .5em;
     color: #fff;
-    font-size: 82%;
-    padding: .25em;
+    font-size: 80%;
+    padding: .2em .25em;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -63,11 +63,15 @@
 }
 
 .liveTvProgram {
-    background: #2196F3;
+    background: #EC407A;
 }
 
 .premiereTvProgram {
     background: #EF6C00;
+}
+
+.repeatTvProgram {
+    background: #009688;
 }
 
 .programAccent {
@@ -250,11 +254,7 @@
 @media all and (min-width: 1600px) {
 
     .guideDateText {
-        display: flex;
-    }
-
-    .guideDateTextDate {
-        margin-left: .25em;
+        font-size: 92%;
     }
 }
 
@@ -367,6 +367,8 @@
     padding: 0 .5em 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
 
 .guideProgramTime {
@@ -376,10 +378,10 @@
 
 .programIcon {
     margin-left: auto;
-    margin-right: .5em;
-    height: 3.5vh;
-    width: 3.5vh;
-    font-size: 3.5vh;
+    margin-right: .25em;
+    height: auto;
+    width: auto;
+    font-size: 1.6em;
     color: #ddd;
     flex-shrink: 0;
 }

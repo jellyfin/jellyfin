@@ -1,4 +1,4 @@
-define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter) {
+define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter, itemHelper) {
 
     function getProgramInfoHtml(item, options) {
         var html = '';
@@ -20,7 +20,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             try {
                 date = datetime.parseISO8601Date(item.StartDate);
 
-                text = date.toLocaleDateString();
+                text = datetime.toLocaleDateString(date);
 
                 text += ', ' + datetime.getDisplayTime(date);
 
@@ -98,7 +98,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
                 try {
                     date = datetime.parseISO8601Date(item.PremiereDate);
 
-                    text = date.toLocaleDateString();
+                    text = datetime.toLocaleDateString(date);
                     miscInfo.push(text);
                 }
                 catch (e) {
@@ -112,7 +112,7 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             try {
                 date = datetime.parseISO8601Date(item.StartDate);
 
-                text = date.toLocaleDateString();
+                text = datetime.toLocaleDateString(date);
                 miscInfo.push(text);
 
                 if (item.Type != "Recording") {
@@ -179,14 +179,14 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
             }
 
             if (item.IsSeries && item.EpisodeTitle) {
-                miscInfo.push(item.EpisodeTitle);
+                miscInfo.push(itemHelper.getDisplayName(item));
             }
 
             else if (item.PremiereDate) {
 
                 try {
                     date = datetime.parseISO8601Date(item.PremiereDate);
-                    text = globalize.translate('sharedcomponents#OriginalAirDateValue', date.toLocaleDateString());
+                    text = globalize.translate('sharedcomponents#OriginalAirDateValue', datetime.toLocaleDateString(date));
                     miscInfo.push(text);
                 }
                 catch (e) {
@@ -395,50 +395,6 @@ define(['datetime', 'globalize', 'embyRouter', 'material-icons', 'css!./mediainf
 
         e.preventDefault();
         return false;
-    }
-
-    function getDisplayName(item, options) {
-
-        if (!item) {
-            throw new Error("null item passed into getDisplayName");
-        }
-
-        options = options || {};
-
-        var name = item.EpisodeTitle || item.Name || '';
-
-        if (item.Type == "TvChannel") {
-
-            if (item.Number) {
-                return item.Number + ' ' + name;
-            }
-            return name;
-        }
-        if (options.isInlineSpecial && item.Type == "Episode" && item.ParentIndexNumber == 0) {
-
-            name = globalize.translate('sharedcomponents#ValueSpecialEpisodeName', name);
-
-        } else if (item.Type == "Episode" && item.IndexNumber != null && item.ParentIndexNumber != null) {
-
-            var displayIndexNumber = item.IndexNumber;
-
-            var number = "E" + displayIndexNumber;
-
-            if (options.includeParentInfo !== false) {
-                number = "S" + item.ParentIndexNumber + ", " + number;
-            }
-
-            if (item.IndexNumberEnd) {
-
-                displayIndexNumber = item.IndexNumberEnd;
-                number += "-" + displayIndexNumber;
-            }
-
-            name = number + " - " + name;
-
-        }
-
-        return name;
     }
 
     function getPrimaryMediaInfoHtml(item, options) {

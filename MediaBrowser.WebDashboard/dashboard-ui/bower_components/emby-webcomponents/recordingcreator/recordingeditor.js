@@ -75,11 +75,6 @@
         });
 
         context.querySelector('form').addEventListener('submit', onSubmit);
-
-        context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
-
-            context.querySelector('.btnSubmit').click();
-        });
     }
 
     function reload(context, id) {

@@ -46,9 +46,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _httpClient = httpClient;
         }
 
+        private string OutputFormat
+        {
+            get
+            {
+                var format = _liveTvOptions.RecordingEncodingFormat;
+
+                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "mkv";
+                }
+
+                return "mp4";
+            }
+        }
+
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            return Path.ChangeExtension(targetFile, ".mp4");
+            return Path.ChangeExtension(targetFile, "." + OutputFormat);
         }
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -233,15 +248,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            // do not copy aac because many players have difficulty with aac_latm
-            var copyAudio = new[] { "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
 
-            if (copyAudio.Contains(inputAudioCodec, StringComparer.OrdinalIgnoreCase))
-            {
-                return "-codec:a:0 copy";
-            }
+            // do not copy aac because many players have difficulty with aac_latm
             if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
