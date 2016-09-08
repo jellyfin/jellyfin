@@ -24,39 +24,40 @@
 }
 
 .dialog-fixedSize {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0;
     border-radius: 0;
     max-height: none;
     max-width: none;
 }
 
+@media screen and (max-width: 1280px), screen and (max-height: 720px) {
+    .dialog-fixedSize {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+    }
+}
+
 @media all and (min-width: 1280px) and (min-height: 720px) {
 
     .dialog-medium {
-        position: static;
         width: 80%;
         height: 80%;
     }
 
     .dialog-medium-tall {
-        position: static;
         width: 80%;
         height: 90%;
     }
 
     .dialog-small {
-        position: static;
         width: 60%;
         height: 80%;
     }
 
     .dialog-fullscreen-border {
-        position: static;
         width: 90%;
         height: 90%;
     }
