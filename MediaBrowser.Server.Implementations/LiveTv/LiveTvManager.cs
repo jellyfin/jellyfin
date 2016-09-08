@@ -35,6 +35,7 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Server.Implementations.LiveTv.Listings;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -1436,7 +1437,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (query.IsMovie.Value)
                 {
-                    includeItemTypes.Add(typeof (Movie).Name);
+                    includeItemTypes.Add(typeof(Movie).Name);
                 }
                 else
                 {
@@ -2800,6 +2801,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (string.Equals(feature, "seriesrecordings", StringComparison.OrdinalIgnoreCase))
             {
                 feature = "embytvseriesrecordings";
+            }
+
+            var config = GetConfiguration();
+            if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
+                config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
+            {
+                return Task.FromResult(new MBRegistrationRecord
+                {
+                    IsRegistered = true,
+                    IsValid = true
+                });
             }
 
             return _security.GetRegistrationStatus(feature);

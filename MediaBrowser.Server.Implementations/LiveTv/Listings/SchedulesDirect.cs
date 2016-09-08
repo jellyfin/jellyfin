@@ -785,9 +785,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             get { return "Schedules Direct"; }
         }
 
+        public static string TypeName = "SchedulesDirect";
         public string Type
         {
-            get { return "SchedulesDirect"; }
+            get { return TypeName; }
         }
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
