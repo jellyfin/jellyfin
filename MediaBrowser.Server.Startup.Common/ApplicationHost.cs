@@ -363,7 +363,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPreInitMigrations()
         {
-            var migrations = new List<IVersionMigration>();
+            var migrations = new List<IVersionMigration>
+            {
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+            };
 
             foreach (var task in migrations)
             {
@@ -383,8 +386,7 @@ namespace MediaBrowser.Server.Startup.Common
             var migrations = new List<IVersionMigration>
             {
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
-                new DbMigration(ServerConfigurationManager, TaskManager),
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
