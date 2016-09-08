@@ -257,10 +257,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     textlines.push(item.SeriesName || '&nbsp;');
                 }
 
-                // Not needed, part of mediainfo
-                //if (item.EpisodeTitle) {
-                //    textlines.push(item.Name || '&nbsp;');
-                //}
+                if (item.EpisodeTitle) {
+                    textlines.push(item.Name || '&nbsp;');
+                }
             }
 
             var displayName = itemHelper.getDisplayName(item);

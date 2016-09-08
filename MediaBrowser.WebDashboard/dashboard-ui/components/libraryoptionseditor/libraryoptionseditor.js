@@ -28,7 +28,7 @@
     function setContentType(parent, contentType) {
 
         if (contentType == 'music' || contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
-            parent.querySelector('.chkArhiveAsMediaContainer').classList.remove('hide');
+            parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
         } else {
             parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
         }

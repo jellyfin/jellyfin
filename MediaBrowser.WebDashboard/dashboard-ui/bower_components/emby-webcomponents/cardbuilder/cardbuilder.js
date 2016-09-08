@@ -851,7 +851,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 if (options.showCurrentProgram && item.Type == 'TvChannel') {
 
                     if (item.CurrentProgram) {
-                        lines.push(itemHelper.getDisplayName(item.CurrentProgram));
+                        lines.push(item.CurrentProgram.Name);
                     } else {
                         lines.push('');
                     }

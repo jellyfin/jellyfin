@@ -92,6 +92,6 @@
 
 .btnCloseActionSheet {
     position: fixed;
-    top: .5em;
-    left: .25em;
+    top: .75em;
+    left: .5em;
 }

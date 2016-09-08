@@ -152,7 +152,8 @@ div.dialogHeader {
 }
 
 .ui-body-a div.formDialogFooter {
-    background-color: #e0e0e0;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
     color: inherit;
 }
 

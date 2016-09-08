@@ -46,10 +46,10 @@
 
 .guideProgramIndicator {
     text-transform: uppercase;
-    border-radius: .3em;
+    border-radius: 2px;
     margin-right: .5em;
     color: #fff;
-    font-size: 82%;
+    font-size: 80%;
     padding: .2em .25em;
     display: inline-flex;
     align-items: center;
@@ -367,6 +367,8 @@
     padding: 0 .5em 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
 
 .guideProgramTime {
