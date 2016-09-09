@@ -1247,7 +1247,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 actionAttribute = '';
             }
 
-            className += ' card-withuserdata';
+            if (item.Type != 'MusicAlbum' && item.Type != 'MusicArtist' && item.Type != 'Audio') {
+                className += ' card-withuserdata';
+            }
 
             var positionTicksData = item.UserData && item.UserData.PlaybackPositionTicks ? (' data-positionticks="' + item.UserData.PlaybackPositionTicks + '"') : '';
             var collectionIdData = options.collectionId ? (' data-collectionid="' + options.collectionId + '"') : '';
@@ -1346,13 +1348,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 return indicatorsElem;
             }
 
-            indicatorsElem = card.querySelector('.indicators');
+            indicatorsElem = card.querySelector('.cardIndicators');
 
             if (!indicatorsElem) {
 
                 var cardImageContainer = card.querySelector('.cardImageContainer');
                 indicatorsElem = document.createElement('div');
-                indicatorsElem.classList.add('indicators');
+                indicatorsElem.classList.add('cardIndicators');
                 cardImageContainer.appendChild(indicatorsElem);
             }
 

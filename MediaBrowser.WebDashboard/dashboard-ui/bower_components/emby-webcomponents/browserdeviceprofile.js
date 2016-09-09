@@ -199,7 +199,7 @@ define(['browser'], function (browser) {
     function getMaxBitrate() {
 
         if (browser.edgeUwp) {
-            return 14000000;
+            return 15000000;
         }
 
         // 10mbps
@@ -285,9 +285,12 @@ define(['browser'], function (browser) {
             hlsVideoAudioCodecs.push('mp3');
         }
 
+        if (browser.tizen) {
+            videoAudioCodecs.push('dca');
+            videoAudioCodecs.push('dts');
+        }
+
         if (browser.edgeUwp) {
-            //videoAudioCodecs.push('dca');
-            //videoAudioCodecs.push('dts');
             //videoAudioCodecs.push('truehd');
         }
 
@@ -484,7 +487,7 @@ define(['browser'], function (browser) {
             }]
         });
 
-        var videoAudioChannels = '6';
+        var videoAudioChannels = browser.tizen ? '8' : '6';
 
         // Handle he-aac not supported
         if (!videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.5"').replace(/no/, '')) {
