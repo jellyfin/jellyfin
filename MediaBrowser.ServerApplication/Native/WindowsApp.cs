@@ -217,7 +217,7 @@ namespace MediaBrowser.ServerApplication.Native
                 return false;
             }
 
-            return MessageBox.Show(MainStartup._splash, "Emby has detected that Windows Firewall has been configured in a way that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
+            return MessageBox.Show(MainStartup._splash, "Emby has detected that a rule has been added to Windows Firewall that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
         }
 
         public bool PortsRequireAuthorization(string applicationPath)
