@@ -1337,7 +1337,7 @@
     "LabelCodecIntrosPath": "Codec Intros Verzeichnis:",
     "LabelCodecIntrosPathHelp": "Ein Verzeichnis welches Video Dateien beinhaltet. Wenn ein Intro Video einem Video Codec, Audio Codec, Audioprofil oder einem Tag zugeordnet werden kann, so wird es vor dem Hauptfilm gezeigt.",
     "OptionConvertRecordingsToStreamingFormat": "Konvertiere Aufnahmen automatisch in ein streaming freundliches Format.",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Aufnahmen werden als MP4 konvertiert um eine bessere Wiedergabe auf Ihren Ger\u00e4ten zu gew\u00e4hrleisten.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Aufnahmen werden als MP4 oder MKV konvertiert um eine bessere Wiedergabe auf Ihren Ger\u00e4ten zu gew\u00e4hrleisten.",
     "FeatureRequiresEmbyPremiere": "Dieses Feature ben\u00f6tigt eine aktive Emby Premiere Mitgliedschaft.",
     "FileExtension": "Dateiendung",
     "OptionReplaceExistingImages": "Ersetze vorhandene Bilder",
@@ -2135,5 +2135,6 @@
     "H264CrfHelp": "Der Constant Rate Factor (CRF) bezeichnet die Einstellung f\u00fcr die Standardqualit\u00e4t des x264 Encoders. Setze einen Wert zwischen 0 und 51. Ein niedriger Wert resultiert in besserer Qualit\u00e4t (auf Kosten einer gr\u00f6\u00dferen Datei). G\u00e4ngige Werte sind 18-28. Der Standard f\u00fcr x264 ist 23 und empfohlen als Startpunkt.",
     "Sports": "Sport",
     "HeaderForKids": "F\u00fcr Kinder",
-    "HeaderRecordingGroups": "Aufnahme-Gruppen"
+    "HeaderRecordingGroups": "Aufnahme-Gruppen",
+    "LabelConvertRecordingsTo": "Konvertiere Aufnahmen nach:"
 }

@@ -2135,5 +2135,6 @@
     "H264CrfHelp": "The Constant Rate Factor (CRF) is the default quality setting for the x264 encoder. You can set the values between 0 and 51, where lower values would result in better quality (at the expense of higher file sizes). Sane values are between 18 and 28. The default for x264 is 23, so you can use this as a starting point.",
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
-    "HeaderRecordingGroups": "Recording Groups"
+    "HeaderRecordingGroups": "Recording Groups",
+    "LabelConvertRecordingsTo": "Convert recordings to:"
 }
