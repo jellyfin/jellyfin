@@ -13,7 +13,7 @@
                 page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
                 page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
 
-                page.querySelector('#selectThemeSong').value = appStorage.getItem('enableThemeSongs-' + user.Id) || '';
+                page.querySelector('#chkThemeSong').checked = userSettings.enableThemeSongs();
                 page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '';
 
                 page.querySelector('#selectLanguage').value = userSettings.language() || '';
@@ -29,9 +29,9 @@
 
             if (userSettingsLoaded) {
                 userSettings.language(page.querySelector('#selectLanguage').value);
+                userSettings.enableThemeSongs(page.querySelector('#chkThemeSong').checked);
             }
 
-            appStorage.setItem('enableThemeSongs-' + user.Id, page.querySelector('#selectThemeSong').value);
             appStorage.setItem('enableBackdrops-' + user.Id, page.querySelector('#selectBackdrop').value);
 
             return ApiClient.updateUserConfiguration(user.Id, user.Configuration);

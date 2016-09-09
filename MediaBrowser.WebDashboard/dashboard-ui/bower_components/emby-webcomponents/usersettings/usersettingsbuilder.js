@@ -1,4 +1,4 @@
-define(['appSettings', 'events'], function (appsettings, events) {
+define(['appSettings', 'events', 'browser'], function (appsettings, events, browser) {
 
     return function () {
 
@@ -83,6 +83,36 @@ define(['appSettings', 'events'], function (appsettings, events) {
             }
 
             return true;
+        };
+
+        self.enableThemeSongs = function (val) {
+
+            if (val != null) {
+                self.set('enableThemeSongs', val.toString());
+            }
+
+            val = self.get('enableThemeSongs', false);
+
+            if (val) {
+                return val != 'false';
+            }
+
+            return true;
+        };
+
+        self.enableThemeVideos = function (val) {
+
+            if (val != null) {
+                self.set('enableThemeVideos', val.toString());
+            }
+
+            val = self.get('enableThemeVideos', false);
+
+            if (val) {
+                return val != 'false';
+            }
+
+            return !browser.slow;
         };
 
         self.language = function (val) {
