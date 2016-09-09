@@ -306,7 +306,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
                 var mediaInfoClass = 'secondary listItemMediaInfo listItemBodyText';
 
-                html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+                html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+                    episodeTitle: false
+                }) + '</div>';
             }
 
             if (enableOverview && item.Overview) {
@@ -321,7 +323,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
 
                     year: false,
-                    container: false
+                    container: false,
+                    episodeTitle: false
 
                 }) + '</div>';
             }
