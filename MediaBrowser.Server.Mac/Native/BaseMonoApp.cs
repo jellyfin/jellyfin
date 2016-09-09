@@ -205,6 +205,16 @@ namespace MediaBrowser.Server.Mac
 			return new NullPowerManagement ();
 		}
 
+		public void EnableLoopback(string appName)
+		{
+
+		}
+
+		public bool PortsRequireAuthorization(string applicationPath)
+		{
+			return false;
+		}
+
         private NativeEnvironment GetEnvironmentInfo()
         {
             var info = new NativeEnvironment
