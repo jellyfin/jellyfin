@@ -2133,7 +2133,8 @@
     "H264EncodingPresetHelp": "Elija un valor mas r\u00e1pido para mejorar el rendimiento, o uno mas lento para mejorar la calidad.",
     "LabelH264Crf": "CRF de codificaci\u00f3n H264:",
     "H264CrfHelp": "El \"Factor de Transferencia Constante\" o \"Constant Rate Factor\" (CFR) es la configuraci\u00f3n por defecto para el codificador x264. Puede poner valores entre 0 y 51, donde los valores mas bajos dan como resultado mejor calidad (a expensas de archivos mas grandes). Los valores comunes son entre 18 y 28. El valor por defecto para x264 es 23, puede usar este valor como punto de referencia.",
-    "Sports": "Sports",
-    "HeaderForKids": "For Kids",
-    "HeaderRecordingGroups": "Recording Groups"
+    "Sports": "Deportes",
+    "HeaderForKids": "Para Ni\u00f1os",
+    "HeaderRecordingGroups": "Grupos de Grabaciones",
+    "LabelConvertRecordingsTo": "Convert recordings to:"
 }

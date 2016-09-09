@@ -167,7 +167,7 @@
         html += '</div>';
 
         html += '<div class="formDialogFooter">';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';
@@ -251,9 +251,9 @@
 
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += title;
-            html += '</div>';
+            html += '</h3>';
 
             html += '<a class="btnHelp" href="https://github.com/MediaBrowser/Wiki/wiki/Collections" target="_blank" style="margin-left:auto;margin-right:.5em;display:inline-block;padding:.25em;display:flex;align-items:center;" title="' + globalize.translate('sharedcomponents#Help') + '"><i class="md-icon">info</i><span style="margin-left:.25em;">' + globalize.translate('sharedcomponents#Help') + '</span></a>';
 

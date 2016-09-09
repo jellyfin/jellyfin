@@ -63,46 +63,46 @@
             font-size: 2.85em;
         }
 
-    .emby-button.noflex {
-        display: inline-block;
-        white-space: nowrap;
+.emby-button-noflex {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.emby-button.fab.mini {
+    padding: 8px;
+}
+
+    .emby-button.fab.mini > i {
+        height: auto;
+        width: auto;
+        font-size: 1.72em;
     }
 
-    .emby-button.fab.mini {
-        padding: 8px;
-    }
+.emby-button.block {
+    display: block;
+    align-items: center;
+    justify-content: center;
+    margin: .25em 0;
+    width: 100%;
+}
 
-        .emby-button.fab.mini > i {
-            height: auto;
-            width: auto;
-            font-size: 1.72em;
-        }
+.emby-button.raised:focus {
+    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    .emby-button.block {
-        display: block;
-        align-items: center;
-        justify-content: center;
-        margin: .25em 0;
-        width: 100%;
-    }
+.emby-button > i + span {
+    margin-left: .5em;
+}
 
-    .emby-button.raised:focus {
-        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
-        transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+.emby-button span + i {
+    margin-left: .5em;
+}
 
-    .emby-button > i + span {
-        margin-left: .5em;
-    }
-
-    .emby-button span + i {
-        margin-left: .5em;
-    }
-
-    .emby-button.iconRight > i {
-        margin-left: auto;
-        margin-right: .25em;
-    }
+.emby-button.iconRight > i {
+    margin-left: auto;
+    margin-right: .25em;
+}
 
 .emby-button-noflex.iconRight > i {
     position: absolute;

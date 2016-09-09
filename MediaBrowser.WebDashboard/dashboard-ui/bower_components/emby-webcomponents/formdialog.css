@@ -5,7 +5,7 @@
 }
 
 .formDialogHeader {
-    padding: .8em .5em;
+    padding: 1em .5em;
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -16,7 +16,10 @@
 }
 
 .formDialogHeaderTitle {
-    margin-left: .5em;
+    margin-left: .25em;
+    /* In case of h1, h2, h3 */
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .formDialogContent {

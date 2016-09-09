@@ -279,9 +279,9 @@
     "Settings": "Einstellungen",
     "ShowIndicatorsFor": "Zeige Indikatoren f\u00fcr:",
     "NewEpisodes": "Neue Episoden",
-    "HDPrograms": "HD programs",
-    "LiveBroadcasts": "Live broadcasts",
-    "Premieres": "Premieres",
-    "RepeatEpisodes": "Repeat episodes",
-    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription."
+    "HDPrograms": "HD Programme",
+    "LiveBroadcasts": "Live\u00fcbertragungen",
+    "Premieres": "Premieren",
+    "RepeatEpisodes": "Wiederholung Episoden",
+    "DvrSubscriptionRequired": "Emby DVR ben\u00f6tigt eine aktive Emby Premiere Mitgliedschaft."
 }

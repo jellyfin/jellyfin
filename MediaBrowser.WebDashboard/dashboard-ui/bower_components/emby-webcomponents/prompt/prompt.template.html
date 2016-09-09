@@ -1,22 +1,21 @@
 ﻿<div class="formDialogHeader">
-    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <div class="formDialogHeaderTitle">
-    </div>
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
+        <i class="md-icon">&#xE5C4;</i>
+    </button>
+    <h3 class="formDialogHeaderTitle"></h3>
 </div>
 
 <div class="formDialogContent smoothScrollY">
-    <div class="dialogContentInner dialog-content-centered">
-        
-        <h1 class="dialogContentTitle"></h1>
+    <div class="dialogContentInner dialog-content-centered" style="padding-top:2em;">
 
         <form>
             <div class="inputContainer">
-                <input is="emby-input" type="text" id="txtInput" label=""/>
+                <input is="emby-input" type="text" id="txtInput" label="" />
                 <div class="fieldDescription"></div>
             </div>
 
             <div class="formDialogFooter">
-                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem">
+                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">
                     <span>${ButtonOk}</span>
                 </button>
             </div>

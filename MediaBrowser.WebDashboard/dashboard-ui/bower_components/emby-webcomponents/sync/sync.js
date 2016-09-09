@@ -393,9 +393,9 @@
             var html = '';
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += globalize.translate('sharedcomponents#Sync');
-            html += '</div>';
+            html += '</h3>';
 
             html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink lnkHelp" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="mini"><i class="md-icon">info</i><span>' + globalize.translate('sharedcomponents#Help') + '</span></button></a>';
 
@@ -409,7 +409,7 @@
             html += '<div class="formFields"></div>';
 
             html += '<div class="formDialogFooter">';
-            html += '<button is="emby-button" type="submit" class="raised submit block formDialogFooterItem"><span>' + globalize.translate('sharedcomponents#Sync') + '</span></button>';
+            html += '<button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem"><span>' + globalize.translate('sharedcomponents#Sync') + '</span></button>';
             html += '</div>';
 
             html += '</form>';

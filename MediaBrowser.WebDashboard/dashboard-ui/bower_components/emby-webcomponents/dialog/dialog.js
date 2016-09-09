@@ -55,7 +55,14 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
             var item = options.buttons[i];
             var autoFocus = i == 0 ? ' autofocus' : '';
-            html += '<button is="emby-button" type="button" class="btnOption raised block formDialogFooterItem" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
+
+            var buttonClass = 'btnOption raised block formDialogFooterItem';
+
+            if (item.type) {
+                buttonClass += ' button-' + item.type;
+            }
+
+            html += '<button is="emby-button" type="button" class="' + buttonClass + '" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
         }
 
         dlg.querySelector('.formDialogFooter').innerHTML = html;

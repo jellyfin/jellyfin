@@ -47,7 +47,7 @@
     "HeaderBecomeProjectSupporter": "Get Emby Premiere",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "An active Emby Premiere subscription is required in order to create automated series recordings.",
     "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 or MKV, based on Emby server settings.",
     "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "Record": "Record",
     "Save": "L\u01b0u",

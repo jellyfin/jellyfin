@@ -47,7 +47,7 @@
     "HeaderBecomeProjectSupporter": "Get Emby Premiere",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "\uc790\ub3d9 \uc2dc\ub9ac\uc988 \ub179\ud654\ub97c \uc608\uc57d\ud558\ub824\uba74 Emby \ud504\ub9ac\ubbf8\uc5b4 \uac00\uc785\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
     "OptionConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 for easy playback on your devices.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Recordings will be converted on the fly to MP4 or MKV, based on Emby server settings.",
     "FeatureRequiresEmbyPremiere": "This feature requires an active Emby Premiere subscription.",
     "Record": "\ub179\ud654",
     "Save": "\uc800\uc7a5",

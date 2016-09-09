@@ -1,46 +1,36 @@
-﻿button.emby-button:not(.fab).blue {
-    color: #03a9f4;
-}
-
-    button.emby-button:not(.fab).blue:hover {
-        background: #e1f5f3;
-    }
-
-button.emby-button.menuButton {
-    color: #212121;
-    text-align: left;
-}
-
-    button.emby-button.menuButton:hover {
-        background: #e1f5f3;
-    }
-
-
-button.emby-button.submit {
-    color: #52B54B;
-}
-
-.ui-body-a .emby-button.raised {
-    background: #52B54B;
+﻿.ui-body-a .raised {
+    background: #3388cc;
     color: #fff;
 }
 
-.ui-body-b .emby-button.raised {
+.ui-body-b .raised {
     background: #404040;
     color: #fff;
 }
 
-.ui-body-a .emby-button.raised.subdued {
+.ui-body-a .button-submit {
+    background: #52B54B;
+    color: #fff;
+}
+
+.ui-body-a .button-cancel {
     background: #fff;
     color: inherit;
 }
 
-.ui-body-b .emby-button.raised.subdued {
-    background: #262626;
+.ui-body-b .button-submit {
+    background: #52B54B;
+    color: #fff;
 }
 
-button.emby-button.more {
-    color: #3388cc;
+.ui-body-a .button-accent {
+    background: #52B54B;
+    color: #fff;
+}
+
+.ui-body-b .button-accent {
+    background: #52B54B;
+    color: #fff;
 }
 
 button.emby-button.raised.more {
@@ -48,61 +38,7 @@ button.emby-button.raised.more {
     color: #fff;
 }
 
-button.emby-button.secondary {
-    color: #4285f4;
-}
-
-button.emby-button.raised.secondary {
-    background: #4285f4;
-    color: #fff;
-}
-
-button.emby-button.accent {
-    color: #52B54B;
-}
-
-button.emby-button.raised.accent {
-    background: #52B54B;
-    color: #fff;
-}
-
-button.emby-button.alt {
-    color: #F57F17;
-}
-
-button.emby-button.raised.alt {
-    background: #F57F17;
-    color: #fff;
-}
-
-.ui-body-b button.emby-button.cancel {
-    color: #444;
-}
-
-.ui-body-b button.emby-button.raised.cancel {
-    background: #444;
-    color: #fff;
-}
-
-button.emby-button.cancelDark {
-    color: #444;
-}
-
-button.emby-button.raised.cancelDark {
-    background: #444;
-    color: #fff;
-}
-
-.ui-body-b button.emby-button.raised.subdued:not([disabled]) {
-    background: #404040;
-    color: #fff;
-}
-
-.ui-body-b button.emby-button.raised[disabled].subdued {
-    background: #111;
-}
-
-button.emby-button span {
+.emby-button > span {
     vertical-align: middle;
 }
 
