@@ -931,8 +931,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var timeoutMs = ConfigurationManager.Configuration.ImageExtractionTimeoutMs;
                     if (timeoutMs <= 0)
                     {
-                        timeoutMs = 10000;
+                        timeoutMs = Environment.Is64BitOperatingSystem ? (Environment.ProcessorCount > 2 ? 14000 : 20000) : 40000;
                     }
+
                     ranToCompletion = process.WaitForExit(timeoutMs);
 
                     if (!ranToCompletion)
