@@ -20,6 +20,7 @@ namespace MediaBrowser.ServerApplication
         private ToolStripMenuItem cmdRestart;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem cmdCommunity;
+        private ToolStripMenuItem cmdPremiere;
         private Container components;
 
         private readonly ILogger _logger;
@@ -50,6 +51,7 @@ namespace MediaBrowser.ServerApplication
 
             cmdExit = new ToolStripMenuItem();
             cmdCommunity = new ToolStripMenuItem();
+            cmdPremiere = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             cmdRestart = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
@@ -69,6 +71,7 @@ namespace MediaBrowser.ServerApplication
             contextMenuStrip1.Items.AddRange(new ToolStripItem[] {
             cmdBrowse,
             cmdConfigure,
+            cmdPremiere,
             toolStripSeparator2,
             cmdRestart,
             toolStripSeparator1,
@@ -88,6 +91,11 @@ namespace MediaBrowser.ServerApplication
             // 
             cmdCommunity.Name = "cmdCommunity";
             cmdCommunity.Size = new System.Drawing.Size(208, 22);
+            // 
+            // cmdPremiere
+            // 
+            cmdPremiere.Name = "cmdPremiere";
+            cmdPremiere.Size = new System.Drawing.Size(208, 22);
             // 
             // toolStripSeparator1
             // 
@@ -118,6 +126,7 @@ namespace MediaBrowser.ServerApplication
             cmdRestart.Click += cmdRestart_Click;
             cmdConfigure.Click += cmdConfigure_Click;
             cmdCommunity.Click += cmdCommunity_Click;
+            cmdPremiere.Click += cmdPremiere_Click;
             cmdBrowse.Click += cmdBrowse_Click;
 
             _configurationManager.ConfigurationUpdated += Instance_ConfigurationUpdated;
@@ -138,6 +147,7 @@ namespace MediaBrowser.ServerApplication
 
             cmdExit.Text = _localization.GetLocalizedString("LabelExit");
             cmdCommunity.Text = _localization.GetLocalizedString("LabelVisitCommunity");
+            cmdPremiere.Text = _localization.GetLocalizedString("Emby Premiere");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
             cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureServer");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
@@ -161,6 +171,11 @@ namespace MediaBrowser.ServerApplication
         void cmdBrowse_Click(object sender, EventArgs e)
         {
             BrowserLauncher.OpenWebClient(_appHost);
+        }
+
+        void cmdPremiere_Click(object sender, EventArgs e)
+        {
+            BrowserLauncher.OpenEmbyPremiere(_appHost);
         }
 
         void cmdCommunity_Click(object sender, EventArgs e)

@@ -31,6 +31,8 @@ namespace MediaBrowser.Controller.Channels
         /// <returns>ChannelFeatures.</returns>
         ChannelFeatures GetChannelFeatures(string id);
 
+        bool SupportsSync(string channelId);
+
         /// <summary>
         /// Gets all channel features.
         /// </summary>

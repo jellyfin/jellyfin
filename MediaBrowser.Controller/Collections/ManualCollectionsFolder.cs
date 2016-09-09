@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 
-namespace MediaBrowser.Server.Implementations.Collections
+namespace MediaBrowser.Controller.Collections
 {
     public class ManualCollectionsFolder : BasePluginFolder, IHiddenFromDisplay
     {

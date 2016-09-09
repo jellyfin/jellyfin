@@ -71,14 +71,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             HostConfig.Instance.MapExceptionToStatusCode = new Dictionary<Type, int>
             {
-                {typeof (InvalidOperationException), 422},
+                {typeof (InvalidOperationException), 500},
+                {typeof (NotImplementedException), 500},
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
                 {typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
                 {typeof (PaymentRequiredException), 402},
                 {typeof (UnauthorizedAccessException), 500},
-                {typeof (ApplicationException), 500}
+                {typeof (ApplicationException), 500},
+                {typeof (PlatformNotSupportedException), 500},
+                {typeof (NotSupportedException), 500}
             };
 
             HostConfig.Instance.GlobalResponseHeaders = new Dictionary<string, string>();
@@ -99,14 +102,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             //    new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
             //}));
 
-            PreRequestFilters.Add((httpReq, httpRes) =>
-            {
-                //Handles Request and closes Responses after emitting global HTTP Headers
-                if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
-                {
-                    httpRes.EndRequest(); //add a 'using ServiceStack;'
-                }
-            });
+            //PreRequestFilters.Add((httpReq, httpRes) =>
+            //{
+            //    //Handles Request and closes Responses after emitting global HTTP Headers
+            //    if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            //    {
+            //        httpRes.EndRequest(); //add a 'using ServiceStack;'
+            //    }
+            //});
 
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
@@ -398,6 +401,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 httpRes.Close();
                 return;
+            }
+
+            if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.StatusCode = 200;
+                httpRes.AddHeader("Access-Control-Allow-Origin", "*");
+                httpRes.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+                httpRes.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
+                httpRes.ContentType = "text/html";
+
+                httpRes.Close();
             }
 
             var operationName = httpReq.OperationName;

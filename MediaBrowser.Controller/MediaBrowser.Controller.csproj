@@ -98,6 +98,7 @@
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\CollectionEvents.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
+    <Compile Include="Collections\ManualCollectionsFolder.cs" />
     <Compile Include="Connect\ConnectSupporterSummary.cs" />
     <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Connect\UserLinkResult.cs" />
@@ -198,7 +199,6 @@
     <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
-    <Compile Include="LiveTv\IHasRegistrationInfo.cs" />
     <Compile Include="LiveTv\IListingsProvider.cs" />
     <Compile Include="LiveTv\ITunerHost.cs" />
     <Compile Include="LiveTv\RecordingGroup.cs" />

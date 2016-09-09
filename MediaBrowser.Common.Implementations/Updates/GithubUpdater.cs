@@ -14,16 +14,14 @@ namespace MediaBrowser.Common.Implementations.Updates
     {
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
-        private TimeSpan _cacheLength;
 
-        public GithubUpdater(IHttpClient httpClient, IJsonSerializer jsonSerializer, TimeSpan cacheLength)
+        public GithubUpdater(IHttpClient httpClient, IJsonSerializer jsonSerializer)
         {
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
-            _cacheLength = cacheLength;
         }
 
-        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, PackageVersionClass updateLevel, string assetFilename, string packageName, string targetFilename, CancellationToken cancellationToken)
+        public async Task<CheckForUpdateResult> CheckForUpdateResult(string organzation, string repository, Version minVersion, PackageVersionClass updateLevel, string assetFilename, string packageName, string targetFilename, TimeSpan cacheLength, CancellationToken cancellationToken)
         {
             var url = string.Format("https://api.github.com/repos/{0}/{1}/releases", organzation, repository);
 
@@ -35,10 +33,10 @@ namespace MediaBrowser.Common.Implementations.Updates
                 UserAgent = "Emby/3.0"
             };
 
-            if (_cacheLength.Ticks > 0)
+            if (cacheLength.Ticks > 0)
             {
                 options.CacheMode = CacheMode.Unconditional;
-                options.CacheLength = _cacheLength;
+                options.CacheLength = cacheLength;
             }
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
@@ -109,12 +107,6 @@ namespace MediaBrowser.Common.Implementations.Updates
                 CancellationToken = cancellationToken,
                 UserAgent = "Emby/3.0"
             };
-
-            if (_cacheLength.Ticks > 0)
-            {
-                options.CacheMode = CacheMode.Unconditional;
-                options.CacheLength = _cacheLength;
-            }
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
             {

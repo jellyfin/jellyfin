@@ -1168,6 +1168,26 @@ namespace MediaBrowser.Server.Implementations.Dto
                         };
                     })
                     .ToList();
+
+                // Include artists that are not in the database yet, e.g., just added via metadata editor
+                var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                dto.ArtistItems.AddRange(hasArtist.Artists
+                    .Except(foundArtists, new DistinctNameComparer())
+                    .Select(i =>
+                    {
+                        var artist = _libraryManager.GetArtist(i);
+                        if (artist != null)
+                        {
+                            return new NameIdPair
+                            {
+                                Name = artist.Name,
+                                Id = artist.Id.ToString("N")
+                            };
+                        }
+
+                        return null;
+
+                    }).Where(i => i != null));
             }
 
             var hasAlbumArtist = item as IHasAlbumArtist;

@@ -325,6 +325,15 @@ namespace MediaBrowser.Server.Startup.Common
 
             await MediaEncoder.Init().ConfigureAwait(false);
 
+            if (string.IsNullOrWhiteSpace(MediaEncoder.EncoderPath))
+            {
+                if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+                {
+                    ServerConfigurationManager.Configuration.IsStartupWizardCompleted = false;
+                    ServerConfigurationManager.SaveConfiguration();
+                }
+            }
+
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
             HttpServer.GlobalResponse = null;
@@ -363,7 +372,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPreInitMigrations()
         {
-            var migrations = new List<IVersionMigration>();
+            var migrations = new List<IVersionMigration>
+            {
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+            };
 
             foreach (var task in migrations)
             {
@@ -382,10 +394,8 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
-                new DbMigration(ServerConfigurationManager, TaskManager),
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -521,7 +531,7 @@ namespace MediaBrowser.Server.Startup.Common
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager, ProviderManager);
             RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, SecurityManager);
             RegisterSingleInstance(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
@@ -547,7 +557,7 @@ namespace MediaBrowser.Server.Startup.Common
             await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
             progress.Report(90);
 
-            EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager);
+            EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
             RegisterSingleInstance(NativeApp.GetPowerManagement());
@@ -774,7 +784,19 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         protected override void FindParts()
         {
-            if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
+            var isAuthorized = ServerConfigurationManager.Configuration.IsPortAuthorized;
+            if (isAuthorized)
+            {
+                try
+                {
+                    isAuthorized = !NativeApp.PortsRequireAuthorization(ConfigurationManager.CommonApplicationPaths.ApplicationPath);
+                }
+                catch
+                {
+                    
+                }
+            }
+            if (!isAuthorized)
             {
                 RegisterServerWithAdministratorAccess();
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
@@ -947,7 +969,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!CanSelfRestart)
             {
-                throw new InvalidOperationException("The server is unable to self-restart. Please restart manually.");
+                throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
             }
 
             try
@@ -1097,7 +1119,8 @@ namespace MediaBrowser.Server.Startup.Common
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
-                SystemArchitecture = NativeApp.Environment.SystemArchitecture
+                SystemArchitecture = NativeApp.Environment.SystemArchitecture,
+                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel
             };
         }
 
@@ -1331,8 +1354,8 @@ namespace MediaBrowser.Server.Startup.Common
                 cacheLength = TimeSpan.FromMinutes(5);
             }
 
-            var result = await new GithubUpdater(HttpClient, JsonSerializer, cacheLength).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
-                    "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
+            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
+                    "MBServer", "Mbserver.zip", cacheLength, cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = result.IsUpdateAvailable;
 
@@ -1392,6 +1415,11 @@ namespace MediaBrowser.Server.Startup.Common
         public void LaunchUrl(string url)
         {
             NativeApp.LaunchUrl(url);
+        }
+
+        public void EnableLoopback(string appName)
+        {
+            NativeApp.EnableLoopback(appName);
         }
     }
 }

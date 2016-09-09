@@ -138,8 +138,6 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.LocationType == LocationType.Virtual)
                 .ToList();
 
-            var episodes = series.GetRecursiveChildren().OfType<Episode>().ToList();
-
             var seasonsToRemove = virtualSeasons
                 .Where(i =>
                 {
@@ -152,19 +150,15 @@ namespace MediaBrowser.Providers.TV
                         {
                             return true;
                         }
-
-                        // If there are no episodes with this season number, delete it
-                        if (episodes.All(e => !e.ParentIndexNumber.HasValue || e.ParentIndexNumber.Value != seasonNumber))
-                        {
-                            return true;
-                        }
-
-                        return false;
                     }
 
-                    // Season does not have a number
-                    // Remove if there are no episodes directly in series without a season number
-                    return episodes.All(s => s.ParentIndexNumber.HasValue || s.IsInSeasonFolder);
+                    // If there are no episodes with this season number, delete it
+                    if (!i.GetEpisodes().Any())
+                    {
+                        return true;
+                    }
+
+                    return false;
                 })
                 .ToList();
 

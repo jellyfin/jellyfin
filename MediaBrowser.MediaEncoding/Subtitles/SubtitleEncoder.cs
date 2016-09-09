@@ -818,14 +818,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public string GetSubtitleFileCharacterSetFromLanguage(string language)
         {
+            // https://developer.xamarin.com/api/type/System.Text.Encoding/
+
             switch (language.ToLower())
             {
+                case "hun":
+                    return "windows-1252";
                 case "pol":
                 case "cze":
                 case "ces":
                 case "slo":
                 case "slk":
-                case "hun":
                 case "slv":
                 case "srp":
                 case "hrv":

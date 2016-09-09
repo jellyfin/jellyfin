@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             LoadCachedAddress();
 
-            _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
+            _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(1));
             ((ConnectManager)_connectManager).Start();
         }
 

@@ -66,7 +66,7 @@ namespace MediaBrowser.Dlna.Profiles
                {
                    Container = "mkv",
                    VideoCodec = "h264,mpeg2video",
-                   AudioCodec = "aac,ac3,dca,mp3,mp2,pcm",
+                   AudioCodec = "aac,ac3,dca,mp3,mp2,pcm,dts",
                    Type = DlnaProfileType.Video
                },
 

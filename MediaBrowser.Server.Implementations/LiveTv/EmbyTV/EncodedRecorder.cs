@@ -46,18 +46,41 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _httpClient = httpClient;
         }
 
+        private string OutputFormat
+        {
+            get
+            {
+                var format = _liveTvOptions.RecordingEncodingFormat;
+
+                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "mkv";
+                }
+
+                return "mp4";
+            }
+        }
+
         public string GetOutputPath(MediaSourceInfo mediaSource, string targetFile)
         {
-            return Path.ChangeExtension(targetFile, ".mp4");
+            return Path.ChangeExtension(targetFile, "." + OutputFormat);
         }
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
+            if (mediaSource.Path.IndexOf("m3u8", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                await RecordWithoutTempFile(mediaSource, targetFile, duration, onStarted, cancellationToken)
+                        .ConfigureAwait(false);
+
+                return;
+            }
+
             var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
 
             try
             {
-                await RecordInternal(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
+                await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
                         .ConfigureAwait(false);
             }
             finally
@@ -73,7 +96,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public async Task RecordInternal(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordWithoutTempFile(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        {
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
+
+            _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private async Task RecordWithTempFile(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions()
             {
@@ -215,15 +248,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
         {
-            // do not copy aac because many players have difficulty with aac_latm
-            var copyAudio = new[] { "mp3" };
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             var inputAudioCodec = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).FirstOrDefault() ?? string.Empty;
 
-            if (copyAudio.Contains(inputAudioCodec, StringComparer.OrdinalIgnoreCase))
-            {
-                return "-codec:a:0 copy";
-            }
+            // do not copy aac because many players have difficulty with aac_latm
             if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings && !string.Equals(inputAudioCodec, "aac", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
