@@ -30,7 +30,8 @@
 }
 
 .dialog-fullscreen {
-    position: fixed;
+    /* Needed due to formDialog style */
+    position: fixed !important;
     top: 0;
     bottom: 0;
     left: 0;
@@ -38,14 +39,14 @@
     margin: 0;
 }
 
-@media screen and (max-width: 1280px), screen and (max-height: 720px) {
+@media all and (max-width: 1280px), all and (max-height: 720px) {
     .dialog-fixedSize {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: 0;
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 !important;
     }
 }
 

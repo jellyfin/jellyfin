@@ -16,12 +16,14 @@ define(['dialog', 'globalize'], function (dialog, globalize) {
 
         items.push({
             name: globalize.translate('sharedcomponents#ButtonOk'),
-            id: 'ok'
+            id: 'ok',
+            type: 'submit'
         });
 
         items.push({
             name: globalize.translate('sharedcomponents#ButtonCancel'),
-            id: 'cancel'
+            id: 'cancel',
+            type: 'cancel'
         });
 
         options.buttons = items;

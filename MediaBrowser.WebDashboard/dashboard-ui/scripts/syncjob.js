@@ -12,7 +12,7 @@
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button is="emby-button" type="submit" class="raised submit block"><span>' + Globalize.translate('ButtonSave') + '</span></button>';
+        html += '<button is="emby-button" type="submit" class="raised button-submit block"><span>' + Globalize.translate('ButtonSave') + '</span></button>';
 
         page.querySelector('.syncJobForm').innerHTML = html;
 

@@ -35,7 +35,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
             dialogHelper.close(dlg);
         });
 
-        dlg.querySelector('.dialogContentTitle').innerHTML = options.title || '';
+        dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
 
         if (options.description) {
             dlg.querySelector('.fieldDescription').innerHTML = options.description;

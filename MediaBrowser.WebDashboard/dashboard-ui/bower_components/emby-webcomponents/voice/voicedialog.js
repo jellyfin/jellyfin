@@ -113,9 +113,9 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             var html = '';
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancelVoiceInput autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += globalize.translate('sharedcomponents#VoiceInput');
-            html += '</div>';
+            html += '</h3>';
             html += '</div>';
 
             html += '<div>';
@@ -141,7 +141,7 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             html += '<p>' + globalize.translate('sharedcomponents#MessageWeDidntRecognizeCommand') + '</p>';
 
             html += '<br/>';
-            html += '<button is="emby-button" type="button" class="submit block btnRetry raised"><i class="md-icon">mic</i><span>' +
+            html += '<button is="emby-button" type="button" class="button-submit block btnRetry raised"><i class="md-icon">mic</i><span>' +
                 globalize.translate('sharedcomponents#ButtonTryAgain') +
                 '</span></button>';
             html += '<p class="blockedMessage hide">' +

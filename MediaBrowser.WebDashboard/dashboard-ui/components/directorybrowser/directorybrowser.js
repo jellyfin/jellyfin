@@ -148,7 +148,7 @@
         html += '<div class="results paperList" style="max-height: 300px; overflow-y: auto;"></div>';
 
         html += '<div class="formDialogFooter">';
-        html += '<button is="emby-button" type="submit" class="raised submit block formDialogFooterItem">' + Globalize.translate('ButtonOk') + '</button>';
+        html += '<button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">' + Globalize.translate('ButtonOk') + '</button>';
         html += '</div>';
 
         html += '</form>';
@@ -247,9 +247,9 @@
                 var html = '';
                 html += '<div class="formDialogHeader">';
                 html += '<button is="paper-icon-button-light" class="btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-                html += '<div class="formDialogHeaderTitle">';
+                html += '<h3 class="formDialogHeaderTitle">';
                 html += options.header || Globalize.translate('HeaderSelectPath');
-                html += '</div>';
+                html += '</h3>';
 
                 html += '</div>';
 
