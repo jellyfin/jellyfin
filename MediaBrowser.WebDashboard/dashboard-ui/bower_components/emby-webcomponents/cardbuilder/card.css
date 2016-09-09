@@ -71,13 +71,16 @@
 
 .cardBox-focustransform {
     will-change: transform;
-    /*transition: transform 200ms ease-out;*/
 }
 
-/*.card:focus > .cardBox-focustransform {
-    transition-delay: 50ms;
+.cardBox-focustransform-transition {
+    will-change: transform;
+    transition: transform 200ms ease-out;
+}
+
+.card-focusscale:focus > .cardBox-focustransform {
     transform: scale(1.16, 1.16);
-}*/
+}
 
 @media all and (min-width: 600px) {
 
@@ -101,10 +104,11 @@
 }
 
 .btnCardOptions {
-    text-align: right;
-    float: right;
-    padding: 5px 0 2px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
     margin: 0 !important;
+    z-index: 1;
 }
 
 .mediaSourceIndicator {
@@ -199,6 +203,7 @@
 
 .cardFooter {
     padding: .5em .3em;
+    position: relative;
 }
 
 .visualCardBox-cardScalable, .visualCardBox-cardFooter {
@@ -250,8 +255,37 @@
     opacity: .6;
 }
 
+.cardText-rightmargin {
+    margin-right: 2em;
+}
+
 .cardCenteredText {
     white-space: normal;
+}
+
+.textActionButton {
+    border: 0 !important;
+    background: transparent;
+    border: 0 !important;
+    padding: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+    /*display: flex;
+    align-items: center;
+    justify-content: center;*/
+}
+
+    .textActionButton:hover {
+        text-decoration: underline;
+        opacity: 1;
+    }
+
+.cardFooterLogo {
+    margin-right: 1em;
 }
 
 .cardImageIcon {

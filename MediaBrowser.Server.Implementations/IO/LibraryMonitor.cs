@@ -46,6 +46,14 @@ namespace MediaBrowser.Server.Implementations.IO
             "TempSBE"
         };
 
+        private readonly IReadOnlyList<string> _alwaysIgnoreSubstrings = new List<string>
+        {
+            // Synology
+            "@eaDir",
+            ".wd_tv",
+            ".actors"
+        };
+
         private readonly IReadOnlyList<string> _alwaysIgnoreExtensions = new List<string>
         {
             // thumbs.db
@@ -421,10 +429,11 @@ namespace MediaBrowser.Server.Implementations.IO
             }
 
             var filename = Path.GetFileName(path);
-
+            
             var monitorPath = !string.IsNullOrEmpty(filename) &&
                 !_alwaysIgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase) &&
-                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                !_alwaysIgnoreExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                _alwaysIgnoreSubstrings.All(i => path.IndexOf(i, StringComparison.OrdinalIgnoreCase) == -1);
 
             // Ignore certain files
             var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();

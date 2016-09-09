@@ -1,4 +1,4 @@
-﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,paper-checkbox,emby-input,emby-select,emby-collapse,emby-button">
+﻿<div id="liveTvSettingsPage" data-role="page" class="page type-interior liveTvPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvsettings,emby-checkbox,emby-input,emby-select,emby-collapse,emby-button">
     <div data-role="content">
         <div class="content-primary">
             <form class="liveTvSettingsForm">
@@ -22,25 +22,27 @@
                     </select>
                     <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
                 </div>
-                <div class="paperCheckboxList">
-                    <label>${LabelEnableInternetMetadataForTvPrograms}</label>
-                    <paper-checkbox id="chkMovies">${OptionTVMovies}</paper-checkbox>
+                <h3 class="checkboxListLabel">${LabelEnableInternetMetadataForTvPrograms}</h3>
+                <div class="checkboxList">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkMovies" />
+                        <span>${OptionTVMovies}</span>
+                    </label>
                 </div>
                 <br />
                 <div class="inputContainer">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
-                            <input is="emby-input" id="txtRecordingPath" label="${LabelRecordingPath}" required="required" autocomplete="off" />
+                            <input is="emby-input" id="txtRecordingPath" label="${LabelRecordingPath}" autocomplete="off" />
                         </div>
                         <button type="button" is="paper-icon-button-light" id="btnSelectRecordingPath" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
                 </div>
-                <div>
-                    <paper-checkbox id="chkEnableRecordingSubfolders">${OptionEnableRecordingSubfolders}</paper-checkbox>
-                </div>
-                <br />
-                <br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" id="chkEnableRecordingSubfolders" />
+                    <span>${OptionEnableRecordingSubfolders}</span>
+                </label>
                 <div class="inputContainer">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
@@ -57,29 +59,38 @@
                         <button type="button" is="paper-icon-button-light" id="btnSelectSeriesRecordingPath" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                 </div>
-                <div>
-                    <paper-checkbox id="chkOrganize">${OptionSendRecordingsToAutoOrganize}</paper-checkbox>
-                </div>
-                <br />
-                <br />
-                <div>
-                    <paper-checkbox id="chkConvertRecordings">${OptionConvertRecordingsToStreamingFormat}</paper-checkbox>
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" id="chkOrganize" />
+                    <span>${OptionSendRecordingsToAutoOrganize}</span>
+                </label>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkConvertRecordings" />
+                        <span>${OptionConvertRecordingsToStreamingFormat}</span>
+                    </label>
                     <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingsToStreamingFormatHelp}</div>
                     <div class="fieldDescription paperCheckboxFieldDescription btnSupporterForConverting"><a href="https://emby.media/premiere" target="_blank" class="accent">${FeatureRequiresEmbyPremiere}</a></div>
                 </div>
-                <br />
-                <div>
-                    <paper-checkbox id="chkPreserveAudio">${OptionConvertRecordingPreserveAudio}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectConversionFormat" label="${LabelConvertRecordingsTo}">
+                        <option value="mp4">MP4</option>
+                        <option value="mkv">MKV</option>
+                    </select>
                 </div>
-                <br />
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkPreserveAudio" />
+                        <span>${OptionConvertRecordingPreserveAudio}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
+                </div>
                 <div>
                     <h1>${HeaderDefaultPadding}</h1>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"/>
+                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"/>
+                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
                     </div>
                 </div>
                 <br />

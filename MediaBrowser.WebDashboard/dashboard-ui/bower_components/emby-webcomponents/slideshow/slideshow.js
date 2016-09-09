@@ -91,7 +91,8 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 size: 'fullscreen',
                 autoFocus: false,
                 scrollY: false,
-                exitAnimation: 'fadeout'
+                exitAnimation: 'fadeout',
+                removeOnClose: true
             });
 
             dlg.classList.add('slideshowDialog');
@@ -166,12 +167,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 }
             }
 
-            document.body.appendChild(dlg);
-
             dialogHelper.open(dlg).then(function () {
 
                 stopInterval();
-                dlg.parentNode.removeChild(dlg);
             });
 
             inputmanager.on(window, onInputCommand);

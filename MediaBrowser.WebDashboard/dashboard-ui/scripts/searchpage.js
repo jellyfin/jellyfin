@@ -191,13 +191,11 @@
 
         view.addEventListener('viewbeforeshow', function (e) {
             document.body.classList.add('hiddenViewMenuBar');
-            LibraryMenu.setMenuButtonVisible(false);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
             document.body.classList.remove('hiddenViewMenuBar');
-            LibraryMenu.setMenuButtonVisible(true);
         });
 
     };

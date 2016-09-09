@@ -100,12 +100,9 @@
 
         var context = params.context;
 
-        LibraryMenu.setBackButtonVisible(true);
-        LibraryMenu.setMenuButtonVisible(false);
-
         LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
         LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
-        LibraryMenu.setTitle(item.SeriesName || item.Name);
+        LibraryMenu.setTitle('');
 
         Dashboard.getCurrentUser().then(function (user) {
 
@@ -249,7 +246,7 @@
                 itemBirthday.classList.add('hide');
             }
 
-            var itemDeathDate = page.querySelector('#itemBirthday');
+            var itemDeathDate = page.querySelector('#itemDeathDate');
             if (item.Type == "Person" && item.EndDate) {
 
                 try {
@@ -1142,7 +1139,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -1458,15 +1455,15 @@
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<div style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
+                    html += '<div style="flex-shrink:0;background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 } else {
-                    html += '<div style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
+                    html += '<div style="flex-shrink:0;background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 }
             }
 
             html += '<div class="listItemBody two-line">';
 
-            html += '<div style="white-space:normal;">' + review.Caption + '</div>';
+            html += '<h3 class="listItemBodyText" style="white-space:normal;">' + review.Caption + '</h3>';
 
             var vals = [];
 
@@ -1477,7 +1474,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div class="secondary">' + vals.join(', ') + '.';
+            html += '<div class="secondary listItemBodyText">' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1494,7 +1491,7 @@
             html += '</div>';
 
             if (review.Url) {
-                html += '<div class="secondary"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div class="secondary listItemBodyText"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
             html += '</div>';
@@ -2179,9 +2176,14 @@
         function editImages() {
             return new Promise(function (resolve, reject) {
 
-                require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+                require(['imageEditor'], function (imageEditor) {
 
-                    ImageEditor.show(currentItem.Id).then(resolve, reject);
+                    imageEditor.show({
+
+                        itemId: currentItem.Id,
+                        serverId: currentItem.ServerId
+
+                    }).then(resolve, reject);
                 });
             });
         }

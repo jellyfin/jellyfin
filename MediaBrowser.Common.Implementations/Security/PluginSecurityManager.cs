@@ -142,9 +142,15 @@ namespace MediaBrowser.Common.Implementations.Security
             }
             set
             {
-                if (value != LicenseFile.RegKey)
+                var newValue = value;
+                if (newValue != null)
                 {
-                    LicenseFile.RegKey = value;
+                    newValue = newValue.Trim();
+                }
+
+                if (newValue != LicenseFile.RegKey)
+                {
+                    LicenseFile.RegKey = newValue;
                     LicenseFile.Save();
 
                     // re-load registration info

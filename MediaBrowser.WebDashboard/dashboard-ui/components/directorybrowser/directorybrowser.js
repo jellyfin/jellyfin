@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'listViewStyle', 'emby-input', 'emby-button', 'paper-icon-button-light', 'css!./directorybrowser'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'listViewStyle', 'emby-input', 'emby-button', 'paper-icon-button-light', 'css!./directorybrowser', 'formDialogStyle'], function (dialogHelper, $) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -107,6 +107,9 @@
 
         var html = '';
 
+        html += '<div class="formDialogContent smoothScrollY">';
+        html += '<div class="dialogContentInner dialog-content-centered">';
+
         var instruction = options.instruction ? options.instruction + '<br/><br/>' : '';
 
         html += '<p class="directoryPickerHeadline">';
@@ -133,7 +136,7 @@
 
         html += '</p>';
 
-        html += '<form style="max-width:100%;">';
+        html += '<form style="margin:auto;">';
 
         html += '<div class="inputContainer" style="display: flex; align-items: center;">';
         html += '<div style="flex-grow:1;">';
@@ -142,13 +145,16 @@
         html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><i class="md-icon">search</i></button>';
         html += '</div>';
 
-        html += '<div class="results paperList" style="height: 180px; overflow-y: auto;"></div>';
+        html += '<div class="results paperList" style="max-height: 300px; overflow-y: auto;"></div>';
 
-        html += '<div>';
-        html += '<button is="emby-button" type="submit" class="raised submit block">' + Globalize.translate('ButtonOk') + '</button>';
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">' + Globalize.translate('ButtonOk') + '</button>';
         html += '</div>';
 
         html += '</form>';
+        html += '</div>';
+
+        html += '</div>';
         html += '</div>';
 
         return html;
@@ -227,30 +233,31 @@
                 var initialPath = responses[1];
 
                 var dlg = dialogHelper.createDialog({
-                    size: 'medium',
-                    removeOnClose: true
+                    size: 'medium-tall',
+                    removeOnClose: true,
+                    scrollY: false
                 });
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
 
                 dlg.classList.add('directoryPicker');
+                dlg.classList.add('formDialog');
 
                 var html = '';
-                html += '<h2 class="dialogHeader">';
-                html += '<button type="button" is="emby-button" icon="arrow-back" class="fab mini btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-                html += '<div style="display:inline-block;margin-left:.6em;vertical-align:middle;">' + (options.header || Globalize.translate('HeaderSelectPath')) + '</div>';
-                html += '</h2>';
+                html += '<div class="formDialogHeader">';
+                html += '<button is="paper-icon-button-light" class="btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+                html += '<h3 class="formDialogHeaderTitle">';
+                html += options.header || Globalize.translate('HeaderSelectPath');
+                html += '</h3>';
 
-                html += '<div class="editorContent" style="max-width:800px;margin:auto;">';
-                html += getEditorHtml(options, systemInfo);
                 html += '</div>';
 
-                dlg.innerHTML = html;
-                document.body.appendChild(dlg);
+                html += getEditorHtml(options, systemInfo);
 
-                var editorContent = dlg.querySelector('.editorContent');
-                initEditor(editorContent, options, fileOptions);
+                dlg.innerHTML = html;
+
+                initEditor(dlg, options, fileOptions);
 
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-opened', function () {
@@ -267,9 +274,9 @@
 
                 currentDialog = dlg;
 
-                var txtCurrentPath = editorContent.querySelector('#txtDirectoryPickerPath');
+                var txtCurrentPath = dlg.querySelector('#txtDirectoryPickerPath');
                 txtCurrentPath.value = initialPath;
-                refreshDirectoryBrowser(editorContent, txtCurrentPath.value);
+                refreshDirectoryBrowser(dlg, txtCurrentPath.value);
 
             });
         };

@@ -110,11 +110,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
         // native scroll is a must with touch input
         // also use native scroll when scrolling vertically in desktop mode - excluding horizontal because the mouse wheel support is choppy at the moment
         // in cases with firefox, if the smooth scroll api is supported then use that because their implementation is very good
-        if (browser.operaTv) {
-            // no scrolling supported
-            options.enableNativeScroll = false;
-        }
-        else if (isSmoothScrollSupported && browser.firefox) {
+        if (isSmoothScrollSupported && browser.firefox) {
             // native smooth scroll
             options.enableNativeScroll = true;
         }
@@ -883,12 +879,13 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 slideeElement.style['will-change'] = 'transform';
             }
 
+            dragSourceElement.addEventListener('mousedown', dragInitSlidee);
+
             if (transform) {
 
                 dom.addEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
                     passive: true
                 });
-                dragSourceElement.addEventListener('mousedown', dragInitSlidee);
 
                 if (!o.scrollWidth) {
                     dom.addEventListener(window, 'resize', onResize, {

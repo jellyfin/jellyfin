@@ -133,7 +133,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="xmlTagsUsed">The XML tags used.</param>
         public static void Save(StringBuilder xml, string path, List<string> xmlTagsUsed, IServerConfigurationManager config, IFileSystem fileSystem)
         {
-			if (fileSystem.FileExists(path))
+            if (fileSystem.FileExists(path))
             {
                 var position = xml.ToString().LastIndexOf("</", StringComparison.OrdinalIgnoreCase);
                 xml.Insert(position, GetCustomTags(path, xmlTagsUsed));
@@ -145,7 +145,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             //Add the new node to the document.
             xmlDocument.InsertBefore(xmlDocument.CreateXmlDeclaration("1.0", "UTF-8", "yes"), xmlDocument.DocumentElement);
 
-			fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             var wasHidden = false;
 
@@ -445,119 +445,16 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<RunningTime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</RunningTime>");
             }
 
-            var imdb = item.GetProviderId(MetadataProviders.Imdb);
-
-            if (!string.IsNullOrEmpty(imdb))
+            if (item.ProviderIds != null)
             {
-                builder.Append("<IMDB>" + SecurityElement.Escape(imdb) + "</IMDB>");
-            }
-
-            var tmdb = item.GetProviderId(MetadataProviders.Tmdb);
-
-            if (!string.IsNullOrEmpty(tmdb))
-            {
-                builder.Append("<TMDbId>" + SecurityElement.Escape(tmdb) + "</TMDbId>");
-            }
-
-            if (!(item is Series))
-            {
-                var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
-
-                if (!string.IsNullOrEmpty(tvdb))
+                foreach (var providerKey in item.ProviderIds.Keys)
                 {
-                    builder.Append("<TvDbId>" + SecurityElement.Escape(tvdb) + "</TvDbId>");
+                    var providerId = item.ProviderIds[providerKey];
+                    if (!string.IsNullOrEmpty(providerId))
+                    {
+                        builder.Append(string.Format("<{0}>{1}</{0}>", providerKey + "Id", SecurityElement.Escape(providerId)));
+                    }
                 }
-            }
-
-            var externalId = item.GetProviderId(MetadataProviders.Tvcom);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<TVcomId>" + SecurityElement.Escape(externalId) + "</TVcomId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.RottenTomatoes);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<RottenTomatoesId>" + SecurityElement.Escape(externalId) + "</RottenTomatoesId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.Zap2It);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<Zap2ItId>" + SecurityElement.Escape(externalId) + "</Zap2ItId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<MusicBrainzAlbumId>" + SecurityElement.Escape(externalId) + "</MusicBrainzAlbumId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.MusicBrainzAlbumArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<MusicBrainzAlbumArtistId>" + SecurityElement.Escape(externalId) + "</MusicBrainzAlbumArtistId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.MusicBrainzArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<MusicBrainzArtistId>" + SecurityElement.Escape(externalId) + "</MusicBrainzArtistId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.MusicBrainzReleaseGroup);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<MusicBrainzReleaseGroupId>" + SecurityElement.Escape(externalId) + "</MusicBrainzReleaseGroupId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.Gamesdb);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<GamesDbId>" + SecurityElement.Escape(externalId) + "</GamesDbId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.TmdbCollection);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<TMDbCollectionId>" + SecurityElement.Escape(externalId) + "</TMDbCollectionId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.AudioDbArtist);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<AudioDbArtistId>" + SecurityElement.Escape(externalId) + "</AudioDbArtistId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.AudioDbAlbum);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<AudioDbAlbumId>" + SecurityElement.Escape(externalId) + "</AudioDbAlbumId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.TvRage);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<TVRageId>" + SecurityElement.Escape(externalId) + "</TVRageId>");
-            }
-
-            externalId = item.GetProviderId(MetadataProviders.TvMaze);
-
-            if (!string.IsNullOrEmpty(externalId))
-            {
-                builder.Append("<TvMazeId>" + SecurityElement.Escape(externalId) + "</TvMazeId>");
             }
 
             var hasTagline = item as IHasTaglines;

@@ -41,7 +41,6 @@ namespace MediaBrowser.Model.Configuration
         public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
-        public bool EnableChannelView { get; set; }
 
         public bool RememberAudioSelections { get; set; }
         public bool RememberSubtitleSelections { get; set; }

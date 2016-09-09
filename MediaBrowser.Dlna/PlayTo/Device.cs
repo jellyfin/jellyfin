@@ -483,7 +483,9 @@ namespace MediaBrowser.Dlna.PlayTo
                 {
                     if (OnDeviceUnavailable != null)
                     {
+                        _logger.Debug("Disposing device due to loss of connection");
                         OnDeviceUnavailable();
+                        return;
                     }
                 }
                 if (_successiveStopCount >= maxSuccessiveStopReturns)

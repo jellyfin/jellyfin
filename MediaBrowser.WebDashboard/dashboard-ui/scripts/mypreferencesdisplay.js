@@ -3,19 +3,23 @@
     return function (view, params) {
 
         var userId = params.userId || Dashboard.getCurrentUserId();
-        var userSettings = new userSettingsBuilder(userId);
+        var userSettings = new userSettingsBuilder();
+        var userSettingsLoaded;
 
         function loadForm(page, user) {
 
-            page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
-            page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
+            userSettings.setUserInfo(userId, ApiClient).then(function () {
+                userSettingsLoaded = true;
+                page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
+                page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
 
-            page.querySelector('#selectThemeSong').value = appStorage.getItem('enableThemeSongs-' + user.Id) || '';
-            page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '';
+                page.querySelector('#chkThemeSong').checked = userSettings.enableThemeSongs();
+                page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '';
 
-            page.querySelector('#selectLanguage').value = userSettings.language() || '';
+                page.querySelector('#selectLanguage').value = userSettings.language() || '';
 
-            Dashboard.hideLoadingMsg();
+                Dashboard.hideLoadingMsg();
+            });
         }
 
         function saveUser(page, user) {
@@ -23,9 +27,11 @@
             user.Configuration.DisplayMissingEpisodes = page.querySelector('.chkDisplayMissingEpisodes').checked;
             user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
 
-            userSettings.language(page.querySelector('#selectLanguage').value);
+            if (userSettingsLoaded) {
+                userSettings.language(page.querySelector('#selectLanguage').value);
+                userSettings.enableThemeSongs(page.querySelector('#chkThemeSong').checked);
+            }
 
-            appStorage.setItem('enableThemeSongs-' + user.Id, page.querySelector('#selectThemeSong').value);
             appStorage.setItem('enableBackdrops-' + user.Id, page.querySelector('#selectBackdrop').value);
 
             return ApiClient.updateUserConfiguration(user.Id, user.Configuration);

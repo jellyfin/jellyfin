@@ -73,7 +73,6 @@
     <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="Migrations\DbMigration.cs" />
     <Compile Include="Migrations\MovieDbEpisodeProviderMigration.cs" />
-    <Compile Include="Migrations\OmdbEpisodeProviderMigration.cs" />
     <Compile Include="Migrations\UpdateLevelMigration.cs" />
     <Compile Include="NativeEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

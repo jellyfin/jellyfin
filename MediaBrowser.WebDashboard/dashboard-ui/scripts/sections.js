@@ -4,22 +4,7 @@
 
         return ApiClient.getUserViews({}, userId).then(function (result) {
 
-            var items = result.Items;
-
-            var list = [];
-
-            for (var i = 0, length = items.length; i < length; i++) {
-
-                var view = items[i];
-
-                if (AppInfo.isNativeApp && browserInfo.safari && view.CollectionType == 'livetv') {
-                    continue;
-                }
-
-                list.push(view);
-            }
-
-            return list;
+            return result.Items;
         });
     }
 
@@ -347,7 +332,8 @@
                     lazy: true,
                     context: 'home',
                     centerText: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';
             }
@@ -390,7 +376,8 @@
                     showChildCountIndicator: true,
                     lazy: true,
                     context: 'home',
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';
             }
@@ -451,14 +438,12 @@
 
             if (items.length) {
 
-                var screenWidth = dom.getWindowSize().innerWidth;
-
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 html += '</div>';
 
-                var scrollX = enableScrollX() && browserInfo.safari && screenWidth > 800;
+                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 640;
 
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
@@ -470,9 +455,11 @@
                     shape: scrollX ? 'overflowBackdrop' : shape,
                     showTitle: showTitles,
                     centerText: true,
+                    overlayText: false,
                     lazy: true,
                     autoThumb: true,
-                    transition: false
+                    transition: false,
+                    allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';
             }
@@ -535,7 +522,8 @@
                     showDetailsMenu: true,
                     overlayPlayButton: true,
                     context: 'home',
-                    centerText: true
+                    centerText: true,
+                    allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';
             }
@@ -578,7 +566,8 @@
                     lazy: true,
                     overlayPlayButton: true,
                     context: 'home',
-                    centerText: true
+                    centerText: true,
+                    allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';
             }
@@ -705,7 +694,9 @@
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                allowBottomPadding: !enableScrollX()
+
             });
             html += '</div>';
 

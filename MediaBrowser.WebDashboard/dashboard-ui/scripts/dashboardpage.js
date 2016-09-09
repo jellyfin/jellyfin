@@ -43,10 +43,6 @@
                 return;
             }
 
-            if (Dashboard.lastSystemInfo) {
-                page.querySelector('.serverNameHeader').innerHTML = Dashboard.lastSystemInfo.ServerName;
-            }
-
             DashboardPage.newsStartIndex = 0;
 
             Dashboard.showLoadingMsg();
@@ -118,9 +114,13 @@
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
                 page.querySelector('.serverNameHeader').innerHTML = systemInfo.ServerName;
-                Dashboard.updateSystemInfo(systemInfo);
 
-                $('#appVersionNumber', page).html(Globalize.translate('LabelVersionNumber').replace('{0}', systemInfo.Version));
+                var localizedVersion = Globalize.translate('LabelVersionNumber', systemInfo.Version);
+                if (systemInfo.SystemUpdateLevel && systemInfo.SystemUpdateLevel != 'Release') {
+                    localizedVersion += " " + Globalize.translate('Option' + systemInfo.SystemUpdateLevel).toLowerCase();
+                }
+
+                $('#appVersionNumber', page).html(localizedVersion);
 
                 if (systemInfo.SupportsHttps) {
                     $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', '<b>' + systemInfo.HttpServerPortNumber + '</b>', '<b>' + systemInfo.HttpsPortNumber + '</b>'));

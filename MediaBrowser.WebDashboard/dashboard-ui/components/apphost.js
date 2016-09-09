@@ -99,6 +99,58 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
                window.msSpeechRecognition;
     }
 
+    function supportsFullscreen() {
+
+        if (browser.tv) {
+            return false;
+        };
+
+        var element = document.documentElement;
+
+        return element.requestFullscreen ||
+            element.mozRequestFullScreen ||
+            element.webkitRequestFullscreen ||
+            element.msRequestFullscreen;
+    }
+
+    var supportedFeatures = function () {
+
+        var features = [
+            'filedownload',
+            'sharing',
+            'externalpremium'
+        ];
+
+        if (browser.operaTv || browser.tizen || browser.web0s) {
+            features.push('exit');
+        } else {
+            features.push('exitmenu');
+        }
+
+        if (!browser.operaTv) {
+            features.push('externallinks');
+        }
+
+        if (supportsVoiceInput()) {
+            features.push('voiceinput');
+        }
+
+        if (!browser.mobile || browser.edgeUwp) {
+            features.push('htmlaudioautoplay');
+            features.push('htmlvideoautoplay');
+        }
+
+        if (window.SyncRegistered) {
+            //features.push('sync');
+        }
+
+        if (supportsFullscreen()) {
+            features.push('fullscreen');
+        }
+        return features;
+    }();
+
+
     var appInfo;
     var version = window.dashboardVersion || '3.0';
 
@@ -124,38 +176,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         },
         supports: function (command) {
 
-            var features = [
-                'filedownload',
-                'sharing',
-                'externalpremium'
-            ];
-
-            if (browser.operaTv || browser.tizen || browser.web0s) {
-                features.push('exit');
-            } else {
-                features.push('exitmenu');
-            }
-
-            if (!browser.operaTv) {
-                features.push('externallinks');
-            }
-
-            if (supportsVoiceInput()) {
-                features.push('voiceinput');
-            }
-
-            var userAgent = navigator.userAgent.toLowerCase();
-
-            if (!browser.mobile || userAgent.indexOf('msapphost') != -1) {
-                features.push('htmlaudioautoplay');
-                features.push('htmlvideoautoplay');
-            }
-
-            if (window.SyncRegistered) {
-                //features.push('sync');
-            }
-
-            return features.indexOf(command.toLowerCase()) != -1;
+            return supportedFeatures.indexOf(command.toLowerCase()) != -1;
         },
         unlockedFeatures: function () {
 

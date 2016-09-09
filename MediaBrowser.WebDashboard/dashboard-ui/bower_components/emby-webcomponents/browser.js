@@ -161,6 +161,7 @@
     browser.animate = document.documentElement.animate != null;
     browser.tizen = userAgent.toLowerCase().indexOf('tizen') != -1 || userAgent.toLowerCase().indexOf('smarthub') != -1;
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) != -1;
+    browser.edgeUwp = browser.edge && userAgent.toLowerCase().indexOf('msapphost') != -1;
 
     browser.tv = isTv();
     browser.operaTv = browser.tv && userAgent.toLowerCase().indexOf('opr/') != -1;

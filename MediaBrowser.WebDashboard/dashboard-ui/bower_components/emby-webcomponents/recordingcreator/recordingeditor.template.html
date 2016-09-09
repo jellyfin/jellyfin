@@ -1,20 +1,13 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <div class="formDialogHeaderTitle">
+    <h3 class="formDialogHeaderTitle">
         ${Edit}
-    </div>
-    <div style="margin-left:auto; display: flex; align-items: center; justify-content: center;">
-        <button is="emby-button" type="button" class="btnHeaderSave accent" tabindex="-1">
-            <i class="md-icon">check</i>
-            <span>${Save}</span>
-        </button>
-    </div>
+    </h3>
 </div>
 
 <div class="formDialogContent smoothScrollY">
     <div class="dialogContentInner dialog-content-centered">
         <h1 class="itemName dialogContentTitle"></h1>
-        <p class="itemEpisodeName"></p>
         <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
         <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
         <p class="itemGenres"></p>
@@ -32,10 +25,13 @@
                 <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
             </div>
             <br />
-            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus>
-                <i class="md-icon recordingDialogSubmitIcon">fiber_manual_record</i>
-                <span>${Save}</span>
-            </button>
+
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit" autofocus>
+                    <span>${Save}</span>
+                </button>
+            </div>
+
         </form>
     </div>
 </div>

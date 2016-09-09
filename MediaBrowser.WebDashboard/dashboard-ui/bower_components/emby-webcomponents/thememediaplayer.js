@@ -1,4 +1,4 @@
-define(['playbackManager', 'browser'], function (playbackManager, browser) {
+define(['playbackManager', 'userSettings'], function (playbackManager, userSettings) {
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -40,13 +40,10 @@ define(['playbackManager', 'browser'], function (playbackManager, browser) {
     function enabled(mediaType) {
 
         if (mediaType == 'Video') {
-            // too slow
-            if (browser.slow) {
-                return false;
-            }
+            return userSettings.enableThemeVideos();
         }
 
-        return true;
+        return userSettings.enableThemeSongs();
     }
 
     function loadThemeMedia(item) {

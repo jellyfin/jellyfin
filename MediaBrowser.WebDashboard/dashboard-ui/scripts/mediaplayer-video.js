@@ -1250,10 +1250,16 @@
             var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
             var item = self.currentItem;
+            var mediaSource = self.currentMediaSource;
             if (item && item.Type == "TvChannel") {
-                errorMsg += '<p>';
+                errorMsg += '<br/>';
+                errorMsg += '<br/>';
                 errorMsg += Globalize.translate('MessageEnsureOpenTuner');
-                errorMsg += '</p>';
+            }
+            else if (mediaSource && mediaSource.VideoType != "VideoFile") {
+                errorMsg += '<br/>';
+                errorMsg += '<br/>';
+                errorMsg += Globalize.translate('MessageFolderRipPlaybackExperimental');
             }
 
             Dashboard.alert({

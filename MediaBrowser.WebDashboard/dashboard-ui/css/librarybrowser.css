@@ -35,10 +35,6 @@
     z-index: -1;
 }
 
-.pageWithAbsoluteTabs neon-animatable {
-    z-index: 2;
-}
-
 .libraryPage .header {
     padding-bottom: 0;
 }
@@ -46,24 +42,6 @@
 .pageTabContent {
     contain: style;
 }
-
-.textActionButton {
-    border: 0 !important;
-    background: transparent;
-    border: 0 !important;
-    padding: 0 !important;
-    cursor: pointer;
-    outline: none !important;
-    color: inherit;
-    vertical-align: middle;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-    .textActionButton:hover {
-        text-decoration: underline;
-        opacity: 1;
-    }
 
 .pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
@@ -849,7 +827,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: fixed;
     right: 0;
     bottom: 0;
-    z-index: 999;
     text-align: center;
     font-size: 90%;
     display: none;
@@ -960,10 +937,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .smallDetailImageContainer {
         padding-left: 1em;
     }
-}
-
-.homeFavoritesDisabled .homeFavoritesTab {
-    display: none !important;
 }
 
 #criticReviewsContent.hiddenScrollX {

@@ -279,6 +279,12 @@ in case playback is stalled, and a buffered range is available upfront, less tha
 hls.js will jump over this buffer hole to reach the beginning of this following buffered range.
 ```maxSeekHole``` allows to configure this jumpable threshold.
 
+#### ```maxStarvationDelay```
+(default 2s)
+
+ABR algorithm will always try to choose a quality level that should avoid rebuffering.
+In case no quality level with this criteria can be found (lets say for example that buffer length is 1s, but fetching a fragment at lowest quality is predicted to take around 2s ... ie we can forecast around 1s of rebuffering ...) then ABR algorithm will try to find a level that should guarantee less than ```maxStarvationDelay``` of buffering.
+this max delay is also used in  automatic start level selection : in that mode ABR controller will ensure that video loading time (ie the time to fetch the first fragment at lowest quality level + the time to fetch the fragment at the appropriate quality level is less than ```maxStarvationDelay``` )
 
 #### ```seekHoleNudgeDuration```
 (default 0.01s)

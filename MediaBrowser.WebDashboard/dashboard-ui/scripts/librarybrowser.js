@@ -150,9 +150,9 @@
                 });
             },
 
-            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs) {
+            configurePaperLibraryTabs: function (ownerpage, tabs, panels, animateTabs, enableSwipe) {
 
-                if (!browser.safari) {
+                if (!browser.safari && enableSwipe !== false) {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs);
                 }
 
@@ -423,7 +423,7 @@
                     includeParentInfo: false
                 });
 
-                Dashboard.setPageTitle(name);
+                LibraryMenu.setTitle(name);
 
                 if (linkToElement) {
                     nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
@@ -658,13 +658,8 @@
                     html += '</div>';
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
-                    // Seeing an issue in Firefox and IE where it's initially visible in the bottom right, then moves to the center
-                    var delay = browser.animate ? 0 : 100;
-                    setTimeout(function () {
-                        dialogHelper.open(dlg);
-                    }, delay);
+                    dialogHelper.open(dlg);
 
                     function onSortByChange() {
                         var newValue = this.value;

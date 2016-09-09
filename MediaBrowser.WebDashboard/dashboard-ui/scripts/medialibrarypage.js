@@ -227,10 +227,13 @@
 
     function editImages(page, virtualFolder) {
 
-        require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+        require(['imageEditor'], function (imageEditor) {
 
-            ImageEditor.show(virtualFolder.ItemId, {
-                theme: 'a'
+            imageEditor.show({
+                
+                itemId: virtualFolder.ItemId,
+                serverId: ApiClient.serverId()
+
             }).then(function () {
                 reloadLibrary(page);
             });

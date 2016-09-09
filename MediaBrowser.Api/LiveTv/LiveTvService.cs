@@ -155,7 +155,67 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public bool? IsMovie { get; set; }
+        public bool? IsSeries { get; set; }
+        public bool? IsKids { get; set; }
+        public bool? IsSports { get; set; }
+
         public GetRecordings()
+        {
+            EnableTotalRecordCount = true;
+        }
+    }
+
+    [Route("/LiveTv/Recordings/Series", "GET", Summary = "Gets live tv recordings")]
+    [Authenticated]
+    public class GetRecordingSeries : IReturn<QueryResult<BaseItemDto>>, IHasDtoOptions
+    {
+        [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelId { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+
+        [ApiMember(Name = "GroupId", Description = "Optional filter by recording group.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string GroupId { get; set; }
+
+        [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? StartIndex { get; set; }
+
+        [ApiMember(Name = "Limit", Description = "Optional. The maximum number of records to return", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? Limit { get; set; }
+
+        [ApiMember(Name = "Status", Description = "Optional filter by recording status.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public RecordingStatus? Status { get; set; }
+
+        [ApiMember(Name = "Status", Description = "Optional filter by recordings that are in progress, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsInProgress { get; set; }
+
+        [ApiMember(Name = "SeriesTimerId", Description = "Optional filter by recordings belonging to a series timer", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string SeriesTimerId { get; set; }
+
+        [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableImages { get; set; }
+
+        [ApiMember(Name = "ImageTypeLimit", Description = "Optional, the max number of images to return, per image type", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? ImageTypeLimit { get; set; }
+
+        [ApiMember(Name = "EnableImageTypes", Description = "Optional. The image types to include in the output.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string EnableImageTypes { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string Fields { get; set; }
+
+        public bool EnableTotalRecordCount { get; set; }
+
+        [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
+        public bool? EnableUserData { get; set; }
+
+        public GetRecordingSeries()
         {
             EnableTotalRecordCount = true;
         }
@@ -535,12 +595,6 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class GetLiveTvRegistrationInfo : IReturn<MBRegistrationRecord>
     {
-        [ApiMember(Name = "ChannelId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ChannelId { get; set; }
-
-        [ApiMember(Name = "ProgramId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string ProgramId { get; set; }
-
         [ApiMember(Name = "Feature", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Feature { get; set; }
     }
@@ -592,7 +646,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetLiveTvRegistrationInfo request)
         {
-            var result = await _liveTvManager.GetRegistrationInfo(request.ChannelId, request.ProgramId, request.Feature).ConfigureAwait(false);
+            var result = await _liveTvManager.GetRegistrationInfo(request.Feature).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -854,6 +908,32 @@ namespace MediaBrowser.Api.LiveTv
             options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
 
             var result = await _liveTvManager.GetRecordings(new RecordingQuery
+            {
+                ChannelId = request.ChannelId,
+                UserId = request.UserId,
+                GroupId = request.GroupId,
+                StartIndex = request.StartIndex,
+                Limit = request.Limit,
+                Status = request.Status,
+                SeriesTimerId = request.SeriesTimerId,
+                IsInProgress = request.IsInProgress,
+                EnableTotalRecordCount = request.EnableTotalRecordCount,
+                IsMovie = request.IsMovie,
+                IsSeries = request.IsSeries,
+                IsKids = request.IsKids,
+                IsSports = request.IsSports
+
+            }, options, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
+        }
+
+        public async Task<object> Get(GetRecordingSeries request)
+        {
+            var options = GetDtoOptions(request);
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+            var result = await _liveTvManager.GetRecordingSeries(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
                 UserId = request.UserId,

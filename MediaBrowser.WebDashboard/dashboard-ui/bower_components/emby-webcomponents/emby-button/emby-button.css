@@ -1,6 +1,6 @@
 .emby-button {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
     align-items: center;
     box-sizing: border-box;
     margin: 0 .29em;
@@ -28,6 +28,8 @@
     overflow: hidden;
     font-weight: 500;
     text-transform: uppercase;
+    /* Disable webkit tap highlighting */
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
     .emby-button.raised, .emby-button.fab {
@@ -61,48 +63,48 @@
             font-size: 2.85em;
         }
 
-    .emby-button.noflex {
-        display: inline-block;
-        white-space: nowrap;
+.emby-button-noflex {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.emby-button.fab.mini {
+    padding: 8px;
+}
+
+    .emby-button.fab.mini > i {
+        height: auto;
+        width: auto;
+        font-size: 1.72em;
     }
 
-    .emby-button.fab.mini {
-        padding: 8px;
-    }
+.emby-button.block {
+    display: block;
+    align-items: center;
+    justify-content: center;
+    margin: .25em 0;
+    width: 100%;
+}
 
-        .emby-button.fab.mini > i {
-            height: auto;
-            width: auto;
-            font-size: 1.72em;
-        }
+.emby-button.raised:focus {
+    box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    .emby-button.block {
-        display: block;
-        align-items: center;
-        justify-content: center;
-        margin: .25em 0;
-        width: 100%;
-    }
+.emby-button > i + span {
+    margin-left: .5em;
+}
 
-    .emby-button.raised:focus {
-        box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4);
-        transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+.emby-button span + i {
+    margin-left: .5em;
+}
 
-    .emby-button i + span {
-        margin-left: .5em;
-    }
+.emby-button.iconRight > i {
+    margin-left: auto;
+    margin-right: .25em;
+}
 
-    .emby-button span + i {
-        margin-left: .5em;
-    }
-
-    .emby-button.iconRight i {
-        margin-left: auto;
-        margin-right: .25em;
-    }
-
-.emby-button-noflex.iconRight i {
+.emby-button-noflex.iconRight > i {
     position: absolute;
     right: 0;
     top: 25%;
@@ -142,7 +144,8 @@
     overflow: hidden;
     font-weight: 500;
     border-radius: 50%;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    /* Disable webkit tap highlighting */
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
     justify-content: center;
 }
 
@@ -183,9 +186,13 @@
         opacity: 0;
     }
 
-    .paper-icon-button-light:focus:after {
-        opacity: .2;
+    .paper-icon-button-light:focus {
+        color: #52B54B;
     }
+
+        .paper-icon-button-light:focus:after {
+            opacity: .2;
+        }
 
 .emby-button-ripple-effect, .paper-icon-button-light-ripple-effect {
     position: absolute;

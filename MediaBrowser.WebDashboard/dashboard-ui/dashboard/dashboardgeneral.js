@@ -36,10 +36,8 @@
 
         if (systemInfo.CanSelfUpdate) {
             $('.fldAutomaticUpdates', page).show();
-            page.querySelector('#selectAutomaticUpdateLevel').setLabel(Globalize.translate('LabelAutomaticUpdateLevel'));
         } else {
             $('.fldAutomaticUpdates', page).hide();
-            page.querySelector('#selectAutomaticUpdateLevel').setLabel(Globalize.translate('LabelAutomaticUpdateLevelForPlugins'));
         }
 
         $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate);
@@ -51,11 +49,11 @@
             $('#fldEnableAutomaticRestart', page).hide();
         }
 
-        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
-
-        $('#chkEnableDashboardResponseCache', page).checked(config.EnableDashboardResponseCaching);
-        $('#chkEnableMinification', page).checked(config.EnableDashboardResourceMinification);
-        $('#txtDashboardSourcePath', page).val(config.DashboardSourcePath).trigger('change');
+        if (systemInfo.CanSelfRestart || systemInfo.CanSelfUpdate) {
+            $('.autoUpdatesContainer', page).removeClass('hide');
+        } else {
+            $('.autoUpdatesContainer', page).addClass('hide');
+        }
 
         Dashboard.hideLoadingMsg();
     }
@@ -82,13 +80,8 @@
             config.EnableAnonymousUsageReporting = $('#chkUsageData', form).checked();
             config.RunAtStartup = $('#chkRunAtStartup', form).checked();
 
-            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
             config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
-
-            config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
-            config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
-            config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
 
             ApiClient.updateServerConfiguration(config).then(function () {
 
@@ -117,16 +110,6 @@
 
     return function (view, params) {
 
-        $('#selectAutomaticUpdateLevel', view).on('change', function () {
-
-            if (this.value == "Dev") {
-                $('#devBuildWarning', view).show();
-            } else {
-                $('#devBuildWarning', view).hide();
-            }
-
-        });
-
         $('#btnSelectCachePath', view).on("click.selectDirectory", function () {
 
             require(['directorybrowser'], function (directoryBrowser) {
@@ -146,25 +129,6 @@
                     header: Globalize.translate('HeaderSelectServerCachePath'),
 
                     instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
-                });
-            });
-        });
-
-        $('#btnSelectDashboardSourcePath', view).on("click.selectDirectory", function () {
-
-            require(['directorybrowser'], function (directoryBrowser) {
-
-                var picker = new directoryBrowser();
-
-                picker.show({
-
-                    callback: function (path) {
-
-                        if (path) {
-                            view.querySelector('#txtDashboardSourcePath').value = path;
-                        }
-                        picker.close();
-                    }
                 });
             });
         });

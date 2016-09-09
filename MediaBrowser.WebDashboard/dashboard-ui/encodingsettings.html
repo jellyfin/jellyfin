@@ -16,7 +16,7 @@
                     <div class="fieldDescription">${LabelHardwareAccelerationTypeHelp}</div>
                 </div>
                 <div class="inputContainer hide fldVaapiDevice">
-                    <input is="emby-input" type="text" id="txtVaapiDevice" label="${LabelVaapiDevice}"/>
+                    <input is="emby-input" type="text" id="txtVaapiDevice" label="${LabelVaapiDevice}" />
                     <div class="fieldDescription">${LabelVaapiDeviceHelp}</div>
                 </div>
                 <div class="selectContainer">
@@ -73,8 +73,28 @@
                     <div class="fieldDescription">${LabelDownMixAudioScaleHelp}</div>
                 </div>
 
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectH264Preset" label="${LabelH264EncodingPreset}">
+                        <option value="">${OptionAuto}</option>
+                        <option value="veryslow">veryslow</option>
+                        <option value="slower">slower</option>
+                        <option value="slow">slow</option>
+                        <option value="medium">medium</option>
+                        <option value="fast">fast</option>
+                        <option value="faster">faster</option>
+                        <option value="veryfast">veryfast</option>
+                        <option value="superfast">superfast</option>
+                        <option value="ultrafast">ultrafast</option>
+                    </select>
+                    <div class="fieldDescription">${H264EncodingPresetHelp}</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" id="txtH264Crf" pattern="[0-9]*" min="0" max="51" step="1" label="${LabelH264Crf}" />
+                    <div class="fieldDescription">${H264CrfHelp}</div>
+                </div>
+
                 <div>
-                    <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
                 </div>
             </form>
         </div>

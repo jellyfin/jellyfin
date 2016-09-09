@@ -41,10 +41,6 @@ define(['apphost'], function (appHost) {
 
         }
 
-        if (item.EpisodeTitle) {
-            name = item.Name + ' ' + name;
-        }
-
         return name;
     }
 

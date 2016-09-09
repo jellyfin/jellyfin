@@ -58,13 +58,11 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEditImages(user, item.Type)) {
 
-                if (isMobileApp) {
-                    if (options.editImages !== false) {
-                        commands.push({
-                            name: globalize.translate('sharedcomponents#EditImages'),
-                            id: 'editimages'
-                        });
-                    }
+                if (options.editImages !== false) {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#EditImages'),
+                        id: 'editimages'
+                    });
                 }
             }
 
@@ -318,9 +316,13 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     }
                 case 'editimages':
                     {
-                        require(['components/imageeditor/imageeditor'], function (ImageEditor) {
+                        require(['imageEditor'], function (imageEditor) {
 
-                            ImageEditor.show(itemId).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
+                            imageEditor.show({
+                                itemId: itemId,
+                                serverId: serverId
+
+                            }).then(getResolveFunction(resolve, id, true), getResolveFunction(resolve, id));
                         });
                         break;
                     }

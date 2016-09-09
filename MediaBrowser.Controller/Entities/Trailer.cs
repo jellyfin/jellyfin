@@ -64,7 +64,7 @@ namespace MediaBrowser.Controller.Entities
 
             info.IsLocalTrailer = TrailerTypes.Contains(TrailerType.LocalTrailer);
 
-            if (!IsInMixedFolder)
+            if (!IsInMixedFolder && LocationType == LocationType.FileSystem)
             {
                 info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
             }

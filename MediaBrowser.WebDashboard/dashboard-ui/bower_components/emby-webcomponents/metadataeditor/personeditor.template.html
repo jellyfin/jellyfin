@@ -1,8 +1,8 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <div class="formDialogHeaderTitle">
+    <h3 class="formDialogHeaderTitle">
         ${Edit}
-    </div>
+    </h3>
 </div>
 
 <div class="formDialogContent smoothScrollY" style="padding-top:2em;">
@@ -27,9 +27,12 @@
             <input is="emby-input" type="text" class="txtPersonRole" label="${LabelPersonRole}" />
             <div class="fieldDescription">${LabelPersonRoleHelp}</div>
         </div>
-        <button is="emby-button" type="submit" class="raised submit block">
-            <i class="md-icon">check</i>
-            <span>${Save}</span>
-        </button>
+
+        <div class="formDialogFooter">
+            <button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">
+                <span>${Save}</span>
+            </button>
+        </div>
+
     </form>
 </div>

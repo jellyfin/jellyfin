@@ -401,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var locationType = item.LocationType;
 
             var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren().ToList()
+                ? ((Folder)item).GetRecursiveChildren(false).ToList()
                 : new List<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
@@ -621,9 +621,38 @@ namespace MediaBrowser.Server.Implementations.Library
             return ResolveItem(args, resolvers);
         }
 
+        private readonly List<string> _ignoredPaths = new List<string>();
+
+        public void RegisterIgnoredPath(string path)
+        {
+            lock (_ignoredPaths)
+            {
+                _ignoredPaths.Add(path);
+            }
+        }
+        public void UnRegisterIgnoredPath(string path)
+        {
+            lock (_ignoredPaths)
+            {
+                _ignoredPaths.Remove(path);
+            }
+        }
+
         public bool IgnoreFile(FileSystemMetadata file, BaseItem parent)
         {
-            return EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent));
+            if (EntityResolutionIgnoreRules.Any(r => r.ShouldIgnore(file, parent)))
+            {
+                return true;
+            }
+
+            //lock (_ignoredPaths)
+            {
+                if (_ignoredPaths.Contains(file.FullName, StringComparer.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public IEnumerable<FileSystemMetadata> NormalizeRootPathList(IEnumerable<FileSystemMetadata> paths)

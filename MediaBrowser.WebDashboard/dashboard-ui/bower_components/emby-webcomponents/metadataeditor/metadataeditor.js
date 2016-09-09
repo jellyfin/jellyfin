@@ -357,11 +357,6 @@
 
         });
 
-        context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
-
-            context.querySelector('.btnSave').click();
-        });
-
         context.querySelector('#chkLockData').addEventListener('click', function (e) {
 
             if (!e.target.checked) {
@@ -1161,7 +1156,7 @@
             if (layoutManager.tv) {
                 dialogOptions.size = 'fullscreen';
             } else {
-                dialogOptions.size = 'medium';
+                dialogOptions.size = 'medium-tall';
             }
 
             var dlg = dialogHelper.createDialog(dialogOptions);
@@ -1173,7 +1168,6 @@
             html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             if (layoutManager.tv) {
                 centerFocus(dlg.querySelector('.formDialogContent'), false, true);

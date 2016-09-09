@@ -120,7 +120,6 @@
                     html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
                     dialogHelper.open(dlg);
 

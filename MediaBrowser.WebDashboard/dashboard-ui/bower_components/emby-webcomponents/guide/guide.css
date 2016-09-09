@@ -44,19 +44,34 @@
     color: #fff;
 }
 
-.newTvProgram {
-    color: yellow;
+.guideProgramIndicator {
     text-transform: uppercase;
+    border-radius: 2px;
+    margin-right: .5em;
+    color: #fff;
+    font-size: 74%;
+    padding: .2em .25em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+}
+
+.newTvProgram {
+    background: #64A239;
 }
 
 .liveTvProgram {
-    color: #64A239;
-    text-transform: uppercase;
+    background: #EC407A;
 }
 
 .premiereTvProgram {
-    color: orange;
-    text-transform: uppercase;
+    background: #EF6C00;
+}
+
+.repeatTvProgram {
+    background: #009688;
 }
 
 .programAccent {
@@ -221,8 +236,46 @@
 }
 
 .btnSelectDate {
-    color: #fff;
     padding-left: .5em;
+    text-transform: none;
+    font-weight: normal;
+}
+
+.btnSelectDateContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guideDateText {
+    font-size: 80%;
+}
+
+@media all and (min-width: 1600px) {
+
+    .guideDateText {
+        font-size: 92%;
+    }
+}
+
+.btnGuideViewSettings {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.btnGuideViewSettingsIcon {
+    font-size: 1.5em !important;
+}
+
+@media all and (max-width: 1280px) {
+
+    .btnGuideViewSettings {
+        display: none;
+    }
+}
+
+.selectDateIcon {
+    flex-shrink: 0;
 }
 
 .channelHeaderCell {
@@ -233,10 +286,6 @@
 }
 
 @media all and (max-width: 800px) {
-
-    .guideCurrentDay {
-        display: none;
-    }
 
     .newTvProgram, .liveTvProgram, .premiereTvProgram, .guideHdIcon {
         display: none;
@@ -267,7 +316,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 3.5em;
+    height: 3em;
 }
 
 .pointerInput .channelHeaderCell:hover {
@@ -318,6 +367,8 @@
     padding: 0 .5em 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
 
 .guideProgramTime {
@@ -327,10 +378,10 @@
 
 .programIcon {
     margin-left: auto;
-    margin-right: .5em;
-    height: 3.5vh;
-    width: 3.5vh;
-    font-size: 3.5vh;
+    margin-right: .25em;
+    height: auto;
+    width: auto;
+    font-size: 1.6em;
     color: #ddd;
     flex-shrink: 0;
 }
@@ -382,4 +433,30 @@
 
 .timerIcon, .seriesTimerIcon {
     color: #cc3333 !important;
+}
+
+.visibleGuideScroller::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-button:start:decrement,
+.visibleGuideScroller::-webkit-scrollbar-button:end:increment {
+    display: none;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-track-piece {
+    background-color: #3b3b3b;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-thumb:vertical, .visibleGuideScroller::-webkit-scrollbar-thumb:horizontal {
+    -webkit-border-radius: 2px;
+    background: #888 no-repeat center;
+}
+
+.guideOptions {
+    color: #eee;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }

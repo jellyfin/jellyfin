@@ -17,7 +17,7 @@
 }
 
 .checkboxContainer {
-    margin-bottom: 2em;
+    margin-bottom: 1.8em;
     display: flex;
 }
 
@@ -120,4 +120,8 @@
 
 .checkboxList-paperList {
     padding: 1em !important;
+}
+
+.checkboxListLabel {
+    opacity: .7;
 }

@@ -16,7 +16,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
+    /* If this is raised, make sure it does not overlap bottom footer */
+    z-index: 1;
     margin: 0 !important;
     width: 100% !important;
     /* Page needs to supply padding */
@@ -57,14 +58,7 @@
 }
 
 .headerButton {
-    margin: 0 5px;
-    background-color: transparent;
-    vertical-align: middle;
-    text-align: center;
-    border: 0 !important;
-    outline: none;
-    cursor: pointer;
-    display: inline-block;
+    flex-shrink: 0;
 }
 
 .menuArrow {
@@ -73,16 +67,6 @@
     width: 24px;
     display: inline-block;
 }
-
-.headerButtonRight {
-    border-width: 0 !important;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-    .headerButtonRight:first-child {
-        border-width: 0 !important;
-    }
 
 .hideMainDrawer .mainDrawerButton {
     display: none;
@@ -101,6 +85,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
+    margin-left: .75em;
+    font-size: 108%;
+    /* Avoid pushing right header off the screen */
+    flex-shrink: 1;
 }
 
 .viewMenuBar {
@@ -114,6 +102,7 @@
     height: 50px;
     display: flex;
     flex-direction: column;
+    font-size: 13px;
 }
 
 .hiddenViewMenuBar .viewMenuBar {
@@ -132,6 +121,10 @@
     text-align: center;
     margin: 0 auto;
     align-items: center;
+}
+
+.emby-tabs {
+    font-size: 13px;
 }
 
 .ui-body-b .libraryViewNav {
@@ -226,13 +219,6 @@
 
 .ui-panel.ui-body-b {
     background-color: #1D1D20;
-}
-
-@media all and (max-width: 400px) {
-
-    .libraryMenuButtonText {
-        display: none;
-    }
 }
 
 @media all and (max-width: 800px) {

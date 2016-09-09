@@ -25,6 +25,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="tempDirectory">The temporary directory.</param>
         void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory);
 
+        bool PortsRequireAuthorization(string applicationPath);
+
         /// <summary>
         /// Gets the environment.
         /// </summary>
@@ -107,5 +109,7 @@ namespace MediaBrowser.Server.Startup.Common
         void LaunchUrl(string url);
 
         IDbConnector GetDbConnector();
+
+        void EnableLoopback(string appName);
     }
 }

@@ -17,14 +17,19 @@
 
         Dashboard.showLoadingMsg();
 
+        var limit = getLimit();
+        if (enableScrollX()) {
+            limit *= 2;
+        }
+
         ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: getLimit() * 2,
+            limit: limit,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary",
-            EnableTotalRecordCount: false
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -47,7 +52,8 @@
             IsSports: false,
             IsKids: false,
             IsSeries: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -61,7 +67,8 @@
             HasAired: false,
             limit: getLimit(),
             IsMovie: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -75,7 +82,8 @@
             HasAired: false,
             limit: getLimit(),
             IsSports: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -89,7 +97,8 @@
             HasAired: false,
             limit: getLimit(),
             IsKids: true,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            Fields: "ChannelInfo"
 
         }).then(function (result) {
 
@@ -101,7 +110,8 @@
 
         var html = cardBuilder.getCardsHtml({
             items: items,
-            shape: shape || (enableScrollX() ? 'autooverflow' : 'auto'),
+            preferThumb: !shape,
+            shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showTitle: true,
             centerText: true,
             coverImage: true,
@@ -109,7 +119,9 @@
             lazy: true,
             overlayMoreButton: overlayButton != 'play',
             overlayPlayButton: overlayButton == 'play',
-            allowBottomPadding: !enableScrollX()
+            allowBottomPadding: !enableScrollX(),
+            showProgramAirInfo: true
+            //cardFooterAside: 'logo'
         });
 
         var elem = page.querySelector('.' + sectionClass);
@@ -170,6 +182,10 @@
                     break;
                 case 4:
                     document.body.classList.remove('autoScrollY');
+                    depends.push('scripts/livetvschedule');
+                    break;
+                case 5:
+                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvseriestimers');
                     break;
                 default:
@@ -200,7 +216,7 @@
 
         var viewTabs = view.querySelector('.libraryViewNav');
 
-        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4]);
+        libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4, 5]);
 
         viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
@@ -211,12 +227,10 @@
             document.body.classList.remove('autoScrollY');
         });
 
-        if (AppInfo.enableHeadRoom) {
-            require(["headroom-window"], function (headroom) {
-                headroom.add(viewTabs);
-                self.headroom = headroom;
-            });
-        }
+        require(["headroom-window"], function (headroom) {
+            headroom.add(viewTabs);
+            self.headroom = headroom;
+        });
 
         view.addEventListener('viewdestroy', function (e) {
 

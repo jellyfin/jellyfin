@@ -52,18 +52,14 @@
 
 /* Now playing bar */
 .nowPlayingBar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     /* Above everything, except for the video player and popup overlays */
-    z-index: 1097;
     color: #fff;
-    background-color: #1C1C1F;
+    background: #222326;
     text-align: center;
     /*box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);*/
     will-change: transform;
     contain: layout style;
+    font-size: 90%;
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {
@@ -105,17 +101,17 @@
         vertical-align: bottom;
     }
 
-     .nowPlayingImage img {
+    .nowPlayingImage img {
         height: 64px;
     }
 
-        .nowPlayingBar .nowPlayingImage {
-            width: 64px;
-            height: 64px;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: contain;
-        }
+.nowPlayingBar .nowPlayingImage {
+    width: 64px;
+    height: 64px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
 
 .nowPlayingBarText {
     display: inline-block;
@@ -185,6 +181,10 @@
     .nowPlayingBarPositionContainer .mdl-slider__background-upper {
         background: #333;
     }
+
+.headroom--unpinned .nowPlayingBarPositionContainer {
+    display: none;
+}
 
 .noMediaProgress .nowPlayingBarPositionContainer {
     display: none;

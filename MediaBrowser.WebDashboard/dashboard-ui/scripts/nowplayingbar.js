@@ -317,7 +317,7 @@
                     return;
                 }
 
-                parentContainer.insertAdjacentHTML('beforeend', getNowPlayingBarHtml());
+                parentContainer.insertAdjacentHTML('afterbegin', getNowPlayingBarHtml());
                 nowPlayingBarElement = parentContainer.querySelector('.nowPlayingBar');
 
                 if (browser.safari && browser.slow) {

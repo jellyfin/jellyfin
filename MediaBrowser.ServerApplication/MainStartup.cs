@@ -292,7 +292,6 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
 
@@ -332,7 +331,7 @@ namespace MediaBrowser.ServerApplication
             Application.Run();
         }
 
-        private static SplashForm _splash;
+        internal static SplashForm _splash;
         private static Thread _splashThread;
         private static void ShowSplashScreen(Version appVersion, Progress<double> progress, ILogger logger)
         {

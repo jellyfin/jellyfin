@@ -1057,10 +1057,20 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>IList{BaseItem}.</returns>
         public IList<BaseItem> GetRecursiveChildren()
         {
-            return GetRecursiveChildren(i => true);
+            return GetRecursiveChildren(true);
+        }
+
+        public IList<BaseItem> GetRecursiveChildren(bool includeLinkedChildren)
+        {
+            return GetRecursiveChildren(i => true, includeLinkedChildren);
         }
 
         public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter)
+        {
+            return GetRecursiveChildren(filter, true);
+        }
+
+        public IList<BaseItem> GetRecursiveChildren(Func<BaseItem, bool> filter, bool includeLinkedChildren)
         {
             var result = new Dictionary<Guid, BaseItem>();
 

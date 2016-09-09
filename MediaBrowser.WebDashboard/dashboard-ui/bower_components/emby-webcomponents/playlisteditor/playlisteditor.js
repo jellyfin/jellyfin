@@ -154,8 +154,8 @@
         // newPlaylistInfo
         html += '</div>';
 
-        html += '<div>';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';
@@ -232,16 +232,15 @@
 
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += title;
-            html += '</div>';
+            html += '</h3>';
 
             html += '</div>';
 
             html += getEditorHtml();
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             initEditor(dlg, items);
 

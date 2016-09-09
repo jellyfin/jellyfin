@@ -10,6 +10,10 @@
 
             this.checked = !this.checked;
 
+            this.dispatchEvent(new CustomEvent('change', {
+                bubbles: true
+            }));
+
             return false;
         }
     }

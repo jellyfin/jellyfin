@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['browser'], function (browser) {
 
     var supportsTextTracks;
     var hlsPlayer;
@@ -123,7 +123,7 @@
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
                 if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
 
-                    var delay = browserInfo.safari ? 2500 : 0;
+                    var delay = browser.safari ? 2500 : 0;
                     if (delay) {
                         setTimeout(function () {
                             element.currentTime = startPositionInSeekParam;
@@ -193,10 +193,10 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Safari often displays the poster under the video and it doesn't look good
-            var poster = !browserInfo.safari && options.poster ? (' poster="' + options.poster + '"') : '';
+            var poster = !browser.safari && options.poster ? (' poster="' + options.poster + '"') : '';
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls && AppInfo.isNativeApp && browserInfo.android) {
+            if (requiresNativeControls && AppInfo.isNativeApp && browser.android) {
                 html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline>';
             }
             else if (requiresNativeControls) {
@@ -324,7 +324,7 @@
                 elem.src = "";
 
                 // When the browser regains focus it may start auto-playing the last video
-                if (browserInfo.safari) {
+                if (browser.safari) {
                     elem.src = 'files/dummy.mp4';
                     elem.play();
                 }
@@ -334,7 +334,7 @@
             elem.crossOrigin = getCrossOriginValue(mediaSource);
             var val = streamInfo.url;
 
-            if (AppInfo.isNativeApp && browserInfo.safari) {
+            if (AppInfo.isNativeApp && browser.safari) {
                 val = val.replace('file://', '');
             }
 
@@ -503,16 +503,12 @@
 
         function enableNativeTrackSupport(track) {
 
-            if (browserInfo.safari && browserInfo.mobile) {
+            if (browser.safari && browser.mobile) {
                 // Leave it to apple to have different behavior between safari on ios vs osx
                 return false;
             }
 
-            if (browserInfo.edge || browserInfo.msie) {
-                return false;
-            }
-
-            if (browserInfo.firefox) {
+            if (browser.firefox) {
                 if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
                     return false;
                 }
@@ -642,13 +638,6 @@
                 return;
             }
 
-            if (browserInfo.edge || browserInfo.msie) {
-                fetchSubtitles(track).then(function (data) {
-                    currentTrackEvents = data.TrackEvents;
-                });
-                return;
-            }
-
             var trackElement = null;
             var expectedId = 'manualTrack' + track.index;
 
@@ -773,7 +762,7 @@
                 console.log('expectedId: ' + expectedId + '--currentTrack.Id:' + currentTrack.id);
 
                 // IE doesn't support track id
-                if (browserInfo.msie || browserInfo.edge) {
+                if (browser.msie || browser.edge) {
                     if (trackIndex == i) {
                         mode = 1; // show this track
                     } else {
@@ -860,7 +849,7 @@
 
         self.enableCustomVideoControls = function () {
 
-            if (AppInfo.isNativeApp && browserInfo.safari) {
+            if (AppInfo.isNativeApp && browser.safari) {
 
                 if (navigator.userAgent.toLowerCase().indexOf('ipad') != -1) {
                     // Need to disable it in order to support picture in picture
@@ -879,7 +868,7 @@
                 return true;
             }
 
-            if (browserInfo.mobile) {
+            if (browser.mobile) {
                 return false;
             }
 

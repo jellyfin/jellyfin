@@ -1,4 +1,4 @@
-define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'globalize', 'userdataButtons', 'apphost', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, globalize, userdataButtons, appHost) {
+define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'globalize', 'datetime', 'userdataButtons', 'apphost', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, globalize, datetime, userdataButtons, appHost) {
 
     function getIndex(item, options) {
 
@@ -178,7 +178,11 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            var cssClass = "listItem listItem-nosidepadding listItem-border";
+            var cssClass = "listItem listItem-nosidepadding";
+
+            if (options.border !== false) {
+                cssClass += ' listItem-border';
+            }
 
             if (clickEntireItem) {
                 cssClass += ' itemAction listItem-button';
@@ -210,37 +214,51 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 html += '<button is="paper-icon-button-light" class="listViewDragHandle autoSize listItemButton"><i class="md-icon">&#xE25D;</i></button>';
             }
 
-            var imgUrl = getImageUrl(item, downloadWidth);
+            if (options.image !== false) {
+                var imgUrl = getImageUrl(item, downloadWidth);
 
-            var imageClass = isLargeStyle ? 'listItemImage listItemImage-large' : 'listItemImage';
+                var imageClass = isLargeStyle ? 'listItemImage listItemImage-large' : 'listItemImage';
 
-            if (imgUrl) {
-                html += '<div class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
-            } else {
-                html += '<div class="' + imageClass + '">';
+                if (imgUrl) {
+                    html += '<div class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
+                } else {
+                    html += '<div class="' + imageClass + '">';
+                }
+
+                var indicatorsHtml = '';
+                indicatorsHtml += indicators.getPlayedIndicatorHtml(item);
+
+                if (indicatorsHtml) {
+                    html += '<div class="indicators listItemIndicators">' + indicatorsHtml + '</div>';
+                }
+
+                var progressHtml = indicators.getProgressBarHtml(item, {
+                    containerClass: 'listItemProgressBar'
+                });
+
+                if (progressHtml) {
+                    html += progressHtml;
+                }
+                html += '</div>';
             }
 
-            var indicatorsHtml = '';
-            indicatorsHtml += indicators.getPlayedIndicatorHtml(item);
-
-            if (indicatorsHtml) {
-                html += '<div class="indicators listItemIndicators">' + indicatorsHtml + '</div>';
+            if (options.showProgramTimeColumn) {
+                html += '<div class="listItemBody listItemBody-nogrow listItemBody-rightborder"><div class="listItemBodyText">';
+                html += datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate));
+                html += ' - ';
+                html += datetime.getDisplayTime(datetime.parseISO8601Date(item.EndDate));
+                html += '</div></div>';
             }
-
-            var progressHtml = indicators.getProgressBarHtml(item, {
-                containerClass: 'listItemProgressBar'
-            });
-
-            if (progressHtml) {
-                html += progressHtml;
-            }
-            html += '</div>';
 
             var textlines = [];
 
             if (options.showParentTitle) {
                 if (item.Type == 'Episode') {
                     textlines.push(item.SeriesName || '&nbsp;');
+                }
+
+                if (item.EpisodeTitle) {
+                    textlines.push(item.Name || '&nbsp;');
                 }
             }
 
@@ -273,7 +291,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            cssClass = 'listItemBody';
+            cssClass = 'listItemBody two-line';
             if (!clickEntireItem) {
                 cssClass += ' itemAction';
             }
@@ -287,11 +305,10 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (!enableSideMediaInfo) {
 
                 var mediaInfoClass = 'secondary listItemMediaInfo listItemBodyText';
-                if (layoutManager.tv) {
-                    mediaInfoClass += ' listItemMediaInfo-padded';
-                }
 
-                html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item) + '</div>';
+                html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+                    episodeTitle: false
+                }) + '</div>';
             }
 
             if (enableOverview && item.Overview) {
@@ -306,20 +323,24 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
 
                     year: false,
-                    container: false
+                    container: false,
+                    episodeTitle: false
 
                 }) + '</div>';
             }
 
             if (!clickEntireItem) {
                 html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
-                html += '<span class="listViewUserDataButtons">';
-                html += userdataButtons.getIconsHtml({
-                    item: item,
-                    includePlayed: false,
-                    cssClass: 'listItemButton'
-                });
-                html += '</span>';
+
+                if (options.enableUserDataButtons !== false) {
+                    html += '<span class="listViewUserDataButtons">';
+                    html += userdataButtons.getIconsHtml({
+                        item: item,
+                        includePlayed: false,
+                        cssClass: 'listItemButton'
+                    });
+                    html += '</span>';
+                }
             }
 
             html += '</' + outerTagName + '>';

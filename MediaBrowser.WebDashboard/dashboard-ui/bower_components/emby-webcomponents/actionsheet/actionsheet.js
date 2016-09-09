@@ -44,7 +44,10 @@
 
         var pos = getOffsets([options.positionTo])[0];
 
-        pos.top += options.positionTo.offsetHeight / 2;
+        if (options.positionY != 'top') {
+            pos.top += options.positionTo.offsetHeight / 2;
+        }
+
         pos.left += options.positionTo.offsetWidth / 2;
 
         var height = dlg.offsetHeight || 300;
@@ -64,6 +67,9 @@
         if (overflowY > 0) {
             pos.top -= (overflowY + 20);
         }
+
+        pos.top += (options.offsetTop || 0);
+        pos.left += (options.offsetLeft || 0);
 
         // Do some boundary checking
         pos.top = Math.max(pos.top, 10);
@@ -88,7 +94,9 @@
         var dialogOptions = {
             removeOnClose: true,
             enableHistory: options.enableHistory,
-            scrollY: false
+            scrollY: false,
+            entryAnimation: options.entryAnimation,
+            exitAnimation: options.exitAnimation
         };
 
         var backButton = false;
@@ -102,8 +110,8 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 140;
-            dialogOptions.exitAnimationDuration = 180;
+            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 140;
+            dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 180;
             dialogOptions.autoFocus = false;
         }
 
@@ -113,11 +121,16 @@
             dlg.classList.add('actionsheet-fullscreen');
         }
 
-        if (!layoutManager.tv) {
+        var extraSpacing = !layoutManager.tv;
+        if (extraSpacing) {
             dlg.classList.add('actionsheet-extraSpacing');
         }
 
         dlg.classList.add('actionSheet');
+
+        if (options.dialogClass) {
+            dlg.classList.add(options.dialogClass);
+        }
 
         var html = '';
 
@@ -140,6 +153,10 @@
             if (option.icon) {
                 renderIcon = true;
             }
+        }
+
+        if (layoutManager.tv) {
+            html += '<button is="paper-icon-button-light" class="btnCloseActionSheet" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
         }
 
         // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
@@ -173,6 +190,16 @@
 
         var menuItemClass = browser.noFlex || browser.firefox ? 'actionSheetMenuItem actionSheetMenuItem-noflex' : 'actionSheetMenuItem';
 
+        if (options.menuItemClass) {
+            menuItemClass += ' ' + options.menuItemClass;
+        }
+
+        var actionSheetItemTextClass = 'actionSheetItemText';
+
+        if (extraSpacing) {
+            actionSheetItemTextClass += ' actionSheetItemText-extraspacing';
+        }
+
         for (i = 0, length = options.items.length; i < length; i++) {
 
             option = options.items[i];
@@ -186,13 +213,13 @@
             else if (renderIcon && !center) {
                 html += '<i class="actionSheetItemIcon md-icon" style="visibility:hidden;">check</i>';
             }
-            html += '<div class="actionSheetItemText">' + (option.name || option.textContent || option.innerText) + '</div>';
+            html += '<div class="' + actionSheetItemTextClass + '">' + (option.name || option.textContent || option.innerText) + '</div>';
             html += '</button>';
         }
 
         if (options.showCancel) {
             html += '<div class="buttons">';
-            html += '<button is="emby-button" type="button" class="btnCancel">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
+            html += '<button is="emby-button" type="button" class="btnCloseActionSheet">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
             html += '</div>';
         }
         html += '</div>';
@@ -203,28 +230,16 @@
             centerFocus(dlg.querySelector('.actionSheetScroller'), false, true);
         }
 
-        if (options.showCancel) {
-            dlg.querySelector('.btnCancel').addEventListener('click', function () {
+        var btnCloseActionSheet = dlg.querySelector('.btnCloseActionSheet');
+        if (btnCloseActionSheet) {
+            dlg.querySelector('.btnCloseActionSheet').addEventListener('click', function () {
                 dialogHelper.close(dlg);
             });
         }
 
-        document.body.appendChild(dlg);
-
         // Seeing an issue in some non-chrome browsers where this is requiring a double click
         //var eventName = browser.firefox ? 'mousedown' : 'click';
         var selectedId;
-
-        dlg.addEventListener('click', function (e) {
-
-            var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
-
-            if (actionSheetMenuItem) {
-                selectedId = actionSheetMenuItem.getAttribute('data-id');
-                dialogHelper.close(dlg);
-            }
-
-        });
 
         var timeout;
         if (options.timeout) {
@@ -234,6 +249,26 @@
         }
 
         return new Promise(function (resolve, reject) {
+
+            var isResolved;
+
+            dlg.addEventListener('click', function (e) {
+
+                var actionSheetMenuItem = dom.parentWithClass(e.target, 'actionSheetMenuItem');
+
+                if (actionSheetMenuItem) {
+                    selectedId = actionSheetMenuItem.getAttribute('data-id');
+
+                    if (options.resolveOnClick) {
+
+                        resolve(selectedId);
+                        isResolved = true;
+                    }
+
+                    dialogHelper.close(dlg);
+                }
+
+            });
 
             dlg.addEventListener('close', function () {
 
@@ -246,20 +281,22 @@
                     timeout = null;
                 }
 
-                if (selectedId != null) {
-                    if (options.callback) {
-                        options.callback(selectedId);
-                    }
+                if (!isResolved) {
+                    if (selectedId != null) {
+                        if (options.callback) {
+                            options.callback(selectedId);
+                        }
 
-                    resolve(selectedId);
-                } else {
-                    reject();
+                        resolve(selectedId);
+                    } else {
+                        reject();
+                    }
                 }
             });
 
             dialogHelper.open(dlg);
 
-            var pos = options.positionTo ? getPosition(options, dlg) : null;
+            var pos = options.positionTo && dialogOptions.size !== 'fullscreen' ? getPosition(options, dlg) : null;
 
             if (pos) {
                 dlg.style.position = 'fixed';

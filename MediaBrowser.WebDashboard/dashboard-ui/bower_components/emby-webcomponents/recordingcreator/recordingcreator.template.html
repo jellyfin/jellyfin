@@ -1,14 +1,13 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <div class="formDialogHeaderTitle">
+    <h3 class="formDialogHeaderTitle">
         ${HeaderNewRecording}
-    </div>
+    </h3>
 </div>
 <div class="formDialogContent smoothScrollY">
     <form class="dialogContentInner dialog-content-centered">
 
         <h1 class="itemName dialogContentTitle"></h1>
-        <p class="itemEpisodeName"></p>
         <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
         <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
 
@@ -98,16 +97,15 @@
             <br />
         </div>
         <br />
-        <div>
-            <div class="supporterContainer hide">
-                <p>${MessageActiveSubscriptionRequiredSeriesRecordings}</p>
-                <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
-                <button is="emby-button" type="button" raised class="btnSupporter hide raised accent block">
-                    <i class="md-icon">check</i>
+        <div class="formDialogFooter">
+            <div class="supporterContainer hide formDialogFooterItem">
+                <div class="supporterContainerText"></div>
+                <br/>
+                <button is="emby-button" type="button" class="btnSupporter hide raised button-submit block">
                     <span>${HeaderBecomeProjectSupporter}</span>
                 </button>
             </div>
-            <button is="emby-button" type="submit" class="raised btnSubmit block" autofocus>
+            <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">
                 <i class="md-icon recordingDialogSubmitIcon">fiber_manual_record</i>
                 <span>${Record}</span>
             </button>

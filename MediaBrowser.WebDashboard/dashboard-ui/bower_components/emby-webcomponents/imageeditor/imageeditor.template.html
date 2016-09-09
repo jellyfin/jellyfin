@@ -1,0 +1,66 @@
+﻿<style>
+    @media all and (min-width: 1200px) {
+
+        .imageEditorCard {
+            width: 20%;
+        }
+    }
+</style>
+
+
+<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${HeaderEditImages}
+    </h3>
+</div>
+
+<div class="formDialogContent">
+    <div class="dialogContentInner">
+
+        <div id="imagesContainer">
+            <div style="display: flex; align-items: center;margin:2em 0 1em;">
+                <h1 style="margin:0;">${Images}</h1>
+                <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;">
+                    <i class="md-icon">search</i>
+                </button>
+                <button type="button" is="emby-button" class="btnOpenUploadMenu fab mini autoSize" style="margin-left: .5em;">
+                    <i class="md-icon">add</i>
+                </button>
+            </div>
+            <div id="images" class="itemsContainer vertical-wrap">
+            </div>
+            <br />
+        </div>
+
+        <div id="backdropsContainer" class="hide">
+            <div style="display: flex; align-items: center;margin:1em 0 1em;">
+                <h1 style="margin:0;">${Backdrops}</h1>
+                <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;" data-imagetype="Backdrop">
+                    <i class="md-icon">search</i>
+                </button>
+                <button type="button" is="emby-button" class="btnOpenUploadMenu fab mini autoSize" style="margin-left: .5em;" data-imagetype="Backdrop">
+                    <i class="md-icon">add</i>
+                </button>
+            </div>
+            <div id="backdrops" class="itemsContainer vertical-wrap">
+            </div>
+            <br />
+        </div>
+
+        <div id="screenshotsContainer" class="hide">
+            <div style="display: flex; align-items: center; margin: 1em 0 1em;">
+                <h1 style="margin: 0;">${Screenshots}</h1>
+                <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;" data-imagetype="Screenshot">
+                    <i class="md-icon">search</i>
+                </button>
+                <button type="button" is="emby-button" class="btnOpenUploadMenu fab mini autoSize" style="margin-left: .5em;" data-imagetype="Screenshot">
+                    <i class="md-icon">add</i>
+                </button>
+            </div>
+            <div id="screenshots" class="itemsContainer vertical-wrap">
+            </div>
+        </div>
+    </div>
+</div>
+

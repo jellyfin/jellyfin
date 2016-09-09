@@ -1,94 +1,44 @@
-﻿button.emby-button:not(.fab).blue {
-    color: #03a9f4;
-}
-
-    button.emby-button:not(.fab).blue:hover {
-        background: #e1f5f3;
-    }
-
-button.emby-button.menuButton {
-    color: #212121;
-    text-align: left;
-}
-
-    button.emby-button.menuButton:hover {
-        background: #e1f5f3;
-    }
-
-
-button.emby-button.submit {
-    color: #52B54B;
-}
-
-button.emby-button.raised.submit, button.emby-button.raised:not(.subdued):not(.cancel) {
-    background: #52B54B;
+﻿.ui-body-a .raised {
+    background: #3388cc;
     color: #fff;
 }
 
-button.emby-button.more {
-    color: #EC407A;
-}
-
-button.emby-button.raised.more {
-    background: #EC407A;
-    color: #fff;
-}
-
-button.emby-button.secondary {
-    color: #4285f4;
-}
-
-button.emby-button.raised.secondary {
-    background: #4285f4;
-    color: #fff;
-}
-
-button.emby-button.accent {
-    color: #52B54B;
-}
-
-button.emby-button.raised.accent {
-    background: #52B54B;
-    color: #fff;
-}
-
-button.emby-button.alt {
-    color: #F57F17;
-}
-
-button.emby-button.raised.alt {
-    background: #F57F17;
-    color: #fff;
-}
-
-.ui-body-b button.emby-button.cancel {
-    color: #444;
-}
-
-.ui-body-b button.emby-button.raised.cancel {
-    background: #444;
-    color: #fff;
-}
-
-button.emby-button.cancelDark {
-    color: #444;
-}
-
-button.emby-button.raised.cancelDark {
-    background: #444;
-    color: #fff;
-}
-
-.ui-body-b button.emby-button.raised.subdued:not([disabled]) {
+.ui-body-b .raised {
     background: #404040;
     color: #fff;
 }
 
-.ui-body-b button.emby-button.raised[disabled].subdued {
-    background: #111;
+.ui-body-a .button-submit {
+    background: #52B54B;
+    color: #fff;
 }
 
-button.emby-button span {
+.ui-body-a .button-cancel {
+    background: #fff;
+    color: inherit;
+}
+
+.ui-body-b .button-submit {
+    background: #52B54B;
+    color: #fff;
+}
+
+.ui-body-a .button-accent {
+    background: #52B54B;
+    color: #fff;
+}
+
+.ui-body-b .button-accent {
+    background: #52B54B;
+    color: #fff;
+}
+
+button.emby-button.raised.more {
+    background: #3388cc;
+    color: #fff;
+}
+
+.emby-button > span {
     vertical-align: middle;
 }
 
@@ -116,12 +66,6 @@ button.emby-button.mini:not(.fab) {
     padding: 0.4em 0.7em;
 }
 
-button.emby-button.notext {
-    min-width: 2.8em;
-    padding-left: .25em !important;
-    padding-right: .25em !important;
-}
-
 .ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused, .ui-body-b .textareaLabelUnfocused {
     color: #ccc;
 }
@@ -143,20 +87,13 @@ div.dialogHeader {
     color: #fff;
 }
 
+.ui-body-a div.formDialogFooter {
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+    color: inherit;
+}
+
 .ui-body-a .formDialogHeader a {
     color: #fff !important;
     text-transform: uppercase;
-}
-
-.ui-body-b div.formDialogHeader {
-    background-color: #101010;
-}
-
-.formDialogHeader button {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.formDialog.background-theme-b {
-    background-color: #181818;
 }

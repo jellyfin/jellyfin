@@ -1,89 +1,55 @@
-define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./style.css', 'emby-button', 'paper-icon-button-light', 'emby-input'], function (dialogHelper, layoutManager, globalize) {
+define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
 
-    function getIcon(icon, cssClass, canFocus, autoFocus) {
-
-        var tabIndex = canFocus ? '' : ' tabindex="-1"';
-        autoFocus = autoFocus ? ' autofocus' : '';
-        return '<button is="paper-icon-button-light" class="autoSize ' + cssClass + '"' + tabIndex + autoFocus + '><i class="md-icon promptExitIcon">' + icon + '</i></button>';
+    function setInputProperties(dlg, options) {
+        var txtInput = dlg.querySelector('#txtInput');
+        txtInput.value = options.value || '';
+        txtInput.label(options.label || '');
     }
 
-    return function (options) {
-
-        if (typeof options === 'string') {
-            options = {
-                title: '',
-                text: options
-            };
-        }
+    function showDialog(options, template) {
 
         var dialogOptions = {
-            removeOnClose: true
+            removeOnClose: true,
+            scrollY: false
         };
-
-        var backButton = false;
-        var raisedButtons = false;
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
-            backButton = true;
-            raisedButtons = true;
         } else {
-
-            dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = 160;
-            dialogOptions.exitAnimationDuration = 200;
+            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
 
-        dlg.classList.add('promptDialog');
+        dlg.classList.add('formDialog');
 
-        var html = '';
-        var submitValue = '';
+        dlg.innerHTML = globalize.translateHtml(template, 'sharedcomponents');
 
-        html += '<div class="promptDialogContent">';
-        if (backButton) {
-            html += getIcon('&#xE5C4;', 'btnPromptExit', false);
+        if (layoutManager.tv) {
+            scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
+        } else {
+            dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
         }
 
-        if (options.title) {
-            html += '<h2>';
-            html += options.title;
-            html += '</h2>';
-        }
+        dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
+            dialogHelper.close(dlg);
+        });
 
-        html += '<form>';
-
-        html += '<div class="inputContainer" style="margin-bottom:0;">';
-        html += '<input is="emby-input" type="text" autoFocus class="txtPromptValue" value="' + (options.value || '') + '" label="' + (options.label || '') + '"/>';
+        dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
 
         if (options.description) {
-            html += '<div class="fieldDescription">';
-            html += options.description;
-            html += '</div>';
-        }
-        html += '</div>';
-
-        html += '<br/>';
-        if (raisedButtons) {
-            html += '<button is="emby-button" type="submit" class="raised btnSubmit"><i class="md-icon">check</i><span>' + globalize.translate('sharedcomponents#ButtonOk') + '</span></button>';
+            dlg.querySelector('.fieldDescription').innerHTML = options.description;
         } else {
-            html += '<div class="buttons">';
-            html += '<button is="emby-button" type="submit" class="btnSubmit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
-            html += '<button is="emby-button" type="button" class="btnPromptExit">' + globalize.translate('sharedcomponents#ButtonCancel') + '</button>';
-            html += '</div>';
+            dlg.querySelector('.fieldDescription').classList.add('hide');
         }
-        html += '</form>';
 
-        html += '</div>';
+        setInputProperties(dlg, options);
 
-        dlg.innerHTML = html;
-
-        document.body.appendChild(dlg);
+        var submitValue;
 
         dlg.querySelector('form').addEventListener('submit', function (e) {
 
-            submitValue = dlg.querySelector('.txtPromptValue').value;
+            submitValue = dlg.querySelector('#txtInput').value;
             e.preventDefault();
             e.stopPropagation();
 
@@ -95,12 +61,12 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./s
             return false;
         });
 
-        dlg.querySelector('.btnPromptExit').addEventListener('click', function (e) {
-
-            dialogHelper.close(dlg);
-        });
-
         return dialogHelper.open(dlg).then(function () {
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
+            }
+
             var value = submitValue;
 
             if (value) {
@@ -108,6 +74,22 @@ define(['dialogHelper', 'layoutManager', 'globalize', 'material-icons', 'css!./s
             } else {
                 return Promise.reject();
             }
+        });
+    }
+
+    return function (options) {
+
+        return new Promise(function (resolve, reject) {
+            require(['text!./prompt.template.html'], function (template) {
+
+                if (typeof options === 'string') {
+                    options = {
+                        title: '',
+                        text: options
+                    };
+                }
+                showDialog(options, template).then(resolve, reject);
+            });
         });
     };
 });

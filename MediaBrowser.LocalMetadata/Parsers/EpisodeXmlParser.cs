@@ -20,8 +20,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private List<LocalImageInfo> _imagesFound;
         private readonly IFileSystem _fileSystem;
 
-        public EpisodeXmlParser(ILogger logger, IFileSystem fileSystem)
-            : base(logger)
+        public EpisodeXmlParser(ILogger logger, IFileSystem fileSystem, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
             _fileSystem = fileSystem;
         }

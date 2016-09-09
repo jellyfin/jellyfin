@@ -27,8 +27,8 @@
 
     function setContentType(parent, contentType) {
 
-        if (contentType == 'music' || contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed') {
-            parent.querySelector('.chkArhiveAsMediaContainer').classList.remove('hide');
+        if (contentType == 'music' || contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
+            parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
         } else {
             parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
         }
@@ -38,6 +38,14 @@
         } else {
             parent.querySelector('.chkEnablePhotosContainer').classList.add('hide');
         }
+
+        if (contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
+            parent.querySelector('.fldExtractChaptersDuringLibraryScan').classList.remove('hide');
+            parent.querySelector('.fldExtractChapterImages').classList.remove('hide');
+        } else {
+            parent.querySelector('.fldExtractChaptersDuringLibraryScan').classList.add('hide');
+            parent.querySelector('.fldExtractChapterImages').classList.add('hide');
+        }
     }
 
     function getLibraryOptions(parent) {
@@ -45,7 +53,9 @@
         var options = {
             EnableArchiveMediaFiles: parent.querySelector('.chkArhiveAsMedia').checked,
             EnablePhotos: parent.querySelector('.chkEnablePhotos').checked,
-            EnableRealtimeMonitor: parent.querySelector('.chkEnableRealtimeMonitor').checked
+            EnableRealtimeMonitor: parent.querySelector('.chkEnableRealtimeMonitor').checked,
+            ExtractChapterImagesDuringLibraryScan: parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked,
+            EnableChapterImageExtraction: parent.querySelector('.chkExtractChapterImages').checked
         };
 
         return options;
@@ -56,6 +66,8 @@
         parent.querySelector('.chkArhiveAsMedia').checked = options.EnableArchiveMediaFiles;
         parent.querySelector('.chkEnablePhotos').checked = options.EnablePhotos;
         parent.querySelector('.chkEnableRealtimeMonitor').checked = options.EnableRealtimeMonitor;
+        parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked = options.ExtractChapterImagesDuringLibraryScan;
+        parent.querySelector('.chkExtractChapterImages').checked = options.EnableChapterImageExtraction;
     }
 
     return {

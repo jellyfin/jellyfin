@@ -1,76 +1,44 @@
-﻿define(['appSettings', 'cardStyle', 'emby-checkbox'], function (appSettings) {
+﻿define(['appSettings', 'dom', 'connectionManager', 'cardStyle', 'emby-checkbox'], function (appSettings, dom, connectionManager) {
 
-    function getApiClient() {
+    function authenticateUserByName(page, apiClient, username, password) {
 
-        var serverId = getParameterByName('serverid');
+        Dashboard.showLoadingMsg();
 
-        if (serverId) {
-            return ConnectionManager.getOrCreateApiClient(serverId);
+        apiClient.authenticateUserByName(username, password).then(function (result) {
 
-        } else {
-            return ApiClient;
-        }
-    }
+            var user = result.User;
 
-    var LoginPage = {
+            var serverId = getParameterByName('serverid');
 
-        showVisualForm: function (page) {
+            var newUrl;
 
-            page.querySelector('.visualLoginForm').classList.remove('hide');
-            page.querySelector('.manualLoginForm').classList.add('hide');
-        },
-
-        getLastSeenText: function (lastActivityDate) {
-
-            if (!lastActivityDate) {
-                return "";
+            if (user.Policy.IsAdministrator && !serverId) {
+                newUrl = "dashboard.html";
+            } else {
+                newUrl = "home.html";
             }
 
-            return "Last seen " + humane_date(lastActivityDate);
-        },
+            Dashboard.hideLoadingMsg();
 
-        authenticateUserByName: function (page, apiClient, username, password) {
+            Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
+            Dashboard.navigate(newUrl);
 
-            Dashboard.showLoadingMsg();
+        }, function (response) {
 
-            apiClient.authenticateUserByName(username, password).then(function (result) {
+            page.querySelector('#txtManualName').value = '';
+            page.querySelector('#txtManualPassword').value = '';
 
-                var user = result.User;
+            Dashboard.hideLoadingMsg();
 
-                var serverId = getParameterByName('serverid');
-
-                var newUrl;
-
-                if (user.Policy.IsAdministrator && !serverId) {
-                    newUrl = "dashboard.html";
-                } else {
-                    newUrl = "home.html";
-                }
-
-                Dashboard.hideLoadingMsg();
-
-                Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
-                Dashboard.navigate(newUrl);
-
-            }, function (response) {
-
-                page.querySelector('#txtManualName').value = '';
-                page.querySelector('#txtManualPassword').value = '';
-
-                Dashboard.hideLoadingMsg();
-
-                if (response.status == 401) {
-                    require(['toast'], function (toast) {
-                        toast(Globalize.translate('MessageInvalidUser'));
-                    });
-                } else {
-                    showServerConnectionFailure();
-                }
-            });
-
-        }
-
-    };
+            if (response.status == 401) {
+                require(['toast'], function (toast) {
+                    toast(Globalize.translate('MessageInvalidUser'));
+                });
+            } else {
+                showServerConnectionFailure();
+            }
+        });
+    }
 
     function showServerConnectionFailure() {
 
@@ -166,7 +134,7 @@
             html += '<div class="cardText">' + user.Name + '</div>';
 
             html += '<div class="cardText cardText-secondary">';
-            var lastSeen = LoginPage.getLastSeenText(user.LastActivityDate);
+            var lastSeen = getLastSeenText(user.LastActivityDate);
             if (lastSeen != "") {
                 html += lastSeen;
             }
@@ -183,25 +151,39 @@
         context.querySelector('#divUsers').innerHTML = html;
     }
 
-    function parentWithClass(elem, className) {
+    function getLastSeenText(lastActivityDate) {
 
-        while (!elem.classList || !elem.classList.contains(className)) {
-            elem = elem.parentNode;
-
-            if (!elem) {
-                return null;
-            }
+        if (!lastActivityDate) {
+            return "";
         }
 
-        return elem;
+        return "Last seen " + humane_date(lastActivityDate);
     }
 
     return function (view, params) {
 
         var self = this;
 
+        function getApiClient() {
+
+            var serverId = params.serverid;
+
+            if (serverId) {
+                return connectionManager.getOrCreateApiClient(serverId);
+
+            } else {
+                return ApiClient;
+            }
+        }
+
+        function showVisualForm() {
+
+            view.querySelector('.visualLoginForm').classList.remove('hide');
+            view.querySelector('.manualLoginForm').classList.add('hide');
+        }
+
         view.querySelector('#divUsers').addEventListener('click', function (e) {
-            var cardContent = parentWithClass(e.target, 'cardContent');
+            var cardContent = dom.parentWithClass(e.target, 'cardContent');
 
             if (cardContent) {
 
@@ -215,7 +197,7 @@
                     showManualForm(context, true);
                 }
                 else if (haspw == 'false') {
-                    LoginPage.authenticateUserByName(context, getApiClient(), name, '');
+                    authenticateUserByName(context, getApiClient(), name, '');
                 } else {
 
                     context.querySelector('#txtManualName').value = name;
@@ -230,7 +212,7 @@
             appSettings.enableAutoLogin(view.querySelector('.chkRememberLogin').checked);
 
             var apiClient = getApiClient();
-            LoginPage.authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);
+            authenticateUserByName(view, apiClient, view.querySelector('#txtManualName').value, view.querySelector('#txtManualPassword').value);
 
             e.preventDefault();
             // Disable default form submission
@@ -241,9 +223,7 @@
             Dashboard.navigate('forgotpassword.html');
         });
 
-        view.querySelector('.btnCancel').addEventListener('click', function () {
-            LoginPage.showVisualForm(view);
-        });
+        view.querySelector('.btnCancel').addEventListener('click', showVisualForm);
 
         view.querySelector('.btnManual').addEventListener('click', function () {
             view.querySelector('#txtManualName').value = '';
@@ -263,7 +243,7 @@
 
                 } else {
 
-                    LoginPage.showVisualForm(view);
+                    showVisualForm();
                     loadUserList(view, apiClient, users);
                 }
 

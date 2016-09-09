@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'shell', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, shell) {
 
     var currentProgramId;
     var currentServerId;
@@ -99,14 +99,14 @@
         return false;
     }
 
-    function getRegistration(programId, apiClient) {
+    function getRegistration(apiClient, programId, feature) {
 
         loading.show();
 
         return apiClient.getJSON(apiClient.getUrl('LiveTv/Registration', {
 
             ProgramId: programId,
-            Feature: 'seriesrecordings'
+            Feature: feature
 
         })).then(function (result) {
 
@@ -140,27 +140,36 @@
         showSeriesDays(context);
         context.querySelector('.btnSubmit').classList.remove('hide');
 
-        getRegistration(currentProgramId, apiClient).then(function (regInfo) {
-
-            if (regInfo.IsValid) {
-                context.querySelector('.btnSubmit').classList.remove('hide');
-            } else {
-                context.querySelector('.btnSubmit').classList.add('hide');
-            }
+        getRegistration(apiClient, currentProgramId, 'seriesrecordings').then(function (regInfo) {
 
             if (regInfo.IsRegistered) {
-
+                context.querySelector('.btnSubmit').classList.remove('hide');
                 context.querySelector('.supporterContainer').classList.add('hide');
 
             } else {
 
+                context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#MessageActiveSubscriptionRequiredSeriesRecordings');
                 context.querySelector('.supporterContainer').classList.remove('hide');
+                context.querySelector('.btnSubmit').classList.add('hide');
+            }
+        });
+    }
 
-                if (regInfo.TrialVersion) {
-                    context.querySelector('.supporterTrial').classList.remove('hide');
-                } else {
-                    context.querySelector('.supporterTrial').classList.add('hide');
-                }
+    function showSingleRecordingFields(context, apiClient) {
+
+        context.querySelector('.btnSubmit').classList.remove('hide');
+
+        getRegistration(apiClient, currentProgramId, 'dvr').then(function (regInfo) {
+
+            if (regInfo.IsRegistered) {
+                context.querySelector('.btnSubmit').classList.remove('hide');
+                context.querySelector('.supporterContainer').classList.add('hide');
+
+            } else {
+
+                context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#DvrSubscriptionRequired');
+                context.querySelector('.supporterContainer').classList.remove('hide');
+                context.querySelector('.btnSubmit').classList.add('hide');
             }
         });
     }
@@ -218,6 +227,7 @@
                 showSeriesRecordingFields(context, apiClient);
             } else {
                 hideSeriesRecordingFields(context);
+                showSingleRecordingFields(context, apiClient);
             }
         });
 
@@ -269,7 +279,6 @@
     function renderRecording(context, defaultTimer, program, apiClient) {
 
         context.querySelector('.itemName').innerHTML = program.Name;
-        context.querySelector('.itemEpisodeName').innerHTML = program.EpisodeTitle || '';
 
         context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
@@ -289,12 +298,8 @@
 
         selectDays(context, defaultTimer.Days);
 
-        if (program.ServiceName == 'Emby') {
-            context.querySelector('.convertRecordingsContainer').classList.remove('hide');
-            showConvertRecordingsUnlockMessage(context, apiClient);
-        } else {
-            context.querySelector('.convertRecordingsContainer').classList.add('hide');
-        }
+        context.querySelector('.convertRecordingsContainer').classList.remove('hide');
+        showConvertRecordingsUnlockMessage(context, apiClient);
 
         loading.hide();
     }
@@ -317,10 +322,9 @@
 
     function onSupporterButtonClick() {
         if (appHost.supports('externalpremium')) {
-            require(['shell'], function (shell) {
-                shell.openUrl('https://emby.media/premiere');
-            });
+            shell.openUrl('https://emby.media/premiere');
         } else {
+
         }
     }
 
@@ -374,7 +378,6 @@
                 html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
-                document.body.appendChild(dlg);
 
                 currentDialog = dlg;
 
@@ -397,6 +400,7 @@
                 dlg.querySelector('.btnSupporterForConverting').addEventListener('click', onSupporterButtonClick);
 
                 hideSeriesRecordingFields(dlg);
+                showSingleRecordingFields(dlg, connectionManager.getApiClient(serverId));
                 init(dlg);
 
                 reload(dlg, itemId);

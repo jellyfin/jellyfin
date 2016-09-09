@@ -65,7 +65,13 @@
 
             var dlg = $(this).parents('.dialog')[0];
 
-            libraryoptionseditor.setContentType(dlg.querySelector('.libraryOptions'), value);
+            libraryoptionseditor.setContentType(dlg.querySelector('.libraryOptions'), (value == 'mixed' ? '' : value));
+
+            if (value) {
+                dlg.querySelector('.libraryOptions').classList.remove('hide');
+            } else {
+                dlg.querySelector('.libraryOptions').classList.add('hide');
+            }
 
             if (value == 'mixed') {
                 return;
@@ -88,6 +94,7 @@
 
                 $('.collectionTypeFieldDescription', dlg).html(folderOption.message || '');
             }
+
         });
 
         $('.btnAddFolder', page).on('click', onAddButtonClick);
@@ -183,7 +190,9 @@
     }
 
     function initLibraryOptions(dlg) {
-        libraryoptionseditor.embed(dlg.querySelector('.libraryOptions'));
+        libraryoptionseditor.embed(dlg.querySelector('.libraryOptions')).then(function() {
+            $('#selectCollectionType', dlg).trigger('change');
+        });
     }
 
     function editor() {
@@ -205,20 +214,21 @@
 
                 var template = this.response;
                 var dlg = dialogHelper.createDialog({
-                    size: 'small',
+                    size: 'medium',
 
                     // In (at least) chrome this is causing the text field to not be editable
                     modal: false,
 
-                    removeOnClose: true
+                    removeOnClose: true,
+                    scrollY: false
                 });
 
                 dlg.classList.add('ui-body-a');
                 dlg.classList.add('background-theme-a');
                 dlg.classList.add('dlg-librarycreator');
+                dlg.classList.add('formDialog');
 
                 dlg.innerHTML = Globalize.translateDocument(template);
-                document.body.appendChild(dlg);
 
                 initEditor(dlg, options.collectionTypeOptions);
 

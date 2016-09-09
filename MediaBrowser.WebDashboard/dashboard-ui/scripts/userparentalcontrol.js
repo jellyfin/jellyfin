@@ -75,7 +75,7 @@
 
     function loadUser(page, user, allParentalRatings) {
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         loadUnratedItems(page, user);
         loadBlockedTags(page, user.Policy.BlockedTags);

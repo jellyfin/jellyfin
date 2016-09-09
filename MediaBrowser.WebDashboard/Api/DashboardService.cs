@@ -58,11 +58,6 @@ namespace MediaBrowser.WebDashboard.Api
     {
     }
 
-    [Route("/web/staticfiles", "GET")]
-    public class GetCacheFiles
-    {
-    }
-
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
@@ -143,37 +138,6 @@ namespace MediaBrowser.WebDashboard.Api
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
-        }
-
-        public object Get(GetCacheFiles request)
-        {
-            var allFiles = GetCacheFileList();
-
-            return ResultFactory.GetOptimizedResult(Request, _jsonSerializer.SerializeToString(allFiles));
-        }
-
-        private List<string> GetCacheFileList()
-        {
-            var creator = GetPackageCreator();
-            var directory = creator.DashboardUIPath;
-
-            var skipExtensions = GetDeployIgnoreExtensions();
-            var skipNames = GetDeployIgnoreFilenames();
-
-            return
-                Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
-                .Where(i => !skipExtensions.Contains(Path.GetExtension(i) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                .Where(i => !skipNames.Any(s =>
-                {
-                    if (s.Item2)
-                    {
-                        return string.Equals(s.Item1, Path.GetFileName(i), StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    return (Path.GetFileName(i) ?? string.Empty).IndexOf(s.Item1, StringComparison.OrdinalIgnoreCase) != -1;
-                }))
-                .Select(i => i.Replace(directory, string.Empty, StringComparison.OrdinalIgnoreCase).Replace("\\", "/").TrimStart('/') + "?v=" + _appHost.ApplicationVersion.ToString())
-                .ToList();
         }
 
         /// <summary>
@@ -368,8 +332,6 @@ namespace MediaBrowser.WebDashboard.Api
             string culture = null;
 
             var appVersion = _appHost.ApplicationVersion.ToString();
-
-            File.WriteAllText(Path.Combine(path, "staticfiles"), _jsonSerializer.SerializeToString(GetCacheFileList()));
 
             var mode = request.Mode;
 
