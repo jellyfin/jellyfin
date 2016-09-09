@@ -879,12 +879,13 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 slideeElement.style['will-change'] = 'transform';
             }
 
+            dragSourceElement.addEventListener('mousedown', dragInitSlidee);
+
             if (transform) {
 
                 dom.addEventListener(dragSourceElement, 'touchstart', dragInitSlidee, {
                     passive: true
                 });
-                dragSourceElement.addEventListener('mousedown', dragInitSlidee);
 
                 if (!o.scrollWidth) {
                     dom.addEventListener(window, 'resize', onResize, {
