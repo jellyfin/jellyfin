@@ -22,7 +22,6 @@ namespace MediaBrowser.Model.Configuration
             EncodingThreadCount = -1;
             VaapiDevice = "/dev/dri/card0";
             H264Crf = 23;
-            H264Preset = "superfast";
         }
     }
 }

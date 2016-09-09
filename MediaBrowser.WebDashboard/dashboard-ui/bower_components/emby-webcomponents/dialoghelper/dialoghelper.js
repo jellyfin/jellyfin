@@ -79,7 +79,9 @@
                 }
             }
 
-            activeElement.focus();
+            if (layoutManager.tv) {
+                activeElement.focus();
+            }
 
             if (dlg.getAttribute('data-removeonclose') != 'false') {
                 removeCenterFocus(dlg);

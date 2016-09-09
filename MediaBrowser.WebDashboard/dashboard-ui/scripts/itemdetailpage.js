@@ -1455,15 +1455,15 @@
             else if (review.Likes != null) {
 
                 if (review.Likes) {
-                    html += '<div style="background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
+                    html += '<div style="flex-shrink:0;background-color:transparent;background-image:url(\'css/images/fresh.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 } else {
-                    html += '<div style="background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
+                    html += '<div style="flex-shrink:0;background-color:transparent;background-image:url(\'css/images/rotten.png\');background-repeat:no-repeat;background-position:center center;background-size: cover;width:40px;height:40px;"></div>';
                 }
             }
 
             html += '<div class="listItemBody two-line">';
 
-            html += '<div style="white-space:normal;">' + review.Caption + '</div>';
+            html += '<h3 class="listItemBodyText" style="white-space:normal;">' + review.Caption + '</h3>';
 
             var vals = [];
 
@@ -1474,7 +1474,7 @@
                 vals.push(review.Publisher);
             }
 
-            html += '<div class="secondary">' + vals.join(', ') + '.';
+            html += '<div class="secondary listItemBodyText">' + vals.join(', ') + '.';
             if (review.Date) {
 
                 try {
@@ -1491,7 +1491,7 @@
             html += '</div>';
 
             if (review.Url) {
-                html += '<div class="secondary"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
+                html += '<div class="secondary listItemBodyText"><a class="textlink" href="' + review.Url + '" target="_blank">' + Globalize.translate('ButtonFullReview') + '</a></div>';
             }
 
             html += '</div>';
