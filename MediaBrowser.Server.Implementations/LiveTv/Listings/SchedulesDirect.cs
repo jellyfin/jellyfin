@@ -194,14 +194,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                         return station;
                     }
 
-                    if (string.IsNullOrWhiteSpace(channelName))
+                    if (!string.IsNullOrWhiteSpace(channelName))
                     {
-                        return null;
+                        channelName = NormalizeName(channelName);
+
+                        var result = channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
+
+                        if (result != null)
+                        {
+                            return result;
+                        }
                     }
 
-                    channelName = NormalizeName(channelName);
-
-                    return channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
+                    if (!string.IsNullOrWhiteSpace(channelNumber))
+                    {
+                        return channelPair.Values.FirstOrDefault(i => string.Equals(NormalizeName(i.stationID ?? string.Empty), channelNumber, StringComparison.OrdinalIgnoreCase));
+                    }
                 }
 
                 return null;
