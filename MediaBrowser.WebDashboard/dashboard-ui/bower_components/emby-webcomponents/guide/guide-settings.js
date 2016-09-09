@@ -40,7 +40,7 @@
                 };
 
                 if (layoutManager.tv) {
-                    dialogOptions.size = 'medium';
+                    dialogOptions.size = 'fullscreen';
                 } else {
                     dialogOptions.size = 'small';
                 }

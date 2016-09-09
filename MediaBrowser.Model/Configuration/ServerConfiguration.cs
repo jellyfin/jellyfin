@@ -217,7 +217,7 @@ namespace MediaBrowser.Model.Configuration
             Migrations = new string[] { };
             CodecsUsed = new string[] { };
             SqliteCacheSize = 0;
-            ImageExtractionTimeoutMs = 14000;
+            ImageExtractionTimeoutMs = 0;
 
             EnableLocalizedGuids = true;
             DisplaySpecialsWithinSeasons = true;
