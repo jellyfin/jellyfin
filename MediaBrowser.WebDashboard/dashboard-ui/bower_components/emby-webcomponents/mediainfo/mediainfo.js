@@ -178,7 +178,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
                 });
             }
 
-            if (item.IsSeries && item.EpisodeTitle) {
+            if (item.IsSeries && item.EpisodeTitle && options.episodeTitle !== false) {
                 miscInfo.push(itemHelper.getDisplayName(item));
             }
 
