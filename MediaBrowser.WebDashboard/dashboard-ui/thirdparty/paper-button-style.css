@@ -33,6 +33,10 @@
     color: #fff;
 }
 
+.button-accent-flat {
+    color: #52B54B !important;
+}
+
 button.emby-button.raised.more {
     background: #3388cc;
     color: #fff;
