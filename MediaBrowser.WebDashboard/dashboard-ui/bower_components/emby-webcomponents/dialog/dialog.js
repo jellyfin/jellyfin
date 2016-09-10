@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
+define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, dom, layoutManager, scrollHelper, globalize, require) {
 
     function showTvDialog(options) {
         return new Promise(function (resolve, reject) {
@@ -64,6 +64,8 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
             html += '<button is="emby-button" type="button" class="' + buttonClass + '" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
         }
+
+        dlg.style.minWidth = (Math.min(options.buttons.length * 150, dom.getWindowSize().innerWidth - 50)) + 'px';
 
         dlg.querySelector('.formDialogFooter').innerHTML = html;
 

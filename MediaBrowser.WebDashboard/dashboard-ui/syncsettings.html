@@ -1,4 +1,4 @@
-﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,paper-checkbox,emby-input,emby-button,paper-icon-button-light,material-icons">
+﻿<div id="syncSettingsPage" data-role="page" class="page type-interior withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Sync" data-require="scripts/syncsettings,emby-checkbox,emby-input,emby-button,paper-icon-button-light,material-icons">
 
     <div data-role="content">
         <div class="content-primary">
@@ -24,22 +24,20 @@
                         ${LabelConversionCpuCoreLimitHelp}
                     </div>
                 </div>
-                <div>
-                    <paper-checkbox id="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">
-                        ${OptionEnableFullSpeedConversionHelp}
-                    </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableFullSpeedConversion" />
+                        <span>${OptionEnableFullSpeedConversion}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionEnableFullSpeedConversionHelp}</div>
                 </div>
                 <br />
-                <br />
                 <div>
-                    <button is="emby-button" type="submit" class="raised submit block">
-                        <i class="md-icon">check</i>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
                         <span>${ButtonSave}</span>
                     </button>
 
-                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();">
-                        <i class="md-icon">close</i>
+                    <button is="emby-button" type="button" class="raised button-cancel block btnCancel" onclick="history.back();">
                         <span>${ButtonCancel}</span>
                     </button>
                 </div>

@@ -357,6 +357,11 @@
 
         });
 
+        context.querySelector('.btnHeaderSave').addEventListener('click', function (e) {
+
+            context.querySelector('.btnSave').click();
+        });
+
         context.querySelector('#chkLockData').addEventListener('click', function (e) {
 
             if (!e.target.checked) {
@@ -1208,6 +1213,8 @@
 
                     elem.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
+                    elem.querySelector('.formDialogFooter').classList.remove('formDialogFooter');
+                    elem.querySelector('.btnHeaderSave').classList.remove('hide');
                     elem.querySelector('.btnCancel').classList.add('hide');
 
                     currentContext = elem;

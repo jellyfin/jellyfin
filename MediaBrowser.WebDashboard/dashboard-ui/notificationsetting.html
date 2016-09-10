@@ -1,4 +1,4 @@
-﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,emby-select,emby-input,paper-checkbox,emby-button">
+﻿<div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage withTabs" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting,emby-select,emby-input,emby-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -8,10 +8,10 @@
             <form class="notificationSettingForm">
 
                 <br />
-                <div>
-                    <paper-checkbox id="chkEnabled">${LabelNotificationEnabled}</paper-checkbox>
-                </div>
-                <br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" id="chkEnabled" />
+                    <span>${LabelNotificationEnabled}</span>
+                </label>
                 <br />
 
                 <div class="monitorUsers" style="display: none;">
