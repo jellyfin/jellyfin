@@ -149,26 +149,12 @@
         }, 0);
 
         dom.addEventListener((dlg.dialogContainer || backdrop), 'click', function (e) {
-            if (!isParent(dlg, e.target)) {
+            if (e.target == dlg.dialogContainer) {
                 close(dlg);
             }
         }, {
             passive: true
         });
-    }
-
-    function isParent(parent, child) {
-
-        while (child) {
-
-            if (child == parent) {
-                return true;
-            }
-
-            child = child.parentNode;
-        }
-
-        return false;
     }
 
     function isHistoryEnabled(dlg) {
