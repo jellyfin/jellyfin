@@ -498,9 +498,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvitems.html">
       <Link>Resources\dashboard-ui\livetvitems.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvrecordinglist.html">
-      <Link>Resources\dashboard-ui\livetvrecordinglist.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvseriestimer.html">
       <Link>Resources\dashboard-ui\livetvseriestimer.html</Link>
     </BundleResource>
@@ -1050,6 +1047,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-winjs.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-winjs.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery.js</Link>
     </BundleResource>
@@ -1214,6 +1214,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dialog\dialog.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dialog\dialog.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dialog\dialog.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dialog\dialog.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dialoghelper\dialoghelper.css</Link>
@@ -1470,6 +1473,18 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fonts\roboto\ty9dfvLAziwdqQ2dHoyjphTbgVql8nDJpwnrE27mub0.woff2">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fonts\roboto\ty9dfvLAziwdqQ2dHoyjphTbgVql8nDJpwnrE27mub0.woff2</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreen-doubleclick.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreen-doubleclick.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.template.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide.css</Link>
     </BundleResource>
@@ -1478,6 +1493,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\images\basicimagefetcher.js</Link>
@@ -1557,14 +1578,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\notificationicon.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\notificationicon.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\notifications.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\notifications.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\page.js\page.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\page.js\page.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\pagejs\page.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\playlisteditor\playlisteditor.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\playlisteditor\playlisteditor.js</Link>
@@ -1578,14 +1602,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\polyfills\objectassign.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\polyfills\objectassign.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\polyfills\raf.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\polyfills\raf.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\prompt\nativeprompt.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\prompt\nativeprompt.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\prompt\prompt.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\prompt\prompt.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\prompt\style.css">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\prompt\style.css</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\prompt\prompt.template.html">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\prompt\prompt.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingcreator.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingcreator.css</Link>
@@ -1616,6 +1643,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\scroller\smoothscroller.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\scroller\smoothscroller.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\serviceworker\notifications.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\serviceworker\notifications.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\serviceworker\sync.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\serviceworker\sync.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sharing\sharingmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sharing\sharingmanager.js</Link>
@@ -3423,12 +3456,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imagedownloader\imagedownloader.template.html">
       <Link>Resources\dashboard-ui\components\imagedownloader\imagedownloader.template.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageeditor\imageeditor.js">
-      <Link>Resources\dashboard-ui\components\imageeditor\imageeditor.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageeditor\imageeditor.template.html">
-      <Link>Resources\dashboard-ui\components\imageeditor\imageeditor.template.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\imageuploader\imageuploader.js">
       <Link>Resources\dashboard-ui\components\imageuploader\imageuploader.js</Link>
     </BundleResource>
@@ -3936,11 +3963,11 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvitems.js">
       <Link>Resources\dashboard-ui\scripts\livetvitems.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvrecordinglist.js">
-      <Link>Resources\dashboard-ui\scripts\livetvrecordinglist.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvrecordings.js">
       <Link>Resources\dashboard-ui\scripts\livetvrecordings.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvschedule.js">
+      <Link>Resources\dashboard-ui\scripts\livetvschedule.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvseriestimer.js">
       <Link>Resources\dashboard-ui\scripts\livetvseriestimer.js</Link>
