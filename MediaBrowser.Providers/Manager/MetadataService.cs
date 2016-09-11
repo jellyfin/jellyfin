@@ -132,7 +132,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (libraryOptions == null)
                     {
-                        libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item) ?? new LibraryOptions();
+                        libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
                     }
 
                     var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (libraryOptions == null)
                 {
-                    libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item) ?? new LibraryOptions();
+                    libraryOptions = LibraryManager.GetLibraryOptions((BaseItem)item);
                 }
 
                 // Save to database
