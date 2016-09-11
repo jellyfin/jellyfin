@@ -175,9 +175,6 @@
     <Compile Include="..\MediaBrowser.Model\Configuration\AccessSchedule.cs">
       <Link>Configuration\AccessSchedule.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\AutoOnOff.cs">
-      <Link>Configuration\AutoOnOff.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
     </Compile>

@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -122,16 +123,18 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
+        void _deviceDiscovery_DeviceLeft(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            var info = e.Argument;
+
             string nts;
-            e.Headers.TryGetValue("NTS", out nts);
+            info.Headers.TryGetValue("NTS", out nts);
 
             string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
+            if (!info.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
 
             string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
+            if (!info.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
 
             if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -653,7 +656,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _device.MediaChanged -= _device_MediaChanged;
-                _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
+                //_deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
                 _device.OnDeviceUnavailable = null;
 
                 _device.Dispose();

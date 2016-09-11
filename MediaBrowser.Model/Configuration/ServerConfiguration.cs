@@ -183,8 +183,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int RemoteClientBitrateLimit { get; set; }
 
-        public AutoOnOff EnableLibraryMonitor { get; set; }
-
         public int SharingExpirationDays { get; set; }
 
         public string[] Migrations { get; set; }
@@ -244,7 +242,6 @@ namespace MediaBrowser.Model.Configuration
             // 5 minutes
             MinResumeDurationSeconds = 300;
 
-            EnableLibraryMonitor = AutoOnOff.Auto;
             LibraryMonitorDelay = 60;
 
             EnableInternetProviders = true;

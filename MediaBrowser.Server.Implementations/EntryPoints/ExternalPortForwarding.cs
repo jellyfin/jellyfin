@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using MediaBrowser.Common.Threading;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -17,17 +18,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly ISsdpHandler _ssdp;
+        private readonly IDeviceDiscovery _deviceDiscovery;
 
         private PeriodicTimer _timer;
         private bool _isStarted;
 
-        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, ISsdpHandler ssdp)
+        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery)
         {
             _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
-            _ssdp = ssdp;
+            _deviceDiscovery = deviceDiscovery;
         }
 
         private string _lastConfigIdentifier;
@@ -61,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         public void Run()
         {
-            //NatUtility.Logger = new LogWriter(_logger);
+            NatUtility.Logger = _logger;
 
             if (_config.Configuration.EnableUPnP)
             {
@@ -93,33 +94,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             _timer = new PeriodicTimer(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
-            _ssdp.MessageReceived += _ssdp_MessageReceived;
+            _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
 
             _lastConfigIdentifier = GetConfigIdentifier();
 
             _isStarted = true;
         }
 
-        private void ClearCreatedRules(object state)
+        private async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
-            _createdRules = new List<string>();
-            _usnsHandled = new List<string>();
-        }
-
-        void _ssdp_MessageReceived(object sender, SsdpMessageEventArgs e)
-        {
-            var endpoint = e.EndPoint as IPEndPoint;
-
-            if (endpoint == null || e.LocalEndPoint == null)
-            {
-                return;
-            }
+            var info = e.Argument;
 
             string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
             string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
 
             // Filter device type
             if (usn.IndexOf("WANIPConnection:", StringComparison.OrdinalIgnoreCase) == -1 &&
@@ -132,13 +122,43 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var identifier = string.IsNullOrWhiteSpace(usn) ? nt : usn;
 
-            if (!_usnsHandled.Contains(identifier))
+            if (info.Location != null && !_usnsHandled.Contains(identifier))
             {
                 _usnsHandled.Add(identifier);
 
                 _logger.Debug("Calling Nat.Handle on " + identifier);
-                NatUtility.Handle(e.LocalEndPoint.Address, e.Message, endpoint, NatProtocol.Upnp);
+
+                IPAddress address;
+                if (IPAddress.TryParse(info.Location.Host, out address))
+                {
+                    // The Handle method doesn't need the port
+                    var endpoint = new IPEndPoint(address, info.Location.Port);
+
+                    IPAddress localAddress = null;
+
+                    try
+                    {
+                        var localAddressString = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+
+                        if (!IPAddress.TryParse(localAddressString, out localAddress))
+                        {
+                            return;
+                        }
+                    }
+                    catch
+                    {
+                        return;
+                    }
+
+                    NatUtility.Handle(localAddress, info, endpoint, NatProtocol.Upnp);
+                }
             }
+        }
+
+        private void ClearCreatedRules(object state)
+        {
+            _createdRules = new List<string>();
+            _usnsHandled = new List<string>();
         }
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -228,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _timer = null;
             }
 
-            _ssdp.MessageReceived -= _ssdp_MessageReceived;
+            _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
 
             try
             {
