@@ -14,6 +14,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 using System.Xml.Linq;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
@@ -50,18 +51,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
         }
 
-        void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
+        void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            var info = e.Argument;
+
             string st = null;
             string nt = null;
-            e.Headers.TryGetValue("ST", out st);
-            e.Headers.TryGetValue("NT", out nt);
+            info.Headers.TryGetValue("ST", out st);
+            info.Headers.TryGetValue("NT", out nt);
 
             if (string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(nt, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
             {
                 string location;
-                if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
+                if (info.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
                 {
                     _logger.Debug("SAT IP found at {0}", location);
 
