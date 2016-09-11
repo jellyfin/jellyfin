@@ -2121,7 +2121,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapse', 'emby-input', 'paper-checkbox', 'emby-button', 'emby-select'],
+            dependencies: ['emby-collapse', 'emby-input', 'emby-button', 'emby-select'],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/librarysettings'

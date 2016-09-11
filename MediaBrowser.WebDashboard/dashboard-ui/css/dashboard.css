@@ -146,26 +146,6 @@
     }
 }
 
-paper-checkbox #checkboxContainer {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-paper-checkbox paper-ripple {
-    top: -13px !important;
-    left: -13px !important;
-}
-
-paper-checkbox #checkmark {
-    border-right-width: 4px !important;
-    border-bottom-width: 4px !important;
-}
-
-.paperCheckboxList paper-checkbox {
-    display: block;
-    padding: .5em 0;
-}
-
 .paperListLabel {
     font-size: 16px;
     margin-bottom: .5em;
@@ -173,11 +153,6 @@ paper-checkbox #checkmark {
 
 .textarea-mono {
     font-family: monospace !important;
-}
-
-.ui-body-a paper-checkbox #checkbox.checked.paper-checkbox {
-    background-color: #52B54B;
-    border-color: #52B54B;
 }
 
 .paperList {

@@ -19,6 +19,7 @@
 
             var imageUrl;
 
+            var fldImage = page.querySelector('#fldImage');
             if (user.PrimaryImageTag) {
 
                 imageUrl = ApiClient.getUserImageUrl(user.Id, {
@@ -31,7 +32,6 @@
                 imageUrl = "css/images/logindefault.png";
             }
 
-            var fldImage = page.querySelector('#fldImage');
             fldImage.classList.remove('hide');
             fldImage.innerHTML = "<img width='140px' src='" + imageUrl + "' />";
 
