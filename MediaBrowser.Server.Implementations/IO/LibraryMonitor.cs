@@ -164,32 +164,16 @@ namespace MediaBrowser.Server.Implementations.IO
             Start();
         }
 
-        private bool EnableLibraryMonitor
-        {
-            get
-            {
-                switch (ConfigurationManager.Configuration.EnableLibraryMonitor)
-                {
-                    case AutoOnOff.Auto:
-                        return Environment.OSVersion.Platform == PlatformID.Win32NT;
-                    case AutoOnOff.Enabled:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-
         private bool IsLibraryMonitorEnabaled(BaseItem item)
         {
             var options = LibraryManager.GetLibraryOptions(item);
 
-            if (options != null && options.SchemaVersion >= 1)
+            if (options != null)
             {
                 return options.EnableRealtimeMonitor;
             }
 
-            return EnableLibraryMonitor;
+            return false;
         }
 
         public void Start()

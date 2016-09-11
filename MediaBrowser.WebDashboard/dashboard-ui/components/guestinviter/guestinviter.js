@@ -1,10 +1,10 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'paper-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'emby-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
 
     function renderLibrarySharingList(context, result) {
 
         var folderHtml = '';
 
-        folderHtml += '<div class="paperCheckboxList">';
+        folderHtml += '<div class="checkboxList">';
 
         folderHtml += result.Items.map(function (i) {
 
@@ -13,8 +13,7 @@
             var isChecked = true;
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            currentHtml += '<paper-checkbox class="chkShareFolder" data-folderid="' + i.Id + '" type="checkbox"' + checkedHtml + '>' + i.Name + '</paper-checkbox>';
-
+            currentHtml += '<label><input is="emby-checkbox" class="chkShareFolder" type="checkbox" data-folderid="' + i.Id + '"' + checkedHtml + '/><span>' + i.Name + '</span></label>';
             return currentHtml;
 
         }).join('');

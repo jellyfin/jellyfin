@@ -549,7 +549,7 @@ namespace MediaBrowser.Server.Startup.Common
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
             RegisterSingleInstance(SubtitleManager);
 
-            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager, this, NetworkManager));
+            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
@@ -565,8 +565,6 @@ namespace MediaBrowser.Server.Startup.Common
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
-
-            RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
 
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
             RegisterSingleInstance(activityLogRepo);

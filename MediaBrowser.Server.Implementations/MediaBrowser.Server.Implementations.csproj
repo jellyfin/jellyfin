@@ -105,9 +105,6 @@
     <Reference Include="UniversalDetector">
       <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Nat">
-      <HintPath>..\packages\Mono.Nat.1.2.24.0\lib\net40\Mono.Nat.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -389,6 +386,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
+      <Project>{d7453b88-2266-4805-b39b-2b5a2a33e1ba}</Project>
+      <Name>Mono.Nat</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

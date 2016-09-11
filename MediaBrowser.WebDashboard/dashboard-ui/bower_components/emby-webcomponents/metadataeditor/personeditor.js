@@ -20,7 +20,7 @@
                 if (layoutManager.tv) {
                     dialogOptions.size = 'fullscreen';
                 } else {
-                    dialogOptions.size = 'medium';
+                    dialogOptions.size = 'medium-tall';
                 }
 
                 var dlg = dialogHelper.createDialog(dialogOptions);
