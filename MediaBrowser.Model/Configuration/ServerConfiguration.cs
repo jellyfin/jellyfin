@@ -191,8 +191,6 @@ namespace MediaBrowser.Model.Configuration
         public int SchemaVersion { get; set; }
         public int SqliteCacheSize { get; set; }
 
-        public bool DownloadImagesInAdvance { get; set; }
-
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
         public bool EnableLocalizedGuids { get; set; }

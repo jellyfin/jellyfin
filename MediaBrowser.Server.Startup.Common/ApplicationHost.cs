@@ -345,6 +345,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var name = entryPoint.GetType().FullName;
                 Logger.Info("Starting entry point {0}", name);
+                var now = DateTime.UtcNow;
                 try
                 {
                     entryPoint.Run();
@@ -353,7 +354,7 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     Logger.ErrorException("Error in {0}", ex, name);
                 }
-                Logger.Info("Entry point completed: {0}", name);
+                Logger.Info("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
             Logger.Info("All entry points have started");
 

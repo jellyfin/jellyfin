@@ -33,10 +33,16 @@
             parent.querySelector('.chkArhiveAsMediaContainer').classList.add('hide');
         }
 
-        if (contentType == 'homevideos') {
+        if (contentType == 'homevideos' || contentType == 'photos') {
             parent.querySelector('.chkEnablePhotosContainer').classList.remove('hide');
         } else {
             parent.querySelector('.chkEnablePhotosContainer').classList.add('hide');
+        }
+
+        if (contentType == 'homevideos') {
+            parent.querySelector('.chkDownloadImagesInAdvanceContainer').classList.add('hide');
+        } else {
+            parent.querySelector('.chkDownloadImagesInAdvanceContainer').classList.remove('hide');
         }
 
         if (contentType == 'tvshows' || contentType == 'movies' || contentType == 'homevideos' || contentType == 'musicvideos' || contentType == 'mixed' || !contentType) {
@@ -55,7 +61,8 @@
             EnablePhotos: parent.querySelector('.chkEnablePhotos').checked,
             EnableRealtimeMonitor: parent.querySelector('.chkEnableRealtimeMonitor').checked,
             ExtractChapterImagesDuringLibraryScan: parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked,
-            EnableChapterImageExtraction: parent.querySelector('.chkExtractChapterImages').checked
+            EnableChapterImageExtraction: parent.querySelector('.chkExtractChapterImages').checked,
+            DownloadImagesInAdvance: parent.querySelector('#chkDownloadImagesInAdvance').checked
         };
 
         return options;
@@ -68,6 +75,7 @@
         parent.querySelector('.chkEnableRealtimeMonitor').checked = options.EnableRealtimeMonitor;
         parent.querySelector('.chkExtractChaptersDuringLibraryScan').checked = options.ExtractChapterImagesDuringLibraryScan;
         parent.querySelector('.chkExtractChapterImages').checked = options.EnableChapterImageExtraction;
+        parent.querySelector('#chkDownloadImagesInAdvance').checked = options.DownloadImagesInAdvance;
     }
 
     return {
