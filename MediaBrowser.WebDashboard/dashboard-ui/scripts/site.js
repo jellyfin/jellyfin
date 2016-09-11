@@ -1337,8 +1337,6 @@ var AppInfo = {};
 
         define("jqmcollapsible", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 
-        define("jqmcheckbox", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
-
         define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
@@ -1410,7 +1408,6 @@ var AppInfo = {};
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
-            require(['fnchecked']);
             if (window.ApiClient) {
                 jQuery.ajax = ApiClient.ajax;
             }
@@ -1937,7 +1934,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: ['paper-checkbox', 'emby-input', 'emby-button'],
+            dependencies: ['emby-input', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/dashboardhosting'

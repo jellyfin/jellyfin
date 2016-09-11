@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
+define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, dom, require) {
 
     function setInputProperties(dlg, options) {
         var txtInput = dlg.querySelector('#txtInput');
@@ -60,6 +60,8 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
             return false;
         });
+
+        dlg.style.minWidth = (Math.min(400, dom.getWindowSize().innerWidth - 50)) + 'px';
 
         return dialogHelper.open(dlg).then(function () {
 

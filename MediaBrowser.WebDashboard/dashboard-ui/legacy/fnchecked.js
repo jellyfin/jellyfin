@@ -12,4 +12,8 @@
             return this.length && this[0].checked;
         }
     };
+
+    $.fn.checkboxradio = function () {
+        return this;
+    };
 });

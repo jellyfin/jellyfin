@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
 
     function onSubmit() {
         var form = this;

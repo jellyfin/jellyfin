@@ -1367,7 +1367,7 @@
   "PasswordMatchError": "Password and password confirmation must match.",
   "UninstallPluginHeader": "Uninstall Plugin",
   "UninstallPluginConfirmation": "Are you sure you wish to uninstall {0}?",
-  "NoPluginConfigurationMessage": "This plugin has nothing to configure.",
+  "NoPluginConfigurationMessage": "This plugin has no settings to configure.",
   "NoPluginsInstalledMessage": "You have no plugins installed.",
   "BrowsePluginCatalogMessage": "Browse our plugin catalog to view available plugins.",
   "HeaderNewApiKey": "New Api Key",
