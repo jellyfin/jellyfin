@@ -1256,7 +1256,7 @@
                 errorMsg += '<br/>';
                 errorMsg += Globalize.translate('MessageEnsureOpenTuner');
             }
-            else if (mediaSource && mediaSource.VideoType != "VideoFile") {
+            else if (mediaSource && mediaSource.VideoType && mediaSource.VideoType != "VideoFile") {
                 errorMsg += '<br/>';
                 errorMsg += '<br/>';
                 errorMsg += Globalize.translate('MessageFolderRipPlaybackExperimental');

@@ -2111,10 +2111,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
-                {
-                    path = LibraryManager.SubstitutePath(path, map.From, map.To);
-                }
+                return LibraryManager.GetPathAfterNetworkSubstitution(path);
             }
 
             return path;
