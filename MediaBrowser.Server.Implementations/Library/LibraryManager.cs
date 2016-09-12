@@ -2527,6 +2527,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 }).OrderBy(i => i.Path).ToList();
         }
 
+        public string GetPathAfterNetworkSubstitution(string path)
+        {
+            foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
+            {
+                path = SubstitutePath(path, map.From, map.To);
+            }
+
+            return path;
+        }
+
         public string SubstitutePath(string path, string from, string to)
         {
             if (string.IsNullOrWhiteSpace(path))
