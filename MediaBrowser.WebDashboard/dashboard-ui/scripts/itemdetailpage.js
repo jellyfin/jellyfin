@@ -1807,73 +1807,15 @@
 
     function getVideosHtml(items, user, limit, moreButtonClass) {
 
-        var html = '';
-
-        for (var i = 0, length = items.length; i < length; i++) {
-
-            if (limit && i >= limit) {
-                break;
-            }
-
-            var item = items[i];
-
-            var cssClass = "card backdropCard scalableCard backdropCard-scalable";
-
-            var href = "itemdetails.html?id=" + item.Id;
-
-            var onclick = item.PlayAccess == 'Full' ? ' onclick="MediaController.play(\'' + item.Id + '\'); return false;"' : "";
-
-            html += '<a class="' + cssClass + '" href="' + href + '"' + onclick + '>';
-
-            html += '<div class="cardBox">';
-            html += '<div class="cardScalable">';
-
-            var imageTags = item.ImageTags || {};
-
-            var imgUrl;
-
-            if (imageTags.Primary) {
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: 400,
-                    tag: imageTags.Primary,
-                    type: "primary"
-                });
-
-            } else {
-                imgUrl = "css/images/items/detail/video.png";
-            }
-
-            html += '<div class="cardPadder cardPadder-backdrop"></div>';
-
-            html += '<div class="cardContent">';
-            html += '<div class="cardImage lazy" data-src="' + imgUrl + '"></div>';
-
-            html += '<div class="innerCardFooter">';
-            html += '<div class="cardText">' + item.Name + '</div>';
-            html += '<div class="cardText">';
-            if (item.RunTimeTicks != "") {
-                html += datetime.getDisplayRunningTime(item.RunTimeTicks);
-            }
-            else {
-                html += "&nbsp;";
-            }
-            html += '</div>';
-
-            //cardFooter
-            html += "</div>";
-
-            // cardContent
-            html += '</div>';
-
-            // cardScalable
-            html += '</div>';
-
-            // cardBox
-            html += '</div>';
-
-            html += '</a>';
-        }
+        var html = cardBuilder.getCardsHtml({
+            items: items,
+            shape: "backdrop",
+            preferThumb: true,
+            showTitle: true,
+            action: 'play',
+            overlayText: true,
+            showRuntime: true
+        });
 
         if (limit && items.length > limit) {
             html += '<p style="margin: 0;padding-left:5px;"><button is="emby-button" type="button" class="raised more ' + moreButtonClass + '">' + Globalize.translate('ButtonMore') + '</button></p>';

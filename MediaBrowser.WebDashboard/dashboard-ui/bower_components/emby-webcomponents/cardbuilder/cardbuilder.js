@@ -818,6 +818,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     lines.push(item.ProductionYear || '');
                 }
 
+                if (options.showRuntime) {
+
+                    if (item.RunTimeTicks) {
+
+                        lines.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
                 if (options.showChannelName) {
 
                     lines.push(item.ChannelName || '');
