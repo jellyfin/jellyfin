@@ -2,8 +2,13 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 're
 
     function setInputProperties(dlg, options) {
         var txtInput = dlg.querySelector('#txtInput');
+
+        if (txtInput.label) {
+            txtInput.label(options.label || '');
+        } else {
+            txtInput.setAttribute('label', options.label || '');
+        }
         txtInput.value = options.value || '';
-        txtInput.label(options.label || '');
     }
 
     function showDialog(options, template) {

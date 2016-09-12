@@ -1516,10 +1516,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                foreach (var map in _config.Configuration.PathSubstitutions)
-                {
-                    path = _libraryManager.SubstitutePath(path, map.From, map.To);
-                }
+                path = _libraryManager.GetPathAfterNetworkSubstitution(path);
             }
 
             return path;

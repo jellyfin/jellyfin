@@ -443,7 +443,7 @@
 
                 html += '</div>';
 
-                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 640;
+                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 600;
 
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
