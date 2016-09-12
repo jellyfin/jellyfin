@@ -1177,20 +1177,24 @@ namespace MediaBrowser.Server.Startup.Common
 
         public async Task<List<IPAddress>> GetLocalIpAddresses()
         {
-            var localAddresses = NetworkManager.GetLocalIpAddresses()
-                .Where(IsIpAddressValid)
-                .ToList();
+            var addresses = NetworkManager.GetLocalIpAddresses().ToList();
+            var list = new List<IPAddress>();
 
-            return localAddresses;
+            foreach (var address in addresses)
+            {
+                var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
+                if (valid)
+                {
+                    list.Add(address);
+                }
+            }
+
+            return list;
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastAddressCacheClear;
-        private bool IsIpAddressValid(IPAddress address)
-        {
-            return IsIpAddressValidInternal(address).Result;
-        }
-        private async Task<bool> IsIpAddressValidInternal(IPAddress address)
+        private async Task<bool> IsIpAddressValidAsync(IPAddress address)
         {
             if (IPAddress.IsLoopback(address))
             {
