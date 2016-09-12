@@ -506,6 +506,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
 
+        string GetPathAfterNetworkSubstitution(string path);
+
         /// <summary>
         /// Substitutes the path.
         /// </summary>

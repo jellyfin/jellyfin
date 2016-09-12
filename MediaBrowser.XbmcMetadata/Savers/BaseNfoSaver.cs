@@ -1040,12 +1040,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static string GetPathToSave(string path, ILibraryManager libraryManager, IServerConfigurationManager config)
         {
-            foreach (var map in config.Configuration.PathSubstitutions)
-            {
-                path = libraryManager.SubstitutePath(path, map.From, map.To);
-            }
-
-            return path;
+            return libraryManager.GetPathAfterNetworkSubstitution(path);
         }
 
         private static bool IsPersonType(PersonInfo person, string type)

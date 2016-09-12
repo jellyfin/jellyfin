@@ -343,7 +343,8 @@ namespace MediaBrowser.Dlna.Main
             if (_Publisher != null)
             {
                 var devices = _Publisher.Devices.ToList();
-                foreach (var device in devices)
+
+                Parallel.ForEach(devices, device =>
                 {
                     try
                     {
@@ -353,7 +354,18 @@ namespace MediaBrowser.Dlna.Main
                     {
                         _logger.ErrorException("Error sending bye bye", ex);
                     }
-                }
+                });
+                //foreach (var device in devices)
+                //{
+                //    try
+                //    {
+                //        _Publisher.RemoveDevice(device);
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        _logger.ErrorException("Error sending bye bye", ex);
+                //    }
+                //}
                 _Publisher.Dispose();
             }
 
