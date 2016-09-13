@@ -881,9 +881,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 if (options.showProgramAirInfo) {
 
-                    var text = item.StartDate ?
-                        datetime.toLocaleString(datetime.parseISO8601Date(item.StartDate, true)) :
-                        '';
+                    var text;
+                    if (item.StartDate) {
+                        var startDate = datetime.parseISO8601Date(item.StartDate, true);
+                        text = datetime.toLocaleDateString(startDate) + ', ' + datetime.getDisplayTime(startDate);
+                    } else {
+                        text = '';
+                    }
 
                     lines.push(text || '&nbsp;');
 
