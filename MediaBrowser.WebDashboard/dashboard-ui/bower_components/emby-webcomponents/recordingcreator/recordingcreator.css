@@ -6,6 +6,20 @@
     display: none;
 }
 
+.recordingDialog-imageContainer {
+    flex-shrink: 0;
+    padding: 1em 1em 1em 0;
+    max-width: 30%;
+}
+
+.recordingDialog-img {
+    max-width: 100%;
+}
+
+.recordingDialog-itemName {
+    margin-top: .5em;
+}
+
 @media all and (max-height: 1400px) {
 
     .layout-tv .recordingDialog .itemOverview {

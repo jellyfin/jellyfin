@@ -126,7 +126,7 @@
     }
 
     function showSeriesDays(context) {
-        
+
         if (context.querySelector('#chkAnyTime').checked) {
             slideUpToHide(context.querySelector('.seriesDays'));
         } else {
@@ -276,9 +276,49 @@
         }
     }
 
+    function getImageUrl(item, apiClient, imageHeight) {
+
+        var imageTags = item.ImageTags || {};
+
+        if (item.PrimaryImageTag) {
+            imageTags.Primary = item.PrimaryImageTag;
+        }
+
+        if (imageTags.Primary) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (imageTags.Thumb) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Thumb",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Thumb
+            });
+        }
+
+        return null;
+    }
+
     function renderRecording(context, defaultTimer, program, apiClient) {
 
-        context.querySelector('.itemName').innerHTML = program.Name;
+        var imgUrl = getImageUrl(program, apiClient, 200);
+        var imageContainer = context.querySelector('.recordingDialog-imageContainer');
+
+        if (imgUrl) {
+            imageContainer.innerHTML = '<img src="' + imgUrl + '" class="recordingDialog-img" />';
+            imageContainer.classList.remove('hide');
+        } else {
+            imageContainer.innerHTML = '';
+            imageContainer.classList.add('hide');
+        }
+
+        context.querySelector('.recordingDialog-itemName').innerHTML = program.Name;
+        context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
 
         context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);

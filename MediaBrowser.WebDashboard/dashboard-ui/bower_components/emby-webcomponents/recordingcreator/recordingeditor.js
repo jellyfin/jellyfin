@@ -30,19 +30,56 @@
         });
     }
 
-    function renderTimer(context, item) {
+    function getImageUrl(item, apiClient, imageHeight) {
 
-        var programInfo = item.ProgramInfo || {};
+        var imageTags = item.ImageTags || {};
 
-        context.querySelector('.itemName').innerHTML = item.Name;
+        if (item.PrimaryImageTag) {
+            imageTags.Primary = item.PrimaryImageTag;
+        }
 
-        context.querySelector('.itemGenres').innerHTML = (programInfo.Genres || []).join(' / ');
-        context.querySelector('.itemOverview').innerHTML = programInfo.Overview || '';
+        if (imageTags.Primary) {
 
-        //var timerPageImageContainer = context.querySelector('.timerPageImageContainer');
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (imageTags.Thumb) {
 
-        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(programInfo);
-        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(programInfo);
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Thumb",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Thumb
+            });
+        }
+
+        return null;
+    }
+
+    function renderTimer(context, item, apiClient) {
+
+        var program = item.ProgramInfo || {};
+
+        var imgUrl = getImageUrl(program, apiClient, 200);
+        var imageContainer = context.querySelector('.recordingDialog-imageContainer');
+
+        if (imgUrl) {
+            imageContainer.innerHTML = '<img src="' + imgUrl + '" class="recordingDialog-img" />';
+            imageContainer.classList.remove('hide');
+        } else {
+            imageContainer.innerHTML = '';
+            imageContainer.classList.add('hide');
+        }
+
+        context.querySelector('.recordingDialog-itemName').innerHTML = item.Name;
+
+        context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
+        context.querySelector('.itemOverview').innerHTML = program.Overview || '';
+
+        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
+        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
 
         context.querySelector('#txtPrePaddingMinutes').value = item.PrePaddingSeconds / 60;
         context.querySelector('#txtPostPaddingMinutes').value = item.PostPaddingSeconds / 60;
@@ -119,7 +156,7 @@
         var apiClient = connectionManager.getApiClient(currentServerId);
         apiClient.getLiveTvTimer(id).then(function (result) {
 
-            renderTimer(context, result);
+            renderTimer(context, result, apiClient);
             loading.hide();
         });
     }

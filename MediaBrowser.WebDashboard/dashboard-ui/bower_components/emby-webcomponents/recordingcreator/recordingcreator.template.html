@@ -7,9 +7,17 @@
 <div class="formDialogContent smoothScrollY">
     <form class="dialogContentInner dialog-content-centered">
 
-        <h1 class="itemName dialogContentTitle"></h1>
-        <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-        <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+        <div style="display: flex;">
+            <div class="recordingDialog-imageContainer">
+
+            </div>
+            <div style="flex-grow:1;">
+                <h1 class="recordingDialog-itemName dialogContentTitle"></h1>
+                <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+                <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+                <p class="itemGenres"></p>
+            </div>
+        </div>
 
         <div id="eligibleForSeriesFields" class="hide">
             <br />
@@ -100,7 +108,7 @@
         <div class="formDialogFooter">
             <div class="supporterContainer hide formDialogFooterItem">
                 <div class="supporterContainerText"></div>
-                <br/>
+                <br />
                 <button is="emby-button" type="button" class="btnSupporter hide raised button-submit block">
                     <span>${HeaderBecomeProjectSupporter}</span>
                 </button>
