@@ -818,6 +818,16 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     lines.push(item.ProductionYear || '');
                 }
 
+                if (options.showRuntime) {
+
+                    if (item.RunTimeTicks) {
+
+                        lines.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
+                    } else {
+                        lines.push('');
+                    }
+                }
+
                 if (options.showChannelName) {
 
                     lines.push(item.ChannelName || '');
@@ -871,9 +881,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                 if (options.showProgramAirInfo) {
 
-                    var text = item.StartDate ?
-                        datetime.toLocaleString(datetime.parseISO8601Date(item.StartDate, true)) :
-                        '';
+                    var text;
+                    if (item.StartDate) {
+                        var startDate = datetime.parseISO8601Date(item.StartDate, true);
+                        text = datetime.toLocaleDateString(startDate) + ', ' + datetime.getDisplayTime(startDate);
+                    } else {
+                        text = '';
+                    }
 
                     lines.push(text || '&nbsp;');
 

@@ -103,8 +103,14 @@
         return false;
     }();
 
+    function getCurrentLocale() {
+        var locale = globalize.getCurrentLocale();
+
+        return locale;
+    }
+
     function toLocaleString(date) {
-        var currentLocale = globalize.getCurrentLocale();
+        var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
             date.toLocaleString(currentLocale) :
@@ -143,7 +149,7 @@
 
     function toLocaleDateString(date) {
 
-        var currentLocale = globalize.getCurrentLocale();
+        var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
             date.toLocaleDateString(currentLocale) :
@@ -152,7 +158,7 @@
 
     function toLocaleTimeString(date) {
 
-        var currentLocale = globalize.getCurrentLocale();
+        var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
             date.toLocaleTimeString(currentLocale) :

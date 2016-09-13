@@ -21,6 +21,8 @@
     width: 100%;
     background-color: transparent;
     border-radius: 0;
+    /* Ensure it is over the label so that it can be clicked */
+    position: relative;
 }
 
 .inputContainer {

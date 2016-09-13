@@ -2,8 +2,33 @@
 
     var currentDialog;
     var recordingUpdated = false;
+    var recordingDeleted = false;
     var currentItemId;
     var currentServerId;
+
+    function deleteTimer(apiClient, timerId) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['confirm'], function (confirm) {
+
+                confirm(globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'), globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation')).then(function () {
+
+                    loading.show();
+
+                    apiClient.cancelLiveTvTimer(timerId).then(function () {
+
+                        require(['toast'], function (toast) {
+                            toast(globalize.translate('sharedcomponents#RecordingCancelled'));
+                        });
+
+                        loading.hide();
+                        resolve();
+                    });
+                });
+            });
+        });
+    }
 
     function renderTimer(context, item) {
 
@@ -34,9 +59,10 @@
         loading.hide();
     }
 
-    function closeDialog(isSubmitted) {
+    function closeDialog(isSubmitted, isDeleted) {
 
         recordingUpdated = isSubmitted;
+        recordingDeleted = isDeleted;
         dialogHelper.close(currentDialog);
     }
 
@@ -74,6 +100,14 @@
             closeDialog(false);
         });
 
+        context.querySelector('.btnCancelRecording').addEventListener('click', function () {
+
+            var apiClient = connectionManager.getApiClient(currentServerId);
+            deleteTimer(apiClient, currentItemId).then(function () {
+                closeDialog(true, true);
+            });
+        });
+
         context.querySelector('form').addEventListener('submit', onSubmit);
     }
 
@@ -95,6 +129,7 @@
         return new Promise(function (resolve, reject) {
 
             recordingUpdated = false;
+            recordingDeleted = false;
             currentServerId = serverId;
             loading.show();
 
@@ -129,7 +164,7 @@
                     if (recordingUpdated) {
                         resolve({
                             updated: true,
-                            deleted: false
+                            deleted: recordingDeleted
                         });
                     } else {
                         reject();

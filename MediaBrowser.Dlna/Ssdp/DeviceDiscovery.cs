@@ -50,8 +50,6 @@ namespace MediaBrowser.Dlna.Ssdp
             // Connect our event handler so we process devices as they are found
             _DeviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
             _DeviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
-            // Enable listening for notifications (optional)
-            _DeviceLocator.StartListeningForNotifications();
 
             // Perform a search so we don't have to wait for devices to broadcast notifications 
             // again to get any results right away (notifications are broadcast periodically).
@@ -62,23 +60,23 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             Task.Factory.StartNew(async (o) =>
             {
-                try
+                while (!_tokenSource.IsCancellationRequested)
                 {
-                    while (true)
+                    try
                     {
+                        // Enable listening for notifications (optional)
+                        _DeviceLocator.StartListeningForNotifications();
+
                         await _DeviceLocator.SearchAsync().ConfigureAwait(false);
-
-                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
-
-                        await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
                     }
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error searching for devices", ex);
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error searching for devices", ex);
+                    }
+
+                    var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
+
+                    await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
                 }
 
             }, CancellationToken.None, TaskCreationOptions.LongRunning);

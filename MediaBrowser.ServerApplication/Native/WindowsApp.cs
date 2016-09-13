@@ -9,7 +9,6 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using CommonIO;
-using MediaBrowser.Controller.Power;
 using MediaBrowser.Model.System;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
@@ -146,11 +145,6 @@ namespace MediaBrowser.ServerApplication.Native
         public void AllowSystemStandby()
         {
             MainStartup.Invoke(Standby.AllowSleep);
-        }
-
-        public IPowerManagement GetPowerManagement()
-        {
-            return new WindowsPowerManagement(_logger);
         }
 
         public FFMpegInstallInfo GetFfmpegInstallInfo()
