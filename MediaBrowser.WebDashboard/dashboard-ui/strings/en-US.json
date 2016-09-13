@@ -90,7 +90,7 @@
   "LabelCountry": "Country:",
   "LabelLanguage": "Language:",
   "LabelTimeLimitHours": "Time limit (hours):",
-  "HeaderPreferredMetadataLanguage": "Preferred metadata language:",
+  "HeaderPreferredMetadataLanguage": "Preferred Metadata Language",
   "LabelSaveLocalMetadata": "Save artwork and metadata into media folders",
   "LabelSaveLocalMetadataHelp": "Saving artwork and metadata directly into media folders will put them in a place where they can be easily edited.",
   "LabelDownloadInternetMetadata": "Download artwork and metadata from the internet",

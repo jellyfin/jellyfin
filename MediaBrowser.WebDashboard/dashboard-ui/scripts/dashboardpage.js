@@ -168,20 +168,20 @@
 
                     itemHtml += '<i class="listItemIcon md-icon">dvr</i>';
 
-                    itemHtml += '<div class="listItemBody three-line">';
+                    itemHtml += '<div class="listItemBody two-line">';
 
-                    itemHtml += '<h3 class="listItemBodyText">';
+                    itemHtml += '<div class="listItemBodyText">';
                     itemHtml += item.Title;
-                    itemHtml += '</h3>';
+                    itemHtml += '</div>';
 
                     itemHtml += '<div class="listItemBodyText secondary">';
                     var date = datetime.parseISO8601Date(item.Date, true);
                     itemHtml += date.toLocaleDateString();
                     itemHtml += '</div>';
 
-                    itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
-                    itemHtml += item.Description;
-                    itemHtml += '</div>';
+                    //itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
+                    //itemHtml += item.Description;
+                    //itemHtml += '</div>';
 
                     itemHtml += '</div>';
 
@@ -1067,9 +1067,9 @@
 
             html += '<div class="listItemBody three-line">';
 
-            html += '<h3 class="listItemBodyText">';
+            html += '<div class="listItemBodyText">';
             html += entry.Name;
-            html += '</h3>';
+            html += '</div>';
 
             html += '<div class="listItemBodyText secondary">';
             var date = datetime.parseISO8601Date(entry.Date, true);

@@ -7,12 +7,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         if (window.IntersectionObserver) {
 
-            // The api exists in chrome 50 but doesn't work
-            if (browser.chrome) {
-
-                var version = parseInt(browser.version.split('.')[0]);
-                return version >= 51;
-            }
             return true;
         }
 

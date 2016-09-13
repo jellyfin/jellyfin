@@ -54,6 +54,7 @@
     z-index: 1;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .formDialogFooterItem {
@@ -61,6 +62,7 @@
     margin-right: .5em !important;
     flex-grow: 1;
     text-align: center;
+    flex-basis: 0;
 }
 
 @media all and (min-width: 800px) {
