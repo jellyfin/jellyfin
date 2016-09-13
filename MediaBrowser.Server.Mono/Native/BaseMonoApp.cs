@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Power;
 using MediaBrowser.Model.System;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
@@ -232,11 +231,6 @@ namespace MediaBrowser.Server.Mono.Native
             public string machine = string.Empty;
         }
 
-        public IPowerManagement GetPowerManagement()
-        {
-            return new NullPowerManagement();
-        }
-
         public FFMpegInstallInfo GetFfmpegInstallInfo()
         {
             return GetInfo(Environment);
@@ -287,14 +281,6 @@ namespace MediaBrowser.Server.Mono.Native
         public bool PortsRequireAuthorization(string applicationPath)
         {
             return false;
-        }
-    }
-
-    public class NullPowerManagement : IPowerManagement
-    {
-        public void ScheduleWake(DateTime utcTime)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -27,7 +27,6 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Power;
 using MediaBrowser.Model.Configuration;
 using Microsoft.Win32;
 
@@ -61,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder, IPowerManagement powerManagement)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder)
         {
             Current = this;
 
@@ -79,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _jsonSerializer = jsonSerializer;
 
             _seriesTimerProvider = new SeriesTimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
-            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), powerManagement, _logger);
+            _timerProvider = new TimerManager(fileSystem, jsonSerializer, _logger, Path.Combine(DataPath, "timers"), _logger);
             _timerProvider.TimerFired += _timerProvider_TimerFired;
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;

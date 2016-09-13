@@ -450,7 +450,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             if (!string.IsNullOrWhiteSpace(user.ConnectUserId))
             {
-                await RemoveConnect(user, connectUser.Id).ConfigureAwait(false);
+                await RemoveConnect(user, user.ConnectUserId).ConfigureAwait(false);
             }
 
             var url = GetConnectUrl("ServerAuthorizations");
