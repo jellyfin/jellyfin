@@ -537,12 +537,15 @@
 
             url = getEmbyServerUrl(url, "Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId);
 
+            var auth = 'MediaBrowser Client="' + appName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + appVersion + '"';
+
             return ajax({
                 type: "GET",
                 url: url,
                 dataType: "json",
                 headers: {
-                    "X-MediaBrowser-Token": server.ExchangeToken
+                    "X-MediaBrowser-Token": server.ExchangeToken,
+                    "X-Emby-Authorization": auth
                 }
 
             }).then(function (auth) {

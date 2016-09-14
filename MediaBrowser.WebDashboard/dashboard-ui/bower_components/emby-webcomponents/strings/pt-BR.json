@@ -47,7 +47,7 @@
     "HeaderBecomeProjectSupporter": "Obter Emby Premiere",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Uma subscri\u00e7\u00e3o ativa do Emby Premiere \u00e9 requerida para criar a grava\u00e7\u00e3o automatizada de s\u00e9ries.",
     "OptionConvertRecordingsToStreamingFormat": "Converter automaticamente grava\u00e7\u00f5es para um formato amig\u00e1vel a streaming",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Grava\u00e7\u00f5es ser\u00e3o convertidas automaticamente para MP4 para uma reprodu\u00e7\u00e3o mais f\u00e1cil em seus dispositivos.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Grava\u00e7\u00f5es ser\u00e3o convertidas automaticamente para MP4 ou MKV, baseado nas configura\u00e7\u00f5es do Servidor Emby.",
     "FeatureRequiresEmbyPremiere": "Este recurso requer uma subscri\u00e7\u00e3o ativa do Emby Premiere",
     "Record": "Gravar",
     "Save": "Salvar",
@@ -277,11 +277,12 @@
     "ConfirmDeleteImage": "Apagar imagem?",
     "HeaderEditImages": "Editar Imagens",
     "Settings": "Ajustes",
-    "ShowIndicatorsFor": "Show indicators for:",
-    "NewEpisodes": "New episodes",
-    "HDPrograms": "HD programs",
-    "LiveBroadcasts": "Live broadcasts",
-    "Premieres": "Premieres",
-    "RepeatEpisodes": "Repeat episodes",
-    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription."
+    "ShowIndicatorsFor": "Mostrar indicadores para:",
+    "NewEpisodes": "Novos epis\u00f3dios",
+    "HDPrograms": "Programas em HD",
+    "LiveBroadcasts": "Broadcasts ao vivo",
+    "Premieres": "Estr\u00e9ias",
+    "RepeatEpisodes": "Repetir epis\u00f3dios",
+    "DvrSubscriptionRequired": "Emby DVR requer uma assinatura ativa do Emby Premiere",
+    "HeaderCancelRecording": "Cancelar Grava\u00e7\u00e3o"
 }

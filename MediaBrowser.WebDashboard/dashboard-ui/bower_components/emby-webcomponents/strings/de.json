@@ -47,7 +47,7 @@
     "HeaderBecomeProjectSupporter": "Holen Sie Emby Premium",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Ein aktives Emby Premium Abo wird benn\u00f6tigt um automatische Serienaufnahmen zu erstellen.",
     "OptionConvertRecordingsToStreamingFormat": "Konvertiere Aufnahmen automatisch in ein streaming freundliches Format.",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Aufnahmen werden als MP4 konvertiert um eine bessere Wiedergabe auf Ihren Ger\u00e4ten zu gew\u00e4hrleisten.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Aufnahmen werden dynamisch als MP4 oder MKV konvertiert um eine bessere Wiedergabe auf Ihren Ger\u00e4ten zu gew\u00e4hrleisten.",
     "FeatureRequiresEmbyPremiere": "Dieses Feature ben\u00f6tigt eine aktive Emby Premiere Mitgliedschaft.",
     "Record": "Aufnehmen",
     "Save": "Speichern",
@@ -283,5 +283,6 @@
     "LiveBroadcasts": "Live\u00fcbertragungen",
     "Premieres": "Premieren",
     "RepeatEpisodes": "Wiederholung Episoden",
-    "DvrSubscriptionRequired": "Emby DVR ben\u00f6tigt eine aktive Emby Premiere Mitgliedschaft."
+    "DvrSubscriptionRequired": "Emby DVR ben\u00f6tigt eine aktive Emby Premiere Mitgliedschaft.",
+    "HeaderCancelRecording": "Aufnahme abbrechen"
 }

@@ -940,13 +940,6 @@
             return self.getJSON(url);
         };
 
-        self.getLiveTvRecordingSeries = function (options) {
-
-            var url = self.getUrl("LiveTv/Recordings/Series", options || {});
-
-            return self.getJSON(url);
-        };
-
         self.getLiveTvRecordingGroups = function (options) {
 
             var url = self.getUrl("LiveTv/Recordings/Groups", options || {});

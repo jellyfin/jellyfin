@@ -283,5 +283,6 @@
     "LiveBroadcasts": "Live broadcasts",
     "Premieres": "Premieres",
     "RepeatEpisodes": "Repeat episodes",
-    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription."
+    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription.",
+    "HeaderCancelRecording": "Cancel Recording"
 }
