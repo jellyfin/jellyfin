@@ -6,15 +6,6 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         var miscInfo = [];
         var text, date;
 
-        if (item.ChannelName) {
-
-            if (options.interactive && item.ChannelId) {
-                miscInfo.push('<a class="lnkChannel" data-id="' + item.ChannelId + '" data-serverid="' + item.ServerId + '" href="#">' + item.ChannelName + '</a>');
-            } else {
-                miscInfo.push(item.ChannelName);
-            }
-        }
-
         if (item.StartDate) {
 
             try {
@@ -22,7 +13,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
                 text = datetime.toLocaleDateString(date);
 
-                text += ', ' + datetime.getDisplayTime(date);
+                text += ' ' + datetime.getDisplayTime(date);
 
                 if (item.EndDate) {
                     date = datetime.parseISO8601Date(item.EndDate);
@@ -38,6 +29,15 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
         if (item.ChannelNumber) {
             miscInfo.push('CH ' + item.ChannelNumber);
+        }
+
+        if (item.ChannelName) {
+
+            if (options.interactive && item.ChannelId) {
+                miscInfo.push('<a class="lnkChannel" data-id="' + item.ChannelId + '" data-serverid="' + item.ServerId + '" href="#">' + item.ChannelName + '</a>');
+            } else {
+                miscInfo.push(item.ChannelName);
+            }
         }
 
         if (item.SeriesTimerId) {

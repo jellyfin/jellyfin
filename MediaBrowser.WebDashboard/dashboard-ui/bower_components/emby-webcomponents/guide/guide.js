@@ -367,7 +367,7 @@
                 if (program.SeriesTimerId) {
                     timerAttributes += ' data-seriestimerid="' + program.SeriesTimerId + '"';
                 }
-                html += '<button data-action="link"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+                html += '<button data-action="programdialog"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
                 var guideProgramNameClass = "guideProgramName";
 

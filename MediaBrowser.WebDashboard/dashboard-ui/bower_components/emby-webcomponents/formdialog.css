@@ -27,7 +27,7 @@
 }
 
 .dialogContentInner {
-    padding: .5em 1.5em 20em 1.5em;
+    padding: .5em 1em 20em 1em;
 }
 
 .dialogContentInner-mini {
@@ -49,7 +49,7 @@
     left: 0;
     right: 0;
     display: flex;
-    padding: 1.5em;
+    padding: 1.25em;
     /* Without this emby-checkbox is able to appear on top */
     z-index: 1;
     align-items: center;
@@ -69,6 +69,11 @@
 
     .formDialogFooterItem {
         max-width: 80%;
+    }
+
+    .dialogContentInner {
+        padding-left: 1.5em;
+        padding-right: 1.5em;
     }
 }
 

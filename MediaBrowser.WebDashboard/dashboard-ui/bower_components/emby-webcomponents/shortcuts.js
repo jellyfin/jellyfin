@@ -91,6 +91,19 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         embyRouter.showItem(item, options);
     }
 
+    function showProgramDialog(item) {
+
+        if (item.TimerId) {
+            showItem(item);
+            return;
+        }
+
+        require(['recordingCreator'], function (recordingCreator) {
+
+            recordingCreator.show(item.Id, item.ServerId);
+        });
+    }
+
     function getItem(button) {
 
         button = dom.parentWithAttribute(button, 'data-id');
@@ -168,6 +181,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         return {
             Type: card.getAttribute('data-type'),
             Id: card.getAttribute('data-id'),
+            TimerId: card.getAttribute('data-timerid'),
             CollectionType: card.getAttribute('data-collectiontype'),
             ChannelId: card.getAttribute('data-channelid'),
             SeriesId: card.getAttribute('data-seriesid'),
@@ -215,6 +229,11 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             showItem(item, {
                 context: card.getAttribute('data-context')
             });
+        }
+
+        else if (action == 'programdialog') {
+
+            showProgramDialog(item);
         }
 
         else if (action == 'instantmix') {

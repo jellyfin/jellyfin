@@ -89,7 +89,8 @@
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
-                action: 'edit'
+                action: 'edit',
+                cardFooterAside: 'none'
 
             });
             html += '</div>';

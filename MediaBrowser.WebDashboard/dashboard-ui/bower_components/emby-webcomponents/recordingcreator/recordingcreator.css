@@ -9,15 +9,26 @@
 .recordingDialog-imageContainer {
     flex-shrink: 0;
     padding: 1em 1em 1em 0;
-    max-width: 30%;
+    max-width: 25%;
 }
 
 .recordingDialog-img {
     max-width: 100%;
 }
 
+.btnPlay-notplayable {
+    display: none !important;
+}
+
 .recordingDialog-itemName {
     margin-top: .5em;
+}
+
+@media all and (max-width: 800px) {
+
+    .programDialog-itemName {
+        display: none;
+    }
 }
 
 @media all and (max-height: 1400px) {

@@ -77,7 +77,7 @@
         var isPortrait = className.indexOf('portrait') != -1;
 
         var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
-        var name = itemHelper.getDisplayName(item);
+        var name = item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
 
         html += '<div>';
         var logoHeight = 26;
