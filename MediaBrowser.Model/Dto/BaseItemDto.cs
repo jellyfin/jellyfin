@@ -826,6 +826,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series count.</value>
         public int? SeriesCount { get; set; }
+        public int? ProgramCount { get; set; }
         /// <summary>
         /// Gets or sets the episode count.
         /// </summary>

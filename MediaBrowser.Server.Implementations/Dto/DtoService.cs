@@ -437,6 +437,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.TrailerCount = taggedItems.Count(i => i is Trailer);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
+                dto.ProgramCount = taggedItems.Count(i => i is LiveTvProgram);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
             }
 

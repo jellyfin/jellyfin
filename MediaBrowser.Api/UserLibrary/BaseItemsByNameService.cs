@@ -205,6 +205,7 @@ namespace MediaBrowser.Api.UserLibrary
         private void SetItemCounts(BaseItemDto dto, ItemCounts counts)
         {
             dto.ChildCount = counts.ItemCount;
+            dto.ProgramCount = counts.ProgramCount;
             dto.SeriesCount = counts.SeriesCount;
             dto.EpisodeCount = counts.EpisodeCount;
             dto.MovieCount = counts.MovieCount;
