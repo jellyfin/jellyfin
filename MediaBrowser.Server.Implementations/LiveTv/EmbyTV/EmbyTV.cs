@@ -580,7 +580,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 PrePaddingSeconds = Math.Max(config.PrePaddingSeconds, 0),
                 RecordAnyChannel = true,
                 RecordAnyTime = true,
-                RecordNewOnly = false,
+                RecordNewOnly = true,
 
                 Days = new List<DayOfWeek>
                 {
@@ -730,6 +730,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     return result.Item1;
                 }
+                catch (FileNotFoundException)
+                {
+                }
                 catch (Exception e)
                 {
                     _logger.ErrorException("Error getting channel stream", e);
@@ -750,6 +753,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     var result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
 
                     return new Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>(result.Item1, hostInstance, result.Item2);
+                }
+                catch (FileNotFoundException)
+                {
                 }
                 catch (Exception e)
                 {
@@ -1213,7 +1219,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             // Exclude programs that have already ended
-            allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow && i.StartDate > DateTime.UtcNow);
+            allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow);
 
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
