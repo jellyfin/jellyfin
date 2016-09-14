@@ -78,21 +78,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
 
-            try
-            {
-                await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
-                        .ConfigureAwait(false);
-            }
-            finally
+            await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
+                    .ConfigureAwait(false);
+        }
+
+        private async void DeleteTempFile(string path)
+        {
+            for (var i = 0; i < 10; i++)
             {
                 try
                 {
-                    File.Delete(tempfile);
+                    File.Delete(path);
+                    return;
+                }
+                catch (FileNotFoundException)
+                {
+                    return;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    return;
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error deleting recording temp file", ex);
                 }
+
+                await Task.Delay(1000).ConfigureAwait(false);
             }
         }
 
@@ -101,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var durationToken = new CancellationTokenSource(duration);
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, false, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
             _logger.Info("Recording completed to file {0}", targetFile);
         }
@@ -143,14 +155,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
                     }
 
-                    var tempFileTask = response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken);
+                    var tempFileTask = DirectRecorder.CopyUntilCancelled(response.Content, output, cancellationToken);
 
                     // Give the temp file a little time to build up
                     await Task.Delay(bufferMs, cancellationToken).ConfigureAwait(false);
 
-                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, duration, onStarted, cancellationToken), cancellationToken);
+                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, true, duration, onStarted, cancellationToken), CancellationToken.None);
 
-                    await tempFileTask.ConfigureAwait(false);
+                    try
+                    {
+                        await tempFileTask.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        
+                    }
 
                     await recordTask.ConfigureAwait(false);
                 }
@@ -159,7 +178,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _logger.Info("Recording completed to file {0}", targetFile);
         }
 
-        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, bool deleteInputFileAfterCompletion, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             _fileSystem.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -200,7 +219,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile, deleteInputFileAfterCompletion);
 
             process.Start();
 
@@ -309,8 +328,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        /// <param name="process">The process.</param>
-        private void OnFfMpegProcessExited(Process process)
+        private void OnFfMpegProcessExited(Process process, string inputFile, bool deleteInputFileAfterCompletion)
         {
             _hasExited = true;
 
@@ -335,6 +353,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.Error("FFMpeg recording exited with an error for {0}.", _targetPath);
                 _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed", _targetPath)));
+            }
+
+            if (deleteInputFileAfterCompletion)
+            {
+                DeleteTempFile(inputFile);
             }
         }
 

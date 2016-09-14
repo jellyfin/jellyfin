@@ -457,8 +457,8 @@
                     centerText: true,
                     overlayText: false,
                     lazy: true,
-                    autoThumb: true,
                     transition: false,
+                    preferThumb: true,
                     allowBottomPadding: !enableScrollX()
                 });
                 html += '</div>';

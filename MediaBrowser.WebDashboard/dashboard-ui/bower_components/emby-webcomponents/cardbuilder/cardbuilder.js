@@ -148,7 +148,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (options.shape == 'auto' || options.shape == 'autohome' || options.shape == 'autooverflow' || options.shape == 'autoVertical') {
 
-                if (options.preferThumb || isThumbAspectRatio) {
+                if (options.preferThumb === true || isThumbAspectRatio) {
                     options.shape = options.shape == 'autooverflow' ? 'overflowBackdrop' : 'backdrop';
                 } else if (isSquareAspectRatio) {
                     options.coverImage = true;
@@ -161,6 +161,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 } else {
                     options.shape = options.defaultShape || (options.shape == 'autooverflow' ? 'overflowSquare' : 'square');
                 }
+            }
+
+            if (options.preferThumb == 'auto') {
+                options.preferThumb = options.shape == 'backdrop' || options.shape == 'overflowBackdrop';
             }
 
             options.uiAspect = getDesiredAspect(options.shape);
@@ -454,34 +458,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var imgUrl = null;
             var coverImage = false;
 
-            if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.34) {
-
-                height = primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Primary",
-                    maxHeight: height,
-                    maxWidth: width,
-                    tag: item.ImageTags.Primary
-                });
-
-                if (primaryImageAspectRatio) {
-                    if (uiAspect) {
-                        if (Math.abs(primaryImageAspectRatio - uiAspect) <= .2) {
-                            coverImage = true;
-                        }
-                    }
-                }
-
-            } else if (options.autoThumb && item.ImageTags && item.ImageTags.Thumb) {
-
-                imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Thumb",
-                    maxWidth: width,
-                    tag: item.ImageTags.Thumb
-                });
-
-            } else if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
+            if (options.preferThumb && item.ImageTags && item.ImageTags.Thumb) {
 
                 imgUrl = apiClient.getScaledImageUrl(item.Id, {
                     type: "Thumb",

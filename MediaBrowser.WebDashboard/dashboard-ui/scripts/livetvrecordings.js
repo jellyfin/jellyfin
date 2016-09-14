@@ -84,7 +84,9 @@
             coverImage: true,
             lazy: true,
             cardLayout: true,
-            allowBottomPadding: !enableScrollX()
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
         }, cardOptions || {}));
 
         ImageLoader.lazyChildren(recordingItems);
@@ -117,7 +119,8 @@
             Limit: enableScrollX() ? 12 : 8,
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 

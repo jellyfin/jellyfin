@@ -1,19 +1,25 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <h3 class="formDialogHeaderTitle">
-        ${HeaderNewRecording}
-    </h3>
+    <h3 class="formDialogHeaderTitle"></h3>
 </div>
 <div class="formDialogContent smoothScrollY">
     <form class="dialogContentInner dialog-content-centered">
 
-        <h1 class="itemName dialogContentTitle"></h1>
-        <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-        <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+        <div style="display: flex;">
+            <div class="recordingDialog-imageContainer">
+
+            </div>
+            <div style="flex-grow:1;">
+                <h1 class="programDialog-itemName recordingDialog-itemName dialogContentTitle"></h1>
+                <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+                <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+                <p class="itemGenres"></p>
+            </div>
+        </div>
 
         <div id="eligibleForSeriesFields" class="hide">
             <br />
-            <label class="checkboxContainer">
+            <label>
                 <input type="checkbox" is="emby-checkbox" id="chkRecordSeries" />
                 <span>${RecordSeries}</span>
             </label>
@@ -36,6 +42,7 @@
                 <br />
             </div>
         </div>
+        <br />
         <div class="convertRecordingsContainer hide checkboxContainer checkboxContainer-withDescription">
             <label>
                 <input type="checkbox" is="emby-checkbox" id="chkConvertRecordings" />
@@ -46,67 +53,19 @@
                 <a href="#" class="accent lnkPremiere">${FeatureRequiresEmbyPremiere}</a>
             </div>
         </div>
-        <div class="advanced hide">
-            <div is="emby-collapse" title="${Advanced}">
-                <div class="collapseContent">
-                    <div class="seriesDays hide">
-                        <div>
-                            <h1>${Days}</h1>
-                        </div>
-                        <div class="checkboxList">
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkSunday" />
-                                <span>${Sunday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkMonday" />
-                                <span>${Monday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
-                                <span>${Tuesday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
-                                <span>${Wednesday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkThursday" />
-                                <span>${Thursday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkFriday" />
-                                <span>${Friday}</span>
-                            </label>
-                            <label>
-                                <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
-                                <span>${Saturday}</span>
-                            </label>
-                        </div>
-                        <br />
-                    </div>
-                    <br />
-                    <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
-                    </div>
-                    <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
-                    </div>
-                </div>
-            </div>
-            <br />
-        </div>
         <br />
         <div class="formDialogFooter">
             <div class="supporterContainer hide formDialogFooterItem">
                 <div class="supporterContainerText"></div>
-                <br/>
+                <br />
                 <button is="emby-button" type="button" class="btnSupporter hide raised button-submit block">
                     <span>${HeaderBecomeProjectSupporter}</span>
                 </button>
             </div>
-            <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">
-                <i class="md-icon recordingDialogSubmitIcon">fiber_manual_record</i>
+            <button is="emby-button" type="button" class="raised btnPlay btnPlay-notplayable hide block formDialogFooterItem button-submit">
+                <span>${Play}</span>
+            </button>
+            <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit" style="background:#cc3333;">
                 <span>${Record}</span>
             </button>
         </div>

@@ -28,7 +28,7 @@
             IsAiring: true,
             limit: limit,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary",
+            EnableImageTypes: "Primary,Thumb",
             Fields: "ChannelInfo"
 
         }).then(function (result) {
@@ -53,7 +53,8 @@
             IsKids: false,
             IsSeries: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -68,7 +69,8 @@
             limit: getLimit(),
             IsMovie: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -83,7 +85,8 @@
             limit: getLimit(),
             IsSports: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -98,7 +101,8 @@
             limit: getLimit(),
             IsKids: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 

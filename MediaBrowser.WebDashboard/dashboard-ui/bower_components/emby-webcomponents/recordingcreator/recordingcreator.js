@@ -1,46 +1,14 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'shell', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, shell) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'datetime', 'imageLoader', 'shell', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, datetime, imageLoader, shell) {
 
     var currentProgramId;
     var currentServerId;
     var currentDialog;
     var recordingCreated = false;
-
-    function getDaysOfWeek() {
-
-        return [
-         'Sunday',
-         'Monday',
-         'Tuesday',
-         'Wednesday',
-         'Thursday',
-         'Friday',
-         'Saturday'
-        ];
-    }
-
-    function getDays(context) {
-
-        var daysOfWeek = getDaysOfWeek();
-
-        var days = [];
-
-        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
-
-            var day = daysOfWeek[i];
-
-            if (context.querySelector('#chk' + day).checked) {
-                days.push(day);
-            }
-
-        }
-
-        return days;
-    }
+    var closeAction;
 
     function hideSeriesRecordingFields(context) {
 
         slideUpToHide(context.querySelector('.seriesFields'));
-        slideUpToHide(context.querySelector('.seriesDays'));
         context.querySelector('.btnSubmit').classList.remove('hide');
         context.querySelector('.supporterContainer').classList.add('hide');
     }
@@ -68,14 +36,9 @@
 
         apiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
 
-            item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
-            item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-
             item.RecordNewOnly = form.querySelector('#chkNewOnly').checked;
             item.RecordAnyChannel = form.querySelector('#chkAllChannels').checked;
             item.RecordAnyTime = form.querySelector('#chkAnyTime').checked;
-
-            item.Days = getDays(form);
 
             if (form.querySelector('#chkRecordSeries').checked) {
 
@@ -125,25 +88,26 @@
         });
     }
 
-    function showSeriesDays(context) {
-        
-        if (context.querySelector('#chkAnyTime').checked) {
-            slideUpToHide(context.querySelector('.seriesDays'));
+    function setPlayButtonVisible(context, visible) {
+
+        var btnPlay = context.querySelector('.btnPlay');
+
+        if (!visible) {
+            btnPlay.classList.add('hide');
         } else {
-            slideDownToShow(context.querySelector('.seriesDays'));
+            btnPlay.classList.remove('hide');
         }
     }
 
     function showSeriesRecordingFields(context, apiClient) {
 
         slideDownToShow(context.querySelector('.seriesFields'));
-        showSeriesDays(context);
-        context.querySelector('.btnSubmit').classList.remove('hide');
 
         getRegistration(apiClient, currentProgramId, 'seriesrecordings').then(function (regInfo) {
 
             if (regInfo.IsRegistered) {
                 context.querySelector('.btnSubmit').classList.remove('hide');
+                setPlayButtonVisible(context, true);
                 context.querySelector('.supporterContainer').classList.add('hide');
 
             } else {
@@ -151,18 +115,18 @@
                 context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#MessageActiveSubscriptionRequiredSeriesRecordings');
                 context.querySelector('.supporterContainer').classList.remove('hide');
                 context.querySelector('.btnSubmit').classList.add('hide');
+                setPlayButtonVisible(context, false);
             }
         });
     }
 
     function showSingleRecordingFields(context, apiClient) {
 
-        context.querySelector('.btnSubmit').classList.remove('hide');
-
         getRegistration(apiClient, currentProgramId, 'dvr').then(function (regInfo) {
 
             if (regInfo.IsRegistered) {
                 context.querySelector('.btnSubmit').classList.remove('hide');
+                setPlayButtonVisible(context, true);
                 context.querySelector('.supporterContainer').classList.add('hide');
 
             } else {
@@ -170,6 +134,7 @@
                 context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#DvrSubscriptionRequired');
                 context.querySelector('.supporterContainer').classList.remove('hide');
                 context.querySelector('.btnSubmit').classList.add('hide');
+                setPlayButtonVisible(context, false);
             }
         });
     }
@@ -231,14 +196,16 @@
             }
         });
 
-        context.querySelector('.btnCancel').addEventListener('click', function () {
+        context.querySelector('.btnPlay').addEventListener('click', function () {
 
+            closeAction = 'play';
             closeDialog(false);
         });
 
-        context.querySelector('#chkAnyTime').addEventListener('change', function () {
+        context.querySelector('.btnCancel').addEventListener('click', function () {
 
-            showSeriesDays(context);
+            closeAction = null;
+            closeDialog(false);
         });
 
         context.querySelector('form', context).addEventListener('submit', onSubmit);
@@ -256,29 +223,62 @@
 
             context.querySelector('#chkConvertRecordings').checked = config.EnableRecordingEncoding;
         });
-
-        if (layoutManager.tv) {
-            context.querySelector('.advanced').classList.add('hide');
-        } else {
-            context.querySelector('.advanced').classList.remove('hide');
-        }
     }
 
-    function selectDays(page, days) {
+    function getImageUrl(item, apiClient, imageHeight) {
 
-        var daysOfWeek = getDaysOfWeek();
+        var imageTags = item.ImageTags || {};
 
-        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
-
-            var day = daysOfWeek[i];
-
-            page.querySelector('#chk' + day).checked = days.indexOf(day) != -1;
+        if (item.PrimaryImageTag) {
+            imageTags.Primary = item.PrimaryImageTag;
         }
+
+        if (imageTags.Primary) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (imageTags.Thumb) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Thumb",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Thumb
+            });
+        }
+
+        return null;
     }
 
     function renderRecording(context, defaultTimer, program, apiClient) {
 
-        context.querySelector('.itemName').innerHTML = program.Name;
+        var imgUrl = getImageUrl(program, apiClient, 200);
+        var imageContainer = context.querySelector('.recordingDialog-imageContainer');
+
+        if (imgUrl) {
+            imageContainer.innerHTML = '<img src="' + require.toUrl('.').split('?')[0] + '/empty.png" data-src="' + imgUrl + '" class="recordingDialog-img lazy" />';
+            imageContainer.classList.remove('hide');
+
+            imageLoader.lazyChildren(imageContainer);
+        } else {
+            imageContainer.innerHTML = '';
+            imageContainer.classList.add('hide');
+        }
+
+        context.querySelector('.recordingDialog-itemName').innerHTML = program.Name;
+        context.querySelector('.formDialogHeaderTitle').innerHTML = program.Name;
+        context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
+
+        var btnPlay = context.querySelector('.btnPlay');
+        var now = new Date();
+        if (now >= datetime.parseISO8601Date(program.StartDate, true) && now < datetime.parseISO8601Date(program.EndDate, true)) {
+            btnPlay.classList.remove('btnPlay-notplayable');
+        } else {
+            btnPlay.classList.add('btnPlay-notplayable');
+        }
 
         context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
@@ -287,16 +287,11 @@
         context.querySelector('#chkAllChannels').checked = defaultTimer.RecordAnyChannel;
         context.querySelector('#chkAnyTime').checked = defaultTimer.RecordAnyTime;
 
-        context.querySelector('#txtPrePaddingMinutes').value = defaultTimer.PrePaddingSeconds / 60;
-        context.querySelector('#txtPostPaddingMinutes').value = defaultTimer.PostPaddingSeconds / 60;
-
         if (program.IsSeries) {
             context.querySelector('#eligibleForSeriesFields').classList.remove('hide');
         } else {
             context.querySelector('#eligibleForSeriesFields').classList.add('hide');
         }
-
-        selectDays(context, defaultTimer.Days);
 
         context.querySelector('.convertRecordingsContainer').classList.remove('hide');
         showConvertRecordingsUnlockMessage(context, apiClient);
@@ -346,6 +341,23 @@
         });
     }
 
+    function executeCloseAction(action, programId, serverId) {
+
+        if (action == 'play') {
+
+            require(['playbackManager'], function (playbackManager) {
+
+                var apiClient = connectionManager.getApiClient(serverId);
+
+                apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId()).then(function (item) {
+
+                    playbackManager.play(item.ChannelId, serverId);
+                });
+            });
+            return;
+        }
+    }
+
     function showEditor(itemId, serverId) {
 
         return new Promise(function (resolve, reject) {
@@ -382,6 +394,8 @@
                 currentDialog = dlg;
 
                 dlg.addEventListener('close', function () {
+
+                    executeCloseAction(closeAction, currentProgramId, currentServerId);
 
                     if (recordingCreated) {
                         require(['toast'], function (toast) {

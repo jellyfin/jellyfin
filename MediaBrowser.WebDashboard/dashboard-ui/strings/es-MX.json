@@ -1337,7 +1337,7 @@
     "LabelCodecIntrosPath": "Ruta de intros de Codec:",
     "LabelCodecIntrosPathHelp": "Carpeta que contiene archivos de video. Si un nombre de archivo de video de entrada coincide con el c\u00f3dec de video, c\u00f3dec de audio, perf\u00edl de audio, o una etiqueta, entonces se reproducir\u00e1 antes de la funci\u00f3n principal.",
     "OptionConvertRecordingsToStreamingFormat": "Convertir autom\u00e1ticamente las grabaciones a un formato amigable para transmisi\u00f3n",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Las grabaciones ser\u00e1n convertidas en tiempo real a MP4 para una f\u00e1cil reproducci\u00f3n en sus dispositivos.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Las grabaciones ser\u00e1n convertidas en tiempo real a MP4 o MKV para una f\u00e1cil reproducci\u00f3n en sus dispositivos.",
     "FeatureRequiresEmbyPremiere": "Esta caracter\u00edstica requiere de una suscripci\u00f3n activa de Emby Premiere.",
     "FileExtension": "Extensi\u00f3n del archivo",
     "OptionReplaceExistingImages": "Reemplazar im\u00e1genes existentes",
@@ -2136,5 +2136,5 @@
     "Sports": "Deportes",
     "HeaderForKids": "Para Ni\u00f1os",
     "HeaderRecordingGroups": "Grupos de Grabaciones",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convertir grabaciones a:"
 }

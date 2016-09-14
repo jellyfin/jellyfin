@@ -1722,7 +1722,7 @@
     "ButtonChangeContentType": "Change content type",
     "HeaderMediaLocations": "Localiza\u00e7\u00f5es dos ficheiros multim\u00e9dia",
     "LabelContentTypeValue": "Content type: {0}",
-    "LabelPathSubstitutionHelp": "Optional: Path substitution can map server paths to network shares that clients can access for direct playback.",
+    "LabelPathSubstitutionHelp": "Optional: Path substitution can map server paths to network shares that Emby apps can access for direct playback.",
     "FolderTypeUnset": "Unset (mixed content)",
     "BirthPlaceValue": "Birth place: {0}",
     "DeathDateValue": "Died: {0}",

@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -195,7 +196,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     }
                     else if (streamId.StartsWith(host.Id, StringComparison.OrdinalIgnoreCase))
                     {
-                        hostsWithChannel = new List<TunerHostInfo> { host };
+                        hostsWithChannel = new List<TunerHostInfo> {host};
                         streamId = streamId.Substring(host.Id.Length);
                         break;
                     }
@@ -222,7 +223,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                             }
                         }
 
-                        var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+                        var stream =
+                            await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
 
                         if (EnableMediaProbing)
                         {
@@ -238,6 +240,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                         resourcePool.Release();
                     }
                 }
+            }
+            else
+            {
+                throw new FileNotFoundException();
             }
 
             throw new LiveTvConflictException();
