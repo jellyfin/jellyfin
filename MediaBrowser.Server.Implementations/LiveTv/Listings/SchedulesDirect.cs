@@ -349,9 +349,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     channelNumber = channelNumber.TrimStart('0');
 
                     _logger.Debug("Found channel: " + channelNumber + " in Schedules Direct");
-                    var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
-
-                    AddToChannelPairCache(listingsId, channelNumber, schChannel);
+                    if (root.stations != null)
+                    {
+                        var schChannel = root.stations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                        if (schChannel != null)
+                        {
+                            AddToChannelPairCache(listingsId, channelNumber, schChannel);
+                        }
+                    }
                 }
                 _logger.Info("Added " + GetChannelPairCacheCount(listingsId) + " channels to the dictionary");
 
