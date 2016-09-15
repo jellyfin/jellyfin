@@ -256,6 +256,8 @@ namespace MediaBrowser.Dlna.Main
 
                 foreach (var fullService in services)
                 {
+                    _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
+
                     var descriptorURI = "/dlna/" + udn + "/description.xml";
                     var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorURI);
 

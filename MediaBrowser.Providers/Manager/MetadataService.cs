@@ -547,8 +547,6 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    refreshResult.Failures++;
-
                     Logger.ErrorException("Error in {0}", ex, provider.Name);
 
                     // If a local provider fails, consider that a failure
