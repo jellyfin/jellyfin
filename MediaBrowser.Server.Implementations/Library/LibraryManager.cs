@@ -695,7 +695,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
-            Folder parent, 
+            Folder parent,
             LibraryOptions libraryOptions,
             string collectionType,
             IItemResolver[] resolvers)
@@ -1490,10 +1490,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
         {
-            if (query.AncestorIds.Length == 0 && 
-                !query.ParentId.HasValue && 
-                query.ChannelIds.Length == 0 && 
-                query.TopParentIds.Length == 0 && 
+            if (query.AncestorIds.Length == 0 &&
+                !query.ParentId.HasValue &&
+                query.ChannelIds.Length == 0 &&
+                query.TopParentIds.Length == 0 &&
                 string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey)
                 && query.ItemIds.Length == 0)
             {
@@ -2552,7 +2552,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("to");
             }
 
-            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
+            var newPath = path.Replace(from.Trim(), to.Trim(), StringComparison.OrdinalIgnoreCase);
 
             if (!string.Equals(newPath, path))
             {

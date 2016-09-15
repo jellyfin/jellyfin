@@ -30,19 +30,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             timer.Overview = parent.Overview;
             timer.SeriesTimerId = series.Id;
 
+            CopyProgramInfoToTimerInfo(parent, timer);
+
             return timer;
         }
 
-        public static string GetRecordingName(TimerInfo timer, ProgramInfo info)
+        public static void CopyProgramInfoToTimerInfo(ProgramInfo programInfo, TimerInfo timerInfo)
         {
-            if (info == null)
-            {
-                return timer.ProgramId;
-            }
+            timerInfo.SeasonNumber = programInfo.SeasonNumber;
+            timerInfo.EpisodeNumber = programInfo.EpisodeNumber;
+            timerInfo.IsMovie = programInfo.IsMovie;
+            timerInfo.IsKids = programInfo.IsKids;
+            timerInfo.IsSports = programInfo.IsSports;
+            timerInfo.ProductionYear = programInfo.ProductionYear;
+            timerInfo.EpisodeTitle = programInfo.EpisodeTitle;
+            timerInfo.OriginalAirDate = programInfo.OriginalAirDate;
+            timerInfo.IsProgramSeries = programInfo.IsSeries;
+        }
 
+        public static string GetRecordingName(TimerInfo info)
+        {
             var name = info.Name;
 
-            if (info.IsSeries)
+            if (info.IsProgramSeries)
             {
                 var addHyphen = true;
 
