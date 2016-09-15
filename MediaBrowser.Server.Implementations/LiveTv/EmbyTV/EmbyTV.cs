@@ -22,12 +22,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using CommonIO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.FileOrganization;
 using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
@@ -867,10 +870,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private string GetRecordingPath(TimerInfo timer)
+        private string GetRecordingPath(TimerInfo timer, out string seriesPath)
         {
             var recordPath = RecordingPath;
             var config = GetConfiguration();
+            seriesPath = null;
 
             if (timer.IsProgramSeries)
             {
@@ -891,6 +895,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 // Can't use the year here in the folder name because it is the year of the episode, not the series.
                 recordPath = Path.Combine(recordPath, folderName);
+
+                seriesPath = recordPath;
 
                 if (timer.SeasonNumber.HasValue)
                 {
@@ -980,7 +986,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 RecordingHelper.CopyProgramInfoToTimerInfo(programInfo, timer);
             }
 
-            var recordPath = GetRecordingPath(timer);
+            string seriesPath = null;
+            var recordPath = GetRecordingPath(timer, out seriesPath);
             var recordingStatus = RecordingStatus.New;
             var isResourceOpen = false;
             SemaphoreSlim semaphore = null;
@@ -1064,7 +1071,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 timer.Status = RecordingStatus.Completed;
                 _timerProvider.Delete(timer);
 
-                OnSuccessfulRecording(timer.IsProgramSeries, recordPath);
+                OnSuccessfulRecording(timer, recordPath, seriesPath);
             }
             else if (DateTime.UtcNow < timer.EndDate)
             {
@@ -1132,26 +1139,72 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return new DirectRecorder(_logger, _httpClient, _fileSystem);
         }
 
-        private async void OnSuccessfulRecording(bool isSeries, string path)
+        private async void OnSuccessfulRecording(TimerInfo timer, string path, string seriesPath)
         {
-            if (GetConfiguration().EnableAutoOrganize)
+            if (timer.IsProgramSeries && GetConfiguration().EnableAutoOrganize)
             {
-                if (isSeries)
+                try
                 {
-                    try
-                    {
-                        // this is to account for the library monitor holding a lock for additional time after the change is complete.
-                        // ideally this shouldn't be hard-coded
-                        await Task.Delay(30000).ConfigureAwait(false);
+                    // this is to account for the library monitor holding a lock for additional time after the change is complete.
+                    // ideally this shouldn't be hard-coded
+                    await Task.Delay(30000).ConfigureAwait(false);
 
-                        var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
+                    var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
 
-                        var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
+                    var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
+
+                    if (result.Status == FileSortingStatus.Success)
                     {
-                        _logger.ErrorException("Error processing new recording", ex);
+                        return;
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error processing new recording", ex);
+                }
+            }
+
+            SaveNfo(timer, path, seriesPath);
+        }
+
+        private void SaveNfo(TimerInfo timer, string recordingPath, string seriesPath)
+        {
+            if (timer.IsProgramSeries)
+            {
+                SaveSeriesNfo(timer, recordingPath, seriesPath);
+            }
+        }
+
+        private void SaveSeriesNfo(TimerInfo timer, string recordingPath, string seriesPath)
+        {
+            var nfoPath = Path.Combine(seriesPath, "tvshow.nfo");
+
+            if (File.Exists(nfoPath))
+            {
+                return;
+            }
+
+            using (var stream = _fileSystem.GetFileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            {
+                var settings = new XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = Encoding.UTF8,
+                    CloseOutput = false
+                };
+
+                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                {
+                    writer.WriteStartDocument(true);
+                    writer.WriteStartElement("tvshow");
+
+                    if (!string.IsNullOrWhiteSpace(timer.Name))
+                    {
+                        writer.WriteElementString("title", timer.Name);
+                    }
+
+                    writer.WriteEndElement();
+                    writer.WriteEndDocument();
                 }
             }
         }
