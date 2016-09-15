@@ -1,10 +1,10 @@
-﻿.ui-body-a .raised {
-    background: #3388cc;
+﻿.raised {
+    background: #404040;
     color: #fff;
 }
 
-.ui-body-b .raised {
-    background: #404040;
+.ui-body-a .raised {
+    background: #3388cc;
     color: #fff;
 }
 
@@ -18,7 +18,7 @@
     color: inherit;
 }
 
-.ui-body-b .button-submit {
+.button-submit {
     background: #52B54B;
     color: #fff;
 }
@@ -28,7 +28,7 @@
     color: #fff;
 }
 
-.ui-body-b .button-accent {
+.button-accent {
     background: #52B54B;
     color: #fff;
 }

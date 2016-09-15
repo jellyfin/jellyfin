@@ -1,4 +1,4 @@
-define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', 'css!./mediainfo.css'], function (datetime, globalize, embyRouter, itemHelper) {
+define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', 'css!./mediainfo.css', 'programStyles'], function (datetime, globalize, embyRouter, itemHelper) {
 
     function getProgramInfoHtml(item, options) {
         var html = '';
@@ -159,22 +159,22 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
             if (item.IsLive) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Live') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem liveTvProgram">' + globalize.translate('sharedcomponents#Live') + '</div>'
                 });
             }
             else if (item.IsPremiere) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Premiere') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem premiereTvProgram">' + globalize.translate('sharedcomponents#Premiere') + '</div>'
                 });
             }
             else if (item.IsSeries && !item.IsRepeat) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#AttributeNew') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem newTvProgram">' + globalize.translate('sharedcomponents#AttributeNew') + '</div>'
                 });
             }
             else if (item.IsSeries && item.IsRepeat) {
                 miscInfo.push({
-                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem">' + globalize.translate('sharedcomponents#Repeat') + '</div>'
+                    html: '<div class="mediaInfoProgramAttribute mediaInfoItem repeatTvProgram">' + globalize.translate('sharedcomponents#Repeat') + '</div>'
                 });
             }
 

@@ -1810,8 +1810,7 @@
 
         var html = cardBuilder.getCardsHtml({
             items: items,
-            shape: "backdrop",
-            preferThumb: true,
+            shape: "auto",
             showTitle: true,
             action: 'play',
             overlayText: true,

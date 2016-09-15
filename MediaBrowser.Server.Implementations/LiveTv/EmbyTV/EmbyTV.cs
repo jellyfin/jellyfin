@@ -461,11 +461,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return CreateSeriesTimer(info, cancellationToken);
         }
 
-        public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
+        public Task<string> CreateTimer(TimerInfo timer, CancellationToken cancellationToken)
         {
-            info.Id = Guid.NewGuid().ToString("N");
-            _timerProvider.Add(info);
-            return Task.FromResult(info.Id);
+            timer.Id = Guid.NewGuid().ToString("N");
+
+            ProgramInfo programInfo = null;
+
+            if (!string.IsNullOrWhiteSpace(timer.ProgramId))
+            {
+                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
+            }
+            if (programInfo == null)
+            {
+                _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
+                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+            }
+
+            if (programInfo != null)
+            {
+                RecordingHelper.CopyProgramInfoToTimerInfo(programInfo, timer);
+            }
+
+            _timerProvider.Add(timer);
+            return Task.FromResult(timer.Id);
         }
 
         public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)
@@ -849,12 +867,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private string GetRecordingPath(TimerInfo timer, ProgramInfo info)
+        private string GetRecordingPath(TimerInfo timer)
         {
             var recordPath = RecordingPath;
             var config = GetConfiguration();
 
-            if (info.IsSeries)
+            if (timer.IsProgramSeries)
             {
                 var customRecordingPath = config.SeriesRecordingPath;
                 var allowSubfolder = true;
@@ -869,11 +887,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recordPath = Path.Combine(recordPath, "Series");
                 }
 
-                var folderName = _fileSystem.GetValidFilename(info.Name).Trim();
+                var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
                 var folderNameWithYear = folderName;
-                if (info.ProductionYear.HasValue)
+                if (timer.ProductionYear.HasValue)
                 {
-                    folderNameWithYear += " (" + info.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
+                    folderNameWithYear += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
                 }
 
                 if (Directory.Exists(Path.Combine(recordPath, folderName)))
@@ -885,13 +903,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recordPath = Path.Combine(recordPath, folderNameWithYear);
                 }
 
-                if (info.SeasonNumber.HasValue)
+                if (timer.SeasonNumber.HasValue)
                 {
-                    folderName = string.Format("Season {0}", info.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture));
+                    folderName = string.Format("Season {0}", timer.SeasonNumber.Value.ToString(CultureInfo.InvariantCulture));
                     recordPath = Path.Combine(recordPath, folderName);
                 }
             }
-            else if (info.IsMovie)
+            else if (timer.IsMovie)
             {
                 var customRecordingPath = config.MovieRecordingPath;
                 var allowSubfolder = true;
@@ -906,34 +924,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     recordPath = Path.Combine(recordPath, "Movies");
                 }
 
-                var folderName = _fileSystem.GetValidFilename(info.Name).Trim();
-                if (info.ProductionYear.HasValue)
+                var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
+                if (timer.ProductionYear.HasValue)
                 {
-                    folderName += " (" + info.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
+                    folderName += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
                 }
                 recordPath = Path.Combine(recordPath, folderName);
             }
-            else if (info.IsKids)
+            else if (timer.IsKids)
             {
                 if (config.EnableRecordingSubfolders)
                 {
                     recordPath = Path.Combine(recordPath, "Kids");
                 }
 
-                var folderName = _fileSystem.GetValidFilename(info.Name).Trim();
-                if (info.ProductionYear.HasValue)
+                var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
+                if (timer.ProductionYear.HasValue)
                 {
-                    folderName += " (" + info.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
+                    folderName += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
                 }
                 recordPath = Path.Combine(recordPath, folderName);
             }
-            else if (info.IsSports)
+            else if (timer.IsSports)
             {
                 if (config.EnableRecordingSubfolders)
                 {
                     recordPath = Path.Combine(recordPath, "Sports");
                 }
-                recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(info.Name).Trim());
+                recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(timer.Name).Trim());
             }
             else
             {
@@ -941,10 +959,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     recordPath = Path.Combine(recordPath, "Other");
                 }
-                recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(info.Name).Trim());
+                recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(timer.Name).Trim());
             }
 
-            var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)).Trim() + ".ts";
+            var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer)).Trim() + ".ts";
 
             return Path.Combine(recordPath, recordingFileName);
         }
@@ -956,29 +974,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException("timer");
             }
 
-            ProgramInfo info = null;
+            ProgramInfo programInfo = null;
 
-            if (string.IsNullOrWhiteSpace(timer.ProgramId))
+            if (!string.IsNullOrWhiteSpace(timer.ProgramId))
             {
-                _logger.Info("Timer {0} has null programId", timer.Id);
+                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
             }
-            else
-            {
-                info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
-            }
-
-            if (info == null)
+            if (programInfo == null)
             {
                 _logger.Info("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
-                info = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
             }
 
-            if (info == null)
+            if (programInfo != null)
             {
-                throw new InvalidOperationException(string.Format("Program with Id {0} not found", timer.ProgramId));
+                RecordingHelper.CopyProgramInfoToTimerInfo(programInfo, timer);
             }
 
-            var recordPath = GetRecordingPath(timer, info);
+            var recordPath = GetRecordingPath(timer);
             var recordingStatus = RecordingStatus.New;
             var isResourceOpen = false;
             SemaphoreSlim semaphore = null;
@@ -1062,7 +1075,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 timer.Status = RecordingStatus.Completed;
                 _timerProvider.Delete(timer);
 
-                OnSuccessfulRecording(info.IsSeries, recordPath);
+                OnSuccessfulRecording(timer.IsProgramSeries, recordPath);
             }
             else if (DateTime.UtcNow < timer.EndDate)
             {
@@ -1176,7 +1189,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool deleteInvalidTimers)
         {
             var newTimers = GetTimersForSeries(seriesTimer, epgData, true).ToList();
-            
+
             var registration = await _liveTvManager.GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
 
             if (registration.IsValid)
