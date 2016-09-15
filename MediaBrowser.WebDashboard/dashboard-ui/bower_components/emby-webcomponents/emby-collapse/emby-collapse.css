@@ -30,6 +30,9 @@
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;
     transition: transform 180ms ease-out;
+    position: absolute;
+    right: .5em;
+    font-size: 1.5em;
 }
 
 .emby-collapse-expandIconExpanded {
