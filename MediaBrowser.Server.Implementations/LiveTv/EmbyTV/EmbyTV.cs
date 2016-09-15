@@ -888,20 +888,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
 
                 var folderName = _fileSystem.GetValidFilename(timer.Name).Trim();
-                var folderNameWithYear = folderName;
-                if (timer.ProductionYear.HasValue)
-                {
-                    folderNameWithYear += " (" + timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture) + ")";
-                }
 
-                if (Directory.Exists(Path.Combine(recordPath, folderName)))
-                {
-                    recordPath = Path.Combine(recordPath, folderName);
-                }
-                else
-                {
-                    recordPath = Path.Combine(recordPath, folderNameWithYear);
-                }
+                // Can't use the year here in the folder name because it is the year of the episode, not the series.
+                recordPath = Path.Combine(recordPath, folderName);
 
                 if (timer.SeasonNumber.HasValue)
                 {
