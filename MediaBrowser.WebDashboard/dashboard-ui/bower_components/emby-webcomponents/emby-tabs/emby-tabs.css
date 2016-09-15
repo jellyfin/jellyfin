@@ -1,5 +1,6 @@
 ﻿.emby-tab-button {
     background: transparent;
+    box-shadow: none;
     border: 2px solid transparent;
     border-width: 0 0 2px 0;
     cursor: pointer;
