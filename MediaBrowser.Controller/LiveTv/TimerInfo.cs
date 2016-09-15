@@ -82,5 +82,21 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The priority.</value>
         public int Priority { get; set; }
+
+
+        // Program properties
+        public int? SeasonNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the episode number.
+        /// </summary>
+        /// <value>The episode number.</value>
+        public int? EpisodeNumber { get; set; }
+        public bool IsMovie { get; set; }
+        public bool IsKids { get; set; }
+        public bool IsSports { get; set; }
+        public int? ProductionYear { get; set; }
+        public string EpisodeTitle { get; set; }
+        public DateTime? OriginalAirDate { get; set; }
+        public bool IsProgramSeries { get; set; }
     }
 }
