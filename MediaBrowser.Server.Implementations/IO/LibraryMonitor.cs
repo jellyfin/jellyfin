@@ -106,7 +106,14 @@ namespace MediaBrowser.Server.Implementations.IO
 
             if (refreshPath)
             {
-                ReportFileSystemChanged(path);
+                try
+                {
+                    ReportFileSystemChanged(path);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in ReportFileSystemChanged for {0}", ex, path);
+                }
             }
         }
 
