@@ -110,18 +110,6 @@ namespace MediaBrowser.Dlna.Main
         {
             var options = _config.GetDlnaConfiguration();
 
-            if (!options.EnableServer && !options.EnablePlayTo && !_config.Configuration.EnableUPnP)
-            {
-                if (_ssdpHandlerStarted)
-                {
-                    // Sat/ip live tv depends on device discovery, as well as hd homerun detection
-                    // In order to allow this to be disabled, we need a modular way of knowing if there are 
-                    // any parts of the system that are dependant on it
-                    // DisposeSsdpHandler();
-                }
-                return;
-            }
-
             if (!_ssdpHandlerStarted)
             {
                 StartSsdpHandler();
@@ -231,7 +219,7 @@ namespace MediaBrowser.Dlna.Main
                 return;
             }
 
-            var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds*2;
+            var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds * 2;
             _Publisher.SupportPnpRootDevice = true;
 
             foreach (var address in await _appHost.GetLocalIpAddresses().ConfigureAwait(false))
