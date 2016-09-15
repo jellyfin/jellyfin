@@ -1316,8 +1316,6 @@ var AppInfo = {};
         define("cryptojs-sha1", [sha1Path]);
         define("cryptojs-md5", [md5Path]);
 
-        define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define("dashboardcss", ['css!css/dashboard']);
@@ -1357,10 +1355,10 @@ var AppInfo = {};
         define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
-        if ('registerElement' in document && 'content' in document.createElement('template')) {
-            define('webcomponentsjs', []);
+        if (!('registerElement' in document)) {
+            define("registerElement", [bowerPath + '/document-register-element/build/document-register-element']);
         } else {
-            define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
+            define("registerElement", []);
         }
 
         if (Dashboard.isRunningInCordova()) {

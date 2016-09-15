@@ -55,9 +55,9 @@
 
         var html = '';
 
-        html += '<p class="paperListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</p>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</h3>';
 
-        html += '<div class="paperCheckboxList">';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -65,7 +65,7 @@
 
             var checkedAttribute = user.Policy.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox"' + checkedAttribute + '>' + item.name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox"' + checkedAttribute + '><span>' + item.name + '</span></label>';
         }
 
         html += '</div>';
