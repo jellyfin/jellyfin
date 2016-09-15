@@ -200,3 +200,7 @@
         display: none !important;
     }
 }
+
+.listItemCheckboxContainer {
+    width: auto !important;
+}

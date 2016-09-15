@@ -35,6 +35,8 @@
     font-weight: inherit;
     align-items: center;
     flex-shrink: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .actionSheetMenuItem-noflex {

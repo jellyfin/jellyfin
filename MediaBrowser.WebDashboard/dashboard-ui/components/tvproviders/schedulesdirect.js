@@ -1,4 +1,4 @@
-﻿define(['jQuery','paper-checkbox', 'listViewStyle', 'emby-input', 'emby-select'], function ($) {
+﻿define(['jQuery','emby-checkbox', 'listViewStyle', 'emby-input', 'emby-select'], function ($) {
 
     return function (page, providerId, options) {
 
@@ -262,7 +262,7 @@
                 var enabledTuners = providerInfo.EnableAllTuners || [];
                 var isChecked = providerInfo.EnableAllTuners || enabledTuners.indexOf(device.Id) != -1;
                 var checkedAttribute = isChecked ? ' checked' : '';
-                html += '<paper-checkbox data-id="' + device.Id + '" class="chkTuner" item-icon ' + checkedAttribute + '></paper-checkbox>';
+                html += '<label class="checkboxContainer listItemCheckboxContainer"><input type="checkbox" is="emby-checkbox" data-id="' + device.Id + '" class="chkTuner" ' + checkedAttribute + '/><span></span></label>';
 
                 html += '<div class="listItemBody two-line">';
                 html += '<div class="listItemBodyText">';
