@@ -639,13 +639,8 @@
 
             reloadGuide(page, newStartDate);
 
-            var dateText = datetime.getLocaleDateStringParts(date);
+            var dateText = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
 
-            if (dateText.length == 1) {
-                dateText = dateText[0];
-            } else {
-                dateText = '<div>' + dateText[0] + '</div><div class="guideDateTextDate">' + dateText[1] + '</div>';
-            }
             page.querySelector('.guideDateText').innerHTML = dateText;
         }
 
@@ -673,7 +668,7 @@
             while (start <= end) {
 
                 dateOptions.push({
-                    name: datetime.getLocaleDateStringParts(start).join(' '),
+                    name: datetime.toLocaleDateString(start, { weekday: 'long', month: 'long', day: 'numeric' }),
                     id: start.getTime()
                 });
 

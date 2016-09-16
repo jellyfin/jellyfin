@@ -49,7 +49,7 @@
     left: 0;
     right: 0;
     display: flex;
-    padding: 1.25em;
+    padding: 1.25em 1em;
     /* Without this emby-checkbox is able to appear on top */
     z-index: 1;
     align-items: center;
