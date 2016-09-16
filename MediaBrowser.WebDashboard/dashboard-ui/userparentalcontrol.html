@@ -1,4 +1,4 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button,emby-collapse">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,emby-checkbox,emby-button,emby-collapse,emby-select">
 
     <div data-role="content">
         <div class="content-primary">
@@ -10,9 +10,8 @@
             </div>
             <form class="userParentalControlForm">
 
-                <div>
-                    <label for="selectMaxParentalRating" class="selectLabel">${LabelMaxParentalRating}</label>
-                    <select name="selectMaxParentalRating" id="selectMaxParentalRating" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectMaxParentalRating" label="${LabelMaxParentalRating}"></select>
                     <div class="fieldDescription">${MaxParentalRatingHelp}</div>
                 </div>
 

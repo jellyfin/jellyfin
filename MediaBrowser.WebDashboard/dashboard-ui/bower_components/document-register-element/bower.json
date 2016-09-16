@@ -1,0 +1,23 @@
+{
+    "name": "document-register-element",
+    "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
+    "main": "./build/document-register-element.js",
+    "ignore": [
+        "test",
+        ".jshintrc",
+        ".travis.yml",
+        ".TO_LOCALE.md",
+        ".gitignore",
+        ".gitmodules",
+        ".npmignore",
+        "benchmark",
+        "dom4",
+        "ie8",
+        "src",
+        "template",
+        "package.json",
+        "index.html",
+        "testrhino.js",
+        "Makefile"
+    ]
+}

@@ -1316,8 +1316,6 @@ var AppInfo = {};
         define("cryptojs-sha1", [sha1Path]);
         define("cryptojs-md5", [md5Path]);
 
-        define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define("dashboardcss", ['css!css/dashboard']);
@@ -1356,12 +1354,6 @@ var AppInfo = {};
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
-
-        if ('registerElement' in document && 'content' in document.createElement('template')) {
-            define('webcomponentsjs', []);
-        } else {
-            define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
-        }
 
         if (Dashboard.isRunningInCordova()) {
             define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
@@ -1422,13 +1414,6 @@ var AppInfo = {};
             dialoghelper.setOnOpen(onDialogOpen);
             return dialoghelper;
         });
-
-        if (!('registerElement' in document)) {
-            //define("registerElement", ['bower_components/webcomponentsjs/CustomElements.min']);
-            define("registerElement", ['webcomponentsjs']);
-        } else {
-            define("registerElement", []);
-        }
 
         // alias
         define("historyManager", [], function () {
@@ -1627,6 +1612,16 @@ var AppInfo = {};
         var bowerPath = getBowerPath();
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (!('registerElement' in document)) {
+            if (browser.msie) {
+                define("registerElement", [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
+            } else {
+                define("registerElement", [bowerPath + '/document-register-element/build/document-register-element']);
+            }
+        } else {
+            define("registerElement", []);
+        }
 
         if (Dashboard.isRunningInCordova() && browser.safari) {
             define("imageFetcher", ['cordova/ios/imagestore'], returnFirstDependency);

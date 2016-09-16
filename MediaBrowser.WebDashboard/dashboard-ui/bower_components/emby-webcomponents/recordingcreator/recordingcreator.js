@@ -365,6 +365,8 @@
             recordingCreated = false;
             currentProgramId = itemId;
             currentServerId = serverId;
+            closeAction = null;
+
             loading.show();
 
             require(['text!./recordingcreator.template.html'], function (template) {

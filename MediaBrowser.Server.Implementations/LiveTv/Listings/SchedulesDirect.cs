@@ -171,22 +171,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                                 var data = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
                                 data = data.OrderByDescending(GetSizeOrder).ToList();
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true, 1280);
                                 //programEntry.thumbImage = GetProgramImage(ApiUrl, data, "Iconic", false);
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
-
-                                if (!string.IsNullOrWhiteSpace(programEntry.thumbImage))
-                                {
-                                    var b = true;
-                                }
-
-                                if (!string.IsNullOrWhiteSpace(programEntry.bannerImage))
-                                {
-                                    var b = true;
-                                }
                             }
                         }
 
@@ -201,10 +191,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private int GetSizeOrder(ScheduleDirect.ImageData image)
         {
-            if (!string.IsNullOrWhiteSpace(image.size))
+            if (!string.IsNullOrWhiteSpace(image.height))
             {
                 int value;
-                if (int.TryParse(image.size, out value))
+                if (int.TryParse(image.height, out value))
                 {
                     return value;
                 }
@@ -517,20 +507,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return date;
         }
 
-        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, string category, bool returnDefaultImage)
+        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, string category, bool returnDefaultImage, int desiredWidth)
         {
             string url = null;
 
-            var logoIndex = images.FindIndex(i => string.Equals(i.category, category, StringComparison.OrdinalIgnoreCase));
-            if (logoIndex == -1)
+            var matches = images
+                .Where(i => string.Equals(i.category, category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (matches.Count == 0)
             {
                 if (!returnDefaultImage)
                 {
                     return null;
                 }
-                logoIndex = 0;
+                matches = images;
             }
-            var uri = images[logoIndex].uri;
+
+            var match = matches.FirstOrDefault(i =>
+            {
+                if (!string.IsNullOrWhiteSpace(i.width))
+                {
+                    int value;
+                    if (int.TryParse(i.width, out value))
+                    {
+                        return value <= desiredWidth;
+                    }
+                }
+
+                return false;
+            }) ?? matches.FirstOrDefault();
+
+            if (match == null)
+            {
+                return null;
+            }
+
+            var uri = match.uri;
 
             if (!string.IsNullOrWhiteSpace(uri))
             {
