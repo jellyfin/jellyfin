@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             if (args.IsDirectory)
             {
-                if (args.HasParent<Series>())
+                if (args.HasParent<Series>() || args.HasParent<Season>())
                 {
                     return null;
                 }
@@ -80,7 +80,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                         {
                             return null;
                         }
-                        if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, args.GetLibraryOptions(), false))
+                        if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, args.GetLibraryOptions(), false) ||
+                            args.ContainsFileSystemEntryByName("tvshow.nfo"))
                         {
                             return new Series
                             {

@@ -15,6 +15,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using Rssdp;
@@ -220,9 +221,11 @@ namespace MediaBrowser.Dlna.Main
             }
 
             var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds * 2;
-            _Publisher.SupportPnpRootDevice = true;
+            _Publisher.SupportPnpRootDevice = false;
 
-            foreach (var address in await _appHost.GetLocalIpAddresses().ConfigureAwait(false))
+            var addresses = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).ToList();
+
+            foreach (var address in addresses)
             {
                 //if (IPAddress.IsLoopback(address))
                 //{
@@ -334,17 +337,11 @@ namespace MediaBrowser.Dlna.Main
             {
                 var devices = _Publisher.Devices.ToList();
 
-                Parallel.ForEach(devices, device =>
+                foreach (var device in devices)
                 {
-                    try
-                    {
-                        _Publisher.RemoveDevice(device);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error sending bye bye", ex);
-                    }
-                });
+                    var task = _Publisher.RemoveDevice(device);
+                    Task.WaitAll(task);
+                }
                 //foreach (var device in devices)
                 //{
                 //    try
