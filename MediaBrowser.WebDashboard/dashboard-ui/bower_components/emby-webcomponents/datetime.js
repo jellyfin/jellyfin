@@ -165,11 +165,7 @@
                 minutes = '0' + minutes;
             }
 
-            if (minutes == '00') {
-                minutes = '';
-            } else {
-                minutes = ':' + minutes;
-            }
+            minutes = ':' + minutes;
             time = hour + minutes + suffix;
         } else {
 

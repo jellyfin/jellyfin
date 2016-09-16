@@ -10,7 +10,7 @@
                 type: 'MusicArtist'
             });
         }
-        if (item.ProgramCount) {
+        if (item.ProgramCount && item.Type == 'Person') {
 
             sections.push({
                 name: Globalize.translate('HeaderUpcomingOnTV'),
