@@ -27,13 +27,6 @@
 
         var apiClient = connectionManager.getApiClient(currentServerId);
 
-        apiClient.getNamedConfiguration("livetv").then(function (config) {
-
-            config.EnableRecordingEncoding = form.querySelector('#chkConvertRecordings').checked;
-
-            apiClient.updateNamedConfiguration("livetv", config);
-        });
-
         apiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
 
             item.RecordNewOnly = form.querySelector('#chkNewOnly').checked;
@@ -218,11 +211,6 @@
                 supporterButtons[i].classList.add('hide');
             }
         }
-
-        apiClient.getNamedConfiguration("livetv").then(function (config) {
-
-            context.querySelector('#chkConvertRecordings').checked = config.EnableRecordingEncoding;
-        });
     }
 
     function getImageUrl(item, apiClient, imageHeight) {
@@ -293,7 +281,6 @@
             context.querySelector('#eligibleForSeriesFields').classList.add('hide');
         }
 
-        context.querySelector('.convertRecordingsContainer').classList.remove('hide');
         showConvertRecordingsUnlockMessage(context, apiClient);
 
         loading.hide();
@@ -304,14 +291,14 @@
         apiClient.getPluginSecurityInfo().then(function (regInfo) {
 
             if (regInfo.IsMBSupporter) {
-                context.querySelector('.btnSupporterForConverting').classList.add('hide');
+                context.querySelector('.convertRecordingsContainer').classList.add('hide');
             } else {
-                context.querySelector('.btnSupporterForConverting').classList.remove('hide');
+                context.querySelector('.convertRecordingsContainer').classList.remove('hide');
             }
 
         }, function () {
 
-            context.querySelector('.btnSupporterForConverting').classList.remove('hide');
+            context.querySelector('.convertRecordingsContainer').classList.remove('hide');
         });
     }
 

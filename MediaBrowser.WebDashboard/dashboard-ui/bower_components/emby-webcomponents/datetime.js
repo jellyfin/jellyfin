@@ -109,59 +109,29 @@
         return locale;
     }
 
-    function toLocaleString(date) {
+    function toLocaleString(date, options) {
         var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleString(currentLocale) :
+            date.toLocaleString(currentLocale, options || {}) :
             date.toLocaleString();
     }
 
-    function getLocaleDateStringParts(date) {
-
-        var day = getDayName(date);
-        date = toLocaleDateString(date);
-
-        var parts = [];
-
-        if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
-            parts.push(day);
-        }
-
-        parts.push(date);
-
-        return parts;
-    }
-
-    function getDayName(date) {
-
-        var weekday = [];
-        weekday[0] = globalize.translate('sharedcomponents#Sunday');
-        weekday[1] = globalize.translate('sharedcomponents#Monday');
-        weekday[2] = globalize.translate('sharedcomponents#Tuesday');
-        weekday[3] = globalize.translate('sharedcomponents#Wednesday');
-        weekday[4] = globalize.translate('sharedcomponents#Thursday');
-        weekday[5] = globalize.translate('sharedcomponents#Friday');
-        weekday[6] = globalize.translate('sharedcomponents#Saturday');
-
-        return weekday[date.getDay()];
-    }
-
-    function toLocaleDateString(date) {
+    function toLocaleDateString(date, options) {
 
         var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleDateString(currentLocale) :
+            date.toLocaleDateString(currentLocale, options || {}) :
             date.toLocaleDateString();
     }
 
-    function toLocaleTimeString(date) {
+    function toLocaleTimeString(date, options) {
 
         var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale) :
+            date.toLocaleTimeString(currentLocale, options || {}) :
             date.toLocaleTimeString();
     }
 
@@ -194,7 +164,9 @@
             if (minutes < 10) {
                 minutes = '0' + minutes;
             }
-            time = hour + ':' + minutes + suffix;
+
+            minutes = ':' + minutes;
+            time = hour + minutes + suffix;
         } else {
 
             var timeParts = time.split(':');
@@ -224,7 +196,6 @@
         toLocaleDateString: toLocaleDateString,
         toLocaleString: toLocaleString,
         getDisplayTime: getDisplayTime,
-        isRelativeDay: isRelativeDay,
-        getLocaleDateStringParts: getLocaleDateStringParts
+        isRelativeDay: isRelativeDay
     };
 });

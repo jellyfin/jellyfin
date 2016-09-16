@@ -46,7 +46,7 @@
 
                     var date = datetime.parseISO8601Date(log.DateModified, true);
 
-                    var text = date.toLocaleDateString();
+                    var text = datetime.toLocaleDateString(date);
 
                     text += ' ' + datetime.getDisplayTime(date);
 

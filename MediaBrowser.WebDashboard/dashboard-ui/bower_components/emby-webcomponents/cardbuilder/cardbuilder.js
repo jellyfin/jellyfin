@@ -233,7 +233,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         if (item.PremiereDate) {
                             try {
 
-                                newIndexValue = getDisplayDateText(datetime.parseISO8601Date(item.PremiereDate));
+                                newIndexValue = datetime.toLocaleDateString(datetime.parseISO8601Date(item.PremiereDate), { weekday: 'long', month: 'long', day: 'numeric' });
 
                             } catch (err) {
                             }
@@ -406,27 +406,6 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             return html;
-        }
-
-        function getDisplayDateText(date) {
-
-            var weekday = [];
-            weekday[0] = globalize.translate('sharedcomponents#Sunday');
-            weekday[1] = globalize.translate('sharedcomponents#Monday');
-            weekday[2] = globalize.translate('sharedcomponents#Tuesday');
-            weekday[3] = globalize.translate('sharedcomponents#Wednesday');
-            weekday[4] = globalize.translate('sharedcomponents#Thursday');
-            weekday[5] = globalize.translate('sharedcomponents#Friday');
-            weekday[6] = globalize.translate('sharedcomponents#Saturday');
-
-            var day = weekday[date.getDay()];
-            date = date.toLocaleDateString();
-
-            if (date.toLowerCase().indexOf(day.toLowerCase()) == -1) {
-                return day + " " + date;
-            }
-
-            return date;
         }
 
         function getDesiredAspect(shape) {
@@ -818,9 +797,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         try {
                             var date = datetime.parseISO8601Date(item.StartDate);
 
-                            airTimeText = date.toLocaleDateString();
+                            airTimeText = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
 
-                            airTimeText += ', ' + datetime.getDisplayTime(date);
+                            airTimeText += ' ' + datetime.getDisplayTime(date);
 
                             if (item.EndDate) {
                                 date = datetime.parseISO8601Date(item.EndDate);
@@ -861,7 +840,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     var text;
                     if (item.StartDate) {
                         var startDate = datetime.parseISO8601Date(item.StartDate, true);
-                        text = datetime.toLocaleDateString(startDate) + ', ' + datetime.getDisplayTime(startDate);
+                        text = datetime.toLocaleDateString(startDate, { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + datetime.getDisplayTime(startDate);
                     } else {
                         text = '';
                     }

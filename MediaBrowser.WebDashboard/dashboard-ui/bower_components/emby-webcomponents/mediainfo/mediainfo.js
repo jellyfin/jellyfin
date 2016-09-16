@@ -11,7 +11,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             try {
                 date = datetime.parseISO8601Date(item.StartDate);
 
-                text = datetime.toLocaleDateString(date);
+                text = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
 
                 text += ' ' + datetime.getDisplayTime(date);
 
