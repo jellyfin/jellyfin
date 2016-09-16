@@ -310,9 +310,11 @@
                 return curr.ChannelId == channel.Id;
             });
 
-            var cssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
+            var outerCssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
 
-            html += '<div class="' + cssClass + '" data-channelid="' + channel.Id + '">';
+            html += '<div class="' + outerCssClass + '" data-channelid="' + channel.Id + '">';
+
+            var clickAction = layoutManager.tv ? 'link' : 'programdialog';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
@@ -367,7 +369,7 @@
                 if (program.SeriesTimerId) {
                     timerAttributes += ' data-seriestimerid="' + program.SeriesTimerId + '"';
                 }
-                html += '<button data-action="programdialog"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+                html += '<button data-action="' + clickAction + '"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
                 var guideProgramNameClass = "guideProgramName";
 

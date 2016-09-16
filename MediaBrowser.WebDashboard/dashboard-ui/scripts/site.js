@@ -1355,12 +1355,6 @@ var AppInfo = {};
         define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
-        if (!('registerElement' in document)) {
-            define("registerElement", [bowerPath + '/document-register-element/build/document-register-element']);
-        } else {
-            define("registerElement", []);
-        }
-
         if (Dashboard.isRunningInCordova()) {
             define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
 
@@ -1420,13 +1414,6 @@ var AppInfo = {};
             dialoghelper.setOnOpen(onDialogOpen);
             return dialoghelper;
         });
-
-        if (!('registerElement' in document)) {
-            //define("registerElement", ['bower_components/webcomponentsjs/CustomElements.min']);
-            define("registerElement", ['webcomponentsjs']);
-        } else {
-            define("registerElement", []);
-        }
 
         // alias
         define("historyManager", [], function () {
@@ -1625,6 +1612,16 @@ var AppInfo = {};
         var bowerPath = getBowerPath();
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (!('registerElement' in document)) {
+            if (browser.msie) {
+                define("registerElement", [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
+            } else {
+                define("registerElement", [bowerPath + '/document-register-element/build/document-register-element']);
+            }
+        } else {
+            define("registerElement", []);
+        }
 
         if (Dashboard.isRunningInCordova() && browser.safari) {
             define("imageFetcher", ['cordova/ios/imagestore'], returnFirstDependency);
