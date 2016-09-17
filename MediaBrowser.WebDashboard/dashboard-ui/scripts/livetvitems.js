@@ -60,6 +60,7 @@
                     items: result.Items,
                     shape: query.IsMovie || params.type == 'RecordingSeries' ? 'portrait' : "backdrop",
                     preferThumb: !query.IsMovie && params.type != 'RecordingSeries',
+                    inheritThumb: params.type == 'Recordings',
                     context: 'livetv',
                     centerText: true,
                     lazy: true,

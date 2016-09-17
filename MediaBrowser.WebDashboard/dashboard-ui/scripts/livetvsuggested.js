@@ -28,7 +28,7 @@
             IsAiring: true,
             limit: limit,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Thumb",
+            EnableImageTypes: "Primary,Thumb,Backdrop",
             Fields: "ChannelInfo"
 
         }).then(function (result) {
@@ -115,6 +115,7 @@
         var html = cardBuilder.getCardsHtml({
             items: items,
             preferThumb: !shape,
+            inheritThumb: false,
             shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showParentTitleOrTitle: true,
             showTitle: false,

@@ -120,7 +120,7 @@
             IsInProgress: false,
             Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
             EnableTotalRecordCount: false,
-            EnableImageTypes: "Primary,Thumb"
+            EnableImageTypes: "Primary,Thumb,Backdrop"
 
         }).then(function (result) {
 
