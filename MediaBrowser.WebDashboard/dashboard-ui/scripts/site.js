@@ -842,7 +842,8 @@ var Dashboard = {
                     supportsCustomSeeking: supportsCustomSeeking
                 });
 
-                if (!(AppInfo.isNativeApp && browserInfo.android)) {
+                if (!(AppInfo.isNativeApp && browserInfo.android) && !browserInfo.edge && !browserInfo.msie) {
+                    // libjass not working here
                     profile.SubtitleProfiles.push({
                         Format: 'ass',
                         Method: 'External'
@@ -1226,6 +1227,7 @@ var AppInfo = {};
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
         define("emby-slider", [embyWebComponentsBowerPath + "/emby-slider/emby-slider"], returnFirstDependency);
         define("emby-checkbox", [embyWebComponentsBowerPath + "/emby-checkbox/emby-checkbox"], returnFirstDependency);
+        define("emby-toggle", [embyWebComponentsBowerPath + "/emby-toggle/emby-toggle"], returnFirstDependency);
         define("emby-radio", [embyWebComponentsBowerPath + "/emby-radio/emby-radio"], returnFirstDependency);
         define("emby-textarea", [embyWebComponentsBowerPath + "/emby-textarea/emby-textarea"], returnFirstDependency);
         define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
