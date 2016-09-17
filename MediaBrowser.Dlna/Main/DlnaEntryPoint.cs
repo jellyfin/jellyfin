@@ -235,6 +235,8 @@ namespace MediaBrowser.Dlna.Main
 
                 var addressString = address.ToString();
 
+                var udn = (addressString).GetMD5().ToString("N");
+
                 var services = new List<string>
                 {
                     "urn:schemas-upnp-org:device:MediaServer:1",
@@ -242,8 +244,6 @@ namespace MediaBrowser.Dlna.Main
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
-
-                var udn = (addressString).GetMD5().ToString("N");
 
                 foreach (var fullService in services)
                 {
