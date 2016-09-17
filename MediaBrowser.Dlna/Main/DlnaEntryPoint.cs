@@ -235,6 +235,8 @@ namespace MediaBrowser.Dlna.Main
 
                 var addressString = address.ToString();
 
+                var udn = (addressString).GetMD5().ToString("N");
+
                 var services = new List<string>
                 {
                     "urn:schemas-upnp-org:device:MediaServer:1",
@@ -242,8 +244,6 @@ namespace MediaBrowser.Dlna.Main
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
-
-                var udn = (addressString).GetMD5().ToString("N");
 
                 foreach (var fullService in services)
                 {
@@ -258,7 +258,7 @@ namespace MediaBrowser.Dlna.Main
 
                     var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
 
-                    _Publisher.AddDevice(new SsdpRootDevice
+                    var device = new SsdpRootDevice
                     {
                         CacheLifetime = TimeSpan.FromSeconds(cacheLength), //How long SSDP clients can cache this info.
                         Location = uri, // Must point to the URL that serves your devices UPnP description document. 
@@ -268,8 +268,11 @@ namespace MediaBrowser.Dlna.Main
                         FriendlyName = "Emby Server",
                         Manufacturer = "Emby",
                         ModelName = "Emby Server",
-                        Uuid = udn // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
-                    });
+                        Uuid = udn
+                        // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
+                    };
+
+                    _Publisher.AddDevice(device);
                 }
             }
         }

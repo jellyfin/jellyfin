@@ -51,7 +51,9 @@
             UserId: Dashboard.getCurrentUserId(),
             HasAired: false,
             SortBy: "StartDate",
-            Limit: 200
+            EnableTotalRecordCount: false,
+            EnableImages: false,
+            ImageTypeLimit: 0
 
         }).then(function (result) {
 
