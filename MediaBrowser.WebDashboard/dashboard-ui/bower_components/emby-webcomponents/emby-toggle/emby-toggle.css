@@ -51,7 +51,7 @@
 }
 
 .mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__track {
-    background: rgba(204,51,51, 0.5);
+    background: rgba(82,181,75, 0.5);
 }
 
 .mdl-switch__input[disabled] + .mdl-switch__label + .mdl-switch__track {
@@ -75,7 +75,7 @@
 }
 
 .mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb {
-    background: rgb(204,51,51);
+    background: rgb(82,181,75);
     left: 1.146em;
     box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 3px 3px -2px rgba(0, 0, 0, 0.2), 0 1px 8px 0 rgba(0, 0, 0, 0.12);
 }
@@ -105,8 +105,8 @@
 }
 
 .mdl-switch__input:checked:focus + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb > .mdl-switch__focus-helper {
-    box-shadow: 0 0 0px 20px rgba(204,51,51, 0.26);
-    background-color: rgba(204,51,51, 0.26);
+    box-shadow: 0 0 0px 20px rgba(82,181,75, 0.26);
+    background-color: rgba(82,181,75, 0.26);
 }
 
 .mdl-switch__label {
