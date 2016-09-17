@@ -602,7 +602,7 @@ namespace MediaBrowser.Model.Dlna
 
         private int GetAudioBitrate(string subProtocol, int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            var defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
+            int defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
             // Reduce the bitrate if we're downmixing
             if (targetAudioChannels.HasValue && audioStream != null && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
             {
@@ -615,7 +615,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
                     {
-                        if (string.Equals(subProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+                        if (StringHelper.EqualsIgnoreCase(subProtocol, "hls"))
                         {
                             defaultBitrate = Math.Max(384000, defaultBitrate);
                         }

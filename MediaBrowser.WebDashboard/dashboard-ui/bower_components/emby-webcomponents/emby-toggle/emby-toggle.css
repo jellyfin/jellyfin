@@ -1,0 +1,123 @@
+.mdl-switch {
+    position: relative;
+    z-index: 1;
+    vertical-align: middle;
+    display: inline-block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 1.72em;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    padding-left: 2em;
+}
+
+.toggleContainer {
+    margin-bottom: 1.8em;
+}
+
+.mdl-switch__input {
+    line-height: 1.72em;
+}
+
+.mdl-switch__input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    -ms-appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+}
+
+.mdl-switch__track {
+    background: rgba(255,255,255, 0.26);
+    position: absolute;
+    left: 0;
+    top: .36em;
+    height: 1em;
+    width: 2.58em;
+    border-radius: 1em;
+    cursor: pointer;
+}
+
+.mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__track {
+    background: rgba(204,51,51, 0.5);
+}
+
+.mdl-switch__input[disabled] + .mdl-switch__label + .mdl-switch__track {
+    background: rgba(0,0,0, 0.12);
+    cursor: auto;
+}
+
+.mdl-switch__thumb {
+    background: #999;
+    position: absolute;
+    left: 0;
+    top: .15em;
+    height: 1.44em;
+    width: 1.44em;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    transition-duration: 0.28s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: left;
+}
+
+.mdl-switch__input:checked + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb {
+    background: rgb(204,51,51);
+    left: 1.146em;
+    box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14), 0 3px 3px -2px rgba(0, 0, 0, 0.2), 0 1px 8px 0 rgba(0, 0, 0, 0.12);
+}
+
+.mdl-switch__input[disabled] + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb {
+    background: rgb(189,189,189);
+    cursor: auto;
+}
+
+.mdl-switch__focus-helper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    display: inline-block;
+    box-sizing: border-box;
+    width: .6em;
+    height: .6em;
+    border-radius: 50%;
+    background-color: transparent;
+}
+
+.mdl-switch__input:focus + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb > .mdl-switch__focus-helper {
+    box-shadow: 0 0 0px 20px rgba(255,255,255, 0.26);
+    background-color: rgba(255,255,255, 0.26);
+}
+
+.mdl-switch__input:checked:focus + .mdl-switch__label + .mdl-switch__track + .mdl-switch__thumb > .mdl-switch__focus-helper {
+    box-shadow: 0 0 0px 20px rgba(204,51,51, 0.26);
+    background-color: rgba(204,51,51, 0.26);
+}
+
+.mdl-switch__label {
+    position: relative;
+    cursor: pointer;
+    line-height: 1.72em;
+    margin: 0;
+    left: 1.52em;
+}
+
+.mdl-switch__input[disabled] .mdl-switch__label {
+    color: rgb(189,189,189);
+    cursor: auto;
+}
