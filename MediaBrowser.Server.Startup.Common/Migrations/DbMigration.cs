@@ -16,7 +16,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             _taskManager = taskManager;
         }
 
-        public void Run()
+        public async Task Run()
         {
             // If a forced migration is required, do that now
             if (_config.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion)

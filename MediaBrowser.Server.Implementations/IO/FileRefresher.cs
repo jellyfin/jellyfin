@@ -68,6 +68,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
             lock (_timerLock)
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 if (_timer == null)
                 {
                     _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
@@ -287,6 +292,7 @@ namespace MediaBrowser.Server.Implementations.IO
                 if (_timer != null)
                 {
                     _timer.Dispose();
+                    _timer = null;
                 }
             }
         }
