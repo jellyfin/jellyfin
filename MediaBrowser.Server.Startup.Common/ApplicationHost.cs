@@ -315,6 +315,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         public override async Task RunStartupTasks()
         {
+            await PerformPreInitMigrations().ConfigureAwait(false);
+
             if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
                 ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
@@ -366,23 +368,21 @@ namespace MediaBrowser.Server.Startup.Common
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
-            PerformPreInitMigrations();
-
             return base.Init(progress);
         }
 
-        private void PerformPreInitMigrations()
+        private async Task PerformPreInitMigrations()
         {
             var migrations = new List<IVersionMigration>
             {
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename, Logger)
             };
 
             foreach (var task in migrations)
             {
                 try
                 {
-                    task.Run();
+                    await task.Run().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

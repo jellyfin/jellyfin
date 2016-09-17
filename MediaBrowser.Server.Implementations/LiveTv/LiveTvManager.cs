@@ -1011,7 +1011,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false);
 
-            programs = programList.OrderBy(i => i.HasImage(ImageType.Primary) ? 0 : 1)
+            programs = programList.OrderBy(i => i.StartDate.Date)
                 .ThenByDescending(i => GetRecommendationScore(i, user.Id, factorChannelWatchCount))
                 .ThenBy(i => i.StartDate);
 
