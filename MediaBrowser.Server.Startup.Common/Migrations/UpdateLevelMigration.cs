@@ -6,6 +6,7 @@ using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 
@@ -18,17 +19,19 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly string _releaseAssetFilename;
+        private readonly ILogger _logger;
 
-        public UpdateLevelMigration(IServerConfigurationManager config, IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, string releaseAssetFilename)
+        public UpdateLevelMigration(IServerConfigurationManager config, IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer, string releaseAssetFilename, ILogger logger)
         {
             _config = config;
             _appHost = appHost;
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _releaseAssetFilename = releaseAssetFilename;
+            _logger = logger;
         }
 
-        public async void Run()
+        public async Task Run()
         {
             var lastVersion = _config.Configuration.LastVersion;
             var currentVersion = _appHost.ApplicationVersion;
@@ -44,9 +47,9 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
                 await CheckVersion(currentVersion, updateLevel, CancellationToken.None).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-
+                _logger.ErrorException("Error in update migration", ex);
             }
         }
 
@@ -109,10 +112,13 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
 
         private Version ParseVersion(string versionString)
         {
-            var parts = versionString.Split('.');
-            if (parts.Length == 3)
+            if (!string.IsNullOrWhiteSpace(versionString))
             {
-                versionString += ".0";
+                var parts = versionString.Split('.');
+                if (parts.Length == 3)
+                {
+                    versionString += ".0";
+                }
             }
 
             Version version;
