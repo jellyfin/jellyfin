@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'mediaInfo', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo) {
+﻿define(['appSettings', 'datetime', 'mediaInfo', 'browser', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo, browser) {
 
     function createVideoPlayer(self) {
 
@@ -710,7 +710,7 @@
             html += '<div id="pause" class="status"></div>';
             html += '</div>';
 
-            var hiddenOnIdleClass = AppInfo.isNativeApp && browserInfo.android ? 'hiddenOnIdle hide' : 'hiddenOnIdle';
+            var hiddenOnIdleClass = AppInfo.isNativeApp && browser.android ? 'hiddenOnIdle hide' : 'hiddenOnIdle';
 
             html += '<div class="videoTopControls ' + hiddenOnIdleClass + '">';
             html += '<div class="videoTopControlsLogo"></div>';
@@ -984,7 +984,7 @@
 
         self.playVideo = function (item, mediaSource, startPosition, callback) {
 
-            if (browserInfo.msie) {
+            if (browser.msie) {
 
                 if (!window.MediaSource || !mediaSource.RunTimeTicks) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
@@ -998,15 +998,20 @@
 
                 self.createStreamInfo('Video', item, mediaSource, startPosition).then(function (streamInfo) {
 
+                    var onReadyToPlay = function () {
+                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                    };
+
                     var isHls = streamInfo.url.toLowerCase().indexOf('.m3u8') != -1;
 
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
                     // Edit: Also seeing stalls from hls.js
-                    if (!mediaSource.RunTimeTicks && isHls && !browserInfo.edge) {
+                    if (!mediaSource.RunTimeTicks && isHls && !browser.edge) {
+
+                        var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
 
                         Dashboard.showLoadingMsg();
-                        var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
                         ApiClient.ajax({
 
                             type: 'GET',
@@ -1016,17 +1021,14 @@
                             Dashboard.hideLoadingMsg();
                             streamInfo.url = hlsPlaylistUrl;
 
-                            // add a delay to continue building up the buffer. without this we see failures in safari mobile
-                            setTimeout(function () {
-                                self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
-                            }, 2000);
+                            onReadyToPlay();
 
                         }, function () {
                             Dashboard.hideLoadingMsg();
                         });
 
                     } else {
-                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                        onReadyToPlay();
                     }
                 });
             });
@@ -1064,7 +1066,7 @@
 
             elem.classList.remove('hide');
 
-            if (!browserInfo.animate || browserInfo.slow) {
+            if (!browser.animate || browser.slow) {
                 return;
             }
 
@@ -1262,7 +1264,7 @@
 
         function onClick() {
 
-            if (!browserInfo.mobile) {
+            if (!browser.mobile) {
                 if (this.paused()) {
                     self.unpause();
                 } else {
@@ -1272,7 +1274,7 @@
         }
 
         function onDoubleClick() {
-            if (!browserInfo.mobile) {
+            if (!browser.mobile) {
                 self.toggleFullscreen();
             }
         }

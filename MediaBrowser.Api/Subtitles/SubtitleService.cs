@@ -148,7 +148,7 @@ namespace MediaBrowser.Api.Subtitles
         {
             var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));
 
-            var mediaSource = await _mediaSourceManager.GetMediaSource(item, request.MediaSourceId, false).ConfigureAwait(false);
+            var mediaSource = await _mediaSourceManager.GetMediaSource(item, request.MediaSourceId, null, false, CancellationToken.None).ConfigureAwait(false);
 
             var builder = new StringBuilder();
 
