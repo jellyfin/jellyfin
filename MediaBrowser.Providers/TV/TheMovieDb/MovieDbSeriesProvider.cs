@@ -119,6 +119,7 @@ namespace MediaBrowser.Providers.TV
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>();
+            result.QueriedById = true;
 
             var tmdbId = info.GetProviderId(MetadataProviders.Tmdb);
 
@@ -154,6 +155,7 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
+                result.QueriedById = false;
                 var searchResults = await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
                 var searchResult = searchResults.FirstOrDefault();
@@ -194,7 +196,7 @@ namespace MediaBrowser.Providers.TV
             tmdbId = seriesInfo.id.ToString(_usCulture);
 
             dataFilePath = GetDataFilePath(tmdbId, language);
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
@@ -326,7 +328,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
