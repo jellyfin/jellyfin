@@ -46,7 +46,7 @@ define(['browser'], function (browser) {
     }
 
     function canPlayHlsWithMSE() {
-        if (window.MediaSource != null && !browser.firefox) {
+        if (window.MediaSource != null) {
             // text tracks don’t work with this in firefox
             return true;
         }
@@ -389,7 +389,7 @@ define(['browser'], function (browser) {
         }
 
         // Can't use mkv on mobile because we have to use the native player controls and they won't be able to seek it
-        if (canPlayMkv && options.supportsCustomSeeking && !browser.tizen) {
+        if (canPlayMkv && options.supportsCustomSeeking && !browser.tizen && options.enableMkvProgressive !== false) {
             profile.TranscodingProfiles.push({
                 Container: 'mkv',
                 Type: 'Video',
@@ -400,7 +400,7 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen && !browser.web0s) {
+        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen && !browser.web0s && options.enableTsProgressive !== false) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',
@@ -414,7 +414,7 @@ define(['browser'], function (browser) {
             });
         }
 
-        if (canPlayHls()) {
+        if (canPlayHls() && options.enableHls !== false) {
             profile.TranscodingProfiles.push({
                 Container: 'ts',
                 Type: 'Video',

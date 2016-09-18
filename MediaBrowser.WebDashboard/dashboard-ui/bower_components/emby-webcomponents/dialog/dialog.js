@@ -30,15 +30,18 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
             formDialogContent.style['max-height'] = '60%';
             scrollHelper.centerFocus.on(formDialogContent, false);
         } else {
-            var minWidth = (Math.min(options.buttons.length * 150, dom.getWindowSize().innerWidth - 50));
-            dlg.style.maxWidth = (minWidth + 200) + 'px';
+            dlg.style.maxWidth = (Math.min((options.buttons.length * 150) + 200, dom.getWindowSize().innerWidth - 50)) + 'px';
         }
 
         //dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
         //    dialogHelper.close(dlg);
         //});
 
-        dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
+        if (options.title) {
+            dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
+        } else {
+            dlg.querySelector('.formDialogHeaderTitle').classList.add('hide');
+        }
 
         dlg.querySelector('.text').innerHTML = options.html || options.text || '';
 

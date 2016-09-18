@@ -595,24 +595,11 @@
             return html;
         }
 
-        function getSeekableDuration() {
-
-            if (self.currentMediaSource && self.currentMediaSource.RunTimeTicks) {
-                return self.currentMediaSource.RunTimeTicks;
-            }
-
-            if (self.currentMediaRenderer) {
-                return self.getCurrentTicks(self.currentMediaRenderer);
-            }
-
-            return null;
-        }
-
         function onPositionSliderChange() {
 
             var newPercent = parseFloat(this.value);
 
-            var newPositionTicks = (newPercent / 100) * getSeekableDuration();
+            var newPositionTicks = (newPercent / 100) * self.getSeekableDurationTicks();
 
             self.changeStream(Math.floor(newPositionTicks));
         }
@@ -808,7 +795,7 @@
 
             positionSlider.getBubbleText = function (value) {
 
-                var seekableDuration = getSeekableDuration();
+                var seekableDuration = self.getSeekableDurationTicks();
                 if (!self.currentMediaSource || !seekableDuration) {
                     return '--:--';
                 }
@@ -1016,7 +1003,7 @@
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
                     // Edit: Also seeing stalls from hls.js
-                    if (!mediaSource.RunTimeTicks && isHls) {
+                    if (!mediaSource.RunTimeTicks && isHls && !browserInfo.edge) {
 
                         Dashboard.showLoadingMsg();
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
@@ -1170,7 +1157,6 @@
             document.body.classList.add('bodyWithPopupOpen');
 
             self.currentMediaRenderer = mediaRenderer;
-            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             self.updateNowPlayingInfo(item);
 
