@@ -14,6 +14,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -203,7 +204,11 @@ namespace MediaBrowser.Providers.Movies
                 if (ourRelease != null)
                 {
                     var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
-                    movie.OfficialRating = ratingPrefix + ourRelease.certification;
+                    var newRating = ratingPrefix + ourRelease.certification;
+
+                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
+
+                    movie.OfficialRating = newRating;
                 }
                 else if (usRelease != null)
                 {
