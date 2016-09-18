@@ -21,6 +21,7 @@ namespace MediaBrowser.Controller.Providers
         public bool HasMetadata { get; set; }
         public T Item { get; set; }
         public string ResultLanguage { get; set; }
+        public bool QueriedById { get; set; }
         public void AddPerson(PersonInfo p)
         {
             if (People == null)

@@ -696,7 +696,7 @@ namespace MediaBrowser.Providers.Manager
                 // prioritize results with matching ResultLanguage
                 foreach (var result in results)
                 {
-                    if (!string.IsNullOrEmpty(result.ResultLanguage) && result.ResultLanguage == id.MetadataLanguage)
+                    if (!string.IsNullOrEmpty(result.ResultLanguage) && result.ResultLanguage == id.MetadataLanguage && result.QueriedById)
                     {
                         orderedResults.Add(result);
                     }

@@ -93,9 +93,11 @@ namespace MediaBrowser.Providers.TV
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>();
+            result.QueriedById = true;
 
             if (!IsValidSeries(itemId.ProviderIds))
             {
+                result.QueriedById = false;
                 await Identify(itemId).ConfigureAwait(false);
             }
 
