@@ -1847,18 +1847,30 @@ namespace MediaBrowser.Api.Playback
             var archivable = item as IArchivable;
             state.IsInputArchive = archivable != null && archivable.IsArchive;
 
-            MediaSourceInfo mediaSource;
+            MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(request.Id, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false)).ToList();
+                //TranscodingJob currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ? 
+                //    ApiEntryPoint.Instance.GetTranscodingJob(request.PlaySessionId)
+                //    : null;
 
-                mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                   ? mediaSources.First()
-                   : mediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId));
+                //if (currentJob != null)
+                //{
+                //    mediaSource = currentJob.MediaSource;
+                //}
 
-                if (mediaSource == null && string.Equals(request.Id, request.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                if (mediaSource == null)
                 {
-                    mediaSource = mediaSources.First();
+                    var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(request.Id, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false)).ToList();
+
+                    mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
+                       ? mediaSources.First()
+                       : mediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId));
+
+                    if (mediaSource == null && string.Equals(request.Id, request.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        mediaSource = mediaSources.First();
+                    }
                 }
             }
             else

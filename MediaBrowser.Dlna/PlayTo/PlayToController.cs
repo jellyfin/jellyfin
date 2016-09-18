@@ -827,6 +827,7 @@ namespace MediaBrowser.Dlna.PlayTo
             public string DeviceId { get; set; }
 
             public string MediaSourceId { get; set; }
+            public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
             public MediaSourceInfo MediaSource { get; set; }
@@ -910,6 +911,10 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         request.StartPositionTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     }
+                    else if (i == 22)
+                    {
+                        request.LiveStreamId = val;
+                    }
                 }
 
                 request.Item = string.IsNullOrWhiteSpace(request.ItemId)
@@ -920,7 +925,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 request.MediaSource = hasMediaSources == null
                     ? null
-                    : (await mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).ConfigureAwait(false));
+                    : (await mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, request.LiveStreamId, false, CancellationToken.None).ConfigureAwait(false));
 
                 return request;
             }

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Api
 {
@@ -187,7 +188,8 @@ namespace MediaBrowser.Api
                     CancellationTokenSource = cancellationTokenSource,
                     Id = transcodingJobId,
                     PlaySessionId = playSessionId,
-                    LiveStreamId = liveStreamId
+                    LiveStreamId = liveStreamId,
+                    MediaSource = state.MediaSource
                 };
 
                 _activeTranscodingJobs.Add(job);
@@ -278,6 +280,14 @@ namespace MediaBrowser.Api
             lock (_activeTranscodingJobs)
             {
                 return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public TranscodingJob GetTranscodingJob(string playSessionId)
+        {
+            lock (_activeTranscodingJobs)
+            {
+                return _activeTranscodingJobs.FirstOrDefault(j => string.Equals(j.PlaySessionId, playSessionId, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -656,6 +666,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
+        public MediaSourceInfo MediaSource { get; set; }
         public string Path { get; set; }
         /// <summary>
         /// Gets or sets the type.

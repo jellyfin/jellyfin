@@ -763,7 +763,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             throw new ApplicationException("Tuner not found.");
         }
 
-        private async Task<Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        private async Task<Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>> GetChannelStreamInternal(string channelId, CancellationToken cancellationToken)
         {
             _logger.Info("Streaming Channel " + channelId);
 
@@ -771,7 +771,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    var result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+                    var result = await hostInstance.GetChannelStream(channelId, null, cancellationToken).ConfigureAwait(false);
 
                     return new Tuple<MediaSourceInfo, ITunerHost, SemaphoreSlim>(result.Item1, hostInstance, result.Item2);
                 }
@@ -994,7 +994,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                var result = await GetChannelStreamInternal(timer.ChannelId, null, CancellationToken.None).ConfigureAwait(false);
+                var result = await GetChannelStreamInternal(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
                 isResourceOpen = true;
                 semaphore = result.Item3;
                 var mediaStreamInfo = result.Item1;

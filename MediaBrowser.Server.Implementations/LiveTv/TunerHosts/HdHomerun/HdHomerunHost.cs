@@ -319,18 +319,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 videoBitrate = 1000000;
             }
 
-            if (string.IsNullOrWhiteSpace(videoCodec))
+            var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
+            var channel = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
+            if (channel != null)
             {
-                var channels = await GetChannels(info, true, CancellationToken.None).ConfigureAwait(false);
-                var channel = channels.FirstOrDefault(i => string.Equals(i.Number, channelId, StringComparison.OrdinalIgnoreCase));
-                if (channel != null)
+                if (string.IsNullOrWhiteSpace(videoCodec))
                 {
                     videoCodec = channel.VideoCodec;
-                    audioCodec = channel.AudioCodec;
-
-                    videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
-                    audioBitrate = (channel.IsHD ?? true) ? 448000 : 192000;
                 }
+                audioCodec = channel.AudioCodec;
+
+                if (!videoBitrate.HasValue)
+                {
+                    videoBitrate = (channel.IsHD ?? true) ? 15000000 : 2000000;
+                }
+                audioBitrate = (channel.IsHD ?? true) ? 448000 : 192000;
             }
 
             // normalize
@@ -380,7 +383,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 BitRate = audioBitrate
                             }
                         },
-                RequiresOpening = false,
+                RequiresOpening = true,
                 RequiresClosing = false,
                 BufferMs = 0,
                 Container = "ts",
