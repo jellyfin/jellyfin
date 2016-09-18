@@ -12,7 +12,15 @@
 
             require(['confirm'], function (confirm) {
 
-                confirm(globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'), globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation')).then(function () {
+                confirm({
+                    
+                    title: globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation'),
+                    text: globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'),
+                    confirmText: globalize.translate('sharedcomponents#HeaderCancelRecording'),
+                    cancelText: globalize.translate('sharedcomponents#HeaderKeepRecording'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     loading.show();
 

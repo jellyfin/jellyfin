@@ -34,7 +34,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation')).then(function () {
+            confirm({
+                
+                title: Globalize.translate('HeaderRemoveMediaLocation'),
+                text: Globalize.translate('MessageConfirmRemoveMediaLocation'),
+                confirmText: Globalize.translate('sharedcomponents#ButtonDelete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 var refreshAfterChange = currentOptions.refresh;
 

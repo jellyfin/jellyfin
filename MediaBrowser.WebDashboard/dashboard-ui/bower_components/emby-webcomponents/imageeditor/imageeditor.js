@@ -192,7 +192,13 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(globalize.translate('sharedcomponents#ConfirmDeleteImage')).then(afterConfirm);
+            confirm({
+                
+                text: globalize.translate('sharedcomponents#ConfirmDeleteImage'),
+                confirmText: globalize.translate('sharedcomponents#Delete'),
+                primary: 'cancel'
+
+            }).then(afterConfirm);
         });
     }
 

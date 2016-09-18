@@ -1,4 +1,9 @@
 {
+    "PromoConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format with Emby Premiere. Recordings will be converted on the fly to MP4 or MKV, based on Emby server settings.",
+    "HeaderConvertYourRecordings": "Convert Your Recordings",
+    "HeaderLearnMore": "Learn More",
+    "HeaderKeepRecording": "Keep Recording",
+    "DeleteMedia": "Delete media",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
     "Share": "Delen",
     "Add": "Toevoegen",
@@ -13,7 +18,7 @@
     "ValueSeriesYearToPresent": "{0}-Heden",
     "ReleaseYearValue": "Jaar van uitgifte: {0}",
     "OriginalAirDateValue": "Originele uitzenddatum: {0}",
-    "EndsAtValue": "Eindigt om: {0}",
+    "EndsAtValue": "Eindigt om {0}",
     "OptionSundayShort": "Zo",
     "OptionMondayShort": "Ma",
     "OptionTuesdayShort": "Di",

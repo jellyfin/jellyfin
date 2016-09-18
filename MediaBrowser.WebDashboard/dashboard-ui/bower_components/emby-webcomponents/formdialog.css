@@ -15,6 +15,10 @@
     background-color: #222326;
 }
 
+.formDialogHeader-clear, .formDialogFooter-clear {
+    background-color: transparent;
+}
+
 .formDialogHeaderTitle {
     margin-left: .25em;
     /* In case of h1, h2, h3 */
@@ -57,12 +61,23 @@
     flex-wrap: wrap;
 }
 
+.formDialogFooter-flex {
+    position: static;
+}
+
 .formDialogFooterItem {
     margin-left: .5em !important;
     margin-right: .5em !important;
     flex-grow: 1;
     text-align: center;
     flex-basis: 0;
+}
+
+.formDialogFooterItem-autosize {
+    flex-basis: initial;
+    flex-grow: initial;
+    padding-left: 2em;
+    padding-right: 2em;
 }
 
 @media all and (min-width: 800px) {
