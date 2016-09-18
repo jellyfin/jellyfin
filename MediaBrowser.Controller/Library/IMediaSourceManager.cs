@@ -60,11 +60,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the static media source.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="mediaSourceId">The media source identifier.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <returns>MediaSourceInfo.</returns>
-        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
+        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Opens the media source.

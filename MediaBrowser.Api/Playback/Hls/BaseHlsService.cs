@@ -104,7 +104,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitForSegments = state.SegmentLength >= 10 ? 2 : 3;
+                        var waitForSegments = state.SegmentLength >= 10 ? 2 : (state.SegmentLength > 3 || !isLive ? 3 : 4);
                         await WaitForMinimumSegmentCount(playlist, waitForSegments, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
@@ -128,10 +128,9 @@ namespace MediaBrowser.Api.Playback.Hls
             var audioBitrate = state.OutputAudioBitrate ?? 0;
             var videoBitrate = state.OutputVideoBitrate ?? 0;
 
-            var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
 
-            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
+            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, baselineStreamBitrate);
 
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
@@ -161,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
+        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, int baselineStreamBitrate)
         {
             var builder = new StringBuilder();
 
@@ -174,14 +173,6 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + paddedBitrate.ToString(UsCulture));
             var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
-
-            // Low bitrate stream
-            if (includeBaselineStream)
-            {
-                builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + baselineStreamBitrate.ToString(UsCulture));
-                playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
-                builder.AppendLine(playlistUrl);
-            }
 
             return builder.ToString();
         }
