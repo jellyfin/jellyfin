@@ -386,31 +386,26 @@
                     name: Globalize.translate('ButtonNo'),
                     id: 'no'
                 });
-                menuItems.push({
-                    name: Globalize.translate('ButtonCancel'),
-                    id: 'cancel'
-                });
 
-                require(['actionsheet'], function (actionsheet) {
+                require(['dialog'], function (dialog) {
 
-                    actionsheet.show({
-                        items: menuItems,
+                    dialog({
+                        buttons: menuItems,
                         //positionTo: positionTo,
-                        title: Globalize.translate('ConfirmEndPlayerSession'),
-                        callback: function (id) {
+                        text: Globalize.translate('ConfirmEndPlayerSession')
 
-                            switch (id) {
+                    }).then(function (id) {
+                        switch (id) {
 
-                                case 'yes':
-                                    MediaController.getCurrentPlayer().endSession();
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                case 'no':
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                default:
-                                    break;
-                            }
+                            case 'yes':
+                                MediaController.getCurrentPlayer().endSession();
+                                self.setDefaultPlayerActive();
+                                break;
+                            case 'no':
+                                self.setDefaultPlayerActive();
+                                break;
+                            default:
+                                break;
                         }
                     });
 

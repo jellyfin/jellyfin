@@ -670,7 +670,7 @@ var Dashboard = {
         });
     },
 
-    getDeviceProfile: function (maxHeight) {
+    getDeviceProfile: function (maxHeight, profileOptions) {
 
         return new Promise(function (resolve, reject) {
 
@@ -838,9 +838,9 @@ var Dashboard = {
                     supportsCustomSeeking = true;
                 }
 
-                var profile = profileBuilder({
+                var profile = profileBuilder(Object.assign(profileOptions || {}, {
                     supportsCustomSeeking: supportsCustomSeeking
-                });
+                }));
 
                 if (!(AppInfo.isNativeApp && browserInfo.android) && !browserInfo.edge && !browserInfo.msie) {
                     // libjass not working here
