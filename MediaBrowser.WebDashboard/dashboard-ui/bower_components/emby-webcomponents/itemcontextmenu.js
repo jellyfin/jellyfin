@@ -37,10 +37,18 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
             }
 
             if (item.CanDelete) {
-                commands.push({
-                    name: globalize.translate('sharedcomponents#Delete'),
-                    id: 'delete'
-                });
+
+                if (item.Type == 'Playlist' || item.Type == 'BoxSet') {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#Delete'),
+                        id: 'delete'
+                    });
+                } else {
+                    commands.push({
+                        name: globalize.translate('sharedcomponents#DeleteMedia'),
+                        id: 'delete'
+                    });
+                }
             }
 
             if (itemHelper.canEdit(user, item.Type)) {
@@ -383,7 +391,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     }
                 case 'delete':
                     {
-                        deleteItem(apiClient, itemId).then(getResolveFunction(resolve, id, true, true), getResolveFunction(resolve, id));
+                        deleteItem(apiClient, item).then(getResolveFunction(resolve, id, true, true), getResolveFunction(resolve, id));
                         break;
                     }
                 case 'share':
@@ -550,16 +558,25 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
         });
     }
 
-    function deleteItem(apiClient, itemId) {
+    function deleteItem(apiClient, item) {
 
         return new Promise(function (resolve, reject) {
+
+            var itemId = item.Id;
 
             var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
             var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
 
             require(['confirm'], function (confirm) {
 
-                confirm(msg, title).then(function () {
+                confirm({
+
+                    title: title,
+                    text: msg,
+                    confirmText: globalize.translate('sharedcomponents#Delete'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     apiClient.deleteItem(itemId).then(function () {
                         resolve(true);

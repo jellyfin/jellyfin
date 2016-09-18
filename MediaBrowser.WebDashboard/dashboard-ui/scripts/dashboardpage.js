@@ -1016,7 +1016,14 @@
 
             require(['confirm'], function (confirm) {
 
-                confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart')).then(function () {
+                confirm({
+                    
+                    title: Globalize.translate('HeaderRestart'),
+                    text: Globalize.translate('MessageConfirmRestart'),
+                    confirmText: Globalize.translate('ButtonRestart'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     $('#btnRestartServer').buttonEnabled(false);
                     $('#btnShutdown').buttonEnabled(false);
@@ -1029,7 +1036,14 @@
 
             require(['confirm'], function (confirm) {
 
-                confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown')).then(function () {
+                confirm({
+
+                    title: Globalize.translate('HeaderShutdown'),
+                    text: Globalize.translate('MessageConfirmShutdown'),
+                    confirmText: Globalize.translate('ButtonShutdown'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     $('#btnRestartServer').buttonEnabled(false);
                     $('#btnShutdown').buttonEnabled(false);

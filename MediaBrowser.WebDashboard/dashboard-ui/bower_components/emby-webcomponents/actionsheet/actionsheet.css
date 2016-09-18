@@ -4,10 +4,12 @@
     padding: 0;
     border: none;
     max-height: 84%;
+    border-radius: 1px !important;
 }
 
 .actionsheet-fullscreen {
     max-height: none;
+    border-radius: 0 !important;
 }
 
 .actionSheetContent-centered {

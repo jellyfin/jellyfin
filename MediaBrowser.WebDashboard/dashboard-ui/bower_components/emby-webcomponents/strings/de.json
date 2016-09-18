@@ -1,4 +1,9 @@
 {
+    "PromoConvertRecordingsToStreamingFormat": "Konvertiere Aufnahmen automatisch in ein Streaming-freundliches Format mit Emby Premiere. Aufnahmen werden, basierend auf den Emby Server-Einstellungen, dynamisch zu MP4 oder MKV konvertiert.",
+    "HeaderConvertYourRecordings": "Konvertiere deine Aufnahmen",
+    "HeaderLearnMore": "Erfahre mehr",
+    "HeaderKeepRecording": "Keep Recording",
+    "DeleteMedia": "Delete media",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Teilen",
     "Add": "Hinzuf\u00fcgen",

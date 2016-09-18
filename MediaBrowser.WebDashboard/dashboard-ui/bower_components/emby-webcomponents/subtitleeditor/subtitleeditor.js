@@ -68,7 +68,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(msg, globalize.translate('sharedcomponents#ConfirmDeletion')).then(function () {
+            confirm({
+
+                title: globalize.translate('sharedcomponents#ConfirmDeletion'),
+                text: msg,
+                confirmText: globalize.translate('sharedcomponents#Delete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 loading.show();
 

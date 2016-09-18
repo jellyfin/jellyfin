@@ -1,6 +1,6 @@
 {
   "name": "requirejs",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "ignore": [],
   "homepage": "http://requirejs.org",
   "authors": [
@@ -14,11 +14,11 @@
   "license": [
     "MIT"
   ],
-  "_release": "2.3.1",
+  "_release": "2.3.2",
   "_resolution": {
     "type": "version",
-    "tag": "2.3.1",
-    "commit": "94785e8633448b668f292009fd2c31e3338a0074"
+    "tag": "2.3.2",
+    "commit": "5b5d3ea2c754898b645cfeaa8871bb92ba4f2790"
   },
   "_source": "https://github.com/jrburke/requirejs-bower.git",
   "_target": "^2.1.22",
