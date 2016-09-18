@@ -269,7 +269,7 @@ define(['browser'], function (browser) {
         }
 
         var mp3Added = false;
-        if (canPlayMkv || canPlayTs) {
+        if ((canPlayMkv && options.enableMkvProgressive !== false) || (canPlayTs && options.enableMkvProgressive !== false)) {
             if (supportsMp3VideoAudio) {
                 mp3Added = true;
                 videoAudioCodecs.push('mp3');
@@ -421,7 +421,8 @@ define(['browser'], function (browser) {
                 AudioCodec: hlsVideoAudioCodecs.join(','),
                 VideoCodec: 'h264',
                 Context: 'Streaming',
-                Protocol: 'hls'
+                Protocol: 'hls',
+                MaxAudioChannels: physicalAudioChannels.toString()
             });
         }
 

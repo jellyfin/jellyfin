@@ -88,6 +88,10 @@ namespace MediaBrowser.Api.Playback
                         return 10;
                     }
 
+                    if (!RunTimeTicks.HasValue)
+                    {
+                        return 10;
+                    }
                     return 6;
                 }
 

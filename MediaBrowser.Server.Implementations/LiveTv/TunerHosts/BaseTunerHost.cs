@@ -223,8 +223,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                             }
                         }
 
-                        var stream =
-                            await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
+                        var stream = await GetChannelStream(host, channelId, streamId, cancellationToken).ConfigureAwait(false);
 
                         if (EnableMediaProbing)
                         {

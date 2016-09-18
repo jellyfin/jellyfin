@@ -221,8 +221,28 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public async Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
+        public async Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
+            if (!string.IsNullOrWhiteSpace(liveStreamId))
+            {
+                return await GetLiveStream(liveStreamId, cancellationToken).ConfigureAwait(false);
+            }
+            //await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            //try
+            //{
+            //    var stream = _openStreams.Values.FirstOrDefault(i => string.Equals(i.MediaSource.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+
+            //    if (stream != null)
+            //    {
+            //        return stream.MediaSource;
+            //    }
+            //}
+            //finally
+            //{
+            //    _liveStreamSemaphore.Release();
+            //}
+
             var sources = await GetPlayackMediaSources(item.Id.ToString("N"), null, enablePathSubstitution, new[] { MediaType.Audio, MediaType.Video },
                         CancellationToken.None).ConfigureAwait(false);
 

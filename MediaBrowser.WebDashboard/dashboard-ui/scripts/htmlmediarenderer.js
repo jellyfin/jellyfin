@@ -170,7 +170,7 @@
             return elem;
         }
 
-        function enableHlsPlayer(src) {
+        function enableHlsPlayer(src, item, mediaSource) {
 
             if (src) {
                 if (src.indexOf('.m3u8') == -1) {
@@ -178,7 +178,25 @@
                 }
             }
 
-            return MediaPlayer.canPlayHls() && !MediaPlayer.canPlayNativeHls();
+            if (MediaPlayer.canPlayHls()) {
+
+                if (window.MediaSource == null) {
+                    return false;
+                }
+
+                if (MediaPlayer.canPlayNativeHls() && mediaSource.RunTimeTicks) {
+                    return false;
+                }
+
+                // For now don't do this in edge because we lose some native audio support
+                if (browser.edge) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         function getCrossOriginValue(mediaSource) {
@@ -384,17 +402,19 @@
                 }
                 subtitleTrackIndexToSetOnPlaying = currentTrackIndex;
 
-                if (enableHlsPlayer(val)) {
+                if (enableHlsPlayer(val, item, mediaSource)) {
 
                     setTracks(elem, tracks);
 
-                    var hls = new Hls();
-                    hls.loadSource(val);
-                    hls.attachMedia(elem);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                        elem.play();
+                    requireHlsPlayer(function () {
+                        var hls = new Hls();
+                        hls.loadSource(val);
+                        hls.attachMedia(elem);
+                        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                            elem.play();
+                        });
+                        hlsPlayer = hls;
                     });
-                    hlsPlayer = hls;
 
                 } else {
 
@@ -880,16 +900,7 @@
 
         self.init = function () {
 
-            return new Promise(function (resolve, reject) {
-
-                if (options.type == 'video' && enableHlsPlayer()) {
-
-                    requireHlsPlayer(resolve);
-
-                } else {
-                    resolve();
-                }
-            });
+            return Promise.resolve();
         };
 
         if (options.type == 'audio') {
