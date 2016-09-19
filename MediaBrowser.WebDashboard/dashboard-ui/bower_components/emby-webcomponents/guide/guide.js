@@ -396,10 +396,10 @@
                 }
 
                 if (program.SeriesTimerId) {
-                    html += '<i class="seriesTimerIcon md-icon programIcon">fiber_smart_record</i>';
+                    html += '<i class="seriesTimerIcon md-icon programIcon">&#xE062;</i>';
                 }
                 else if (program.TimerId) {
-                    html += '<i class="timerIcon md-icon programIcon">fiber_manual_record</i>';
+                    html += '<i class="timerIcon md-icon programIcon">&#xE061;</i>';
                 }
 
                 if (addAccent) {
@@ -778,7 +778,7 @@
 
                 var icon = cell.querySelector('.timerIcon');
                 if (!icon) {
-                    cell.insertAdjacentHTML('beforeend', '<i class="timerIcon md-icon">fiber_manual_record</i>');
+                    cell.insertAdjacentHTML('beforeend', '<i class="timerIcon md-icon">&#xE061;</i>');
                 }
 
                 if (newTimerId) {

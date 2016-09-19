@@ -183,6 +183,57 @@
         });
     }
 
+    function onTimerCreated(e, apiClient, data) {
+
+        var itemsContainer = this;
+
+        var programId = data.ProgramId;
+        // This could be null, not supported by all tv providers
+        var newTimerId = data.Id;
+
+        require(['cardBuilder'], function (cardBuilder) {
+            cardBuilder.onTimerCreated(programId, newTimerId, itemsContainer);
+        });
+    }
+
+    function onSeriesTimerCreated(e, apiClient, data) {
+        var itemsContainer = this;
+    }
+
+    function onTimerCancelled(e, apiClient, data) {
+        var itemsContainer = this;
+        var id = data.Id;
+
+        require(['cardBuilder'], function (cardBuilder) {
+            cardBuilder.onTimerCancelled(id, itemsContainer);
+        });
+    }
+
+    function onSeriesTimerCancelled(e, apiClient, data) {
+        var itemsContainer = this;
+        var id = data.Id;
+
+        require(['cardBuilder'], function (cardBuilder) {
+            cardBuilder.onSeriesTimerCancelled(id, itemsContainer);
+        });
+    }
+
+    function addNotificationEvent(instance, name, handler) {
+
+        var localHandler = handler.bind(instance);
+        events.on(serverNotifications, name, localHandler);
+        instance[name] = localHandler;
+    }
+
+    function removeNotificationEvent(instance, name) {
+
+        var handler = instance[name];
+        if (handler) {
+            events.off(serverNotifications, 'UserDataChanged', handler);
+            instance[name] = null;
+        }
+    }
+
     ItemsContainerProtoType.attachedCallback = function () {
 
         this.addEventListener('click', onClick);
@@ -203,9 +254,11 @@
 
         itemShortcuts.on(this, getShortcutOptions());
 
-        var userDataHandler = onUserDataChanged.bind(this);
-        events.on(serverNotifications, 'UserDataChanged', userDataHandler);
-        this.userDataHandler = userDataHandler;
+        addNotificationEvent(this, 'UserDataChanged', onUserDataChanged);
+        addNotificationEvent(this, 'TimerCreated', onTimerCreated);
+        addNotificationEvent(this, 'SeriesTimerCreated', onSeriesTimerCreated);
+        addNotificationEvent(this, 'TimerCancelled', onTimerCancelled);
+        addNotificationEvent(this, 'SeriesTimerCancelled', onSeriesTimerCancelled);
     };
 
     ItemsContainerProtoType.detachedCallback = function () {
@@ -218,11 +271,11 @@
         this.removeEventListener('contextmenu', disableEvent);
         itemShortcuts.off(this, getShortcutOptions());
 
-        var userDataHandler = this.userDataHandler;
-        if (userDataHandler) {
-            events.off(serverNotifications, 'UserDataChanged', userDataHandler);
-            this.userDataHandler = null;
-        }
+        removeNotificationEvent(this, 'UserDataChanged');
+        removeNotificationEvent(this, 'TimerCreated');
+        removeNotificationEvent(this, 'SeriesTimerCreated');
+        removeNotificationEvent(this, 'TimerCancelled');
+        removeNotificationEvent(this, 'SeriesTimerCancelled');
     };
 
     document.registerElement('emby-itemscontainer', {

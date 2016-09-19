@@ -168,7 +168,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
+            if (item.Type == 'Program') {
 
                 commands.push({
                     name: Globalize.translate('sharedcomponents#Record'),

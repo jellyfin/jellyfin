@@ -184,12 +184,23 @@
                     return false;
                 }
 
-                if (MediaPlayer.canPlayNativeHls() && mediaSource.RunTimeTicks) {
-                    return false;
+                if (MediaPlayer.canPlayNativeHls()) {
+
+                    // simple playback should use the native support
+                    if (mediaSource.RunTimeTicks) {
+                        return false;
+                    }
+
+                    //return false;
                 }
 
                 // For now don't do this in edge because we lose some native audio support
                 if (browser.edge) {
+                    return false;
+                }
+
+                // hls.js is only in beta. needs more testing.
+                if (browser.safari) {
                     return false;
                 }
 

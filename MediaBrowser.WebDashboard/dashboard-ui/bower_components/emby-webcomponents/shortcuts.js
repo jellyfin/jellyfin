@@ -1,4 +1,4 @@
-define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading', 'dom'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading, dom) {
+define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading', 'dom', 'recordingHelper'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading, dom, recordingHelper) {
 
     function playAllFromHere(card, serverId, queue) {
 
@@ -92,11 +92,6 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     }
 
     function showProgramDialog(item) {
-
-        if (item.TimerId) {
-            showItem(item);
-            return;
-        }
 
         require(['recordingCreator'], function (recordingCreator) {
 
@@ -338,73 +333,18 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         if (seriesTimerId && timerId) {
 
             // cancel 
-            cancelTimer(apiClient, timerId, true);
+            recordingHelper.cancelTimer(apiClient, timerId, true);
 
         } else if (timerId) {
 
             // change to series recording, if possible
             // otherwise cancel individual recording
-            changeRecordingToSeries(apiClient, timerId, id);
+            recordingHelper.changeRecordingToSeries(apiClient, timerId, id);
 
         } else if (type == 'Program') {
             // schedule recording
-            createRecording(apiClient, id);
+            recordingHelper.createRecording(apiClient, id);
         }
-    }
-
-    function changeRecordingToSeries(apiClient, timerId, programId) {
-
-        loading.show();
-
-        apiClient.getItem(apiClient.getCurrentUserId(), programId).then(function (item) {
-
-            if (item.IsSeries) {
-                // cancel, then create series
-                cancelTimer(apiClient, timerId, false).then(function () {
-                    apiClient.getNewLiveTvTimerDefaults({ programId: programId }).then(function (timerDefaults) {
-
-                        apiClient.createLiveTvSeriesTimer(timerDefaults).then(function () {
-
-                            loading.hide();
-                            sendToast(globalize.translate('sharedcomponents#SeriesRecordingScheduled'));
-                        });
-                    });
-                });
-            } else {
-                // cancel 
-                cancelTimer(apiClient, timerId, true);
-            }
-        });
-    }
-
-    function cancelTimer(apiClient, timerId, hideLoading) {
-        loading.show();
-        return apiClient.cancelLiveTvTimer(timerId).then(function () {
-
-            if (hideLoading) {
-                loading.hide();
-                sendToast(globalize.translate('sharedcomponents#RecordingCancelled'));
-            }
-        });
-    }
-
-    function createRecording(apiClient, programId) {
-
-        loading.show();
-        apiClient.getNewLiveTvTimerDefaults({ programId: programId }).then(function (item) {
-
-            apiClient.createLiveTvTimer(item).then(function () {
-
-                loading.hide();
-                sendToast(globalize.translate('sharedcomponents#RecordingScheduled'));
-            });
-        });
-    }
-
-    function sendToast(msg) {
-        require(['toast'], function (toast) {
-            toast(msg);
-        });
     }
 
     function onClick(e) {
