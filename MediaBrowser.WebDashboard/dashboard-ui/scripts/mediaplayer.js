@@ -143,9 +143,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 return true;
             }
 
-            // viblast can help us here
-            //return true;
-            return window.MediaSource;
+            return window.MediaSource != null;
         };
 
         self.changeStream = function (ticks, params) {

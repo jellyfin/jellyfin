@@ -1421,10 +1421,56 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
         }
 
+        function onTimerCreated(programId, newTimerId, itemsContainer) {
+            
+            var cells = itemsContainer.querySelectorAll('.card[data-id="' + programId + '"]');
+
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cell = cells[i];
+                var icon = cell.querySelector('.timerIndicator');
+                if (!icon) {
+                    var indicatorsElem = ensureIndicators(cell);
+                    indicatorsElem.insertAdjacentHTML('beforeend', '<i class="md-icon timerIndicator indicatorIcon">&#xE061;</i>');
+                }
+                cell.setAttribute('data-timerid', newTimerId);
+            }
+        }
+
+        function onTimerCancelled(id, itemsContainer) {
+
+            var cells = itemsContainer.querySelectorAll('.card[data-timerid="' + id + '"]');
+
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cell = cells[i];
+                var icon = cell.querySelector('.timerIndicator');
+                if (icon) {
+                    icon.parentNode.removeChild(icon);
+                }
+                cell.removeAttribute('data-timerid');
+            }
+        }
+
+        function onSeriesTimerCancelled(id, itemsContainer) {
+
+            var cells = itemsContainer.querySelectorAll('.card[data-seriestimerid="' + id + '"]');
+
+            for (var i = 0, length = cells.length; i < length; i++) {
+                var cell = cells[i];
+                var icon = cell.querySelector('.timerIndicator');
+                if (icon) {
+                    icon.parentNode.removeChild(icon);
+                }
+                cell.removeAttribute('data-seriestimerid');
+            }
+        }
+
         return {
             getCardsHtml: getCardsHtml,
             buildCards: buildCards,
             onUserDataChanged: onUserDataChanged,
-            getDefaultColorClass: getDefaultColorClass
+            getDefaultColorClass: getDefaultColorClass,
+            onTimerCreated: onTimerCreated,
+            onTimerCancelled: onTimerCancelled,
+            onSeriesTimerCancelled: onSeriesTimerCancelled
         };
     });

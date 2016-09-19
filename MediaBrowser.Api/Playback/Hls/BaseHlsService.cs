@@ -150,9 +150,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var text = reader.ReadToEnd();
 
+                    text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
+
                     var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture);
 
-                    // ffmpeg pads the reported length by a full second
                     text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
                     return text;

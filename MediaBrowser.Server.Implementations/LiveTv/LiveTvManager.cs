@@ -668,6 +668,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
+            item.ExternalSeriesId = info.SeriesId;
             item.Genres = info.Genres;
             item.IsHD = info.IsHD;
             item.IsKids = info.IsKids;
@@ -903,8 +904,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
-            var list = new List<Tuple<BaseItemDto, string, string>>();
-            list.Add(new Tuple<BaseItemDto, string, string>(dto, program.ServiceName, program.ExternalId));
+            var list = new List<Tuple<BaseItemDto, string, string, string>>();
+            list.Add(new Tuple<BaseItemDto, string, string, string>(dto, program.ServiceName, program.ExternalId, program.ExternalSeriesId));
 
             await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
 
@@ -1092,15 +1093,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return score;
         }
 
-        private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string>> programs, CancellationToken cancellationToken)
+        private async Task AddRecordingInfo(IEnumerable<Tuple<BaseItemDto, string, string, string>> programs, CancellationToken cancellationToken)
         {
             var timers = new Dictionary<string, List<TimerInfo>>();
+            var seriesTimers = new Dictionary<string, List<SeriesTimerInfo>>();
 
             foreach (var programTuple in programs)
             {
                 var program = programTuple.Item1;
                 var serviceName = programTuple.Item2;
                 var externalProgramId = programTuple.Item3;
+                string externalSeriesId = programTuple.Item4;
 
                 if (string.IsNullOrWhiteSpace(serviceName))
                 {
@@ -1123,6 +1126,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
+                var foundSeriesTimer = false;
 
                 if (timer != null)
                 {
@@ -1133,7 +1137,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     {
                         program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(serviceName, timer.SeriesTimerId)
                             .ToString("N");
+
+                        foundSeriesTimer = true;
                     }
+                }
+
+                if (foundSeriesTimer || string.IsNullOrWhiteSpace(externalSeriesId))
+                {
+                    continue;
+                }
+
+                List<SeriesTimerInfo> seriesTimerList;
+                if (!seriesTimers.TryGetValue(serviceName, out seriesTimerList))
+                {
+                    try
+                    {
+                        var tempTimers = await GetService(serviceName).GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+                        seriesTimers[serviceName] = seriesTimerList = tempTimers.ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting series timer infos", ex);
+                        seriesTimers[serviceName] = seriesTimerList = new List<SeriesTimerInfo>();
+                    }
+                }
+
+                var seriesTimer = seriesTimerList.FirstOrDefault(i => string.Equals(i.SeriesId, externalSeriesId, StringComparison.OrdinalIgnoreCase));
+
+                if (seriesTimer != null)
+                {
+                    program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(serviceName, seriesTimer.Id)
+                        .ToString("N");
                 }
             }
         }
@@ -1659,7 +1693,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> tuples, List<ItemFields> fields, User user = null)
         {
-            var recordingTuples = new List<Tuple<BaseItemDto, string, string>>();
+            var recordingTuples = new List<Tuple<BaseItemDto, string, string, string>>();
 
             foreach (var tuple in tuples)
             {
@@ -1727,7 +1761,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     dto.ServiceName = serviceName;
                 }
 
-                recordingTuples.Add(new Tuple<BaseItemDto, string, string>(dto, serviceName, program.ExternalId));
+                recordingTuples.Add(new Tuple<BaseItemDto, string, string, string>(dto, serviceName, program.ExternalId, program.ExternalSeriesId));
             }
 
             await AddRecordingInfo(recordingTuples, CancellationToken.None).ConfigureAwait(false);

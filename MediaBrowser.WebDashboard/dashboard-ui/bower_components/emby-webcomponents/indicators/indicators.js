@@ -99,10 +99,10 @@ define(['css!./indicators.css', 'material-icons'], function () {
     function getTimerIndicator(item) {
 
         if (item.SeriesTimerId) {
-            return '<i class="md-icon timerIndicator indicatorIcon">fiber_smart_record</i>';
+            return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
         }
         if (item.TimerId) {
-            return '<i class="md-icon timerIndicator indicatorIcon">fiber_manual_record</i>';
+            return '<i class="md-icon timerIndicator indicatorIcon">&#xE061;</i>';
         }
 
         return '';

@@ -986,8 +986,9 @@
 
             if (browser.msie) {
 
-                if (!window.MediaSource || !mediaSource.RunTimeTicks) {
+                if (window.MediaSource == null || mediaSource.RunTimeTicks == null) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
+                    return;
                 }
             }
 
@@ -1021,7 +1022,7 @@
                             Dashboard.hideLoadingMsg();
                             streamInfo.url = hlsPlaylistUrl;
 
-                            onReadyToPlay();
+                            setTimeout(onReadyToPlay, 0);
 
                         }, function () {
                             Dashboard.hideLoadingMsg();

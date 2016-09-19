@@ -254,6 +254,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public string ExternalSeriesId
+        {
+            get { return this.GetProviderId("ProviderExternalSeriesId"); }
+            set
+            {
+                this.SetProviderId("ProviderExternalSeriesId", value);
+            }
+        }
+
         /// <summary>
         /// Gets or sets the etag.
         /// </summary>

@@ -188,6 +188,14 @@ select {
         color: #fff;
     }
 
+.ui-body-a .secondaryText {
+    color: #ccc;
+}
+
+.ui-body-b .secondaryText {
+    color: #aaa;
+}
+
 div[data-role='page'] {
     outline: none;
 }
