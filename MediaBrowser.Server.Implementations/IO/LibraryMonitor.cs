@@ -420,7 +420,20 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 Logger.Debug("Changed detected of type " + e.ChangeType + " to " + e.FullPath);
 
-                ReportFileSystemChanged(e.FullPath);
+                var path = e.FullPath;
+
+                // For deletes, use the parent path
+                if (e.ChangeType == WatcherChangeTypes.Deleted)
+                {
+                    var parentPath = Path.GetDirectoryName(path);
+
+                    if (!string.IsNullOrWhiteSpace(parentPath))
+                    {
+                        path = parentPath;
+                    }
+                }
+
+                ReportFileSystemChanged(path);
             }
             catch (Exception ex)
             {
