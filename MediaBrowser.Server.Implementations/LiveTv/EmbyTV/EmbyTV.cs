@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
@@ -1026,6 +1027,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     result.Item3.Release();
                     isResourceOpen = false;
+
+                    SaveNfo(timer, recordPath, seriesPath);
                 };
 
                 var pathWithDuration = result.Item2.ApplyDuration(mediaStreamInfo.Path, duration);
@@ -1071,7 +1074,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 timer.Status = RecordingStatus.Completed;
                 _timerProvider.Delete(timer);
 
-                OnSuccessfulRecording(timer, recordPath, seriesPath);
+                OnSuccessfulRecording(timer, recordPath);
             }
             else if (DateTime.UtcNow < timer.EndDate)
             {
@@ -1139,7 +1142,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return new DirectRecorder(_logger, _httpClient, _fileSystem);
         }
 
-        private async void OnSuccessfulRecording(TimerInfo timer, string path, string seriesPath)
+        private async void OnSuccessfulRecording(TimerInfo timer, string path)
         {
             if (timer.IsProgramSeries && GetConfiguration().EnableAutoOrganize)
             {
@@ -1163,15 +1166,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     _logger.ErrorException("Error processing new recording", ex);
                 }
             }
-
-            SaveNfo(timer, path, seriesPath);
         }
 
         private void SaveNfo(TimerInfo timer, string recordingPath, string seriesPath)
         {
-            if (timer.IsProgramSeries)
+            try
             {
-                SaveSeriesNfo(timer, recordingPath, seriesPath);
+                if (timer.IsProgramSeries)
+                {
+                    SaveSeriesNfo(timer, recordingPath, seriesPath);
+                }
+                else if (!timer.IsMovie || timer.IsSports)
+                {
+                    SaveVideoNfo(timer, recordingPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error saving nfo", ex);
             }
         }
 
@@ -1201,6 +1213,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     if (!string.IsNullOrWhiteSpace(timer.Name))
                     {
                         writer.WriteElementString("title", timer.Name);
+                    }
+
+                    writer.WriteEndElement();
+                    writer.WriteEndDocument();
+                }
+            }
+        }
+
+        public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
+        private void SaveVideoNfo(TimerInfo timer, string recordingPath)
+        {
+            var nfoPath = Path.ChangeExtension(recordingPath, ".nfo");
+
+            if (File.Exists(nfoPath))
+            {
+                return;
+            }
+
+            using (var stream = _fileSystem.GetFileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            {
+                var settings = new XmlWriterSettings
+                {
+                    Indent = true,
+                    Encoding = Encoding.UTF8,
+                    CloseOutput = false
+                };
+
+                using (XmlWriter writer = XmlWriter.Create(stream, settings))
+                {
+                    writer.WriteStartDocument(true);
+                    writer.WriteStartElement("movie");
+
+                    if (!string.IsNullOrWhiteSpace(timer.Name))
+                    {
+                        writer.WriteElementString("title", timer.Name);
+                    }
+
+                    writer.WriteElementString("dateadded", DateTime.UtcNow.ToLocalTime().ToString(DateAddedFormat));
+
+                    if (timer.ProductionYear.HasValue)
+                    {
+                        writer.WriteElementString("year", timer.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
+                    }
+                    if (!string.IsNullOrEmpty(timer.OfficialRating))
+                    {
+                        writer.WriteElementString("mpaa", timer.OfficialRating);
+                    }
+
+                    var overview = (timer.Overview ?? string.Empty)
+                        .StripHtml()
+                        .Replace("&quot;", "'");
+
+                    writer.WriteElementString("plot", overview);
+                    writer.WriteElementString("lockdata", true.ToString().ToLower());
+
+                    if (timer.CommunityRating.HasValue)
+                    {
+                        writer.WriteElementString("rating", timer.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    foreach (var genre in timer.Genres)
+                    {
+                        writer.WriteElementString("genre", genre);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(timer.ShortOverview))
+                    {
+                        writer.WriteElementString("outline", timer.ShortOverview);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(timer.HomePageUrl))
+                    {
+                        writer.WriteElementString("website", timer.HomePageUrl);
                     }
 
                     writer.WriteEndElement();

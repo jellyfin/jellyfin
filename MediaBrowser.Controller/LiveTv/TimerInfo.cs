@@ -1,10 +1,16 @@
 ﻿using MediaBrowser.Model.LiveTv;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
 {
     public class TimerInfo
     {
+        public TimerInfo()
+        {
+            Genres = new List<string>();
+        }
+
         /// <summary>
         /// Id of the recording.
         /// </summary>
@@ -15,7 +21,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
-        
+
         /// <summary>
         /// ChannelId of the recording.
         /// </summary>
@@ -26,7 +32,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The program identifier.</value>
         public string ProgramId { get; set; }
-        
+
         /// <summary>
         /// Name of the recording.
         /// </summary>
@@ -76,7 +82,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
         public bool IsPostPaddingRequired { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the priority.
         /// </summary>
@@ -98,5 +104,10 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
         public DateTime? OriginalAirDate { get; set; }
         public bool IsProgramSeries { get; set; }
+        public string HomePageUrl { get; set; }
+        public float? CommunityRating { get; set; }
+        public string ShortOverview { get; set; }
+        public string OfficialRating { get; set; }
+        public List<string> Genres { get; set; }
     }
 }
