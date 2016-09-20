@@ -46,6 +46,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             timerInfo.EpisodeTitle = programInfo.EpisodeTitle;
             timerInfo.OriginalAirDate = programInfo.OriginalAirDate;
             timerInfo.IsProgramSeries = programInfo.IsSeries;
+
+            timerInfo.HomePageUrl = programInfo.HomePageUrl;
+            timerInfo.CommunityRating = programInfo.CommunityRating;
+            timerInfo.ShortOverview = programInfo.ShortOverview;
+            timerInfo.OfficialRating = programInfo.OfficialRating;
         }
 
         public static string GetRecordingName(TimerInfo info)
