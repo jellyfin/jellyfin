@@ -171,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                                 var data = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
                                 data = data.OrderByDescending(GetSizeOrder).ToList();
 
-                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true, 1280);
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true, 800);
                                 //programEntry.thumbImage = GetProgramImage(ApiUrl, data, "Iconic", false);
                                 //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                                 //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -536,7 +536,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 }
 
                 return false;
-            }) ?? matches.FirstOrDefault();
+            });
+
+            if (match == null)
+            {
+                // Get the second lowest quality image, when possible
+                if (matches.Count > 1)
+                {
+                    match = matches[matches.Count - 2];
+                }
+                else
+                {
+                    match = matches.FirstOrDefault();
+                }
+            }
 
             if (match == null)
             {

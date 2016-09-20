@@ -34,7 +34,7 @@
 
         var labelTextElement = labelElement.querySelector('span');
 
-        labelElement.insertAdjacentHTML('beforeend', '<div class="mdl-switch__track"></div><div class="mdl-switch__thumb"><span class="mdl-switch__focus-helper"></span></div>');
+        labelElement.insertAdjacentHTML('beforeend', '<div class="mdl-switch__trackContainer"><div class="mdl-switch__track"></div><div class="mdl-switch__thumb"><span class="mdl-switch__focus-helper"></span></div></div>');
 
         labelTextElement.classList.add('toggleButtonLabel');
         labelTextElement.classList.add('mdl-switch__label');

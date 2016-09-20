@@ -117,6 +117,10 @@
         addBackdropOverlay(dlg);
 
         dlg.classList.add('opened');
+        dlg.dispatchEvent(new CustomEvent('open', {
+            bubbles: false,
+            cancelable: false
+        }));
 
         if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');

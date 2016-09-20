@@ -269,19 +269,20 @@ define(['browser'], function (browser) {
         }
 
         var mp3Added = false;
-        if ((canPlayMkv && options.enableMkvProgressive !== false) || (canPlayTs && options.enableMkvProgressive !== false)) {
+        if (canPlayMkv || canPlayTs) {
             if (supportsMp3VideoAudio) {
                 mp3Added = true;
                 videoAudioCodecs.push('mp3');
-                hlsVideoAudioCodecs.push('mp3');
             }
         }
         if (videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.2"').replace(/no/, '')) {
             videoAudioCodecs.push('aac');
             hlsVideoAudioCodecs.push('aac');
         }
-        if (!mp3Added && supportsMp3VideoAudio) {
-            videoAudioCodecs.push('mp3');
+        if (supportsMp3VideoAudio) {
+            if (!mp3Added) {
+                videoAudioCodecs.push('mp3');
+            }
             hlsVideoAudioCodecs.push('mp3');
         }
 

@@ -40,15 +40,17 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.SeriesTimerId) {
-            miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
-            });
-        }
-        else if (item.TimerId) {
-            miscInfo.push({
-                html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE061;</i>'
-            });
+        if (options.timerIndicator !== false) {
+            if (item.SeriesTimerId) {
+                miscInfo.push({
+                    html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
+                });
+            }
+            else if (item.TimerId) {
+                miscInfo.push({
+                    html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE061;</i>'
+                });
+            }
         }
 
         html += miscInfo.map(function (m) {

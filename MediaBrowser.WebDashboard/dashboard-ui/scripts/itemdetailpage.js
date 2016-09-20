@@ -172,25 +172,7 @@
                 hideAll(page, 'syncLocalContainer');
             }
 
-            if (item.Type == 'Program' && item.TimerId) {
-                hideAll(page, 'btnCancelRecording', true);
-            } else {
-                hideAll(page, 'btnCancelRecording');
-            }
-
-            if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
-
-                if (canPlay) {
-                    hideAll(page, 'btnRecord', true);
-                    hideAll(page, 'btnFloatingRecord');
-                } else {
-                    hideAll(page, 'btnRecord');
-                    hideAll(page, 'btnFloatingRecord', true);
-                }
-            } else {
-                hideAll(page, 'btnRecord');
-                hideAll(page, 'btnFloatingRecord');
-            }
+            showRecordingFields(page, item, user);
 
             var btnPlayExternalTrailer = page.querySelectorAll('.btnPlayExternalTrailer');
             for (var i = 0, length = btnPlayExternalTrailer.length; i < length; i++) {
@@ -312,6 +294,31 @@
         }));
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function showRecordingFields(page, item, user) {
+
+        var recordingFieldsElement = page.querySelector('.recordingFields');
+
+        if (item.Type == 'Program' && user.Policy.EnableLiveTvManagement) {
+
+            if (recordingFieldsElement.innerHTML) {
+                //return;
+            }
+
+            require(['recordingFields'], function (recordingFields) {
+
+                var currentRecordingFields = new recordingFields({
+                    parent: recordingFieldsElement,
+                    programId: item.Id,
+                    serverId: item.ServerId
+                });
+                recordingFieldsElement.classList.remove('hide');
+            });
+        } else {
+            recordingFieldsElement.classList.add('hide');
+            recordingFieldsElement.innerHTML = '';
+        }
     }
 
     function renderLinks(linksElem, item) {
@@ -1637,10 +1644,13 @@
             });
         });
 
-        if (limitExceeded) {
-            page.querySelector('.moreScenes').classList.remove('hide');
-        } else {
-            page.querySelector('.moreScenes').classList.add('hide');
+        var moreScenesButton = page.querySelector('.moreScenes');
+        if (moreScenesButton) {
+            if (limitExceeded) {
+                moreScenesButton.classList.remove('hide');
+            } else {
+                moreScenesButton.classList.add('hide');
+            }
         }
     }
 
@@ -1865,10 +1875,13 @@
             });
         });
 
-        if (limitExceeded && !enableScrollX()) {
-            page.querySelector('.morePeople').classList.remove('hide');
-        } else {
-            page.querySelector('.morePeople').classList.add('hide');
+        var morePeopleButton = page.querySelector('.morePeople');
+        if (morePeopleButton) {
+            if (limitExceeded && !enableScrollX()) {
+                morePeopleButton.classList.remove('hide');
+            } else {
+                morePeopleButton.classList.add('hide');
+            }
         }
     }
 
@@ -2073,16 +2086,6 @@
         elems = view.querySelectorAll('.chkOffline');
         for (i = 0, length = elems.length; i < length; i++) {
             elems[i].addEventListener('change', onSyncLocalClick);
-        }
-
-        elems = view.querySelectorAll('.btnRecord,.btnFloatingRecord');
-        for (i = 0, length = elems.length; i < length; i++) {
-            elems[i].addEventListener('click', onRecordClick);
-        }
-
-        elems = view.querySelectorAll('.btnCancelRecording');
-        for (i = 0, length = elems.length; i < length; i++) {
-            elems[i].addEventListener('click', onCancelRecordingClick);
         }
 
         elems = view.querySelectorAll('.btnMoreCommands');

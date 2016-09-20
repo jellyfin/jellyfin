@@ -393,6 +393,20 @@ namespace MediaBrowser.MediaEncoding.Probing
             };
         }
 
+        private string NormalizeSubtitleCodec(string codec)
+        {
+            if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                codec = "PGSSUB";
+            }
+            else if ((codec ?? string.Empty).IndexOf("DVD", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                codec = "DVDSUB";
+            }
+
+            return codec;
+        }
+
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
         /// </summary>
@@ -474,6 +488,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             else if (string.Equals(streamInfo.codec_type, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
                 stream.Type = MediaStreamType.Subtitle;
+                stream.Codec = NormalizeSubtitleCodec(stream.Codec);
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {

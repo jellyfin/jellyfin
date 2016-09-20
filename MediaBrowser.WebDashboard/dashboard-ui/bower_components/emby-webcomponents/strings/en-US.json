@@ -286,5 +286,16 @@
   "HeaderCancelRecording": "Cancel Recording",
   "HeaderKeepRecording": "Keep Recording",
   "HeaderLearnMore": "Learn More",
-  "DeleteMedia": "Delete media"
+  "DeleteMedia": "Delete media",
+  "SeriesSettings": "Series settings",
+  "HeaderRecordingOptions": "Recording Options",
+  "CancelSeries": "Cancel series",
+  "DoNotRecord": "Do not record",
+  "HeaderSeriesOptions": "Series Options",
+  "LabelChannels": "Channels:",
+  "ChannelNameOnly": "Channel {0} only",
+  "Anytime": "Anytime",
+  "AroundTime": "Around {0}",
+  "LabelAirtime": "Airtime:",
+  "AllChannels": "All channels"
 }

@@ -1457,8 +1457,7 @@
   "HeaderPlaybackError": "Playback Error",
   "MessagePlaybackErrorNotAllowed": "You're currently not authorized to play this content. Please contact your system administrator for details.",
   "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
-  "MessagePlaybackErrorRateLimitExceeded": "Your playback rate limit has been exceeded. Please contact your system administrator for details.",
-  "MessagePlaybackErrorPlaceHolder": "The content chosen is not playable from this device.",
+  "MessagePlaybackErrorPlaceHolder": "Please insert the disc in order to play this video.",
   "HeaderSelectAudio": "Select Audio",
   "HeaderSelectSubtitles": "Select Subtitles",
   "ButtonMarkForRemoval": "Remove from device",
@@ -2137,5 +2136,5 @@
   "HeaderForKids": "For Kids",
   "HeaderRecordingGroups": "Recording Groups",
   "LabelConvertRecordingsTo": "Convert recordings to:",
-  "HeaderUpcomingOnTV":  "Upcoming On TV"
+  "HeaderUpcomingOnTV": "Upcoming On TV"
 }

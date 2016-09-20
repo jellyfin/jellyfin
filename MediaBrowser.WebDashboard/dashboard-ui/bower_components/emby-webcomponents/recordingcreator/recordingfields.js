@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'recordingHelper', 'emby-toggle'], function (globalize, connectionManager, require, loading, appHost, recordingHelper) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'recordingHelper', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, recordingHelper) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -91,13 +91,10 @@
     function loadData(parent, program, apiClient) {
 
         if (program.IsSeries) {
-            parent.querySelector('.chkRecordSeriesContainer').classList.remove('hide');
+            parent.querySelector('.recordSeriesContainer').classList.remove('hide');
         } else {
-            parent.querySelector('.chkRecordSeriesContainer').classList.add('hide');
+            parent.querySelector('.recordSeriesContainer').classList.add('hide');
         }
-
-        parent.querySelector('.chkRecord').checked = program.TimerId != null;
-        parent.querySelector('.chkRecordSeries').checked = program.SeriesTimerId != null;
 
         if (program.SeriesTimerId != null) {
             showSeriesRecordingFields(parent, program.Id, apiClient);
@@ -105,13 +102,25 @@
             showSingleRecordingFields(parent, program.Id, apiClient);
         }
 
-        //var seriesTimerPromise = program.SeriesTimerId ?
-        //    apiClient.getLiveTvSeriesTimer(program.SeriesTimerId) :
-        //    apiClient.getLiveTvProgram(program.Id, apiClient.getCurrentUserId());
+        if (program.SeriesTimerId) {
+            parent.querySelector('.btnManageSeriesRecording').classList.remove('visibilityHide');
+            parent.querySelector('.seriesRecordingButton .recordingIcon').classList.add('recordingIcon-active');
+            parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#CancelSeries');
+        } else {
+            parent.querySelector('.btnManageSeriesRecording').classList.add('visibilityHide');
+            parent.querySelector('.seriesRecordingButton .recordingIcon').classList.remove('recordingIcon-active');
+            parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#RecordSeries');
+        }
 
-        //seriesTimerPromise.then(function (seriesTimer) {
-
-        //});
+        if (program.TimerId) {
+            parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
+            parent.querySelector('.singleRecordingButton .recordingIcon').classList.add('recordingIcon-active');
+            parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#DoNotRecord');
+        } else {
+            parent.querySelector('.btnManageRecording').classList.add('visibilityHide');
+            parent.querySelector('.singleRecordingButton .recordingIcon').classList.remove('recordingIcon-active');
+            parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#Record');
+        }
     }
 
     function fetchData(instance) {
@@ -143,6 +152,50 @@
         }
     }
 
+    function onManageRecordingClick(e) {
+
+        var options = this.options;
+
+        if (!this.TimerId) {
+            return;
+        }
+
+        var self = this;
+
+        require(['recordingEditor'], function (recordingEditor) {
+
+            recordingEditor.show(self.TimerId, options.serverId, {
+
+                enableCancel: false
+
+            }).then(function () {
+                self.changed = true;
+            });
+        });
+    }
+
+    function onManageSeriesRecordingClick(e) {
+
+        var options = this.options;
+
+        if (!this.SeriesTimerId) {
+            return;
+        }
+
+        var self = this;
+
+        require(['seriesRecordingEditor'], function (seriesRecordingEditor) {
+
+            seriesRecordingEditor.show(self.SeriesTimerId, options.serverId, {
+
+                enableCancel: false
+
+            }).then(function () {
+                self.changed = true;
+            });
+        });
+    }
+
     function onRecordChange(e) {
 
         this.changed = true;
@@ -151,9 +204,9 @@
         var options = this.options;
         var apiClient = connectionManager.getApiClient(options.serverId);
 
-        var isChecked = e.target.checked;
+        var isChecked = !e.target.querySelector('i').classList.contains('recordingIcon-active');
 
-        if (e.target.checked) {
+        if (isChecked) {
             if (!this.TimerId && !this.SeriesTimerId) {
                 recordingHelper.createRecording(apiClient, options.programId, false).then(function () {
                     fetchData(self);
@@ -176,9 +229,9 @@
         var options = this.options;
         var apiClient = connectionManager.getApiClient(options.serverId);
 
-        var isChecked = e.target.checked;
+        var isChecked = !e.target.querySelector('i').classList.contains('recordingIcon-active');
 
-        if (e.target.checked) {
+        if (isChecked) {
             showSeriesRecordingFields(options.parent, options.programId, apiClient);
 
             if (!this.SeriesTimerId) {
@@ -225,8 +278,10 @@
                     supporterButtons[i].addEventListener('click', onSupporterButtonClick);
                 }
 
-                context.querySelector('.chkRecord').addEventListener('change', onRecordChange.bind(self));
-                context.querySelector('.chkRecordSeries').addEventListener('change', onRecordSeriesChange.bind(self));
+                context.querySelector('.singleRecordingButton').addEventListener('click', onRecordChange.bind(self));
+                context.querySelector('.seriesRecordingButton').addEventListener('click', onRecordSeriesChange.bind(self));
+                context.querySelector('.btnManageRecording').addEventListener('click', onManageRecordingClick.bind(self));
+                context.querySelector('.btnManageSeriesRecording').addEventListener('click', onManageSeriesRecordingClick.bind(self));
 
                 fetchData(self).then(resolve);
             });
