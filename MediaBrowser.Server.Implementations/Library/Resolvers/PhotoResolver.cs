@@ -89,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            if (IgnoreFiles.Any(i => filename.IndexOf("-" + i, StringComparison.OrdinalIgnoreCase) != -1))
+            if (IgnoreFiles.Any(i => filename.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1))
             {
                 return false;
             }
