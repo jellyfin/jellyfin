@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
+using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -136,9 +137,10 @@ namespace MediaBrowser.Server.Implementations.IO
         private async Task ProcessPathChanges(List<string> paths)
         {
             var itemsToRefresh = paths
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
                 .Where(item => item != null)
-                .Distinct()
+                .DistinctBy(i => i.Id)
                 .ToList();
 
             foreach (var p in paths)
