@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'scrollStyles', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'datetime', 'scrollStyles', 'emby-button', 'emby-collapse', 'emby-input', 'emby-select', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader, datetime) {
 
     var currentDialog;
     var recordingUpdated = false;
@@ -24,7 +24,7 @@
 
                     loading.show();
 
-                    apiClient.cancelLiveTvTimer(timerId).then(function () {
+                    apiClient.cancelLiveSeriesTvTimer(timerId).then(function () {
 
                         require(['toast'], function (toast) {
                             toast(globalize.translate('sharedcomponents#RecordingCancelled'));
@@ -45,6 +45,17 @@
         context.querySelector('#txtPrePaddingMinutes').value = item.PrePaddingSeconds / 60;
         context.querySelector('#txtPostPaddingMinutes').value = item.PostPaddingSeconds / 60;
 
+        context.querySelector('.selectChannels').value = item.RecordAnyChannel ? 'all' : 'one';
+        context.querySelector('.selectAirTime').value = item.RecordAnyTime ? 'any' : 'original';
+
+        if (item.ChannelName || item.ChannelNumber) {
+            context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#ChannelNameOnly', item.ChannelName || item.ChannelNumber);
+        } else {
+            context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#AllChannels');
+        }
+
+        context.querySelector('.optionAroundTime').innerHTML = globalize.translate('sharedcomponents#AroundTime', datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate)));
+
         loading.hide();
     }
 
@@ -62,11 +73,14 @@
 
         var apiClient = connectionManager.getApiClient(currentServerId);
 
-        apiClient.getLiveTvTimer(currentItemId).then(function (item) {
+        apiClient.getLiveTvSeriesTimer(currentItemId).then(function (item) {
 
             item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-            apiClient.updateLiveTvTimer(item);
+            item.RecordAnyChannel = form.querySelector('.selectChannels').value == 'all';
+            item.RecordAnyTime = form.querySelector('.selectAirTime').value == 'any';
+
+            apiClient.updateLiveTvSeriesTimer(item);
         });
 
         e.preventDefault();
@@ -99,7 +113,7 @@
         currentItemId = id;
 
         var apiClient = connectionManager.getApiClient(currentServerId);
-        apiClient.getLiveTvTimer(id).then(function (result) {
+        apiClient.getLiveTvSeriesTimer(id).then(function (result) {
 
             renderTimer(context, result, apiClient);
             loading.hide();
@@ -116,7 +130,7 @@
             loading.show();
             options = options || {};
 
-            require(['text!./recordingeditor.template.html'], function (template) {
+            require(['text!./seriesrecordingeditor.template.html'], function (template) {
 
                 var dialogOptions = {
                     removeOnClose: true,
@@ -126,7 +140,7 @@
                 if (layoutManager.tv) {
                     dialogOptions.size = 'fullscreen';
                 } else {
-                    dialogOptions.size = 'mini';
+                    dialogOptions.size = 'small';
                 }
 
                 var dlg = dialogHelper.createDialog(dialogOptions);
