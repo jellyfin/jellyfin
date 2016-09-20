@@ -1,9 +1,11 @@
 {
-    "PromoConvertRecordingsToStreamingFormat": "Automatically convert recordings to a streaming friendly format with Emby Premiere. Recordings will be converted on the fly to MP4 or MKV, based on Emby server settings.",
-    "HeaderConvertYourRecordings": "Convert Your Recordings",
-    "HeaderLearnMore": "Learn More",
-    "HeaderKeepRecording": "Keep Recording",
-    "DeleteMedia": "Delete media",
+    "PromoConvertRecordingsToStreamingFormat": "Convertir autom\u00e1ticamente grabaciones a un formato amigable para transmitir con Emby Premiere. Las grabaciones ser\u00e1n convertidos en tiempo real a MP4 o MKV, basado en las configuraciones del servidor Emby.",
+    "HeaderConvertYourRecordings": "Convertir Sus Grabaciones",
+    "HeaderLearnMore": "Aprenda m\u00e1s",
+    "HeaderKeepRecording": "Conservar Grabaciones",
+    "DeleteMedia": "Eliminar medios",
+    "SeriesSettings": "Series settings",
+    "HeaderRecordingOptions": "Recording Options",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartir",
     "Add": "Agregar",
@@ -52,7 +54,7 @@
     "HeaderBecomeProjectSupporter": "Obtener Emby Premier",
     "MessageActiveSubscriptionRequiredSeriesRecordings": "Se requiere de una suscripci\u00f3n de Emby Premier para crear grabaciones automatizadas de series.",
     "OptionConvertRecordingsToStreamingFormat": "Convertir autom\u00e1ticamente las grabaciones a un formato amigable para transmisi\u00f3n",
-    "OptionConvertRecordingsToStreamingFormatHelp": "Las grabaciones ser\u00e1n convertidas en tiempo real a MP4 para una f\u00e1cil reproducci\u00f3n en sus dispositivos.",
+    "OptionConvertRecordingsToStreamingFormatHelp": "Las grabaciones ser\u00e1n convertidas en tiempo real a MP4 o MKV para una f\u00e1cil reproducci\u00f3n en sus dispositivos, basado en las configuraciones del servidor Emby.",
     "FeatureRequiresEmbyPremiere": "Esta caracter\u00edstica requiere de una suscripci\u00f3n activa de Emby Premiere.",
     "Record": "Grabar",
     "Save": "Guardar",
@@ -288,6 +290,6 @@
     "LiveBroadcasts": "Transmisiones en vivo",
     "Premieres": "Estrenos",
     "RepeatEpisodes": "Repetir episodios",
-    "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription.",
-    "HeaderCancelRecording": "Cancel Recording"
+    "DvrSubscriptionRequired": "Emby DVR necesita una suscripci\u00f3n activa de Emby Premiere.",
+    "HeaderCancelRecording": "Cancelar Grabaci\u00f3n"
 }

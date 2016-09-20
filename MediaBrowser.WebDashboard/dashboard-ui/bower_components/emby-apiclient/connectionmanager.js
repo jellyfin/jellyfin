@@ -448,12 +448,9 @@
             }
 
             if (options.enableWebSocket !== false) {
-                if (!apiClient.isWebSocketOpenOrConnecting() && apiClient.isWebSocketSupported()) {
+                console.log('calling apiClient.ensureWebSocket');
 
-                    console.log('calling apiClient.openWebSocket');
-
-                    apiClient.openWebSocket();
-                }
+                apiClient.ensureWebSocket();
             }
         }
 

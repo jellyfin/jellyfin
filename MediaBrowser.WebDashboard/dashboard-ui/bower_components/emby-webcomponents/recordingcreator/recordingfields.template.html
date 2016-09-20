@@ -1,4 +1,41 @@
-﻿<div class="convertRecordingsContainer hide" style="text-align: center; padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
+﻿<style>
+    .recordingToggleContainer {
+        width: 10em;
+    }
+
+    .visibilityHide {
+        visibility: hidden;
+    }
+
+    .manageRecordingButton {
+        font-size: 90%;
+        background-color: #333;
+        color: #ccc;
+        border-radius: 20px;
+        padding: .45em 1em;
+    }
+
+    @media all and (max-width: 440px) {
+
+        .manageButtonText {
+            display: none !important;
+        }
+
+        .recordingToggleContainer {
+            width: auto;
+            margin-right: 1.5em !important;
+        }
+    }
+
+    @media all and (min-width: 440px) {
+
+        .manageButtonIcon {
+            font-size: 90% !important;
+        }
+    }
+</style>
+
+<div class="convertRecordingsContainer hide" style="text-align: center; padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
     <h1 style="margin: .25em 0 .5em;">${HeaderConvertYourRecordings}</h1>
     <div class="fieldDescription">${PromoConvertRecordingsToStreamingFormat}</div>
     <br />
@@ -15,13 +52,20 @@
 </div>
 <div class="recordingFields hide">
 
-    <label class="toggleContainer chkRecordSeriesContainer hide" style="margin-bottom: 1em;">
-        <input type="checkbox" is="emby-toggle" class="chkRecordSeries red" />
-        <span>${RecordSeries}</span>
-    </label>
+   <div class="chkRecordSeriesContainer hide" style="display: flex; align-items: center;margin-bottom:1em;">
+        <label class="toggleContainer recordingToggleContainer" style="margin:0 .5em 0 0;">
+            <input type="checkbox" is="emby-toggle" class="chkRecordSeries red" />
+            <span>${RecordSeries}</span>
+        </label>
+        <button is="emby-button" type="button" class="raised manageRecordingButton btnManageSeriesRecording visibilityHide" style="font-size: 90%;"><i class="md-icon manageButtonIcon">settings</i><span class="manageButtonText">${SeriesSettings}</span></button>
+    </div>
 
-    <label class="toggleContainer">
-        <input type="checkbox" is="emby-toggle" class="chkRecord red" />
-        <span>${Record}</span>
-    </label>
+    <div style="display: flex; align-items: center;">
+        <label class="toggleContainer recordingToggleContainer" style="margin:0 .5em 0 0;">
+            <input type="checkbox" is="emby-toggle" class="chkRecord red" />
+            <span>${Record}</span>
+        </label>
+        <button is="emby-button" type="button" class="raised manageRecordingButton btnManageRecording visibilityHide" style="font-size: 90%;"><i class="md-icon manageButtonIcon">settings</i><span class="manageButtonText">${Settings}</span></button>
+    </div>
+    <br />
 </div>

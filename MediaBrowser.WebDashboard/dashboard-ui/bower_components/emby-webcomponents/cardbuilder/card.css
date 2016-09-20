@@ -85,7 +85,7 @@
 @media all and (min-width: 600px) {
 
     .cardBox-mobile {
-        margin: 3px;
+        margin: 2px;
     }
 }
 
@@ -147,7 +147,7 @@
 
     .cardImageContainer {
         /* Should be 0 with visualCardBox, but not really noticeable */
-        border-radius: 2px;
+        border-radius: 1px;
     }
 }
 

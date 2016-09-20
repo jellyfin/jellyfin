@@ -9,64 +9,22 @@
             <div class="recordingDialog-imageContainer">
 
             </div>
-            <div style="flex-grow:1;">
+            <div style="flex-grow: 1;">
                 <h1 class="programDialog-itemName recordingDialog-itemName dialogContentTitle"></h1>
                 <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-                <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-                <p class="itemGenres"></p>
+                <p class="itemMiscInfoSecondary secondaryText" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
+                <p class="itemGenres secondaryText"></p>
+
+                <div style="margin:.5em 0 0;" class="recordingFields">
+                </div>
             </div>
         </div>
 
         <p class="itemOverview"></p>
-
-        <div id="eligibleForSeriesFields" class="hide">
-            <br />
-            <label>
-                <input type="checkbox" is="emby-checkbox" id="chkRecordSeries" />
-                <span>${RecordSeries}</span>
-            </label>
-
-            <div class="seriesFields hide">
-                <div class="checkboxList">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkNewOnly" />
-                        <span>${RecordOnlyNewEpisodes}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkAnyTime" />
-                        <span>${RecordAnytime}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkAllChannels" />
-                        <span>${RecordOnAllChannels}</span>
-                    </label>
-                </div>
-                <br />
-            </div>
-        </div>
         <br />
-        <div class="convertRecordingsContainer hide" style="text-align: center; padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
-            <h1 style="margin: .25em 0 .5em;">${HeaderConvertYourRecordings}</h1>
-            <div class="fieldDescription">${PromoConvertRecordingsToStreamingFormat}</div>
-            <br/>
-            <button is="emby-button" type="button" class="raised btnSupporterForConverting button-submit">
-                <span>${HeaderLearnMore}</span>
-            </button>
-        </div>
-        <br />
-        <div class="formDialogFooter">
-            <div class="supporterContainer hide formDialogFooterItem">
-                <div class="supporterContainerText"></div>
-                <br />
-                <button is="emby-button" type="button" class="btnSupporter hide raised button-submit block">
-                    <span>${HeaderBecomeProjectSupporter}</span>
-                </button>
-            </div>
-            <button is="emby-button" type="button" class="raised btnPlay btnPlay-notplayable hide block formDialogFooterItem button-submit">
+        <div class="formDialogFooter hide">
+            <button is="emby-button" type="button" class="raised btnPlay block formDialogFooterItem button-submit">
                 <span>${Play}</span>
-            </button>
-            <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit recordingDialog-btnRecord">
-                <span>${Record}</span>
             </button>
         </div>
     </form>

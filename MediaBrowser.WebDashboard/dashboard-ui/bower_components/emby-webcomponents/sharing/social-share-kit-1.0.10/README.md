@@ -33,4 +33,4 @@ IE8+, Chrome, Firefox, Safari. JavaScript library is standalone and has no 3rd p
 
 * If contributed changes affects documentation/examples page `docs/index.html`, you should add according changes to it too.
 
-* If you are changing JavaScript `dist/js/social-share-kit.js` compression of the file into  `dist/js/social-share-kit.min.js` is welcomed (with [yuicompressor](http://yui.github.io/yuicompressor/)), but not neccessary. 
+* If you are changing JavaScript `dist/js/social-share-kit.js` compression of the file into  `dist/js/social-share-kit.min.js` is welcomed (with npm [uglify-js](https://www.npmjs.com/package/uglify-js) - `uglifyjs --compress --mangle --comments -- dist/js/social-share-kit.js > dist/js/social-share-kit.min.js`), but not neccessary.

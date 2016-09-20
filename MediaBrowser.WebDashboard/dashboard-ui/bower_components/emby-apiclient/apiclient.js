@@ -535,7 +535,11 @@
                 return;
             }
 
-            self.openWebSocket();
+            try {
+                self.openWebSocket();
+            } catch (err) {
+                console.log("Error opening web socket: " + err);
+            }
         };
 
         function replaceAll(originalString, strReplace, strWith) {

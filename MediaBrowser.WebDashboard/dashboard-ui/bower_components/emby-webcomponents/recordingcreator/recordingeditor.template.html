@@ -1,29 +1,12 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
     <h3 class="formDialogHeaderTitle">
-        ${Edit}
+        ${HeaderRecordingOptions}
     </h3>
 </div>
 
 <div class="formDialogContent smoothScrollY">
     <div class="dialogContentInner dialog-content-centered">
-
-        <div style="display: flex;">
-            <div class="recordingDialog-imageContainer">
-
-            </div>
-            <div style="flex-grow:1;">
-                <h1 class="recordingDialog-itemName dialogContentTitle"></h1>
-                <p class="itemMiscInfoPrimary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-                <p class="itemMiscInfoSecondary" style="display: flex; align-items: center; flex-wrap: wrap;"></p>
-            </div>
-        </div>
-
-        <p class="itemGenres"></p>
-        <p class="itemOverview"></p>
-
-        <p style="margin-top: 2em;" class="timerStatus hide">
-        </p>
 
         <form>
             <br />
@@ -36,10 +19,10 @@
             <br />
 
             <div class="formDialogFooter">
-                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit" autofocus>
+                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit hide">
                     <span>${Save}</span>
                 </button>
-                <button is="emby-button" type="button" class="raised btnCancelRecording block formDialogFooterItem button-cancel" style="white-space:nowrap;" autofocus>
+                <button is="emby-button" type="button" class="raised btnCancelRecording block formDialogFooterItem button-cancel" style="white-space:nowrap;">
                     <span>${HeaderCancelRecording}</span>
                 </button>
             </div>

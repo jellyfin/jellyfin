@@ -286,5 +286,7 @@
   "HeaderCancelRecording": "Cancel Recording",
   "HeaderKeepRecording": "Keep Recording",
   "HeaderLearnMore": "Learn More",
-  "DeleteMedia": "Delete media"
+  "DeleteMedia": "Delete media",
+  "SeriesSettings": "Series settings",
+  "HeaderRecordingOptions": "Recording Options"
 }

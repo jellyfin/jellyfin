@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'recordingHelper', 'emby-toggle'], function (globalize, connectionManager, require, loading, appHost, recordingHelper) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'recordingHelper', 'emby-toggle', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, recordingHelper) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -105,6 +105,18 @@
             showSingleRecordingFields(parent, program.Id, apiClient);
         }
 
+        if (program.SeriesTimerId) {
+            parent.querySelector('.btnManageSeriesRecording').classList.remove('visibilityHide');
+        } else {
+            parent.querySelector('.btnManageSeriesRecording').classList.add('visibilityHide');
+        }
+
+        if (program.TimerId) {
+            parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
+        } else {
+            parent.querySelector('.btnManageRecording').classList.add('visibilityHide');
+        }
+
         //var seriesTimerPromise = program.SeriesTimerId ?
         //    apiClient.getLiveTvSeriesTimer(program.SeriesTimerId) :
         //    apiClient.getLiveTvProgram(program.Id, apiClient.getCurrentUserId());
@@ -141,6 +153,28 @@
         } else {
 
         }
+    }
+
+    function onManageRecordingClick(e) {
+        
+        var options = this.options;
+
+        if (!this.TimerId) {
+            return;
+        }
+
+        var self = this;
+
+        require(['recordingEditor'], function (recordingEditor) {
+
+            recordingEditor.show(self.TimerId, options.serverId, {
+                
+                enableCancel: false
+
+            }).then(function () {
+                self.changed = true;
+            });
+        });
     }
 
     function onRecordChange(e) {
@@ -227,6 +261,7 @@
 
                 context.querySelector('.chkRecord').addEventListener('change', onRecordChange.bind(self));
                 context.querySelector('.chkRecordSeries').addEventListener('change', onRecordSeriesChange.bind(self));
+                context.querySelector('.btnManageRecording').addEventListener('click', onManageRecordingClick.bind(self));
 
                 fetchData(self).then(resolve);
             });

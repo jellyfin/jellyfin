@@ -13,7 +13,7 @@
             require(['confirm'], function (confirm) {
 
                 confirm({
-                    
+
                     title: globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation'),
                     text: globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'),
                     confirmText: globalize.translate('sharedcomponents#HeaderCancelRecording'),
@@ -38,84 +38,29 @@
         });
     }
 
-    function getImageUrl(item, apiClient, imageHeight) {
-
-        var imageTags = item.ImageTags || {};
-
-        if (item.PrimaryImageTag) {
-            imageTags.Primary = item.PrimaryImageTag;
-        }
-
-        if (imageTags.Primary) {
-
-            return apiClient.getScaledImageUrl(item.Id, {
-                type: "Primary",
-                maxHeight: imageHeight,
-                tag: item.ImageTags.Primary
-            });
-        }
-        else if (imageTags.Thumb) {
-
-            return apiClient.getScaledImageUrl(item.Id, {
-                type: "Thumb",
-                maxHeight: imageHeight,
-                tag: item.ImageTags.Thumb
-            });
-        }
-
-        return null;
-    }
-
     function renderTimer(context, item, apiClient) {
 
         var program = item.ProgramInfo || {};
 
-        var imgUrl = getImageUrl(program, apiClient, 200);
-        var imageContainer = context.querySelector('.recordingDialog-imageContainer');
-
-        if (imgUrl) {
-            imageContainer.innerHTML = '<img src="' + require.toUrl('.').split('?')[0] + '/empty.png" data-src="' + imgUrl + '" class="recordingDialog-img lazy" />';
-            imageContainer.classList.remove('hide');
-
-            imageLoader.lazyChildren(imageContainer);
-        } else {
-            imageContainer.innerHTML = '';
-            imageContainer.classList.add('hide');
-        }
-
-        context.querySelector('.recordingDialog-itemName').innerHTML = item.Name;
-
-        context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
-        context.querySelector('.itemOverview').innerHTML = program.Overview || '';
-
-        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
-        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
-
         context.querySelector('#txtPrePaddingMinutes').value = item.PrePaddingSeconds / 60;
         context.querySelector('#txtPostPaddingMinutes').value = item.PostPaddingSeconds / 60;
-
-        var timerStausElem = context.querySelector('.timerStatus');
-
-        if (item.Status == 'New') {
-            timerStausElem.classList.add('hide');
-        } else {
-            timerStausElem.classList.remove('hide');
-            timerStausElem.innerHTML = 'Status:&nbsp;&nbsp;&nbsp;' + item.Status;
-        }
 
         loading.hide();
     }
 
-    function closeDialog(isSubmitted, isDeleted) {
+    function closeDialog(isDeleted) {
 
-        recordingUpdated = isSubmitted;
+        recordingUpdated = true;
         recordingDeleted = isDeleted;
-        dialogHelper.close(currentDialog);
+
+        if (isDeleted) {
+            dialogHelper.close(currentDialog);
+        } else {
+            currentDialog.querySelector('.btnSubmit').click();
+        }
     }
 
     function onSubmit(e) {
-
-        loading.show();
 
         var form = this;
 
@@ -126,11 +71,7 @@
             item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
             apiClient.updateLiveTvTimer(item).then(function () {
-                loading.hide();
-                require(['toast'], function (toast) {
-                    toast(Globalize.translate('MessageRecordingSaved'));
-                    closeDialog(true);
-                });
+                dialogHelper.close(currentDialog);
             });
         });
 
@@ -151,7 +92,7 @@
 
             var apiClient = connectionManager.getApiClient(currentServerId);
             deleteTimer(apiClient, currentItemId).then(function () {
-                closeDialog(true, true);
+                closeDialog(true);
             });
         });
 
@@ -171,7 +112,7 @@
         });
     }
 
-    function showEditor(itemId, serverId) {
+    function showEditor(itemId, serverId, options) {
 
         return new Promise(function (resolve, reject) {
 
@@ -179,6 +120,7 @@
             recordingDeleted = false;
             currentServerId = serverId;
             loading.show();
+            options = options || {};
 
             require(['text!./recordingeditor.template.html'], function (template) {
 
@@ -190,7 +132,7 @@
                 if (layoutManager.tv) {
                     dialogOptions.size = 'fullscreen';
                 } else {
-                    dialogOptions.size = 'small';
+                    dialogOptions.size = 'mini';
                 }
 
                 var dlg = dialogHelper.createDialog(dialogOptions);
@@ -198,11 +140,19 @@
                 dlg.classList.add('formDialog');
                 dlg.classList.add('recordingDialog');
 
+                if (!layoutManager.tv) {
+                    dlg.style['min-width'] = '20%';
+                }
+
                 var html = '';
 
                 html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
+
+                if (options.enableCancel === false) {
+                    dlg.querySelector('.formDialogFooter').classList.add('hide');
+                }
 
                 currentDialog = dlg;
 

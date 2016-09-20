@@ -313,10 +313,17 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             var serverId = apiClient.serverInfo().Id;
 
             if (item.Type == 'Timer') {
-                require(['recordingEditor'], function (recordingEditor) {
+                if (item.ProgramId) {
+                    require(['recordingCreator'], function (recordingCreator) {
 
-                    recordingEditor.show(item.Id, serverId).then(resolve, reject);
-                });
+                        recordingCreator.show(item.ProgramId, serverId).then(resolve, reject);
+                    });
+                } else {
+                    require(['recordingEditor'], function (recordingEditor) {
+
+                        recordingEditor.show(item.Id, serverId).then(resolve, reject);
+                    });
+                }
             } else {
                 require(['metadataEditor'], function (metadataEditor) {
 
