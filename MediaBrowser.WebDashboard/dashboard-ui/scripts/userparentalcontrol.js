@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'listViewStyle', 'paper-icon-button-light'], function ($) {
 
     function populateRatings(allParentalRatings, page) {
 
@@ -111,23 +111,27 @@
 
     function loadBlockedTags(page, tags) {
 
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
+        var html = tags.map(function (h) {
 
-            var li = '<li>';
+            var li = '<div class="listItem">';
 
-            li += '<a href="#">';
+            li += '<div class="listItemBody">';
+            li += '<h3 class="listItemBodyTest">';
+            li += h;
+            li += '</h3>';
+            li += '</div>';
 
-            li += '<div style="font-weight:normal;">' + h + '</div>';
-
-            li += '</a>';
-
-            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '" data-icon="delete"></a>';
-
-            li += '</li>';
+            li += '<button type="button" is="paper-icon-button-light" class="blockedTag btnDeleteTag listItemButton" data-tag="' + h + '"><i class="md-icon">delete</i></button>';
+            
+            li += '</div>';
 
             return li;
 
-        }).join('') + '</ul>';
+        }).join('');
+
+        if (html) {
+            html = '<div class="paperList">' + html + '</div>';
+        }
 
         var elem = $('.blockedTags', page).html(html).trigger('create');
 
