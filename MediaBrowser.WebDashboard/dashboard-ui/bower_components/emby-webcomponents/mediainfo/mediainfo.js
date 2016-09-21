@@ -41,7 +41,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         }
 
         if (options.timerIndicator !== false) {
-            if (item.SeriesTimerId) {
+            if (item.SeriesTimerId && item.TimerId) {
                 miscInfo.push({
                     html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
                 });

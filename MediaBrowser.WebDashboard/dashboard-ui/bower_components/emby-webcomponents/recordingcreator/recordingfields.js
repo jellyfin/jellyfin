@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -210,12 +210,14 @@
         if (isChecked) {
             if (!this.TimerId && !this.SeriesTimerId) {
                 recordingHelper.createRecording(apiClient, options.programId, false).then(function () {
+                    events.trigger(self, 'recordingchanged');
                     fetchData(self);
                 });
             }
         } else {
             if (this.TimerId) {
                 recordingHelper.cancelTimer(apiClient, this.TimerId, true).then(function () {
+                    events.trigger(self, 'recordingchanged');
                     fetchData(self);
                 });
             }

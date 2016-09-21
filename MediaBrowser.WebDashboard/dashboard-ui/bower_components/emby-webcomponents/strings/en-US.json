@@ -39,8 +39,6 @@
   "Saturday": "Saturday",
   "Days": "Days",
   "RecordSeries": "Record series",
-  "LabelPrePaddingMinutes": "Pre-padding minutes:",
-  "LabelPostPaddingMinutes": "Post-padding minutes:",
   "RecordOnAllChannels": "Record on all channels",
   "RecordAnytime": "Record at any time",
   "RecordOnlyNewEpisodes": "Record only new episodes",
@@ -297,5 +295,10 @@
   "Anytime": "Anytime",
   "AroundTime": "Around {0}",
   "LabelAirtime": "Airtime:",
-  "AllChannels": "All channels"
+  "AllChannels": "All channels",
+  "LabelRecord": "Record:",
+  "NewEpisodesOnly": "New episodes only",
+  "AllEpisodes": "All episodes",
+  "LabelStartWhenPossible": "Start when possible:",
+  "LabelStopWhenPossible": "Stop when possible:"
 }

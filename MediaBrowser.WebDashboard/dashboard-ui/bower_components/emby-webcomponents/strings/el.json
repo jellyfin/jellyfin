@@ -1,4 +1,10 @@
 {
+    "LabelRecord": "Record:",
+    "AllChannels": "All channels",
+    "NewEpisodesOnly": "New episodes only",
+    "AllEpisodes": "All episodes",
+    "LabelStartWhenPossible": "Start when possible:",
+    "LabelStopWhenPossible": "Stop when possible:",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "\u03a0\u03c1\u03cc\u03c3\u03b8\u03b5\u03c3\u03b5",

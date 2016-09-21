@@ -48,6 +48,8 @@
         context.querySelector('.selectChannels').value = item.RecordAnyChannel ? 'all' : 'one';
         context.querySelector('.selectAirTime').value = item.RecordAnyTime ? 'any' : 'original';
 
+        context.querySelector('.selectShowType').value = item.RecordNewOnly ? 'new' : 'all';
+
         if (item.ChannelName || item.ChannelNumber) {
             context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#ChannelNameOnly', item.ChannelName || item.ChannelNumber);
         } else {
@@ -79,6 +81,7 @@
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
             item.RecordAnyChannel = form.querySelector('.selectChannels').value == 'all';
             item.RecordAnyTime = form.querySelector('.selectAirTime').value == 'any';
+            item.RecordNewOnly = form.querySelector('.selectShowType').value == 'new';
 
             apiClient.updateLiveTvSeriesTimer(item);
         });

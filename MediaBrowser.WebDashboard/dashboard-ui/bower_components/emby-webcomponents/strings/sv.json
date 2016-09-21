@@ -1,4 +1,10 @@
 {
+    "LabelRecord": "Record:",
+    "AllChannels": "All channels",
+    "NewEpisodesOnly": "New episodes only",
+    "AllEpisodes": "All episodes",
+    "LabelStartWhenPossible": "Start when possible:",
+    "LabelStopWhenPossible": "Stop when possible:",
     "ValueSpecialEpisodeName": "Specialavsnitt - {0}",
     "Share": "Dela",
     "Add": "L\u00e4gg till",

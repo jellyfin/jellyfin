@@ -395,7 +395,7 @@
                     html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
                 }
 
-                if (program.SeriesTimerId) {
+                if (program.SeriesTimerId && program.TimerId) {
                     html += '<i class="seriesTimerIcon md-icon programIcon">&#xE062;</i>';
                 }
                 else if (program.TimerId) {
