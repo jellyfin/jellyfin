@@ -873,6 +873,23 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 ServerManager.Start(GetUrlPrefixes(), CertificatePath);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error starting http server", ex);
+
+                if (HttpPort == 8096)
+                {
+                    throw;
+                }
+            }
+
+            HttpPort = 8096;
+
+            try
+            {
+                ServerManager.Start(GetUrlPrefixes(), CertificatePath);
             }
             catch (Exception ex)
             {
