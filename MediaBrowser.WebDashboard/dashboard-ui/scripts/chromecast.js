@@ -54,6 +54,7 @@
     var applicationID = "2D4B1DA3";
 
     // This is the beta version used for testing new changes
+
     //applicationID = '27C4EB5B';
 
     var messageNamespace = 'urn:x-cast:com.connectsdk';
@@ -843,22 +844,21 @@
 
         self.tryPair = function (target) {
 
-            castPlayer.launchApp();
-            return new Promise(function (resolve, reject) {
-                if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
 
+                return new Promise(function (resolve, reject) {
                     currentResolve = resolve;
                     currentReject = reject;
 
                     castPlayer.launchApp();
-                } else {
+                });
+            } else {
 
-                    currentResolve = null;
-                    currentReject = null;
+                currentResolve = null;
+                currentReject = null;
 
-                    reject();
-                }
-            });
+                return Promise.reject();
+            }
         };
     }
 
