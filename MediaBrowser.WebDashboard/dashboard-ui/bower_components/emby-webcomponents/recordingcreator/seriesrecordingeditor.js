@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'datetime', 'scrollStyles', 'emby-button', 'emby-collapse', 'emby-input', 'emby-select', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader, datetime) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'datetime', 'scrollStyles', 'emby-button', 'emby-checkbox', 'emby-input', 'emby-select', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader, datetime) {
 
     var currentDialog;
     var recordingUpdated = false;
@@ -49,6 +49,8 @@
         context.querySelector('.selectAirTime').value = item.RecordAnyTime ? 'any' : 'original';
 
         context.querySelector('.selectShowType').value = item.RecordNewOnly ? 'new' : 'all';
+        context.querySelector('.chkSkipEpisodesInLibrary').checked = item.SkipEpisodesInLibrary;
+        context.querySelector('.selectKeepUpTo').value = item.KeepUpTo || 0;
 
         if (item.ChannelName || item.ChannelNumber) {
             context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#ChannelNameOnly', item.ChannelName || item.ChannelNumber);
@@ -82,6 +84,8 @@
             item.RecordAnyChannel = form.querySelector('.selectChannels').value == 'all';
             item.RecordAnyTime = form.querySelector('.selectAirTime').value == 'any';
             item.RecordNewOnly = form.querySelector('.selectShowType').value == 'new';
+            item.SkipEpisodesInLibrary = form.querySelector('.chkSkipEpisodesInLibrary').checked;
+            item.KeepUpTo = form.querySelector('.selectKeepUpTo').value;
 
             apiClient.updateLiveTvSeriesTimer(item);
         });
@@ -93,6 +97,8 @@
     }
 
     function init(context) {
+
+        fillKeepUpTo(context);
 
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
@@ -121,6 +127,28 @@
             renderTimer(context, result, apiClient);
             loading.hide();
         });
+    }
+
+    function fillKeepUpTo(context) {
+
+        var html = '';
+
+        for (var i = 0; i <= 50; i++) {
+
+            var text;
+
+            if (i == 0) {
+                text = globalize.translate('sharedcomponents#AsManyAsPossible');
+            } else if (i == 1) {
+                text = globalize.translate('sharedcomponents#ValueOneEpisode');
+            } else {
+                text = globalize.translate('sharedcomponents#ValueEpisodeCount', i);
+            }
+
+            html += '<option value="' + i + '">' + text + '</option>';
+        }
+
+        context.querySelector('.selectKeepUpTo').innerHTML = html;
     }
 
     function showEditor(itemId, serverId, options) {

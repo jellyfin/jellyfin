@@ -16,6 +16,14 @@
                 </select>
             </div>
 
+            <div class="checkboxContainer checkboxContainer-withDescription">
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkSkipEpisodesInLibrary"/>
+                    <span>${SkipEpisodesAlreadyInMyLibrary}</span>
+                </label>
+                <div class="fieldDescription checkboxFieldDescription">${SkipEpisodesAlreadyInMyLibraryHelp}</div>
+            </div>
+
             <div class="selectContainer">
                 <select is="emby-select" class="selectChannels" label="${LabelChannels}">
                     <option class="optionChannelOnly" value="one">${OneChannel}</option>
@@ -27,6 +35,11 @@
                 <select is="emby-select" class="selectAirTime" label="${LabelAirtime}">
                     <option class="optionAroundTime" value="original"></option>
                     <option value="any">${Anytime}</option>
+                </select>
+            </div>
+
+            <div class="selectContainer">
+                <select is="emby-select" class="selectKeepUpTo" label="${LabelKeepUpTo}">
                 </select>
             </div>
 

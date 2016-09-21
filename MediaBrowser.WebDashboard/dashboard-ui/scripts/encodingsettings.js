@@ -100,26 +100,6 @@
         return false;
     }
 
-    function getTabs() {
-        return [
-        {
-            href: 'cinemamodeconfiguration.html',
-            name: Globalize.translate('TabCinemaMode')
-        },
-         {
-             href: 'playbackconfiguration.html',
-             name: Globalize.translate('TabResumeSettings')
-         },
-         {
-             href: 'streamingsettings.html',
-             name: Globalize.translate('TabStreaming')
-         },
-         {
-             href: 'encodingsettings.html',
-             name: Globalize.translate('TabTranscoding')
-         }];
-    }
-
     function onSelectEncoderPathChange(e) {
 
         var page = $(this).parents('.page')[0];
@@ -201,7 +181,6 @@
 
         Dashboard.showLoadingMsg();
 
-        LibraryMenu.setTabs('playback', 3, getTabs);
         var page = this;
 
         ApiClient.getNamedConfiguration("encoding").then(function (config) {
