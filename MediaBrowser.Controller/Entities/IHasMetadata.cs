@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -62,5 +63,6 @@ namespace MediaBrowser.Controller.Entities
 
         int? GetInheritedParentalRatingValue();
         int InheritedParentalRatingValue { get; set; }
+        List<string> GetInheritedTags();
     }
 }

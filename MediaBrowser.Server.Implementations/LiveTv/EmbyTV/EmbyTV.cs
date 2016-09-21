@@ -843,6 +843,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 if (recordingEndDate <= DateTime.UtcNow)
                 {
                     _logger.Warn("Recording timer fired for timer {0}, Id: {1}, but the program has already ended.", timer.Name, timer.Id);
+                    _timerProvider.Delete(timer);
                     return;
                 }
 
@@ -1273,6 +1274,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         writer.WriteElementString("rating", timer.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
+                    if (timer.IsSports)
+                    {
+                        AddGenre(timer.Genres, "Sports");
+                    }
+                    if (timer.IsKids)
+                    {
+                        AddGenre(timer.Genres, "Kids");
+                    }
+
                     foreach (var genre in timer.Genres)
                     {
                         writer.WriteElementString("genre", genre);
@@ -1291,6 +1301,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     writer.WriteEndElement();
                     writer.WriteEndDocument();
                 }
+            }
+        }
+
+        private void AddGenre(List<string> genres, string genre)
+        {
+            if (!genres.Contains(genre, StringComparer.OrdinalIgnoreCase))
+            {
+                genres.Add(genre);
             }
         }
 

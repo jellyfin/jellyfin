@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'recordingHelper', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, recordingHelper) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -204,7 +204,8 @@
         var options = this.options;
         var apiClient = connectionManager.getApiClient(options.serverId);
 
-        var isChecked = !e.target.querySelector('i').classList.contains('recordingIcon-active');
+        var button = dom.parentWithTag(e.target, 'BUTTON');
+        var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
         if (isChecked) {
             if (!this.TimerId && !this.SeriesTimerId) {
@@ -229,7 +230,8 @@
         var options = this.options;
         var apiClient = connectionManager.getApiClient(options.serverId);
 
-        var isChecked = !e.target.querySelector('i').classList.contains('recordingIcon-active');
+        var button = dom.parentWithTag(e.target, 'BUTTON');
+        var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
         if (isChecked) {
             showSeriesRecordingFields(options.parent, options.programId, apiClient);

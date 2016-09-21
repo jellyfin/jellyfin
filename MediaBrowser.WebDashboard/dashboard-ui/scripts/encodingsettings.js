@@ -44,10 +44,6 @@
 
         return ApiClient.getSystemInfo().then(function (systemInfo) {
 
-            if (systemInfo.EncoderLocationType == "External") {
-                return;
-            }
-
             return ApiClient.ajax({
                 url: ApiClient.getUrl('System/MediaEncoder/Path'),
                 type: 'POST',
@@ -212,11 +208,7 @@
 
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
-                if (systemInfo.EncoderLocationType == "External") {
-                    page.querySelector('.fldSelectEncoderPathType').classList.add('hide');
-                } else {
-                    page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
-                }
+                page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
                 loadPage(page, config, systemInfo);
             });
         });

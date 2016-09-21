@@ -6,7 +6,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(msg, Globalize.translate('DeleteUser')).then(function () {
+            confirm({
+                
+                title: Globalize.translate('DeleteUser'),
+                text: msg,
+                confirmText: Globalize.translate('ButtonDelete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 Dashboard.showLoadingMsg();
 
