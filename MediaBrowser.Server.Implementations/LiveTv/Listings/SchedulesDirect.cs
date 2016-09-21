@@ -339,13 +339,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     channelNumber = channelNumber.TrimStart('0');
 
                     _logger.Debug("Found channel: " + channelNumber + " in Schedules Direct");
-                    if (root.stations != null)
+
+                    var schChannel = (root.stations ?? new List<ScheduleDirect.Station>()).FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                    if (schChannel != null)
                     {
-                        var schChannel = root.stations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
-                        if (schChannel != null)
+                        AddToChannelPairCache(listingsId, channelNumber, schChannel);
+                    }
+                    else
+                    {
+                        AddToChannelPairCache(listingsId, channelNumber, new ScheduleDirect.Station
                         {
-                            AddToChannelPairCache(listingsId, channelNumber, schChannel);
-                        }
+                            stationID = map.stationID
+                        });
                     }
                 }
                 _logger.Info("Added " + GetChannelPairCacheCount(listingsId) + " channels to the dictionary");
@@ -361,8 +366,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                             channel.ImageUrl = station.logo.URL;
                             channel.HasImage = true;
                         }
-                        string channelName = station.name;
-                        channel.Name = channelName;
+
+                        if (!string.IsNullOrWhiteSpace(station.name))
+                        {
+                            channel.Name = station.name;
+                        }
                     }
                     else
                     {
@@ -993,7 +1001,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     var name = channelNumber;
                     var station = GetStation(listingsId, channelNumber, null);
 
-                    if (station != null)
+                    if (station != null && !string.IsNullOrWhiteSpace(station.name))
                     {
                         name = station.name;
                     }

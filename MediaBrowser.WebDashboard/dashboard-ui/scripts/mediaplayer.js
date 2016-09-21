@@ -676,11 +676,11 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             }
 
             var onBitrateDetected = function () {
+
                 Dashboard.getDeviceProfile(null, {
                     
                     enableMkvProgressive: item.RunTimeTicks != null,
-                    enableTsProgressive: item.RunTimeTicks != null,
-                    enableHls: !browserInfo.firefox || item.RunTimeTicks == null
+                    enableTsProgressive: item.RunTimeTicks != null
 
                 }).then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
