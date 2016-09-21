@@ -44,6 +44,7 @@ namespace MediaBrowser.Controller.Entities
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
+            InheritedTags = new List<string>();
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -793,6 +794,9 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public int InheritedParentalRatingValue { get; set; }
+
+        [IgnoreDataMember]
+        public List<string> InheritedTags { get; set; }
 
         /// <summary>
         /// Gets or sets the critic rating.

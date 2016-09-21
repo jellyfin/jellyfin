@@ -541,6 +541,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 instance.RecordAnyChannel = info.RecordAnyChannel;
                 instance.RecordAnyTime = info.RecordAnyTime;
                 instance.RecordNewOnly = info.RecordNewOnly;
+                instance.SkipEpisodesInLibrary = info.SkipEpisodesInLibrary;
+                instance.KeepUpTo = info.KeepUpTo;
                 instance.StartDate = info.StartDate;
 
                 _seriesTimerProvider.Update(instance);
@@ -1381,7 +1383,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
-            if (filterByCurrentRecordings)
+            if (filterByCurrentRecordings && seriesTimer.SkipEpisodesInLibrary)
             {
                 allPrograms = allPrograms.Where(i => !IsProgramAlreadyInLibrary(i));
             }
