@@ -53,6 +53,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if [record any channel]; otherwise, <c>false</c>.</value>
         public bool RecordAnyChannel { get; set; }
 
+        public int KeepUpTo { get; set; }
+
+        public bool SkipEpisodesInLibrary { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [record new only].
         /// </summary>
@@ -104,6 +108,7 @@ namespace MediaBrowser.Controller.LiveTv
         public SeriesTimerInfo()
         {
             Days = new List<DayOfWeek>();
+            SkipEpisodesInLibrary = true;
         }
     }
 }

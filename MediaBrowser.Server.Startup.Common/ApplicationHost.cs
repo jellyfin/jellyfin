@@ -851,12 +851,12 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var prefixes = new List<string>
                 {
-                    "http://"+i+":" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
+                    "http://"+i+":" + HttpPort + "/"
                 };
 
                 if (!string.IsNullOrWhiteSpace(CertificatePath))
                 {
-                    prefixes.Add("https://" + i + ":" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                    prefixes.Add("https://" + i + ":" + HttpsPort + "/");
                 }
 
                 return prefixes;
