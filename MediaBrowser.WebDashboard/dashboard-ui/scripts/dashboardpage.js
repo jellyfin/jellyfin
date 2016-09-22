@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery', 'cardStyle'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'dom', 'cardStyle'], function (datetime, $, dom) {
 
     function renderNoHealthAlertsMessage(page) {
 
@@ -22,6 +22,37 @@
         return false;
     }
 
+    function onEditServerNameClick(e) {
+
+        var page = dom.parentWithClass(this, 'page');
+
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                label: Globalize.translate('LabelFriendlyServerName'),
+                description: Globalize.translate('LabelFriendlyServerNameHelp'),
+                value: page.querySelector('.serverNameHeader').innerHTML
+
+            }).then(function (value) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getServerConfiguration().then(function (config) {
+
+                    config.ServerName = value;
+
+                    ApiClient.updateServerConfiguration(config).then(function () {
+                        page.querySelector('.serverNameHeader').innerHTML = value;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+            });
+        });
+
+        e.preventDefault();
+        return false;
+    }
+
     window.DashboardPage = {
 
         newsStartIndex: 0,
@@ -31,6 +62,7 @@
             var page = this;
 
             page.querySelector('.btnConnectionHelp').addEventListener('click', onConnectionHelpClick);
+            page.querySelector('.btnEditServerName').addEventListener('click', onEditServerNameClick);
         },
 
         onPageShow: function () {
@@ -123,9 +155,9 @@
                 $('#appVersionNumber', page).html(localizedVersion);
 
                 if (systemInfo.SupportsHttps) {
-                    $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', '<b>' + systemInfo.HttpServerPortNumber + '</b>', '<b>' + systemInfo.HttpsPortNumber + '</b>'));
+                    $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', systemInfo.HttpServerPortNumber, systemInfo.HttpsPortNumber));
                 } else {
-                    $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
+                    $('#ports', page).html(Globalize.translate('LabelRunningOnPort', systemInfo.HttpServerPortNumber));
                 }
 
                 if (systemInfo.CanSelfRestart) {
@@ -1017,7 +1049,7 @@
             require(['confirm'], function (confirm) {
 
                 confirm({
-                    
+
                     title: Globalize.translate('HeaderRestart'),
                     text: Globalize.translate('MessageConfirmRestart'),
                     confirmText: Globalize.translate('ButtonRestart'),

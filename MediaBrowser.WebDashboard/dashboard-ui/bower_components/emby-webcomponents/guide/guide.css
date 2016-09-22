@@ -419,6 +419,11 @@
     color: #cc3333 !important;
 }
 
+.seriesTimerIcon-inactive {
+    color: inherit !important;
+    opacity: .7;
+}
+
 .visibleGuideScroller::-webkit-scrollbar {
     width: 10px;
     height: 10px;

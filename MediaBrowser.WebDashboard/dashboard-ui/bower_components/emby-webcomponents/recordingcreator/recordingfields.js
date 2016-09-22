@@ -224,6 +224,12 @@
         }
     }
 
+    function sendToast(msg) {
+        require(['toast'], function (toast) {
+            toast(msg);
+        });
+    }
+
     function onRecordSeriesChange(e) {
 
         this.changed = true;
@@ -254,6 +260,7 @@
 
             if (this.SeriesTimerId) {
                 apiClient.cancelLiveTvSeriesTimer(this.SeriesTimerId).then(function () {
+                    sendToast(globalize.translate('sharedcomponents#RecordingCancelled'));
                     fetchData(self);
                 });
             }

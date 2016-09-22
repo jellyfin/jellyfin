@@ -138,13 +138,14 @@ define(['browser'], function (browser) {
 
     function testCanPlayTs() {
 
-        return browser.tizen || browser.web0s;
+        return browser.tizen || browser.web0s || browser.edgeUwp;
     }
 
     function getDirectPlayProfileForVideoContainer(container, videoAudioCodecs) {
 
         var supported = false;
         var profileContainer = container;
+        var videoCodecs = [];
 
         switch (container) {
 
@@ -169,16 +170,19 @@ define(['browser'], function (browser) {
                 break;
             case 'mov':
                 supported = browser.chrome || browser.edgeUwp;
+                videoCodecs.push('h264');
                 break;
             case 'm2ts':
                 supported = browser.tizen || browser.web0s || browser.edgeUwp;
+                videoCodecs.push('h264');
                 break;
             case 'wmv':
                 supported = browser.tizen || browser.web0s || browser.edgeUwp;
                 videoAudioCodecs = [];
                 break;
             case 'ts':
-                supported = browser.tizen || browser.web0s || browser.edgeUwp;
+                supported = testCanPlayTs();
+                videoCodecs.push('h264');
                 profileContainer = 'ts,mpegts';
                 break;
             default:
@@ -192,6 +196,7 @@ define(['browser'], function (browser) {
         return {
             Container: profileContainer,
             Type: 'Video',
+            VideoCodec: videoCodecs.join(','),
             AudioCodec: videoAudioCodecs.join(',')
         };
     }
@@ -239,7 +244,6 @@ define(['browser'], function (browser) {
         var canPlayWebm = videoTestElement.canPlayType('video/webm').replace(/no/, '');
 
         var canPlayMkv = testCanPlayMkv(videoTestElement);
-        var canPlayTs = testCanPlayTs();
 
         var profile = {};
 
@@ -269,7 +273,7 @@ define(['browser'], function (browser) {
         }
 
         var mp3Added = false;
-        if (canPlayMkv || canPlayTs) {
+        if (canPlayMkv) {
             if (supportsMp3VideoAudio) {
                 mp3Added = true;
                 videoAudioCodecs.push('mp3');
@@ -398,20 +402,6 @@ define(['browser'], function (browser) {
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 CopyTimestamps: copyTimestamps
-            });
-        }
-
-        if (canPlayTs && options.supportsCustomSeeking && !browser.tizen && !browser.web0s && options.enableTsProgressive !== false) {
-            profile.TranscodingProfiles.push({
-                Container: 'ts',
-                Type: 'Video',
-                AudioCodec: videoAudioCodecs.join(','),
-                VideoCodec: 'h264',
-                Context: 'Streaming',
-                CopyTimestamps: copyTimestamps,
-                // If audio transcoding is needed, limit channels to number of physical audio channels
-                // Trying to transcode to 5 channels when there are only 2 speakers generally does not sound good
-                MaxAudioChannels: physicalAudioChannels.toString()
             });
         }
 

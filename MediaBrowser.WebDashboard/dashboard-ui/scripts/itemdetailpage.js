@@ -1,6 +1,7 @@
 ﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox', 'emby-toggle'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost) {
 
     var currentItem;
+    var currentRecordingFields;
 
     function getPromise(params) {
 
@@ -298,13 +299,17 @@
 
     function showRecordingFields(page, item, user) {
 
+        if (currentRecordingFields) {
+            return;
+        }
+
         var recordingFieldsElement = page.querySelector('.recordingFields');
 
         if (item.Type == 'Program' && user.Policy.EnableLiveTvManagement) {
 
             require(['recordingFields'], function (recordingFields) {
 
-                var currentRecordingFields = new recordingFields({
+                currentRecordingFields = new recordingFields({
                     parent: recordingFieldsElement,
                     programId: item.Id,
                     serverId: item.ServerId
@@ -2181,6 +2186,7 @@
         view.addEventListener('viewbeforehide', function () {
 
             currentItem = null;
+            currentRecordingFields = null;
 
             Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
             LibraryMenu.setTransparentMenu(false);
