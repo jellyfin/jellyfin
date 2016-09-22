@@ -302,10 +302,6 @@
 
         if (item.Type == 'Program' && user.Policy.EnableLiveTvManagement) {
 
-            if (recordingFieldsElement.innerHTML) {
-                //return;
-            }
-
             require(['recordingFields'], function (recordingFields) {
 
                 var currentRecordingFields = new recordingFields({

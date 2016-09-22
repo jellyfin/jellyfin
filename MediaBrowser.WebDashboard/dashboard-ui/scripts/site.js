@@ -482,13 +482,18 @@ var Dashboard = {
             icon: 'play_circle_filled',
             color: '#E5342E',
             href: "cinemamodeconfiguration.html",
-            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage', 'encodingSettingsPage']
+            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage']
         }, {
             name: Globalize.translate('TabSync'),
             icon: 'sync',
             href: "syncactivity.html",
             pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage'],
             color: '#009688'
+        }, {
+            name: Globalize.translate('TabTranscoding'),
+            icon: 'transform',
+            href: "encodingsettings.html",
+            pageIds: ['encodingSettingsPage']
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')

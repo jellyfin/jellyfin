@@ -1,4 +1,16 @@
 {
+    "LabelRecord": "Gravar:",
+    "AllChannels": "Todos os canais",
+    "NewEpisodesOnly": "Apenas novos epis\u00f3dios",
+    "AllEpisodes": "Todos os epis\u00f3dios",
+    "LabelStartWhenPossible": "Iniciar quando poss\u00edvel:",
+    "LabelStopWhenPossible": "Parar quando poss\u00edvel:",
+    "MinutesBefore": "minutes before",
+    "SkipEpisodesAlreadyInMyLibraryHelp": "Episodes will be compared using season and episode numbers, when available.",
+    "SkipEpisodesAlreadyInMyLibrary": "Skip recording episodes that are already in my library",
+    "MinutesAfter": "minutes after",
+    "LabelKeepUpTo": "Keep up to:",
+    "AsManyAsPossible": "As many as possible",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartilhar",
     "Add": "Adicionar",
@@ -291,10 +303,10 @@
     "HeaderRecordingOptions": "Op\u00e7\u00f5es de Grava\u00e7\u00e3o",
     "CancelSeries": "Cancelar s\u00e9rie",
     "DoNotRecord": "N\u00e3o gravar",
-    "HeaderSeriesOptions": "Series Options",
-    "LabelChannels": "Channels:",
-    "ChannelNameOnly": "Channel {0} only",
-    "Anytime": "Anytime",
-    "AroundTime": "Around {0}",
-    "LabelAirtime": "Airtime:"
+    "HeaderSeriesOptions": "Op\u00e7\u00f5es da S\u00e9rie",
+    "LabelChannels": "Canais:",
+    "ChannelNameOnly": "Somente canal {0}",
+    "Anytime": "A qualquer momento",
+    "AroundTime": "Em torno de {0}",
+    "LabelAirtime": "Hor\u00e1rio de exibi\u00e7\u00e3o:"
 }

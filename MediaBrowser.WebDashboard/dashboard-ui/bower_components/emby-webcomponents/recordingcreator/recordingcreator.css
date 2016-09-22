@@ -19,10 +19,3 @@
 .recordingDialog-btnRecord {
     background-color: #cc3333;
 }
-
-@media all and (max-width: 800px) {
-
-    .programDialog-itemName {
-        display: none;
-    }
-}

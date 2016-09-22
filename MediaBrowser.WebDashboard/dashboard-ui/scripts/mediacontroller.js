@@ -148,7 +148,7 @@
 
         dlg.classList.add('promptDialog');
 
-        html += '<div class="promptDialogContent">';
+        html += '<div class="promptDialogContent" style="padding:1em;">';
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
         html += '</h2>';

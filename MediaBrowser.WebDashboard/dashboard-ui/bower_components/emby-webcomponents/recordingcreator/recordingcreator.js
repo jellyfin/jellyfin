@@ -1,7 +1,5 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'datetime', 'imageLoader', 'recordingFields', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, datetime, imageLoader, recordingFields) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'datetime', 'imageLoader', 'recordingFields', 'events', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, datetime, imageLoader, recordingFields, events) {
 
-    var currentProgramId;
-    var currentServerId;
     var currentDialog;
     var closeAction;
     var currentRecordingFields;
@@ -54,47 +52,49 @@
         return null;
     }
 
-    function renderRecording(context, defaultTimer, program, apiClient) {
+    function renderRecording(context, defaultTimer, program, apiClient, refreshRecordingStateOnly) {
 
-        var imgUrl = getImageUrl(program, apiClient, 200);
-        var imageContainer = context.querySelector('.recordingDialog-imageContainer');
+        if (!refreshRecordingStateOnly) {
+            var imgUrl = getImageUrl(program, apiClient, 200);
+            var imageContainer = context.querySelector('.recordingDialog-imageContainer');
 
-        if (imgUrl) {
-            imageContainer.innerHTML = '<img src="' + require.toUrl('.').split('?')[0] + '/empty.png" data-src="' + imgUrl + '" class="recordingDialog-img lazy" />';
-            imageContainer.classList.remove('hide');
+            if (imgUrl) {
+                imageContainer.innerHTML = '<img src="' + require.toUrl('.').split('?')[0] + '/empty.png" data-src="' + imgUrl + '" class="recordingDialog-img lazy" />';
+                imageContainer.classList.remove('hide');
 
-            imageLoader.lazyChildren(imageContainer);
-        } else {
-            imageContainer.innerHTML = '';
-            imageContainer.classList.add('hide');
+                imageLoader.lazyChildren(imageContainer);
+            } else {
+                imageContainer.innerHTML = '';
+                imageContainer.classList.add('hide');
+            }
+
+            context.querySelector('.recordingDialog-itemName').innerHTML = program.Name;
+            context.querySelector('.formDialogHeaderTitle').innerHTML = program.Name;
+            context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
+            context.querySelector('.itemOverview').innerHTML = program.Overview || '';
+
+            var formDialogFooter = context.querySelector('.formDialogFooter');
+            var now = new Date();
+            if (now >= datetime.parseISO8601Date(program.StartDate, true) && now < datetime.parseISO8601Date(program.EndDate, true)) {
+                formDialogFooter.classList.remove('hide');
+            } else {
+                formDialogFooter.classList.add('hide');
+            }
+
+            context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         }
 
-        context.querySelector('.recordingDialog-itemName').innerHTML = program.Name;
-        context.querySelector('.formDialogHeaderTitle').innerHTML = program.Name;
-        context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
-        context.querySelector('.itemOverview').innerHTML = program.Overview || '';
-
-        var formDialogFooter = context.querySelector('.formDialogFooter');
-        var now = new Date();
-        if (now >= datetime.parseISO8601Date(program.StartDate, true) && now < datetime.parseISO8601Date(program.EndDate, true)) {
-            formDialogFooter.classList.remove('hide');
-        } else {
-            formDialogFooter.classList.add('hide');
-        }
-
-        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program, {
-            timerIndicator: false
         });
 
         loading.hide();
     }
 
-    function reload(context, programId) {
+    function reload(context, programId, serverId, refreshRecordingStateOnly) {
 
         loading.show();
 
-        var apiClient = connectionManager.getApiClient(currentServerId);
+        var apiClient = connectionManager.getApiClient(serverId);
 
         var promise1 = apiClient.getNewLiveTvTimerDefaults({ programId: programId });
         var promise2 = apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId());
@@ -104,7 +104,7 @@
             var defaults = responses[0];
             var program = responses[1];
 
-            renderRecording(context, defaults, program, apiClient);
+            renderRecording(context, defaults, program, apiClient, refreshRecordingStateOnly);
         });
     }
 
@@ -129,8 +129,6 @@
 
         return new Promise(function (resolve, reject) {
 
-            currentProgramId = itemId;
-            currentServerId = serverId;
             closeAction = null;
 
             loading.show();
@@ -161,9 +159,14 @@
 
                 currentDialog = dlg;
 
+                function onRecordingChanged() {
+                    reload(dlg, itemId, serverId, true);
+                }
+
                 dlg.addEventListener('close', function () {
 
-                    executeCloseAction(closeAction, currentProgramId, currentServerId);
+                    events.off(currentRecordingFields, 'recordingchanged', onRecordingChanged);
+                    executeCloseAction(closeAction, itemId, serverId);
 
                     if (currentRecordingFields && currentRecordingFields.hasChanged()) {
                         resolve();
@@ -178,13 +181,15 @@
 
                 init(dlg);
 
-                reload(dlg, itemId);
+                reload(dlg, itemId, serverId);
 
                 currentRecordingFields = new recordingFields({
                     parent: dlg.querySelector('.recordingFields'),
                     programId: itemId,
                     serverId: serverId
                 });
+
+                events.on(currentRecordingFields, 'recordingchanged', onRecordingChanged);
 
                 dialogHelper.open(dlg);
             });
