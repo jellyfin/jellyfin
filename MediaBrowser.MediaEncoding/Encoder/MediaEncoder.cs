@@ -82,6 +82,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
         private readonly bool _hasExternalEncoder;
+        private string _originalFFMpegPath;
+        private string _originalFFProbePath;
 
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient)
         {
@@ -100,6 +102,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _zipClient = zipClient;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
+            _originalFFProbePath = ffProbePath;
+            _originalFFMpegPath = ffMpegPath;
 
             _hasExternalEncoder = hasExternalEncoder;
         }
@@ -231,11 +235,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new ResourceNotFoundException("ffprobe not found");
             }
 
+            if (!ValidateVersion(path))
+            {
+                throw new ResourceNotFoundException("ffmpeg version 3.0 or greater is required.");
+            }
+
             var config = GetEncodingOptions();
             config.EncoderAppPath = path;
             ConfigurationManager.SaveConfiguration("encoding", config);
 
             Init();
+        }
+
+        private bool ValidateVersion(string path)
+        {
+            return new EncoderValidator(_logger).ValidateVersion(path);
         }
 
         private void ConfigureEncoderPaths()
@@ -287,45 +301,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string encoderPath = null;
             string probePath = null;
 
-            if (TestSystemInstalled("ffmpeg"))
+            if (_hasExternalEncoder && ValidateVersion(_originalFFMpegPath))
             {
-                encoderPath = "ffmpeg";
+                encoderPath = _originalFFMpegPath;
+                probePath = _originalFFProbePath;
             }
-            if (TestSystemInstalled("ffprobe"))
+
+            if (string.IsNullOrWhiteSpace(encoderPath))
             {
-                probePath = "ffprobe";
+                if (ValidateVersion("ffmpeg") && ValidateVersion("ffprobe"))
+                {
+                    encoderPath = "ffmpeg";
+                    probePath = "ffprobe";
+                }
             }
 
             return new Tuple<string, string>(encoderPath, probePath);
-        }
-
-        private bool TestSystemInstalled(string app)
-        {
-            try
-            {
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = app,
-                    Arguments = "-v",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                };
-
-                using (var process = Process.Start(startInfo))
-                {
-                    process.WaitForExit();
-                }
-
-                _logger.Debug("System app installed: " + app);
-                return true;
-            }
-            catch
-            {
-                _logger.Debug("System app not installed: " + app);
-                return false;
-            }
         }
 
         private Tuple<string, string> GetPathsFromDirectory(string path)
