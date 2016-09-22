@@ -41,10 +41,16 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         }
 
         if (options.timerIndicator !== false) {
-            if (item.SeriesTimerId && item.TimerId) {
-                miscInfo.push({
-                    html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
-                });
+            if (item.SeriesTimerId) {
+                if (item.TimerId) {
+                    miscInfo.push({
+                        html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
+                    });
+                } else {
+                    miscInfo.push({
+                        html: '<i class="md-icon mediaInfoItem mediaInfoIconItem">&#xE062;</i>'
+                    });
+                }
             }
             else if (item.TimerId) {
                 miscInfo.push({

@@ -335,22 +335,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function onRecordCommand(serverId, id, type, timerId, seriesTimerId) {
 
-        var apiClient = connectionManager.getApiClient(serverId);
+        if (type == 'Program' || timerId || seriesTimerId) {
 
-        if (seriesTimerId && timerId) {
-
-            // cancel 
-            recordingHelper.cancelTimer(apiClient, timerId, true);
-
-        } else if (timerId) {
-
-            // change to series recording, if possible
-            // otherwise cancel individual recording
-            recordingHelper.changeRecordingToSeries(apiClient, timerId, id);
-
-        } else if (type == 'Program') {
-            // schedule recording
-            recordingHelper.createRecording(apiClient, id);
+            var programId = type == 'Program' ? id : null;
+            recordingHelper.toggle(serverId, programId, timerId, seriesTimerId);
         }
     }
 

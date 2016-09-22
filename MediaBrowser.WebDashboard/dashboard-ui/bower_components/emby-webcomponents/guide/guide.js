@@ -395,8 +395,12 @@
                     html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
                 }
 
-                if (program.SeriesTimerId && program.TimerId) {
-                    html += '<i class="seriesTimerIcon md-icon programIcon">&#xE062;</i>';
+                if (program.SeriesTimerId) {
+                    if (program.TimerId) {
+                        html += '<i class="seriesTimerIcon md-icon programIcon">&#xE062;</i>';
+                    } else {
+                        html += '<i class="seriesTimerIcon seriesTimerIcon-inactive md-icon programIcon">&#xE062;</i>';
+                    }
                 }
                 else if (program.TimerId) {
                     html += '<i class="timerIcon md-icon programIcon">&#xE061;</i>';

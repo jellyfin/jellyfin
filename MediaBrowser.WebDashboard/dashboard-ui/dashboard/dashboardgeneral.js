@@ -21,7 +21,6 @@
             $('#fldRunAtStartup', page).hide();
         }
 
-        page.querySelector('#txtServerName').value = config.ServerName || '';
         page.querySelector('#txtCachePath').value = config.CachePath || '';
 
         $('#selectLocalizationLanguage', page).html(languageOptions.map(function (l) {
@@ -66,7 +65,6 @@
 
         ApiClient.getServerConfiguration().then(function (config) {
 
-            config.ServerName = form.querySelector('#txtServerName').value;
             config.UICulture = $('#selectLocalizationLanguage', form).val();
 
             config.CachePath = form.querySelector('#txtCachePath').value;

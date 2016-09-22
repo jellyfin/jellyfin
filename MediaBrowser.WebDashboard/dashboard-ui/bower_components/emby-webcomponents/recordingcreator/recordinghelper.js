@@ -59,9 +59,33 @@
         });
     }
 
+    function toggleRecording(serverId, programId, timerId, seriesTimerId) {
+
+        var apiClient = connectionManager.getApiClient(serverId);
+
+        if (seriesTimerId && timerId) {
+
+            // cancel 
+            return cancelTimer(apiClient, timerId, true);
+
+        } else if (timerId && programId) {
+
+            // change to series recording, if possible
+            // otherwise cancel individual recording
+            return changeRecordingToSeries(apiClient, timerId, programId);
+
+        } else if (programId) {
+            // schedule recording
+            return createRecording(apiClient, programId);
+        } else {
+            return Promise.reject();
+        }
+    }
+
     return {
         cancelTimer: cancelTimer,
         createRecording: createRecording,
-        changeRecordingToSeries: changeRecordingToSeries
+        changeRecordingToSeries: changeRecordingToSeries,
+        toggleRecording: toggleRecording
     };
 });

@@ -16,16 +16,23 @@
                     <div>
                     </div>
                     <div>
-                        <h1 class="serverNameHeader"></h1>
-                        <div class="paperList" style="padding:1em;">
+                        <div style="display: flex; align-items: center;margin-top:1.45em;">
+                            <h1 class="serverNameHeader" style="margin:0;"></h1>
+                            <button is="paper-icon-button-light" type="button" class="btnEditServerName" style="margin-left: .5em;color:#666;">
+                                <i class="md-icon">mode_edit</i>
+                            </button>
+                        </div>
+                        <div class="paperList" style="padding: 1em;">
                             <p id="appVersionNumber">
                             </p>
-                            <p id="pUpToDate" style="display: flex; align-items:center;" class="hide">
-                                <i class="md-icon" style="background-color: #52B54B;border-radius:.25em;color: #fff;margin-right:.5em;padding:.25em;font-size:110%;">check</i>
+                            <p id="pUpToDate" style="display: flex; align-items: center;" class="hide">
+                                <i class="md-icon" style="background-color: #52B54B; border-radius: .25em; color: #fff; margin-right: .5em; padding: .25em; font-size: 110%;">check</i>
                                 ${ServerUpToDate}
                             </p>
                             <div id="pUpdateNow" style="display: none;">
-                                <p><strong>${NewServerVersionAvailable}</strong></p>
+                                <p>
+                                    <strong>${NewServerVersionAvailable}</strong>
+                                </p>
                                 <p id="newVersionNumber"></p>
                                 <div id="btnUpdateApplicationContainer">
                                     <button id="btnUpdateApplication" type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.updateApplication();">${ButtonUpdateNow}</button>
@@ -39,7 +46,9 @@
 
                             <p class="localUrl"></p>
                             <p class="externalUrl"></p>
-                            <p class="hide"><a class="btnConnectionHelp" href="#">${HowToConnectFromEmbyApps}</a></p>
+                            <p class="hide">
+                                <a class="btnConnectionHelp" href="#">${HowToConnectFromEmbyApps}</a>
+                            </p>
                             <div style="margin-top: 1em;">
                                 <button is="emby-button" type="button" class="raised button-cancel btnRestartContainer hide" onclick="DashboardPage.restart();">
                                     <i class="md-icon">refresh</i>
