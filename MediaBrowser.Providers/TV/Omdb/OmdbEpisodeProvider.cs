@@ -43,7 +43,8 @@ namespace MediaBrowser.Providers.TV
         {
             var result = new MetadataResult<Episode>()
             {
-                Item = new Episode()
+                Item = new Episode(),
+                QueriedById = true
             };
 
             // Allowing this will dramatically increase scan times
