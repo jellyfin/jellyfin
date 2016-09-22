@@ -212,13 +212,15 @@ namespace MediaBrowser.Providers.Omdb
         {
             var result = new MetadataResult<Series>
             {
-                Item = new Series()
+                Item = new Series(),
+                QueriedById = true
             };
 
             var imdbId = info.GetProviderId(MetadataProviders.Imdb);
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
+                result.QueriedById = false;
             }
 
             if (!string.IsNullOrEmpty(imdbId))
@@ -251,13 +253,15 @@ namespace MediaBrowser.Providers.Omdb
         {
             var result = new MetadataResult<T>
             {
-                Item = new T()
+                Item = new T(),
+                QueriedById = true
             };
 
             var imdbId = info.GetProviderId(MetadataProviders.Imdb);
             if (string.IsNullOrWhiteSpace(imdbId))
             {
                 imdbId = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
+                result.QueriedById = false;
             }
 
             if (!string.IsNullOrEmpty(imdbId))
