@@ -412,7 +412,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeriesId",
             "SeriesSortName",
             "PresentationUniqueKey",
-            "InheritedParentalRatingValue"
+            "InheritedParentalRatingValue",
+            "InheritedTags"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -1456,6 +1457,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(index))
             {
                 item.InheritedParentalRatingValue = reader.GetInt32(index);
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.InheritedTags = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
             }
             index++;
 
