@@ -262,7 +262,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(i.Id).ToList(),
                 Name = i.Name,
-                Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
+                Path = enablePathSubstituion ? GetMappedPath(i, i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,
                 Container = i.Container,
                 Size = i.Size

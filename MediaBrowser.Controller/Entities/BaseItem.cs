@@ -2121,11 +2121,11 @@ namespace MediaBrowser.Controller.Entities
             return hasChanges;
         }
 
-        protected static string GetMappedPath(string path, LocationType locationType)
+        protected static string GetMappedPath(BaseItem item, string path, LocationType locationType)
         {
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                return LibraryManager.GetPathAfterNetworkSubstitution(path);
+                return LibraryManager.GetPathAfterNetworkSubstitution(path, item);
             }
 
             return path;

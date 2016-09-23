@@ -48,24 +48,14 @@ namespace MediaBrowser.Controller.Entities
         private static readonly Dictionary<string, LibraryOptions> LibraryOptions = new Dictionary<string, LibraryOptions>();
         public LibraryOptions GetLibraryOptions()
         {
-            lock (LibraryOptions)
-            {
-                LibraryOptions options;
-                if (!LibraryOptions.TryGetValue(Path, out options))
-                {
-                    options = LoadLibraryOptions();
-                    LibraryOptions[Path] = options;
-                }
-
-                return options;
-            }
+            return GetLibraryOptions(Path);
         }
 
-        private LibraryOptions LoadLibraryOptions()
+        private static LibraryOptions LoadLibraryOptions(string path)
         {
             try
             {
-                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(Path)) as LibraryOptions;
+                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
 
                 if (result == null)
                 {
@@ -98,6 +88,21 @@ namespace MediaBrowser.Controller.Entities
         public void UpdateLibraryOptions(LibraryOptions options)
         {
             SaveLibraryOptions(Path, options);
+        }
+
+        public static LibraryOptions GetLibraryOptions(string path)
+        {
+            lock (LibraryOptions)
+            {
+                LibraryOptions options;
+                if (!LibraryOptions.TryGetValue(path, out options))
+                {
+                    options = LoadLibraryOptions(path);
+                    LibraryOptions[path] = options;
+                }
+
+                return options;
+            }
         }
 
         public static void SaveLibraryOptions(string path, LibraryOptions options)

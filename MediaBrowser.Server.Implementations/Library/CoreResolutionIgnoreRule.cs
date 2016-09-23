@@ -33,7 +33,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 // Synology
                 "@eaDir",
-                "eaDir"
+                "eaDir",
+                "#recycle"
 
         };
         
