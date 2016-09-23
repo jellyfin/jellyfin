@@ -1241,7 +1241,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        protected virtual bool EnableThrottling(StreamState state)
+        private bool EnableThrottling(StreamState state)
         {
             // do not use throttling with hardware encoders
             return state.InputProtocol == MediaProtocol.File &&
