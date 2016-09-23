@@ -728,7 +728,7 @@ namespace MediaBrowser.Providers.Manager
         {
             if (string.IsNullOrWhiteSpace(language))
             {
-                return "en-us";
+                return "en";
             }
             return language;
         }
