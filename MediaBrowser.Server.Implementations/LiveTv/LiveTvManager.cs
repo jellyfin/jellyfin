@@ -2837,6 +2837,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 feature = "embytvseriesrecordings";
             }
 
+            if (string.Equals(feature, "dvr-l", StringComparison.OrdinalIgnoreCase))
+            {
+                var config = GetConfiguration();
+                if (config.TunerHosts.Count(i => i.IsEnabled) > 0 &&
+                    config.ListingProviders.Count(i => (i.EnableAllTuners || i.EnabledTuners.Length > 0) && string.Equals(i.Type, SchedulesDirect.TypeName, StringComparison.OrdinalIgnoreCase)) > 0)
+                {
+                    return Task.FromResult(new MBRegistrationRecord
+                    {
+                        IsRegistered = true,
+                        IsValid = true
+                    });
+                }
+            }
+
             if (string.Equals(feature, "dvr", StringComparison.OrdinalIgnoreCase))
             {
                 var config = GetConfiguration();

@@ -11,8 +11,6 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
 
         if (enableTvLayout) {
             dialogOptions.size = 'fullscreen';
-        } else {
-            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
@@ -21,16 +19,18 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
 
         dlg.innerHTML = globalize.translateHtml(template, 'sharedcomponents');
 
+        dlg.style['align-items'] = 'center';
+        dlg.style['justify-content'] = 'center';
+        var formDialogContent = dlg.querySelector('.formDialogContent');
+        formDialogContent.style['flex-grow'] = 'initial';
+
         if (enableTvLayout) {
-            dlg.style['align-items'] = 'center';
-            dlg.style['justify-content'] = 'center';
-            var formDialogContent = dlg.querySelector('.formDialogContent');
-            formDialogContent.style['flex-grow'] = 'initial';
             formDialogContent.style['max-width'] = '50%';
             formDialogContent.style['max-height'] = '60%';
             scrollHelper.centerFocus.on(formDialogContent, false);
         } else {
-            dlg.style.maxWidth = (Math.min((options.buttons.length * 150) + 200, dom.getWindowSize().innerWidth - 50)) + 'px';
+            formDialogContent.style.maxWidth = (Math.min((options.buttons.length * 150) + 200, dom.getWindowSize().innerWidth - 50)) + 'px';
+            dlg.classList.add('dialog-fullscreen-lowres');
         }
 
         //dlg.querySelector('.btnCancel').addEventListener('click', function (e) {

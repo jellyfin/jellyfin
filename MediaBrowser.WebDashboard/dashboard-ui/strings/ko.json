@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "\uc7ac\uc0dd \uc624\ub958",
     "MessagePlaybackErrorNotAllowed": "\uc774 \ucf58\ud150\ud2b8\ub97c \uc7ac\uc0dd\ud560 \uad8c\ud55c\uc774 \uc5c6\uc2b5\ub2c8\ub2e4. \uc790\uc138\ud55c \ub0b4\uc6a9\uc740 \uc2dc\uc2a4\ud15c \uad00\ub9ac\uc790\uc5d0\uac8c \ubb38\uc758\ud558\uc138\uc694.",
     "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
-    "MessagePlaybackErrorRateLimitExceeded": "Your playback rate limit has been exceeded. Please contact your system administrator for details.",
     "MessagePlaybackErrorPlaceHolder": "\uc120\ud0dd\ud55c \ucf58\ud150\ud2b8\ub294 \uc774 \uc7a5\uce58\uc5d0\uc11c \uc7ac\uc0dd\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4.",
     "HeaderSelectAudio": "\uc624\ub514\uc624 \uc120\ud0dd",
     "HeaderSelectSubtitles": "\uc790\ub9c9 \uc120\ud0dd",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
     "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
     "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favorite Artists",
     "HeaderFavoriteSongs": "Favorite Songs",
     "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

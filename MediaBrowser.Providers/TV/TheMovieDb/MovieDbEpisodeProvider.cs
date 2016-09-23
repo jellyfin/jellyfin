@@ -91,6 +91,13 @@ namespace MediaBrowser.Providers.TV
                 var response = await GetEpisodeInfo(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = true;
+                result.QueriedById = true;
+
+                if (!string.IsNullOrEmpty(response.overview))
+                {
+                    // if overview is non-empty, we can assume that localized data was returned
+                    result.ResultLanguage = info.MetadataLanguage;
+                }
 
                 var item = new Episode();
                 result.Item = item;

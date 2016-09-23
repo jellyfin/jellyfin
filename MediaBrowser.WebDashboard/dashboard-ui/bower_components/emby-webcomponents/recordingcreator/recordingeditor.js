@@ -126,7 +126,6 @@
                 if (layoutManager.tv) {
                     dialogOptions.size = 'fullscreen';
                 } else {
-                    dialogOptions.size = 'mini';
                 }
 
                 var dlg = dialogHelper.createDialog(dialogOptions);
@@ -136,6 +135,7 @@
 
                 if (!layoutManager.tv) {
                     dlg.style['min-width'] = '20%';
+                    dlg.classList.add('dialog-fullscreen-lowres');
                 }
 
                 var html = '';

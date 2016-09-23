@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "B\u0142\u0105d Odtwarzania",
     "MessagePlaybackErrorNotAllowed": "Obecnie nie jeste\u015b autoryzowany do odtwarzania tej zawarto\u015bci. prosz\u0119 skontaktuj si\u0119 ze swoim administratorem.",
     "MessagePlaybackErrorNoCompatibleStream": "Obecnie brak kompatybilnych stream\u00f3w. Prosz\u0119 spr\u00f3buj ponownie p\u00f3\u017aniej lub skontaktuj si\u0119 z administratorem systemu.",
-    "MessagePlaybackErrorRateLimitExceeded": "Tw\u00f3j limit odtwarzania wyczerpa\u0142 si\u0119. Prosz\u0119 skontaktuj si\u0119 z administratorem systemu.",
     "MessagePlaybackErrorPlaceHolder": "Wybrana zawarto\u015b\u0107 nie mo\u017ce by\u0107 odtwarzana z tego urz\u0105dzenia.",
     "HeaderSelectAudio": "Wybierz Audio",
     "HeaderSelectSubtitles": "Wybierz Napisy",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "Wyst\u0105pi\u0142 b\u0142\u0105d podczas usuwania konta Emby Connect. Prosz\u0119 upewnij si\u0119 \u017ce posiadasz aktywne po\u0142\u0105czenie z internetem i spr\u00f3buj ponownie.",
     "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
     "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Ulubieni arty\u015bci",
     "HeaderFavoriteSongs": "Ulubione utwory",
     "HeaderConfirmPluginInstallation": "Potwierd\u017a instalacj\u0119 pluginu",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

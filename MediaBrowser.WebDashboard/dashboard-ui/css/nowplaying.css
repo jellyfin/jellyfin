@@ -73,8 +73,6 @@
     }
 
 .currentChapter {
-    -moz-box-shadow: 0 0 12px 7px #cc3333;
-    -webkit-box-shadow: 0 0 12px 7px #cc3333;
     box-shadow: 0 0 12px 7px #cc3333;
 }
 

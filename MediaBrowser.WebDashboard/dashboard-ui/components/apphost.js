@@ -155,6 +155,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     var version = window.dashboardVersion || '3.0';
 
     return {
+        dvrFeatureCode: Dashboard.isConnectMode() ? 'dvr' : 'dvrl',
         getWindowState: function () {
             return document.windowState || 'Normal';
         },

@@ -145,24 +145,24 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (index > 0) {
-                    html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
+                    html += '<button type="button" is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 } else {
-                    html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
+                    html += '<button type="button" is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
                 }
 
                 if (index < numImages - 1) {
-                    html += '<button is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
+                    html += '<button type="button" is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex + 1) + '" title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 } else {
-                    html += '<button is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
+                    html += '<button type="button" is="paper-icon-button-light" class="autoSize" disabled title="' + globalize.translate('sharedcomponents#MoveRight') + '"><i class="md-icon">chevron_right</i></button>';
                 }
             }
             else {
                 if (imageProviders.length) {
-                    html += '<button is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" class="btnSearchImages autoSize" title="' + globalize.translate('sharedcomponents#Search') + '"><i class="md-icon">search</i></button>';
+                    html += '<button type="button" is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" class="btnSearchImages autoSize" title="' + globalize.translate('sharedcomponents#Search') + '"><i class="md-icon">search</i></button>';
                 }
             }
 
-            html += '<button is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage autoSize" title="' + globalize.translate('sharedcomponents#Delete') + '"><i class="md-icon">delete</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" data-imagetype="' + image.ImageType + '" data-index="' + (image.ImageIndex != null ? image.ImageIndex : "null") + '" class="btnDeleteImage autoSize" title="' + globalize.translate('sharedcomponents#Delete') + '"><i class="md-icon">delete</i></button>';
             html += '</div>';
         }
 
@@ -208,6 +208,11 @@
 
             hasChanges = true;
             reload(context, null, focusContext);
+        }, function() {
+
+            require(['alert'], function (alert) {
+                alert(globalize.translate('sharedcomponents#DefaultErrorMessage'));
+            });
         });
     }
 
@@ -233,25 +238,6 @@
 
         elem.innerHTML = html;
         imageLoader.lazyChildren(elem);
-
-        addListeners(elem, 'btnSearchImages', 'click', function () {
-            showImageDownloader(page, this.getAttribute('data-imagetype'));
-        });
-
-        addListeners(elem, 'btnDeleteImage', 'click', function () {
-            var type = this.getAttribute('data-imagetype');
-            var index = this.getAttribute('data-index');
-            index = index == "null" ? null : parseInt(index);
-
-            deleteImage(page, currentItem.Id, type, index, apiClient, true);
-        });
-
-        addListeners(elem, 'btnMoveImage', 'click', function () {
-            var type = this.getAttribute('data-imagetype');
-            var index = this.getAttribute('data-index');
-            var newIndex = this.getAttribute('data-newindex');
-            moveImage(page, apiClient, currentItem.Id, type, index, newIndex, dom.parentWithClass(this, 'itemsContainer'));
-        });
     }
 
     function renderStandardImages(page, apiClient, item, imageInfos, imageProviders) {
@@ -384,9 +370,9 @@
         });
     }
 
-    function initEditor(page, options) {
+    function initEditor(context, options) {
 
-        addListeners(page, 'btnOpenUploadMenu', 'click', function () {
+        addListeners(context, 'btnOpenUploadMenu', 'click', function () {
             var imageType = this.getAttribute('data-imagetype');
 
             require(['components/imageuploader/imageuploader'], function (imageUploader) {
@@ -400,7 +386,7 @@
 
                     if (hasChanged) {
                         hasChanges = true;
-                        reload(page);
+                        reload(context);
                     }
                 });
             }, function () {
@@ -410,12 +396,32 @@
             });
         });
 
-        addListeners(page, 'btnBrowseAllImages', 'click', function () {
-            showImageDownloader(page, this.getAttribute('data-imagetype') || 'Primary');
+        addListeners(context, 'btnSearchImages', 'click', function () {
+            showImageDownloader(context, this.getAttribute('data-imagetype'));
         });
 
-        addListeners(page, 'btnImageCard', 'click', function () {
-            showActionSheet(page, this);
+        addListeners(context, 'btnBrowseAllImages', 'click', function () {
+            showImageDownloader(context, this.getAttribute('data-imagetype') || 'Primary');
+        });
+
+        addListeners(context, 'btnImageCard', 'click', function () {
+            showActionSheet(context, this);
+        });
+
+        addListeners(context, 'btnDeleteImage', 'click', function () {
+            var type = this.getAttribute('data-imagetype');
+            var index = this.getAttribute('data-index');
+            index = index == "null" ? null : parseInt(index);
+            var apiClient = connectionManager.getApiClient(currentItem.ServerId);
+            deleteImage(context, currentItem.Id, type, index, apiClient, true);
+        });
+
+        addListeners(context, 'btnMoveImage', 'click', function () {
+            var type = this.getAttribute('data-imagetype');
+            var index = this.getAttribute('data-index');
+            var newIndex = this.getAttribute('data-newindex');
+            var apiClient = connectionManager.getApiClient(currentItem.ServerId);
+            moveImage(context, apiClient, currentItem.Id, type, index, newIndex, dom.parentWithClass(this, 'itemsContainer'));
         });
     }
 

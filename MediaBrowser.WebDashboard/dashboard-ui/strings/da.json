@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Fejl i afspilning",
     "MessagePlaybackErrorNotAllowed": "Du er p\u00e5 nuv\u00e6rende tidspunkt ikke autoriseret til at afspille dette indhold. Kontakt venligst din systemadministrator for flere detaljer.",
     "MessagePlaybackErrorNoCompatibleStream": "Ingen kompatible streams er tilg\u00e6ngelige p\u00e5 nuv\u00e6rende tidspunkt. Pr\u00f8v igen senere eller kontakt din systemadministrator for flere detaljer.",
-    "MessagePlaybackErrorRateLimitExceeded": "Din afspilningskvote er blevet overskredet. Kontakt venligst din systemadministrator for flere detaljer.",
     "MessagePlaybackErrorPlaceHolder": "Det valgte indhold kan ikke afspilles fra denne enhed.",
     "HeaderSelectAudio": "V\u00e6lg lydspor",
     "HeaderSelectSubtitles": "V\u00e6lg undertekster",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
     "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
     "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favorite Artists",
     "HeaderFavoriteSongs": "Favorite Songs",
     "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

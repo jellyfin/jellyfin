@@ -2527,8 +2527,29 @@ namespace MediaBrowser.Server.Implementations.Library
                 }).OrderBy(i => i.Path).ToList();
         }
 
-        public string GetPathAfterNetworkSubstitution(string path)
+        public string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem)
         {
+            if (ownerItem != null)
+            {
+                var libraryOptions = GetLibraryOptions(ownerItem);
+                if (libraryOptions != null)
+                {
+                    foreach (var pathInfo in libraryOptions.PathInfos)
+                    {
+                        if (string.IsNullOrWhiteSpace(pathInfo.NetworkPath))
+                        {
+                            continue;
+                        }
+
+                        var substitutionResult = SubstitutePathInternal(path, pathInfo.Path, pathInfo.NetworkPath);
+                        if (substitutionResult.Item2)
+                        {
+                            return substitutionResult.Item1;
+                        }
+                    }
+                }
+            }
+
             foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
             {
                 path = SubstitutePath(path, map.From, map.To);
@@ -2538,6 +2559,11 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public string SubstitutePath(string path, string from, string to)
+        {
+            return SubstitutePathInternal(path, from, to).Item1;
+        }
+
+        private Tuple<string, bool> SubstitutePathInternal(string path, string from, string to)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -2552,7 +2578,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("to");
             }
 
-            var newPath = path.Replace(from.Trim(), to.Trim(), StringComparison.OrdinalIgnoreCase);
+            from = from.Trim();
+            to = to.Trim();
+
+            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
+            var changed = false;
 
             if (!string.Equals(newPath, path))
             {
@@ -2564,9 +2594,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     newPath = newPath.Replace('/', '\\');
                 }
+
+                changed = true;
             }
 
-            return newPath;
+            return new Tuple<string, bool>(newPath, changed);
         }
 
         private void SetExtraTypeFromFilename(Video item)
@@ -2695,7 +2727,7 @@ namespace MediaBrowser.Server.Implementations.Library
             throw new InvalidOperationException();
         }
 
-        public void AddVirtualFolder(string name, string collectionType, string[] mediaPaths, LibraryOptions options, bool refreshLibrary)
+        public void AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -2713,12 +2745,13 @@ namespace MediaBrowser.Server.Implementations.Library
                 virtualFolderPath = Path.Combine(rootFolderPath, name);
             }
 
-            if (mediaPaths != null)
+            var mediaPathInfos = options.PathInfos;
+            if (mediaPathInfos != null)
             {
-                var invalidpath = mediaPaths.FirstOrDefault(i => !_fileSystem.DirectoryExists(i));
+                var invalidpath = mediaPathInfos.FirstOrDefault(i => !_fileSystem.DirectoryExists(i.Path));
                 if (invalidpath != null)
                 {
-                    throw new ArgumentException("The specified path does not exist: " + invalidpath + ".");
+                    throw new ArgumentException("The specified path does not exist: " + invalidpath.Path + ".");
                 }
             }
 
@@ -2740,11 +2773,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
 
-                if (mediaPaths != null)
+                if (mediaPathInfos != null)
                 {
-                    foreach (var path in mediaPaths)
+                    foreach (var path in mediaPathInfos)
                     {
-                        AddMediaPath(name, path);
+                        AddMediaPathInternal(name, path, false);
                     }
                 }
             }
@@ -2767,6 +2800,61 @@ namespace MediaBrowser.Server.Implementations.Library
                         _libraryMonitorFactory().Start();
                     }
                 });
+            }
+        }
+
+        private const string ShortcutFileExtension = ".mblink";
+        private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
+        public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
+        {
+            AddMediaPathInternal(virtualFolderName, pathInfo, true);
+        }
+
+        private void AddMediaPathInternal(string virtualFolderName, MediaPathInfo pathInfo, bool saveLibraryOptions)
+        {
+            if (pathInfo == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var path = pathInfo.Path;
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            if (!_fileSystem.DirectoryExists(path))
+            {
+                throw new DirectoryNotFoundException("The path does not exist.");
+            }
+
+            var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+
+            var shortcutFilename = _fileSystem.GetFileNameWithoutExtension(path);
+
+            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+
+            while (_fileSystem.FileExists(lnk))
+            {
+                shortcutFilename += "1";
+                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
+            }
+
+            _fileSystem.CreateShortcut(lnk, path);
+
+            RemoveContentTypeOverrides(path);
+
+            if (saveLibraryOptions)
+            {
+                var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+
+                var list = libraryOptions.PathInfos.ToList();
+                list.Add(pathInfo);
+                libraryOptions.PathInfos = list.ToArray();
+
+                CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
             }
         }
 
@@ -2812,38 +2900,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     }
                 });
             }
-        }
-
-        private const string ShortcutFileExtension = ".mblink";
-        private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
-        public void AddMediaPath(string virtualFolderName, string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            if (!_fileSystem.DirectoryExists(path))
-            {
-                throw new DirectoryNotFoundException("The path does not exist.");
-            }
-
-            var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
-            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
-
-            var shortcutFilename = _fileSystem.GetFileNameWithoutExtension(path);
-
-            var lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-
-            while (_fileSystem.FileExists(lnk))
-            {
-                shortcutFilename += "1";
-                lnk = Path.Combine(virtualFolderPath, shortcutFilename + ShortcutFileExtension);
-            }
-
-            _fileSystem.CreateShortcut(lnk, path);
-
-            RemoveContentTypeOverrides(path);
         }
 
         private void RemoveContentTypeOverrides(string path)

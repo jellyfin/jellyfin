@@ -8,7 +8,7 @@ define(['apphost'], function (appHost) {
 
         options = options || {};
 
-        var name = item.EpisodeTitle || item.Name || '';
+        var name = (item.Type == 'Program' && item.IsSeries ? item.EpisodeTitle : item.Name) || '';
 
         if (item.Type == "TvChannel") {
 
@@ -37,7 +37,7 @@ define(['apphost'], function (appHost) {
                 number += "-" + displayIndexNumber;
             }
 
-            name = number + " - " + name;
+            name = name ? (number + " - " + name) : number;
 
         }
 

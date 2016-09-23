@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Error de Reproducci\u00f3n",
     "MessagePlaybackErrorNotAllowed": "Actualmente no esta autorizado para reproducir este contenido. Por favor contacte a su administrador de sistema para mas informaci\u00f3n.",
     "MessagePlaybackErrorNoCompatibleStream": "No hay streams compatibles en este en este momento. Por favor intente de nuevo mas tarde o contacte a su administrador de sistema para mas detalles.",
-    "MessagePlaybackErrorRateLimitExceeded": "Su limite de transferencia ha sido excedido. Por favor contacte a su administrador de sistema para mas informaci\u00f3n.",
     "MessagePlaybackErrorPlaceHolder": "No es posible reproducir el contenido seleccionado en este dispositivo.",
     "HeaderSelectAudio": "Seleccionar Audio",
     "HeaderSelectSubtitles": "Seleccionar Subtitulos",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "Hubo un error retirando la cuenta de Emby Connect. Por favor aseg\u00farese que su conexi\u00f3n a internet esta activa e intente de nuevo.",
     "ErrorAddingEmbyConnectAccount1": "Hubo un error agregando la cuenta de Emby Connect. \u00bfYa ha creado una cuenta de Emby? Registrese en {0}.",
     "ErrorAddingEmbyConnectAccount2": "Por favor aseg\u00farese que la cuenta Emby ha sido activada siguiendo las instrucciones incluidas en el correo electr\u00f3nico que recibi\u00f3 al crear la cuenta. Si no recibi\u00f3 dicho correo electr\u00f3nico por favor escriba uno a {0} desde la direcci\u00f3n de correo electr\u00f3nico usada con la cuenta Emby.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Artistas Favoritos",
     "HeaderFavoriteSongs": "Canciones Favoritas",
     "HeaderConfirmPluginInstallation": "Confirmar Instalaci\u00f3n de Complemento",
@@ -2136,5 +2136,6 @@
     "Sports": "Deportes",
     "HeaderForKids": "Para Ni\u00f1os",
     "HeaderRecordingGroups": "Grupos de Grabaciones",
-    "LabelConvertRecordingsTo": "Convertir grabaciones a:"
+    "LabelConvertRecordingsTo": "Convertir grabaciones a:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

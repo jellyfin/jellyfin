@@ -284,7 +284,7 @@
         html += item.TargetPath || '';
         html += '</td>';
 
-        html += '<td class="organizerButtonCell">';
+        html += '<td class="organizerButtonCell" style="whitespace:no-wrap;">';
 
         if (item.Status != 'Success') {
 

@@ -112,6 +112,8 @@ namespace MediaBrowser.Api.Library
         /// <value>The name.</value>
         public string Path { get; set; }
 
+        public MediaPathInfo PathInfo { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [refresh library].
         /// </summary>
@@ -212,7 +214,12 @@ namespace MediaBrowser.Api.Library
         {
             var libraryOptions = request.LibraryOptions ?? new LibraryOptions();
 
-            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, request.Paths, libraryOptions, request.RefreshLibrary);
+            if (request.Paths != null && request.Paths.Length > 0)
+            {
+                libraryOptions.PathInfos = request.Paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
+            }
+
+            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, libraryOptions, request.RefreshLibrary);
         }
 
         /// <summary>
@@ -308,7 +315,16 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                _libraryManager.AddMediaPath(request.Name, request.Path);
+                var mediaPath = request.PathInfo;
+
+                if (mediaPath == null)
+                {
+                    mediaPath = new MediaPathInfo
+                    {
+                        Path = request.Path
+                    };
+                }
+                _libraryManager.AddMediaPath(request.Name, mediaPath);
             }
             finally
             {

@@ -90,7 +90,7 @@
     "LabelCountry": "Land:",
     "LabelLanguage": "Sprache:",
     "LabelTimeLimitHours": "Zeitlimit (Stunden):",
-    "HeaderPreferredMetadataLanguage": "Bevorzugte Metadata Sprache:",
+    "HeaderPreferredMetadataLanguage": "Bevorzugte Sprache der Metadaten:",
     "LabelSaveLocalMetadata": "Speichere Bildmaterial und Metadaten in den Medienverzeichnissen",
     "LabelSaveLocalMetadataHelp": "Durch die Speicherung von Bildmaterial und Metadaten direkt in den Medienverzeichnissen, befinden sich diese an einem Ort wo sie sehr leicht bearbeitet werden k\u00f6nnen.",
     "LabelDownloadInternetMetadata": "Lade Bildmaterial und Metadaten aus dem Internet",
@@ -338,7 +338,7 @@
     "TitleMetadata": "Metadaten",
     "LabelFanartApiKey": "Pers\u00f6nlicher API Schl\u00fcssel:",
     "LabelFanartApiKeyHelp": "Fanart Anfragen ohne einen pers\u00f6nlichen API Schl\u00fcssel liefert Bilder der letzten 7 Tage. Bei Verwendung eines pers\u00f6nlichen API Schl\u00fcssels werden Ergebnisse der letzten 48 Stunden, und als VIP Member, der letzten 10 Minuten geliefert.",
-    "ExtractChapterImagesHelp": "Das Extrahieren von Kapitel-Bildern erm\u00f6glicht es den Clients eine grafische Szenenauswahl anzubieten. Das Erstellen ist recht langsam, rechenintensiv und erfordert ggf. einige Gigabyte an freien Speicherplatz. Diese Aufgabe startet wenn neue Videos erkannt werden und ebenso als eine n\u00e4chtliche Aufgabe. Es wird nicht empfohlen diese Aufgabe in Zeiten hoher Server-Auslastung zu starten.",
+    "ExtractChapterImagesHelp": "Das Extrahieren von Kapitel-Bildern erm\u00f6glicht es Emby-Apps eine grafische Szenenauswahl anzubieten. Das Erstellen ist recht langsam, rechenintensiv und erfordert ggf. einige Gigabyte an freien Speicherplatz. Diese Aufgabe startet wenn neue Videos erkannt werden und ebenso als eine n\u00e4chtliche Aufgabe. Es wird nicht empfohlen diese Aufgabe in Zeiten hoher Server-Auslastung zu starten.",
     "LabelMetadataDownloadLanguage": "Bevorzugte Sprache f\u00fcr Downloads:",
     "ButtonSignIn": "Einloggen",
     "TitleSignIn": "Einloggen",
@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Wiedergabefehler",
     "MessagePlaybackErrorNotAllowed": "Sie sind nicht befugt diese Inhalte wiederzugeben. Bitte kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
     "MessagePlaybackErrorNoCompatibleStream": "Es sind keine kompatiblen Streams verf\u00fcgbar. Bitte versuchen Sie es sp\u00e4ter erneut oder kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
-    "MessagePlaybackErrorRateLimitExceeded": "Ihr Wiedergabelimit wurde \u00fcberschritten. Bitte kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
     "MessagePlaybackErrorPlaceHolder": "Der gew\u00e4hlte Inhalt kann auf diesem Ger\u00e4t nicht abgespielt werden.",
     "HeaderSelectAudio": "W\u00e4hle Audio",
     "HeaderSelectSubtitles": "W\u00f6hle Untertitel",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "Ein Fehler trat beim entfernen des Empy Connect Kontos auf. Bitte stellen Sie sicher, dass Sie \u00fcber eine aktive Internetverbindung verf\u00fcgen und versuchen Sie es erneut.",
     "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Haben Sie bereits ein Emby Konto? Melden Sie sich hier an: {0}.",
     "ErrorAddingEmbyConnectAccount2": "Bitte stellen Sie sicher, dass Ihr Emby Konto nach den Anweisungen aus der Email, die Sie nach Erstellung des Kontos erhielten, aktiviert wurde. Wenn Sie keine Email erhalten haben, so senden Sie und bitte eine email an {0}. Benutzen Sie dazu bitte die Email-Adresse, die Sie bereits zur Erstellung Ihres Emby Kontos verwendet haben.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Lieblings K\u00fcnstler",
     "HeaderFavoriteSongs": "Lieblings Songs",
     "HeaderConfirmPluginInstallation": "Best\u00e4tige Plugin Installation",
@@ -2136,5 +2136,6 @@
     "Sports": "Sport",
     "HeaderForKids": "F\u00fcr Kinder",
     "HeaderRecordingGroups": "Aufnahme-Gruppen",
-    "LabelConvertRecordingsTo": "Konvertiere Aufnahmen nach:"
+    "LabelConvertRecordingsTo": "Konvertiere Aufnahmen nach:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

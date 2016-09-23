@@ -119,6 +119,8 @@
 
         if (isFullscreen) {
             dlg.classList.add('actionsheet-fullscreen');
+        } else {
+            dlg.classList.add('actionsheet-not-fullscreen');
         }
 
         var extraSpacing = !layoutManager.tv;

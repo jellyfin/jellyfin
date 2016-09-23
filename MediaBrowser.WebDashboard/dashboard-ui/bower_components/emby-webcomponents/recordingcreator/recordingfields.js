@@ -59,9 +59,14 @@
         });
     }
 
+    function getDvrFeatureCode() {
+
+        return appHost.dvrFeatureCode || 'dvr';
+    }
+
     function showSingleRecordingFields(context, programId, apiClient) {
 
-        getRegistration(apiClient, programId, 'dvr').then(function (regInfo) {
+        getRegistration(apiClient, programId, getDvrFeatureCode()).then(function (regInfo) {
 
             if (regInfo.IsRegistered) {
                 context.querySelector('.supporterContainer').classList.add('hide');
@@ -77,7 +82,7 @@
 
     function showRecordingFieldsContainer(context, programId, apiClient) {
 
-        getRegistration(apiClient, programId, 'dvr').then(function (regInfo) {
+        getRegistration(apiClient, programId, getDvrFeatureCode()).then(function (regInfo) {
 
             if (regInfo.IsRegistered) {
                 context.querySelector('.recordingFields').classList.remove('hide');
@@ -209,16 +214,20 @@
 
         if (isChecked) {
             if (!this.TimerId && !this.SeriesTimerId) {
+                loading.show();
                 recordingHelper.createRecording(apiClient, options.programId, false).then(function () {
                     events.trigger(self, 'recordingchanged');
                     fetchData(self);
+                    loading.hide();
                 });
             }
         } else {
             if (this.TimerId) {
+                loading.show();
                 recordingHelper.cancelTimer(apiClient, this.TimerId, true).then(function () {
                     events.trigger(self, 'recordingchanged');
                     fetchData(self);
+                    loading.hide();
                 });
             }
         }
@@ -302,6 +311,15 @@
     recordingEditor.prototype.hasChanged = function () {
 
         return this.changed;
+    };
+
+    recordingEditor.prototype.refresh = function () {
+
+        fetchData(this);
+    };
+
+    recordingEditor.prototype.destroy = function () {
+
     };
 
     return recordingEditor;

@@ -38,6 +38,7 @@
 .button-flat {
     background: transparent;
     box-shadow: none;
+    text-transform: uppercase;
 }
 
 .emby-button > i {
