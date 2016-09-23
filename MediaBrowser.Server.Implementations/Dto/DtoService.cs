@@ -1509,7 +1509,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private string GetMappedPath(IHasMetadata item)
+        private string GetMappedPath(BaseItem item)
         {
             var path = item.Path;
 
@@ -1517,7 +1517,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                path = _libraryManager.GetPathAfterNetworkSubstitution(path);
+                path = _libraryManager.GetPathAfterNetworkSubstitution(path, item);
             }
 
             return path;

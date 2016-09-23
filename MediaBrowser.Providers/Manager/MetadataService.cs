@@ -651,6 +651,8 @@ namespace MediaBrowser.Providers.Manager
         {
             var refreshResult = new RefreshResult();
 
+            var results = new List<MetadataResult<TItemType>>();
+
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
@@ -667,7 +669,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (result.HasMetadata)
                     {
-                        MergeData(result, temp, new List<MetadataFields>(), false, false);
+                        results.Add(result);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
                     }
@@ -688,7 +690,47 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            var orderedResults = new List<MetadataResult<TItemType>>();
+            var preferredLanguage = NormalizeLanguage(id.MetadataLanguage);
+
+            // prioritize results with matching ResultLanguage
+            foreach (var result in results)
+            {
+                if (!result.QueriedById)
+                {
+                    break;
+                }
+
+                if (string.Equals(NormalizeLanguage(result.ResultLanguage), preferredLanguage, StringComparison.OrdinalIgnoreCase) && result.QueriedById)
+                {
+                    orderedResults.Add(result);
+                }
+            }
+
+            // add all other results
+            foreach (var result in results)
+            {
+                if (!orderedResults.Contains(result))
+                {
+                    orderedResults.Add(result);
+                }
+            }
+
+            foreach (var result in results)
+            {
+                MergeData(result, temp, new List<MetadataFields>(), false, false);
+            }
+
             return refreshResult;
+        }
+
+        private string NormalizeLanguage(string language)
+        {
+            if (string.IsNullOrWhiteSpace(language))
+            {
+                return "en";
+            }
+            return language;
         }
 
         private void MergeNewData(TItemType source, TIdType lookupInfo)

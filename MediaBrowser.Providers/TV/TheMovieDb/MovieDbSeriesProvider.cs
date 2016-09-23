@@ -119,6 +119,7 @@ namespace MediaBrowser.Providers.TV
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>();
+            result.QueriedById = true;
 
             var tmdbId = info.GetProviderId(MetadataProviders.Tmdb);
 
@@ -154,6 +155,7 @@ namespace MediaBrowser.Providers.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
+                result.QueriedById = false;
                 var searchResults = await new MovieDbSearch(_logger, _jsonSerializer, _libraryManager).GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
                 var searchResult = searchResults.FirstOrDefault();
@@ -168,7 +170,7 @@ namespace MediaBrowser.Providers.TV
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchSeriesData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                result = await FetchMovieData(tmdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = result.Item != null;
             }
@@ -176,7 +178,7 @@ namespace MediaBrowser.Providers.TV
             return result;
         }
 
-        private async Task<Series> FetchSeriesData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<MetadataResult<Series>> FetchMovieData(string tmdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
             string dataFilePath = null;
             RootObject seriesInfo = null;
@@ -194,16 +196,18 @@ namespace MediaBrowser.Providers.TV
             tmdbId = seriesInfo.id.ToString(_usCulture);
 
             dataFilePath = GetDataFilePath(tmdbId, language);
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
             _jsonSerializer.SerializeToFile(seriesInfo, dataFilePath);
 
             await EnsureSeriesInfo(tmdbId, language, cancellationToken).ConfigureAwait(false);
 
-            var item = new Series();
+            var result = new MetadataResult<Series>();
+            result.Item = new Series();
+            result.ResultLanguage = seriesInfo.ResultLanguage;
 
-            ProcessMainInfo(item, seriesInfo, preferredCountryCode);
+            ProcessMainInfo(result.Item, seriesInfo, preferredCountryCode);
 
-            return item;
+            return result;
         }
 
         private void ProcessMainInfo(Series series, RootObject seriesInfo, string preferredCountryCode)
@@ -324,7 +328,7 @@ namespace MediaBrowser.Providers.TV
 
             var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
             _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
         }
@@ -354,6 +358,11 @@ namespace MediaBrowser.Providers.TV
             }).ConfigureAwait(false))
             {
                 mainResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
+
+                if (!string.IsNullOrEmpty(language))
+                {
+                    mainResult.ResultLanguage = language;
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -385,6 +394,7 @@ namespace MediaBrowser.Providers.TV
                     var englishResult = _jsonSerializer.DeserializeFromStream<RootObject>(json);
 
                     mainResult.overview = englishResult.overview;
+                    mainResult.ResultLanguage = "en";
                 }
             }
 
@@ -627,6 +637,7 @@ namespace MediaBrowser.Providers.TV
             public ExternalIds external_ids { get; set; }
             public Videos videos { get; set; }
             public ContentRatings content_ratings { get; set; }
+            public string ResultLanguage { get; set; }
         }
 
         public int Order

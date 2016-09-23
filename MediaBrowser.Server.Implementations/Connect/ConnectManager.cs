@@ -403,6 +403,14 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)
         {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("userId");
+            }
+            if (string.IsNullOrWhiteSpace(connectUsername))
+            {
+                throw new ArgumentNullException("connectUsername");
+            }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
                 await UpdateConnectInfo().ConfigureAwait(false);
@@ -422,14 +430,6 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async Task<UserLinkResult> LinkUserInternal(string userId, string connectUsername)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                throw new ArgumentNullException("userId");
-            }
-            if (string.IsNullOrWhiteSpace(connectUsername))
-            {
-                throw new ArgumentNullException("connectUsername");
-            }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
                 throw new ArgumentNullException("ConnectServerId");
@@ -444,6 +444,12 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (!connectUser.IsActive)
             {
                 throw new ArgumentException("The Emby account has been disabled.");
+            }
+
+            var existingUser = _userManager.Users.FirstOrDefault(i => string.Equals(i.ConnectUserId, connectUser.Id) && !string.IsNullOrWhiteSpace(i.ConnectAccessKey));
+            if (existingUser != null)
+            {
+                throw new InvalidOperationException("This connect user is already linked to local user " + existingUser.Name);
             }
 
             var user = GetUser(userId);

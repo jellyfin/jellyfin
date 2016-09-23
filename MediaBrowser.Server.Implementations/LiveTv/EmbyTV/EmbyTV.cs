@@ -143,9 +143,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     continue;
                 }
 
+                var mediaPathInfos = pathsToCreate.Select(i => new MediaPathInfo { Path = i }).ToArray();
+
+                var libraryOptions = new LibraryOptions
+                {
+                    PathInfos = mediaPathInfos
+                };
                 try
                 {
-                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, pathsToCreate.ToArray(), new LibraryOptions(), true);
+                    _libraryManager.AddVirtualFolder(recordingFolder.Name, recordingFolder.CollectionType, libraryOptions, true);
                 }
                 catch (Exception ex)
                 {
