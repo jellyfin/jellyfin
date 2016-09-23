@@ -253,7 +253,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
 
             if (mediaSource.ReadAtNativeFramerate)
             {
