@@ -600,7 +600,7 @@ namespace MediaBrowser.Controller.Entities
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = mediaStreams,
                 Name = GetMediaSourceName(i, mediaStreams),
-                Path = enablePathSubstitution ? GetMappedPath(i.Path, locationType) : i.Path,
+                Path = enablePathSubstitution ? GetMappedPath(i, i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
                 VideoType = i.VideoType,
