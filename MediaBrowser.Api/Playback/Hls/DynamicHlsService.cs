@@ -922,11 +922,6 @@ namespace MediaBrowser.Api.Playback.Hls
                             ).Trim();
         }
 
-        protected override bool EnableThrottling(StreamState state)
-        {
-            return true;
-        }
-
         /// <summary>
         /// Gets the segment file extension.
         /// </summary>
