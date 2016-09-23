@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Errore di riproduzione",
     "MessagePlaybackErrorNotAllowed": "Al momento non sei autorizzato a riprodurre questo contenuto. Per favore contatta l'amministratore del sistema per ulteriori dettagli",
     "MessagePlaybackErrorNoCompatibleStream": "Nessuna trasmissione compatibile \u00e8 al momento disponibile. Per favore riprova in seguito o contatta il tuo Amministratore di sistema per chiarimenti",
-    "MessagePlaybackErrorRateLimitExceeded": "La tua quota di riproduzione \u00e8 stata raggiunta. Per favore contatta l'amministratore del sistema per ulteriori dettagli",
     "MessagePlaybackErrorPlaceHolder": "Il contenuto scelto non pu\u00f2 essere riprodotto su questo dispositivo",
     "HeaderSelectAudio": "Seleziona audio",
     "HeaderSelectSubtitles": "Seleziona sottotitoli",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "C'\u00e8 stato un errore nella rimozione dell'account Emby Connect. Per favore assicurati di avere una connessione a internet attiva e riprova.",
     "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
     "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favorite Artists",
     "HeaderFavoriteSongs": "Favorite Songs",
     "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

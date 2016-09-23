@@ -1331,7 +1331,6 @@ var AppInfo = {};
         define("dashboardcss", ['css!css/dashboard']);
 
         define("jqmbase", ['dashboardcss', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
-        define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
         define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
         define("jqmwidget", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.widget"]);
@@ -1344,7 +1343,7 @@ var AppInfo = {};
 
         define("jqmcontrolgroup", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
 
-        define("jqmcollapsible", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
+        define("jqmcollapsible", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
 
         define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
@@ -1608,12 +1607,10 @@ var AppInfo = {};
     }
 
     function onDialogOpen(dlg) {
-        if (dlg.classList.contains('formDialog')) {
-            if (!dlg.classList.contains('background-theme-a')) {
+        if (!dlg.classList.contains('background-theme-a') && !dlg.classList.contains('actionSheet')) {
 
-                dlg.classList.add('background-theme-b');
-                dlg.classList.add('ui-body-b');
-            }
+            dlg.classList.add('background-theme-b');
+            dlg.classList.add('ui-body-b');
         }
     }
 

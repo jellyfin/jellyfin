@@ -20,8 +20,6 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 're
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
-        } else {
-            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
@@ -34,6 +32,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 're
             scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
         } else {
             dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
+            dlg.classList.add('dialog-fullscreen-lowres');
         }
 
         dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
@@ -65,6 +64,8 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 're
 
             return false;
         });
+
+        dlg.querySelector('.submitText').innerHTML = options.submitText || globalize.translate('sharedcomponents#ButtonOk');
 
         dlg.style.minWidth = (Math.min(400, dom.getWindowSize().innerWidth - 50)) + 'px';
 

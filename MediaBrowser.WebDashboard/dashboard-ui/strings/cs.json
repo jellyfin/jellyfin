@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Chyba p\u0159ehr\u00e1v\u00e1n\u00ed",
     "MessagePlaybackErrorNotAllowed": "V sou\u010dasn\u00e9 dob\u011b nejste opr\u00e1vn\u011bni p\u0159ehr\u00e1vat tento obsah. Pro v\u00edce informac\u00ed se obra\u0165te se na spr\u00e1vce syst\u00e9mu.",
     "MessagePlaybackErrorNoCompatibleStream": "\u017d\u00e1dn\u00e9 kompatibiln\u00ed streamy nejsou v sou\u010dasn\u00e9 dob\u011b k dispozici. Zkuste to pros\u00edm pozd\u011bji nebo pro v\u00edce podrobnost\u00ed kontaktujte sv\u00e9ho spr\u00e1vce syst\u00e9mu",
-    "MessagePlaybackErrorRateLimitExceeded": "Limit rychlosti p\u0159ehr\u00e1v\u00e1n\u00ed byl p\u0159ekro\u010den. Pro v\u00edce informac\u00ed se obra\u0165te na spr\u00e1vce syst\u00e9mu.",
     "MessagePlaybackErrorPlaceHolder": "Zvolen\u00fd obsah nen\u00ed mo\u017en\u00e9 p\u0159ehr\u00e1t z tohoto za\u0159\u00edzen\u00ed.",
     "HeaderSelectAudio": "Vyber audio",
     "HeaderSelectSubtitles": "Vyber titulky",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "Nastala chyba p\u0159i odebr\u00e1n\u00ed \u00fa\u010dtu Emby Connect. Zkontrolujte zda m\u00e1te aktivn\u00ed internetov\u00e9 p\u0159ipojen\u00ed a zkuste znovu.",
     "ErrorAddingEmbyConnectAccount1": "Nastala chyba p\u0159i p\u0159id\u00e1v\u00e1n\u00ed \u00fa\u010dtu Emby Connect. Opravdu m\u00e1te vytvo\u0159en \u00fa\u010det u Emby? P\u0159ihlaste se zde {0}.",
     "ErrorAddingEmbyConnectAccount2": "Pros\u00edm, ujist\u011bte se, \u017ee \u00fa\u010det Emby byl aktivov\u00e1n podle pokyn\u016f v e-mailu zaslan\u00e9m po vytvo\u0159en\u00ed \u00fa\u010dtu. Pokud jste neobdr\u017eeli e-mail, pak pros\u00edm po\u0161lete e-mail na adresu {0} z e-mailov\u00e9 adresy pou\u017eit\u00fd na \u00fa\u010dtu Emby.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Obl\u00edben\u00ed \u00fam\u011blci",
     "HeaderFavoriteSongs": "Obl\u00edben\u00e1 hudba",
     "HeaderConfirmPluginInstallation": "Potvrzen\u00ed instalace z\u00e1suvn\u00e9ho modulu",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

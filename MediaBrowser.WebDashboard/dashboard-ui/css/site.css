@@ -116,6 +116,10 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
+.ui-body-a .paperList {
+    background-color: #fff;
+}
+
 input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
@@ -152,31 +156,6 @@ input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='r
     border-radius: 4px;
     display: block;
 }
-
-select {
-    width: 100%;
-    margin: 0 0 .5em 0;
-    background: none;
-    border: 1px solid rgb(221, 221, 221);
-    border-width: 0 0 1px 0;
-    /* Prefixed box-sizing rules necessary for older browsers */
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    /* Remove select styling */
-    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
-    font-size: inherit;
-    /* General select styles: change as needed */
-    font-family: inherit;
-    font-weight: bold;
-    color: inherit;
-    padding: .6em .8em .3em 0;
-    cursor: pointer;
-}
-
-    select:not([data-inline='true']) {
-        display: block;
-    }
 
 .ui-body-b select, .ui-body-b [is="emby-input"] {
     background: none;
@@ -219,29 +198,6 @@ div[data-role='page'] {
 .libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
     transform: translateY(-210%);
 }
-
-textarea {
-    width: 100%;
-}
-
-    pre, textarea.pre {
-        display: block;
-        padding: 8.5px;
-        font-size: 12.025px;
-        line-height: 18px;
-        word-break: break-all;
-        word-wrap: break-word;
-        white-space: pre;
-        white-space: pre-wrap;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        border-radius: 4px;
-        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-        color: #000;
-    }
 
 .hide {
     display: none !important;
@@ -302,10 +258,6 @@ textarea {
 
 .dialog.background-theme-a {
     background-color: #f0f0f0;
-}
-
-.dialog:not(.background-theme-a):not(.background-theme-b) {
-    background-color: #fff;
 }
 
 .sidebarLinks {
@@ -545,10 +497,6 @@ progress {
     padding: 25px;
     text-align: center;
     color: #bbb;
-}
-
-.actionSheetMenuItem:hover {
-    background-color: #e8e8e8;
 }
 
 .ui-body-a select {

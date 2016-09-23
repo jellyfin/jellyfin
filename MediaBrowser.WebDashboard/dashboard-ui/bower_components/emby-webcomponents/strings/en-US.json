@@ -303,5 +303,6 @@
   "SkipEpisodesAlreadyInMyLibrary": "Skip episodes that are already in my library",
   "SkipEpisodesAlreadyInMyLibraryHelp": "Episodes will be compared using season and episode numbers, when available.",
   "LabelKeepUpTo": "Keep up to:",
-  "AsManyAsPossible": "As many as possible"
+  "AsManyAsPossible": "As many as possible",
+  "DefaultErrorMessage": "There was an error processing the request. Please try again later."
 }

@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Erro na Reprodu\u00e7\u00e3o",
     "MessagePlaybackErrorNotAllowed": "N\u00e3o est\u00e1 autorizado a reproduzir este conte\u00fado. Por favor, contacte o administrador do sistema para mais detalhes.",
     "MessagePlaybackErrorNoCompatibleStream": "N\u00e3o existem streams compat\u00edveis. Por favor, tente novamente mais tarde ou contate o administrador do sistema para mais detalhes.",
-    "MessagePlaybackErrorRateLimitExceeded": "O seu limite da taxa de reprodu\u00e7\u00e3o foi excedido. Por favor, entre em contato com o administrador do sistema para mais detalhes.",
     "MessagePlaybackErrorPlaceHolder": "O conte\u00fado escolhido n\u00e3o \u00e9 reproduz\u00edvel neste dispositivo.",
     "HeaderSelectAudio": "Selecione \u00c1udio",
     "HeaderSelectSubtitles": "Selecione Legendas",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
     "ErrorAddingEmbyConnectAccount1": "There was an error adding the Emby Connect account. Have you created an Emby account? Sign up at {0}.",
     "ErrorAddingEmbyConnectAccount2": "Please ensure the Emby account has been activated by following the instructions in the email sent after creating the account. If you did not receive this email then please send an email to {0} from the email address used with the Emby account.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favorite Artists",
     "HeaderFavoriteSongs": "Favorite Songs",
     "HeaderConfirmPluginInstallation": "Confirm Plugin Installation",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

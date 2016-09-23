@@ -41,7 +41,8 @@
 }
 
 @media all and (max-width: 1280px), all and (max-height: 720px) {
-    .dialog-fixedSize {
+
+    .dialog-fixedSize, .dialog-fullscreen-lowres {
         position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
@@ -94,5 +95,5 @@
 }
 
 .dialogBackdropOpened {
-    opacity: .8;
+    opacity: .6;
 }

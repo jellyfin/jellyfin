@@ -1457,7 +1457,6 @@
     "HeaderPlaybackError": "Uppspelningsfel",
     "MessagePlaybackErrorNotAllowed": "Du har inte tillg\u00e5ng att spela upp det h\u00e4r inneh\u00e5llet. Kontakta din systemadministrat\u00f6r f\u00f6r mer detaljer.",
     "MessagePlaybackErrorNoCompatibleStream": "Inga kompatibla str\u00f6mmar finns att tillg\u00e5. V\u00e4nligen f\u00f6rs\u00f6k igen senare eller kontakta din systemadministrat\u00f6r f\u00f6r mer detaljer.",
-    "MessagePlaybackErrorRateLimitExceeded": "Begr\u00e4nsningen f\u00f6r din uppspelning har n\u00e5tt sin gr\u00e4ns. Kontakta din systemadministrat\u00f6r f\u00f6r mer information.",
     "MessagePlaybackErrorPlaceHolder": "Inneh\u00e5llet du har valt kan inte spelas upp fr\u00e5n den h\u00e4r enheten.",
     "HeaderSelectAudio": "V\u00e4lj ljudsp\u00e5r",
     "HeaderSelectSubtitles": "V\u00e4lj undertexter",
@@ -2026,6 +2025,7 @@
     "ErrorRemovingEmbyConnectAccount": "There was an error removing the Emby Connect account. Please ensure you have an active internet connection and try again.",
     "ErrorAddingEmbyConnectAccount1": "Det gick inte att l\u00e4gga till ditt Emby Connect-konto. Har du ett Emby Connect-konto? Du kan skapa ett p\u00e5 {0}",
     "ErrorAddingEmbyConnectAccount2": "Kontrollera att ditt konto aktiverats genom att f\u00f6lja instruktionerna som skickades per epost n\u00e4r du skapade ditt konto. Om du inte f\u00e5tt denna epost, skicka epost till {0} fr\u00e5n den apostadress du anv\u00e4nde n\u00e4r du skapade kontot.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favorit artister",
     "HeaderFavoriteSongs": "Favorit l\u00e5tar",
     "HeaderConfirmPluginInstallation": "Bekr\u00e4fta installation av till\u00e4gg",
@@ -2136,5 +2136,6 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV"
 }

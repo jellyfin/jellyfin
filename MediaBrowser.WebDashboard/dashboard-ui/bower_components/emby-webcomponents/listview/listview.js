@@ -257,7 +257,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     textlines.push(item.SeriesName || '&nbsp;');
                 }
 
-                if (item.EpisodeTitle) {
+                if (item.IsSeries) {
                     textlines.push(item.Name || '&nbsp;');
                 }
             }
@@ -267,7 +267,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (options.showIndexNumber && item.IndexNumber != null) {
                 displayName = item.IndexNumber + ". " + displayName;
             }
-            textlines.push(displayName);
+            if (displayName) {
+                textlines.push(displayName);
+            }
 
             if (item.ArtistItems && item.Type != 'MusicAlbum') {
                 textlines.push(item.ArtistItems.map(function (a) {
