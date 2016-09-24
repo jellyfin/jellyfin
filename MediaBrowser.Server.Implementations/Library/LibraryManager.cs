@@ -2829,6 +2829,16 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new DirectoryNotFoundException("The path does not exist.");
             }
 
+            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
+            {
+                throw new DirectoryNotFoundException("The network path does not exist.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
+            {
+                throw new DirectoryNotFoundException("The network path does not exist.");
+            }
+
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
@@ -2850,6 +2860,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
+                SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
+
                 var list = libraryOptions.PathInfos.ToList();
                 list.Add(pathInfo);
                 libraryOptions.PathInfos = list.ToArray();
@@ -2865,10 +2877,17 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("path");
             }
 
+            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
+            {
+                throw new DirectoryNotFoundException("The network path does not exist.");
+            }
+
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
             var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
             var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+
+            SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
             var list = libraryOptions.PathInfos.ToList();
             foreach (var originalPathInfo in list)
@@ -2879,9 +2898,34 @@ namespace MediaBrowser.Server.Implementations.Library
                     break;
                 }
             }
+
             libraryOptions.PathInfos = list.ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
+        }
+
+        private void SyncLibraryOptionsToLocations(string virtualFolderPath, LibraryOptions options)
+        {
+            var topLibraryFolders = GetUserRootFolder().Children.ToList();
+            var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders);
+
+            if (info.Locations.Count > 0 && info.Locations.Count != options.PathInfos.Length)
+            {
+                var list = options.PathInfos.ToList();
+
+                foreach (var location in info.Locations)
+                {
+                    if (!list.Any(i => string.Equals(i.Path, location, StringComparison.Ordinal)))
+                    {
+                        list.Add(new MediaPathInfo
+                        {
+                            Path = location
+                        });
+                    }
+                }
+
+                options.PathInfos = list.ToArray();
+            }
         }
 
         public void RemoveVirtualFolder(string name, bool refreshLibrary)

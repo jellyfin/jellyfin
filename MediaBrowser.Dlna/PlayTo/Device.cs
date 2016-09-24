@@ -474,7 +474,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 if (_disposed)
                     return;
 
-                _logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
+                //_logger.ErrorException("Error updating device info for {0}", ex, Properties.Name);
 
                 _successiveStopCount++;
                 _connectFailureCount++;
