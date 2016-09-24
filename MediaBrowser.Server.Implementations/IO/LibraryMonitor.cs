@@ -43,7 +43,10 @@ namespace MediaBrowser.Server.Implementations.IO
 
             // WMC temp recording directories that will constantly be written to
             "TempRec",
-            "TempSBE"
+            "TempSBE",
+            "@eaDir",
+            "eaDir",
+            "#recycle"
         };
 
         private readonly IReadOnlyList<string> _alwaysIgnoreSubstrings = new List<string>
