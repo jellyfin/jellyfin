@@ -559,6 +559,7 @@ namespace MediaBrowser.Controller.Library
         void AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
         void RemoveVirtualFolder(string name, bool refreshLibrary);
         void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
         void RemoveMediaPath(string virtualFolderName, string path);
 
         QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);
