@@ -318,7 +318,6 @@
     <Compile Include="Providers\SongInfo.cs" />
     <Compile Include="Providers\TrailerInfo.cs" />
     <Compile Include="Providers\VideoContentType.cs" />
-    <Compile Include="RelatedMedia\IRelatedMediaProvider.cs" />
     <Compile Include="Security\AuthenticationInfo.cs" />
     <Compile Include="Security\AuthenticationInfoQuery.cs" />
     <Compile Include="Security\IAuthenticationRepository.cs" />
