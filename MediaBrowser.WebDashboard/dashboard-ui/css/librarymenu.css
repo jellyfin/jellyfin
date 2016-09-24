@@ -246,7 +246,7 @@ body:not(.dashboardDocument) .btnNotifications {
     }
 
 i.sidebarLinkIcon {
-    font-size: 150%;
+    font-size: 120%;
     height: auto;
     width: auto;
 }

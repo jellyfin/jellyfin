@@ -2137,5 +2137,7 @@
   "HeaderForKids": "For Kids",
   "HeaderRecordingGroups": "Recording Groups",
   "LabelConvertRecordingsTo": "Convert recordings to:",
-  "HeaderUpcomingOnTV": "Upcoming On TV"
+  "HeaderUpcomingOnTV": "Upcoming On TV",
+  "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+  "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }

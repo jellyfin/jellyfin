@@ -2858,6 +2858,32 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        public void UpdateMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
+        {
+            if (pathInfo == null)
+            {
+                throw new ArgumentNullException("path");
+            }
+
+            var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
+            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
+
+            var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+
+            var list = libraryOptions.PathInfos.ToList();
+            foreach (var originalPathInfo in list)
+            {
+                if (string.Equals(pathInfo.Path, originalPathInfo.Path, StringComparison.Ordinal))
+                {
+                    originalPathInfo.NetworkPath = pathInfo.NetworkPath;
+                    break;
+                }
+            }
+            libraryOptions.PathInfos = list.ToArray();
+
+            CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
+        }
+
         public void RemoveVirtualFolder(string name, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -2938,19 +2964,28 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             var rootFolderPath = ConfigurationManager.ApplicationPaths.DefaultUserViewsPath;
-            var path = Path.Combine(rootFolderPath, virtualFolderName);
+            var virtualFolderPath = Path.Combine(rootFolderPath, virtualFolderName);
 
-            if (!_fileSystem.DirectoryExists(path))
+            if (!_fileSystem.DirectoryExists(virtualFolderPath))
             {
                 throw new DirectoryNotFoundException(string.Format("The media collection {0} does not exist", virtualFolderName));
             }
 
-            var shortcut = Directory.EnumerateFiles(path, ShortcutFileSearch, SearchOption.AllDirectories).FirstOrDefault(f => _fileSystem.ResolveShortcut(f).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
+            var shortcut = Directory.EnumerateFiles(virtualFolderPath, ShortcutFileSearch, SearchOption.AllDirectories).FirstOrDefault(f => _fileSystem.ResolveShortcut(f).Equals(mediaPath, StringComparison.OrdinalIgnoreCase));
 
             if (!string.IsNullOrEmpty(shortcut))
             {
                 _fileSystem.DeleteFile(shortcut);
             }
+
+            var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
+
+            libraryOptions.PathInfos = libraryOptions
+                .PathInfos
+                .Where(i => !string.Equals(i.Path, mediaPath, StringComparison.Ordinal))
+                .ToArray();
+
+            CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
         }
     }
 }

@@ -1739,7 +1739,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths, libraryOptions) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, libraryOptions) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1762,7 +1762,6 @@
                 type: "POST",
                 url: url,
                 data: JSON.stringify({
-                    Paths: initialPaths,
                     LibraryOptions: libraryOptions
                 }),
                 contentType: 'application/json'
@@ -1817,7 +1816,7 @@
         * Adds an additional mediaPath to an existing virtual folder
         * @param {String} name
         */
-        self.addMediaPath = function (virtualFolderName, mediaPath, refreshLibrary) {
+        self.addMediaPath = function (virtualFolderName, mediaPath, networkSharePath, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1829,15 +1828,50 @@
 
             var url = "Library/VirtualFolders/Paths";
 
+            var pathInfo = {
+                Path: mediaPath
+            };
+            if (networkSharePath) {
+                pathInfo.NetworkPath = networkSharePath;
+            }
+
             url = self.getUrl(url, {
-                refreshLibrary: refreshLibrary ? true : false,
-                path: mediaPath,
-                name: virtualFolderName
+                refreshLibrary: refreshLibrary ? true : false
             });
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify({
+                    Name: virtualFolderName,
+                    PathInfo: pathInfo
+                }),
+                contentType: 'application/json'
+            });
+        };
+
+        self.updateMediaPath = function (virtualFolderName, pathInfo) {
+
+            if (!virtualFolderName) {
+                throw new Error("null virtualFolderName");
+            }
+
+            if (!pathInfo) {
+                throw new Error("null pathInfo");
+            }
+
+            var url = "Library/VirtualFolders/Paths/Update";
+
+            url = self.getUrl(url);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({
+                    Name: virtualFolderName,
+                    PathInfo: pathInfo
+                }),
+                contentType: 'application/json'
             });
         };
 

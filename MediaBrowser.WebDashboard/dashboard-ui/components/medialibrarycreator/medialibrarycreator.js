@@ -3,11 +3,11 @@
     var currentDeferred;
     var hasChanges;
     var currentOptions;
-    var paths = [];
+    var pathInfos = [];
 
     function onSubmit() {
 
-        if (paths.length == 0) {
+        if (pathInfos.length == 0) {
             require(['alert'], function (alert) {
                 alert({
                     text: Globalize.translate('PleaseAddAtLeastOneFolder'),
@@ -29,7 +29,9 @@
 
         var libraryOptions = libraryoptionseditor.getLibraryOptions(dlg.querySelector('.libraryOptions'));
 
-        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, paths, libraryOptions).then(function () {
+        libraryOptions.PathInfos = pathInfos;
+
+        ApiClient.addVirtualFolder(name, type, currentOptions.refresh, libraryOptions).then(function () {
 
             hasChanges = true;
             dialogHelper.close(dlg);
@@ -111,10 +113,11 @@
 
             picker.show({
 
-                callback: function (path) {
+                enableNetworkSharePath: true,
+                callback: function (path, networkSharePath) {
 
                     if (path) {
-                        addMediaLocation(page, path);
+                        addMediaLocation(page, path, networkSharePath);
                     }
                     picker.close();
                 }
@@ -123,7 +126,7 @@
         });
     }
 
-    function getFolderHtml(path, index) {
+    function getFolderHtml(pathInfo, index) {
 
         var html = '';
 
@@ -131,8 +134,14 @@
 
         html += '<i class="listItemIcon md-icon">folder</i>';
 
-        html += '<div class="listItemBody">';
-        html += '<div class="listItemBodyText">' + path + '</div>';
+        var cssClass = pathInfo.NetworkPath ? 'listItemBody two-line' : 'listItemBody';
+
+        html += '<div class="' + cssClass + '">';
+        html += '<div class="listItemBodyText">' + pathInfo.Path + '</div>';
+
+        if (pathInfo.NetworkPath) {
+            html += '<div class="listItemBodyText secondary">' + pathInfo.NetworkPath + '</div>';
+        }
         html += '</div>';
 
         html += '<button is="paper-icon-button-light"" class="listItemButton btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
@@ -143,7 +152,7 @@
     }
 
     function renderPaths(page) {
-        var foldersHtml = paths.map(getFolderHtml).join('');
+        var foldersHtml = pathInfos.map(getFolderHtml).join('');
 
         var folderList = page.querySelector('.folderList');
         folderList.innerHTML = foldersHtml;
@@ -157,14 +166,21 @@
         $(page.querySelectorAll('.btnRemovePath')).on('click', onRemoveClick);
     }
 
-    function addMediaLocation(page, path) {
+    function addMediaLocation(page, path, networkSharePath) {
 
-        if (paths.filter(function (p) {
+        if (pathInfos.filter(function (p) {
 
-            return p.toLowerCase() == path.toLowerCase();
+            return p.Path.toLowerCase() == path.toLowerCase();
 
         }).length == 0) {
-            paths.push(path);
+
+            var pathInfo = {
+                Path: path
+            };
+            if (networkSharePath) {
+                pathInfo.NetworkPath = networkSharePath;
+            }
+            pathInfos.push(pathInfo);
             renderPaths(page);
         }
     }
@@ -174,10 +190,10 @@
         var button = this;
         var index = parseInt(button.getAttribute('data-index'));
 
-        var location = paths[index];
-        paths = paths.filter(function (p) {
+        var location = pathInfos[index];
+        pathInfos = pathInfos.filter(function (p) {
 
-            return p.toLowerCase() != location.toLowerCase();
+            return p.Path.toLowerCase() != location.toLowerCase();
         });
         var page = $(this).parents('.dlg-librarycreator')[0];
         renderPaths(page);
@@ -190,7 +206,7 @@
     }
 
     function initLibraryOptions(dlg) {
-        libraryoptionseditor.embed(dlg.querySelector('.libraryOptions')).then(function() {
+        libraryoptionseditor.embed(dlg.querySelector('.libraryOptions')).then(function () {
             $('#selectCollectionType', dlg).trigger('change');
         });
     }
@@ -241,7 +257,7 @@
                     dialogHelper.close(dlg);
                 });
 
-                paths = [];
+                pathInfos = [];
                 renderPaths(dlg);
                 initLibraryOptions(dlg);
             }

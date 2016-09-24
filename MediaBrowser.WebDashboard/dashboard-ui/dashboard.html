@@ -35,7 +35,9 @@
                                 </p>
                                 <p id="newVersionNumber"></p>
                                 <div id="btnUpdateApplicationContainer">
-                                    <button id="btnUpdateApplication" type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.updateApplication();">${ButtonUpdateNow}</button>
+                                    <button id="btnUpdateApplication" is="emby-button" type="button" class="raised block" onclick="DashboardPage.updateApplication();">
+                                        <span>${ButtonUpdateNow}</span>
+                                    </button>
                                 </div>
                                 <div id="btnManualUpdateContainer">
                                     <a href="http://emby.media/download" target="_blank">${PleaseUpdateManually}</a>
