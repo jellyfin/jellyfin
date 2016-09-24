@@ -294,11 +294,9 @@ namespace MediaBrowser.Server.Implementations.Session
                     var key = GetSessionKey(session.Client, session.DeviceId);
 
                     SessionInfo removed;
+                    _activeConnections.TryRemove(key, out removed);
 
-                    if (_activeConnections.TryRemove(key, out removed))
-                    {
-                        OnSessionEnded(removed);
-                    }
+                    OnSessionEnded(session);
                 }
             }
             finally
