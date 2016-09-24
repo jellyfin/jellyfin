@@ -152,7 +152,7 @@
         }
 
         if (options.enableNetworkSharePath) {
-            html += '<div class="inputContainer">';
+            html += '<div class="inputContainer" style="margin-top:2em;">';
             html += '<input is="emby-input" id="txtNetworkPath" type="text" label="' + Globalize.translate('LabelOptionalNetworkPath') + '"/>';
             html += '<div class="fieldDescription">';
             html += Globalize.translate('LabelOptionalNetworkPathHelp');

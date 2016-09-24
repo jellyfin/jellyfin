@@ -4,7 +4,7 @@
         return [
         {
             href: 'library.html',
-            name: globalize.translate('TabFolders')
+            name: globalize.translate('HeaderLibraries')
         },
          {
              href: 'librarydisplay.html',

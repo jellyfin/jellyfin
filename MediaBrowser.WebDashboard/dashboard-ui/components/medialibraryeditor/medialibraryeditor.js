@@ -25,7 +25,6 @@
 
     function updateMediaLocation(page, path, networkSharePath) {
         var virtualFolder = currentOptions.library;
-
         ApiClient.updateMediaPath(virtualFolder.Name, {
 
             Path: path,
