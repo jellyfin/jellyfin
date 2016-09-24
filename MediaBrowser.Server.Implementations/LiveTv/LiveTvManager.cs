@@ -699,7 +699,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.HomePageUrl = info.HomePageUrl;
 
             item.ProductionYear = info.ProductionYear;
-            item.PremiereDate = info.OriginalAirDate;
+
+            if (!info.IsSeries || info.IsRepeat)
+            {
+                item.PremiereDate = info.OriginalAirDate;
+            }
 
             item.IndexNumber = info.EpisodeNumber;
             item.ParentIndexNumber = info.SeasonNumber;

@@ -121,6 +121,18 @@ namespace MediaBrowser.Api.Library
         public bool RefreshLibrary { get; set; }
     }
 
+    [Route("/Library/VirtualFolders/Paths/Update", "POST")]
+    public class UpdateMediaPath : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        public MediaPathInfo PathInfo { get; set; }
+    }
+
     [Route("/Library/VirtualFolders/Paths", "DELETE")]
     public class RemoveMediaPath : IReturnVoid
     {
@@ -346,6 +358,20 @@ namespace MediaBrowser.Api.Library
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(UpdateMediaPath request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            _libraryManager.UpdateMediaPath(request.Name, request.PathInfo);
         }
 
         /// <summary>

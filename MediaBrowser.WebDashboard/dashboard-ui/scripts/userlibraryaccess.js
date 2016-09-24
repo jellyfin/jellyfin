@@ -70,7 +70,7 @@
 
             var checkedAttribute = user.Policy.EnableAllDevices || user.Policy.EnabledDevices.indexOf(device.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<label><input type="checkbox" is="emby-checkbox" class="chkChannel" data-id="' + device.Id + '" ' + checkedAttribute + '><span>' + device.Name + ' - ' + device.AppName + '</span></label>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkDevice" data-id="' + device.Id + '" ' + checkedAttribute + '><span>' + device.Name + ' - ' + device.AppName + '</span></label>';
         }
 
         html += '</div>';
