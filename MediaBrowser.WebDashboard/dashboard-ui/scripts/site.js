@@ -1330,22 +1330,17 @@ var AppInfo = {};
 
         define("dashboardcss", ['css!css/dashboard']);
 
-        define("jqmbase", ['dashboardcss', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
-        define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
-        define("jqmwidget", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.widget"]);
+        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
 
-        define("jqmslider", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
 
-        define("jqmpopup", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+        define("jqmlistview", ['css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
-
-        define("jqmcollapsible", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
-
-        define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
@@ -2268,7 +2263,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: ['emby-checkbox', 'emby-button'],
+            dependencies: ['emby-checkbox', 'emby-button', 'emby-select'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mypreferenceshome'
@@ -2276,7 +2271,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
-            dependencies: ['emby-button', 'emby-checkbox'],
+            dependencies: ['emby-button', 'emby-checkbox', 'emby-select'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mypreferenceslanguages'

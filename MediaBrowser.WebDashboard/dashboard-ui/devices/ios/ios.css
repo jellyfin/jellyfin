@@ -28,6 +28,16 @@ body:not(.dashboardDocument) .mainDrawerButton {
     height: 50px;
 }
 
+/*.viewMenuBar, .ui-body-b .libraryViewNav {
+    background: rgba(34,35,38,.90);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+    .viewMenuBar.semiTransparent {
+        background-color: rgba(15, 15, 15, .3);
+    }*/
+
 .emby-tab-button {
     font-weight: 400;
     text-transform: none !important;
@@ -55,6 +65,10 @@ h1, h1 a {
     font-weight: 400;
 }
 
+.cardImageContainer {
+    border-radius: 8px;
+}
+
 .noSecondaryNavPage .itemBackdrop {
     margin-top: 0;
 }
@@ -65,10 +79,6 @@ h1, h1 a {
 
 .videoSubtitles {
     font-size: 200% !important;
-}
-
-.alphabetPicker {
-    right: 5px !important;
 }
 
 .txtSearch {
@@ -83,4 +93,10 @@ h1, h1 a {
 
 .categorySyncButton, .btnSync {
     display: none !important;
+}
+
+.dialog.background-theme-b {
+    background: rgba(28,28,28,.88);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
 }

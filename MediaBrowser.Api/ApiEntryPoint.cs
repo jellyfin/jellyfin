@@ -8,6 +8,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -44,7 +45,13 @@ namespace MediaBrowser.Api
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1, 1);
+        /// <summary>
+        /// The active transcoding jobs
+        /// </summary>
+        private readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
+
+        private readonly Dictionary<string, SemaphoreSlim> _transcodingLocks =
+            new Dictionary<string, SemaphoreSlim>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiEntryPoint" /> class.
@@ -65,6 +72,21 @@ namespace MediaBrowser.Api
             Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
             _sessionManager.PlaybackStart += _sessionManager_PlaybackStart;
+        }
+
+        public SemaphoreSlim GetTranscodingLock(string outputPath)
+        {
+            lock (_transcodingLocks)
+            {
+                SemaphoreSlim result;
+                if (!_transcodingLocks.TryGetValue(outputPath, out result))
+                {
+                    result = new SemaphoreSlim(1, 1);
+                    _transcodingLocks[outputPath] = result;
+                }
+
+                return result;
+            }
         }
 
         private void _sessionManager_PlaybackStart(object sender, PlaybackProgressEventArgs e)
@@ -147,11 +169,6 @@ namespace MediaBrowser.Api
                 Thread.Sleep(1000);
             }
         }
-
-        /// <summary>
-        /// The active transcoding jobs
-        /// </summary>
-        private readonly List<TranscodingJob> _activeTranscodingJobs = new List<TranscodingJob>();
 
         /// <summary>
         /// Called when [transcode beginning].
@@ -256,6 +273,11 @@ namespace MediaBrowser.Api
                 {
                     _activeTranscodingJobs.Remove(job);
                 }
+            }
+
+            lock (_transcodingLocks)
+            {
+                _transcodingLocks.Remove(path);
             }
 
             if (!string.IsNullOrWhiteSpace(state.Request.DeviceId))
@@ -495,6 +517,11 @@ namespace MediaBrowser.Api
                 {
                     job.CancellationTokenSource.Cancel();
                 }
+            }
+
+            lock (_transcodingLocks)
+            {
+                _transcodingLocks.Remove(job.Path);
             }
 
             lock (job.ProcessLock)

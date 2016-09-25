@@ -91,6 +91,16 @@ namespace MediaBrowser.XbmcMetadata
                 return;
             }
 
+            if (!item.SupportsLocalMetadata)
+            {
+                return;
+            }
+
+            if (!item.IsSaveLocalMetadataEnabled())
+            {
+                return;
+            }
+
             try
             {
                 await _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver.SaverName }).ConfigureAwait(false);

@@ -512,25 +512,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-overflow: ellipsis;
     overflow: hidden;
     position: relative;
+    margin: 1.5em 0 1em;
+    display: flex;
+    align-items: center;
 }
 
-.ui-body-a .detailSectionHeader {
-    border: 1px solid #ddd;
-    border-width: 0 0 1px 0;
-}
-
-.ui-body-b .detailSectionHeader {
-    border: 1px solid #444;
-    border-width: 0 0 1px 0;
-}
-
-.detailSectionHeader, .detailSectionHeader h3 {
-    font-size: 20px;
-    font-weight: 400;
-}
-
-    .detailSectionHeader button {
-        font-size: 13px;
+    .detailSectionHeader > h1 {
+        margin: 0;
     }
 
 .detailSectionHeaderButton {
@@ -700,10 +688,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-}
-
-.mediaInfoItem {
-    white-space: nowrap;
 }
 
 @media all and (max-width: 600px) {

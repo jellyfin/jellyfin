@@ -25,7 +25,9 @@
 
             results[i] = {
                 top: box.top,
-                left: box.left
+                left: box.left,
+                width: box.width,
+                height: box.height
             };
         }
 
@@ -45,10 +47,10 @@
         var pos = getOffsets([options.positionTo])[0];
 
         if (options.positionY != 'top') {
-            pos.top += options.positionTo.offsetHeight / 2;
+            pos.top += (pos.height || 0) / 2;
         }
 
-        pos.left += options.positionTo.offsetWidth / 2;
+        pos.left += (pos.width || 0) / 2;
 
         var height = dlg.offsetHeight || 300;
         var width = dlg.offsetWidth || 160;

@@ -1,4 +1,14 @@
-﻿.ui-popup.ui-body-a {
+﻿/* "page" containers - full-screen views, one should always be in view post-pageload */
+.ui-mobile [data-role=dialog] {
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    position: absolute;
+    border: 0;
+}
+
+.ui-popup.ui-body-a {
     background: #f4f4f4;
 }
 .ui-popup.ui-body-b {

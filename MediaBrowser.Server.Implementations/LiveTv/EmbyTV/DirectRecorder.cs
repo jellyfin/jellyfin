@@ -69,11 +69,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         }
 
         private const int BufferSize = 81920;
-        public static async Task CopyUntilCancelled(Stream source, Stream target, CancellationToken cancellationToken)
+        public static Task CopyUntilCancelled(Stream source, Stream target, CancellationToken cancellationToken)
+        {
+            return CopyUntilCancelled(source, target, null, cancellationToken);
+        }
+        public static async Task CopyUntilCancelled(Stream source, Stream target, Action onStarted, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var bytesRead = await CopyToAsyncInternal(source, target, BufferSize, cancellationToken).ConfigureAwait(false);
+                var bytesRead = await CopyToAsyncInternal(source, target, BufferSize, onStarted, cancellationToken).ConfigureAwait(false);
+
+                onStarted = null;
 
                 //var position = fs.Position;
                 //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
@@ -85,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, Int32 bufferSize, CancellationToken cancellationToken)
+        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, Int32 bufferSize, Action onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
@@ -96,6 +102,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
 
                 totalBytesRead += bytesRead;
+
+                if (onStarted != null)
+                {
+                    onStarted();
+                }
+                onStarted = null;
             }
 
             return totalBytesRead;
