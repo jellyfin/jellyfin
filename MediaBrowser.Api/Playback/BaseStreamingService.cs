@@ -1037,7 +1037,15 @@ namespace MediaBrowser.Api.Playback
                 var encodingOptions = ApiEntryPoint.Instance.GetEncodingOptions();
                 if (GetVideoEncoder(state).IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    arg = "-hwaccel vaapi -hwaccel_output_format yuv420p -vaapi_device " + encodingOptions.VaapiDevice + " " + arg;
+                    var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.VideoRequest.SubtitleMethod == SubtitleDeliveryMethod.Encode;
+                    var hwOutputFormat = "vaapi";
+
+                    if (hasGraphicalSubs)
+                    {
+                        hwOutputFormat = "yuv420p";
+                    }
+
+                    arg = "-hwaccel vaapi -hwaccel_output_format " + hwOutputFormat + " -vaapi_device " + encodingOptions.VaapiDevice + " " + arg;
                 }
             }
 
