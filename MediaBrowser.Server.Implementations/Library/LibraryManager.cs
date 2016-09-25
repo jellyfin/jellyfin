@@ -2803,6 +2803,17 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        private bool ValidateNetworkPath(string path)
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT || !path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+            {
+                return Directory.Exists(path);
+            }
+
+            // Without native support for unc, we cannot validate this when running under mono
+            return true;
+        }
+
         private const string ShortcutFileExtension = ".mblink";
         private const string ShortcutFileSearch = "*" + ShortcutFileExtension;
         public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
@@ -2829,12 +2840,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new DirectoryNotFoundException("The path does not exist.");
             }
 
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
-            {
-                throw new DirectoryNotFoundException("The network path does not exist.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
+            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
             {
                 throw new DirectoryNotFoundException("The network path does not exist.");
             }
@@ -2877,7 +2883,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("path");
             }
 
-            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !_fileSystem.DirectoryExists(pathInfo.NetworkPath))
+            if (!string.IsNullOrWhiteSpace(pathInfo.NetworkPath) && !ValidateNetworkPath(pathInfo.NetworkPath))
             {
                 throw new DirectoryNotFoundException("The network path does not exist.");
             }

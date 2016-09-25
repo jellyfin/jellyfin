@@ -1,4 +1,14 @@
-﻿/* preset breakpoint to switch to stacked grid styles below 35em (560px) */
+﻿/* "page" containers - full-screen views, one should always be in view post-pageload */
+.ui-mobile [data-role=dialog] {
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    position: absolute;
+    border: 0;
+}
+
+/* preset breakpoint to switch to stacked grid styles below 35em (560px) */
 @media (max-width: 35em) {
 	.ui-responsive > .ui-block-a,
 	.ui-responsive > .ui-block-b,

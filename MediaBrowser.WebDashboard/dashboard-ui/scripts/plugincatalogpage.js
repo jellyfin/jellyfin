@@ -96,7 +96,7 @@
 
         if (!options.categories) {
             currentCategory = Globalize.translate('HeaderTopPlugins');
-            html += '<div class="detailSectionHeader">' + currentCategory + '</div>';
+            html += '<div class="detailSectionHeader"><h1>' + currentCategory + '</h1></div>';
             var topPlugins = allPlugins.slice(0).sort(function (a, b) {
 
                 if (a.installs > b.installs) {
@@ -153,7 +153,7 @@
                         html += '<br/>';
                     }
 
-                    html += '<div class="detailSectionHeader">' + category + '</div>';
+                    html += '<div class="detailSectionHeader"><h1>' + category + '</h1></div>';
                     html += '<div class="itemsContainer vertical-wrap">';
                     hasOpenTag = true;
                 }

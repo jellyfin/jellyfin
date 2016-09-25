@@ -14,7 +14,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
@@ -24,11 +27,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
         private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
+        private readonly IServerApplicationHost _appHost;
 
-        public HdHomerunHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient)
+        public HdHomerunHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IHttpClient httpClient, IFileSystem fileSystem, IServerApplicationHost appHost)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
+            _appHost = appHost;
         }
 
         public string Name
@@ -355,6 +362,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 url += "?transcode=" + profile;
             }
 
+            var id = profile;
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                id = "native";
+            }
+            id += "_" + url.GetMD5().ToString("N");
+
             var mediaSource = new MediaSourceInfo
             {
                 Path = url,
@@ -387,9 +401,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 RequiresClosing = false,
                 BufferMs = 0,
                 Container = "ts",
-                Id = profile,
-                SupportsDirectPlay = true,
-                SupportsDirectStream = false,
+                Id = id,
+                SupportsDirectPlay = false,
+                SupportsDirectStream = true,
                 SupportsTranscoding = true
             };
 
@@ -452,9 +466,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
         }
 
-        protected override async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
+        protected override async Task<LiveStream> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
-            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1}", channelId, streamId ?? string.Empty);
+            var profile = streamId.Split('_')[0];
+
+            Logger.Info("GetChannelStream: channel id: {0}. stream id: {1} profile: {2}", channelId, streamId, profile);
 
             if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -462,7 +478,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            return await GetMediaSource(info, hdhrId, streamId).ConfigureAwait(false);
+            var mediaSource = await GetMediaSource(info, hdhrId, profile).ConfigureAwait(false);
+
+            var liveStream = new HdHomerunLiveStream(mediaSource, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+            return liveStream;
         }
 
         public async Task Validate(TunerHostInfo info)

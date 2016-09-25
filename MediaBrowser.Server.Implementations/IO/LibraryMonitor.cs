@@ -43,16 +43,14 @@ namespace MediaBrowser.Server.Implementations.IO
 
             // WMC temp recording directories that will constantly be written to
             "TempRec",
-            "TempSBE",
-            "@eaDir",
-            "eaDir",
-            "#recycle"
+            "TempSBE"
         };
 
         private readonly IReadOnlyList<string> _alwaysIgnoreSubstrings = new List<string>
         {
             // Synology
-            "@eaDir",
+            "eaDir",
+            "#recycle",
             ".wd_tv",
             ".actors"
         };

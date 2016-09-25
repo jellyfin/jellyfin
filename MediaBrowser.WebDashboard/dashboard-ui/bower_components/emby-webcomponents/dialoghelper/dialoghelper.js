@@ -281,7 +281,7 @@
                     }));
                 }
             };
-            if (!dlg.animationConfig || !dlg.animate) {
+            if (!dlg.animationConfig) {
                 onAnimationFinish();
                 return;
             }
@@ -312,7 +312,7 @@
             }
         };
 
-        if (!dlg.animationConfig || !dlg.animate) {
+        if (!dlg.animationConfig) {
             onAnimationFinish();
             return;
         }
