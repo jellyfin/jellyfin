@@ -24,6 +24,8 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private long _bytesWritten = 0;
 
+        public bool AllowEndOfFile = true;
+
         public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
@@ -50,7 +52,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (var fs = _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
-                    while (eofCount < 15)
+                    while (eofCount < 15 || !AllowEndOfFile)
                     {
                         var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, _cancellationToken).ConfigureAwait(false);
 

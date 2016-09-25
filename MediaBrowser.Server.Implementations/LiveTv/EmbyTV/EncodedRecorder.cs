@@ -68,18 +68,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            if (mediaSource.Path.IndexOf("m3u8", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                await RecordWithoutTempFile(mediaSource, targetFile, duration, onStarted, cancellationToken)
-                        .ConfigureAwait(false);
+            var durationToken = new CancellationTokenSource(duration);
+            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-                return;
-            }
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, false, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
-            var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
-
-            await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
-                    .ConfigureAwait(false);
+            _logger.Info("Recording completed to file {0}", targetFile);
         }
 
         private async void DeleteTempFile(string path)
@@ -106,76 +100,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 await Task.Delay(1000).ConfigureAwait(false);
             }
-        }
-
-        private async Task RecordWithoutTempFile(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
-        {
-            var durationToken = new CancellationTokenSource(duration);
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, false, duration, onStarted, cancellationToken).ConfigureAwait(false);
-
-            _logger.Info("Recording completed to file {0}", targetFile);
-        }
-
-        private async Task RecordWithTempFile(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
-        {
-            var httpRequestOptions = new HttpRequestOptions()
-            {
-                Url = mediaSource.Path
-            };
-
-            httpRequestOptions.BufferContent = false;
-
-            using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
-            {
-                _logger.Info("Opened recording stream from tuner provider");
-
-                Directory.CreateDirectory(Path.GetDirectoryName(tempFile));
-
-                using (var output = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    //onStarted();
-
-                    _logger.Info("Copying recording stream to file {0}", tempFile);
-
-                    var bufferMs = 5000;
-
-                    if (mediaSource.RunTimeTicks.HasValue)
-                    {
-                        // The media source already has a fixed duration
-                        // But add another stop 1 minute later just in case the recording gets stuck for any reason
-                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
-                    else
-                    {
-                        // The media source if infinite so we need to handle stopping ourselves
-                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMilliseconds(bufferMs)));
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
-
-                    var tempFileTask = DirectRecorder.CopyUntilCancelled(response.Content, output, cancellationToken);
-
-                    // Give the temp file a little time to build up
-                    await Task.Delay(bufferMs, cancellationToken).ConfigureAwait(false);
-
-                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, true, duration, onStarted, cancellationToken), CancellationToken.None);
-
-                    try
-                    {
-                        await tempFileTask.ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        
-                    }
-
-                    await recordTask.ConfigureAwait(false);
-                }
-            }
-
-            _logger.Info("Recording completed to file {0}", targetFile);
         }
 
         private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, bool deleteInputFileAfterCompletion, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
