@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="streamId">The stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<Tuple<MediaSourceInfo,SemaphoreSlim>> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
+        Task<LiveStream> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
         /// <summary>
         /// Gets the channel stream media sources.
         /// </summary>

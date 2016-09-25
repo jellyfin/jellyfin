@@ -171,14 +171,15 @@ namespace MediaBrowser.Api.Playback.Hls
                 return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
             }
 
-            await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(playlistPath);
+            await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
             var released = false;
             try
             {
                 if (FileSystem.FileExists(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                    ApiEntryPoint.Instance.TranscodingStartLock.Release();
+                    transcodingLock.Release();
                     released = true;
                     return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
                 }
@@ -242,7 +243,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (!released)
                 {
-                    ApiEntryPoint.Instance.TranscodingStartLock.Release();
+                    transcodingLock.Release();
                 }
             }
 

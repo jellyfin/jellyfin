@@ -73,10 +73,6 @@ namespace MediaBrowser.Api.Playback
         {
             get
             {
-                if (!RunTimeTicks.HasValue)
-                {
-                    return 6;
-                }
                 if (string.Equals(OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var userAgent = UserAgent ?? string.Empty;
@@ -92,12 +88,16 @@ namespace MediaBrowser.Api.Playback
                         return 10;
                     }
 
+                    if (!RunTimeTicks.HasValue)
+                    {
+                        return 3;
+                    }
                     return 6;
                 }
 
                 if (!RunTimeTicks.HasValue)
                 {
-                    return 6;
+                    return 3;
                 }
                 return 3;
             }

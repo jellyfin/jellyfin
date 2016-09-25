@@ -12,9 +12,13 @@ using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CommonIO;
+using MediaBrowser.Api.Playback.Progressive;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -613,16 +617,24 @@ namespace MediaBrowser.Api.LiveTv
 
     }
 
+    [Route("/LiveTv/LiveStreamFiles/{Id}/stream.{Container}", "GET", Summary = "Gets a live tv channel")]
+    public class GetLiveStreamFile
+    {
+        public string Id { get; set; }
+        public string Container { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IUserManager _userManager;
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
+        private readonly IFileSystem _fileSystem;
 
-        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService)
+        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IServerConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService, IFileSystem fileSystem)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
@@ -630,6 +642,23 @@ namespace MediaBrowser.Api.LiveTv
             _httpClient = httpClient;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _fileSystem = fileSystem;
+        }
+
+        public object Get(GetLiveStreamFile request)
+        {
+            var filePath = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, request.Id + ".ts");
+
+            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            outputHeaders["Content-Type"] = MimeTypes.GetMimeType(filePath);
+
+            var streamSource = new ProgressiveFileCopier(_fileSystem, filePath, outputHeaders, null, Logger, CancellationToken.None)
+            {
+                AllowEndOfFile = false
+            };
+
+            return ResultFactory.GetAsyncStreamWriter(streamSource);
         }
 
         public object Get(GetDefaultListingProvider request)
