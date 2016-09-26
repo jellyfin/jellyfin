@@ -1219,7 +1219,7 @@ namespace MediaBrowser.Server.Startup.Common
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
-            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 5)
+            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 10)
             {
                 _lastAddressCacheClear = DateTime.UtcNow;
                 _validAddressResults.Clear();
