@@ -1688,7 +1688,7 @@ var AppInfo = {};
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/audioplayer"]);
+            define("audiorenderer", ["cordova/ios/audioplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
@@ -2694,12 +2694,9 @@ var AppInfo = {};
                     postInitDependencies.push('cordova/android/mediasession');
                     postInitDependencies.push('cordova/android/chromecast');
 
-                } else {
-                    postInitDependencies.push('cordova/volume');
-                }
+                } else if (browserInfo.safari) {
 
-                if (browserInfo.safari) {
-
+                    postInitDependencies.push('cordova/ios/volume');
                     postInitDependencies.push('cordova/ios/chromecast');
                     postInitDependencies.push('cordova/ios/orientation');
                     postInitDependencies.push('cordova/ios/remotecontrols');

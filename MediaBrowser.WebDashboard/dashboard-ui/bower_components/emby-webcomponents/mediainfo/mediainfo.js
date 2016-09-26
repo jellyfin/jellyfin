@@ -42,7 +42,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
         if (options.timerIndicator !== false) {
             if (item.SeriesTimerId) {
-                if (item.TimerId) {
+                if (item.TimerId || item.Type == 'Timer') {
                     miscInfo.push({
                         html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
                     });

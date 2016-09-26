@@ -304,5 +304,8 @@
   "SkipEpisodesAlreadyInMyLibraryHelp": "Episodes will be compared using season and episode numbers, when available.",
   "LabelKeepUpTo": "Keep up to:",
   "AsManyAsPossible": "As many as possible",
-  "DefaultErrorMessage": "There was an error processing the request. Please try again later."
+  "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
+  "LabelKeep:": "Keep:",
+  "UntilIDelete": "Until I delete",
+  "UntilSpaceNeeded": "Until space needed"
 }

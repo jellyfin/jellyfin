@@ -223,22 +223,20 @@
         html += plugin.name;
         html += "</div>";
 
-        if (!plugin.isExternal) {
-            html += "<div class='cardText' style='display:flex;align-items:center;'>";
+        //    html += "<div class='cardText' style='display:flex;align-items:center;'>";
 
-            if (plugin.avgRating) {
-                html += '<i class="md-icon" style="color:#cc3333;margin-right:.25em;">star</i>';
-                html += plugin.avgRating.toFixed(1);
-            }
+        //    if (plugin.avgRating) {
+        //        html += '<i class="md-icon" style="color:#cc3333;margin-right:.25em;">star</i>';
+        //        html += plugin.avgRating.toFixed(1);
+        //    }
 
-            if (plugin.totalRatings) {
-                html += "<div style='margin-left:.5em;'>";
-                html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
-            }
-            html += "</div>";
+        //    if (plugin.totalRatings) {
+        //        html += "<div style='margin-left:.5em;'>";
+        //        html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);
+        //    }
+        //    html += "</div>";
 
-            html += "</div>";
-        }
+        //    html += "</div>";
 
         var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
             return ip.Id == plugin.guid;

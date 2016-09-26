@@ -154,7 +154,7 @@ define(['browser'], function (browser) {
                 videoAudioCodecs = [];
                 break;
             case 'avi':
-                supported = browser.edgeUwp;
+                supported = browser.tizen || browser.edgeUwp;
                 break;
             case 'mpg':
             case 'mpeg':

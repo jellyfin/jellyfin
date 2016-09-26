@@ -27,6 +27,7 @@ namespace MediaBrowser.Model.LiveTv
         public bool RecordAnyChannel { get; set; }
 
         public int KeepUpTo { get; set; }
+        public KeepUntil KeepUntil { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [record new only].
@@ -67,5 +68,13 @@ namespace MediaBrowser.Model.LiveTv
             ImageTags = new Dictionary<ImageType, string>();
             Days = new List<DayOfWeek>();
         }
+    }
+
+    public enum KeepUntil
+    {
+        UntilDeleted,
+        UntilSpaceNeeded,
+        UntilWatched,
+        UntilDate
     }
 }
