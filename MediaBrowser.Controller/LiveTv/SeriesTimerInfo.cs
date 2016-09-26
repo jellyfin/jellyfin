@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -54,6 +55,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool RecordAnyChannel { get; set; }
 
         public int KeepUpTo { get; set; }
+        public KeepUntil KeepUntil { get; set; }
 
         public bool SkipEpisodesInLibrary { get; set; }
 
@@ -109,6 +111,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             Days = new List<DayOfWeek>();
             SkipEpisodesInLibrary = true;
+            KeepUntil = KeepUntil.UntilDeleted;
         }
     }
 }

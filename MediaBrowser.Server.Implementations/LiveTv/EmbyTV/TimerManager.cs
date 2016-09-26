@@ -32,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var item in GetAll().ToList())
             {
-                AddTimer(item);
+                AddOrUpdateSystemTimer(item);
             }
         }
 
@@ -55,17 +55,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public override void Update(TimerInfo item)
         {
             base.Update(item);
-
-            Timer timer;
-            if (_timers.TryGetValue(item.Id, out timer))
-            {
-                var timespan = RecordingHelper.GetStartTime(item) - DateTime.UtcNow;
-                timer.Change(timespan, TimeSpan.Zero);
-            }
-            else
-            {
-                AddTimer(item);
-            }
+            AddOrUpdateSystemTimer(item);
         }
 
         public void AddOrUpdate(TimerInfo item, bool resetTimer)
@@ -96,12 +86,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             base.Add(item);
-            AddTimer(item);
+            AddOrUpdateSystemTimer(item);
         }
 
-        private void AddTimer(TimerInfo item)
+        private bool ShouldStartTimer(TimerInfo item)
         {
-            if (item.Status == RecordingStatus.Completed)
+            if (item.Status == RecordingStatus.Completed ||
+                item.Status == RecordingStatus.Cancelled)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void AddOrUpdateSystemTimer(TimerInfo item)
+        {
+            StopTimer(item);
+
+            if (!ShouldStartTimer(item))
             {
                 return;
             }
@@ -115,14 +118,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var timerLength = startDate - now;
-            StartTimer(item, timerLength);
+            var dueTime = startDate - now;
+            StartTimer(item, dueTime);
         }
 
-        public void StartTimer(TimerInfo item, TimeSpan dueTime)
+        private void StartTimer(TimerInfo item, TimeSpan dueTime)
         {
-            StopTimer(item);
-
             var timer = new Timer(TimerCallback, item.Id, dueTime, TimeSpan.Zero);
 
             if (_timers.TryAdd(item.Id, timer))
