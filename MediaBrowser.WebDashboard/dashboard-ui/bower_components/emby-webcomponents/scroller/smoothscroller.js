@@ -1,4 +1,4 @@
-define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, layoutManager, dom) {
+define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], function (browser, layoutManager, dom, focusManager) {
 
     /**
 * Return type of the value.
@@ -20,21 +20,6 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
     }
 
     /**
-	 * Event preventDefault & stopPropagation helper.
-	 *
-	 * @param {Event} event     Event object.
-	 * @param {Bool}  noBubbles Cancel event bubbling.
-	 *
-	 * @return {Void}
-	 */
-    function stopDefault(event, noBubbles) {
-        event.preventDefault();
-        if (noBubbles) {
-            event.stopPropagation();
-        }
-    }
-
-    /**
 	 * Disables an event it was triggered on and unbinds itself.
 	 *
 	 * @param  {Event} event
@@ -43,7 +28,8 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 	 */
     function disableOneEvent(event) {
         /*jshint validthis:true */
-        stopDefault(event, 1);
+        event.preventDefault();
+        event.stopPropagation();
         this.removeEventListener(event.type, disableOneEvent);
     }
 
@@ -599,7 +585,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
 
             if (!isTouch) {
                 // prevents native image dragging in Firefox
-                stopDefault(event);
+                event.preventDefault();
             }
 
             // Reset dragging object
@@ -676,7 +662,7 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 }
             }
 
-            stopDefault(event);
+            event.preventDefault();
 
             // Disable click on a source element, as it is unwelcome when dragging
             if (!dragging.locked && dragging.path > dragging.pathToLock && dragging.slidee) {
@@ -821,6 +807,11 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 passive: true
             });
 
+            dom.removeEventListener(frameElement, 'click', onFrameClick, {
+                passive: true,
+                capture: true
+            });
+
             dragSourceElement.removeEventListener('mousedown', dragInitSlidee);
 
             // Reset initialized status and return the instance
@@ -837,6 +828,13 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                 this.scrollLeft = 0;
             } else {
                 this.scrollTop = 0;
+            }
+        }
+
+        function onFrameClick(e) {
+            var focusableParent = focusManager.focusableParent(e.target);
+            if (focusableParent != document.activeElement) {
+                focusableParent.focus();
             }
         }
 
@@ -913,6 +911,11 @@ define(['browser', 'layoutManager', 'dom', 'scrollStyles'], function (browser, l
                     passive: true
                 });
             }
+
+            dom.addEventListener(frameElement, 'click', onFrameClick, {
+                passive: true,
+                capture: true
+            });
 
             // Mark instance as initialized
             self.initialized = 1;

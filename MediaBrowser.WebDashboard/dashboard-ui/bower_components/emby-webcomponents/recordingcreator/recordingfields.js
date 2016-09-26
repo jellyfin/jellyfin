@@ -213,7 +213,7 @@
         var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
         if (isChecked) {
-            if (!this.TimerId && !this.SeriesTimerId) {
+            if (!this.TimerId) {
                 loading.show();
                 recordingHelper.createRecording(apiClient, options.programId, false).then(function () {
                     events.trigger(self, 'recordingchanged');

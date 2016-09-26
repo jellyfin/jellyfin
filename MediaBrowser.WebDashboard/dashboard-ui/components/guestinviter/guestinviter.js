@@ -1,10 +1,8 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'emby-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
 
     function renderLibrarySharingList(context, result) {
 
         var folderHtml = '';
-
-        folderHtml += '<div class="checkboxList">';
 
         folderHtml += result.Items.map(function (i) {
 
@@ -17,8 +15,6 @@
             return currentHtml;
 
         }).join('');
-
-        folderHtml += '</div>';
 
         context.querySelector('.librarySharingList').innerHTML = folderHtml;
     }
