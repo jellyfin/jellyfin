@@ -27,7 +27,6 @@ namespace MediaBrowser.Model.LiveTv
         public bool RecordAnyChannel { get; set; }
 
         public int KeepUpTo { get; set; }
-        public KeepUntil KeepUntil { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [record new only].
