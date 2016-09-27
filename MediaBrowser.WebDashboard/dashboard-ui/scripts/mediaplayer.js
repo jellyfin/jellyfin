@@ -163,11 +163,17 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
+            var disableVideoAudioCodecs = [];
+            if (!AppInfo.isNativeApp && !self.currentMediaSource.RunTimeTicks) {
+                disableVideoAudioCodecs.push('ac3');
+            }
+
             Dashboard.getDeviceProfile(null, {
 
                 enableMkvProgressive: self.currentMediaSource.RunTimeTicks != null,
                 enableTsProgressive: self.currentMediaSource.RunTimeTicks != null,
-                enableHls: !browserInfo.firefox || self.currentMediaSource.RunTimeTicks == null
+                enableHls: !browserInfo.firefox || self.currentMediaSource.RunTimeTicks == null,
+                disableVideoAudioCodecs: disableVideoAudioCodecs
 
             }).then(function (deviceProfile) {
 
@@ -677,10 +683,17 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             var onBitrateDetected = function () {
 
+                var disableVideoAudioCodecs = [];
+
+                if (!AppInfo.isNativeApp && !item.RunTimeTicks) {
+                    disableVideoAudioCodecs.push('ac3');
+                }
+
                 Dashboard.getDeviceProfile(null, {
                     
                     enableMkvProgressive: item.RunTimeTicks != null,
-                    enableTsProgressive: item.RunTimeTicks != null
+                    enableTsProgressive: item.RunTimeTicks != null,
+                    disableVideoAudioCodecs: disableVideoAudioCodecs
 
                 }).then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);

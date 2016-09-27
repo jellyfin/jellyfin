@@ -25,6 +25,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             timer.PostPaddingSeconds = series.PostPaddingSeconds;
             timer.IsPostPaddingRequired = series.IsPostPaddingRequired;
             timer.IsPrePaddingRequired = series.IsPrePaddingRequired;
+            timer.KeepUntil = series.KeepUntil;
             timer.Priority = series.Priority;
             timer.Name = parent.Name;
             timer.Overview = parent.Overview;

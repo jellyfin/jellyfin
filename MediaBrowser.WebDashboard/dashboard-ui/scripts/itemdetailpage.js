@@ -1412,13 +1412,13 @@
 
         var userDataIcons = page.querySelectorAll('.userDataIcons');
 
-        var html = userdataButtons.getIconsHtml({
-            item: item,
-            style: 'fab-mini'
-        });
-
         for (var i = 0, length = userDataIcons.length; i < length; i++) {
-            userDataIcons[i].innerHTML = html;
+
+            userdataButtons.fill({
+                item: item,
+                style: 'fab-mini',
+                element: userDataIcons[i]
+            });
         }
     }
 

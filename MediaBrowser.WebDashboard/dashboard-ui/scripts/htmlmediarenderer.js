@@ -196,7 +196,7 @@
 
                 // For now don't do this in edge because we lose some native audio support
                 if (browser.edge) {
-                    return false;
+                    //return false;
                 }
 
                 // hls.js is only in beta. needs more testing.
