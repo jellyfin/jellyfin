@@ -156,5 +156,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = timer }, Logger);
             }
         }
+
+        public TimerInfo GetTimer(string id)
+        {
+            return GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
+        }
     }
 }
