@@ -73,6 +73,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
+        public string MetadataNetworkPath { get; set; }
 
         public string LastVersion { get; set; }
 
