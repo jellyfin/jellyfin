@@ -1,10 +1,10 @@
 ﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'scrollStyles', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader) {
 
     var currentDialog;
-    var recordingUpdated = false;
     var recordingDeleted = false;
     var currentItemId;
     var currentServerId;
+    var currentResolve;
 
     function deleteTimer(apiClient, timerId) {
 
@@ -50,7 +50,6 @@
 
     function closeDialog(isDeleted) {
 
-        recordingUpdated = true;
         recordingDeleted = isDeleted;
 
         dialogHelper.close(currentDialog);
@@ -63,10 +62,9 @@
         var apiClient = connectionManager.getApiClient(currentServerId);
 
         apiClient.getLiveTvTimer(currentItemId).then(function (item) {
-
             item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-            apiClient.updateLiveTvTimer(item);
+            apiClient.updateLiveTvTimer(item).then(currentResolve);
         });
 
         e.preventDefault();
@@ -110,11 +108,11 @@
 
         return new Promise(function (resolve, reject) {
 
-            recordingUpdated = false;
             recordingDeleted = false;
             currentServerId = serverId;
             loading.show();
             options = options || {};
+            currentResolve = resolve;
 
             require(['text!./recordingeditor.template.html'], function (template) {
 
@@ -150,22 +148,20 @@
 
                 currentDialog = dlg;
 
-                dlg.addEventListener('close', function () {
+                dlg.addEventListener('closing', function () {
 
                     if (!recordingDeleted) {
-                        this.querySelector('.btnSubmit').click();
+                        dlg.querySelector('.btnSubmit').click();
                     }
                 });
 
                 dlg.addEventListener('close', function () {
 
-                    if (recordingUpdated) {
+                    if (recordingDeleted) {
                         resolve({
                             updated: true,
-                            deleted: recordingDeleted
+                            deleted: true
                         });
-                    } else {
-                        reject();
                     }
                 });
 

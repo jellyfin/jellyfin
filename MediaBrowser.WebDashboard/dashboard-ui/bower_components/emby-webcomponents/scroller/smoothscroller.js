@@ -832,9 +832,11 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
         }
 
         function onFrameClick(e) {
-            var focusableParent = focusManager.focusableParent(e.target);
-            if (focusableParent != document.activeElement) {
-                focusableParent.focus();
+            if (e.which == 1) {
+                var focusableParent = focusManager.focusableParent(e.target);
+                if (focusableParent != document.activeElement) {
+                    focusableParent.focus();
+                }
             }
         }
 

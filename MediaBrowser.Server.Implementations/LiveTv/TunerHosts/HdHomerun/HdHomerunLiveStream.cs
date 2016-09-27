@@ -22,6 +22,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
 
         private readonly CancellationTokenSource _liveStreamCancellationTokenSource = new CancellationTokenSource();
+        private readonly TaskCompletionSource<bool> _liveStreamTaskCompletionSource = new TaskCompletionSource<bool>();
 
         public HdHomerunLiveStream(MediaSourceInfo mediaSource, IFileSystem fileSystem, IHttpClient httpClient, ILogger logger, IServerApplicationPaths appPaths, IServerApplicationHost appHost)
             : base(mediaSource)
@@ -62,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             _liveStreamCancellationTokenSource.Cancel();
 
-            return base.Close();
+            return _liveStreamTaskCompletionSource.Task;
         }
 
         private async Task StartStreamingToTempFile(Stream outputStream, string tempFilePath, string url, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -120,7 +121,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
                 }
 
-                await Task.Delay(5000).ConfigureAwait(false);
+                _liveStreamTaskCompletionSource.TrySetResult(true);
 
                 DeleteTempFile(tempFilePath);
 

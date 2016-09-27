@@ -8,6 +8,7 @@
     white-space: nowrap;
     width: 100%;
     flex-shrink: 0;
+    display: flex;
 }
 
 .tvProgramSectionHeader {
@@ -83,7 +84,7 @@
 }
 
 .channelTimeslotHeader {
-    float: left;
+    flex-shrink: 0;
 }
 
 .timeslotHeaders {
@@ -93,15 +94,14 @@
 .programContainer {
     white-space: nowrap;
     position: relative;
-}
-
-.programGridContainer {
-    margin-left: 12.2vw;
+    display: flex;
+    align-items: flex-start;
 }
 
 .channelPrograms {
     white-space: nowrap;
     position: relative;
+    contain: strict;
 }
 
 .timeslotHeadersInner {
@@ -285,6 +285,12 @@
 
 .channelPrograms, .channelHeaderCell {
     height: 4em;
+    contain: strict;
+}
+
+.channelPrograms {
+    display: flex;
+    flex-direction: column;
 }
 
 .channelPrograms-tv, .channelHeaderCell-tv {
@@ -305,10 +311,6 @@
 
 .pointerInput .channelHeaderCell:hover {
     background-color: #444;
-}
-
-.channelList {
-    float: left;
 }
 
 .programGrid {
@@ -403,8 +405,13 @@
     }
 }
 
+.channelList {
+    display: flex;
+    flex-direction: column;
+}
+
 .channelList, .programGrid {
-    height: auto !important;
+    contain: layout style;
 }
 
 .programCell, .channelHeaderCell, .btnSelectDate {
