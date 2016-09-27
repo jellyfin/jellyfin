@@ -242,10 +242,14 @@
                 passwordConfirm: page.querySelector('#txtSignupPasswordConfirm', page).value,
                 grecaptcha: greResponse
 
-            }).then(function () {
+            }).then(function (result) {
+
+                var msg = result.Validated ?
+                    Globalize.translate('MessageThankYouForConnectSignUpNoValidation') :
+                    Globalize.translate('MessageThankYouForConnectSignUp');
 
                 Dashboard.alert({
-                    message: Globalize.translate('MessageThankYouForConnectSignUp'),
+                    message: msg,
                     callback: function () {
                         Dashboard.navigate('connectlogin.html?mode=welcome');
                     }

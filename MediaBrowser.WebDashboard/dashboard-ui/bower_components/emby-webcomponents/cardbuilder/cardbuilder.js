@@ -1188,7 +1188,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (!imgUrl) {
-                var defaultName = item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
+                var defaultName = item.Type == 'Program' ? item.Name : itemHelper.getDisplayName(item);
                 cardImageContainerOpen += '<div class="cardText cardCenteredText">' + defaultName + '</div>';
             }
 

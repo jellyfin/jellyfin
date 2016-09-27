@@ -1,4 +1,11 @@
-define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize) {
+define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize, dom) {
+
+    var userDataMethods = {
+        markPlayed: markPlayed,
+        markDislike: markDislike,
+        markLike: markLike,
+        markFavorite: markFavorite
+    };
 
     function getUserDataButtonHtml(method, itemId, buttonCssClass, iconCssClass, icon, tooltip, style) {
 
@@ -22,16 +29,49 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
 
         iconCssClass += 'md-icon';
 
-        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" class="' + className + '" onclick="UserDataButtons.' + method + '(this);return false;">\
+        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" data-method="' + method + '" class="' + className + '">\
                 <i class="'+ iconCssClass + '">' + icon + '</i>\
             </button>';
+    }
+
+    function onContainerClick(e) {
+
+        var btnUserData = dom.parentWithClass(e.target, 'btnUserData');
+
+        if (!btnUserData) {
+            return;
+        }
+
+        var method = btnUserData.getAttribute('data-method');
+        userDataMethods[method](btnUserData);
     }
 
     function fill(options) {
 
         var html = getIconsHtml(options);
 
-        options.element.innerHTML = html;
+        if (options.fillMode == 'insertAdjacent') {
+            options.element.insertAdjacentHTML(options.insertLocation || 'beforeend', html);
+        } else {
+            options.element.innerHTML = html;
+        }
+
+        dom.removeEventListener(options.element, 'click', onContainerClick, {
+            passive: true
+        });
+
+        dom.addEventListener(options.element, 'click', onContainerClick, {
+            passive: true
+        });
+    }
+
+    function destroy(options) {
+
+        options.element.innerHTML = '';
+
+        dom.removeEventListener(options.element, 'click', onContainerClick, {
+            passive: true
+        });
     }
 
     function getIconsHtml(options) {
@@ -195,15 +235,9 @@ define(['connectionManager', 'globalize', 'paper-icon-button-light', 'material-i
         return apiClient.clearUserItemRating(apiClient.getCurrentUserId(), id);
     }
 
-    window.UserDataButtons = {
-        markPlayed: markPlayed,
-        markDislike: markDislike,
-        markLike: markLike,
-        markFavorite: markFavorite
-    };
-
     return {
         fill: fill,
+        destroy: destroy,
         getIconsHtml: getIconsHtml
     };
 
