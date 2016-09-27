@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "Ce nom d'utilisateur est d\u00e9j\u00e0 utilis\u00e9. Veuillez en choisir un autre et r\u00e9essayer.",
     "ErrorMessageEmailInUse": "Cette adresse email est d\u00e9j\u00e0 utilis\u00e9e. Veuillez en saisir une autre et r\u00e9essayer, ou bien utiliser la fonction du mot de passe oubli\u00e9.",
     "MessageThankYouForConnectSignUp": "Merci de vous \u00eatre inscrits sur Emby Connect. Un email va vous \u00eatre envoy\u00e9, avec les instructions pour confirmer votre nouveau compte. Merci de confirmer ce compte puis de revenir \u00e0 cet endroit pour vous connecter.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Partager",
     "HeaderConfirm": "Confirmer",
     "MessageConfirmDeleteTunerDevice": "Etes-vous s\u00fbr de vouloir supprimer cet appareil ?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
     "LabelConvertRecordingsTo": "Convert recordings to:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }

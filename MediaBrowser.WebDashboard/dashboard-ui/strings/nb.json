@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "Brukernavnet er alt i bruk, Pr\u00f8v igjen med et annet brukernavn.",
     "ErrorMessageEmailInUse": "Epost addressee du oppgav er alt i bruk.  Velg en annen epost adresse eller bruk tilbakestilling av passord funksjonen.",
     "MessageThankYouForConnectSignUp": "Takk for din registering i Emby Connect nettverket. En e-post vil bli sendt til din adresse med instruksjoner om hvordan du bekrefte den nye kontoen. Vennligst bekreft kontoen og deretter kom tilbake hit for \u00e5 logge p\u00e5.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Del",
     "HeaderConfirm": "Bekreft",
     "MessageConfirmDeleteTunerDevice": "Er du sikker p\u00e5 at du vil slette denne enheten?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
     "LabelConvertRecordingsTo": "Convert recordings to:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }

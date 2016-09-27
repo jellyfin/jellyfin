@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "U\u017eivatelsk\u00e9 jm\u00e9no se ji\u017e pou\u017e\u00edv\u00e1. Pros\u00edm, vyberte nov\u00fd n\u00e1zev a zkuste to znovu.",
     "ErrorMessageEmailInUse": "E-mailov\u00e1 adresa je ji\u017e pou\u017e\u00edv\u00e1na. Zadejte novou e-mailovou adresu a zkuste to znovu, nebo pou\u017eijte funkci zapomenut\u00e9ho hesla.",
     "MessageThankYouForConnectSignUp": "D\u011bkujeme za p\u0159ihl\u00e1\u0161en\u00ed se k Emby Connect. Dal\u0161\u00ed pokyny, jak potvrdit sv\u016fj nov\u00fd \u00fa\u010det, V\u00e1m budou zasl\u00e1ny na va\u0161\u00ed emailovou adresu. Pros\u00edm potvr\u010fte \u00fa\u010det a pak se vr\u00e1\u0165te pro p\u0159ihl\u00e1\u0161en\u00ed.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Sd\u00edlet",
     "HeaderConfirm": "Souhlas",
     "MessageConfirmDeleteTunerDevice": "Jste si jisti, \u017ee chcete smazat tento p\u0159\u00edstroj?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
     "LabelConvertRecordingsTo": "Convert recordings to:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }
