@@ -245,8 +245,6 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (options.showProgramTimeColumn) {
                 html += '<div class="listItemBody listItemBody-nogrow listItemBody-rightborder"><div class="listItemBodyText">';
                 html += datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate));
-                html += ' - ';
-                html += datetime.getDisplayTime(datetime.parseISO8601Date(item.EndDate));
                 html += '</div></div>';
             }
 
@@ -309,7 +307,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 var mediaInfoClass = 'secondary listItemMediaInfo listItemBodyText';
 
                 html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
-                    episodeTitle: false
+                    episodeTitle: false,
+                    originalAirDate: false
                 }) + '</div>';
             }
 

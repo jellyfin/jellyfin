@@ -986,7 +986,7 @@
 
             if (browser.msie) {
 
-                if (window.MediaSource == null || mediaSource.RunTimeTicks == null) {
+                if (window.MediaSource == null || mediaSource.RunTimeTicks == null || browser.mobile) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
                     return;
                 }
@@ -1008,7 +1008,7 @@
                     // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
                     // This will start the transcoding process before actually feeding the video url into the player
                     // Edit: Also seeing stalls from hls.js
-                    if (!mediaSource.RunTimeTicks && isHls) {
+                    if (!mediaSource.RunTimeTicks && isHls && (!browser.edge || !browser.mobile)) {
 
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
 

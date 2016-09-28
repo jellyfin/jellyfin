@@ -100,7 +100,7 @@ h1, h1 a {
 }
 
 .dialog.background-theme-b {
-    background: rgba(28,28,28,.88);
+    background: rgba(28,28,28,.84);
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
 }

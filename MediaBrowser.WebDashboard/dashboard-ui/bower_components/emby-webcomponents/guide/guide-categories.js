@@ -1,41 +1,44 @@
 ﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
 
-    function save(context) {
+    function save(context, options) {
 
-        var chkIndicators = context.querySelectorAll('.chkIndicator');
-        for (var i = 0, length = chkIndicators.length; i < length; i++) {
+        var categories = [];
 
-            var type = chkIndicators[i].getAttribute('data-type');
-            userSettings.set('guide-indicator-' + type, chkIndicators[i].checked);
-        }
+        var chkCategorys = context.querySelectorAll('.chkCategory');
+        for (var i = 0, length = chkCategorys.length; i < length; i++) {
 
-        userSettings.set('guide-colorcodedbackgrounds', context.querySelector('.chkColorCodedBackgrounds').checked);
-    }
+            var type = chkCategorys[i].getAttribute('data-type');
 
-    function load(context) {
-
-        var chkIndicators = context.querySelectorAll('.chkIndicator');
-        for (var i = 0, length = chkIndicators.length; i < length; i++) {
-
-            var type = chkIndicators[i].getAttribute('data-type');
-
-            if (chkIndicators[i].getAttribute('data-default') == 'true') {
-                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) != 'false';
-            } else {
-                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) == 'true';
+            if (chkCategorys[i].checked) {
+                categories.push(type);
             }
         }
 
-        context.querySelector('.chkColorCodedBackgrounds').checked = userSettings.get('guide-colorcodedbackgrounds') == 'true';
+        // differentiate between none and all
+        categories.push('all');
+        options.categories = categories;
     }
 
-    function showEditor() {
+    function load(context, options) {
+
+        var selectedCategories = options.categories || [];
+
+        var chkCategorys = context.querySelectorAll('.chkCategory');
+        for (var i = 0, length = chkCategorys.length; i < length; i++) {
+
+            var type = chkCategorys[i].getAttribute('data-type');
+
+            chkCategorys[i].checked = !selectedCategories.length || selectedCategories.indexOf(type) != -1;
+        }
+    }
+
+    function showEditor(options) {
 
         return new Promise(function (resolve, reject) {
 
             var settingsChanged = false;
 
-            require(['text!./guide-settings.template.html'], function (template) {
+            require(['text!./guide-categories.template.html'], function (template) {
 
                 var dialogOptions = {
                     removeOnClose: true,
@@ -69,10 +72,10 @@
                         scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
                     }
 
-                    save(dlg);
+                    save(dlg, options);
 
                     if (settingsChanged) {
-                        resolve();
+                        resolve(options);
                     } else {
                         reject();
                     }
@@ -86,7 +89,7 @@
                     scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }
 
-                load(dlg);
+                load(dlg, options);
                 dialogHelper.open(dlg);
             });
         });

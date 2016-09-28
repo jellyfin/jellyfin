@@ -19,7 +19,6 @@
     /* If this is raised, make sure it does not overlap bottom footer */
     z-index: 1;
     margin: 0 !important;
-    width: 100% !important;
     /* Page needs to supply padding */
     top: 102px !important;
     transition: transform 200ms ease-out;

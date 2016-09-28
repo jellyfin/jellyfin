@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "The username is already in use. Please choose a new name and try again.",
     "ErrorMessageEmailInUse": "\u6b64\u96fb\u5b50\u90f5\u4ef6\u5e33\u865f\u5df2\u88ab\u4f7f\u7528\u904e\uff0c\u8acb\u8f38\u5165\u5176\u4ed6\u7684\u96fb\u5b50\u90f5\u4ef6\u5e33\u865f\uff0c\u7136\u5f8c\u518d\u8a66\u4e00\u6b21\uff0c\u6216\u4f7f\u7528\u300c\u5fd8\u8a18\u5bc6\u78bc\u300d\u529f\u80fd\u627e\u56de\u5bc6\u78bc\u3002",
     "MessageThankYouForConnectSignUp": "Thank you for signing up for Emby Connect. An email will be sent to your address with instructions on how to confirm your new account. Please confirm the account and then return here to sign in.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "\u5206\u4eab",
     "HeaderConfirm": "Confirm",
     "MessageConfirmDeleteTunerDevice": "Are you sure you wish to delete this device?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
     "LabelConvertRecordingsTo": "Convert recordings to:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }

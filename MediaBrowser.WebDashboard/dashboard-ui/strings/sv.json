@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "Anv\u00e4ndarnamnet anv\u00e4nds redan. V\u00e4lj ett nytt anv\u00e4ndarnamn och f\u00f6rs\u00f6k igen.",
     "ErrorMessageEmailInUse": "Emailadressen anv\u00e4nds redan. V\u00e4lj en ny emailadress och f\u00f6rs\u00f6k igen, eller klicka p\u00e5 \u00e5terst\u00e4ll l\u00f6senord.",
     "MessageThankYouForConnectSignUp": "Tack f\u00f6r att du registrerar dig med Emby Connect. Ett mail kommer skickas till den adress med instruktioner om hur du kan bekfr\u00e4fta ditt nya konto. V\u00e4nligen bekfr\u00e4fta kontot och kom sedan tillbaka hit f\u00f6r att logga in.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Dela",
     "HeaderConfirm": "Bekr\u00e4fta",
     "MessageConfirmDeleteTunerDevice": "\u00c4r du s\u00e4ker p\u00e5 att du vill ta bort den h\u00e4r enheten?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
     "LabelConvertRecordingsTo": "Convert recordings to:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }

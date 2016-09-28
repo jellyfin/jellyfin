@@ -8,6 +8,8 @@
     white-space: nowrap;
     width: 100%;
     flex-shrink: 0;
+    display: flex;
+    padding-left: 3.4em;
 }
 
 .tvProgramSectionHeader {
@@ -21,34 +23,10 @@
     position: relative;
 }
 
-.tvProgramTimeSlotInner {
-    padding: .5em;
-}
-
-.tvProgramInfo {
-    vertical-align: middle;
-    padding: .5em .5em;
-    border-bottom: .65vh solid #121212;
-}
-
-.tvProgramCurrentTimeSlot {
-    background-color: green;
-}
-
-.tvProgramName {
-    color: #fff;
-    margin-bottom: .5em;
-}
-
-.tvProgramTime {
-    color: #fff;
-}
-
 .guideProgramIndicator {
     text-transform: uppercase;
     border-radius: 2px;
     margin-right: .5em;
-    color: #fff;
     font-size: 74%;
     padding: .2em .25em;
     display: inline-flex;
@@ -58,32 +36,8 @@
     color: #fff;
 }
 
-.programAccent {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-}
-
-.sportsAccent {
-    background-color: #0A7C33;
-}
-
-.newsAccent {
-    background-color: #523378;
-}
-
-.movieAccent {
-    background-color: #A43913;
-}
-
-.childAccent {
-    background-color: #0B487D;
-}
-
 .channelTimeslotHeader {
-    float: left;
+    flex-shrink: 0;
 }
 
 .timeslotHeaders {
@@ -93,15 +47,14 @@
 .programContainer {
     white-space: nowrap;
     position: relative;
-}
-
-.programGridContainer {
-    margin-left: 12.2vw;
+    display: flex;
+    align-items: flex-start;
 }
 
 .channelPrograms {
     white-space: nowrap;
     position: relative;
+    contain: strict;
 }
 
 .timeslotHeadersInner {
@@ -184,7 +137,6 @@
     background: rgba(40, 40, 40, .9);
     display: flex;
     align-items: center;
-    color: #fff !important;
     text-decoration: none;
     /* Needed in firefox */
     text-align: left;
@@ -285,6 +237,12 @@
 
 .channelPrograms, .channelHeaderCell {
     height: 4em;
+    contain: strict;
+}
+
+.channelPrograms {
+    display: flex;
+    flex-direction: column;
 }
 
 .channelPrograms-tv, .channelHeaderCell-tv {
@@ -307,10 +265,6 @@
     background-color: #444;
 }
 
-.channelList {
-    float: left;
-}
-
 .programGrid {
     padding-bottom: 4px;
 }
@@ -327,7 +281,6 @@
     border-left: .65vh solid #121212 !important;
     background-color: rgba(32, 32, 32, .95);
     display: flex;
-    color: #fff !important;
     text-decoration: none;
     overflow: hidden;
     align-items: center;
@@ -336,15 +289,32 @@
     contain: strict;
 }
 
-.timeslotCellInner {
+.programAccent {
     position: absolute;
     bottom: 0;
-    overflow: hidden;
-    width: 100%;
-    top: 0;
-    display: block;
-    text-decoration: none;
-    color: #fff !important;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.sportsAccent {
+    background-color: #3F51B5;
+}
+
+.movieAccent {
+    background-color: #673AB7;
+}
+
+.childAccent {
+    background-color: #2196F3;
+}
+
+.newsAccent {
+    background-color: #4CAF50;
+}
+
+.specialsAccent {
+    background-color: #FF9800;
 }
 
 .guideProgramName {
@@ -353,11 +323,6 @@
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
-}
-
-.guideProgramTime {
-    padding: 0 .5em .35em;
-    color: #bbb;
 }
 
 .programIcon {
@@ -403,8 +368,40 @@
     }
 }
 
+.channelsContainer {
+    display: flex;
+}
+
+.btnCategories {
+    margin: 0 .3em !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    background: rgba(40, 40, 40, .9);
+    border-radius: 0 !important;
+    width: 2.8em;
+    font-weight: normal !important;
+    align-items: flex-start;
+}
+
+.btnCategoriesText {
+    transform: rotate(90deg);
+    text-transform: uppercase;
+    transform-origin: left;
+    margin-left: 1.2em;
+    letter-spacing: .25em;
+    /*position: fixed;
+    top: 20%;*/
+    white-space: nowrap;
+    margin-top: -10em;
+}
+
+.channelList {
+    display: flex;
+    flex-direction: column;
+}
+
 .channelList, .programGrid {
-    height: auto !important;
+    contain: layout style;
 }
 
 .programCell, .channelHeaderCell, .btnSelectDate {
@@ -448,4 +445,15 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
+}
+
+@media all and (max-width: 800px), all and (max-height: 600px) {
+
+    .tvGuideHeader {
+        padding-left: 0;
+    }
+
+    .btnCategories {
+        display: none;
+    }
 }

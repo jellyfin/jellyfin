@@ -190,7 +190,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
                 miscInfo.push(itemHelper.getDisplayName(item));
             }
 
-            else if (item.PremiereDate) {
+            else if (item.PremiereDate && options.originalAirDate !== false) {
 
                 try {
                     date = datetime.parseISO8601Date(item.PremiereDate);

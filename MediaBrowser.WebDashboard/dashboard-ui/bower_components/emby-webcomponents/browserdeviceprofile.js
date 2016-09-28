@@ -204,7 +204,7 @@ define(['browser'], function (browser) {
     function getMaxBitrate() {
 
         if (browser.edgeUwp) {
-            return 24000000;
+            return 26000000;
         }
 
         // 10mbps
@@ -263,14 +263,12 @@ define(['browser'], function (browser) {
         // Otherwise with HLS and mp3 audio we're seeing some browsers
         // safari is lying
         if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || browser.edgeUwp || browser.tizen) {
-            if ((options.disableVideoAudioCodecs || []).indexOf('ac3') == -1) {
-                videoAudioCodecs.push('ac3');
+            videoAudioCodecs.push('ac3');
 
-                // This works in edge desktop, but not mobile
-                // TODO: Retest this on mobile
-                if (!browser.edge || !browser.touch) {
-                    hlsVideoAudioCodecs.push('ac3');
-                }
+            // This works in edge desktop, but not mobile
+            // TODO: Retest this on mobile
+            if (!browser.edge || !browser.touch) {
+                hlsVideoAudioCodecs.push('ac3');
             }
         }
 

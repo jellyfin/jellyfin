@@ -307,5 +307,12 @@
   "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
   "LabelKeep:": "Keep:",
   "UntilIDelete": "Until I delete",
-  "UntilSpaceNeeded": "Until space needed"
+  "UntilSpaceNeeded": "Until space needed",
+  "Categories": "Categories",
+  "Sports": "Sports",
+  "News": "News",
+  "Movies": "Movies",
+  "Kids": "Kids",
+  "Others": "Others",
+  "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
 }

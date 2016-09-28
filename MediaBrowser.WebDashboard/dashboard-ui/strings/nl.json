@@ -1965,6 +1965,7 @@
     "ErrorMessageUsernameInUse": "Deze gebruikersnaam is al in gebruik. Kies een andere en probeer het opnieuw.",
     "ErrorMessageEmailInUse": "Dit emailadres is al in gebruik. Kies een ander en probeer het opnieuw, of gebruik de vergeten wachtwoord functie.",
     "MessageThankYouForConnectSignUp": "Bedankt voor het aanmelden bij Emby Connect. Een e-mail met instructies hoe uw account bevestigd moet worden wordt verstuurd. Bevestig het account en keer terug om aan te melden.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Delen",
     "HeaderConfirm": "bevestigen",
     "MessageConfirmDeleteTunerDevice": "Weet u zeker dat u dit apparaat wilt verwijderen?",
@@ -2137,5 +2138,7 @@
     "HeaderForKids": "Voor Kinderen",
     "HeaderRecordingGroups": "Opname groepen",
     "LabelConvertRecordingsTo": "Converteer opnames naar:",
-    "HeaderUpcomingOnTV": "Upcoming On TV"
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
 }
