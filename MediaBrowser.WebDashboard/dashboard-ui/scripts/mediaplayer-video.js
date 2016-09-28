@@ -986,7 +986,7 @@
 
             if (browser.msie) {
 
-                if (window.MediaSource == null || mediaSource.RunTimeTicks == null) {
+                if (window.MediaSource == null || mediaSource.RunTimeTicks == null || browser.mobile) {
                     alert('Playback of this content is not supported in Internet Explorer. For a better experience, please try a modern browser such as Google Chrome, Firefox, Opera, or Microsoft Edge.');
                     return;
                 }

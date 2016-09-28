@@ -2882,11 +2882,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
-
                 var list = libraryOptions.PathInfos.ToList();
                 list.Add(pathInfo);
                 libraryOptions.PathInfos = list.ToArray();
+
+                SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
             }
