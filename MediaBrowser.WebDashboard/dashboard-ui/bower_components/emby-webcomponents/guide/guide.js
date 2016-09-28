@@ -391,6 +391,10 @@
                     displayInnerContent = displayOtherContent;
                 }
 
+                if (!displayInnerContent) {
+                    accentCssClass = null;
+                }
+
                 if (enableColorCodedBackgrounds && accentCssClass) {
                     cssClass += ' ' + accentCssClass;
 
