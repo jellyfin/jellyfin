@@ -908,6 +908,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     try
                     {
                         await stream.Close().ConfigureAwait(false);
+                        _logger.Info("Live stream {0} closed successfully", id);
                     }
                     catch (Exception ex)
                     {

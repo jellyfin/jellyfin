@@ -2550,9 +2550,25 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
+            var metadataPath = ConfigurationManager.Configuration.MetadataPath;
+            var metadataNetworkPath = ConfigurationManager.Configuration.MetadataNetworkPath;
+
+            if (!string.IsNullOrWhiteSpace(metadataPath) && !string.IsNullOrWhiteSpace(metadataNetworkPath))
+            {
+                var metadataSubstitutionResult = SubstitutePathInternal(path, metadataPath, metadataNetworkPath);
+                if (metadataSubstitutionResult.Item2)
+                {
+                    return metadataSubstitutionResult.Item1;
+                }
+            }
+
             foreach (var map in ConfigurationManager.Configuration.PathSubstitutions)
             {
-                path = SubstitutePath(path, map.From, map.To);
+                var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
+                if (substitutionResult.Item2)
+                {
+                    return substitutionResult.Item1;
+                }
             }
 
             return path;
@@ -2866,11 +2882,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var libraryOptions = CollectionFolder.GetLibraryOptions(virtualFolderPath);
 
-                SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
-
                 var list = libraryOptions.PathInfos.ToList();
                 list.Add(pathInfo);
                 libraryOptions.PathInfos = list.ToArray();
+
+                SyncLibraryOptionsToLocations(virtualFolderPath, libraryOptions);
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
             }
