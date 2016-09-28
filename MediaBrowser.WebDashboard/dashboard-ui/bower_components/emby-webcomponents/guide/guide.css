@@ -370,17 +370,18 @@
 
 .channelsContainer {
     display: flex;
+    flex-shrink: 0;
 }
 
 .btnCategories {
-    margin: 0 .3em !important;
+    margin: 0 .3em 0 .5em !important;
     padding: 0 !important;
     flex-shrink: 0;
     background: rgba(40, 40, 40, .9);
     border-radius: 0 !important;
-    width: 2.8em;
+    width: 2.6em;
     font-weight: normal !important;
-    align-items: flex-start;
+    position: relative;
 }
 
 .btnCategoriesText {
@@ -389,10 +390,10 @@
     transform-origin: left;
     margin-left: 1.2em;
     letter-spacing: .25em;
-    /*position: fixed;
-    top: 20%;*/
+    position: absolute;
+    top: 0;
+    margin-top: 1em;
     white-space: nowrap;
-    margin-top: -10em;
 }
 
 .channelList {
