@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             throw new NotImplementedException();
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId)
         {
             throw new NotImplementedException();
         }

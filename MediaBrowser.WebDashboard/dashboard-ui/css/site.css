@@ -35,16 +35,16 @@ html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: -apple-system, 'San Francisco', 'Helvetica Neue', Roboto, 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
     font-size: 14px;
 }
 
 h1 {
-    font-family: -apple-system-headline, 'San Francisco', 'Helvetica Neue', Roboto, 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: -apple-system-headline, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
 }
 
 h2 {
-    font-family: -apple-system-subheadline, 'San Francisco', 'Helvetica Neue', Roboto, 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: -apple-system-subheadline, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
 }
 
 body {

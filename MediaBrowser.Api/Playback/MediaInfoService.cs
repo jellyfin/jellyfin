@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Post(CloseMediaSource request)
         {
-            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId, CancellationToken.None);
+            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId);
             Task.WaitAll(task);
         }
 

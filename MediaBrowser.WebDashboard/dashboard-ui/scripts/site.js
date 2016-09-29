@@ -1160,10 +1160,10 @@ var AppInfo = {};
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
-            howler: bowerPath + '/howler.js/howler.min',
+            howler: bowerPath + '/howlerjs/howler.min',
             sortable: bowerPath + '/Sortable/Sortable.min',
             isMobile: bowerPath + '/isMobile/isMobile.min',
-            headroom: bowerPath + '/headroom.js/dist/headroom',
+            headroom: bowerPath + '/headroomjs/dist/headroom',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
@@ -1189,7 +1189,7 @@ var AppInfo = {};
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
-        paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
+        paths.hlsjs = bowerPath + "/hlsjs/dist/hls.min";
 
         if ((window.chrome && window.chrome.sockets) || Dashboard.isRunningInCordova()) {
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery-chrome";
@@ -2715,8 +2715,8 @@ var AppInfo = {};
 
             // Prefer custom font over Segoe if on desktop windows
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
-                //postInitDependencies.push('opensansFont');
-                postInitDependencies.push('robotoFont');
+                postInitDependencies.push('opensansFont');
+                //postInitDependencies.push('robotoFont');
             }
 
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');

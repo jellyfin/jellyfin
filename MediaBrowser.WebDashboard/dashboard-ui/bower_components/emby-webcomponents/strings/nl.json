@@ -307,5 +307,11 @@
     "DefaultErrorMessage": "Er is een fout opgetreden. Probeer later opnieuw.",
     "LabelKeep:": "Keep:",
     "UntilIDelete": "Until I delete",
-    "UntilSpaceNeeded": "Until space needed"
+    "UntilSpaceNeeded": "Until space needed",
+    "Categories": "Categories",
+    "Sports": "Sports",
+    "News": "News",
+    "Movies": "Movies",
+    "Kids": "Kids",
+    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
 }

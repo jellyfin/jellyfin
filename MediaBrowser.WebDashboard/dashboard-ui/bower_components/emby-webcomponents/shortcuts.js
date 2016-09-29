@@ -367,12 +367,15 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
     }
 
     function onCommand(e) {
+
         var cmd = e.detail.command;
 
         if (cmd == 'play' || cmd == 'record' || cmd == 'menu' || cmd == 'info') {
             var card = dom.parentWithClass(e.target, 'itemAction');
 
             if (card) {
+                e.preventDefault();
+                e.stopPropagation();
                 executeAction(card, card, cmd);
             }
         }

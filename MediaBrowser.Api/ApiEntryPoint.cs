@@ -567,7 +567,7 @@ namespace MediaBrowser.Api
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(job.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(job.LiveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -789,12 +789,12 @@ namespace MediaBrowser.Api
             {
                 if (KillTimer == null)
                 {
-                    Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer = new Timer(callback, this, intervalMs, Timeout.Infinite);
                 }
                 else
                 {
-                    Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }
@@ -813,7 +813,7 @@ namespace MediaBrowser.Api
                 {
                     var intervalMs = PingTimeout;
 
-                    Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    //Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
             }

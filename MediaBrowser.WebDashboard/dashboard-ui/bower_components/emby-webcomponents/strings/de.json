@@ -307,5 +307,11 @@
     "DefaultErrorMessage": "Es gab einen Fehler beim verarbeiten der Anfrage. Bitte versuche es sp\u00e4ter erneut.",
     "LabelKeep:": "Behalten:",
     "UntilIDelete": "Bis ich l\u00f6sche",
-    "UntilSpaceNeeded": "Bis Speicherplatz ben\u00f6tigt wird"
+    "UntilSpaceNeeded": "Bis Speicherplatz ben\u00f6tigt wird",
+    "Categories": "Kategorien",
+    "Sports": "Sport",
+    "News": "Nachrichten",
+    "Movies": "Filme",
+    "Kids": "Kinder",
+    "EnableColorCodedBackgrounds": "Aktiviere farbige Hintergr\u00fcnde"
 }

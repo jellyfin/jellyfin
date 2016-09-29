@@ -340,22 +340,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _timerProvider.Delete(timer);
         }
 
-        private List<ChannelInfo> _channelCache = null;
         private async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(bool enableCache, CancellationToken cancellationToken)
         {
-            if (enableCache && _channelCache != null)
-            {
-
-                return _channelCache.ToList();
-            }
-
             var list = new List<ChannelInfo>();
 
             foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
                 try
                 {
-                    var channels = await hostInstance.GetChannels(cancellationToken).ConfigureAwait(false);
+                    var channels = await hostInstance.GetChannels(enableCache, cancellationToken).ConfigureAwait(false);
 
                     list.AddRange(channels);
                 }
@@ -388,7 +381,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            _channelCache = list.ToList();
             return list;
         }
 
@@ -400,7 +392,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    var channels = await hostInstance.GetChannels(cancellationToken).ConfigureAwait(false);
+                    var channels = await hostInstance.GetChannels(false, cancellationToken).ConfigureAwait(false);
 
                     list.AddRange(channels);
                 }
@@ -632,6 +624,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             existingTimer.Genres = updatedTimer.Genres;
             existingTimer.HomePageUrl = updatedTimer.HomePageUrl;
             existingTimer.IsKids = updatedTimer.IsKids;
+            existingTimer.IsNews = updatedTimer.IsNews;
             existingTimer.IsMovie = updatedTimer.IsMovie;
             existingTimer.IsProgramSeries = updatedTimer.IsProgramSeries;
             existingTimer.IsSports = updatedTimer.IsSports;
@@ -836,32 +829,67 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var result = await GetChannelStreamInternal(channelId, streamId, cancellationToken).ConfigureAwait(false);
 
-            return result.Item1.PublicMediaSource;
+            return result.Item2;
         }
 
-        private async Task<Tuple<LiveStream, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
+        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, int consumerId)
+        {
+            var json = _jsonSerializer.SerializeToString(mediaSource);
+            mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
+
+            mediaSource.Id = consumerId.ToString(CultureInfo.InvariantCulture) + "_" + mediaSource.Id;
+
+            return mediaSource;
+        }
+
+        private async Task<Tuple<LiveStream, MediaSourceInfo, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
         {
             _logger.Info("Streaming Channel " + channelId);
 
-            foreach (var hostInstance in _liveTvManager.TunerHosts)
+            await _liveStreamsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            var result = _liveStreams.Values.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
+
+            if (result != null)
             {
-                try
-                {
-                    var result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+                //result.ConsumerCount++;
 
-                    await _liveStreamsSemaphore.WaitAsync().ConfigureAwait(false);
-                    _liveStreams[result.Id] = result;
-                    _liveStreamsSemaphore.Release();
+                //_logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
-                    return new Tuple<LiveStream, ITunerHost>(result, hostInstance);
-                }
-                catch (FileNotFoundException)
+                //_liveStreamsSemaphore.Release();
+                //return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, CloneMediaSource(result.OpenedMediaSource, result.ConsumerCount - 1), result.TunerHost);
+            }
+
+            try
+            {
+                foreach (var hostInstance in _liveTvManager.TunerHosts)
                 {
+                    try
+                    {
+                        result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+                        _liveStreams[result.OpenedMediaSource.Id] = result;
+
+                        result.ConsumerCount++;
+                        result.TunerHost = hostInstance;
+                        result.OriginalStreamId = streamId;
+
+                        _logger.Info("Returning mediasource streamId {0}, mediaSource.Id {1}, mediaSource.LiveStreamId {2}",
+                            streamId, result.OpenedMediaSource.Id, result.OpenedMediaSource.LiveStreamId);
+
+                        return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, CloneMediaSource(result.OpenedMediaSource, 0), hostInstance);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
                 }
-                catch (Exception e)
-                {
-                    _logger.ErrorException("Error getting channel stream", e);
-                }
+            }
+            finally
+            {
+                _liveStreamsSemaphore.Release();
             }
 
             throw new ApplicationException("Tuner not found.");
@@ -896,25 +924,41 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
         {
-            await _liveStreamsSemaphore.WaitAsync().ConfigureAwait(false);
+            // Ignore the consumer id
+            id = id.Substring(id.IndexOf('_') + 1);
+
+            await _liveStreamsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
                 LiveStream stream;
                 if (_liveStreams.TryGetValue(id, out stream))
                 {
-                    _liveStreams.Remove(id);
+                    stream.ConsumerCount--;
 
-                    try
+                    _logger.Info("Live stream {0} consumer count is now {1}", id, stream.ConsumerCount);
+
+                    if (stream.ConsumerCount <= 0)
                     {
+                        _liveStreams.Remove(id);
+
+                        _logger.Info("Closing live stream {0}", id);
+
                         await stream.Close().ConfigureAwait(false);
                         _logger.Info("Live stream {0} closed successfully", id);
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error closing live stream", ex);
-                    }
                 }
+                else
+                {
+                    _logger.Warn("Live stream not found: {0}, unable to close", id);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error closing live stream", ex);
             }
             finally
             {
@@ -1095,20 +1139,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordPath = GetRecordingPath(timer, out seriesPath);
             var recordingStatus = RecordingStatus.New;
 
-            LiveStream liveStream = null;
+            string liveStreamId = null;
 
             try
             {
                 var allMediaSources =
                     await GetChannelStreamMediaSources(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
 
-                var liveStreamInfo =
-                    await
-                        GetChannelStreamInternal(timer.ChannelId, allMediaSources[0].Id, CancellationToken.None)
+                var liveStreamInfo = await GetChannelStreamInternal(timer.ChannelId, allMediaSources[0].Id, CancellationToken.None)
                             .ConfigureAwait(false);
-                liveStream = liveStreamInfo.Item1;
-                var mediaStreamInfo = liveStreamInfo.Item1.PublicMediaSource;
-                var tunerHost = liveStreamInfo.Item2;
+
+                var mediaStreamInfo = liveStreamInfo.Item2;
+                liveStreamId = mediaStreamInfo.Id;
 
                 // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
                 //await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
@@ -1140,15 +1182,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     EnforceKeepUpTo(timer);
                 };
 
-                var pathWithDuration = tunerHost.ApplyDuration(mediaStreamInfo.Path, duration);
-
-                // If it supports supplying duration via url
-                if (!string.Equals(pathWithDuration, mediaStreamInfo.Path, StringComparison.OrdinalIgnoreCase))
-                {
-                    mediaStreamInfo.Path = pathWithDuration;
-                    mediaStreamInfo.RunTimeTicks = duration.Ticks;
-                }
-
                 await recorder.Record(mediaStreamInfo, recordPath, duration, onStarted, cancellationToken)
                         .ConfigureAwait(false);
 
@@ -1166,11 +1199,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 recordingStatus = RecordingStatus.Error;
             }
 
-            if (liveStream != null)
+            if (!string.IsNullOrWhiteSpace(liveStreamId))
             {
                 try
                 {
-                    await CloseLiveStream(liveStream.Id, CancellationToken.None).ConfigureAwait(false);
+                    await CloseLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1251,7 +1284,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1,1);
+        private readonly SemaphoreSlim _recordingDeleteSemaphore = new SemaphoreSlim(1, 1);
         private async Task DeleteLibraryItemsForTimers(List<TimerInfo> timers)
         {
             foreach (var timer in timers)
@@ -1295,7 +1328,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (FileNotFoundException)
                 {
-                    
+
                 }
             }
 
@@ -1491,6 +1524,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     if (timer.IsKids)
                     {
                         AddGenre(timer.Genres, "Kids");
+                    }
+                    if (timer.IsNews)
+                    {
+                        AddGenre(timer.Genres, "News");
                     }
 
                     foreach (var genre in timer.Genres)

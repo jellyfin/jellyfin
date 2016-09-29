@@ -307,5 +307,11 @@
     "DefaultErrorMessage": "\uc694\uad6c \ucc98\ub9ac \uacfc\uc815\uc5d0 \uc624\ub958\uac00 \ubc1c\uc0dd\ud558\uc600\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc138\uc694.",
     "LabelKeep:": "Keep:",
     "UntilIDelete": "Until I delete",
-    "UntilSpaceNeeded": "Until space needed"
+    "UntilSpaceNeeded": "Until space needed",
+    "Categories": "Categories",
+    "Sports": "Sports",
+    "News": "News",
+    "Movies": "Movies",
+    "Kids": "Kids",
+    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
 }
