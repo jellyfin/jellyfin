@@ -73,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 .ToList();
         }
 
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(CancellationToken cancellationToken)
+        public async Task<IEnumerable<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken)
         {
             var list = new List<ChannelInfo>();
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             {
                 try
                 {
-                    var channels = await GetChannels(host, true, cancellationToken).ConfigureAwait(false);
+                    var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
                     var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
 
                     list.AddRange(newChannels);

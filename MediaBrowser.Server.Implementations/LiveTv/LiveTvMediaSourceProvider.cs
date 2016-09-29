@@ -204,9 +204,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId)
         {
-            return _liveTvManager.CloseLiveStream(liveStreamId, cancellationToken);
+            return _liveTvManager.CloseLiveStream(liveStreamId);
         }
     }
 }

@@ -62,9 +62,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly List<ILiveTvService> _services = new List<ILiveTvService>();
 
-        private readonly ConcurrentDictionary<string, LiveStreamData> _openStreams =
-            new ConcurrentDictionary<string, LiveStreamData>();
-
         private readonly SemaphoreSlim _refreshRecordingsLock = new SemaphoreSlim(1, 1);
 
         private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
@@ -153,6 +150,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var channels = _libraryManager.GetItemList(new InternalItemsQuery
             {
+                IsMovie = query.IsMovie,
+                IsNews = query.IsNews,
+                IsKids = query.IsKids,
+                IsSports = query.IsSports,
+                IsSeries = query.IsSeries,
                 IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 TopParentIds = new[] { topFolder.Id.ToString("N") }
@@ -406,15 +408,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
                 Normalize(info, service, isVideo);
-
-                var data = new LiveStreamData
-                {
-                    Info = info,
-                    IsChannel = isChannel,
-                    ItemId = id
-                };
-
-                _openStreams.AddOrUpdate(info.Id, data, (key, i) => data);
 
                 return info;
             }
@@ -937,8 +930,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MaxStartDate = query.MaxStartDate,
                 ChannelIds = query.ChannelIds,
                 IsMovie = query.IsMovie,
+                IsSeries = query.IsSeries,
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
+                IsNews = query.IsNews,
                 Genres = query.Genres,
                 StartIndex = query.StartIndex,
                 Limit = query.Limit,
@@ -985,7 +980,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 IsAiring = query.IsAiring,
+                IsNews = query.IsNews,
                 IsMovie = query.IsMovie,
+                IsSeries = query.IsSeries,
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
@@ -1014,7 +1011,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var programList = programs.ToList();
 
-            var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false);
+            var factorChannelWatchCount = (query.IsAiring ?? false) || (query.IsKids ?? false) || (query.IsSports ?? false) || (query.IsMovie ?? false) || (query.IsNews ?? false) || (query.IsSeries ?? false);
 
             programs = programList.OrderBy(i => i.StartDate.Date)
                 .ThenByDescending(i => GetRecommendationScore(i, user.Id, factorChannelWatchCount))
@@ -1305,6 +1302,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var start = DateTime.UtcNow.AddHours(-1);
                     var end = start.AddDays(guideDays);
 
+                    var isMovie = false;
+                    var isSports = false;
+                    var isNews = false;
+                    var isKids = false;
+                    var iSSeries = false;
+
                     var channelPrograms = await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false);
 
                     foreach (var program in channelPrograms)
@@ -1312,7 +1315,40 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         var programItem = await GetProgram(program, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
 
                         programs.Add(programItem.Id);
+
+                        if (program.IsMovie)
+                        {
+                            isMovie = true;
+                        }
+
+                        if (program.IsSeries)
+                        {
+                            iSSeries = true;
+                        }
+
+                        if (program.IsSports)
+                        {
+                            isSports = true;
+                        }
+
+                        if (program.IsNews)
+                        {
+                            isNews = true;
+                        }
+
+                        if (program.IsKids)
+                        {
+                            isKids = true;
+                        }
                     }
+
+                    currentChannel.IsMovie = isMovie;
+                    currentChannel.IsNews = isNews;
+                    currentChannel.IsSports = isSports;
+                    currentChannel.IsKids = isKids;
+                    currentChannel.IsSeries = iSSeries;
+
+                    await currentChannel.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1645,6 +1681,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var val = query.IsMovie.Value;
                 recordings = recordings.Where(i => i.IsMovie == val);
+            }
+
+            if (query.IsNews.HasValue)
+            {
+                var val = query.IsNews.Value;
+                recordings = recordings.Where(i => i.IsNews == val);
             }
 
             if (query.IsSeries.HasValue)
@@ -2444,9 +2486,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             internal bool IsChannel;
         }
 
-        public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
+        public async Task CloseLiveStream(string id)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -2461,12 +2503,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 id = parts[1];
 
-                LiveStreamData data;
-                _openStreams.TryRemove(id, out data);
-
                 _logger.Info("Closing live stream from {0}, stream Id: {1}", service.Name, id);
 
-                await service.CloseLiveStream(id, cancellationToken).ConfigureAwait(false);
+                await service.CloseLiveStream(id, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -2500,7 +2539,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             Dispose(true);
         }
 
-        private readonly object _disposeLock = new object();
         private bool _isDisposed = false;
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -2511,18 +2549,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (dispose)
             {
                 _isDisposed = true;
-
-                lock (_disposeLock)
-                {
-                    foreach (var stream in _openStreams.Values.ToList())
-                    {
-                        var task = CloseLiveStream(stream.Info.Id, CancellationToken.None);
-
-                        Task.WaitAll(task);
-                    }
-
-                    _openStreams.Clear();
-                }
             }
         }
 

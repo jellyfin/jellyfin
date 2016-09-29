@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
@@ -52,7 +53,9 @@ namespace MediaBrowser.Model.Dto
         public string TranscodingUrl { get; set; }
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
-        
+
+        public DateTime? DateLiveStreamOpened { get; set; }
+
         public MediaSourceInfo()
         {
             Formats = new List<string>();

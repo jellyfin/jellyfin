@@ -220,9 +220,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// Closes the live stream.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseLiveStream(string id, CancellationToken cancellationToken);
+        Task CloseLiveStream(string id);
 
         /// <summary>
         /// Gets the guide information.

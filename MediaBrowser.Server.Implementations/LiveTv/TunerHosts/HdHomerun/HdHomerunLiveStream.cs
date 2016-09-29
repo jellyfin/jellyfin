@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _appHost = appHost;
         }
 
-        public override async Task Open(CancellationToken openCancellationToken)
+        protected override async Task OpenInternal(CancellationToken openCancellationToken)
         {
             _liveStreamCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
@@ -54,13 +54,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             await taskCompletionSource.Task.ConfigureAwait(false);
 
-            PublicMediaSource.Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveStreamFiles/" + Path.GetFileNameWithoutExtension(tempFile) + "/stream.ts";
+            OpenedMediaSource.Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveStreamFiles/" + Path.GetFileNameWithoutExtension(tempFile) + "/stream.ts";
 
-            PublicMediaSource.Protocol = MediaProtocol.Http;
+            OpenedMediaSource.Protocol = MediaProtocol.Http;
         }
 
         public override Task Close()
         {
+            _logger.Info("Closing HDHR live stream");
             _liveStreamCancellationTokenSource.Cancel();
 
             return _liveStreamTaskCompletionSource.Task;

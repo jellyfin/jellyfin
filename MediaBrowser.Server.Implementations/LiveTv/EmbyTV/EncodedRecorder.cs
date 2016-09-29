@@ -71,38 +71,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var durationToken = new CancellationTokenSource(duration);
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, false, duration, onStarted, cancellationToken).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
 
             _logger.Info("Recording completed to file {0}", targetFile);
         }
 
-        private async void DeleteTempFile(string path)
-        {
-            for (var i = 0; i < 10; i++)
-            {
-                try
-                {
-                    File.Delete(path);
-                    return;
-                }
-                catch (FileNotFoundException)
-                {
-                    return;
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error deleting recording temp file", ex);
-                }
-
-                await Task.Delay(1000).ConfigureAwait(false);
-            }
-        }
-
-        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, bool deleteInputFileAfterCompletion, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             _fileSystem.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -143,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile, deleteInputFileAfterCompletion);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile);
 
             process.Start();
 
@@ -252,7 +226,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(Process process, string inputFile, bool deleteInputFileAfterCompletion)
+        private void OnFfMpegProcessExited(Process process, string inputFile)
         {
             _hasExited = true;
 
@@ -277,11 +251,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.Error("FFMpeg recording exited with an error for {0}.", _targetPath);
                 _taskCompletionSource.TrySetException(new Exception(string.Format("Recording for {0} failed", _targetPath)));
-            }
-
-            if (deleteInputFileAfterCompletion)
-            {
-                DeleteTempFile(inputFile);
             }
         }
 
