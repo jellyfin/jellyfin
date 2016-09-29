@@ -101,6 +101,8 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsMovie { get; set; }
         public bool? IsSports { get; set; }
         public bool? IsKids { get; set; }
+        public bool? IsNews { get; set; }
+        public bool? IsSeries { get; set; }
 
         public int? MinPlayers { get; set; }
         public int? MaxPlayers { get; set; }

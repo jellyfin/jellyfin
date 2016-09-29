@@ -2530,38 +2530,111 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("IsOffline=@IsOffline");
                 cmd.Parameters.Add(cmd, "@IsOffline", DbType.Boolean).Value = query.IsOffline;
             }
-            if (query.IsMovie.HasValue)
-            {
-                var alternateTypes = new List<string>();
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Movie).Name))
-                {
-                    alternateTypes.Add(typeof(Movie).FullName);
-                }
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Trailer).Name))
-                {
-                    alternateTypes.Add(typeof(Trailer).FullName);
-                }
 
-                if (alternateTypes.Count == 0)
-                {
-                    whereClauses.Add("IsMovie=@IsMovie");
-                }
-                else
-                {
-                    whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
-                }
-                cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
-            }
-            if (query.IsKids.HasValue)
+            var exclusiveProgramAttribtues = !(query.IsMovie ?? true) ||
+                                             !(query.IsSports ?? true) ||
+                                             !(query.IsKids ?? true) ||
+                                             !(query.IsNews ?? true) ||
+                                             !(query.IsSeries ?? true);
+
+            if (exclusiveProgramAttribtues)
             {
-                whereClauses.Add("IsKids=@IsKids");
-                cmd.Parameters.Add(cmd, "@IsKids", DbType.Boolean).Value = query.IsKids;
+                if (query.IsMovie.HasValue)
+                {
+                    var alternateTypes = new List<string>();
+                    if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Movie).Name))
+                    {
+                        alternateTypes.Add(typeof(Movie).FullName);
+                    }
+                    if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Trailer).Name))
+                    {
+                        alternateTypes.Add(typeof(Trailer).FullName);
+                    }
+
+                    if (alternateTypes.Count == 0)
+                    {
+                        whereClauses.Add("IsMovie=@IsMovie");
+                        cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
+                    }
+                    else
+                    {
+                        whereClauses.Add("(IsMovie is null OR IsMovie=@IsMovie)");
+                        cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
+                    }
+                }
+                if (query.IsSeries.HasValue)
+                {
+                    whereClauses.Add("IsSeries=@IsSeries");
+                    cmd.Parameters.Add(cmd, "@IsSeries", DbType.Boolean).Value = query.IsSeries;
+                }
+                if (query.IsNews.HasValue)
+                {
+                    whereClauses.Add("IsNews=@IsNews");
+                    cmd.Parameters.Add(cmd, "@IsNews", DbType.Boolean).Value = query.IsNews;
+                }
+                if (query.IsKids.HasValue)
+                {
+                    whereClauses.Add("IsKids=@IsKids");
+                    cmd.Parameters.Add(cmd, "@IsKids", DbType.Boolean).Value = query.IsKids;
+                }
+                if (query.IsSports.HasValue)
+                {
+                    whereClauses.Add("IsSports=@IsSports");
+                    cmd.Parameters.Add(cmd, "@IsSports", DbType.Boolean).Value = query.IsSports;
+                }
             }
-            if (query.IsSports.HasValue)
+            else
             {
-                whereClauses.Add("IsSports=@IsSports");
-                cmd.Parameters.Add(cmd, "@IsSports", DbType.Boolean).Value = query.IsSports;
+                var programAttribtues = new List<string>();
+                if (query.IsMovie ?? false)
+                {
+                    var alternateTypes = new List<string>();
+                    if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Movie).Name))
+                    {
+                        alternateTypes.Add(typeof(Movie).FullName);
+                    }
+                    if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(typeof(Trailer).Name))
+                    {
+                        alternateTypes.Add(typeof(Trailer).FullName);
+                    }
+
+                    if (alternateTypes.Count == 0)
+                    {
+                        programAttribtues.Add("IsMovie=@IsMovie");
+                    }
+                    else
+                    {
+                        programAttribtues.Add("(IsMovie is null OR IsMovie=@IsMovie)");
+                    }
+
+                    cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = true;
+                }
+                if (query.IsSports ?? false)
+                {
+                    programAttribtues.Add("IsSports=@IsSports");
+                    cmd.Parameters.Add(cmd, "@IsSports", DbType.Boolean).Value = true;
+                }
+                if (query.IsNews ?? false)
+                {
+                    programAttribtues.Add("IsNews=@IsNews");
+                    cmd.Parameters.Add(cmd, "@IsNews", DbType.Boolean).Value = true;
+                }
+                if (query.IsSeries ?? false)
+                {
+                    programAttribtues.Add("IsSeries=@IsSeries");
+                    cmd.Parameters.Add(cmd, "@IsSeries", DbType.Boolean).Value = true;
+                }
+                if (query.IsKids ?? false)
+                {
+                    programAttribtues.Add("IsKids=@IsKids");
+                    cmd.Parameters.Add(cmd, "@IsKids", DbType.Boolean).Value = true;
+                }
+                if (programAttribtues.Count > 0)
+                {
+                    whereClauses.Add("("+string.Join(" OR ", programAttribtues.ToArray())+")");
+                }
             }
+
             if (query.IsFolder.HasValue)
             {
                 whereClauses.Add("IsFolder=@IsFolder");

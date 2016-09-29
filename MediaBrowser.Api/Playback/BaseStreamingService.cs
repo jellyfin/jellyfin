@@ -1861,14 +1861,14 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                //TranscodingJob currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ? 
-                //    ApiEntryPoint.Instance.GetTranscodingJob(request.PlaySessionId)
-                //    : null;
+                TranscodingJob currentJob = !string.IsNullOrWhiteSpace(request.PlaySessionId) ?
+                    ApiEntryPoint.Instance.GetTranscodingJob(request.PlaySessionId)
+                    : null;
 
-                //if (currentJob != null)
-                //{
-                //    mediaSource = currentJob.MediaSource;
-                //}
+                if (currentJob != null)
+                {
+                    mediaSource = currentJob.MediaSource;
+                }
 
                 if (mediaSource == null)
                 {

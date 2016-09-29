@@ -28,8 +28,7 @@ namespace MediaBrowser.Controller.Library
         /// Closes the media source.
         /// </summary>
         /// <param name="liveStreamId">The live stream identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken);
+        Task CloseMediaSource(string liveStreamId);
     }
 }
