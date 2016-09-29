@@ -150,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId)
         {
             throw new NotImplementedException();
         }

@@ -153,10 +153,5 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         {
             return Task.FromResult(true);
         }
-
-        public string ApplyDuration(string streamPath, TimeSpan duration)
-        {
-            return streamPath;
-        }
     }
 }

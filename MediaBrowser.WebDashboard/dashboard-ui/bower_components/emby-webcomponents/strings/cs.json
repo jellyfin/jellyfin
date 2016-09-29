@@ -307,5 +307,11 @@
     "DefaultErrorMessage": "Do\u0161lo k chyb\u011b p\u0159i zpracov\u00e1n\u00ed po\u017eadavku. Pros\u00edm zkuste to znovu pozd\u011bji.",
     "LabelKeep:": "Keep:",
     "UntilIDelete": "Until I delete",
-    "UntilSpaceNeeded": "Until space needed"
+    "UntilSpaceNeeded": "Until space needed",
+    "Categories": "Categories",
+    "Sports": "Sports",
+    "News": "News",
+    "Movies": "Movies",
+    "Kids": "Kids",
+    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
 }

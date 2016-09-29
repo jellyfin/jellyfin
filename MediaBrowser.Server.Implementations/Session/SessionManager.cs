@@ -818,7 +818,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

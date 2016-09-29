@@ -42,6 +42,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             timerInfo.EpisodeNumber = programInfo.EpisodeNumber;
             timerInfo.IsMovie = programInfo.IsMovie;
             timerInfo.IsKids = programInfo.IsKids;
+            timerInfo.IsNews = programInfo.IsNews;
             timerInfo.IsSports = programInfo.IsSports;
             timerInfo.ProductionYear = programInfo.ProductionYear;
             timerInfo.EpisodeTitle = programInfo.EpisodeTitle;

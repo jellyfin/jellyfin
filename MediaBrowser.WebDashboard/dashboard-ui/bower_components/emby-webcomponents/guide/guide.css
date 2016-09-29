@@ -261,10 +261,6 @@
     height: 3em;
 }
 
-.pointerInput .channelHeaderCell:hover {
-    background-color: #444;
-}
-
 .programGrid {
     padding-bottom: 4px;
 }
@@ -298,23 +294,23 @@
 }
 
 .sportsAccent {
-    background-color: #3F51B5;
+    background-color: #3949AB;
 }
 
 .movieAccent {
-    background-color: #673AB7;
+    background-color: #5E35B1;
 }
 
 .childAccent {
-    background-color: #2196F3;
+    background-color: #039BE5;
 }
 
 .newsAccent {
-    background-color: #4CAF50;
+    background-color: #43A047;
 }
 
 .specialsAccent {
-    background-color: #FF9800;
+    background-color: #FB8C00;
 }
 
 .guideProgramName {

@@ -307,5 +307,11 @@
     "DefaultErrorMessage": "Ocorreu um erro ao processar o pedido. Por favor, tente novamente mais tarde.",
     "LabelKeep:": "Manter:",
     "UntilIDelete": "At\u00e9 eu excluir",
-    "UntilSpaceNeeded": "At\u00e9 o espa\u00e7o necess\u00e1rio"
+    "UntilSpaceNeeded": "At\u00e9 o espa\u00e7o necess\u00e1rio",
+    "Categories": "Categorias",
+    "Sports": "Esportes",
+    "News": "Not\u00edcias",
+    "Movies": "Filmes",
+    "Kids": "Crian\u00e7as",
+    "EnableColorCodedBackgrounds": "Habilitar cores de fundo por c\u00f3digo"
 }

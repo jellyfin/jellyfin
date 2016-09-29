@@ -125,7 +125,7 @@
                 picker.show({
 
                     path: $('#txtMetadataPath', view).val(),
-                    networkPath: $('#txtMetadataNetworkPath', view).val(),
+                    networkSharePath: $('#txtMetadataNetworkPath', view).val(),
                     callback: function (path, networkPath) {
                         if (path) {
                             $('#txtMetadataPath', view).val(path);

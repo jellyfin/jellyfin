@@ -38,14 +38,6 @@
         var currentStartIndex = 0;
         var currentChannelLimit = 0;
 
-        var channelQuery = {
-
-            StartIndex: 0,
-            EnableFavoriteSorting: true
-        };
-
-        var channelsPromise;
-
         self.refresh = function () {
 
             currentDate = null;
@@ -163,6 +155,12 @@
 
             var apiClient = connectionManager.currentApiClient();
 
+            var channelQuery = {
+
+                StartIndex: 0,
+                EnableFavoriteSorting: true
+            };
+
             channelQuery.UserId = apiClient.getCurrentUserId();
 
             getChannelLimit(context).then(function (channelLimit) {
@@ -177,7 +175,36 @@
                 channelQuery.EnableUserData = false;
                 channelQuery.EnableImageTypes = "Primary";
 
-                channelsPromise = channelsPromise || apiClient.getLiveTvChannels(channelQuery);
+                var categories = self.categoryOptions.categories || [];
+                var displayMovieContent = !categories.length || categories.indexOf('movies') != -1;
+                var displaySportsContent = !categories.length || categories.indexOf('sports') != -1;
+                var displayNewsContent = !categories.length || categories.indexOf('news') != -1;
+                var displayKidsContent = !categories.length || categories.indexOf('kids') != -1;
+                var displaySeriesContent = !categories.length || categories.indexOf('series') != -1;
+
+                if (displayMovieContent && displaySportsContent && displayNewsContent && displayKidsContent) {
+                    channelQuery.IsMovie = null;
+                    channelQuery.IsSports = null;
+                    channelQuery.IsKids = null;
+                    channelQuery.IsNews = null;
+                    channelQuery.IsSeries = null;
+                } else {
+                    if (displayNewsContent) {
+                        channelQuery.IsNews = true;
+                    }
+                    if (displaySportsContent) {
+                        channelQuery.IsSports = true;
+                    }
+                    if (displayKidsContent) {
+                        channelQuery.IsKids = true;
+                    }
+                    if (displayMovieContent) {
+                        channelQuery.IsMovie = true;
+                    }
+                    if (displaySeriesContent) {
+                        channelQuery.IsSeries = true;
+                    }
+                }
 
                 var date = newStartDate;
                 // Add one second to avoid getting programs that are just ending
@@ -187,7 +214,7 @@
                 var nextDay = new Date(date.getTime() + msPerDay - 2000);
 
                 console.log(nextDay);
-                channelsPromise.then(function (channelsResult) {
+                apiClient.getLiveTvChannels(channelQuery).then(function (channelsResult) {
 
                     var btnPreviousPage = context.querySelector('.btnPreviousPage');
                     var btnNextPage = context.querySelector('.btnNextPage');
@@ -331,9 +358,9 @@
             var categories = self.categoryOptions.categories || [];
             var displayMovieContent = !categories.length || categories.indexOf('movies') != -1;
             var displaySportsContent = !categories.length || categories.indexOf('sports') != -1;
-            var displayOtherContent = !categories.length || categories.indexOf('others') != -1;
             var displayNewsContent = !categories.length || categories.indexOf('news') != -1;
             var displayKidsContent = !categories.length || categories.indexOf('kids') != -1;
+            var displaySeriesContent = !categories.length || categories.indexOf('series') != -1;
             var enableColorCodedBackgrounds = userSettings.get('guide-colorcodedbackgrounds') == 'true';
 
             for (var i = 0, length = programs.length; i < length; i++) {
@@ -366,7 +393,7 @@
                 endPercent *= 100;
 
                 var cssClass = "programCell clearButton itemAction";
-                var accentCssClass;
+                var accentCssClass = null;
                 var displayInnerContent = true;
 
                 if (program.IsKids) {
@@ -386,9 +413,13 @@
                     displayInnerContent = displayMovieContent;
                     accentCssClass = 'movieAccent';
                 }
+                else if (program.IsSeries) {
+                    cssClass += " plainProgramInfo";
+                    displayInnerContent = displaySeriesContent;
+                }
                 else {
                     cssClass += " plainProgramInfo";
-                    displayInnerContent = displayOtherContent;
+                    displayInnerContent = displayMovieContent && displayNewsContent && displaySportsContent && displayKidsContent && displaySeriesContent;
                 }
 
                 if (!displayInnerContent) {
@@ -863,19 +894,16 @@
 
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
-                channelsPromise = null;
                 reloadPage(context);
             });
 
             context.querySelector('.btnNextPage').addEventListener('click', function () {
                 currentStartIndex += currentChannelLimit;
-                channelsPromise = null;
                 reloadPage(context);
             });
 
             context.querySelector('.btnPreviousPage').addEventListener('click', function () {
                 currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
-                channelsPromise = null;
                 reloadPage(context);
             });
 

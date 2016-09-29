@@ -14,6 +14,10 @@
             }
         }
 
+        if (categories.length >= 4) {
+            categories.push('series');
+        }
+
         // differentiate between none and all
         categories.push('all');
         options.categories = categories;

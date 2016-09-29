@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 
@@ -7,17 +8,27 @@ namespace MediaBrowser.Controller.LiveTv
     public class LiveStream
     {
         public MediaSourceInfo OriginalMediaSource { get; set; }
-        public MediaSourceInfo PublicMediaSource { get; set; }
-        public string Id { get; set; }
+        public MediaSourceInfo OpenedMediaSource { get; set; }
+        public DateTime DateOpened { get; set; }
+        public int ConsumerCount { get; set; }
+        public ITunerHost TunerHost { get; set; }
+        public string OriginalStreamId { get; set; }
 
         public LiveStream(MediaSourceInfo mediaSource)
         {
             OriginalMediaSource = mediaSource;
-            PublicMediaSource = mediaSource;
-            Id = mediaSource.Id;
+            OpenedMediaSource = mediaSource;
         }
 
-        public virtual Task Open(CancellationToken cancellationToken)
+        public async Task Open(CancellationToken cancellationToken)
+        {
+            await OpenInternal(cancellationToken).ConfigureAwait(false);
+            DateOpened = DateTime.UtcNow;
+
+            OpenedMediaSource.DateLiveStreamOpened = DateOpened;
+        }
+
+        protected virtual Task OpenInternal(CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

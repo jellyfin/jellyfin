@@ -305,7 +305,13 @@
     "LabelKeepUpTo": "Mantener hasta:",
     "AsManyAsPossible": "Tantos como sea posible",
     "DefaultErrorMessage": "Ha ocurrido un error al procesar la solicitud. Por favor int\u00e9ntelo de nuevo mas tarde.",
-    "LabelKeep:": "Keep:",
-    "UntilIDelete": "Until I delete",
-    "UntilSpaceNeeded": "Until space needed"
+    "LabelKeep:": "Mantener:",
+    "UntilIDelete": "Hasta que yo lo borre",
+    "UntilSpaceNeeded": "Hasta que se necesite espacio",
+    "Categories": "Categories",
+    "Sports": "Sports",
+    "News": "News",
+    "Movies": "Movies",
+    "Kids": "Kids",
+    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
 }

@@ -52,8 +52,9 @@
 
             if (e.detail.command == 'back') {
                 self.closedByBack = true;
-                closeDialog(dlg);
                 e.preventDefault();
+                e.stopPropagation();
+                closeDialog(dlg);
             }
         }
 
