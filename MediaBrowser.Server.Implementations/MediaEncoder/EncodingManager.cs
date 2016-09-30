@@ -160,7 +160,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                             _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var container = video.Container;
+
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             File.Copy(tempFile, path, true);
 
                             try

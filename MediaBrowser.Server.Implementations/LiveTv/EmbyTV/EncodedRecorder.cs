@@ -131,6 +131,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
 
+            _logger.Info("ffmpeg recording process started for {0}", _targetPath);
+
             return _taskCompletionSource.Task;
         }
 
@@ -141,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var maxBitrate = 25000000;
                 videoArgs = string.Format(
-                        "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41 -tune zerolatency",
+                        "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
                         GetOutputSizeParam(),
                         maxBitrate.ToString(CultureInfo.InvariantCulture));
             }
