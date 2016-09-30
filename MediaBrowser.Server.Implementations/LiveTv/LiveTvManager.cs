@@ -148,7 +148,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var topFolder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
 
-            var channels = _libraryManager.GetItemList(new InternalItemsQuery
+            var internalQuery = new InternalItemsQuery(user)
             {
                 IsMovie = query.IsMovie,
                 IsNews = query.IsNews,
@@ -156,109 +156,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
                 IncludeItemTypes = new[] { typeof(LiveTvChannel).Name },
-                SortBy = new[] { ItemSortBy.SortName },
-                TopParentIds = new[] { topFolder.Id.ToString("N") }
+                SortOrder = query.SortOrder ?? SortOrder.Ascending,
+                TopParentIds = new[] { topFolder.Id.ToString("N") },
+                IsFavorite = query.IsFavorite,
+                IsLiked = query.IsLiked,
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            };
 
-            }).Cast<LiveTvChannel>();
+            internalQuery.OrderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder ?? SortOrder.Ascending)));
 
-            if (user != null)
+            if (query.EnableFavoriteSorting)
             {
-                // Avoid implicitly captured closure
-                var currentUser = user;
-
-                channels = channels
-                    .Where(i => i.IsVisible(currentUser))
-                    .OrderBy(i =>
-                    {
-                        double number = 0;
-
-                        if (!string.IsNullOrEmpty(i.Number))
-                        {
-                            double.TryParse(i.Number, out number);
-                        }
-
-                        return number;
-
-                    });
-
-                if (query.IsFavorite.HasValue)
-                {
-                    var val = query.IsFavorite.Value;
-
-                    channels = channels
-                        .Where(i => _userDataManager.GetUserData(user, i).IsFavorite == val);
-                }
-
-                if (query.IsLiked.HasValue)
-                {
-                    var val = query.IsLiked.Value;
-
-                    channels = channels
-                        .Where(i =>
-                        {
-                            var likes = _userDataManager.GetUserData(user, i).Likes;
-
-                            return likes.HasValue && likes.Value == val;
-                        });
-                }
-
-                if (query.IsDisliked.HasValue)
-                {
-                    var val = query.IsDisliked.Value;
-
-                    channels = channels
-                        .Where(i =>
-                        {
-                            var likes = _userDataManager.GetUserData(user, i).Likes;
-
-                            return likes.HasValue && likes.Value != val;
-                        });
-                }
+                internalQuery.OrderBy.Insert(0, new Tuple<string, SortOrder>(ItemSortBy.IsFavoriteOrLiked, SortOrder.Descending));
             }
 
-            var enableFavoriteSorting = query.EnableFavoriteSorting;
-
-            channels = channels.OrderBy(i =>
+            if (!internalQuery.OrderBy.Any(i => string.Equals(i.Item1, ItemSortBy.SortName, StringComparison.OrdinalIgnoreCase)))
             {
-                if (enableFavoriteSorting)
-                {
-                    var userData = _userDataManager.GetUserData(user, i);
-
-                    if (userData.IsFavorite)
-                    {
-                        return 0;
-                    }
-                    if (userData.Likes.HasValue)
-                    {
-                        if (!userData.Likes.Value)
-                        {
-                            return 3;
-                        }
-
-                        return 1;
-                    }
-                }
-
-                return 2;
-            });
-
-            var allChannels = channels.ToList();
-            IEnumerable<LiveTvChannel> allEnumerable = allChannels;
-
-            if (query.StartIndex.HasValue)
-            {
-                allEnumerable = allEnumerable.Skip(query.StartIndex.Value);
+                internalQuery.OrderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending));
             }
 
-            if (query.Limit.HasValue)
-            {
-                allEnumerable = allEnumerable.Take(query.Limit.Value);
-            }
+            var channelResult = _libraryManager.GetItemsResult(internalQuery);
 
             var result = new QueryResult<LiveTvChannel>
             {
-                Items = allEnumerable.ToArray(),
-                TotalRecordCount = allChannels.Count
+                Items = channelResult.Items.Cast<LiveTvChannel>().ToArray(),
+                TotalRecordCount = channelResult.TotalRecordCount
             };
 
             return result;

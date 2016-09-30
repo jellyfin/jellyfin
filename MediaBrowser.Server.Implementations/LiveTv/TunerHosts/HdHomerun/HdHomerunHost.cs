@@ -104,8 +104,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             });
         }
 
+        private Dictionary<string, DiscoverResponse> _modelCache = new Dictionary<string, DiscoverResponse>();
         private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
         {
+            lock (_modelCache)
+            {
+                DiscoverResponse response;
+                if (_modelCache.TryGetValue(info.Url, out response))
+                {
+                    return response.ModelNumber;
+                }
+            }
+
             try
             {
                 using (var stream = await _httpClient.Get(new HttpRequestOptions()
@@ -119,6 +129,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
 
+                    lock (_modelCache)
+                    {
+                        _modelCache[info.Id] = response;
+                    }
+
                     return response.ModelNumber;
                 }
             }
@@ -126,8 +141,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
                 {
+                    var defaultValue = "HDHR";
                     // HDHR4 doesn't have this api
-                    return "HDHR";
+                    lock (_modelCache)
+                    {
+                        _modelCache[info.Id] = new DiscoverResponse
+                        {
+                            ModelNumber = defaultValue
+                        };
+                    }
+                    return defaultValue;
                 }
 
                 throw;
@@ -396,7 +419,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Id = id,
                 SupportsDirectPlay = false,
                 SupportsDirectStream = true,
-                SupportsTranscoding = true
+                SupportsTranscoding = true,
+                IsInfiniteStream = true
             };
 
             return mediaSource;
@@ -426,18 +450,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             try
             {
-                string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
-                model = model ?? string.Empty;
-
-                if (info.AllowHWTranscoding && (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                if (info.AllowHWTranscoding)
                 {
-                    list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
+                    string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
+                    model = model ?? string.Empty;
 
-                    list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
-                    list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
-                    list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
-                    list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
-                    list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
+                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                    {
+                        list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
+
+                        list.Add(await GetMediaSource(info, hdhrId, "internet540").ConfigureAwait(false));
+                        list.Add(await GetMediaSource(info, hdhrId, "internet480").ConfigureAwait(false));
+                        list.Add(await GetMediaSource(info, hdhrId, "internet360").ConfigureAwait(false));
+                        list.Add(await GetMediaSource(info, hdhrId, "internet240").ConfigureAwait(false));
+                        list.Add(await GetMediaSource(info, hdhrId, "mobile").ConfigureAwait(false));
+                    }
                 }
             }
             catch
@@ -473,6 +500,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = await GetMediaSource(info, hdhrId, profile).ConfigureAwait(false);
 
             var liveStream = new HdHomerunLiveStream(mediaSource, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
+            if (info.AllowHWTranscoding)
+            {
+                var model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
+
+                if ((model ?? string.Empty).IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    liveStream.EnableStreamSharing = !info.AllowHWTranscoding;
+                }
+                else
+                {
+                    liveStream.EnableStreamSharing = true;
+                }
+            }
+            else
+            {
+                liveStream.EnableStreamSharing = true;
+            }
             return liveStream;
         }
 
@@ -481,6 +525,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             if (!info.IsEnabled)
             {
                 return;
+            }
+
+            lock (_modelCache)
+            {
+                _modelCache.Clear();
             }
 
             try

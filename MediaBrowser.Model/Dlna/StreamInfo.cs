@@ -215,13 +215,26 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
 
-            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls"))
+            var forceStartPosition = false;
+            long startPositionTicks = item.StartPositionTicks;
+            //if (item.MediaSource.DateLiveStreamOpened.HasValue && startPositionTicks == 0)
+            //{
+            //    var elapsed = DateTime.UtcNow - item.MediaSource.DateLiveStreamOpened.Value;
+            //    elapsed -= TimeSpan.FromSeconds(20);
+            //    if (elapsed.TotalSeconds >= 0)
+            //    {
+            //        startPositionTicks = elapsed.Ticks + startPositionTicks;
+            //        forceStartPosition = true;
+            //    }
+            //}
+
+            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls") && !forceStartPosition)
             {
                 list.Add(new NameValuePair("StartTimeTicks", string.Empty));
             }
             else
             {
-                list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(item.StartPositionTicks)));
+                list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(startPositionTicks)));
             }
 
             list.Add(new NameValuePair("Level", item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty));

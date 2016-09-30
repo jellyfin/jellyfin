@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Model.Entities;
+
 namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
@@ -85,9 +86,18 @@ namespace MediaBrowser.Model.LiveTv
         public bool? IsSports { get; set; }
         public bool? IsSeries { get; set; }
 
+        public string[] SortBy { get; set; }
+
+        /// <summary>
+        /// The sort order to return results with
+        /// </summary>
+        /// <value>The sort order.</value>
+        public SortOrder? SortOrder { get; set; }
+
         public LiveTvChannelQuery()
         {
             EnableUserData = true;
+            SortBy = new string[] { };
         }
     }
 }

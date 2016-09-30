@@ -151,6 +151,8 @@ namespace MediaBrowser.Controller.Entities
         public Dictionary<string, string> ExcludeProviderIds { get; set; }
         public bool EnableGroupByMetadataKey { get; set; }
 
+        public List<Tuple<string, SortOrder>> OrderBy { get; set; }
+
         public InternalItemsQuery()
         {
             GroupByPresentationUniqueKey = true;
@@ -193,6 +195,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = new TrailerType[] { };
             AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
+            OrderBy = new List<Tuple<string, SortOrder>>();
         }
 
         public InternalItemsQuery(User user)

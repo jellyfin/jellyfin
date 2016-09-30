@@ -141,7 +141,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                     ReadAtNativeFramerate = false,
 
-                    Id = channel.Path.GetMD5().ToString("N")
+                    Id = channel.Path.GetMD5().ToString("N"),
+                    IsInfiniteStream = true
                 };
 
                 return new List<MediaSourceInfo> { mediaSource };
