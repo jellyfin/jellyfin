@@ -907,6 +907,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     ).Trim();
             }
 
+            // TODO: check libavformat version for 57 50.100 and use -hls_flags split_by_time
             return string.Format("{0}{11} {1} -map_metadata -1 -threads {2} {3} {4}{5} {6} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {7} -start_number {8} -hls_list_size {9} -y \"{10}\"",
                             inputModifier,
                             GetInputArgument(state),

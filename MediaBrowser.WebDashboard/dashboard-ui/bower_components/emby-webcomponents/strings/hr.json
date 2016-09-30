@@ -1,4 +1,8 @@
 {
+    "SortChannelsBy": "Sort channels by:",
+    "ChannelNumber": "Channel number",
+    "RecentlyWatched": "Recently watched",
+    "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
     "ValueSpecialEpisodeName": "Specijal - {0}",
     "Share": "Dijeli",
     "Add": "Dodaj",
@@ -308,10 +312,10 @@
     "LabelKeep:": "Zadr\u017ei:",
     "UntilIDelete": "Dok ne izbri\u0161em",
     "UntilSpaceNeeded": "Dok ne treba prostora",
-    "Categories": "Categories",
-    "Sports": "Sports",
-    "News": "News",
-    "Movies": "Movies",
-    "Kids": "Kids",
-    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
+    "Categories": "Kategorije",
+    "Sports": "Sportovi",
+    "News": "Vijesti",
+    "Movies": "Filmovi",
+    "Kids": "Djeca",
+    "EnableColorCodedBackgrounds": "Omogu\u0107i kodirane boje pozadine"
 }

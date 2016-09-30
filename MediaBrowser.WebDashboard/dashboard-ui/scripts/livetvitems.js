@@ -67,7 +67,9 @@
                     overlayText: false,
                     showTitle: true,
                     showParentTitle: query.IsSeries !== false && !query.IsMovie,
-                    showProgramAirInfo: params.type != 'Recordings' && params.type != 'RecordingSeries',
+                    showAirTime: params.type != 'Recordings' && params.type != 'RecordingSeries',
+                    showAirDateTime: params.type != 'Recordings' && params.type != 'RecordingSeries',
+                    showChannelName: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     overlayMoreButton: true,
                     showYear: query.IsMovie && params.type == 'Recordings',
                     coverImage: true

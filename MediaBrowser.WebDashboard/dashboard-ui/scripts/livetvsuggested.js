@@ -126,7 +126,9 @@
             overlayMoreButton: overlayButton != 'play',
             overlayPlayButton: overlayButton == 'play',
             allowBottomPadding: !enableScrollX(),
-            showProgramAirInfo: true
+            showAirTime: true,
+            showAirDateTime: true,
+            showChannelName: true
             //cardFooterAside: 'logo'
         });
 

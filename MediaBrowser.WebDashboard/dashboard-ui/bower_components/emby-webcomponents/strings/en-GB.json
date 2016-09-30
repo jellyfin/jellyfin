@@ -1,4 +1,8 @@
 {
+    "SortChannelsBy": "Sort channels by:",
+    "ChannelNumber": "Channel number",
+    "RecentlyWatched": "Recently watched",
+    "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
     "ValueSpecialEpisodeName": "Special - {0}",
     "Share": "Share",
     "Add": "Add",
@@ -313,5 +317,5 @@
     "News": "News",
     "Movies": "Movies",
     "Kids": "Kids",
-    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
+    "EnableColorCodedBackgrounds": "Enable colour-coded backgrounds"
 }

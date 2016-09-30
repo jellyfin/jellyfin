@@ -151,6 +151,50 @@
         context.querySelector('.selectKeepUpTo').innerHTML = html;
     }
 
+    function embed(itemId, serverId, options) {
+
+        recordingUpdated = false;
+        recordingDeleted = false;
+        currentServerId = serverId;
+        loading.show();
+        options = options || {};
+
+        require(['text!./seriesrecordingeditor.template.html'], function (template) {
+
+            var dialogOptions = {
+                removeOnClose: true,
+                scrollY: false
+            };
+
+            if (layoutManager.tv) {
+                dialogOptions.size = 'fullscreen';
+            } else {
+                dialogOptions.size = 'small';
+            }
+
+            var dlg = options.context;
+
+            dlg.classList.add('hide');
+            dlg.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
+
+            dlg.querySelector('.formDialogHeader').classList.add('hide');
+            dlg.querySelector('.formDialogFooter').classList.add('hide');
+            dlg.querySelector('.formDialogContent').className = '';
+            dlg.querySelector('.dialogContentInner').className = '';
+            dlg.classList.remove('hide');
+
+            dlg.addEventListener('change', function () {
+                dlg.querySelector('.btnSubmit').click();
+            });
+
+            currentDialog = dlg;
+
+            init(dlg);
+
+            reload(dlg, itemId);
+        });
+    }
+
     function showEditor(itemId, serverId, options) {
 
         return new Promise(function (resolve, reject) {
@@ -195,7 +239,7 @@
 
                 currentDialog = dlg;
 
-                dlg.addEventListener('close', function () {
+                dlg.addEventListener('closing', function () {
 
                     if (!recordingDeleted) {
                         this.querySelector('.btnSubmit').click();
@@ -228,6 +272,7 @@
     }
 
     return {
-        show: showEditor
+        show: showEditor,
+        embed: embed
     };
 });
