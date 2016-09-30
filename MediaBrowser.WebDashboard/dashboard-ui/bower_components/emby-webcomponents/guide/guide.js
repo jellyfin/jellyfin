@@ -158,7 +158,7 @@
             var channelQuery = {
 
                 StartIndex: 0,
-                EnableFavoriteSorting: true
+                EnableFavoriteSorting: userSettings.get('livetv-favoritechannelsattop') !== 'false'
             };
 
             channelQuery.UserId = apiClient.getCurrentUserId();
@@ -204,6 +204,14 @@
                     if (displaySeriesContent) {
                         channelQuery.IsSeries = true;
                     }
+                }
+
+                if (userSettings.get('livetv-channelorder') == 'Number') {
+                    channelQuery.SortBy = "SortName";
+                    channelQuery.SortOrder = "Ascending";
+                } else {
+                    channelQuery.SortBy = "DatePlayed";
+                    channelQuery.SortOrder = "Descending";
                 }
 
                 var date = newStartDate;

@@ -1,21 +1,34 @@
-﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
+﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'emby-radio', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
 
     function save(context) {
 
+        var i, length;
+
         var chkIndicators = context.querySelectorAll('.chkIndicator');
-        for (var i = 0, length = chkIndicators.length; i < length; i++) {
+        for (i = 0, length = chkIndicators.length; i < length; i++) {
 
             var type = chkIndicators[i].getAttribute('data-type');
             userSettings.set('guide-indicator-' + type, chkIndicators[i].checked);
         }
 
         userSettings.set('guide-colorcodedbackgrounds', context.querySelector('.chkColorCodedBackgrounds').checked);
+        userSettings.set('livetv-favoritechannelsattop', context.querySelector('.chkFavoriteChannelsAtTop').checked);
+
+        var sortBys = context.querySelectorAll('.chkSortOrder');
+        for (i = 0, length = sortBys.length; i < length; i++) {
+            if (sortBys[i].checked) {
+                userSettings.set('livetv-channelorder', sortBys[i].value);
+                break;
+            }
+        }
     }
 
     function load(context) {
 
+        var i, length;
+
         var chkIndicators = context.querySelectorAll('.chkIndicator');
-        for (var i = 0, length = chkIndicators.length; i < length; i++) {
+        for (i = 0, length = chkIndicators.length; i < length; i++) {
 
             var type = chkIndicators[i].getAttribute('data-type');
 
@@ -27,6 +40,28 @@
         }
 
         context.querySelector('.chkColorCodedBackgrounds').checked = userSettings.get('guide-colorcodedbackgrounds') == 'true';
+        context.querySelector('.chkFavoriteChannelsAtTop').checked = userSettings.get('livetv-favoritechannelsattop') != 'false';
+
+        var sortByValue = userSettings.get('livetv-channelorder') || 'DatePlayed';
+
+        var sortBys = context.querySelectorAll('.chkSortOrder');
+        for (i = 0, length = sortBys.length; i < length; i++) {
+            sortBys[i].checked = sortBys[i].value == sortByValue;
+        }
+    }
+
+    function onSortByChange() {
+        var newValue = this.value;
+        if (this.checked) {
+            var changed = options.query.SortBy != newValue;
+
+            options.query.SortBy = newValue.replace('_', ',');
+            options.query.StartIndex = 0;
+
+            if (options.callback && changed) {
+                options.callback();
+            }
+        }
     }
 
     function showEditor() {

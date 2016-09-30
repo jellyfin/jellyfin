@@ -104,6 +104,26 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public string SortBy { get; set; }
+
+        public SortOrder? SortOrder { get; set; }
+
+        /// <summary>
+        /// Gets the order by.
+        /// </summary>
+        /// <returns>IEnumerable{ItemSortBy}.</returns>
+        public string[] GetOrderBy()
+        {
+            var val = SortBy;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                return new string[] { };
+            }
+
+            return val.Split(',');
+        }
+
         public GetChannels()
         {
             AddCurrentProgram = true;
@@ -650,6 +670,8 @@ namespace MediaBrowser.Api.LiveTv
     {
         public string Id { get; set; }
         public string Container { get; set; }
+        public long T { get; set; }
+        public long S { get; set; }
     }
 
     public class LiveTvService : BaseApiService
@@ -681,9 +703,35 @@ namespace MediaBrowser.Api.LiveTv
 
             outputHeaders["Content-Type"] = MimeTypes.GetMimeType(filePath);
 
+            long startPosition = 0;
+
+            if (request.T > 0)
+            {
+                var now = DateTime.UtcNow;
+
+                var totalTicks = now.Ticks - request.S;
+
+                if (totalTicks > 0)
+                {
+                    double requestedOffset = request.T;
+                    requestedOffset = Math.Max(0, requestedOffset - TimeSpan.FromSeconds(10).Ticks);
+
+                    var pct = requestedOffset / totalTicks;
+
+                    Logger.Info("Live stream offset pct {0}", pct);
+
+                    var bytes = new FileInfo(filePath).Length;
+                    Logger.Info("Live stream total bytes {0}", bytes);
+                    startPosition = Convert.ToInt64(pct * bytes);
+                }
+            }
+
+            Logger.Info("Live stream starting byte position {0}", startPosition);
+
             var streamSource = new ProgressiveFileCopier(_fileSystem, filePath, outputHeaders, null, Logger, CancellationToken.None)
             {
-                AllowEndOfFile = false
+                AllowEndOfFile = false,
+                StartPosition = startPosition
             };
 
             return ResultFactory.GetAsyncStreamWriter(streamSource);
@@ -848,6 +896,8 @@ namespace MediaBrowser.Api.LiveTv
                 IsNews = request.IsNews,
                 IsKids = request.IsKids,
                 IsSports = request.IsSports,
+                SortBy = request.GetOrderBy(),
+                SortOrder = request.SortOrder ?? SortOrder.Ascending,
                 AddCurrentProgram = request.AddCurrentProgram
 
             }, CancellationToken.None).ConfigureAwait(false);
