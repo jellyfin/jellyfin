@@ -771,20 +771,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public Task<string> ExtractAudioImage(string path, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(new[] { path }, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
+            return ExtractImage(new[] { path }, null, imageStreamIndex, MediaProtocol.File, true, null, null, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, null, protocol, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFiles, container, null, protocol, false, threedFormat, offset, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFiles, imageStreamIndex, protocol, false, null, null, cancellationToken);
+            return ExtractImage(inputFiles, container, imageStreamIndex, protocol, false, null, null, cancellationToken);
         }
 
-        private async Task<string> ExtractImage(string[] inputFiles, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
+        private async Task<string> ExtractImage(string[] inputFiles, string container, int? imageStreamIndex, MediaProtocol protocol, bool isAudio,
             Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
             var resourcePool = isAudio ? _audioImageResourcePool : _videoImageResourcePool;
@@ -803,7 +803,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, imageStreamIndex, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -815,10 +815,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, imageStreamIndex, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, imageStreamIndex, protocol, threedFormat, offset, false, resourcePool, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, int? imageStreamIndex, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, SemaphoreSlim resourcePool, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
@@ -859,8 +859,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
+            var enableThumbnail = !new List<string> { "wtv" }.Contains(container ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var thumbnail = enableThumbnail ? ",thumbnail=30" : string.Empty;
+
             // Use ffmpeg to sample 100 (we can drop this if required using thumbnail=50 for 50 frames) frames and pick the best thumbnail. Have a fall back just in case.
-            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2},thumbnail=30\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg) :
+            var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
                 string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
             var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
