@@ -141,7 +141,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var maxBitrate = 25000000;
                 videoArgs = string.Format(
-                        "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41",
+                        "-codec:v:0 libx264 -force_key_frames \"expr:gte(t,n_forced*5)\" {0} -pix_fmt yuv420p -preset superfast -crf 23 -b:v {1} -maxrate {1} -bufsize ({1}*2) -vsync -1 -profile:v high -level 41 -tune zerolatency",
                         GetOutputSizeParam(),
                         maxBitrate.ToString(CultureInfo.InvariantCulture));
             }
@@ -151,16 +151,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var inputModifiers = "-fflags +genpts -async 1 -vsync -1";
+            var commandLineArgs = "-i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+
+            long startTimeTicks = 0;
+            //if (mediaSource.DateLiveStreamOpened.HasValue)
+            //{
+            //    var elapsed = DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value;
+            //    elapsed -= TimeSpan.FromSeconds(10);
+            //    if (elapsed.TotalSeconds >= 0)
+            //    {
+            //        startTimeTicks = elapsed.Ticks + startTimeTicks;
+            //    }
+            //}
 
             if (mediaSource.ReadAtNativeFramerate)
             {
-                commandLineArgs = "-re " + commandLineArgs;
+                inputModifiers += " -re";
+            }
+
+            if (startTimeTicks > 0)
+            {
+                inputModifiers = "-ss " + _mediaEncoder.GetTimeParameter(startTimeTicks) + " " + inputModifiers;
             }
 
             commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
 
-            return commandLineArgs;
+            return inputModifiers + " " + commandLineArgs;
         }
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)

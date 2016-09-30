@@ -52,11 +52,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             StartStreamingToTempFile(output, tempFile, url, taskCompletionSource, _liveStreamCancellationTokenSource.Token);
 
-            await taskCompletionSource.Task.ConfigureAwait(false);
+            //OpenedMediaSource.Protocol = MediaProtocol.File;
+            //OpenedMediaSource.Path = tempFile;
+            //OpenedMediaSource.ReadAtNativeFramerate = true;
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveStreamFiles/" + Path.GetFileNameWithoutExtension(tempFile) + "/stream.ts";
-
             OpenedMediaSource.Protocol = MediaProtocol.Http;
+
+            await taskCompletionSource.Task.ConfigureAwait(false);
+
+            //await Task.Delay(5000).ConfigureAwait(false);
         }
 
         public override Task Close()

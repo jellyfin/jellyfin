@@ -2602,6 +2602,7 @@ namespace MediaBrowser.Api.Playback
             inputModifier += " " + GetFastSeekCommandLineParameter(state.Request);
             inputModifier = inputModifier.Trim();
 
+            //inputModifier += " -fflags +genpts+ignidx+igndts";
             if (state.VideoRequest != null && genPts)
             {
                 inputModifier += " -fflags +genpts";

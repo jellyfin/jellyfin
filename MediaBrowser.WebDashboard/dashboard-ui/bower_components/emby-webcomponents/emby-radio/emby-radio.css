@@ -43,13 +43,13 @@
     height: 16px;
     margin: 0;
     cursor: pointer;
-    border: 2px solid rgba(0,0,0, 0.54);
+    border: 2px solid currentcolor;
     border-radius: 50%;
     z-index: 2;
 }
 
 .mdl-radio__button:checked + .mdl-radio__label + .mdl-radio__outer-circle {
-    border: 2px solid rgb(63,81,181);
+    border: 2px solid rgb(82, 181, 75);
 }
 
 .mdl-radio__button:disabled + .mdl-radio__label + .mdl-radio__outer-circle {
@@ -75,7 +75,7 @@
     -webkit-transform: scale3d(0, 0, 0);
     transform: scale3d(0, 0, 0);
     border-radius: 50%;
-    background: rgb(63,81,181);
+    background: rgb(82, 181, 75);
 }
 
 .mdl-radio__button:checked + .mdl-radio__label + .mdl-radio__outer-circle + .mdl-radio__inner-circle {
@@ -89,7 +89,7 @@
 }
 
 .mdl-radio__button:focus + .mdl-radio__label + .mdl-radio__outer-circle + .mdl-radio__inner-circle {
-    box-shadow: 0 0 0px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0px 10px rgba(82, 181, 75, 0.26);
 }
 
 .mdl-radio__label {

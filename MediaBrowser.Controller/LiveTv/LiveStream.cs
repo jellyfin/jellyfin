@@ -13,11 +13,13 @@ namespace MediaBrowser.Controller.LiveTv
         public int ConsumerCount { get; set; }
         public ITunerHost TunerHost { get; set; }
         public string OriginalStreamId { get; set; }
+        public bool EnableStreamSharing { get; set; }
 
         public LiveStream(MediaSourceInfo mediaSource)
         {
             OriginalMediaSource = mediaSource;
             OpenedMediaSource = mediaSource;
+            EnableStreamSharing = true;
         }
 
         public async Task Open(CancellationToken cancellationToken)

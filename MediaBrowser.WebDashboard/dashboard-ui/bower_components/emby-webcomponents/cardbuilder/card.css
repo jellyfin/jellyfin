@@ -511,7 +511,6 @@
     }
 }
 
-
 @media all and (min-width: 1600px) {
 
     .portraitCard-scalable {
@@ -520,6 +519,10 @@
 
     .smallBackdropCard-scalable {
         width: 12.5%;
+    }
+
+    .backdropCard-scalable {
+        width: 20%;
     }
 }
 
@@ -581,4 +584,12 @@
 
 .layout-tv .personCard-scalable {
     width: 14.285714285714285714285714285714%;
+}
+
+
+@media all and (min-width: 1600px) {
+
+    .layout-tv .backdropCard-scalable {
+        width: 25%;
+    }
 }

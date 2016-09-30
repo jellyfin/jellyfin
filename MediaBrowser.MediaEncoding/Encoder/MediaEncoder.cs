@@ -235,6 +235,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new ResourceNotFoundException("ffprobe not found");
             }
 
+            path = newPaths.Item1;
+
             if (!ValidateVersion(path))
             {
                 throw new ResourceNotFoundException("ffmpeg version 3.0 or greater is required.");
