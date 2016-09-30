@@ -396,7 +396,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Id = id,
                 SupportsDirectPlay = false,
                 SupportsDirectStream = true,
-                SupportsTranscoding = true
+                SupportsTranscoding = true,
+                IsInfiniteStream = true
             };
 
             return mediaSource;
