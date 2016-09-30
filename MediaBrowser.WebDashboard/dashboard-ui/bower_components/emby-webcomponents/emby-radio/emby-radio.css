@@ -21,8 +21,9 @@
 .mdl-radio__button {
     line-height: 24px;
     position: absolute;
-    width: 0;
-    height: 0;
+    /* 1px is for focusing purposes, so the focusManager doesn't skip over it */
+    width: 1px;
+    height: 1px;
     margin: 0;
     padding: 0;
     opacity: 0;
@@ -89,6 +90,10 @@
 }
 
 .mdl-radio__button:focus + .mdl-radio__label + .mdl-radio__outer-circle + .mdl-radio__inner-circle {
+    box-shadow: 0 0 0px 10px rgba(255, 255, 255, 0.76);
+}
+
+.mdl-radio__button:checked:focus + .mdl-radio__label + .mdl-radio__outer-circle + .mdl-radio__inner-circle {
     box-shadow: 0 0 0px 10px rgba(82, 181, 75, 0.26);
 }
 

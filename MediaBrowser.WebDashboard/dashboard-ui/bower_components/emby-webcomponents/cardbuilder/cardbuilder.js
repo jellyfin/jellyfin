@@ -682,9 +682,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var cssClass = options.centerText && !options.cardLayout ? "cardText cardTextCentered" : "cardText";
 
             var lines = [];
+            var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
 
             if (showOtherText) {
-                var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
                 if ((options.showParentTitle || options.showParentTitleOrTitle) && !parentTitleUnderneath) {
 
                     if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
@@ -698,7 +698,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        var parentTitle = item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
+                        var parentTitle = item.Type == 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
 
                         if (parentTitle || options.showParentTitle) {
                             lines.push(parentTitle);
@@ -722,7 +722,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         item.AlbumArtists[0].IsFolder = true;
                         lines.push(getTextActionButton(item.AlbumArtists[0]));
                     } else {
-                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                        lines.push(item.Type == 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
                     }
                 }
 
@@ -784,24 +784,21 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                 }
 
-                if (options.showChannelName) {
-
-                    lines.push(item.ChannelName || '');
-                }
-
                 if (options.showAirTime) {
 
-                    var airTimeText;
+                    var airTimeText = '';
                     if (item.StartDate) {
 
                         try {
                             var date = datetime.parseISO8601Date(item.StartDate);
 
-                            airTimeText = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
+                            if (options.showAirDateTime) {
+                                airTimeText += datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' }) + ' ';
+                            }
 
-                            airTimeText += ' ' + datetime.getDisplayTime(date);
+                            airTimeText += datetime.getDisplayTime(date);
 
-                            if (item.EndDate) {
+                            if (item.EndDate && options.showAirEndTime) {
                                 date = datetime.parseISO8601Date(item.EndDate);
                                 airTimeText += ' - ' + datetime.getDisplayTime(date);
                             }
@@ -814,38 +811,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     lines.push(airTimeText || '');
                 }
 
-                if (options.showCurrentProgram && item.Type == 'TvChannel') {
-
-                    if (item.CurrentProgram) {
-                        lines.push(item.CurrentProgram.Name);
-                    } else {
-                        lines.push('');
-                    }
-                }
-
-                if (options.showSeriesYear) {
-
-                    if (item.Status == "Continuing") {
-
-                        lines.push(globalize.translate('sharedcomponents#SeriesYearToPresent', item.ProductionYear || ''));
-
-                    } else {
-                        lines.push(item.ProductionYear || '');
-                    }
-
-                }
-
-                if (options.showProgramAirInfo) {
-
-                    var text;
-                    if (item.StartDate) {
-                        var startDate = datetime.parseISO8601Date(item.StartDate, true);
-                        text = datetime.toLocaleDateString(startDate, { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + datetime.getDisplayTime(startDate);
-                    } else {
-                        text = '';
-                    }
-
-                    lines.push(text || '&nbsp;');
+                if (options.showChannelName) {
 
                     if (item.ChannelId) {
 
@@ -874,6 +840,27 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     } else {
                         lines.push(item.ChannelName || '&nbsp;');
                     }
+                }
+
+                if (options.showCurrentProgram && item.Type == 'TvChannel') {
+
+                    if (item.CurrentProgram) {
+                        lines.push(item.CurrentProgram.Name);
+                    } else {
+                        lines.push('');
+                    }
+                }
+
+                if (options.showSeriesYear) {
+
+                    if (item.Status == "Continuing") {
+
+                        lines.push(globalize.translate('sharedcomponents#SeriesYearToPresent', item.ProductionYear || ''));
+
+                    } else {
+                        lines.push(item.ProductionYear || '');
+                    }
+
                 }
             }
 
@@ -1048,7 +1035,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             if (options.coverImage || imgInfo.coverImage) {
                 cardImageContainerClass += ' coveredImage';
 
-                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.Type == 'Program') {
+                if (item.MediaType == 'Photo' || item.Type == 'PhotoAlbum' || item.Type == 'Folder' || item.ProgramInfo || item.Type == 'Program') {
                     cardImageContainerClass += ' coveredImage-noScale';
                 }
             }
@@ -1422,7 +1409,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
         }
 
         function onTimerCreated(programId, newTimerId, itemsContainer) {
-            
+
             var cells = itemsContainer.querySelectorAll('.card[data-id="' + programId + '"]');
 
             for (var i = 0, length = cells.length; i < length; i++) {

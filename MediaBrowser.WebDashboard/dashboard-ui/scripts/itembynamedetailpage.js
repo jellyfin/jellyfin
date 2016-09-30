@@ -128,7 +128,9 @@
                     overlayMoreButton: true,
                     preferThumb: true,
                     overlayText: false,
-                    showProgramAirInfo: true
+                    showAirTime: true,
+                    showAirDateTime: true,
+                    showChannelName: true
                 });
                 break;
 

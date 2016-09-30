@@ -4,8 +4,8 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
-    function getSquareShape() {
-        return enableScrollX() ? 'overflowSquare' : 'square';
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
     }
 
     function getTimersHtml(timers, options) {
@@ -83,14 +83,18 @@
 
             html += cardBuilder.getCardsHtml({
                 items: group.items,
-                shape: getSquareShape(),
+                shape: getBackdropShape(),
                 showTitle: true,
                 showAirTime: true,
+                showAirEndTime: true,
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
                 action: 'edit',
-                cardFooterAside: 'none'
+                cardFooterAside: 'none',
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
 
             });
             html += '</div>';
