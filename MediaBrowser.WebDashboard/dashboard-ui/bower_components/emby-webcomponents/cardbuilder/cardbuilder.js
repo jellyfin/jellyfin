@@ -682,9 +682,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var cssClass = options.centerText && !options.cardLayout ? "cardText cardTextCentered" : "cardText";
 
             var lines = [];
+            var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
 
             if (showOtherText) {
-                var parentTitleUnderneath = item.Type == 'MusicAlbum' || item.Type == 'Audio' || item.Type == 'MusicVideo';
                 if ((options.showParentTitle || options.showParentTitleOrTitle) && !parentTitleUnderneath) {
 
                     if (isOuterFooter && item.Type == 'Episode' && item.SeriesName && item.SeriesId) {
@@ -698,7 +698,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        var parentTitle = item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
+                        var parentTitle = item.Type == 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
 
                         if (parentTitle || options.showParentTitle) {
                             lines.push(parentTitle);
@@ -722,7 +722,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         item.AlbumArtists[0].IsFolder = true;
                         lines.push(getTextActionButton(item.AlbumArtists[0]));
                     } else {
-                        lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                        lines.push(item.Type == 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
                     }
                 }
 

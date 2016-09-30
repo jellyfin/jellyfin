@@ -93,7 +93,8 @@
                 action: 'edit',
                 cardFooterAside: 'none',
                 preferThumb: true,
-                coverImage: true
+                coverImage: true,
+                overlayText: false
 
             });
             html += '</div>';
