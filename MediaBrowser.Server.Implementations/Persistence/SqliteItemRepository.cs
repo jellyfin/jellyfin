@@ -1730,28 +1730,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return true;
             }
 
-            if (query.SortBy != null && query.SortBy.Length > 0)
+            var sortingFields = query.SortBy.ToList();
+            sortingFields.AddRange(query.OrderBy.Select(i => i.Item1));
+
+            if (sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
             {
-                if (query.SortBy.Contains(ItemSortBy.IsFavoriteOrLiked, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                if (query.SortBy.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
+                return true;
+            }
+            if (sortingFields.Contains(ItemSortBy.IsPlayed, StringComparer.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (sortingFields.Contains(ItemSortBy.IsUnplayed, StringComparer.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (sortingFields.Contains(ItemSortBy.PlayCount, StringComparer.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            if (sortingFields.Contains(ItemSortBy.DatePlayed, StringComparer.OrdinalIgnoreCase))
+            {
+                return true;
             }
 
             if (query.IsFavoriteOrLiked.HasValue)
@@ -2151,34 +2151,41 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string GetOrderByText(InternalItemsQuery query)
         {
+            var orderBy = query.OrderBy.ToList();
+            var enableOrderInversion = true;
+
+            if (orderBy.Count == 0)
+            {
+                orderBy.AddRange(query.SortBy.Select(i => new Tuple<string, SortOrder>(i, query.SortOrder)));
+            }
+            else
+            {
+                enableOrderInversion = false;
+            }
+
             if (query.SimilarTo != null)
             {
-                if (query.SortBy == null || query.SortBy.Length == 0)
+                if (orderBy.Count == 0)
                 {
-                    if (query.User != null)
-                    {
-                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.Random };
-                    }
-                    else
-                    {
-                        query.SortBy = new[] { "SimilarityScore", ItemSortBy.Random };
-                    }
+                    orderBy.Add(new Tuple<string, SortOrder>("SimilarityScore", SortOrder.Descending));
+                    orderBy.Add(new Tuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending));
                     query.SortOrder = SortOrder.Descending;
+                    enableOrderInversion = false;
                 }
             }
 
-            if (query.SortBy == null || query.SortBy.Length == 0)
+            query.OrderBy = orderBy;
+
+            if (orderBy.Count == 0)
             {
                 return string.Empty;
             }
 
-            var isAscending = query.SortOrder != SortOrder.Descending;
-
-            return " ORDER BY " + string.Join(",", query.SortBy.Select(i =>
+            return " ORDER BY " + string.Join(",", orderBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i, query);
-                var columnAscending = isAscending;
-                if (columnMap.Item2)
+                var columnMap = MapOrderByField(i.Item1, query);
+                var columnAscending = i.Item2 == SortOrder.Ascending;
+                if (columnMap.Item2 && enableOrderInversion)
                 {
                     columnAscending = !columnAscending;
                 }
