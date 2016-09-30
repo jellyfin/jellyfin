@@ -27,7 +27,7 @@ namespace MediaBrowser.Model.Dto
         public bool SupportsTranscoding { get; set; }
         public bool SupportsDirectStream { get; set; }
         public bool SupportsDirectPlay { get; set; }
-
+        public bool IsInfiniteStream { get; set; }
         public bool RequiresOpening { get; set; }
         public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }

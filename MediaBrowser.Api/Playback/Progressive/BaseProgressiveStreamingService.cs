@@ -170,6 +170,19 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
+                    if (state.MediaSource.IsInfiniteStream)
+                    {
+                        var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                        outputHeaders["Content-Type"] = contentType;
+
+                        var streamSource = new ProgressiveFileCopier(FileSystem, state.MediaPath, outputHeaders, null, Logger, CancellationToken.None)
+                        {
+                            AllowEndOfFile = false
+                        };
+                        return ResultFactory.GetAsyncStreamWriter(streamSource);
+                    }
+
                     TimeSpan? cacheDuration = null;
 
                     if (!string.IsNullOrEmpty(request.Tag))
