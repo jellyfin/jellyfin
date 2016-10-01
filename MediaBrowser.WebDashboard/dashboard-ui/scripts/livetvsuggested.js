@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -29,6 +29,7 @@
             limit: limit,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Thumb,Backdrop",
+            EnableTotalRecordCount: false,
             Fields: "ChannelInfo"
 
         }).then(function (result) {

@@ -11,11 +11,6 @@
     max-width: 130px;
 }
 
-.mediaButton.infoButton {
-    width: 34px;
-    height: 34px;
-}
-
 .mediaButton.active {
     color: #52B54B;
 }

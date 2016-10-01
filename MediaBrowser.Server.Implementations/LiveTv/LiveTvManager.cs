@@ -565,6 +565,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 };
             }
 
+            var seriesId = info.SeriesId;
+            if (string.IsNullOrWhiteSpace(seriesId) && info.IsSeries)
+            {
+                seriesId = info.Name.GetMD5().ToString("N");
+            }
+
             if (!item.ParentId.Equals(channel.Id))
             {
                 forceUpdate = true;
@@ -584,7 +590,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             item.EpisodeTitle = info.EpisodeTitle;
             item.ExternalId = info.Id;
-            item.ExternalSeriesId = info.SeriesId;
+            item.ExternalSeriesIdLegacy = seriesId;
+
+            if (!string.IsNullOrWhiteSpace(seriesId) && !string.Equals(item.ExternalSeriesId, seriesId, StringComparison.Ordinal))
+            {
+                forceUpdate = true;
+            }
+            item.ExternalSeriesId = seriesId;
+
             item.Genres = info.Genres;
             item.IsHD = info.IsHD;
             item.IsKids = info.IsKids;
@@ -825,7 +838,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
             var list = new List<Tuple<BaseItemDto, string, string, string>>();
-            list.Add(new Tuple<BaseItemDto, string, string, string>(dto, program.ServiceName, program.ExternalId, program.ExternalSeriesId));
+            list.Add(new Tuple<BaseItemDto, string, string, string>(dto, program.ServiceName, program.ExternalId, program.ExternalSeriesIdLegacy));
 
             await AddRecordingInfo(list, cancellationToken).ConfigureAwait(false);
 
@@ -865,6 +878,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 TopParentIds = new[] { topFolder.Id.ToString("N") }
             };
+
+            if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
+            {
+                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery {}, cancellationToken).ConfigureAwait(false);
+                var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.ServiceName, i.Id).ToString("N"), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
+                if (seriesTimer != null)
+                {
+                    internalQuery.ExternalSeriesId = seriesTimer.SeriesId;
+
+                    if (string.IsNullOrWhiteSpace(seriesTimer.SeriesId))
+                    {
+                        // Better to return nothing than every program in the database
+                        return new QueryResult<BaseItemDto>();
+                    }
+                }
+                else
+                {
+                    // Better to return nothing than every program in the database
+                    return new QueryResult<BaseItemDto>();
+                }
+            }
 
             if (query.HasAired.HasValue)
             {
@@ -1730,7 +1764,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     dto.ServiceName = serviceName;
                 }
 
-                recordingTuples.Add(new Tuple<BaseItemDto, string, string, string>(dto, serviceName, program.ExternalId, program.ExternalSeriesId));
+                recordingTuples.Add(new Tuple<BaseItemDto, string, string, string>(dto, serviceName, program.ExternalId, program.ExternalSeriesIdLegacy));
             }
 
             await AddRecordingInfo(recordingTuples, CancellationToken.None).ConfigureAwait(false);
@@ -2003,6 +2037,56 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var results = await GetSeriesTimers(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async Task<QueryResult<SeriesTimerInfo>> GetSeriesTimersInternal(SeriesTimerQuery query, CancellationToken cancellationToken)
+        {
+            var tasks = _services.Select(async i =>
+            {
+                try
+                {
+                    var recs = await i.GetSeriesTimersAsync(cancellationToken).ConfigureAwait(false);
+                    return recs.Select(r =>
+                    {
+                        r.ServiceName = i.Name;
+                        return new Tuple<SeriesTimerInfo, ILiveTvService>(r, i);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting recordings", ex);
+                    return new List<Tuple<SeriesTimerInfo, ILiveTvService>>();
+                }
+            });
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var timers = results.SelectMany(i => i.ToList());
+
+            if (string.Equals(query.SortBy, "Priority", StringComparison.OrdinalIgnoreCase))
+            {
+                timers = query.SortOrder == SortOrder.Descending ?
+                    timers.OrderBy(i => i.Item1.Priority).ThenByStringDescending(i => i.Item1.Name) :
+                    timers.OrderByDescending(i => i.Item1.Priority).ThenByString(i => i.Item1.Name);
+            }
+            else
+            {
+                timers = query.SortOrder == SortOrder.Descending ?
+                    timers.OrderByStringDescending(i => i.Item1.Name) :
+                    timers.OrderByString(i => i.Item1.Name);
+            }
+
+            var returnArray = timers
+                .Select(i =>
+                {
+                    return i.Item1;
+
+                })
+                .ToArray();
+
+            return new QueryResult<SeriesTimerInfo>
+            {
+                Items = returnArray,
+                TotalRecordCount = returnArray.Length
+            };
         }
 
         public async Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken)

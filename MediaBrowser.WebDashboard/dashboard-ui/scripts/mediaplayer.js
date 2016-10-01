@@ -146,6 +146,25 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             return window.MediaSource != null;
         };
 
+        function getProfileOptions(item) {
+
+            var disableVideoAudioCodecs = [];
+            if (!AppInfo.isNativeApp && !item.RunTimeTicks) {
+                disableVideoAudioCodecs.push('ac3');
+            }
+
+            var options = {};
+
+            if (!AppInfo.isNativeApp) {
+                options.enableMkvProgressive = item.RunTimeTicks != null;
+                options.enableTsProgressive = item.RunTimeTicks != null;
+                options.enableHls = !browserInfo.firefox || item.RunTimeTicks == null;
+                options.disableVideoAudioCodecs = disableVideoAudioCodecs;
+            }
+
+            return options;
+        }
+
         self.changeStream = function (ticks, params) {
 
             var mediaRenderer = self.currentMediaRenderer;
@@ -163,19 +182,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
-            var disableVideoAudioCodecs = [];
-            if (!AppInfo.isNativeApp && !self.currentMediaSource.RunTimeTicks) {
-                disableVideoAudioCodecs.push('ac3');
-            }
-
-            Dashboard.getDeviceProfile(null, {
-
-                enableMkvProgressive: self.currentMediaSource.RunTimeTicks != null,
-                enableTsProgressive: self.currentMediaSource.RunTimeTicks != null,
-                enableHls: !browserInfo.firefox || self.currentMediaSource.RunTimeTicks == null,
-                disableVideoAudioCodecs: disableVideoAudioCodecs
-
-            }).then(function (deviceProfile) {
+            Dashboard.getDeviceProfile(null, getProfileOptions(self.currentMediaSource)).then(function (deviceProfile) {
 
                 var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
                 if (typeof (audioStreamIndex) == 'string') {
@@ -683,19 +690,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             var onBitrateDetected = function () {
 
-                var disableVideoAudioCodecs = [];
-
-                if (!AppInfo.isNativeApp && !item.RunTimeTicks) {
-                    disableVideoAudioCodecs.push('ac3');
-                }
-
-                Dashboard.getDeviceProfile(null, {
-                    
-                    enableMkvProgressive: item.RunTimeTicks != null,
-                    enableTsProgressive: item.RunTimeTicks != null,
-                    disableVideoAudioCodecs: disableVideoAudioCodecs
-
-                }).then(function (deviceProfile) {
+                Dashboard.getDeviceProfile(null, getProfileOptions(item)).then(function (deviceProfile) {
                     playOnDeviceProfileCreated(deviceProfile, item, startPosition, callback);
                 });
             };

@@ -9,17 +9,38 @@
             Dashboard.hideLoadingMsg();
         }
 
-        function renderSchedule(page, result) {
+        function renderSchedule(page) {
 
-            var timers = result.Items;
+            ApiClient.getLiveTvPrograms({
+                UserId: ApiClient.getCurrentUserId(),
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary,Backdrop,Thumb",
+                SortBy: "StartDate",
+                EnableTotalRecordCount: false,
+                EnableUserData: false,
+                SeriesTimerId: params.id,
+                Fields: "ChannelInfo"
 
-            LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+            }).then(function (result) {
 
-                var scheduleTab = page.querySelector('.scheduleTab');
-                scheduleTab.innerHTML = html;
+                LiveTvHelpers.getProgramScheduleHtml(result.Items).then(function (html) {
 
-                ImageLoader.lazyChildren(scheduleTab);
+                    var scheduleTab = page.querySelector('.scheduleTab');
+                    scheduleTab.innerHTML = html;
+
+                    ImageLoader.lazyChildren(scheduleTab);
+                });
             });
+
+            //var timers = result.Items;
+
+            //LiveTvHelpers.getTimersHtml(timers).then(function (html) {
+
+            //    var scheduleTab = page.querySelector('.scheduleTab');
+            //    scheduleTab.innerHTML = html;
+
+            //    ImageLoader.lazyChildren(scheduleTab);
+            //});
         }
 
         function reload() {
@@ -33,15 +54,7 @@
 
             });
 
-            ApiClient.getLiveTvTimers({
-
-                seriesTimerId: id
-
-            }).then(function (timerResult) {
-
-                renderSchedule(view, timerResult);
-
-            });
+            renderSchedule(view);
         }
 
         seriesRecordingEditor.embed(params.id, ApiClient.serverId(), {
