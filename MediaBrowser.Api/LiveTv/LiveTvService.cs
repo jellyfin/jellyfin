@@ -386,6 +386,8 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "EnableUserData", Description = "Optional, include user data", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableUserData { get; set; }
 
+        public string SeriesTimerId { get; set; }
+
         /// <summary>
         /// Fields to return within the items, in addition to basic information
         /// </summary>
@@ -985,6 +987,7 @@ namespace MediaBrowser.Api.LiveTv
             query.IsSeries = request.IsSeries;
             query.IsKids = request.IsKids;
             query.IsSports = request.IsSports;
+            query.SeriesTimerId = request.SeriesTimerId;
             query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = await _liveTvManager.GetPrograms(query, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);

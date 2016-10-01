@@ -339,12 +339,9 @@ namespace MediaBrowser.Dlna.Main
             if (_Publisher != null)
             {
                 var devices = _Publisher.Devices.ToList();
+                var tasks = devices.Select(i => _Publisher.RemoveDevice(i)).ToArray();
 
-                foreach (var device in devices)
-                {
-                    var task = _Publisher.RemoveDevice(device);
-                    Task.WaitAll(task);
-                }
+                Task.WaitAll(tasks);
                 //foreach (var device in devices)
                 //{
                 //    try
