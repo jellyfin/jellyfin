@@ -413,7 +413,24 @@
 
             var elem = mediaControls.querySelector('.nowPlayingTabs');
             elem.innerHTML = getNowPlayingTabsHtml(item.CurrentProgram || item);
-            ImageLoader.lazyChildren(elem);
+
+            var tabCast = elem.querySelector('.tabCast');
+            if (tabCast) {
+                require(['peoplecardbuilder'], function (peoplecardbuilder) {
+
+                    peoplecardbuilder.buildPeopleCards((item.CurrentProgram || item).People || [], {
+                        itemsContainer: tabCast,
+                        coverImage: true,
+                        serverId: ApiClient.serverId(),
+                        width: 160,
+                        shape: 'portrait'
+                    });
+                    ImageLoader.lazyChildren(elem);
+                });
+            }
+            else {
+                ImageLoader.lazyChildren(elem);
+            }
 
             function onTabButtonClick() {
                 if (!this.classList.contains('selectedNowPlayingTabButton')) {
@@ -540,55 +557,6 @@
 
             if (item.People && item.People.length) {
                 html += '<div class="tabCast nowPlayingTab smoothScrollX hide" style="white-space:nowrap;">';
-                html += item.People.map(function (cast) {
-
-                    var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
-
-                    var imgUrl;
-                    var height = 150;
-
-                    if (cast.PrimaryImageTag) {
-
-                        imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                            height: height,
-                            tag: cast.PrimaryImageTag,
-                            type: "primary",
-                            minScale: 2
-                        });
-
-                        personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:' + height + 'px;"></div>';
-                    } else {
-
-                        imgUrl = "css/images/items/list/person.png";
-                        personHtml += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');height:' + height + 'px;"></div>';
-                    }
-
-                    personHtml += '<div class="tileContent">';
-
-                    personHtml += '<p>' + cast.Name + '</p>';
-
-                    var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
-
-                    if (role == "GuestStar") {
-                        role = Globalize.translate('ValueGuestStar');
-                    }
-
-                    role = role || "";
-
-                    var maxlength = 40;
-
-                    if (role.length > maxlength) {
-                        role = role.substring(0, maxlength - 3) + '...';
-                    }
-
-                    personHtml += '<p>' + role + '</p>';
-
-                    personHtml += '</div>';
-
-                    personHtml += '</div>';
-                    return personHtml;
-
-                }).join('');
                 html += '</div>';
             }
 
