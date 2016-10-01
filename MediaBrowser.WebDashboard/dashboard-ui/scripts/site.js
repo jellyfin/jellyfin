@@ -1449,6 +1449,10 @@ var AppInfo = {};
 
                     MediaController.play(options);
                 },
+                queue: function (options) {
+
+                    MediaController.queue(options);
+                },
                 currentPlaylistIndex: function (options) {
                     return MediaController.currentPlaylistIndex(options);
                 },
