@@ -566,10 +566,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var seriesId = info.SeriesId;
-            if (string.IsNullOrWhiteSpace(seriesId) && info.IsSeries)
-            {
-                seriesId = info.Name.GetMD5().ToString("N");
-            }
 
             if (!item.ParentId.Equals(channel.Id))
             {

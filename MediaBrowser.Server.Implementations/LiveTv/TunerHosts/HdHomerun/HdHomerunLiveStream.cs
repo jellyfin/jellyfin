@@ -58,6 +58,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             OpenedMediaSource.Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveStreamFiles/" + Path.GetFileNameWithoutExtension(tempFile) + "/stream.ts";
             OpenedMediaSource.Protocol = MediaProtocol.Http;
+            OpenedMediaSource.SupportsDirectPlay = false;
+            OpenedMediaSource.SupportsDirectStream = true;
+            OpenedMediaSource.SupportsTranscoding = true;
 
             await taskCompletionSource.Task.ConfigureAwait(false);
 
