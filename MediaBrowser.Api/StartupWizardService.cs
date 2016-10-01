@@ -148,12 +148,6 @@ namespace MediaBrowser.Api
         {
             var user = _userManager.Users.First();
 
-            // TODO: This should be handled internally by xbmc metadata
-            const string metadataKey = "xbmcmetadata";
-            var metadata = _config.GetConfiguration<XbmcMetadataOptions>(metadataKey);
-            metadata.UserId = user.Id.ToString("N");
-            _config.SaveConfiguration(metadataKey, metadata);
-
             user.Name = request.Name;
             await _userManager.UpdateUser(user).ConfigureAwait(false);
 
