@@ -334,7 +334,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             trigger.Stop();
 
-            TaskManager.QueueScheduledTask(ScheduledTask);
+            TaskManager.QueueScheduledTask(ScheduledTask, e.Argument);
 
             await Task.Delay(1000).ConfigureAwait(false);
 
