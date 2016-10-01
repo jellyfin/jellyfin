@@ -19,9 +19,14 @@
                 EnableTotalRecordCount: false,
                 EnableUserData: false,
                 SeriesTimerId: params.id,
-                Fields: "ChannelInfo"
+                Fields: "ChannelInfo",
+                limit: 100
 
             }).then(function (result) {
+
+                if (result.Items.length && result.Items[0].SeriesTimerId != params.id) {
+                    result.Items = [];
+                }
 
                 LiveTvHelpers.getProgramScheduleHtml(result.Items).then(function (html) {
 
