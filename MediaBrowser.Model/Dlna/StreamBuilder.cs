@@ -602,33 +602,20 @@ namespace MediaBrowser.Model.Dlna
 
         private int GetAudioBitrate(string subProtocol, int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            var defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
+            int defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
             // Reduce the bitrate if we're downmixing
             if (targetAudioChannels.HasValue && audioStream != null && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
             {
                 defaultBitrate = StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3") ? 192000 : 128000;
             }
 
-            if (targetAudioChannels.HasValue)
+            if (StringHelper.EqualsIgnoreCase(subProtocol, "hls"))
             {
-                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1200000)
-                {
-                    if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
-                    {
-                        if (string.Equals(subProtocol, "hls", StringComparison.OrdinalIgnoreCase))
-                        {
-                            defaultBitrate = Math.Max(384000, defaultBitrate);
-                        }
-                        else
-                        {
-                            defaultBitrate = Math.Max(448000, defaultBitrate);
-                        }
-                    }
-                    else
-                    {
-                        defaultBitrate = Math.Max(320000, defaultBitrate);
-                    }
-                }
+                defaultBitrate = Math.Min(384000, defaultBitrate);
+            }
+            else
+            {
+                defaultBitrate = Math.Min(448000, defaultBitrate);
             }
 
             int encoderAudioBitrateLimit = int.MaxValue;
@@ -644,6 +631,14 @@ namespace MediaBrowser.Model.Dlna
                     {
                         encoderAudioBitrateLimit = 64000;
                     }
+                }
+            }
+
+            if (maxTotalBitrate.HasValue)
+            {
+                if (maxTotalBitrate.Value < 640000)
+                {
+                    defaultBitrate = Math.Min(128000, defaultBitrate);
                 }
             }
 
