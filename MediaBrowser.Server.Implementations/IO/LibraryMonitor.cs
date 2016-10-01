@@ -49,7 +49,8 @@ namespace MediaBrowser.Server.Implementations.IO
         private readonly IReadOnlyList<string> _alwaysIgnoreSubstrings = new List<string>
         {
             // Synology
-            "@eaDir",
+            "eaDir",
+            "#recycle",
             ".wd_tv",
             ".actors"
         };
