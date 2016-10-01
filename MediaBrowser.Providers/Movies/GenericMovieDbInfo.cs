@@ -126,11 +126,7 @@ namespace MediaBrowser.Providers.Movies
 
             movie.Name = movieData.GetTitle() ?? movie.Name;
 
-            var hasOriginalTitle = movie as IHasOriginalTitle;
-            if (hasOriginalTitle != null)
-            {
-                hasOriginalTitle.OriginalTitle = movieData.GetOriginalTitle();
-            }
+            movie.OriginalTitle = movieData.GetOriginalTitle();
 
             // Bug in Mono: WebUtility.HtmlDecode should return null if the string is null but in Mono it generate an System.ArgumentNullException.
             movie.Overview = movieData.overview != null ? WebUtility.HtmlDecode(movieData.overview) : null;
