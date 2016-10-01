@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
 {
@@ -13,7 +14,7 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
             _config = config;
         }
 
-        public void Run()
+        public async Task Run()
         {
             var migrationKey = this.GetType().FullName;
             var migrationKeyList = _config.Configuration.Migrations.ToList();

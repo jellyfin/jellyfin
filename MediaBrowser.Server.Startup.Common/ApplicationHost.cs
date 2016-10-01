@@ -313,8 +313,13 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
+        /// <summary>
+        /// Runs the startup tasks.
+        /// </summary>
         public override async Task RunStartupTasks()
         {
+            await PerformPreInitMigrations().ConfigureAwait(false);
+
             if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
                 ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
@@ -345,6 +350,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var name = entryPoint.GetType().FullName;
                 Logger.Info("Starting entry point {0}", name);
+                var now = DateTime.UtcNow;
                 try
                 {
                     entryPoint.Run();
@@ -353,7 +359,7 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     Logger.ErrorException("Error in {0}", ex, name);
                 }
-                Logger.Info("Entry point completed: {0}", name);
+                Logger.Info("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
             Logger.Info("All entry points have started");
 
@@ -365,23 +371,21 @@ namespace MediaBrowser.Server.Startup.Common
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
-            PerformPreInitMigrations();
-
             return base.Init(progress);
         }
 
-        private void PerformPreInitMigrations()
+        private async Task PerformPreInitMigrations()
         {
             var migrations = new List<IVersionMigration>
             {
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename)
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename, Logger)
             };
 
             foreach (var task in migrations)
             {
                 try
                 {
-                    task.Run();
+                    await task.Run().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
