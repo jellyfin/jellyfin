@@ -139,6 +139,7 @@ namespace MediaBrowser.Controller.Entities
         public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
         public string AlbumArtistStartsWithOrGreater { get; set; }
+        public string ExternalSeriesId { get; set; }
 
         public string[] AlbumNames { get; set; }
         public string[] ArtistNames { get; set; }

@@ -27,6 +27,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         public string Name { get; set; }
 
+        public string ServiceName { get; set; }
+
         /// <summary>
         /// Description of the recording.
         /// </summary>
