@@ -256,7 +256,10 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
-        public string ExternalSeriesId
+        public string ExternalSeriesId { get; set; }
+
+        [IgnoreDataMember]
+        public string ExternalSeriesIdLegacy
         {
             get { return this.GetProviderId("ProviderExternalSeriesId"); }
             set

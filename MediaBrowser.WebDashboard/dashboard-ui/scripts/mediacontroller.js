@@ -376,18 +376,18 @@
 
             if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
 
-                var menuItems = [];
-
-                menuItems.push({
-                    name: Globalize.translate('ButtonYes'),
-                    id: 'yes'
-                });
-                menuItems.push({
-                    name: Globalize.translate('ButtonNo'),
-                    id: 'no'
-                });
-
                 require(['dialog'], function (dialog) {
+
+                    var menuItems = [];
+
+                    menuItems.push({
+                        name: Globalize.translate('ButtonYes'),
+                        id: 'yes'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonNo'),
+                        id: 'no'
+                    });
 
                     dialog({
                         buttons: menuItems,

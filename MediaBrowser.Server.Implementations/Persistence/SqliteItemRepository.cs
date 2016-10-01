@@ -270,6 +270,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "SeasonId", "GUID");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesId", "GUID");
             _connection.AddColumn(Logger, "TypedBaseItems", "SeriesSortName", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ExternalSeriesId", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -413,7 +414,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "SeriesSortName",
             "PresentationUniqueKey",
             "InheritedParentalRatingValue",
-            "InheritedTags"
+            "InheritedTags",
+            "ExternalSeriesId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -535,7 +537,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "SeasonName",
                 "SeasonId",
                 "SeriesId",
-                "SeriesSortName"
+                "SeriesSortName",
+                "ExternalSeriesId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -974,6 +977,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = null;
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.ExternalSeriesId;
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1463,6 +1468,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!reader.IsDBNull(index))
             {
                 item.InheritedTags = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.ExternalSeriesId = reader.GetString(index);
             }
             index++;
 
@@ -2850,6 +2861,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("SortName>=@MinSortName");
                 cmd.Parameters.Add(cmd, "@MinSortName", DbType.String).Value = query.MinSortName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.ExternalSeriesId))
+            {
+                whereClauses.Add("ExternalSeriesId=@ExternalSeriesId");
+                cmd.Parameters.Add(cmd, "@ExternalSeriesId", DbType.String).Value = query.ExternalSeriesId;
             }
 
             if (!string.IsNullOrWhiteSpace(query.Name))

@@ -243,11 +243,7 @@ namespace MediaBrowser.Api
                 hasBudget.Revenue = request.Revenue;
             }
 
-            var hasOriginalTitle = item as IHasOriginalTitle;
-            if (hasOriginalTitle != null)
-            {
-                hasOriginalTitle.OriginalTitle = hasOriginalTitle.OriginalTitle;
-            }
+            item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
 
             var hasCriticRating = item as IHasCriticRating;
             if (hasCriticRating != null)
