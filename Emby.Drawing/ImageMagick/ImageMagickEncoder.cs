@@ -53,7 +53,10 @@ namespace Emby.Drawing.ImageMagick
                     "arw", 
                     "webp",
                     "gif",
-                    "bmp"
+                    "bmp",
+                    "erf",
+                    "raf",
+                    "rw2"
                 };
             }
         }
