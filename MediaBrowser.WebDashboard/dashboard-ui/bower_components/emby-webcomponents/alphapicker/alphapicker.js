@@ -1,14 +1,16 @@
 define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-icons'], function (focusManager) {
+    'use strict';
 
     var selectedButtonClass = 'alphaPickerButton-selected';
 
     function focus() {
-        var selected = this.querySelector('.' + selectedButtonClass);
+        var scope = this;
+        var selected = scope.querySelector('.' + selectedButtonClass);
 
         if (selected) {
             focusManager.focus(selected);
         } else {
-            focusManager.autoFocus(this, true);
+            focusManager.autoFocus(scope, true);
         }
     }
 
@@ -25,11 +27,9 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
         var letters;
 
         html += '<div class="alphaPickerRow">';
-        if (options.mode == 'keyboard') {
+        if (options.mode === 'keyboard') {
             // space_bar icon
-            html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon alphaPickerButtonIcon">&#xE256;</i>\
-            </button>';
+            html += '<button data-value=" " is="paper-icon-button-light" class="alphaPickerButton autoSize"><i class="md-icon alphaPickerButtonIcon">&#xE256;</i></button>';
         } else {
             letters = ['#'];
             html += letters.map(getLetterButton).join('');
@@ -38,11 +38,9 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
         letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
         html += letters.map(getLetterButton).join('');
 
-        if (options.mode == 'keyboard') {
+        if (options.mode === 'keyboard') {
             // backspace icon
-            html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton autoSize">\
-                <i class="md-icon alphaPickerButtonIcon">&#xE14A;</i>\
-            </button>';
+            html += '<button data-value="backspace" is="paper-icon-button-light" class="alphaPickerButton autoSize"><i class="md-icon alphaPickerButtonIcon">&#xE14A;</i></button>';
             html += '</div>';
 
             letters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -60,7 +58,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
         element.focus = focus;
     }
 
-    function alphaPicker(options) {
+    function AlphaPicker(options) {
 
         var self = this;
 
@@ -83,7 +81,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
 
             alphaFocusTimeout = null;
 
-            if (document.activeElement == alphaFocusedElement) {
+            if (document.activeElement === alphaFocusedElement) {
                 var value = alphaFocusedElement.getAttribute('data-value');
                 self.value(value, true);
             }
@@ -125,7 +123,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
             if (alphaPickerButton) {
                 var value = alphaPickerButton.getAttribute('data-value');
 
-                if (currentValue == value.toUpperCase()) {
+                if (currentValue === value.toUpperCase()) {
                     self.value(null, true);
                 } else {
                     self.value(value, true);
@@ -173,7 +171,7 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
                     itemsContainer.addEventListener('focus', onItemsFocusIn, true);
                 }
 
-                if (options.mode == 'keyboard') {
+                if (options.mode === 'keyboard') {
                     element.addEventListener('click', onAlphaPickerInKeyboardModeClick);
                 }
 
@@ -225,14 +223,14 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
                     value = value.toUpperCase();
                     currentValue = value;
 
-                    if (options.mode != 'keyboard') {
+                    if (options.mode !== 'keyboard') {
                         selected = element.querySelector('.' + selectedButtonClass);
                         btn = element.querySelector('.alphaPickerButton[data-value=\'' + value + '\']');
 
-                        if (btn && btn != selected) {
+                        if (btn && btn !== selected) {
                             btn.classList.add(selectedButtonClass);
                         }
-                        if (selected && selected != btn) {
+                        if (selected && selected !== btn) {
                             selected.classList.remove(selectedButtonClass);
                         }
                     }
@@ -281,5 +279,5 @@ define(['focusManager', 'css!./style.css', 'paper-icon-button-light', 'material-
         self.visible(true);
     }
 
-    return alphaPicker;
+    return AlphaPicker;
 });

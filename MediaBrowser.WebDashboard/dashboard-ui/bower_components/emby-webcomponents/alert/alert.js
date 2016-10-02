@@ -1,4 +1,5 @@
 define(['dialog', 'globalize'], function (dialog, globalize) {
+    'use strict';
 
     return function (text, title) {
 
@@ -23,7 +24,7 @@ define(['dialog', 'globalize'], function (dialog, globalize) {
         options.buttons = items;
 
         return dialog(options).then(function (result) {
-            if (result == 'ok') {
+            if (result === 'ok') {
                 return Promise.resolve();
             }
 

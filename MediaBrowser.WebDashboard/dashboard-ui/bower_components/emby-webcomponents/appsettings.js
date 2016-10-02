@@ -1,4 +1,5 @@
 define(['appStorage', 'events'], function (appStorage, events) {
+    'use strict';
 
     function getKey(name, userId) {
 
@@ -9,7 +10,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
         return name;
     }
 
-    return new function () {
+    function AppSettings() {
 
         var self = this;
 
@@ -19,7 +20,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
                 self.set('enableAutoLogin', val.toString());
             }
 
-            return self.get('enableAutoLogin') != 'false';
+            return self.get('enableAutoLogin') !== 'false';
         };
 
         self.enableAutomaticBitrateDetection = function (val) {
@@ -28,7 +29,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
                 self.set('enableAutomaticBitrateDetection', val.toString());
             }
 
-            return self.get('enableAutomaticBitrateDetection') != 'false';
+            return self.get('enableAutomaticBitrateDetection') !== 'false';
         };
 
         self.maxStreamingBitrate = function (val) {
@@ -66,7 +67,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
                 self.set('syncOnlyOnWifi', val.toString());
             }
 
-            return self.get('syncOnlyOnWifi') != 'false';
+            return self.get('syncOnlyOnWifi') !== 'false';
         };
 
         self.syncPath = function (val) {
@@ -99,7 +100,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
 
             appStorage.setItem(getKey(name, userId), value);
 
-            if (currentValue != value) {
+            if (currentValue !== value) {
                 events.trigger(self, 'change', [name]);
             }
         };
@@ -108,5 +109,7 @@ define(['appStorage', 'events'], function (appStorage, events) {
 
             return appStorage.getItem(getKey(name, userId));
         };
-    }();
+    }
+
+    return new AppSettings();
 });
