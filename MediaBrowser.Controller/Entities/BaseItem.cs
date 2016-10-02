@@ -422,7 +422,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsInternetMetadataEnabled()
         {
-            return ConfigurationManager.Configuration.EnableInternetProviders;
+            return LibraryManager.GetLibraryOptions(this).EnableInternetProviders;
         }
 
         public virtual bool CanDelete()
@@ -1341,7 +1341,9 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            return ConfigurationManager.Configuration.SaveLocalMeta;
+            var libraryOptions = LibraryManager.GetLibraryOptions(this);
+
+            return libraryOptions.SaveLocalMetadata;
         }
 
         /// <summary>

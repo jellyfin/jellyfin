@@ -1216,12 +1216,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (libraryFolder != null)
             {
                 info.ItemId = libraryFolder.Id.ToString("N");
-            }
-
-            var collectionFolder = libraryFolder as CollectionFolder;
-            if (collectionFolder != null)
-            {
-                info.LibraryOptions = collectionFolder.GetLibraryOptions();
+                info.LibraryOptions = GetLibraryOptions(libraryFolder);
             }
 
             return info;
@@ -1889,11 +1884,23 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public LibraryOptions GetLibraryOptions(BaseItem item)
         {
-            var collectionFolder = GetCollectionFolders(item)
-                .OfType<CollectionFolder>()
-                .FirstOrDefault();
+            var collectionFolder = item as CollectionFolder;
+            if (collectionFolder == null)
+            {
+                collectionFolder = GetCollectionFolders(item)
+                   .OfType<CollectionFolder>()
+                   .FirstOrDefault();
+            }
 
-            return collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+            var options = collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
+
+            if (options.SchemaVersion < 3)
+            {
+                options.SaveLocalMetadata = ConfigurationManager.Configuration.SaveLocalMeta;
+                options.EnableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
+            }
+
+            return options;
         }
 
         public string GetContentType(BaseItem item)

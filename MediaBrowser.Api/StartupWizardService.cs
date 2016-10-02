@@ -88,8 +88,6 @@ namespace MediaBrowser.Api
             var result = new StartupConfiguration
             {
                 UICulture = _config.Configuration.UICulture,
-                EnableInternetProviders = _config.Configuration.EnableInternetProviders,
-                SaveLocalMeta = _config.Configuration.SaveLocalMeta,
                 MetadataCountryCode = _config.Configuration.MetadataCountryCode,
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
@@ -123,8 +121,6 @@ namespace MediaBrowser.Api
         public void Post(UpdateStartupConfiguration request)
         {
             _config.Configuration.UICulture = request.UICulture;
-            _config.Configuration.EnableInternetProviders = request.EnableInternetProviders;
-            _config.Configuration.SaveLocalMeta = request.SaveLocalMeta;
             _config.Configuration.MetadataCountryCode = request.MetadataCountryCode;
             _config.Configuration.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
             _config.SaveConfiguration();
@@ -215,8 +211,6 @@ namespace MediaBrowser.Api
     public class StartupConfiguration
     {
         public string UICulture { get; set; }
-        public bool EnableInternetProviders { get; set; }
-        public bool SaveLocalMeta { get; set; }
         public string MetadataCountryCode { get; set; }
         public string PreferredMetadataLanguage { get; set; }
         public string LiveTvTunerType { get; set; }

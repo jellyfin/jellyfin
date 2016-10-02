@@ -242,8 +242,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
                 user.LastActivityDate = activityDate;
 
-                // Don't log in the db anymore frequently than 10 seconds
-                if ((activityDate - userLastActivityDate).TotalSeconds > 10)
+                if ((activityDate - userLastActivityDate).TotalSeconds > 60)
                 {
                     try
                     {

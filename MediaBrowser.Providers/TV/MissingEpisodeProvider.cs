@@ -118,7 +118,7 @@ namespace MediaBrowser.Providers.TV
 
             var hasNewEpisodes = false;
 
-            if (_config.Configuration.EnableInternetProviders && addNewItems)
+            if (addNewItems && !group.Any(i => !i.IsInternetMetadataEnabled()))
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
