@@ -93,11 +93,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-
-            if (responseHeaders != null)
+            if (responseHeaders == null)
             {
-                AddResponseHeaders(result, responseHeaders);
+                responseHeaders = new Dictionary<string, string>();
             }
+
+            responseHeaders["Expires"] = "-1";
+            AddResponseHeaders(result, responseHeaders);
 
             return result;
         }
