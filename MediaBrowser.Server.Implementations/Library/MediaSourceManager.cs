@@ -456,7 +456,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 else
                 {
-                    _logger.Error("Failed to update MediaSource timestamp for {0}", id);
+                    _logger.Error("Failed to ping live stream {0}", id);
                 }
             }
             finally
@@ -540,7 +540,7 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         private Timer _closeTimer;
-        private readonly TimeSpan _openStreamMaxAge = TimeSpan.FromSeconds(60);
+        private readonly TimeSpan _openStreamMaxAge = TimeSpan.FromSeconds(180);
 
         private void StartCloseTimer()
         {
