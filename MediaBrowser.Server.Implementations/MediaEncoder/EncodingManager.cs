@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
-            if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
+            if (libraryOptions != null)
             {
                 if (!libraryOptions.EnableChapterImageExtraction)
                 {
@@ -70,29 +70,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
             else
             {
-                var options = _chapterManager.GetConfiguration();
-
-                if (video is Movie)
-                {
-                    if (!options.EnableMovieChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
-                else if (video is Episode)
-                {
-                    if (!options.EnableEpisodeChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (!options.EnableOtherVideoChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
+                return false;
             }
 
             // Can't extract images if there are no video streams

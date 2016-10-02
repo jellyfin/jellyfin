@@ -11,11 +11,15 @@
         public bool DownloadImagesInAdvance { get; set; }
         public MediaPathInfo[] PathInfos { get; set; }
 
+        public bool SaveLocalMetadata { get; set; }
+        public bool EnableInternetProviders { get; set; }
+
         public LibraryOptions()
         {
             EnablePhotos = true;
             EnableRealtimeMonitor = true;
             PathInfos = new MediaPathInfo[] { };
+            EnableInternetProviders = true;
         }
     }
 

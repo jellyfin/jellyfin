@@ -262,8 +262,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 NormalizeChapterNames(chapters);
 
                 var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                var extractDuringScan = chapterOptions.ExtractDuringLibraryScan;
-                if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
+                var extractDuringScan = false;
+                if (libraryOptions != null)
                 {
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
