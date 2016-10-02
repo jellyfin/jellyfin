@@ -4,26 +4,7 @@
 
         <div class="ui-corner-all ui-shadow wizardContent">
             <form class="wizardSettingsForm">
-                <h1>
-                    ${LabelConfigureSettings}
-                </h1>
-                <br/>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" class="chkEnableInternetProviders" />
-                        <span>${LabelDownloadInternetMetadata}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" class="chkSaveLocalMetadata" />
-                        <span>${LabelSaveLocalMetadata}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
-                </div>
-
-                <h1 style="margin:2em 0 1.5em;">${HeaderPreferredMetadataLanguage}</h1>
+                <h1>${HeaderPreferredMetadataLanguage}</h1>
 
                 <div class="selectContainer">
                     <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>

@@ -2200,7 +2200,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['emby-button', 'humanedate', 'emby-input'],
+            dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,
             anonymous: true,
             startup: true,

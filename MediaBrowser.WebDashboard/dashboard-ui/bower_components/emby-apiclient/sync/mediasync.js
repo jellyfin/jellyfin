@@ -1,4 +1,5 @@
 ﻿define(['localassetmanager'], function (LocalAssetManager) {
+    'use strict';
 
     return function () {
 
@@ -248,55 +249,54 @@
 
             // Just for now while media syncing gets worked out
             deferred.resolve();
-            return;
 
-            var libraryItem = localItem.Item;
+            //var libraryItem = localItem.Item;
 
-            var serverId = libraryItem.ServerId;
-            var itemId = null;
-            var imageTag = null;
-            var imageType = "Primary";
+            //var serverId = libraryItem.ServerId;
+            //var itemId = null;
+            //var imageTag = null;
+            //var imageType = "Primary";
 
-            switch (index) {
+            //switch (index) {
 
-                case 0:
-                    itemId = libraryItem.Id;
-                    imageType = "Primary";
-                    imageTag = (libraryItem.ImageTags || {})["Primary"];
-                    break;
-                case 1:
-                    itemId = libraryItem.SeriesId;
-                    imageType = "Primary";
-                    imageTag = libraryItem.SeriesPrimaryImageTag;
-                    break;
-                case 2:
-                    itemId = libraryItem.SeriesId;
-                    imageType = "Thumb";
-                    imageTag = libraryItem.SeriesPrimaryImageTag;
-                    break;
-                case 3:
-                    itemId = libraryItem.AlbumId;
-                    imageType = "Primary";
-                    imageTag = libraryItem.AlbumPrimaryImageTag;
-                    break;
-                default:
-                    break;
-            }
+            //    case 0:
+            //        itemId = libraryItem.Id;
+            //        imageType = "Primary";
+            //        imageTag = (libraryItem.ImageTags || {})["Primary"];
+            //        break;
+            //    case 1:
+            //        itemId = libraryItem.SeriesId;
+            //        imageType = "Primary";
+            //        imageTag = libraryItem.SeriesPrimaryImageTag;
+            //        break;
+            //    case 2:
+            //        itemId = libraryItem.SeriesId;
+            //        imageType = "Thumb";
+            //        imageTag = libraryItem.SeriesPrimaryImageTag;
+            //        break;
+            //    case 3:
+            //        itemId = libraryItem.AlbumId;
+            //        imageType = "Primary";
+            //        imageTag = libraryItem.AlbumPrimaryImageTag;
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            if (!itemId || !imageTag) {
-                getNextImage(index + 1, apiClient, localItem, deferred);
-                return;
-            }
+            //if (!itemId || !imageTag) {
+            //    getNextImage(index + 1, apiClient, localItem, deferred);
+            //    return;
+            //}
 
-            downloadImage(apiClient, serverId, itemId, imageTag, imageType).then(function () {
+            //downloadImage(apiClient, serverId, itemId, imageTag, imageType).then(function () {
 
-                // For the sake of simplicity, limit to one image
-                deferred.resolve();
-                return;
+            //    // For the sake of simplicity, limit to one image
+            //    deferred.resolve();
+            //    return;
 
-                getNextImage(index + 1, apiClient, localItem, deferred);
+            //    getNextImage(index + 1, apiClient, localItem, deferred);
 
-            }, getOnFail(deferred));
+            //}, getOnFail(deferred));
         }
 
         function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
@@ -340,7 +340,7 @@
             }
 
             var files = jobItem.AdditionalFiles.filter(function (f) {
-                return f.Type == 'Subtitles';
+                return f.Type === 'Subtitles';
             });
 
             var mediaSource = jobItem.Item.MediaSources[0];
@@ -375,7 +375,7 @@
             var deferred = DeferredBuilder.Deferred();
 
             var subtitleStream = mediaSource.MediaStreams.filter(function (m) {
-                return m.Type == 'Subtitle' && m.Index == file.Index;
+                return m.Type === 'Subtitle' && m.Index === file.Index;
             })[0];
 
             if (!subtitleStream) {
@@ -445,7 +445,7 @@
 
                 var userIdsWithAccess = syncDataResult.ItemUserAccess[itemId];
 
-                if (userIdsWithAccess.join(',') == savedUserIdsWithAccess.join(',')) {
+                if (userIdsWithAccess.join(',') === savedUserIdsWithAccess.join(',')) {
                     // Hasn't changed, nothing to do
                     deferred.resolve();
                 }

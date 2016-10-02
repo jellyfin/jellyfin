@@ -131,17 +131,8 @@
             html += '</div>';
 
             html += '<div class="cardFooter visualCardBox-cardFooter">';
-            html += '<div class="cardText">' + user.Name + '</div>';
+            html += '<div class="cardText singleCardText">' + user.Name + '</div>';
 
-            html += '<div class="cardText cardText-secondary">';
-            var lastSeen = getLastSeenText(user.LastActivityDate);
-            if (lastSeen != "") {
-                html += lastSeen;
-            }
-            else {
-                html += "&nbsp;";
-            }
-            html += '</div>';
             html += '</div>';
             html += '</div>';
 
@@ -149,15 +140,6 @@
         }
 
         context.querySelector('#divUsers').innerHTML = html;
-    }
-
-    function getLastSeenText(lastActivityDate) {
-
-        if (!lastActivityDate) {
-            return "";
-        }
-
-        return "Last seen " + humane_date(lastActivityDate);
     }
 
     return function (view, params) {

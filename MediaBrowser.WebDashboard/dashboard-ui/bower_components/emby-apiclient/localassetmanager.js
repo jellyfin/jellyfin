@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function getLocalMediaSource(serverId, itemId) {
         return Promise.resolve(null);
