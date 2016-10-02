@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function listenerSession(resolve, timeoutMs) {
 
@@ -78,7 +79,7 @@
                 var stringLength = eventArguments.getDataReader().unconsumedBufferLength;
                 var receivedMessage = eventArguments.getDataReader().readString(stringLength);
 
-                if (receivedMessage == stringToSend) {
+                if (receivedMessage === stringToSend) {
                     return;
                 }
 
@@ -97,7 +98,7 @@
                 servers.push(server);
 
             } catch (exception) {
-                onError("Error receiving message: " + receivedMessage);
+                onError("Error receiving message: " + exception);
             }
         }
 

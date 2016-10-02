@@ -1,4 +1,5 @@
 ﻿define(['events', 'apiclient', 'appStorage'], function (events, apiClientFactory, appStorage) {
+    'use strict';
 
     var ConnectionState = {
         Unavailable: 0,
@@ -83,7 +84,7 @@
 
             var headers = request.headers || {};
 
-            if (request.dataType == 'json') {
+            if (request.dataType === 'json') {
                 headers.accept = 'application/json';
             }
 
@@ -177,7 +178,7 @@
 
                 if (response.status < 400) {
 
-                    if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                    if (request.dataType === 'json' || request.headers.accept === 'application/json') {
                         return response.json();
                     } else {
                         return response;
@@ -256,7 +257,7 @@
 
             return servers.filter(function (s) {
 
-                return s.Id == id;
+                return s.Id === id;
 
             })[0];
         };
@@ -402,7 +403,7 @@
 
             var credentials = credentialProvider.credentials();
             var servers = credentials.Servers.filter(function (s) {
-                return s.Id == result.ServerId;
+                return s.Id === result.ServerId;
             });
 
             var server = servers.length ? servers[0] : apiClient.serverInfo();
@@ -435,7 +436,7 @@
             var info = {
                 Id: user.Id,
                 IsSignedInOffline: true
-            }
+            };
 
             credentialProvider.addOrUpdateUser(server, info);
         }
@@ -471,7 +472,7 @@
 
             return new Promise(function (resolve, reject) {
 
-                if (connectUser && connectUser.Id == credentials.ConnectUserId) {
+                if (connectUser && connectUser.Id === credentials.ConnectUserId) {
                     resolve();
                 }
 
@@ -707,7 +708,7 @@
                 var credentials = credentialProvider.credentials();
 
                 var servers = credentials.Servers.filter(function (u) {
-                    return u.UserLinkType != "Guest";
+                    return u.UserLinkType !== "Guest";
                 });
 
                 for (var j = 0, numServers = servers.length; j < numServers; j++) {
@@ -785,7 +786,7 @@
                         Name: i.Name,
                         RemoteAddress: i.Url,
                         LocalAddress: i.LocalAddress,
-                        UserLinkType: (i.UserType || '').toLowerCase() == "guest" ? "Guest" : "LinkedUser"
+                        UserLinkType: (i.UserType || '').toLowerCase() === "guest" ? "Guest" : "LinkedUser"
                     };
                 });
 
@@ -849,7 +850,7 @@
 
                 return connectServers.filter(function (connectServer) {
 
-                    return server.Id == connectServer.Id;
+                    return server.Id === connectServer.Id;
 
                 }).length > 0;
             });
@@ -924,11 +925,11 @@
 
             console.log('Begin connectToServers, with ' + servers.length + ' servers');
 
-            if (servers.length == 1) {
+            if (servers.length === 1) {
 
                 return self.connectToServer(servers[0], options).then(function (result) {
 
-                    if (result.State == ConnectionState.Unavailable) {
+                    if (result.State === ConnectionState.Unavailable) {
 
                         result.State = result.ConnectUser == null ?
                             ConnectionState.ConnectSignIn :
@@ -945,7 +946,7 @@
             if (firstServer) {
                 return self.connectToServer(firstServer, options).then(function (result) {
 
-                    if (result.State == ConnectionState.SignedIn) {
+                    if (result.State === ConnectionState.SignedIn) {
 
                         return result;
 
@@ -992,9 +993,9 @@
                 if (server.LastConnectionMode != null) {
                     //tests.push(server.LastConnectionMode);
                 }
-                if (tests.indexOf(ConnectionMode.Manual) == -1) { tests.push(ConnectionMode.Manual); }
-                if (tests.indexOf(ConnectionMode.Local) == -1) { tests.push(ConnectionMode.Local); }
-                if (tests.indexOf(ConnectionMode.Remote) == -1) { tests.push(ConnectionMode.Remote); }
+                if (tests.indexOf(ConnectionMode.Manual) === -1) { tests.push(ConnectionMode.Manual); }
+                if (tests.indexOf(ConnectionMode.Local) === -1) { tests.push(ConnectionMode.Local); }
+                if (tests.indexOf(ConnectionMode.Remote) === -1) { tests.push(ConnectionMode.Remote); }
 
                 //beginWakeServer(server);
 
@@ -1007,7 +1008,7 @@
 
         function stringEqualsIgnoreCase(str1, str2) {
 
-            return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
+            return (str1 || '').toLowerCase() === (str2 || '').toLowerCase();
         }
 
         function compareVersions(a, b) {
@@ -1049,7 +1050,7 @@
             var skipTest = false;
             var timeout = defaultTimeout;
 
-            if (mode == ConnectionMode.Local) {
+            if (mode === ConnectionMode.Local) {
 
                 enableRetry = true;
                 timeout = 8000;
@@ -1060,7 +1061,7 @@
                 }
             }
 
-            else if (mode == ConnectionMode.Manual) {
+            else if (mode === ConnectionMode.Manual) {
 
                 if (stringEqualsIgnoreCase(address, server.LocalAddress)) {
                     enableRetry = true;
@@ -1078,7 +1079,7 @@
 
             tryConnect(address, timeout).then(function (result) {
 
-                if (compareVersions(self.minServerVersion(), result.Version) == 1) {
+                if (compareVersions(self.minServerVersion(), result.Version) === 1) {
 
                     console.log('minServerVersion requirement not met. Server version: ' + result.Version);
                     resolve({
@@ -1178,7 +1179,7 @@
             result.Servers.push(server);
             result.ApiClient.updateServerInfo(server, connectionMode);
 
-            if (result.State == ConnectionState.SignedIn) {
+            if (result.State === ConnectionState.SignedIn) {
                 afterConnected(result.ApiClient, options);
             }
 
@@ -1197,7 +1198,7 @@
             // attempt to correct bad input
             address = address.trim();
 
-            if (address.toLowerCase().indexOf('http') != 0) {
+            if (address.toLowerCase().indexOf('http') !== 0) {
                 address = "http://" + address;
             }
 
@@ -1314,7 +1315,7 @@
                     reject({ errorCode: 'passwordmatch' });
                     return;
                 }
-                if (password != passwordConfirm) {
+                if (password !== passwordConfirm) {
                     reject({ errorCode: 'passwordmatch' });
                     return;
                 }
@@ -1406,7 +1407,7 @@
                 var serverInfo = a.serverInfo();
 
                 // We have to keep this hack in here because of the addApiClient method
-                return !serverInfo || serverInfo.Id == item;
+                return !serverInfo || serverInfo.Id === item;
 
             })[0];
         };
@@ -1443,7 +1444,7 @@
             }
 
             var server = credentialProvider.credentials().Servers.filter(function (s) {
-                return s.Id == serverId;
+                return s.Id === serverId;
             });
             server = server.length ? server[0] : null;
 
@@ -1453,7 +1454,7 @@
                     var credentials = credentialProvider.credentials();
 
                     credentials.Servers = credentials.Servers.filter(function (s) {
-                        return s.Id != serverId;
+                        return s.Id !== serverId;
                     });
 
                     credentialProvider.credentials(credentials);
@@ -1560,7 +1561,7 @@
 
                 console.log('getRegistrationInfo has cached info');
 
-                if (regInfo.deviceId == params.deviceId) {
+                if (regInfo.deviceId === params.deviceId) {
                     console.log('getRegistrationInfo returning cached info');
                     return Promise.resolve();
                 }
@@ -1593,17 +1594,17 @@
                         var status = response.status;
                         console.log('getRegistrationInfo response: ' + status);
 
-                        if (status == 200) {
+                        if (status === 200) {
                             appStorage.setItem(cacheKey, JSON.stringify({
                                 lastValidDate: new Date().getTime(),
                                 deviceId: params.deviceId
                             }));
                             return Promise.resolve();
                         }
-                        if (status == 401) {
+                        if (status === 401) {
                             return Promise.reject();
                         }
-                        if (status == 403) {
+                        if (status === 403) {
                             return Promise.reject('overlimit');
                         }
 
