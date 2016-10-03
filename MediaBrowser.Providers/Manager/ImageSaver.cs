@@ -211,6 +211,20 @@ namespace MediaBrowser.Providers.Manager
                     throw;
                 }
             }
+            catch (IOException ex)
+            {
+                var retry = !string.IsNullOrWhiteSpace(retryPath) &&
+                    !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
+
+                if (retry)
+                {
+                    _logger.Error("IOException saving to {0}. {2}. Will retry saving to {1}", path, retryPath, ex.Message);
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             source.Position = 0;
             await SaveImageToLocation(source, retryPath, cancellationToken).ConfigureAwait(false);
