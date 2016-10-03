@@ -539,7 +539,7 @@ namespace MediaBrowser.Providers.Manager
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
-                        if (IsFullLocalMetadata(localItem.Item))
+                        if (item.IsLocked || IsFullLocalMetadata(localItem.Item))
                         {
                             hasLocalMetadata = true;
                         }
