@@ -168,9 +168,11 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        var tabControllers = [];
+        var renderedTabs = [];
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        function getTabController(page, index, callback) {
+
             var depends = [];
 
             switch (index) {
@@ -178,23 +180,18 @@
                 case 0:
                     break;
                 case 1:
-                    document.body.classList.add('autoScrollY');
                     depends.push('scripts/livetvguide');
                     break;
                 case 2:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvchannels');
                     break;
                 case 3:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvrecordings');
                     break;
                 case 4:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvschedule');
                     break;
                 case 5:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvseriestimers');
                     break;
                 default:
@@ -202,12 +199,14 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
                     tabControllers[index] = controller;
 
@@ -216,8 +215,37 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
-                    renderedTabs.push(index);
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+
+                if (index === 1) {
+                    document.body.classList.add('autoScrollY');
+                } else {
+                    document.body.classList.remove('autoScrollY');
+                }
+
+                if (renderedTabs.indexOf(index) == -1) {
+
+                    if (index < 2) {
+                        renderedTabs.push(index);
+                    }
                     controller.renderTab();
                 }
             });
@@ -226,6 +254,10 @@
         var viewTabs = view.querySelector('.libraryViewNav');
 
         libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4, 5]);
+
+        viewTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
 
         viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

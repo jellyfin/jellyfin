@@ -606,15 +606,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             ActiveRecordingInfo activeRecordingInfo;
             if (!_activeRecordings.TryGetValue(updatedTimer.Id, out activeRecordingInfo))
             {
-                UpdateExistingTimerWithNewData(existingTimer, updatedTimer);
-
-                _timerProvider.Update(existingTimer);
+                existingTimer.PrePaddingSeconds = updatedTimer.PrePaddingSeconds;
+                existingTimer.PostPaddingSeconds = updatedTimer.PostPaddingSeconds;
+                existingTimer.IsPostPaddingRequired = updatedTimer.IsPostPaddingRequired;
+                existingTimer.IsPrePaddingRequired = updatedTimer.IsPrePaddingRequired;
             }
 
             return Task.FromResult(true);
         }
 
-        private void UpdateExistingTimerWithNewData(TimerInfo existingTimer, TimerInfo updatedTimer)
+        private void UpdateExistingTimerWithNewMetadata(TimerInfo existingTimer, TimerInfo updatedTimer)
         {
             // Update the program info but retain the status
             existingTimer.ChannelId = updatedTimer.ChannelId;
@@ -1430,7 +1431,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     SaveSeriesNfo(timer, recordingPath, seriesPath);
                 }
-                else if (!timer.IsMovie || timer.IsSports)
+                else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
                 {
                     SaveVideoNfo(timer, recordingPath);
                 }
@@ -1620,7 +1621,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         ActiveRecordingInfo activeRecordingInfo;
                         if (!_activeRecordings.TryGetValue(timer.Id, out activeRecordingInfo))
                         {
-                            UpdateExistingTimerWithNewData(existingTimer, timer);
+                            UpdateExistingTimerWithNewMetadata(existingTimer, timer);
 
                             if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                             {

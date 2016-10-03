@@ -558,6 +558,15 @@ define(['browser'], function (browser) {
             }]
         });
 
+        if (browser.chrome) {
+            profile.CodecProfiles[profile.CodecProfiles.length - 1].Conditions.push({
+                Condition: 'NotEquals',
+                Property: 'IsAVC',
+                Value: 'false',
+                IsRequired: false
+            });
+        }
+
         profile.CodecProfiles.push({
             Type: 'Video',
             Codec: 'vpx',

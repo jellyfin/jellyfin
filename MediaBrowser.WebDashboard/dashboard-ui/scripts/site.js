@@ -1850,7 +1850,8 @@ var AppInfo = {};
             path: '/addplugin.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin'
+            roles: 'admin',
+            controller: 'scripts/addpluginpage'
         });
 
         defineRoute({
@@ -2719,8 +2720,8 @@ var AppInfo = {};
 
             // Prefer custom font over Segoe if on desktop windows
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
-                postInitDependencies.push('opensansFont');
-                //postInitDependencies.push('robotoFont');
+                //postInitDependencies.push('opensansFont');
+                postInitDependencies.push('robotoFont');
             }
 
             postInitDependencies.push('bower_components/emby-webcomponents/input/api');

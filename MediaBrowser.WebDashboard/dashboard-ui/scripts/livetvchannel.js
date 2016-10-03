@@ -27,7 +27,9 @@
                         enableUserDataButtons: false,
                         showParentTitle: true,
                         image: false,
-                        showProgramTimeColumn: true
+                        showProgramTime: true,
+                        mediaInfo: false,
+                        parentTitleWithTitle: true
 
                     }) + '</div>';
                 }

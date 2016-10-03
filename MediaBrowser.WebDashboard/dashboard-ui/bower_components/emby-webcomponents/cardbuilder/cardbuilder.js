@@ -761,6 +761,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var lines = [];
             var parentTitleUnderneath = item.Type === 'MusicAlbum' || item.Type === 'Audio' || item.Type === 'MusicVideo';
+            var titleAdded;
 
             if (showOtherText) {
                 if ((options.showParentTitle || options.showParentTitleOrTitle) && !parentTitleUnderneath) {
@@ -776,20 +777,30 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        var parentTitle = item.Type === 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "");
+                        if (item.Type === 'Program') {
 
-                        if (parentTitle || options.showParentTitle) {
-                            lines.push(parentTitle);
+                            lines.push(item.Name);
+
+                            if (!item.IsSeries) {
+                                titleAdded = true;
+                            }
+
+                        } else {
+                            var parentTitle = item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || "";
+
+                            if (parentTitle || options.showParentTitle) {
+                                lines.push(parentTitle);
+                            }
                         }
                     }
                 }
             }
 
-            if (showTitle || forceName || (options.showParentTitleOrTitle && !lines.length)) {
+            if (((showTitle || forceName) && !titleAdded) || (options.showParentTitleOrTitle && !lines.length)) {
 
                 var name = options.showTitle === 'auto' && !item.IsFolder && item.MediaType === 'Photo' ? '' : itemHelper.getDisplayName(item);
 
-                lines.push(htmlEncode(name));
+                lines.push(name);
             }
 
             if (showOtherText) {

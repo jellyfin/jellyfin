@@ -35,16 +35,16 @@ html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
     font-size: 14px;
 }
 
 h1 {
-    font-family: -apple-system-headline, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
+    font-family: -apple-system-headline, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
 }
 
 h2 {
-    font-family: -apple-system-subheadline, BlinkMacSystemFont, 'Open Sans', "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", sans-serif;
+    font-family: -apple-system-subheadline, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
 }
 
 body {
@@ -165,9 +165,9 @@ input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='r
     display: block;
 }
 
-.ui-body-b select, .ui-body-b [is="emby-input"] {
+.ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
-    border-color: #454545;
+    border-color: #ccc!important;
 }
 
     .ui-body-b select option {

@@ -154,6 +154,9 @@ namespace MediaBrowser.Controller.Entities
 
         public List<Tuple<string, SortOrder>> OrderBy { get; set; }
 
+        public DateTime? MinDateCreated { get; set; }
+        public DateTime? MinDateLastSaved { get; set; }
+
         public InternalItemsQuery()
         {
             GroupByPresentationUniqueKey = true;

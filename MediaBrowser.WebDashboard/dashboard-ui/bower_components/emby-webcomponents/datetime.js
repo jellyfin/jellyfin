@@ -131,8 +131,8 @@
         var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale, options || {}) :
-            date.toLocaleTimeString();
+            date.toLocaleTimeString(currentLocale, options || {}).toLowerCase() :
+            date.toLocaleTimeString().toLowerCase();
     }
 
     function getDisplayTime(date) {
@@ -147,38 +147,12 @@
             }
         }
 
-        var time = toLocaleTimeString(date);
+        return toLocaleTimeString(date, {
 
-        var timeLower = time.toLowerCase();
+            hour: 'numeric',
+            minute: '2-digit'
 
-        if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
-
-            time = timeLower;
-            var hour = date.getHours() % 12;
-            var suffix = date.getHours() > 11 ? 'pm' : 'am';
-            if (!hour) {
-                hour = 12;
-            }
-            var minutes = date.getMinutes();
-
-            if (minutes < 10) {
-                minutes = '0' + minutes;
-            }
-
-            minutes = ':' + minutes;
-            time = hour + minutes + suffix;
-        } else {
-
-            var timeParts = time.split(':');
-
-            // Trim off seconds
-            if (timeParts.length > 2) {
-                timeParts.length -= 1;
-                time = timeParts.join(':');
-            }
-        }
-
-        return time;
+        });
     }
 
     function isRelativeDay(date, offsetInDays) {

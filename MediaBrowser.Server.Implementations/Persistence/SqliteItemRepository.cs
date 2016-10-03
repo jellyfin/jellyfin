@@ -2724,6 +2724,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@MinIndexNumber", DbType.Int32).Value = query.MinIndexNumber.Value;
             }
 
+            if (query.MinDateCreated.HasValue)
+            {
+                whereClauses.Add("DateCreated>=@MinDateCreated");
+                cmd.Parameters.Add(cmd, "@MinDateCreated", DbType.DateTime).Value = query.MinDateCreated.Value;
+            }
+
+            if (query.MinDateLastSaved.HasValue)
+            {
+                whereClauses.Add("DateLastSaved>=@MinDateLastSaved");
+                cmd.Parameters.Add(cmd, "@MinDateLastSaved", DbType.DateTime).Value = query.MinDateLastSaved.Value;
+            }
+
             //if (query.MinPlayers.HasValue)
             //{
             //    whereClauses.Add("Players>=@MinPlayers");

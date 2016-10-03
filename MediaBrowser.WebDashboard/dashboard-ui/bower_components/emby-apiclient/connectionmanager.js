@@ -1087,6 +1087,11 @@
                         Servers: [server]
                     });
 
+                } if (result.Id != server.Id) {
+
+                    // http request succeeded, but it's a different server than what was expected
+                    testNextConnectionMode(tests, index + 1, server, options, resolve);
+
                 } else {
                     console.log('calling onSuccessfulConnection with connection mode ' + mode + ' with server ' + server.Name);
                     onSuccessfulConnection(server, result, mode, options, resolve);
