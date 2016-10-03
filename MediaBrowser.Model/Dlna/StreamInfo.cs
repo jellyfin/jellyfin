@@ -676,6 +676,19 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? null : TargetVideoStream.IsAVC;
+                }
+
+                return true;
+            }
+        }
+
         public int? TargetWidth
         {
             get

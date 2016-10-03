@@ -540,7 +540,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetRefFrames,
                     streamInfo.TargetVideoStreamCount,
                     streamInfo.TargetAudioStreamCount,
-                    streamInfo.TargetVideoCodecTag);
+                    streamInfo.TargetVideoCodecTag,
+                    streamInfo.IsTargetAVC);
 
                 return list.FirstOrDefault();
             }

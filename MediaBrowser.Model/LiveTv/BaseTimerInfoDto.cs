@@ -10,6 +10,8 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         public string Id { get; set; }
 
+        public string Type { get; set; }
+
         /// <summary>
         /// Gets or sets the server identifier.
         /// </summary>
