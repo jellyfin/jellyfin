@@ -27,8 +27,6 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The external series timer identifier.</value>
         public string ExternalSeriesTimerId { get; set; }
 
-        public string Type { get; set; }
-
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
