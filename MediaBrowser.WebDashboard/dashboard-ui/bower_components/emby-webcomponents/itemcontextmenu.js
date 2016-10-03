@@ -29,7 +29,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (item.Type == 'Timer' && user.Policy.EnableLiveTvManagement) {
+            if ((item.Type == 'Timer') && user.Policy.EnableLiveTvManagement) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#ButtonCancel'),
                     id: 'canceltimer'
@@ -53,9 +53,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEdit(user, item.Type)) {
 
-                if (options.edit !== false) {
+                if (options.edit !== false && item.Type != 'SeriesTimer') {
 
-                    var text = item.Type == 'Timer' ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
+                    var text = (item.Type == 'Timer' || item.Type == 'SeriesTimer') ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
 
                     commands.push({
                         name: text,
@@ -120,15 +120,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            //if (options.open !== false) {
-            //    if (item.Type != 'Timer' && item.Type != 'Audio') {
-            //        commands.push({
-            //            name: globalize.translate('sharedcomponents#Open'),
-            //            id: 'open'
-            //        });
-            //    }
-            //}
-
             if (canPlay) {
                 if (options.play !== false) {
                     commands.push({
@@ -178,7 +169,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (user.Policy.IsAdministrator) {
 
-                if (item.Type != 'Timer' && item.Type != 'Program') {
+                if (item.Type != 'Timer' && item.Type != 'SeriesTimer' && item.Type != 'Program') {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Refresh'),
                         id: 'refresh'
@@ -503,7 +494,11 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
                 loading.show();
 
-                apiClient.cancelLiveTvTimer(item.Id).then(function () {
+                var promise = item.Type == 'SeriesTimer' ?
+                    apiClient.cancelLiveTvSeriesTimer(item.Id) :
+                    apiClient.cancelLiveTvTimer(item.Id);
+
+                promise.then(function () {
 
                     require(['toast'], function (toast) {
                         toast(globalize.translate('sharedcomponents#RecordingCancelled'));
@@ -546,6 +541,11 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (item.Type == 'Timer') {
                 require(['recordingEditor'], function (recordingEditor) {
+
+                    recordingEditor.show(item.Id, serverId).then(resolve, reject);
+                });
+            } else if (item.Type == 'SeriesTimer') {
+                require(['seriesRecordingEditor'], function (recordingEditor) {
 
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);
                 });
@@ -601,6 +601,10 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
     function show(options) {
 
         return getCommands(options).then(function (commands) {
+
+            if (!commands.length) {
+                return Promise.reject();
+            }
 
             return new Promise(function (resolve, reject) {
 

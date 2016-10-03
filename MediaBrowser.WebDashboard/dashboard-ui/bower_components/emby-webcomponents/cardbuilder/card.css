@@ -237,7 +237,7 @@
 }
 
 .cardText {
-    padding: .25em .5em;
+    padding: .35em .5em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

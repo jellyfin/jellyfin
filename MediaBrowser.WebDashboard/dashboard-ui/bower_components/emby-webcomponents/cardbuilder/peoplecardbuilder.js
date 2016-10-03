@@ -1,4 +1,5 @@
 define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], function (imageLoader, itemShortcuts, connectionManager, layoutManager) {
+    'use strict';
 
     function buildPeopleCardsHtml(people, options) {
 
@@ -16,7 +17,7 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
 
         for (var i = 0, length = people.length; i < length; i++) {
 
-            if (options.rows && itemsInRow == 0) {
+            if (options.rows && itemsInRow === 0) {
                 html += '<div class="cardColumn">';
             }
 
@@ -84,22 +85,7 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
             cardBoxCssClass += ' cardBox-focustransform';
         }
 
-        var html = '\
-<button type="button" data-isfolder="' + person.IsFolder + '" data-type="' + person.Type + '" data-action="link" data-id="' + person.Id + '" data-serverid="' + serverId + '" raised class="' + className + '"> \
-<div class="' + cardBoxCssClass + '">\
-<div class="cardScalable visualCardBox-cardScalable">\
-<div class="cardPadder-portrait"></div>\
-<div class="cardContent">\
-' + cardImageContainer + '\
-</div>\
-</div>\
-</div>\
-<div class="cardFooter visualCardBox-cardFooter">\
-' + nameHtml + '\
-</div>\
-</div>\
-</button>'
-        ;
+        var html = '<button type="button" data-isfolder="' + person.IsFolder + '" data-type="' + person.Type + '" data-action="link" data-id="' + person.Id + '" data-serverid="' + serverId + '" raised class="' + className + '"><div class="' + cardBoxCssClass + '"><div class="cardScalable visualCardBox-cardScalable"><div class="cardPadder-portrait"></div><div class="cardContent">' + cardImageContainer + '</div></div></div><div class="cardFooter visualCardBox-cardFooter">' + nameHtml + '</div></div></button>';
 
         return html;
     }

@@ -16,7 +16,7 @@
 }
 
 .listItem-border {
-    border-bottom: 1px solid #2a2a2a;
+    border-bottom: 1px solid #262626;
 }
 
 .listItem-button {
@@ -55,13 +55,12 @@
 
 .listItemBody {
     flex-grow: 1;
-    padding: 0 1em;
+    padding: .8em 1em;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-direction: column;
     vertical-align: middle;
     justify-content: center;
-    min-height: 3.44em;
 }
 
 .listItemBody-nogrow {

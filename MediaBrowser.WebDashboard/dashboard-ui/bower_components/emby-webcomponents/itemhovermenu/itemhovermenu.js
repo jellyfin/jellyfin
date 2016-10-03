@@ -191,7 +191,7 @@
         var id = dataElement.getAttribute('data-id');
         var type = dataElement.getAttribute('data-type');
 
-        if (type == 'Timer') {
+        if (type == 'Timer' || type == 'SeriesTimer') {
             return;
         }
 
