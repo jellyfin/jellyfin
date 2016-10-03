@@ -5,6 +5,7 @@
 .recordingDialog-imageContainer {
     flex-shrink: 0;
     padding: 1em 1em 1em 0;
+    min-width: 17%;
     max-width: 25%;
 }
 

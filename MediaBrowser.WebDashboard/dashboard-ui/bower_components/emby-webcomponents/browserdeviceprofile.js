@@ -1,4 +1,5 @@
 define(['browser'], function (browser) {
+    'use strict';
 
     function canPlayH264() {
         var v = document.createElement('video');
@@ -58,7 +59,7 @@ define(['browser'], function (browser) {
 
         var typeString;
 
-        if (format == 'flac') {
+        if (format === 'flac') {
             if (browser.tizen) {
                 return true;
             }
@@ -67,7 +68,7 @@ define(['browser'], function (browser) {
             }
         }
 
-        else if (format == 'wma') {
+        else if (format === 'wma') {
             if (browser.tizen) {
                 return true;
             }
@@ -76,7 +77,7 @@ define(['browser'], function (browser) {
             }
         }
 
-        else if (format == 'opus') {
+        else if (format === 'opus') {
             typeString = 'audio/ogg; codecs="opus"';
 
             if (document.createElement('audio').canPlayType(typeString).replace(/no/, '')) {
@@ -86,7 +87,7 @@ define(['browser'], function (browser) {
             return false;
         }
 
-        if (format == 'webma') {
+        if (format === 'webma') {
             typeString = 'audio/webm';
         } else {
             typeString = 'audio/' + format;
@@ -117,7 +118,7 @@ define(['browser'], function (browser) {
             }
 
             // Filter out browsers based on chromium that don't support mkv
-            if (userAgent.indexOf('vivaldi') != -1 || userAgent.indexOf('opera') != -1) {
+            if (userAgent.indexOf('vivaldi') !== -1 || userAgent.indexOf('opera') !== -1) {
                 return false;
             }
 
@@ -204,7 +205,7 @@ define(['browser'], function (browser) {
     function getMaxBitrate() {
 
         if (browser.edgeUwp) {
-            return 26000000;
+            return 30000000;
         }
 
         // 10mbps
@@ -221,7 +222,7 @@ define(['browser'], function (browser) {
         if (browser.tizen) {
 
             // 2015 models
-            if (userAgent.indexOf('tizen 2.3') != -1) {
+            if (userAgent.indexOf('tizen 2.3') !== -1) {
                 return 20000000;
             }
 
@@ -347,12 +348,12 @@ define(['browser'], function (browser) {
         ['opus', 'mp3', 'aac', 'flac', 'webma', 'wma', 'wav'].filter(canPlayAudioFormat).forEach(function (audioFormat) {
 
             profile.DirectPlayProfiles.push({
-                Container: audioFormat == 'webma' ? 'webma,webm' : audioFormat,
+                Container: audioFormat === 'webma' ? 'webma,webm' : audioFormat,
                 Type: 'Audio'
             });
 
             // aac also appears in the m4a container
-            if (audioFormat == 'aac') {
+            if (audioFormat === 'aac') {
                 profile.DirectPlayProfiles.push({
                     Container: 'm4a',
                     AudioCodec: audioFormat,
@@ -556,6 +557,15 @@ define(['browser'], function (browser) {
                 Value: maxLevel
             }]
         });
+
+        if (browser.chrome) {
+            profile.CodecProfiles[profile.CodecProfiles.length - 1].Conditions.push({
+                Condition: 'NotEquals',
+                Property: 'IsAVC',
+                Value: 'false',
+                IsRequired: false
+            });
+        }
 
         profile.CodecProfiles.push({
             Type: 'Video',

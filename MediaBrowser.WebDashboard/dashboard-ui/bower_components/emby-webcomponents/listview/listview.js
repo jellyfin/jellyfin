@@ -180,8 +180,10 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             var cssClass = "listItem listItem-nosidepadding";
 
-            if (options.border !== false) {
-                cssClass += ' listItem-border';
+            if (options.highlight !== false) {
+                if (i % 2 == 1) {
+                    cssClass += ' listItem-odd';
+                }
             }
 
             if (clickEntireItem) {
@@ -242,21 +244,32 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 html += '</div>';
             }
 
-            if (options.showProgramTimeColumn) {
-                html += '<div class="listItemBody listItemBody-nogrow listItemBody-rightborder"><div class="listItemBodyText">';
-                html += datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate));
-                html += '</div></div>';
+            var textlines = [];
+
+            if (options.showProgramDateTime) {
+                textlines.push(datetime.toLocaleString(datetime.parseISO8601Date(item.StartDate), {
+
+                    weekday: 'long',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                }));
             }
 
-            var textlines = [];
+            if (options.showProgramTime) {
+                textlines.push(datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate)));
+            }
+
+            var parentTitle;
 
             if (options.showParentTitle) {
                 if (item.Type == 'Episode') {
-                    textlines.push(item.SeriesName || '&nbsp;');
+                    parentTitle = item.SeriesName;
                 }
 
-                if (item.IsSeries) {
-                    textlines.push(item.Name || '&nbsp;');
+                else if (item.IsSeries) {
+                    parentTitle = item.Name;
                 }
             }
 
@@ -265,7 +278,20 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             if (options.showIndexNumber && item.IndexNumber != null) {
                 displayName = item.IndexNumber + ". " + displayName;
             }
-            if (displayName) {
+
+            if (options.showParentTitle && options.parentTitleWithTitle) {
+
+                if (parentTitle && displayName) {
+                    parentTitle += ' - ' + displayName;
+                }
+
+                textlines.push(parentTitle || '&nbsp;');
+            }
+            else if (options.showParentTitle) {
+                textlines.push(parentTitle || '&nbsp;');
+            }
+
+            if (displayName && !options.parentTitleWithTitle) {
                 textlines.push(displayName);
             }
 
@@ -302,14 +328,16 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             html += getTextLinesHtml(textlines, isLargeStyle);
 
-            if (!enableSideMediaInfo) {
+            if (options.mediaInfo !== false) {
+                if (!enableSideMediaInfo) {
 
-                var mediaInfoClass = 'secondary listItemMediaInfo listItemBodyText';
+                    var mediaInfoClass = 'secondary listItemMediaInfo listItemBodyText';
 
-                html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
-                    episodeTitle: false,
-                    originalAirDate: false
-                }) + '</div>';
+                    html += '<div class="' + mediaInfoClass + '">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+                        episodeTitle: false,
+                        originalAirDate: false
+                    }) + '</div>';
+                }
             }
 
             if (enableOverview && item.Overview) {
@@ -320,18 +348,23 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             html += '</div>';
 
-            if (enableSideMediaInfo) {
-                html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
+            if (options.mediaInfo !== false) {
+                if (enableSideMediaInfo) {
+                    html += '<div class="secondary listItemMediaInfo">' + mediaInfo.getPrimaryMediaInfoHtml(item, {
 
-                    year: false,
-                    container: false,
-                    episodeTitle: false
+                        year: false,
+                        container: false,
+                        episodeTitle: false
 
-                }) + '</div>';
+                    }) + '</div>';
+                }
             }
 
             if (!clickEntireItem) {
-                html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+
+                if (options.moreButton !== false) {
+                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+                }
 
                 if (options.enableUserDataButtons !== false) {
                     html += '<span class="listViewUserDataButtons">';

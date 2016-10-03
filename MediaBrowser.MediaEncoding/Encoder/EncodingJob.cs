@@ -392,6 +392,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (Options.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAVC;
+                }
+
+                return false;
+            }
+        }
+
         public int? TargetVideoStreamCount
         {
             get

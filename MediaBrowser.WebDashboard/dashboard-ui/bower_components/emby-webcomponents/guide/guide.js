@@ -438,6 +438,8 @@
                     cssClass += ' ' + accentCssClass;
 
                     accentCssClass = null;
+                } else {
+                    accentCssClass = null;
                 }
 
                 var timerAttributes = '';

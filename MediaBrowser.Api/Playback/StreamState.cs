@@ -516,5 +516,18 @@ namespace MediaBrowser.Api.Playback
                 return false;
             }
         }
+
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAVC;
+                }
+
+                return true;
+            }
+        }
     }
 }

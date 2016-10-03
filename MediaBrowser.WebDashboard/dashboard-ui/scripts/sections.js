@@ -693,8 +693,10 @@
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
+                overlayText: false,
                 overlayPlayButton: true,
-                allowBottomPadding: !enableScrollX()
+                allowBottomPadding: !enableScrollX(),
+                preferThumb: true
 
             });
             html += '</div>';

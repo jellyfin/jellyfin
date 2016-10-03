@@ -38,7 +38,7 @@
                     itemHtml += '<i class="listItemIcon md-icon" style="background-color:#999;">notifications_off</i>';
                 }
 
-                itemHtml += '<div class="listItemBody two-line">';
+                itemHtml += '<div class="listItemBody">';
                 itemHtml += '<div class="listItemBodyText">' + i.Name + '</div>';
 
                 itemHtml += '</div>';

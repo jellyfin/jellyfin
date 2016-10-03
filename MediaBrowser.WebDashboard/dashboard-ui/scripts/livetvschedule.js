@@ -1,12 +1,8 @@
 ﻿define(['scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function () {
 
-    function renderActiveRecordings(context) {
+    function renderActiveRecordings(context, promise) {
 
-        ApiClient.getLiveTvTimers({
-
-            IsActive: true
-
-        }).then(function (result) {
+        promise.then(function (result) {
 
             // The IsActive param is new, so handle older servers that don't support it
             if (result.Items.length && result.Items[0].Status != 'InProgress') {
@@ -18,7 +14,7 @@
             });
         });
     }
-    
+
     function renderTimers(context, timers, options) {
 
         LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
@@ -37,35 +33,41 @@
         });
     }
 
-    function renderUpcomingRecordings(context) {
+    function renderUpcomingRecordings(context, promise) {
 
-        ApiClient.getLiveTvTimers({
-            IsActive: false
-        }).then(function (result) {
+        promise.then(function (result) {
 
             renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function reload(context) {
-
-        Dashboard.showLoadingMsg();
-
-        renderActiveRecordings(context);
-        renderUpcomingRecordings(context);
-    }
-
     return function (view, params, tabContent) {
 
         var self = this;
+        var activeRecordingsPromise;
+        var upcomingRecordingsPromise;
 
         tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
+            self.preRender();
+            self.renderTab();
         });
 
+        self.preRender = function () {
+            activeRecordingsPromise = ApiClient.getLiveTvTimers({
+                IsActive: true
+            });
+
+            upcomingRecordingsPromise = ApiClient.getLiveTvTimers({
+                IsActive: false
+            });
+        };
+
         self.renderTab = function () {
-            reload(tabContent);
+            Dashboard.showLoadingMsg();
+
+            renderActiveRecordings(tabContent, activeRecordingsPromise);
+            renderUpcomingRecordings(tabContent, upcomingRecordingsPromise);
         };
     };
 

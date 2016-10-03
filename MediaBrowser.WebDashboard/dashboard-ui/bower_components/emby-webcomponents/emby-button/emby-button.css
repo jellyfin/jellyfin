@@ -152,7 +152,7 @@
     .paper-icon-button-light > i {
         width: auto;
         height: auto;
-        font-size: 1.72em;
+        font-size: 1.6em;
         /* Make sure its on top of the ripple */
         position: relative;
         z-index: 1;

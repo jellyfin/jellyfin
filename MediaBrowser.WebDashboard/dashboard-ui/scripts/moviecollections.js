@@ -141,8 +141,7 @@
                         shape: "auto",
                         context: 'movies',
                         showTitle: true,
-                        showYear: true,
-                        lazy: true,
+                        centerText: false,
                         cardLayout: true,
                         showItemCounts: true
                     });

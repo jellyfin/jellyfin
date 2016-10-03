@@ -12,6 +12,13 @@ namespace MediaBrowser.Model.LiveTv
     [DebuggerDisplay("Name = {Name}")]
     public class SeriesTimerInfoDto : BaseTimerInfoDto
     {
+        public SeriesTimerInfoDto()
+        {
+            ImageTags = new Dictionary<ImageType, string>();
+            Days = new List<DayOfWeek>();
+            Type = "SeriesTimer";
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [record any time].
         /// </summary>
@@ -60,12 +67,6 @@ namespace MediaBrowser.Model.LiveTv
         public bool HasPrimaryImage
         {
             get { return ImageTags != null && ImageTags.ContainsKey(ImageType.Primary); }
-        }
-
-        public SeriesTimerInfoDto()
-        {
-            ImageTags = new Dictionary<ImageType, string>();
-            Days = new List<DayOfWeek>();
         }
     }
 

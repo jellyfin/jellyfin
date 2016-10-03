@@ -104,7 +104,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                     Action onStarted = null;
                                     if (isFirstAttempt)
                                     {
-                                        onStarted = () => openTaskCompletionSource.TrySetResult(true);
+                                        onStarted = () => ResolveWhenExists(openTaskCompletionSource, tempFilePath, cancellationToken);
                                     }
                                     await DirectRecorder.CopyUntilCancelled(response.Content, outputStream, onStarted, cancellationToken).ConfigureAwait(false);
                                 }
@@ -135,6 +135,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 DeleteTempFile(tempFilePath);
 
             }).ConfigureAwait(false);
+        }
+
+        private async void ResolveWhenExists(TaskCompletionSource<bool> taskCompletionSource, string file, CancellationToken cancellationToken)
+        {
+            while (!File.Exists(file) && !cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(50).ConfigureAwait(false);
+            }
+
+            taskCompletionSource.TrySetResult(true);
         }
 
         private async void DeleteTempFile(string path)

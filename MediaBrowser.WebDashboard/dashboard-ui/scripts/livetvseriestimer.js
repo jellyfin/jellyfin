@@ -1,4 +1,4 @@
-﻿define(['datetime', 'dom', 'seriesRecordingEditor', 'emby-itemscontainer'], function (datetime, dom, seriesRecordingEditor) {
+﻿define(['datetime', 'dom', 'seriesRecordingEditor', 'listView', 'emby-itemscontainer'], function (datetime, dom, seriesRecordingEditor, listView) {
 
     return function (view, params) {
 
@@ -7,6 +7,27 @@
             page.querySelector('.itemName').innerHTML = item.Name;
 
             Dashboard.hideLoadingMsg();
+        }
+
+        function getProgramScheduleHtml(items, options) {
+
+            options = options || {};
+
+            var html = '';
+            html += '<div is="emby-itemscontainer" class="itemsContainer vertical-list">';
+            html += listView.getListViewHtml({
+                items: items,
+                enableUserDataButtons: false,
+                image: false,
+                showProgramDateTime: true,
+                mediaInfo: false,
+                action: 'none',
+                moreButton: false
+            });
+
+            html += '</div>';
+
+            return html;
         }
 
         function renderSchedule(page) {
@@ -28,24 +49,13 @@
                     result.Items = [];
                 }
 
-                LiveTvHelpers.getProgramScheduleHtml(result.Items).then(function (html) {
+                var html = getProgramScheduleHtml(result.Items);
 
-                    var scheduleTab = page.querySelector('.scheduleTab');
-                    scheduleTab.innerHTML = html;
+                var scheduleTab = page.querySelector('.scheduleTab');
+                scheduleTab.innerHTML = html;
 
-                    ImageLoader.lazyChildren(scheduleTab);
-                });
+                ImageLoader.lazyChildren(scheduleTab);
             });
-
-            //var timers = result.Items;
-
-            //LiveTvHelpers.getTimersHtml(timers).then(function (html) {
-
-            //    var scheduleTab = page.querySelector('.scheduleTab');
-            //    scheduleTab.innerHTML = html;
-
-            //    ImageLoader.lazyChildren(scheduleTab);
-            //});
         }
 
         function reload() {

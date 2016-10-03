@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'dom', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser, dom) {
+    'use strict';
 
     function getOffsets(elems) {
 
@@ -46,7 +47,7 @@
 
         var pos = getOffsets([options.positionTo])[0];
 
-        if (options.positionY != 'top') {
+        if (options.positionY !== 'top') {
             pos.top += (pos.height || 0) / 2;
         }
 

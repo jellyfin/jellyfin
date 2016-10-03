@@ -111,6 +111,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         if (type == 'Timer') {
             return apiClient.getLiveTvTimer(id);
         }
+        if (type == 'SeriesTimer') {
+            return apiClient.getLiveTvSeriesTimer(id);
+        }
         return apiClient.getItem(apiClient.getCurrentUserId(), id);
     }
 

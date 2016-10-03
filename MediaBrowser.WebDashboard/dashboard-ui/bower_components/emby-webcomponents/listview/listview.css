@@ -15,10 +15,6 @@
     overflow: hidden;
 }
 
-.listItem-border {
-    border-bottom: 1px solid #2a2a2a;
-}
-
 .listItem-button {
     width: 100%;
 }
@@ -55,33 +51,16 @@
 
 .listItemBody {
     flex-grow: 1;
-    padding: 0 1em;
+    padding: .8em 1em;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-direction: column;
     vertical-align: middle;
     justify-content: center;
-    min-height: 3.44em;
 }
 
-.listItemBody-nogrow {
-    flex-grow: initial;
-    flex-shrink: 0;
-    width: 9em;
-    opacity: .7;
-}
-
-@media all and (max-width: 800px) {
-
-    .listItemBody-nogrow {
-        width: 4em;
-    }
-}
-
-.two-line {
-    min-height: 5.15em;
-    padding-top: 0;
-    padding-bottom: 0;
+.listItem-odd {
+    background: #171717;
 }
 
 .three-line {

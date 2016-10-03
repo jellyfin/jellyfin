@@ -1,4 +1,4 @@
-﻿define(['datetime', 'paper-icon-button-light', 'emby-button', 'listViewStyle'], function (datetime) {
+﻿define(['datetime', 'cardBuilder', 'paper-icon-button-light', 'emby-button'], function (datetime, cardBuilder) {
 
     var query = {
 
@@ -30,75 +30,88 @@
 
         var html = '';
 
-        if (timers.length) {
-            html += '<div class="paperList">';
-        }
+        html += cardBuilder.getCardsHtml({
+            items: timers,
+            shape: 'backdrop',
+            showTitle: true,
+            cardLayout: true,
+            cardFooterAside: 'none',
+            preferThumb: true,
+            coverImage: true,
+            overlayText: false,
+            showSeriesTimerTime: true,
+            showSeriesTimerChannel: true
+        });
 
-        for (var i = 0, length = timers.length; i < length; i++) {
+        //if (timers.length) {
+        //    html += '<div class="paperList">';
+        //}
 
-            var timer = timers[i];
+        //for (var i = 0, length = timers.length; i < length; i++) {
 
-            html += '<div class="listItem">';
+        //    var timer = timers[i];
 
-            html += '<i class="md-icon listItemIcon">live_tv</i>';
+        //    html += '<div class="listItem">';
 
-            html += '<div class="listItemBody three-line">';
-            html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
-            html += '<h3 class="listItemBodyText">';
-            html += timer.Name;
-            html += '</h3>';
+        //    html += '<i class="md-icon listItemIcon">live_tv</i>';
 
-            html += '<div class="secondary">';
-            if (timer.DayPattern) {
-                html += timer.DayPattern;
-            }
-            else {
-                var days = timer.Days || [];
+        //    html += '<div class="listItemBody three-line">';
+        //    html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
+        //    html += '<h3 class="listItemBodyText">';
+        //    html += timer.Name;
+        //    html += '</h3>';
 
-                html += days.join(', ');
-            }
+        //    html += '<div class="secondary">';
+        //    if (timer.DayPattern) {
+        //        html += timer.DayPattern;
+        //    }
+        //    else {
+        //        var days = timer.Days || [];
 
-            if (timer.RecordAnyTime) {
+        //        html += days.join(', ');
+        //    }
 
-                html += ' - ' + Globalize.translate('LabelAnytime');
-            } else {
-                html += ' - ' + datetime.getDisplayTime(timer.StartDate);
-            }
-            html += '</div>';
+        //    if (timer.RecordAnyTime) {
 
-            html += '<div class="secondary">';
-            if (timer.RecordAnyChannel) {
-                html += Globalize.translate('LabelAllChannels');
-            }
-            else if (timer.ChannelId) {
-                html += timer.ChannelName;
-            }
-            html += '</div>';
+        //        html += ' - ' + Globalize.translate('LabelAnytime');
+        //    } else {
+        //        html += ' - ' + datetime.getDisplayTime(timer.StartDate);
+        //    }
+        //    html += '</div>';
 
-            html += '</a>';
-            html += '</div>';
+        //    html += '<div class="secondary">';
+        //    if (timer.RecordAnyChannel) {
+        //        html += Globalize.translate('LabelAllChannels');
+        //    }
+        //    else if (timer.ChannelId) {
+        //        html += timer.ChannelName;
+        //    }
+        //    html += '</div>';
 
-            html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries autoSize"><i class="md-icon">cancel</i></button>';
+        //    html += '</a>';
+        //    html += '</div>';
 
-            html += '</div>';
-        }
+        //    html += '<button type="button" is="paper-icon-button-light" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries autoSize"><i class="md-icon">cancel</i></button>';
 
-        if (timers.length) {
-            html += '</div>';
-        }
+        //    html += '</div>';
+        //}
+
+        //if (timers.length) {
+        //    html += '</div>';
+        //}
 
         var elem = context.querySelector('#items');
         elem.innerHTML = html;
 
-        if (timers.length) {
-            elem.querySelector('.paperList').addEventListener('click', function (e) {
+        //if (timers.length) {
+        //    elem.querySelector('.paperList').addEventListener('click', function (e) {
 
-                var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
-                if (btnCancelSeries) {
-                    deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
-                }
-            });
-        }
+        //        var btnCancelSeries = parentWithClass(e.target, 'btnCancelSeries');
+        //        if (btnCancelSeries) {
+        //            deleteSeriesTimer(context, btnCancelSeries.getAttribute('data-seriestimerid'));
+        //        }
+        //    });
+        //}
 
         Dashboard.hideLoadingMsg();
     }
@@ -116,11 +129,11 @@
         return elem;
     }
 
-    function reload(context) {
+    function reload(context, promise) {
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getLiveTvSeriesTimers(query).then(function (result) {
+        promise.then(function (result) {
 
             renderTimers(context, result.Items);
         });
@@ -129,9 +142,13 @@
     return function (view, params, tabContent) {
 
         var self = this;
-        self.renderTab = function () {
+        var timersPromise;        self.preRender = function () {
+            timersPromise = ApiClient.getLiveTvSeriesTimers(query);
+        };
 
-            reload(tabContent);
+        self.renderTab = function () {
+
+            reload(tabContent, timersPromise);
         };
     };
 

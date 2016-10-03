@@ -131,7 +131,7 @@
         animateDialogOpen(dlg);
 
         if (isHistoryEnabled(dlg)) {
-            historyManager.pushState({ dialogId: hash }, "Dialog", hash);
+            historyManager.pushState({ dialogId: hash }, "Dialog", '#' + hash);
 
             window.addEventListener('popstate', onHashChange);
         } else {
