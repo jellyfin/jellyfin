@@ -106,6 +106,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
         public DateTime? OriginalAirDate { get; set; }
         public bool IsProgramSeries { get; set; }
+        public bool IsRepeat { get; set; }
         public string HomePageUrl { get; set; }
         public float? CommunityRating { get; set; }
         public string ShortOverview { get; set; }

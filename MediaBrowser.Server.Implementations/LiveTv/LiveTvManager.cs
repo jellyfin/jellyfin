@@ -1087,6 +1087,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     program.TimerId = _tvDtoService.GetInternalTimerId(serviceName, timer.Id)
                         .ToString("N");
 
+                    program.TimerStatus = timer.Status;
+
                     if (!string.IsNullOrEmpty(timer.SeriesTimerId))
                     {
                         program.SeriesTimerId = _tvDtoService.GetInternalSeriesTimerId(serviceName, timer.SeriesTimerId)
@@ -1872,6 +1874,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 else
                 {
                     timers = timers.Where(i => i.Item1.Status != RecordingStatus.InProgress);
+                }
+            }
+
+            if (query.IsScheduled.HasValue)
+            {
+                if (query.IsScheduled.Value)
+                {
+                    timers = timers.Where(i => i.Item1.Status == RecordingStatus.New || i.Item1.Status == RecordingStatus.Scheduled);
+                }
+                else
+                {
+                    timers = timers.Where(i => !(i.Item1.Status == RecordingStatus.New || i.Item1.Status == RecordingStatus.Scheduled));
                 }
             }
 

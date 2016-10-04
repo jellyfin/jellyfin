@@ -463,13 +463,15 @@ namespace MediaBrowser.Api.Playback
                 var level = NormalizeTranscodingLevel(state.OutputVideoCodec, state.VideoRequest.Level);
 
                 // h264_qsv and h264_nvenc expect levels to be expressed as a decimal. libx264 supports decimal and non-decimal format
+                // also needed for libx264 due to https://trac.ffmpeg.org/ticket/3307
                 if (string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(videoEncoder, "libx264", StringComparison.OrdinalIgnoreCase))
                 {
                     switch (level)
                     {
                         case "30":
-                            param += " -level 3";
+                            param += " -level 3.0";
                             break;
                         case "31":
                             param += " -level 3.1";
@@ -478,7 +480,7 @@ namespace MediaBrowser.Api.Playback
                             param += " -level 3.2";
                             break;
                         case "40":
-                            param += " -level 4";
+                            param += " -level 4.0";
                             break;
                         case "41":
                             param += " -level 4.1";
@@ -487,7 +489,7 @@ namespace MediaBrowser.Api.Playback
                             param += " -level 4.2";
                             break;
                         case "50":
-                            param += " -level 5";
+                            param += " -level 5.0";
                             break;
                         case "51":
                             param += " -level 5.1";
