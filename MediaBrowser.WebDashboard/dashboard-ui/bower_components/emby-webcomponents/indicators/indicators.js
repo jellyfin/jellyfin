@@ -98,18 +98,37 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
     function getTimerIndicator(item) {
 
-        if (item.SeriesTimerId || item.Type == 'SeriesTimer') {
-            if (item.TimerId || item.Type == 'Timer' || item.Type == 'SeriesTimer') {
-                return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
-            } else {
-                return '<i class="md-icon timerIndicator timerIndicator-inactive indicatorIcon">&#xE062;</i>';
-            }
+        var status;
+
+        if (item.Type == 'SeriesTimer') {
+            return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
         }
-        else if (item.TimerId || item.Type == 'Timer') {
-            return '<i class="md-icon timerIndicator indicatorIcon">&#xE061;</i>';
+        else if (item.TimerId) {
+
+            status = item.TimerStatus;
+        }
+        else if (item.Type == 'Timer') {
+
+            status = item.Status;
+        }
+        else {
+            return '';
         }
 
-        return '';
+        if (item.SeriesTimerId) {
+
+            if (status != 'Cancelled' && status != 'Aborted') {
+                return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
+            }
+
+            return '<i class="md-icon timerIndicator timerIndicator-inactive indicatorIcon">&#xE062;</i>';
+        }
+
+        if (!isActive) {
+            return '';
+        }
+
+        return '<i class="md-icon timerIndicator indicatorIcon">&#xE061;</i>';
     }
 
     function getSyncIndicator(item) {

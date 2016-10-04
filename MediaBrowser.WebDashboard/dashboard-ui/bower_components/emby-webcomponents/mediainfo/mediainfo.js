@@ -1,5 +1,40 @@
 define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', 'css!./mediainfo.css', 'programStyles'], function (datetime, globalize, embyRouter, itemHelper) {
 
+    function getTimerIndicator(item) {
+
+        var status;
+
+        if (item.Type == 'SeriesTimer') {
+            return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
+        }
+        else if (item.TimerId) {
+
+            status = item.TimerStatus;
+        }
+        else if (item.Type == 'Timer') {
+
+            status = item.Status;
+        }
+        else {
+            return '';
+        }
+
+        if (item.SeriesTimerId) {
+
+            if (status != 'Cancelled' && status != 'Aborted') {
+                return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
+            }
+
+            return '<i class="md-icon mediaInfoItem mediaInfoIconItem">&#xE062;</i>';
+        }
+
+        if (!isActive) {
+            return '';
+        }
+
+        return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE061;</i>';
+    }
+
     function getProgramInfoHtml(item, options) {
         var html = '';
 
@@ -41,20 +76,10 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         }
 
         if (options.timerIndicator !== false) {
-            if (item.SeriesTimerId || item.Type == 'SeriesTimer') {
-                if (item.TimerId || item.Type == 'Timer' || item.Type == 'SeriesTimer') {
-                    miscInfo.push({
-                        html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE062;</i>'
-                    });
-                } else {
-                    miscInfo.push({
-                        html: '<i class="md-icon mediaInfoItem mediaInfoIconItem">&#xE062;</i>'
-                    });
-                }
-            }
-            else if (item.TimerId) {
+            var timerHtml = getTimerIndicator(item);
+            if (timerHtml) {
                 miscInfo.push({
-                    html: '<i class="md-icon mediaInfoItem mediaInfoTimerIcon mediaInfoIconItem">&#xE061;</i>'
+                    html: timerHtml
                 });
             }
         }
@@ -206,20 +231,22 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.Type != "Series" && item.Type != "Episode" && item.Type != "Person" && item.MediaType != 'Photo' && item.Type != 'Program') {
+        if (options.year !== false) {
+            if (item.Type != "Series" && item.Type != "Episode" && item.Type != "Person" && item.MediaType != 'Photo' && item.Type != 'Program') {
 
-            if (item.ProductionYear) {
+                if (item.ProductionYear) {
 
-                miscInfo.push(item.ProductionYear);
-            }
-            else if (item.PremiereDate) {
-
-                try {
-                    text = datetime.parseISO8601Date(item.PremiereDate).getFullYear();
-                    miscInfo.push(text);
+                    miscInfo.push(item.ProductionYear);
                 }
-                catch (e) {
-                    console.log("Error parsing date: " + item.PremiereDate);
+                else if (item.PremiereDate) {
+
+                    try {
+                        text = datetime.parseISO8601Date(item.PremiereDate).getFullYear();
+                        miscInfo.push(text);
+                    }
+                    catch (e) {
+                        console.log("Error parsing date: " + item.PremiereDate);
+                    }
                 }
             }
         }

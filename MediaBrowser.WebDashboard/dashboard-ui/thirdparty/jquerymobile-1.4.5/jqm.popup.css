@@ -1,4 +1,8 @@
-﻿/* "page" containers - full-screen views, one should always be in view post-pageload */
+﻿.ui-popup-container {
+    z-index: 99999;
+}
+
+/* "page" containers - full-screen views, one should always be in view post-pageload */
 .ui-mobile [data-role=dialog] {
     top: 0;
     left: 0;

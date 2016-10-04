@@ -1,4 +1,5 @@
 ﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
+    'use strict';
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -40,14 +41,14 @@
 
     function onKeyDown(e) {
 
-        if (e.keyCode == 13) {
+        if (e.keyCode === 13) {
             animateButton.call(this, e);
         }
     }
 
     function onMouseDown(e) {
 
-        if (e.button == 0) {
+        if (e.button === 0) {
             animateButton.call(this, e);
         }
     }

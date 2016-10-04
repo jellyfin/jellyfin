@@ -558,7 +558,7 @@ define(['browser'], function (browser) {
             }]
         });
 
-        if (browser.chrome) {
+        if (!browser.edgeUwp && !browser.tizen && !browser.web0s) {
             profile.CodecProfiles[profile.CodecProfiles.length - 1].Conditions.push({
                 Condition: 'NotEquals',
                 Property: 'IsAVC',

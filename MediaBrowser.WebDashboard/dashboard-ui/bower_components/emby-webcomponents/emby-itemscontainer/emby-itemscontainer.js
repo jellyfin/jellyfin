@@ -241,7 +241,9 @@
         if (browser.touch) {
             this.addEventListener('contextmenu', disableEvent);
         } else {
-            this.addEventListener('contextmenu', onContextMenu);
+            if (this.getAttribute('data-contextmenu') !== 'false') {
+                this.addEventListener('contextmenu', onContextMenu);
+            }
         }
 
         if (layoutManager.desktop) {

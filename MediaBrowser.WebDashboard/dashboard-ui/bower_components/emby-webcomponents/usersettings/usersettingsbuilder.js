@@ -1,4 +1,5 @@
 define(['appSettings', 'events', 'browser'], function (appsettings, events, browser) {
+    'use strict';
 
     return function () {
 
@@ -50,7 +51,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
                 saveServerPreferences();
             }
 
-            if (currentValue != value) {
+            if (currentValue !== value) {
                 events.trigger(self, 'change', [name]);
             }
         };
@@ -79,7 +80,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             val = self.get('enableCinemaMode', false);
 
             if (val) {
-                return val != 'false';
+                return val !== 'false';
             }
 
             return true;
@@ -94,7 +95,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             val = self.get('enableThemeSongs', false);
 
             if (val) {
-                return val != 'false';
+                return val !== 'false';
             }
 
             return true;
@@ -109,7 +110,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             val = self.get('enableThemeVideos', false);
 
             if (val) {
-                return val != 'false';
+                return val !== 'false';
             }
 
             return !browser.slow;

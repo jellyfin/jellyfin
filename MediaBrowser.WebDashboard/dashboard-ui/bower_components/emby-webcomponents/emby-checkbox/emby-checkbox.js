@@ -1,11 +1,12 @@
 ﻿define(['css!./emby-checkbox', 'registerElement'], function () {
+    'use strict';
 
     var EmbyCheckboxPrototype = Object.create(HTMLInputElement.prototype);
 
     function onKeyDown(e) {
 
         // Don't submit form on enter
-        if (e.keyCode == 13) {
+        if (e.keyCode === 13) {
             e.preventDefault();
 
             this.checked = !this.checked;
@@ -20,7 +21,7 @@
 
     EmbyCheckboxPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycheckbox') == 'true') {
+        if (this.getAttribute('data-embycheckbox') === 'true') {
             return;
         }
 

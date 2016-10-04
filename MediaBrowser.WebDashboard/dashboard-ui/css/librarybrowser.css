@@ -8,13 +8,11 @@
 }
 
 .background-theme-b .backgroundContainer, .dialog.background-theme-b {
-    background-color: #121314;
-    /*background: radial-gradient(circle, #282828, #141414);*/
+    background-color: #161616;
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
         background-color: rgba(6, 6,6, .9);
-        /*background: radial-gradient(circle, #282828, #141414);*/
     }
 
 .ui-body-b {

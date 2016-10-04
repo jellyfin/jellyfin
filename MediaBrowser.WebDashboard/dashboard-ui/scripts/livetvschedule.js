@@ -59,7 +59,8 @@
             });
 
             upcomingRecordingsPromise = ApiClient.getLiveTvTimers({
-                IsActive: false
+                IsActive: false,
+                IsScheduled: true
             });
         };
 

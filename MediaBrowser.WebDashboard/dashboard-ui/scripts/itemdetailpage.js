@@ -1113,7 +1113,8 @@
                     showIndexNumber: true,
                     playFromHere: true,
                     action: 'playallfromhere',
-                    lazy: true
+                    image: false,
+                    artist: false
                 });
                 isList = true;
             }

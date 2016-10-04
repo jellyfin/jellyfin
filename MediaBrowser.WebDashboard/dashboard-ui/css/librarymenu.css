@@ -127,7 +127,6 @@
 }
 
 .ui-body-b .libraryViewNav {
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),1px 5px 1px rgba(0,0,0,.12);
     position: fixed;
     right: 0;
     left: 0;
@@ -156,7 +155,6 @@
 }
 
     .dashboardDocument .viewMenuBar {
-        background-color: #333;
         height: auto;
     }
 
@@ -166,10 +164,6 @@
 
     .dashboardDocument.withTallToolbar .primaryIcons {
         padding-bottom: 0;
-    }
-
-    .dashboardDocument .viewMenuBar #selectionBar {
-        height: 3px;
     }
 
 .viewMenuBarTabs {

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Vibrant.js - Extract prominent colors from an image.</title>
+    <script src="dist/Vibrant.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/0.3.0/css/material.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <script src="website.js"></script>
+
+    <!-- Open graph metadata -->
+    <meta property="og:title" content="Vibrant"/>
+    <meta property="og:url" content="https://jariz.github.io/vibrant.js/"/>
+    <meta property="og:image" content="https://jariz.github.io/vibrant.js/examples/og.png"/>
+    <meta property="og:site_name" content="Vibrant"/>
+    <meta property="og:description" content="Extract prominent colors from an image."/>
+    <meta property="og:type" content="website"/>
+</head>
+<body>
+    <div class="navbar navbar-white navbar-fixed">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="http://jariz.github.io/vibrant.js/">Vibrant.js</a>
+            </div>
+            <div class="navbar-collapse collapse navbar-responsive-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <a target="_blank" href="http://github.com/jariz/vibrant.js/" class="btn btn-success btn-raised navbar-btn">Get it</a>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Vibrant.js</h1>
+        <p>Extract prominent colors from an image.<br>Vibrant.js is a javascript port of the <a href="https://developer.android.com/reference/android/support/v7/graphics/Palette.html">awesome Palette class</a> in the Android support library.</p>
+
+        <h3 id="showcase">Showcase</h3>
+        <div class="row examples">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <img data-src="examples/3.jpg">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <img data-src="examples/4.jpg">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row examples">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <img data-src="examples/2.jpg">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <img data-src="examples/1.jpg">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3>API</h3>
+        <p>Use of Vibrant is pretty straight forward, but because code works better than explanation, here's an example:</p>
+
+        <!--<a class="btn btn-raised pull-right btn-success">Run</a>-->
+        <pre class="prettyprint">
+var img = document.createElement('img');
+img.setAttribute('src', 'examples/octocat.png')
+
+img.addEventListener('load', function() {
+    var vibrant = new Vibrant(img);
+    var swatches = vibrant.swatches()
+    for (var swatch in swatches)
+        if (swatches.hasOwnProperty(swatch) && swatches[swatch])
+            console.log(swatch, swatches[swatch].getHex())
+
+    /*
+     * Results into:
+     * Vibrant #7a4426
+     * Muted #7b9eae
+     * DarkVibrant #348945
+     * DarkMuted #141414
+     * LightVibrant #f3ccb4
+     */
+});
+        </pre>
+        <p>As you can see, Vibrant's first argument is an image. Make sure it's loaded before passing it off to Vibrant.<br>Vibrant has 3 constructor parameters:</p>
+        <pre class="prettyprint">
+new Vibrant(
+    img,
+    64, /* amount of colors in initial palette from which the swatches will be generated, defaults to 64 */
+    5 /* quality. 0 is highest, but takes way more processing. defaults to 5. */
+)
+        </pre>
+        <h4 style="margin-top:20px">The Swatch class</h4>
+        <p>Vibrant.swatch() returns a object with Swatch objects.
+            <br><strong>Note that some Swatches might be set to 'undefined' when Vibrant fails to find a matching color for the profile!</strong>
+            <br>A Swatch can be used to get the swatch's color (in RGB and hex), what text color works best with this color, and more.</p>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Function name</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>new Swatch()</td>
+                <td>Initialize a new swatch. First argument needs to be an RGB array, second argument must be the swatch' population.</td>
+            </tr>
+            <tr>
+                <td>.getRgb()</td>
+                <td>Get swatch color in a RGB array</td>
+            </tr>
+            <tr>
+                <td>.getHex()</td>
+                <td>Get swatch color in hex format (#EE22DD)</td>
+            </tr>
+            <tr>
+                <td>.getHsl()</td>
+                <td>Get swatch color in a HSL array</td>
+            </tr>
+            <tr>
+                <td>.getPopulation()</td>
+                <td>Get population (amount of times this color was used in the original image)</td>
+            </tr>
+            <tr>
+                <td>.getTitleTextColor()</td>
+                <td>Get a color (in hex) that works best with any 'title' text that is used over this swatch's color</td>
+            </tr>
+            <tr>
+                <td>.getBodyTextColor()</td>
+                <td>Get a color (in hex) that works best with any 'body' text that is used over this swatch's color</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="well-material-light-green footer">
+        <div class="container">
+            <div class="pull-left">Another one of <a href="http://jari.io/">Jari's</a> weird projects.</div>
+            <div class="pull-right">Like material design? <a href="http://tabbie.io">Check out Tabbie!</a></div>
+        </div>
+    </div>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?skin=desert"></script>
+</body>
+</html>

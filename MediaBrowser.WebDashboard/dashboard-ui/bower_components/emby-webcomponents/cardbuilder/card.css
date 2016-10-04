@@ -82,6 +82,10 @@
     transform: scale(1.16, 1.16);
 }
 
+.cardBox-mobile {
+    margin: 1px;
+}
+
 @media all and (min-width: 600px) {
 
     .cardBox-mobile {
@@ -211,9 +215,8 @@
 }
 
 .visualCardBox-cardFooter {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
 }
 
 .innerCardFooter {

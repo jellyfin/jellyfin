@@ -315,6 +315,8 @@ namespace MediaBrowser.Api.LiveTv
         public string SeriesTimerId { get; set; }
 
         public bool? IsActive { get; set; }
+
+        public bool? IsScheduled { get; set; }
     }
 
     [Route("/LiveTv/Programs", "GET,POST", Summary = "Gets available live tv epgs..")]
@@ -1095,7 +1097,8 @@ namespace MediaBrowser.Api.LiveTv
             {
                 ChannelId = request.ChannelId,
                 SeriesTimerId = request.SeriesTimerId,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                IsScheduled = request.IsScheduled
 
             }, CancellationToken.None).ConfigureAwait(false);
 

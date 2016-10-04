@@ -1,4 +1,5 @@
 define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, dom, layoutManager, scrollHelper, globalize, require) {
+    'use strict';
 
     function showDialog(options, template) {
 
@@ -50,7 +51,7 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
         for (i = 0, length = options.buttons.length; i < length; i++) {
 
             var item = options.buttons[i];
-            var autoFocus = i == 0 ? ' autofocus' : '';
+            var autoFocus = i === 0 ? ' autofocus' : '';
 
             var buttonClass = 'btnOption raised formDialogFooterItem formDialogFooterItem-autosize';
 
