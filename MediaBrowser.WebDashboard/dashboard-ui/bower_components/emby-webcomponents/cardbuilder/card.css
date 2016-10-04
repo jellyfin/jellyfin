@@ -82,6 +82,10 @@
     transform: scale(1.16, 1.16);
 }
 
+.cardBox-mobile {
+    margin: 1px;
+}
+
 @media all and (min-width: 600px) {
 
     .cardBox-mobile {

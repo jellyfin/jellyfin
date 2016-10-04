@@ -59,16 +59,18 @@
         });
     }
 
-    function toggleRecording(serverId, programId, timerId, seriesTimerId) {
+    function toggleRecording(serverId, programId, timerId, timerStatus, seriesTimerId) {
 
         var apiClient = connectionManager.getApiClient(serverId);
 
-        if (seriesTimerId && timerId) {
+        var hasTimer = timerId && timerStatus != 'Cancelled';
+
+        if (seriesTimerId && hasTimer) {
 
             // cancel 
             return cancelTimer(apiClient, timerId, true);
 
-        } else if (timerId && programId) {
+        } else if (hasTimer && programId) {
 
             // change to series recording, if possible
             // otherwise cancel individual recording

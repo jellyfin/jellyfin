@@ -629,6 +629,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             existingTimer.IsNews = updatedTimer.IsNews;
             existingTimer.IsMovie = updatedTimer.IsMovie;
             existingTimer.IsProgramSeries = updatedTimer.IsProgramSeries;
+            existingTimer.IsRepeat = updatedTimer.IsRepeat;
             existingTimer.IsSports = updatedTimer.IsSports;
             existingTimer.Name = updatedTimer.Name;
             existingTimer.OfficialRating = updatedTimer.OfficialRating;
@@ -665,8 +666,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var excludeStatues = new List<RecordingStatus>
             {
-                RecordingStatus.Completed,
-                RecordingStatus.Cancelled
+                RecordingStatus.Completed
             };
 
             var timers = _timerProvider.GetAll()
@@ -1591,6 +1591,29 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private bool ShouldCancelTimerForSeriesTimer(SeriesTimerInfo seriesTimer, TimerInfo timer)
         {
+            if (!seriesTimer.RecordAnyTime)
+            {
+                if (Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - timer.StartDate.TimeOfDay.Ticks) >= TimeSpan.FromMinutes(5).Ticks)
+                {
+                    return true;
+                }
+
+                if (!seriesTimer.Days.Contains(timer.StartDate.ToLocalTime().DayOfWeek))
+                {
+                    return true;
+                }
+            }
+
+            if (seriesTimer.RecordNewOnly && timer.IsRepeat)
+            {
+                return true;
+            }
+
+            if (!seriesTimer.RecordAnyChannel && !string.Equals(timer.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             return seriesTimer.SkipEpisodesInLibrary && IsProgramAlreadyInLibrary(timer);
         }
 
@@ -1734,23 +1757,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<ProgramInfo> GetProgramsForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms)
         {
-            if (!seriesTimer.RecordAnyTime)
-            {
-                allPrograms = allPrograms.Where(epg => Math.Abs(seriesTimer.StartDate.TimeOfDay.Ticks - epg.StartDate.TimeOfDay.Ticks) < TimeSpan.FromMinutes(5).Ticks);
-
-                allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.ToLocalTime().DayOfWeek));
-            }
-
-            if (seriesTimer.RecordNewOnly)
-            {
-                allPrograms = allPrograms.Where(epg => !epg.IsRepeat);
-            }
-
-            if (!seriesTimer.RecordAnyChannel)
-            {
-                allPrograms = allPrograms.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
-            }
-
             if (string.IsNullOrWhiteSpace(seriesTimer.SeriesId))
             {
                 _logger.Error("seriesTimer.SeriesId is null. Cannot find programs for series");

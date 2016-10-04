@@ -117,7 +117,7 @@
             parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#RecordSeries');
         }
 
-        if (program.TimerId) {
+        if (program.TimerId && program.TimerStatus != 'Cancelled') {
             parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
             parent.querySelector('.singleRecordingButton .recordingIcon').classList.add('recordingIcon-active');
             parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#DoNotRecord');
@@ -138,6 +138,7 @@
         return apiClient.getLiveTvProgram(options.programId, apiClient.getCurrentUserId()).then(function (program) {
 
             instance.TimerId = program.TimerId;
+            instance.TimerStatus = program.TimerStatus;
             instance.SeriesTimerId = program.SeriesTimerId;
 
             loadData(options.parent, program, apiClient);
@@ -161,7 +162,7 @@
 
         var options = this.options;
 
-        if (!this.TimerId) {
+        if (!this.TimerId || this.TimerStatus == 'Cancelled') {
             return;
         }
 
@@ -212,8 +213,10 @@
         var button = dom.parentWithTag(e.target, 'BUTTON');
         var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
+        var hasEnabledTimer = this.TimerId && this.TimerStatus != 'Cancelled';
+
         if (isChecked) {
-            if (!this.TimerId) {
+            if (!hasEnabledTimer) {
                 loading.show();
                 recordingHelper.createRecording(apiClient, options.programId, false).then(function () {
                     events.trigger(self, 'recordingchanged');
@@ -222,7 +225,7 @@
                 });
             }
         } else {
-            if (this.TimerId) {
+            if (hasEnabledTimer) {
                 loading.show();
                 recordingHelper.cancelTimer(apiClient, this.TimerId, true).then(function () {
                     events.trigger(self, 'recordingchanged');

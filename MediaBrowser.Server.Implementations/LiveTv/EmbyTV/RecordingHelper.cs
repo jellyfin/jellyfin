@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.LiveTv;
 using System;
 using System.Globalization;
+using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -12,24 +13,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);
         }
 
-        public static TimerInfo CreateTimer(ProgramInfo parent, SeriesTimerInfo series)
+        public static TimerInfo CreateTimer(ProgramInfo parent, SeriesTimerInfo seriesTimer)
         {
             var timer = new TimerInfo();
 
             timer.ChannelId = parent.ChannelId;
-            timer.Id = (series.Id + parent.Id).GetMD5().ToString("N");
+            timer.Id = (seriesTimer.Id + parent.Id).GetMD5().ToString("N");
             timer.StartDate = parent.StartDate;
             timer.EndDate = parent.EndDate;
             timer.ProgramId = parent.Id;
-            timer.PrePaddingSeconds = series.PrePaddingSeconds;
-            timer.PostPaddingSeconds = series.PostPaddingSeconds;
-            timer.IsPostPaddingRequired = series.IsPostPaddingRequired;
-            timer.IsPrePaddingRequired = series.IsPrePaddingRequired;
-            timer.KeepUntil = series.KeepUntil;
-            timer.Priority = series.Priority;
+            timer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+            timer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+            timer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+            timer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+            timer.KeepUntil = seriesTimer.KeepUntil;
+            timer.Priority = seriesTimer.Priority;
             timer.Name = parent.Name;
             timer.Overview = parent.Overview;
-            timer.SeriesTimerId = series.Id;
+            timer.SeriesTimerId = seriesTimer.Id;
 
             CopyProgramInfoToTimerInfo(parent, timer);
 
@@ -53,6 +54,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             timerInfo.CommunityRating = programInfo.CommunityRating;
             timerInfo.ShortOverview = programInfo.ShortOverview;
             timerInfo.OfficialRating = programInfo.OfficialRating;
+            timerInfo.IsRepeat = programInfo.IsRepeat;
         }
 
         public static string GetRecordingName(TimerInfo info)

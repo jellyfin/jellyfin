@@ -19,11 +19,6 @@
     width: 100%;
 }
 
-.listItem-nosidepadding {
-    padding-left: 0;
-    padding-right: 0;
-}
-
 .listItem-largeImage {
     padding: .5em !important;
 }
@@ -59,8 +54,12 @@
     justify-content: center;
 }
 
+.listItemBody-noleftpadding {
+    padding-left: 0;
+}
+
 .listItem-odd {
-    background: #171717;
+    background: #1c1c1c;
 }
 
 .three-line {
@@ -148,6 +147,7 @@
     /* Don't display if flex not supported */
     display: none;
     align-items: center;
+    margin-right: 1em;
 }
 
 .listGroupHeader {

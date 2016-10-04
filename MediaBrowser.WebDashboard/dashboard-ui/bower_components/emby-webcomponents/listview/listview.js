@@ -111,6 +111,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
         for (var i = 0, length = textlines.length; i < length; i++) {
 
+            var text = textlines[i];
+
+            if (!text) {
+                continue;
+            }
+
             if (i === 0) {
                 if (isLargeStyle) {
                     html += '<h2 class="listItemBodyText">';
@@ -143,7 +149,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
         var clickEntireItem = layoutManager.tv ? true : false;
         var outerTagName = clickEntireItem ? 'button' : 'div';
-        var enableSideMediaInfo = options.enableSideMediaInfo != null ? options.enableSideMediaInfo : clickEntireItem;
+        var enableSideMediaInfo = options.enableSideMediaInfo != null ? options.enableSideMediaInfo : true;
 
         var outerHtml = '';
 
@@ -178,7 +184,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            var cssClass = "listItem listItem-nosidepadding";
+            var cssClass = "listItem";
 
             if (options.highlight !== false) {
                 if (i % 2 == 1) {
@@ -285,29 +291,31 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     parentTitle += ' - ' + displayName;
                 }
 
-                textlines.push(parentTitle || '&nbsp;');
+                textlines.push(parentTitle || '');
             }
             else if (options.showParentTitle) {
-                textlines.push(parentTitle || '&nbsp;');
+                textlines.push(parentTitle || '');
             }
 
             if (displayName && !options.parentTitleWithTitle) {
                 textlines.push(displayName);
             }
 
-            if (item.ArtistItems && item.Type != 'MusicAlbum') {
-                textlines.push(item.ArtistItems.map(function (a) {
-                    return a.Name;
+            if (options.artist !== false) {
+                if (item.ArtistItems && item.Type != 'MusicAlbum') {
+                    textlines.push(item.ArtistItems.map(function (a) {
+                        return a.Name;
 
-                }).join(', ') || '&nbsp;');
-            }
+                    }).join(', '));
+                }
 
-            if (item.AlbumArtist && item.Type == 'MusicAlbum') {
-                textlines.push(item.AlbumArtist || '&nbsp;');
+                if (item.AlbumArtist && item.Type == 'MusicAlbum') {
+                    textlines.push(item.AlbumArtist);
+                }
             }
 
             if (item.Type == 'Game') {
-                textlines.push(item.GameSystem || '&nbsp;');
+                textlines.push(item.GameSystem);
             }
 
             if (item.Type == 'TvChannel') {
@@ -317,9 +325,13 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            cssClass = 'listItemBody two-line';
+            cssClass = 'listItemBody';
             if (!clickEntireItem) {
                 cssClass += ' itemAction';
+            }
+
+            if (options.image === false) {
+                cssClass += ' itemAction listItemBody-noleftpadding';
             }
 
             html += '<div class="' + cssClass + '">';
@@ -360,10 +372,19 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
+            if (!options.recordButton && (item.Type == 'Timer' || item.Type == 'Program')) {
+                html += indicators.getTimerIndicator(item).replace('indicatorIcon', 'indicatorIcon listItemAside');
+            }
+
             if (!clickEntireItem) {
 
                 if (options.moreButton !== false) {
                     html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="menu"><i class="md-icon">' + moreIcon + '</i></button>';
+                }
+
+                if (options.recordButton) {
+
+                    html += '<button is="paper-icon-button-light" class="listItemButton itemAction autoSize" data-action="programdialog">' + indicators.getTimerIndicator(item) + '</button>';
                 }
 
                 if (options.enableUserDataButtons !== false) {

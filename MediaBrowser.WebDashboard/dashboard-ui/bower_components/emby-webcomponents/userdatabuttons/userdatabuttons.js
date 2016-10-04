@@ -1,4 +1,5 @@
 define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize, dom) {
+    'use strict';
 
     var userDataMethods = {
         markPlayed: markPlayed,
@@ -9,13 +10,13 @@ define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'mat
 
     function getUserDataButtonHtml(method, itemId, buttonCssClass, iconCssClass, icon, tooltip, style) {
 
-        if (style == 'fab-mini') {
+        if (style === 'fab-mini') {
             style = 'fab';
             buttonCssClass = buttonCssClass ? (buttonCssClass + ' mini') : 'mini';
         }
 
-        var is = style == 'fab' ? 'emby-button' : 'paper-icon-button-light';
-        var className = style == 'fab' ? 'autoSize fab' : 'autoSize';
+        var is = style === 'fab' ? 'emby-button' : 'paper-icon-button-light';
+        var className = style === 'fab' ? 'autoSize fab' : 'autoSize';
 
         if (buttonCssClass) {
             className += ' ' + buttonCssClass;
@@ -29,9 +30,7 @@ define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'mat
 
         iconCssClass += 'md-icon';
 
-        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" data-method="' + method + '" class="' + className + '">\
-                <i class="'+ iconCssClass + '">' + icon + '</i>\
-            </button>';
+        return '<button title="' + tooltip + '" data-itemid="' + itemId + '" is="' + is + '" data-method="' + method + '" class="' + className + '"><i class="'+ iconCssClass + '">' + icon + '</i></button>';
     }
 
     function onContainerClick(e) {
@@ -50,7 +49,7 @@ define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'mat
 
         var html = getIconsHtml(options);
 
-        if (options.fillMode == 'insertAdjacent') {
+        if (options.fillMode === 'insertAdjacent') {
             options.element.insertAdjacentHTML(options.insertLocation || 'beforeend', html);
         } else {
             options.element.innerHTML = html;
@@ -98,8 +97,8 @@ define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'mat
         if (includePlayed !== false) {
             var tooltipPlayed = globalize.translate('sharedcomponents#MarkPlayed');
 
-            if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
-                if (item.Type != 'TvChannel') {
+            if (item.MediaType === 'Video' || item.Type === 'Series' || item.Type === 'Season' || item.Type === 'BoxSet' || item.Type === 'Playlist') {
+                if (item.Type !== 'TvChannel') {
                     if (userData.Played) {
                         html += getUserDataButtonHtml('markPlayed', itemId, btnCssClass + ' btnUserDataOn', iconCssClass, 'check', tooltipPlayed, style);
                     } else {

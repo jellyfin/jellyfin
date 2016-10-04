@@ -1,4 +1,83 @@
-﻿/* Tabs (e.g. advanced metadata page) */
+﻿.dashboardFooter {
+    margin-top: 50px;
+    text-align: center;
+}
+
+    .dashboardFooter a {
+        text-decoration: none;
+        font-weight: normal;
+        margin: 0 .7em;
+    }
+
+    .dashboardFooter .appLinks a {
+        margin: .25em;
+    }
+
+    .dashboardFooter .appLinks img {
+        height: 16px;
+    }
+
+/*
+ * Gradient Shadow
+ */
+
+/* All HTML5 progress enabled browsers */
+progress {
+    /* Turns off styling - not usually needed, but good to know. */
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    /* gets rid of default border in Firefox and Opera. */
+    border: solid #cccccc 2px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+    /* Polyfill */
+    progress[role]:after {
+        background-image: none; /* removes default background from polyfill */
+    }
+
+/*
+ * Background of the progress bar background
+ */
+
+/* Firefox and Polyfill */
+progress {
+    background: #cccccc !important; /* !important only needed in polyfill */
+}
+
+    /* Chrome */
+    progress::-webkit-progress-bar {
+        background: #cccccc;
+    }
+
+    /*
+ * Background of the progress bar value
+ */
+
+    /* Firefox */
+    progress::-moz-progress-bar {
+        border-radius: 5px;
+        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+    }
+
+    /* Chrome */
+    progress::-webkit-progress-value {
+        border-radius: 5px;
+        background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(43,194,83)), color-stop(1, rgb(84,240,84)) );
+        background-image: -webkit-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+    }
+
+    /* Polyfill */
+    progress[aria-valuenow]:before {
+        border-radius: 5px;
+        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+        background-image: -ms-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+        background-image: -o-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
+    }
+
+/* Tabs (e.g. advanced metadata page) */
 .localnav {
     margin-bottom: 30px !important;
 }
@@ -362,10 +441,10 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     display: inline-block;
 }
 
-.header .imageLink img {
-    height: 28px;
-    vertical-align: middle;
-}
+    .header .imageLink img {
+        height: 28px;
+        vertical-align: middle;
+    }
 
 .ulForm {
     margin: -1em !important;

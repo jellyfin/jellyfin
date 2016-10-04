@@ -8,6 +8,10 @@ define(['apphost'], function (appHost) {
 
         options = options || {};
 
+        if (item.Type == 'Timer') {
+            item = item.ProgramInfo || item;
+        }
+
         var name = (item.Type == 'Program' && item.IsSeries ? item.EpisodeTitle : item.Name) || '';
 
         if (item.Type == "TvChannel") {

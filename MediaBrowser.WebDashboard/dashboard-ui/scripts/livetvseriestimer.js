@@ -14,7 +14,7 @@
             options = options || {};
 
             var html = '';
-            html += '<div is="emby-itemscontainer" class="itemsContainer vertical-list">';
+            html += '<div is="emby-itemscontainer" class="itemsContainer vertical-list" data-contextmenu="false">';
             html += listView.getListViewHtml({
                 items: items,
                 enableUserDataButtons: false,
@@ -22,7 +22,8 @@
                 showProgramDateTime: true,
                 mediaInfo: false,
                 action: 'none',
-                moreButton: false
+                moreButton: false,
+                recordButton: false
             });
 
             html += '</div>';
@@ -32,7 +33,7 @@
 
         function renderSchedule(page) {
 
-            ApiClient.getLiveTvPrograms({
+            ApiClient.getLiveTvTimers({
                 UserId: ApiClient.getCurrentUserId(),
                 ImageTypeLimit: 1,
                 EnableImageTypes: "Primary,Backdrop,Thumb",
@@ -40,8 +41,7 @@
                 EnableTotalRecordCount: false,
                 EnableUserData: false,
                 SeriesTimerId: params.id,
-                Fields: "ChannelInfo",
-                limit: 100
+                Fields: "ChannelInfo"
 
             }).then(function (result) {
 

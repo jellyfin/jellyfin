@@ -29,6 +29,11 @@
 
         appSettings.cameraUploadServers(cameraUploadServers);
 
+        if (window.MainActivity) {
+            // TODO: isolate into android app
+            MainActivity.authorizeStorage();
+        }
+
         Dashboard.hideLoadingMsg();
     }
 
