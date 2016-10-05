@@ -116,17 +116,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return list;
         }
 
-        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            MediaSourceInfo stream;
+            MediaSourceInfo stream = null;
             const bool isAudio = false;
 
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
+            IDirectStreamProvider directStreamProvider = null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
-                stream = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                stream = info.Item1;
+                directStreamProvider = info.Item2;
             }
             else
             {
@@ -142,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 _logger.ErrorException("Error probing live tv stream", ex);
             }
 
-            return stream;
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(stream, directStreamProvider);
         }
 
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)

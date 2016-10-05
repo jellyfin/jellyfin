@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -79,6 +80,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
         Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken);
+
+        Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken);
         
         /// <summary>
         /// Pings the media source.
@@ -94,5 +97,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The live stream identifier.</param>
         /// <returns>Task.</returns>
         Task CloseLiveStream(string id);
+    }
+
+    public interface IDirectStreamProvider
+    {
+        Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
     }
 }

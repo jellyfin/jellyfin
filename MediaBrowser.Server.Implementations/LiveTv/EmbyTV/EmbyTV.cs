@@ -36,7 +36,7 @@ using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, ISupportsNewTimerIds, IDisposable
+    public class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
@@ -829,9 +829,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
+            var result = await GetChannelStreamWithDirectStreamProvider(channelId, streamId, cancellationToken).ConfigureAwait(false);
+
+            return result.Item1;
+        }
+
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, CancellationToken cancellationToken)
+        {
             var result = await GetChannelStreamInternal(channelId, streamId, cancellationToken).ConfigureAwait(false);
 
-            return result.Item2;
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(result.Item2, result.Item1 as IDirectStreamProvider);
         }
 
         private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, int consumerId, bool enableStreamSharing)
