@@ -1888,7 +1888,9 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                mediaSource = await MediaSourceManager.GetLiveStream(request.LiveStreamId, cancellationToken).ConfigureAwait(false);
+                var liveStreamInfo = await MediaSourceManager.GetLiveStreamWithDirectStreamProvider(request.LiveStreamId, cancellationToken).ConfigureAwait(false);
+                mediaSource = liveStreamInfo.Item1;
+                state.DirectStreamProvider = liveStreamInfo.Item2;
             }
 
             var videoRequest = request as VideoStreamRequest;

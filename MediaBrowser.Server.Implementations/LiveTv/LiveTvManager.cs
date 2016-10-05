@@ -227,10 +227,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<MediaSourceInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
-            return await GetLiveStream(id, null, false, cancellationToken).ConfigureAwait(false);
+            var info = await GetLiveStream(id, null, false, cancellationToken).ConfigureAwait(false);
+
+            return info.Item1;
         }
 
-        public async Task<MediaSourceInfo> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
         {
             return await GetLiveStream(id, mediaSourceId, true, cancellationToken).ConfigureAwait(false);
         }
@@ -280,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task<MediaSourceInfo> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
+        private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -294,6 +296,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MediaSourceInfo info;
                 bool isVideo;
                 ILiveTvService service;
+                IDirectStreamProvider directStreamProvider = null;
 
                 if (isChannel)
                 {
@@ -301,7 +304,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     isVideo = channel.ChannelType == ChannelType.TV;
                     service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-                    info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
+
+                    var supportsManagedStream = service as ISupportsDirectStreamProvider;
+                    if (supportsManagedStream != null)
+                    {
+                        var streamInfo = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
+                        info = streamInfo.Item1;
+                        directStreamProvider = streamInfo.Item2;
+                    }
+                    else
+                    {
+                        info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
+                    }
                     info.RequiresClosing = true;
 
                     if (info.RequiresClosing)
@@ -332,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
                 Normalize(info, service, isVideo);
 
-                return info;
+                return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);
             }
             catch (Exception ex)
             {
@@ -1881,11 +1895,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (query.IsScheduled.Value)
                 {
-                    timers = timers.Where(i => i.Item1.Status == RecordingStatus.New || i.Item1.Status == RecordingStatus.Scheduled);
+                    timers = timers.Where(i => i.Item1.Status == RecordingStatus.New);
                 }
                 else
                 {
-                    timers = timers.Where(i => !(i.Item1.Status == RecordingStatus.New || i.Item1.Status == RecordingStatus.Scheduled));
+                    timers = timers.Where(i => !(i.Item1.Status == RecordingStatus.New));
                 }
             }
 

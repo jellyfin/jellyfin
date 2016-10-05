@@ -84,9 +84,6 @@
     <Compile Include="Channels\ChannelMediaContentType.cs" />
     <Compile Include="Channels\ChannelMediaType.cs" />
     <Compile Include="Channels\ChannelQuery.cs" />
-    <Compile Include="Chapters\ChapterProviderInfo.cs" />
-    <Compile Include="Chapters\RemoteChapterInfo.cs" />
-    <Compile Include="Chapters\RemoteChapterResult.cs" />
     <Compile Include="Collections\CollectionCreationResult.cs" />
     <Compile Include="Configuration\AccessSchedule.cs" />
     <Compile Include="Configuration\ChannelOptions.cs" />

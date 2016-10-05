@@ -705,7 +705,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            outputHeaders["Content-Type"] = MimeTypes.GetMimeType(filePath);
+            outputHeaders["Content-Type"] = MediaBrowser.Model.Net.MimeTypes.GetMimeType(filePath);
 
             long startPosition = 0;
 
