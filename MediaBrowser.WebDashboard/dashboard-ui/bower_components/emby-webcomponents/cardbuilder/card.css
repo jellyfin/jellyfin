@@ -398,7 +398,7 @@ button::-moz-focus-inner {
 }
 
 .overflowBackdropCard-scalable {
-    width: 84%;
+    width: 80%;
     max-width: 400px;
 }
 

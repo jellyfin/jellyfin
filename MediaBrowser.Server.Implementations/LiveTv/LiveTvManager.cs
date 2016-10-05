@@ -558,11 +558,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
             var id = _tvDtoService.GetInternalProgramId(serviceName, info.Id);
 
-            var item = _libraryManager.GetItemById(id) as LiveTvProgram;
+            LiveTvProgram item = null;
+            allExistingPrograms.TryGetValue(id, out item);
+
             var isNew = false;
             var forceUpdate = false;
 
@@ -891,7 +893,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
             {
-                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery {}, cancellationToken).ConfigureAwait(false);
+                var seriesTimers = await GetSeriesTimersInternal(new SeriesTimerQuery { }, cancellationToken).ConfigureAwait(false);
                 var seriesTimer = seriesTimers.Items.FirstOrDefault(i => string.Equals(_tvDtoService.GetInternalSeriesTimerId(i.ServiceName, i.Id).ToString("N"), query.SeriesTimerId, StringComparison.OrdinalIgnoreCase));
                 if (seriesTimer != null)
                 {
@@ -1279,9 +1281,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     var channelPrograms = await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false);
 
+                    var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+
+                        IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                        ChannelIds = new string[] { currentChannel.Id.ToString("N") }
+
+                    }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
+
                     foreach (var program in channelPrograms)
                     {
-                        var programItem = await GetProgram(program, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
+                        var programItem = await GetProgram(program, existingPrograms, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
 
                         programs.Add(programItem.Id);
 

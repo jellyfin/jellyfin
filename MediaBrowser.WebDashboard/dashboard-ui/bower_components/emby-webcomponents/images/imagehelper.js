@@ -97,7 +97,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     }
 
     function getSettingsKey(url) {
-        return 'vibrant2-' + url.split('?')[0];
+        return 'vibrant3-' + url.split('?')[0];
     }
 
     function getCachedVibrantInfo(url) {
