@@ -90,6 +90,7 @@
                 showChannelName: true,
                 lazy: true,
                 cardLayout: true,
+                vibrant: true,
                 action: 'edit',
                 cardFooterAside: 'none',
                 preferThumb: true,

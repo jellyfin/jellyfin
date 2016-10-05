@@ -56,7 +56,8 @@ namespace Emby.Drawing.ImageMagick
                     "bmp",
                     "erf",
                     "raf",
-                    "rw2"
+                    "rw2",
+                    "nrw"
                 };
             }
         }

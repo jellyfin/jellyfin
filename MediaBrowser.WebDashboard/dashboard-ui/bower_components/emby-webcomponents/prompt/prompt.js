@@ -65,7 +65,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 're
             return false;
         });
 
-        dlg.querySelector('.submitText').innerHTML = options.submitText || globalize.translate('sharedcomponents#ButtonOk');
+        dlg.querySelector('.submitText').innerHTML = options.confirmText || globalize.translate('sharedcomponents#ButtonOk');
 
         dlg.style.minWidth = (Math.min(400, dom.getWindowSize().innerWidth - 50)) + 'px';
 

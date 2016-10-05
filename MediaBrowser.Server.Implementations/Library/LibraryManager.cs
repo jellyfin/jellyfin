@@ -43,6 +43,7 @@ using MediaBrowser.Server.Implementations.Library.Resolvers;
 using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
+using MediaBrowser.Common.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -1898,6 +1899,24 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 options.SaveLocalMetadata = ConfigurationManager.Configuration.SaveLocalMeta;
                 options.EnableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
+            }
+
+            if (options.SchemaVersion < 2)
+            {
+                var chapterOptions = ConfigurationManager.GetConfiguration<ChapterOptions>("chapters");
+                options.ExtractChapterImagesDuringLibraryScan = chapterOptions.ExtractDuringLibraryScan;
+
+                if (collectionFolder != null)
+                {
+                    if (string.Equals(collectionFolder.CollectionType, "movies", StringComparison.OrdinalIgnoreCase))
+                    {
+                        options.EnableChapterImageExtraction = chapterOptions.EnableMovieChapterImageExtraction;
+                    }
+                    else if (string.Equals(collectionFolder.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
+                    {
+                        options.EnableChapterImageExtraction = chapterOptions.EnableEpisodeChapterImageExtraction;
+                    }
+                }
             }
 
             return options;

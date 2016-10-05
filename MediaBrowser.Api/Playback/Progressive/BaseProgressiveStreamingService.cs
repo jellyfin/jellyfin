@@ -121,6 +121,25 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var responseHeaders = new Dictionary<string, string>();
 
+            if (request.Static && state.DirectStreamProvider != null)
+            {
+                AddDlnaHeaders(state, responseHeaders, true);
+
+                using (state)
+                {
+                    var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                    // TODO: Don't hardcode this
+                    outputHeaders["Content-Type"] = MediaBrowser.Model.Net.MimeTypes.GetMimeType("file.ts");
+
+                    var streamSource = new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
+                    {
+                        AllowEndOfFile = false
+                    };
+                    return ResultFactory.GetAsyncStreamWriter(streamSource);
+                }
+            }
+
             // Static remote stream
             if (request.Static && state.InputProtocol == MediaProtocol.Http)
             {
@@ -128,25 +147,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    if (state.MediaPath.IndexOf("/livestreamfiles/", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        var parts = state.MediaPath.Split('/');
-                        var filename = parts[parts.Length - 2] + Path.GetExtension(parts[parts.Length - 1]);
-                        var filePath = Path.Combine(ServerConfigurationManager.ApplicationPaths.TranscodingTempPath, filename);
-
-                        var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-                        outputHeaders["Content-Type"] = MimeTypes.GetMimeType(filePath);
-
-                        var streamSource = new ProgressiveFileCopier(FileSystem, filePath, outputHeaders, null, Logger, CancellationToken.None)
-                        {
-                            AllowEndOfFile = false
-                        };
-                        return ResultFactory.GetAsyncStreamWriter(streamSource);
-                    }
-
-                    return await GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest, cancellationTokenSource)
-                                .ConfigureAwait(false);
+                    return await GetStaticRemoteStreamResult(state, responseHeaders, isHeadRequest, cancellationTokenSource).ConfigureAwait(false);
                 }
             }
 

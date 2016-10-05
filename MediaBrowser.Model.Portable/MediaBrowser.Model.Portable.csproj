@@ -160,15 +160,6 @@
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
       <Link>Channels\ChannelQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\ChapterProviderInfo.cs">
-      <Link>Chapters\ChapterProviderInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterInfo.cs">
-      <Link>Chapters\RemoteChapterInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterResult.cs">
-      <Link>Chapters\RemoteChapterResult.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Collections\CollectionCreationResult.cs">
       <Link>Collections\CollectionCreationResult.cs</Link>
     </Compile>

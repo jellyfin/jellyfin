@@ -1,16 +1,24 @@
-define([], function () {
+define(['dom'], function (dom) {
 
     function loadImage(elem, url) {
 
         if (elem.tagName !== "IMG") {
 
             elem.style.backgroundImage = "url('" + url + "')";
-            return Promise.resolve(elem);
+            return Promise.resolve();
 
-        } else {
-            elem.setAttribute("src", url);
-            return Promise.resolve(elem);
         }
+        return loadImageIntoImg(elem, url);
+    }
+
+    function loadImageIntoImg(elem, url) {
+        return new Promise(function (resolve, reject) {
+
+            dom.addEventListener(elem, 'load', resolve, {
+                once: true
+            });
+            elem.setAttribute("src", url);
+        });
     }
 
     return {

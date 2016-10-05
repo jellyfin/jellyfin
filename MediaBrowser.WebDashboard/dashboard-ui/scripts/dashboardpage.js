@@ -32,7 +32,7 @@
                 label: Globalize.translate('LabelFriendlyServerName'),
                 description: Globalize.translate('LabelFriendlyServerNameHelp'),
                 value: page.querySelector('.serverNameHeader').innerHTML,
-                submitText: Globalize.translate('ButtonSave')
+                confirmText: Globalize.translate('ButtonSave')
 
             }).then(function (value) {
 

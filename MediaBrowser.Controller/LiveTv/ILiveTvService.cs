@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -244,5 +245,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken);
+    }
+
+    public interface ISupportsDirectStreamProvider
+    {
+        Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, CancellationToken cancellationToken);
     }
 }

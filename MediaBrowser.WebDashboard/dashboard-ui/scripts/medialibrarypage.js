@@ -75,7 +75,8 @@
         require(['prompt'], function (prompt) {
 
             prompt({
-                label: Globalize.translate('LabelNewName')
+                label: Globalize.translate('LabelNewName'),
+                confirmText: Globalize.translate('ButtonRename')
 
             }).then(function (newName) {
                 if (newName && newName != virtualFolder.Name) {

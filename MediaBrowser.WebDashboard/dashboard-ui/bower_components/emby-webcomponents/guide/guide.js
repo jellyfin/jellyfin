@@ -374,10 +374,6 @@
                 return '<i class="md-icon programIcon seriesTimerIcon seriesTimerIcon-inactive">&#xE062;</i>';
             }
 
-            if (!isActive) {
-                return '';
-            }
-
             return '<i class="md-icon programIcon">&#xE061;</i>';
         }
 

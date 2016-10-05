@@ -84,6 +84,7 @@
             coverImage: true,
             lazy: true,
             cardLayout: true,
+            vibrant: true,
             allowBottomPadding: !enableScrollX(),
             preferThumb: 'auto'
 

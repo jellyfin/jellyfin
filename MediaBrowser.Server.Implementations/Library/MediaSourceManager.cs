@@ -367,7 +367,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 var tuple = GetProvider(request.OpenToken);
                 var provider = tuple.Item1;
 
-                var mediaSource = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+                var mediaSourceTuple = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+
+                var mediaSource = mediaSourceTuple.Item1;
 
                 if (string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
                 {
@@ -381,8 +383,10 @@ namespace MediaBrowser.Server.Implementations.Library
                     Date = DateTime.UtcNow,
                     EnableCloseTimer = enableAutoClose,
                     Id = mediaSource.LiveStreamId,
-                    MediaSource = mediaSource
+                    MediaSource = mediaSource,
+                    DirectStreamProvider = mediaSourceTuple.Item2
                 };
+
                 _openStreams[mediaSource.LiveStreamId] = info;
 
                 if (enableAutoClose)
@@ -414,7 +418,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -430,7 +434,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 LiveStreamInfo info;
                 if (_openStreams.TryGetValue(id, out info))
                 {
-                    return info.MediaSource;
+                    return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info.DirectStreamProvider);
                 }
                 else
                 {
@@ -441,6 +445,12 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 _liveStreamSemaphore.Release();
             }
+        }
+
+        public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
+        {
+            var result = await GetLiveStreamWithDirectStreamProvider(id, cancellationToken).ConfigureAwait(false);
+            return result.Item1;
         }
 
         public async Task PingLiveStream(string id, CancellationToken cancellationToken)
@@ -630,6 +640,7 @@ namespace MediaBrowser.Server.Implementations.Library
             public string Id;
             public bool Closed;
             public MediaSourceInfo MediaSource;
+            public IDirectStreamProvider DirectStreamProvider;
         }
     }
 }

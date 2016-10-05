@@ -3,6 +3,7 @@ using MediaBrowser.Model.Dto;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -22,7 +23,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="openToken">The open token.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken);
+        Task<Tuple<MediaSourceInfo,IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.

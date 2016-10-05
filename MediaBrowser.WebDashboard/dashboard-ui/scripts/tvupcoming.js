@@ -119,9 +119,10 @@
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true,
-                overlayMoreButton: true,
                 showParentTitle: true,
-                allowBottomPadding: allowBottomPadding
+                allowBottomPadding: allowBottomPadding,
+                cardLayout: true,
+                vibrant: true
 
             });
             html += '</div>';

@@ -124,10 +124,6 @@ define(['css!./indicators.css', 'material-icons'], function () {
             return '<i class="md-icon timerIndicator timerIndicator-inactive indicatorIcon">&#xE062;</i>';
         }
 
-        if (!isActive) {
-            return '';
-        }
-
         return '<i class="md-icon timerIndicator indicatorIcon">&#xE061;</i>';
     }
 
