@@ -28,10 +28,6 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             return '<i class="md-icon mediaInfoItem mediaInfoIconItem">&#xE062;</i>';
         }
 
-        if (!isActive) {
-            return '';
-        }
-
         return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE061;</i>';
     }
 
