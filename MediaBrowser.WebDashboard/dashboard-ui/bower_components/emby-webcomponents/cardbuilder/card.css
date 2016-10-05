@@ -1,3 +1,8 @@
+button::-moz-focus-inner {
+    padding: 0;
+    border: 0
+}
+
 .card {
     border: 0;
     font-size: inherit !important;
@@ -194,6 +199,20 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
+}
+
+.cardImage-img {
+    max-height: 100%;
+    max-width: 100%;
+    align-self: flex-end;
+    position: static;
+}
+
+.coveredImage-img {
+    max-height: none;
+    max-width: none;
+    height: 100%;
+    width: 100%;
 }
 
 .coveredImage {

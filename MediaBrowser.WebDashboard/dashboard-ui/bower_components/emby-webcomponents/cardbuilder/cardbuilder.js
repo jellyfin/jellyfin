@@ -712,18 +712,19 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             for (i = 0, length = lines.length; i < length; i++) {
 
+                var currentCssClass = cssClass;
                 var text = lines[i];
 
-                if (i === 1 && isOuterFooter) {
-                    cssClass += ' cardText-secondary';
+                if (valid > 0 && isOuterFooter) {
+                    currentCssClass += ' cardText-secondary';
                 }
 
                 if (isOuterFooter && cardLayout) {
-                    cssClass += ' cardText-rightmargin';
+                    currentCssClass += ' cardText-rightmargin';
                 }
 
                 if (text) {
-                    html += "<div class='" + cssClass + "'>";
+                    html += "<div class='" + currentCssClass + "'>";
                     html += text;
                     html += "</div>";
                     valid++;
@@ -740,7 +741,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
-        function getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter) {
+        var uniqueFooterIndex = 0;
+        function getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter, cardFooterId, vibrantSwatch) {
 
             var html = '';
 
@@ -982,7 +984,18 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (html) {
-                html = '<div class="' + footerClass + '">' + html;
+
+                var style = '';
+
+                if (options.vibrant && vibrantSwatch) {
+                    var swatch = vibrantSwatch.split('|');
+                    if (swatch.length) {
+
+                        var index = 0;
+                        style = ' style="color:' + swatch[index + 1] + ';background-color:' + swatch[index] + ';"';
+                    }
+                }
+                html = '<div id="' + cardFooterId + '" class="' + footerClass + '"' + style + '>' + html;
 
                 //cardFooter
                 html += "</div>";
@@ -1139,7 +1152,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             var cardImageContainerClass = 'cardImageContainer';
-            if (options.coverImage || imgInfo.coverImage) {
+            var coveredImage = options.coverImage || imgInfo.coverImage;
+
+            if (coveredImage) {
                 cardImageContainerClass += ' coveredImage';
 
                 if (item.MediaType === 'Photo' || item.Type === 'PhotoAlbum' || item.Type === 'Folder' || item.ProgramInfo || item.Type === 'Program') {
@@ -1167,10 +1182,13 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             var footerOverlayed = false;
 
+            var cardFooterId = 'cardFooter' + uniqueFooterIndex;
+            uniqueFooterIndex++;
+
             if (overlayText) {
 
                 footerCssClass = progressHtml ? 'innerCardFooter fullInnerCardFooter' : 'innerCardFooter';
-                innerCardFooter += getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false);
+                innerCardFooter += getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, false, cardFooterId);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1186,10 +1204,12 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 innerCardFooter += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
             }
 
+            var vibrantSwatch = options.vibrant && imgUrl ? imageLoader.getCachedVibrantInfo(imgUrl) : null;
+
             var outerCardFooter = '';
             if (!overlayText && !footerOverlayed) {
                 footerCssClass = options.cardLayout ? 'cardFooter visualCardBox-cardFooter' : 'cardFooter transparent';
-                outerCardFooter = getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true);
+                outerCardFooter = getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerCssClass, progressHtml, true, cardFooterId, vibrantSwatch);
             }
 
             if (outerCardFooter && !options.cardLayout && options.allowBottomPadding !== false) {
@@ -1241,7 +1261,19 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     cardContentOpen = '<button type="button" class="clearButton cardContent itemAction" data-action="' + action + '">';
                     cardContentClose = '</button>';
                 }
-                cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+
+                if (options.vibrant && imgUrl && !vibrantSwatch) {
+                    cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + '">') : ('<div class="' + cardImageContainerClass + '">');
+
+                    var imgClass = 'cardImage cardImage-img lazy';
+                    if (coveredImage) {
+                        imgClass += ' coveredImage-img';
+                    }
+                    cardImageContainerOpen += '<img class="' + imgClass + '" data-vibrant="' + cardFooterId + '" data-swatch="db" data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
+
+                } else {
+                    cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+                }
 
                 var cardScalableClass = options.cardLayout ? 'cardScalable visualCardBox-cardScalable' : 'cardScalable';
                 cardImageContainerOpen = '<div class="' + cardBoxClass + '"><div class="' + cardScalableClass + '"><div class="cardPadder-' + options.shape + '"></div>' + cardContentOpen + cardImageContainerOpen;
@@ -1439,10 +1471,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     playedIndicator = document.createElement('div');
                     playedIndicator.classList.add('playedIndicator');
+                    playedIndicator.classList.add('indicator');
                     indicatorsElem = ensureIndicators(card, indicatorsElem);
                     indicatorsElem.appendChild(playedIndicator);
                 }
-                playedIndicator.innerHTML = '<i class="md-icon">check</i>';
+                playedIndicator.innerHTML = '<i class="md-icon indicatorIcon">check</i>';
             } else {
 
                 playedIndicator = card.querySelector('.playedIndicator');

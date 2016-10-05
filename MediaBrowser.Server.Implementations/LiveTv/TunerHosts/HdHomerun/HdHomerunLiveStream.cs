@@ -6,14 +6,16 @@ using CommonIO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class HdHomerunLiveStream : LiveStream
+    public class HdHomerunLiveStream : LiveStream, IDirectStreamProvider
     {
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
@@ -106,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                     {
                                         onStarted = () => ResolveWhenExists(openTaskCompletionSource, tempFilePath, cancellationToken);
                                     }
-                                    await DirectRecorder.CopyUntilCancelled(response.Content, outputStream, onStarted, cancellationToken).ConfigureAwait(false);
+                                    await CopyUntilCancelled(response.Content, outputStream, onStarted, cancellationToken).ConfigureAwait(false);
                                 }
                             }
                         }
@@ -135,6 +137,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 DeleteTempFile(tempFilePath);
 
             }).ConfigureAwait(false);
+        }
+
+        private List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>> _additionalStreams = new List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>>();
+
+        public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            _additionalStreams.Add(new Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>(stream, cancellationToken, taskCompletionSource));
+
+            return taskCompletionSource.Task;
+        }
+
+        private void PopAdditionalStream(Tuple<Stream, CancellationToken, TaskCompletionSource<bool>> stream, Exception exception)
+        {
+            if (_additionalStreams.Remove(stream))
+            {
+                stream.Item3.TrySetException(exception);
+            }
+        }
+
+        private const int BufferSize = 81920;
+        private async Task CopyUntilCancelled(Stream source, Stream target, Action onStarted, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var bytesRead = await CopyToAsyncInternal(source, target, BufferSize, onStarted, cancellationToken).ConfigureAwait(false);
+
+                onStarted = null;
+
+                //var position = fs.Position;
+                //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                if (bytesRead == 0)
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task<int> CopyToAsyncInternal(Stream source, Stream destination, Int32 bufferSize, Action onStarted, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            int totalBytesRead = 0;
+
+            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+
+                foreach (var additionalStream in _additionalStreams)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        await additionalStream.Item1.WriteAsync(buffer, 0, bytesRead, additionalStream.Item2).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        PopAdditionalStream(additionalStream, ex);
+                    }
+                }
+
+                totalBytesRead += bytesRead;
+
+                if (onStarted != null)
+                {
+                    onStarted();
+                }
+                onStarted = null;
+            }
+
+            return totalBytesRead;
         }
 
         private async void ResolveWhenExists(TaskCompletionSource<bool> taskCompletionSource, string file, CancellationToken cancellationToken)

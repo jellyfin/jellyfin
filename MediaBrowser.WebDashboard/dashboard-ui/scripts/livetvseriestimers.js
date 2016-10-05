@@ -35,6 +35,7 @@
             shape: 'backdrop',
             showTitle: true,
             cardLayout: true,
+            vibrant: true,
             cardFooterAside: 'none',
             preferThumb: true,
             coverImage: true,

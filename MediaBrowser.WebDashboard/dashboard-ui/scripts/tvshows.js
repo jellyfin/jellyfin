@@ -113,7 +113,8 @@
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
-                        showSeriesYear: true
+                        showSeriesYear: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -143,7 +144,8 @@
                         showTitle: true,
                         showYear: true,
                         lazy: true,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: true
                     });
                 }
                 else {

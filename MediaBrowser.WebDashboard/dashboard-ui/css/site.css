@@ -162,7 +162,7 @@ input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='r
 
 .ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
-    border-color: #ccc!important;
+    border-color: #ccc !important;
 }
 
 .ui-body-a .secondaryText {
@@ -418,6 +418,12 @@ div[data-role='page'] {
 
 .ui-body-a .visualCardBox-cardScalable, .ui-body-a .visualCardBox-cardFooter {
     background-color: #fff;
+}
+
+.ui-body-a .visualCardBox {
+    border: 0;
+    margin: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .ui-body-a .cardFooter .cardText + .cardText {

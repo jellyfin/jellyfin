@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -156,7 +157,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{StreamResponseInfo}.</returns>
-        Task<MediaSourceInfo> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken);
+        Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the program.

@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom', 'appSettings', 'vibrant'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom, appSettings) {
 
     var thresholdX;
     var thresholdY;
@@ -47,14 +47,103 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         if (!source) {
             source = elem.getAttribute('data-src');
         }
+
         if (source) {
-            if (enableFade && !layoutManager.tv && enableEffects !== false) {
-                imageFetcher.loadImage(elem, source).then(fadeIn);
-            } else {
-                imageFetcher.loadImage(elem, source);
-            }
-            elem.removeAttribute("data-src");
+
+            imageFetcher.loadImage(elem, source).then(function () {
+
+                fillVibrant(elem, source);
+
+                if (enableFade && !layoutManager.tv && enableEffects !== false) {
+                    fadeIn(elem);
+                }
+
+                elem.removeAttribute("data-src");
+            });
         }
+    }
+
+    function fillVibrant(img, url) {
+
+        if (img.tagName != 'IMG') {
+            return;
+        }
+
+        var vibrantElement = img.getAttribute('data-vibrant');
+        if (!vibrantElement) {
+            return;
+        }
+
+        vibrantElement = document.getElementById(vibrantElement);
+        if (!vibrantElement) {
+            return;
+        }
+
+        var swatch = getVibrantInfo(img, url).split('|');
+        if (swatch.length) {
+
+            var index = 0;
+            vibrantElement.style['backgroundColor'] = swatch[index];
+            vibrantElement.style['color'] = swatch[index + 1];
+        }
+        /*
+         * Results into:
+         * Vibrant #7a4426
+         * Muted #7b9eae
+         * DarkVibrant #348945
+         * DarkMuted #141414
+         * LightVibrant #f3ccb4
+         */
+    }
+
+    function getSettingsKey(url) {
+        return 'vibrant2-' + url.split('?')[0];
+    }
+
+    function getCachedVibrantInfo(url) {
+
+        return appSettings.get(getSettingsKey(url));
+    }
+
+    function getVibrantInfo(img, url) {
+
+        var value = getCachedVibrantInfo(url);
+        if (value) {
+            return value;
+        }
+
+        var vibrant = new Vibrant(img);
+        var swatches = vibrant.swatches();
+
+        value = '';
+        var swatch = swatches['DarkVibrant'];
+        if (swatch) {
+            value += swatch.getHex() + '|' + swatch.getBodyTextColor();
+        }
+        swatch = swatches['DarkMuted'];
+        if (swatch) {
+            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        } else {
+            value += '||';
+        }
+        swatch = swatches['Vibrant'];
+        if (swatch) {
+            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        } else {
+            value += '||';
+        }
+        swatch = swatches['Muted'];
+        if (swatch) {
+            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        } else {
+            value += '||';
+        }
+
+        if (value) {
+            appSettings.set(getSettingsKey(url), value);
+        }
+
+        return value;
     }
 
     function fadeIn(elem) {
@@ -268,6 +357,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     self.lazyImage = fillImage;
     self.lazyChildren = lazyChildren;
     self.getPrimaryImageAspectRatio = getPrimaryImageAspectRatio;
+    self.getCachedVibrantInfo = getCachedVibrantInfo;
 
     return self;
 });
