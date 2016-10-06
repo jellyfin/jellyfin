@@ -24,6 +24,7 @@ using CommonIO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -79,13 +80,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
         private readonly IHttpClient _httpClient;
         private readonly IZipClient _zipClient;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
         private readonly bool _hasExternalEncoder;
         private string _originalFFMpegPath;
         private string _originalFFProbePath;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IMemoryStreamProvider memoryStreamProvider)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -100,6 +102,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             MediaSourceManager = mediaSourceManager;
             _httpClient = httpClient;
             _zipClient = zipClient;
+            _memoryStreamProvider = memoryStreamProvider;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
             _originalFFProbePath = ffProbePath;
@@ -544,7 +547,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         }
                     }
 
-                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem, _memoryStreamProvider).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
                     var videoStream = mediaInfo.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 

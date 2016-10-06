@@ -72,7 +72,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var options = new HttpRequestOptions
             {
                 Url = string.Format("{0}/lineup.json", GetApiUrl(info, false)),
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
             };
             using (var stream = await _httpClient.Get(options))
             {
@@ -124,7 +125,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     CancellationToken = cancellationToken,
                     CacheLength = TimeSpan.FromDays(1),
                     CacheMode = CacheMode.Unconditional,
-                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
+                    TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
+                    BufferContent = false
                 }))
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);
@@ -165,7 +167,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 Url = string.Format("{0}/tuners.html", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken,
-                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds)
+                TimeoutMs = Convert.ToInt32(TimeSpan.FromSeconds(5).TotalMilliseconds),
+                BufferContent = false
             }))
             {
                 var tuners = new List<LiveTvTunerInfo>();
@@ -538,7 +541,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (var stream = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = string.Format("{0}/discover.json", GetApiUrl(info, false)),
-                    CancellationToken = CancellationToken.None
+                    CancellationToken = CancellationToken.None,
+                    BufferContent = false
                 }))
                 {
                     var response = JsonSerializer.DeserializeFromStream<DiscoverResponse>(stream);

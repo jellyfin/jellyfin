@@ -12,6 +12,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
@@ -139,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }).ConfigureAwait(false);
         }
 
-        private List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>> _additionalStreams = new List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>>();
+        private readonly List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>> _additionalStreams = new List<Tuple<Stream, CancellationToken, TaskCompletionSource<bool>>>();
 
         public Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
@@ -186,7 +187,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
 
-                foreach (var additionalStream in _additionalStreams)
+                var additionalStreams = _additionalStreams.ToList();
+                foreach (var additionalStream in additionalStreams)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -196,6 +198,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
                     catch (Exception ex)
                     {
+                        _logger.ErrorException("Error writing HDHR data to stream", ex);
+
                         PopAdditionalStream(additionalStream, ex);
                     }
                 }

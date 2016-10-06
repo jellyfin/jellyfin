@@ -1143,7 +1143,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
+                    overlayPlayButton: true
                 });
             }
             else if (item.Type == "GameSystem") {

@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'cardBuilder', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost) {
 
     function getNextUpPromise() {
 
@@ -25,6 +25,8 @@
 
             var html = '';
 
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: "backdrop",
@@ -35,8 +37,10 @@
                 preferThumb: true,
                 showDetailsMenu: true,
                 centerText: true,
-                overlayPlayButton: AppInfo.enableAppLayouts,
-                context: 'home-nextup'
+                overlayPlayButton: AppInfo.enableAppLayouts && !supportsImageAnalysis,
+                context: 'home-nextup',
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
             });
 
             var elem = page.querySelector('#nextUpItems');

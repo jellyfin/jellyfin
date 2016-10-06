@@ -7,6 +7,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Api.Dlna
 {
@@ -109,13 +111,15 @@ namespace MediaBrowser.Api.Dlna
         private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
         private const string XMLContentType = "text/xml; charset=UTF-8";
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar, IMemoryStreamProvider memoryStreamProvider)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
             _connectionManager = connectionManager;
             _mediaReceiverRegistrar = mediaReceiverRegistrar;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         public object Get(GetDescriptionXml request)
@@ -201,7 +205,7 @@ namespace MediaBrowser.Api.Dlna
         {
             using (var response = _dlnaManager.GetIcon(request.Filename))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = _memoryStreamProvider.CreateNew())
                 {
                     response.Stream.CopyTo(ms);
 

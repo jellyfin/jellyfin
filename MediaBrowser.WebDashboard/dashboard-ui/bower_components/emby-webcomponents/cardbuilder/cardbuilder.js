@@ -1273,7 +1273,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (coveredImage) {
                         imgClass += ' coveredImage-img';
                     }
-                    cardImageContainerOpen += '<img class="' + imgClass + '" data-vibrant="' + cardFooterId + '" data-swatch="db" data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
+                    cardImageContainerOpen += '<img crossOrigin="Anonymous" class="' + imgClass + '" data-vibrant="' + cardFooterId + '" data-swatch="db" data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
 
                 } else {
                     cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');

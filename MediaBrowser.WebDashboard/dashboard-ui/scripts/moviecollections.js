@@ -113,7 +113,8 @@
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
-                        showItemCounts: true
+                        showItemCounts: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -143,7 +144,8 @@
                         showTitle: true,
                         centerText: false,
                         cardLayout: true,
-                        showItemCounts: true
+                        showItemCounts: true,
+                        vibrant: true
                     });
                 }
                 else {

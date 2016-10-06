@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder, appHost) {
 
     return function (view, params, tabContent) {
 
@@ -92,6 +92,8 @@
                 var html;
                 var viewStyle = self.getCurrentViewStyle();
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+
                 if (viewStyle == "Thumb") {
 
                     html = cardBuilder.getCardsHtml({
@@ -114,7 +116,7 @@
                         cardLayout: true,
                         showTitle: true,
                         showYear: true,
-                        vibrant: true
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -145,7 +147,7 @@
                         showYear: true,
                         lazy: true,
                         cardLayout: true,
-                        vibrant: true
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else {

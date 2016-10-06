@@ -436,11 +436,11 @@ namespace MediaBrowser.Server.Startup.Common
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
             
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector());
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector(), MemoryStreamProvider);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector());
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector(), MemoryStreamProvider);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -465,17 +465,17 @@ namespace MediaBrowser.Server.Startup.Common
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, this);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer, MemoryStreamProvider);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, "Emby", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html");
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager);
+            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamProvider);
             RegisterSingleInstance(ServerManager);
 
             var innerProgress = new ActionableProgress<double>();
@@ -487,7 +487,7 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamProvider);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
@@ -573,7 +573,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager));
 
-            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager);
+            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider);
             RegisterSingleInstance(SubtitleEncoder);
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
@@ -665,7 +665,7 @@ namespace MediaBrowser.Server.Startup.Common
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 HttpClient,
-                ZipClient);
+                ZipClient, MemoryStreamProvider);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -679,7 +679,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             try
             {
-                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector());
+                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamProvider);
 
                 await repo.Initialize().ConfigureAwait(false);
 
@@ -1132,7 +1132,8 @@ namespace MediaBrowser.Server.Startup.Common
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = NativeApp.Environment.SystemArchitecture,
-                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel
+                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
+                PackageName = _startupOptions.GetOption("package")
             };
         }
 
@@ -1237,7 +1238,8 @@ namespace MediaBrowser.Server.Startup.Common
                     LogErrorResponseBody = false,
                     LogErrors = false,
                     LogRequest = false,
-                    TimeoutMs = 30000
+                    TimeoutMs = 30000,
+                    BufferContent = false
 
                 }, "POST").ConfigureAwait(false))
                 {
