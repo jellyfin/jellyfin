@@ -2469,7 +2469,8 @@ namespace MediaBrowser.Api.Playback
                 Url = "https://mb3admin.com/admin/service/transcoding/report",
                 CancellationToken = CancellationToken.None,
                 LogRequest = false,
-                LogErrors = false
+                LogErrors = false,
+                BufferContent = false
             };
             options.RequestContent = JsonSerializer.SerializeToString(dict);
             options.RequestContentType = "application/json";

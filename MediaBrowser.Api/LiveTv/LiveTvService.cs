@@ -811,7 +811,8 @@ namespace MediaBrowser.Api.LiveTv
 
             var response = await _httpClient.Get(new HttpRequestOptions
             {
-                Url = "https://json.schedulesdirect.org/20141201/available/countries"
+                Url = "https://json.schedulesdirect.org/20141201/available/countries",
+                BufferContent = false
 
             }).ConfigureAwait(false);
 

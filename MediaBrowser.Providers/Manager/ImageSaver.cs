@@ -38,6 +38,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver" /> class.
@@ -46,12 +47,13 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
-        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
+        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             _config = config;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         /// <summary>
@@ -124,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
             var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
 
             // If there are more than one output paths, the stream will need to be seekable
-            var memoryStream = new MemoryStream();
+            var memoryStream = _memoryStreamProvider.CreateNew();
             using (source)
             {
                 await source.CopyToAsync(memoryStream).ConfigureAwait(false);
