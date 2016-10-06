@@ -88,7 +88,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (var stream = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = string.Format("{0}/discover.json", url),
-                    CancellationToken = CancellationToken.None
+                    CancellationToken = CancellationToken.None,
+                    BufferContent = false
                 }))
                 {
                     var response = _json.DeserializeFromStream<HdHomerunHost.DiscoverResponse>(stream);

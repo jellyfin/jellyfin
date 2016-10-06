@@ -1,11 +1,12 @@
 ﻿define(['css!./emby-radio', 'registerElement'], function () {
+    'use strict';
 
     var EmbyRadioPrototype = Object.create(HTMLInputElement.prototype);
 
     function onKeyDown(e) {
 
         // Don't submit form on enter
-        if (e.keyCode == 13) {
+        if (e.keyCode === 13) {
             e.preventDefault();
 
             this.checked = true;
@@ -16,7 +17,7 @@
 
     EmbyRadioPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-radio') == 'true') {
+        if (this.getAttribute('data-radio') === 'true') {
             return;
         }
 

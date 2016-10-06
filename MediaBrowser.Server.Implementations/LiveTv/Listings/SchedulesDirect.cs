@@ -846,7 +846,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Url = ApiUrl + "/lineups/" + info.ListingsId,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                BufferContent = false
             };
 
             httpOptions.RequestHeaders["token"] = token;

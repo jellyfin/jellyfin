@@ -169,7 +169,8 @@ namespace MediaBrowser.Common.Implementations.Security
             var options = new HttpRequestOptions()
             {
                 Url = AppstoreRegUrl,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
             options.RequestHeaders.Add("X-Emby-Token", _appHost.SystemId);
             options.RequestContent = parameters;
@@ -269,7 +270,8 @@ namespace MediaBrowser.Common.Implementations.Security
                         Url = MBValidateUrl,
 
                         // Seeing block length errors
-                        EnableHttpCompression = false
+                        EnableHttpCompression = false,
+                        BufferContent = false
                     };
 
                     options.SetPostData(data);

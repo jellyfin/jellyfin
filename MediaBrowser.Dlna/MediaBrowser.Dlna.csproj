@@ -133,7 +133,6 @@
     <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
     <Compile Include="Ssdp\DeviceDiscovery.cs" />
-    <Compile Include="Ssdp\SsdpHelper.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
     <Compile Include="Common\StateVariable.cs" />
     <Compile Include="PlayTo\TransportCommands.cs" />

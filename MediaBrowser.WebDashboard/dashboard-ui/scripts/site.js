@@ -2800,7 +2800,6 @@ var AppInfo = {};
             initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
-
             setAppInfo();
             setDocumentClasses(browser);
 

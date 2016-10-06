@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom', 'appSettings', 'vibrant'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom, appSettings) {
+define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom', 'appSettings'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom, appSettings) {
 
     var thresholdX;
     var thresholdY;
@@ -74,6 +74,22 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
             return;
         }
 
+        if (window.Vibrant) {
+            fillVibrantOnLoaded(img, url, vibrantElement);
+            return;
+        }
+
+        require(['vibrant'], function () {
+            fillVibrantOnLoaded(img, url, vibrantElement);
+        });
+    }
+
+    function fillVibrantOnLoaded(img, url, vibrantElement) {
+
+        if (img.tagName != 'IMG') {
+            return;
+        }
+
         vibrantElement = document.getElementById(vibrantElement);
         if (!vibrantElement) {
             return;
@@ -97,7 +113,16 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     }
 
     function getSettingsKey(url) {
-        return 'vibrant3-' + url.split('?')[0];
+
+        var parts = url.split('://');
+        url = parts[parts.length - 1];
+
+        url = url.substring(url.indexOf('/') + 1);
+
+        url = url.split('?')[0];
+
+        console.log(url);
+        return 'vibrant3-' + url;
     }
 
     function getCachedVibrantInfo(url) {

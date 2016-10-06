@@ -1176,6 +1176,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                     .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
+                        // This should not be necessary but we're seeing some cases of it
+                        if (string.IsNullOrWhiteSpace(i))
+                        {
+                            return null;
+                        }
+
                         var artist = _libraryManager.GetArtist(i);
                         if (artist != null)
                         {

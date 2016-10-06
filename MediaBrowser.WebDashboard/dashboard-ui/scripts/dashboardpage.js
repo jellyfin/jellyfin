@@ -178,6 +178,12 @@
                     $('#btnManualUpdateContainer', page).show();
                 }
 
+                if (systemInfo.PackageName == 'synology') {
+                    $('#btnManualUpdateContainer').html(Globalize.translate('SynologyUpdateInstructions'));
+                } else {
+                    $('#btnManualUpdateContainer').html('<a href="http://emby.media/download" target="_blank">' + Globalize.translate('PleaseUpdateManually') + '</a>');
+                }
+
                 DashboardPage.renderPaths(page, systemInfo);
                 DashboardPage.renderHasPendingRestart(page, systemInfo.HasPendingRestart);
             });

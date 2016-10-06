@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, appHost) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -113,6 +113,8 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+
         var html = cardBuilder.getCardsHtml({
             items: items,
             preferThumb: !shape,
@@ -124,12 +126,14 @@
             coverImage: true,
             overlayText: false,
             lazy: true,
-            overlayMoreButton: overlayButton != 'play',
+            overlayMoreButton: overlayButton != 'play' && !supportsImageAnalysis,
             overlayPlayButton: overlayButton == 'play',
             allowBottomPadding: !enableScrollX(),
             showAirTime: true,
             showAirDateTime: true,
-            showChannelName: true
+            showChannelName: true,
+            vibrant: true,
+            cardLayout: supportsImageAnalysis
             //cardFooterAside: 'logo'
         });
 

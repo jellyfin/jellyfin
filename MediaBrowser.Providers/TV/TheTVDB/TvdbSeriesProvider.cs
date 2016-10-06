@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -38,6 +39,7 @@ namespace MediaBrowser.Providers.TV
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
         {
@@ -238,7 +240,7 @@ namespace MediaBrowser.Providers.TV
                 DeleteXmlFiles(seriesDataPath);
 
                 // Copy to memory stream because we need a seekable stream
-                using (var ms = new MemoryStream())
+                using (var ms = _memoryStreamProvider.CreateNew())
                 {
                     await zipStream.CopyToAsync(ms).ConfigureAwait(false);
 

@@ -266,7 +266,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             options.SetPostData(postData);
@@ -314,7 +315,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             options.SetPostData(postData);
@@ -464,7 +466,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             var accessToken = Guid.NewGuid().ToString("N");
@@ -599,7 +602,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             var accessToken = Guid.NewGuid().ToString("N");
@@ -652,7 +656,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             var postData = new Dictionary<string, string>
@@ -726,7 +731,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url
+                Url = url,
+                BufferContent = false
             };
 
             SetServerAccessToken(options);
@@ -790,7 +796,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
             };
 
             SetServerAccessToken(options);
@@ -1078,7 +1085,8 @@ namespace MediaBrowser.Server.Implementations.Connect
             var options = new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
 
             var postData = new Dictionary<string, string>
@@ -1126,7 +1134,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             var options = new HttpRequestOptions
             {
-                Url = GetConnectUrl("user/authenticate")
+                Url = GetConnectUrl("user/authenticate"),
+                BufferContent = false
             };
 
             options.SetPostData(new Dictionary<string, string>

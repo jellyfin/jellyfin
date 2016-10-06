@@ -558,7 +558,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private Tuple<LiveTvProgram, bool, bool> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
             var id = _tvDtoService.GetInternalProgramId(serviceName, info.Id);
 
@@ -671,13 +671,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
+            var isUpdated = false;
             if (isNew)
             {
-                await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
             else if (forceUpdate || string.IsNullOrWhiteSpace(info.Etag))
             {
-                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                isUpdated = true;
             }
             else
             {
@@ -687,13 +687,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 if (!string.Equals(etag, item.ExternalEtag, StringComparison.OrdinalIgnoreCase))
                 {
                     item.ExternalEtag = etag;
-                    await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                    isUpdated = true;
                 }
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions(_fileSystem));
-
-            return item;
+            return new Tuple<LiveTvProgram, bool, bool>(item, isNew, isUpdated);
         }
 
         private async Task<Guid> CreateRecordingRecord(RecordingInfo info, string serviceName, Guid parentFolderId, CancellationToken cancellationToken)
@@ -1289,9 +1287,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
 
+                    var newPrograms = new List<LiveTvProgram>();
+                    var updatedPrograms = new List<LiveTvProgram>();
+
                     foreach (var program in channelPrograms)
                     {
-                        var programItem = await GetProgram(program, existingPrograms, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false);
+                        var programTuple = GetProgram(program, existingPrograms, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken);
+                        var programItem = programTuple.Item1;
+
+                        if (programTuple.Item2)
+                        {
+                            newPrograms.Add(programItem);
+                        }
+                        else if (programTuple.Item3)
+                        {
+                            updatedPrograms.Add(programItem);
+                        }
 
                         programs.Add(programItem.Id);
 
@@ -1319,6 +1330,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         {
                             isKids = true;
                         }
+                    }
+
+                    if (newPrograms.Count > 0)
+                    {
+                        await _libraryManager.CreateItems(newPrograms, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    // TODO: Do this in bulk
+                    foreach (var program in updatedPrograms)
+                    {
+                        await _libraryManager.UpdateItem(program, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                    }
+
+                    foreach (var program in newPrograms)
+                    {
+                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
+                    }
+                    foreach (var program in updatedPrograms)
+                    {
+                        _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions(_fileSystem));
                     }
 
                     currentChannel.IsMovie = isMovie;
