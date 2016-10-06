@@ -139,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await AddMediaInfoInternal(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
