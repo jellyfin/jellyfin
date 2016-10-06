@@ -1,6 +1,10 @@
 button::-moz-focus-inner {
     padding: 0;
-    border: 0
+    border: 0;
+}
+
+button {
+    -webkit-border-fit: border !important;
 }
 
 .card {
@@ -188,6 +192,8 @@ button::-moz-focus-inner {
     bottom: 0;
     /* Needed in case this is a button */
     display: block;
+    /* Needed in safari */
+    height: 100%;
 }
 
 .cardImage {
@@ -204,6 +210,9 @@ button::-moz-focus-inner {
 .cardImage-img {
     max-height: 100%;
     max-width: 100%;
+    /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
+    min-height: 70%;
+    min-width: 70%;
     align-self: flex-end;
     position: static;
 }

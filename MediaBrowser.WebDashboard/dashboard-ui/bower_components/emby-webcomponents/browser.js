@@ -129,6 +129,8 @@
             ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||
             [];
 
+        var versionMatch = /(version)[ \/]([\w.]+)/.exec(ua);
+
         var platform_match = /(ipad)/.exec(ua) ||
             /(iphone)/.exec(ua) ||
             /(android)/.exec(ua) ||
@@ -153,10 +155,24 @@
             browser = 'opera';
         }
 
+        var version;
+        if (versionMatch && versionMatch.length > 2) {
+            version = versionMatch[2];
+        }
+
+        version = version || match[2] || "0";
+
+        var versionMajor = parseInt(version.split('.')[0]);
+
+        if (isNaN(versionMajor)) {
+            versionMajor = 0;
+        }
+
         return {
             browser: browser,
-            version: match[2] || "0",
-            platform: platform_match[0] || ""
+            version: version,
+            platform: platform_match[0] || "",
+            versionMajor: versionMajor
         };
     };
 
@@ -167,6 +183,7 @@
     if (matched.browser) {
         browser[matched.browser] = true;
         browser.version = matched.version;
+        browser.versionMajor = matched.versionMajor;
     }
 
     if (matched.platform) {

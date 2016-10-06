@@ -1,4 +1,5 @@
 ﻿define(['browser', 'css!./emby-slider', 'registerElement', 'emby-input'], function (browser) {
+    'use strict';
 
     var EmbySliderPrototype = Object.create(HTMLInputElement.prototype);
 
@@ -41,7 +42,7 @@
 
     EmbySliderPrototype.attachedCallback = function () {
 
-        if (this.getAttribute('data-embycheckbox') == 'true') {
+        if (this.getAttribute('data-embycheckbox') === 'true') {
             return;
         }
 

@@ -31,9 +31,8 @@
         }, false);
     }
 
-    function animateButton(e) {
+    function animateButton(e, btn) {
 
-        var btn = this;
         requestAnimationFrame(function () {
             animateButtonInternal(e, btn);
         });
@@ -42,15 +41,20 @@
     function onKeyDown(e) {
 
         if (e.keyCode === 13) {
-            animateButton.call(this, e);
+            animateButton(e, this);
         }
     }
 
     function onMouseDown(e) {
 
         if (e.button === 0) {
-            animateButton.call(this, e);
+            animateButton(e, this);
         }
+    }
+
+    function onClick(e) {
+
+        animateButton(e, this);
     }
 
     function enableAnimation() {
@@ -78,7 +82,7 @@
                 passive: true
             });
             if (browser.safari) {
-                dom.addEventListener(this, 'click', animateButton, {
+                dom.addEventListener(this, 'click', onClick, {
                     passive: true
                 });
             } else {

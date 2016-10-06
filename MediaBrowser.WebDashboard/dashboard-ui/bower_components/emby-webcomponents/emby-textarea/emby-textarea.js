@@ -1,4 +1,5 @@
 ﻿define(['layoutManager', 'browser', 'css!./emby-textarea', 'registerElement'], function (layoutManager, browser) {
+    'use strict';
 
     function autoGrow(textarea, maxLines) {
         var self = this;
@@ -84,7 +85,7 @@
                     bubbles: false,
                     cancelable: false
                 }));
-            }
+            };
 
             Object.defineProperty(HTMLTextAreaElement.prototype, 'value', descriptor);
             supportsFloatingLabel = true;
@@ -113,7 +114,7 @@
         label.innerHTML = this.getAttribute('label') || '';
         label.classList.add('textareaLabel');
 
-        if (!supportsFloatingLabel || this.type == 'date') {
+        if (!supportsFloatingLabel || this.type === 'date') {
             label.classList.add('nofloat');
         }
 

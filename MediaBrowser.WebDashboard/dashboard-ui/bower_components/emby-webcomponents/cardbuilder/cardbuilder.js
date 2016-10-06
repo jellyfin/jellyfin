@@ -270,6 +270,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 isVertical = true;
             }
 
+            if (options.vibrant && !appHost.supports('imageanalysis')) {
+                options.vibrant = false;
+            }
+
             setCardData(items, options);
 
             if (options.indexBy === 'Genres') {
