@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using UniversalDetector;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
@@ -78,7 +79,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         /// <value>The query string.</value>
         public NameValueCollection QueryString { get; set; }
-        
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
@@ -87,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             if (socket == null)
             {
@@ -113,6 +115,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _socket.OnReceive = OnReceiveInternal;
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
+            _memoryStreamProvider = memoryStreamProvider;
 
             socket.Closed += socket_Closed;
         }
@@ -149,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             try
             {
-                using (var ms = new MemoryStream(bytes))
+                using (var ms = _memoryStreamProvider.CreateNew(bytes))
                 {
                     var detector = new CharsetDetector();
                     detector.Feed(ms);

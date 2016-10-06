@@ -251,4 +251,9 @@ namespace MediaBrowser.Controller.LiveTv
     {
         Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, CancellationToken cancellationToken);
     }
+
+    public interface ISupportsUpdatingDefaults
+    {
+        Task UpdateTimerDefaults(SeriesTimerInfo info, CancellationToken cancellationToken);
+    }
 }

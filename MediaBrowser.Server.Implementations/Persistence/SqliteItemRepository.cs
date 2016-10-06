@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Playlists;
@@ -95,11 +96,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedTagsCommand;
 
         public const int LatestSchemaVersion = 109;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamProvider memoryStreamProvider)
             : base(logManager, connector)
         {
             if (config == null)
@@ -113,6 +115,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _config = config;
             _jsonSerializer = jsonSerializer;
+            _memoryStreamProvider = memoryStreamProvider;
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
@@ -724,7 +727,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Id;
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
-                    _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item);
+                    _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item, _memoryStreamProvider);
 
                     _saveItemCommand.GetParameter(index++).Value = item.Path;
 
@@ -1075,7 +1078,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             BaseItem item = null;
 
-            using (var stream = reader.GetMemoryStream(1))
+            using (var stream = reader.GetMemoryStream(1, _memoryStreamProvider))
             {
                 try
                 {

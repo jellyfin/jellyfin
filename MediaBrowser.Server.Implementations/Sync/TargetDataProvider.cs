@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using Interfaces.IO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -28,8 +29,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly IApplicationPaths _appPaths;
         private readonly IServerApplicationHost _appHost;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths)
+        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths, IMemoryStreamProvider memoryStreamProvider)
         {
             _logger = logger;
             _json = json;
@@ -37,6 +39,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _target = target;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
+            _memoryStreamProvider = memoryStreamProvider;
             _appHost = appHost;
         }
 
@@ -90,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task SaveData(List<LocalItem> items, CancellationToken cancellationToken)
         {
-            using (var stream = new MemoryStream())
+            using (var stream = _memoryStreamProvider.CreateNew())
             {
                 _json.SerializeToStream(items, stream);
 

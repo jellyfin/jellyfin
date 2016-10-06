@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Net
 
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Logger.Info("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
+            Logger.Debug("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var timer = SendOnTimer ?
                 new Timer(TimerCallback, message.Connection, Timeout.Infinite, Timeout.Infinite) :
@@ -267,7 +267,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="connection">The connection.</param>
         private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> connection)
         {
-            Logger.Info("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
+            Logger.Debug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 
             var timer = connection.Item3;
 

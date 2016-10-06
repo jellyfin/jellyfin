@@ -127,7 +127,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 // Seeing block length errors with our server
                 EnableHttpCompression = false,
-                PreferIpv4 = preferIpv4
+                PreferIpv4 = preferIpv4,
+                BufferContent = false
 
             }).ConfigureAwait(false))
             {

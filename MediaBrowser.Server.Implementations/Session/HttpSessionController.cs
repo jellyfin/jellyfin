@@ -75,7 +75,8 @@ namespace MediaBrowser.Server.Implementations.Session
             await _httpClient.Post(new HttpRequestOptions
             {
                 Url = url,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
 
             }).ConfigureAwait(false);
         }

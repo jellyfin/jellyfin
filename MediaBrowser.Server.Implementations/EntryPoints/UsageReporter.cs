@@ -64,7 +64,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 EnableHttpCompression = false,
 
                 LogRequest = false,
-                LogErrors = logErrors
+                LogErrors = logErrors,
+                BufferContent = false
             };
 
             options.SetPostData(data);
@@ -114,7 +115,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 EnableHttpCompression = false,
 
                 LogRequest = false,
-                LogErrors = logErrors
+                LogErrors = logErrors,
+                BufferContent = false
             };
 
             options.SetPostData(data);
