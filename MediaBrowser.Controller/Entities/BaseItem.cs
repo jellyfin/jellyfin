@@ -116,6 +116,22 @@ namespace MediaBrowser.Controller.Entities
         public bool IsInMixedFolder { get; set; }
 
         [IgnoreDataMember]
+        protected virtual bool SupportsIsInMixedFolderDetection
+        {
+            get { return false; }
+        }
+
+        public bool DetectIsInMixedFolder()
+        {
+            if (SupportsIsInMixedFolderDetection)
+            {
+                    
+            }
+
+            return IsInMixedFolder;
+        }
+
+        [IgnoreDataMember]
         public virtual bool SupportsRemoteImageDownloading
         {
             get
@@ -1116,7 +1132,7 @@ namespace MediaBrowser.Controller.Entities
                 var hasThemeMedia = this as IHasThemeMedia;
                 if (hasThemeMedia != null)
                 {
-                    if (!IsInMixedFolder)
+                    if (!DetectIsInMixedFolder())
                     {
                         themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -1266,7 +1282,15 @@ namespace MediaBrowser.Controller.Entities
         {
             var current = this;
 
-            return current.IsInMixedFolder == newItem.IsInMixedFolder;
+            if (!SupportsIsInMixedFolderDetection)
+            {
+                if (current.IsInMixedFolder != newItem.IsInMixedFolder)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void AfterMetadataRefresh()

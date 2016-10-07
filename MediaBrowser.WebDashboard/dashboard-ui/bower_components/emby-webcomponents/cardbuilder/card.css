@@ -273,6 +273,7 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
     color: inherit;
+    text-align: left;
 }
 
 .singleCardText {

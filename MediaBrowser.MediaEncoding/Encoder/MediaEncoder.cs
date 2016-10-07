@@ -426,8 +426,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
+            var probeSizeArgument = GetProbeSizeArgument(inputFiles, request.Protocol);
+
             return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
-                GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
+                probeSizeArgument, request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
         }
 
         /// <summary>

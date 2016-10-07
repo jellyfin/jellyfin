@@ -41,7 +41,7 @@ namespace MediaBrowser.Providers.TV
         private readonly ILibraryManager _libraryManager;
         private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IMemoryStreamProvider memoryStreamProvider)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
@@ -49,6 +49,7 @@ namespace MediaBrowser.Providers.TV
             _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
+            _memoryStreamProvider = memoryStreamProvider;
             Current = this;
         }
 

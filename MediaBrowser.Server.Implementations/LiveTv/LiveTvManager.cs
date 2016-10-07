@@ -223,8 +223,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result.Items.FirstOrDefault();
         }
 
-        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
-
         public async Task<MediaSourceInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
             var info = await GetLiveStream(id, null, false, cancellationToken).ConfigureAwait(false);
@@ -284,80 +282,65 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
         {
-            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
             if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
             {
                 mediaSourceId = null;
             }
 
-            try
+            MediaSourceInfo info;
+            bool isVideo;
+            ILiveTvService service;
+            IDirectStreamProvider directStreamProvider = null;
+
+            if (isChannel)
             {
-                MediaSourceInfo info;
-                bool isVideo;
-                ILiveTvService service;
-                IDirectStreamProvider directStreamProvider = null;
+                var channel = GetInternalChannel(id);
+                isVideo = channel.ChannelType == ChannelType.TV;
+                service = GetService(channel);
+                _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
 
-                if (isChannel)
+                var supportsManagedStream = service as ISupportsDirectStreamProvider;
+                if (supportsManagedStream != null)
                 {
-                    var channel = GetInternalChannel(id);
-                    isVideo = channel.ChannelType == ChannelType.TV;
-                    service = GetService(channel);
-                    _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-
-                    var supportsManagedStream = service as ISupportsDirectStreamProvider;
-                    if (supportsManagedStream != null)
-                    {
-                        var streamInfo = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
-                        info = streamInfo.Item1;
-                        directStreamProvider = streamInfo.Item2;
-                    }
-                    else
-                    {
-                        info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
-                    }
-                    info.RequiresClosing = true;
-
-                    if (info.RequiresClosing)
-                    {
-                        var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
-
-                        info.LiveStreamId = idPrefix + info.Id;
-                    }
+                    var streamInfo = await supportsManagedStream.GetChannelStreamWithDirectStreamProvider(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
+                    info = streamInfo.Item1;
+                    directStreamProvider = streamInfo.Item2;
                 }
                 else
                 {
-                    var recording = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
-                    isVideo = !string.Equals(recording.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
-                    service = GetService(recording);
-
-                    _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.ExternalId);
-                    info = await service.GetRecordingStream(recording.ExternalId, null, cancellationToken).ConfigureAwait(false);
-                    info.RequiresClosing = true;
-
-                    if (info.RequiresClosing)
-                    {
-                        var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
-
-                        info.LiveStreamId = idPrefix + info.Id;
-                    }
+                    info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                 }
+                info.RequiresClosing = true;
 
-                _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
-                Normalize(info, service, isVideo);
+                if (info.RequiresClosing)
+                {
+                    var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
 
-                return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);
+                    info.LiveStreamId = idPrefix + info.Id;
+                }
             }
-            catch (Exception ex)
+            else
             {
-                _logger.ErrorException("Error getting channel stream", ex);
+                var recording = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
+                isVideo = !string.Equals(recording.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
+                service = GetService(recording);
 
-                throw;
+                _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.ExternalId);
+                info = await service.GetRecordingStream(recording.ExternalId, null, cancellationToken).ConfigureAwait(false);
+                info.RequiresClosing = true;
+
+                if (info.RequiresClosing)
+                {
+                    var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
+
+                    info.LiveStreamId = idPrefix + info.Id;
+                }
             }
-            finally
-            {
-                _liveStreamSemaphore.Release();
-            }
+
+            _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
+            Normalize(info, service, isVideo);
+
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info, directStreamProvider);
         }
 
         private void Normalize(MediaSourceInfo mediaSource, ILiveTvService service, bool isVideo)
@@ -2560,35 +2543,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task CloseLiveStream(string id)
         {
-            await _liveStreamSemaphore.WaitAsync().ConfigureAwait(false);
+            var parts = id.Split(new[] { '_' }, 2);
 
-            try
+            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), parts[0], StringComparison.OrdinalIgnoreCase));
+
+            if (service == null)
             {
-                var parts = id.Split(new[] { '_' }, 2);
-
-                var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), parts[0], StringComparison.OrdinalIgnoreCase));
-
-                if (service == null)
-                {
-                    throw new ArgumentException("Service not found.");
-                }
-
-                id = parts[1];
-
-                _logger.Info("Closing live stream from {0}, stream Id: {1}", service.Name, id);
-
-                await service.CloseLiveStream(id, CancellationToken.None).ConfigureAwait(false);
+                throw new ArgumentException("Service not found.");
             }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error closing live stream", ex);
 
-                throw;
-            }
-            finally
-            {
-                _liveStreamSemaphore.Release();
-            }
+            id = parts[1];
+
+            _logger.Info("Closing live stream from {0}, stream Id: {1}", service.Name, id);
+
+            await service.CloseLiveStream(id, CancellationToken.None).ConfigureAwait(false);
         }
 
         public GuideInfo GetGuideInfo()

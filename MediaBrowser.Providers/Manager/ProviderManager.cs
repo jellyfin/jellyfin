@@ -58,7 +58,6 @@ namespace MediaBrowser.Providers.Manager
         private IMetadataService[] _metadataServices = { };
         private IMetadataProvider[] _metadataProviders = { };
         private IEnumerable<IMetadataSaver> _savers;
-        private IImageSaver[] _imageSavers;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
 
@@ -91,21 +90,14 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        /// <param name="imageProviders">The image providers.</param>
-        /// <param name="metadataServices">The metadata services.</param>
-        /// <param name="metadataProviders">The metadata providers.</param>
-        /// <param name="metadataSavers">The metadata savers.</param>
-        /// <param name="imageSavers">The image savers.</param>
-        /// <param name="externalIds">The external ids.</param>
         public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices,
                              IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
-                             IEnumerable<IImageSaver> imageSavers, IEnumerable<IExternalId> externalIds)
+                             IEnumerable<IExternalId> externalIds)
         {
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _imageSavers = imageSavers.ToArray();
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.Where(i =>

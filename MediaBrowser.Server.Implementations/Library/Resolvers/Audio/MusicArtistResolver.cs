@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Controller.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -18,12 +19,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
 
-        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager)
+        public MusicArtistResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager, IServerConfigurationManager config)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
+            _config = config;
         }
 
         /// <summary>
@@ -63,6 +66,19 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             // If there's a collection type and it's not music, it can't be a series
             if (!isMusicMediaFolder)
+            {
+                return null;
+            }
+
+            if (args.IsDirectory)
+            {
+                if (args.ContainsFileSystemEntryByName("artist.nfo"))
+                {
+                    return new MusicArtist();
+                }
+            }
+
+            if (_config.Configuration.EnableSimpleArtistDetection)
             {
                 return null;
             }

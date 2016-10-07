@@ -25,6 +25,72 @@
         });
     }
 
+    function cancelTimerWithConfirmation(timerId, serverId) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['confirm'], function (confirm) {
+
+                confirm({
+
+                    text: globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'),
+                    primary: 'cancel',
+                    confirmText: globalize.translate('sharedcomponents#HeaderCancelRecording'),
+                    cancelText: globalize.translate('sharedcomponents#HeaderKeepRecording')
+
+                }).then(function () {
+
+                    loading.show();
+
+                    var apiClient = connectionManager.getApiClient(serverId);
+                    apiClient.cancelLiveTvTimer(timerId).then(function () {
+
+                        require(['toast'], function (toast) {
+                            toast(globalize.translate('sharedcomponents#RecordingCancelled'));
+                        });
+
+                        loading.hide();
+                        resolve();
+                    }, reject);
+
+                }, reject);
+            });
+        });
+    }
+
+    function cancelSeriesTimerWithConfirmation(timerId, serverId) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['confirm'], function (confirm) {
+
+                confirm({
+
+                    text: globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'),
+                    primary: 'cancel',
+                    confirmText: globalize.translate('sharedcomponents#HeaderCancelSeries'),
+                    cancelText: globalize.translate('sharedcomponents#HeaderKeepSeries')
+
+                }).then(function () {
+
+                    loading.show();
+
+                    var apiClient = connectionManager.getApiClient(serverId);
+                    apiClient.cancelLiveTvSeriesTimer(timerId).then(function () {
+
+                        require(['toast'], function (toast) {
+                            toast(globalize.translate('sharedcomponents#SeriesCancelled'));
+                        });
+
+                        loading.hide();
+                        resolve();
+                    }, reject);
+
+                }, reject);
+            });
+        });
+    }
+
     function cancelTimer(apiClient, timerId, hideLoading) {
         loading.show();
         return apiClient.cancelLiveTvTimer(timerId).then(function () {
@@ -88,6 +154,8 @@
         cancelTimer: cancelTimer,
         createRecording: createRecording,
         changeRecordingToSeries: changeRecordingToSeries,
-        toggleRecording: toggleRecording
+        toggleRecording: toggleRecording,
+        cancelTimerWithConfirmation: cancelTimerWithConfirmation,
+        cancelSeriesTimerWithConfirmation: cancelSeriesTimerWithConfirmation
     };
 });

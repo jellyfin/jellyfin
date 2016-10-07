@@ -16,7 +16,6 @@ namespace MediaBrowser.Model.Notifications
         PluginUpdateInstalled,
         PluginUninstalled,
         NewLibraryContent,
-        NewLibraryContentMultiple,
         ServerRestartRequired,
         TaskFailed,
         CameraImageUploaded,

@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Providers
         {
             Path = item.Path;
             ContainingFolderPath = item.ContainingFolderPath;
-            IsInMixedFolder = item.IsInMixedFolder;
+            IsInMixedFolder = item.DetectIsInMixedFolder();
 
             var video = item as Video;
             if (video != null)

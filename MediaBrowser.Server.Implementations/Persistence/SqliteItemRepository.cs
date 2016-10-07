@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var cacheSize = _config.Configuration.SqliteCacheSize;
             if (cacheSize <= 0)
             {
-                cacheSize = Math.Min(Environment.ProcessorCount * 50000, 200000);
+                cacheSize = Math.Min(Environment.ProcessorCount * 50000, 100000);
             }
 
             var connection = await DbConnector.Connect(DbFilePath, false, false, 0 - cacheSize).ConfigureAwait(false);
@@ -2654,6 +2654,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     whereClauses.Add("("+string.Join(" OR ", programAttribtues.ToArray())+")");
                 }
+            }
+
+            if (query.SimilarTo != null)
+            {
+                whereClauses.Add("SimilarityScore > 0");
             }
 
             if (query.IsFolder.HasValue)

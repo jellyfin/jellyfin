@@ -267,7 +267,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 textlines.push(datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate)));
             }
 
-            var parentTitle;
+            var parentTitle = null;
 
             if (options.showParentTitle) {
                 if (item.Type == 'Episode') {
@@ -287,8 +287,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             if (options.showParentTitle && options.parentTitleWithTitle) {
 
-                if (parentTitle && displayName) {
-                    parentTitle += ' - ' + displayName;
+                if (displayName) {
+
+                    if (parentTitle) {
+                        parentTitle += ' - ';
+                    }
+                    parentTitle = (parentTitle || '') + displayName;
                 }
 
                 textlines.push(parentTitle || '');
