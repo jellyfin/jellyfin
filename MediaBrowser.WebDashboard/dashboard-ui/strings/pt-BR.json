@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Sair",
     "LabelApiDocumentation": "Documenta\u00e7\u00e3o da Api",
     "LabelBrowseLibrary": "Explorar Biblioteca",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Servi\u00e7os Dispon\u00edveis",
     "MessageNoServicesInstalled": "N\u00e3o existem servi\u00e7os instalados atualmente.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Para acessar, por favor digite seu c\u00f3digo pin f\u00e1cil",
-    "KidsModeAdultInstruction": "Clique no \u00edcone de bloqueio no canto inferior direito para configurar ou deixar o modo infantil. Seu c\u00f3digo pin ser\u00e1 necess\u00e1rio.",
     "ButtonConfigurePinCode": "Configurar c\u00f3digo pin",
     "RegisterWithPayPal": "Registrar com PayPal",
     "HeaderEnjoyDayTrial": "Aproveite um per\u00edodo de 14 dias gr\u00e1tis para testes",
@@ -310,7 +310,7 @@
     "TitleAdvanced": "Avan\u00e7ado",
     "OptionRelease": "Vers\u00e3o Oficial",
     "OptionBeta": "Beta",
-    "OptionDev": "Dev (Inst\u00e1vel)",
+    "OptionDev": "Dev",
     "LabelAllowServerAutoRestart": "Permitir ao servidor reiniciar automaticamente para aplicar as atualiza\u00e7\u00f5es",
     "LabelAllowServerAutoRestartHelp": "O servidor s\u00f3 reiniciar\u00e1 durante os per\u00edodos ociosos, quando nenhum usu\u00e1rio estiver ativo.",
     "LabelRunServerAtStartup": "Executar servidor na inicializa\u00e7\u00e3o",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Tarefas Agendadas",
     "MessageItemsAdded": "Itens adicionados",
     "HeaderSelectCertificatePath": "Selecione o Local do Certificado",
-    "ConfirmMessageScheduledTaskButton": "Esta opera\u00e7\u00e3o normalmente \u00e9 executada automaticamente como uma tarefa agendada e n\u00e3o \u00e9 necess\u00e1ria nenhuma intera\u00e7\u00e3o manual. Para configurar a tarefa agendada, veja:",
+    "ConfirmMessageScheduledTaskButton": "Esta opera\u00e7\u00e3o normalmente \u00e9 executada automaticamente como uma tarefa agendada e n\u00e3o \u00e9 necess\u00e1ria nenhuma intera\u00e7\u00e3o manual. Para configurar a tarefa agendada, clique em Tarefas Agendadas.",
     "HeaderSupporterBenefit": "Um subscri\u00e7\u00e3o ativa do Emby Premiere fornece benef\u00edcios adicionais como acesso \u00e0 sincroniza\u00e7\u00e3o, plugins premium, conte\u00fado de canais da internet e mais.  {0}Saiba mais{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Bem vindo ao Painel do Servidor Emby",
     "HeaderWelcomeToProjectWebClient": "Bem vindo ao Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Converter grava\u00e7\u00f5es para:",
     "HeaderUpcomingOnTV": "Chegando na TV",
     "LabelOptionalNetworkPath": "(Opcional) Caminho de rede compartilhado:",
-    "LabelOptionalNetworkPathHelp": "Se esta pasta estiver compartilhada em sua rede, prover o caminho de rede do compartilhamento permitir\u00e1 que apps Emby em outros dispositivos acessem m\u00eddias diretamente."
+    "LabelOptionalNetworkPathHelp": "Se esta pasta estiver compartilhada em sua rede, prover o caminho de rede do compartilhamento permitir\u00e1 que apps Emby em outros dispositivos acessem m\u00eddias diretamente.",
+    "ButtonPlayExternalPlayer": "Reproduzir com reprodutor externo",
+    "WillRecord": "Ir\u00e1 gravar",
+    "NotScheduledToRecord": "N\u00e3o agendado para gravar"
 }

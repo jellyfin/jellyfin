@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Izlaz",
     "LabelApiDocumentation": "Api dokumentacija",
     "LabelBrowseLibrary": "Pregledaj biblioteku",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Dostupni servisi",
     "MessageNoServicesInstalled": "Trenutno nema instalirane usluge.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Molimo unesite svoj lagan PIN kako biste pristupili",
-    "KidsModeAdultInstruction": "Kliknite na ikonu lokota u donjem desnom kutu za postavke ili ostaviti dje\u010dji na\u010din. PIN kod \u0107e biti potreban.",
     "ButtonConfigurePinCode": "Podesi PIN kod",
     "RegisterWithPayPal": "Registracija sa PayPal-om",
     "HeaderEnjoyDayTrial": "U\u017eivajte u 14 dana besplatne probe",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Konvertiraj snimke na:",
     "HeaderUpcomingOnTV": "Sljede\u0107e na TV-u",
     "LabelOptionalNetworkPath": "(Nije obavezno) Zajedni\u010dka mapa mre\u017ee:",
-    "LabelOptionalNetworkPathHelp": "Ako se ova mapa dijeli na mre\u017ei, opskrba zajedni\u010dke mre\u017ene mre\u017ee mo\u017ee dopustiti Emby aplikacijama na drugim ure\u0111ajima izravni pristup multimedijskim datotekama."
+    "LabelOptionalNetworkPathHelp": "Ako se ova mapa dijeli na mre\u017ei, opskrba zajedni\u010dke mre\u017ene mre\u017ee mo\u017ee dopustiti Emby aplikacijama na drugim ure\u0111ajima izravni pristup multimedijskim datotekama.",
+    "ButtonPlayExternalPlayer": "Reproduciraj sa vanjskim pokreta\u010dem",
+    "WillRecord": "Snimit \u0107e se",
+    "NotScheduledToRecord": "Nije predvi\u0111en za snimanje"
 }

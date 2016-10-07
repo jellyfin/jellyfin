@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Wyj\u015bcie",
     "LabelApiDocumentation": "Dokumantacja API",
     "LabelBrowseLibrary": "Przegl\u0105daj bibliotek\u0119",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Dost\u0119pne Us\u0142ugi",
     "MessageNoServicesInstalled": "Brak zainstalowanych us\u0142ug.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Wprowad\u017a pin aby uzyska\u0107 dost\u0119p",
-    "KidsModeAdultInstruction": "Kliknij ikon\u0119 k\u0142\u00f3dki w prawym dolnym rogu aby konfigurowa\u0107 albo op\u00f3\u015b\u0107 tryb dzieci\u0119cy. Tw\u00f3j kod pin b\u0119dzie wymagany.",
     "ButtonConfigurePinCode": "Konfiguruj kod pin",
     "RegisterWithPayPal": "Zarejestruj z PayPal",
     "HeaderEnjoyDayTrial": "Mi\u0142ego 14 dniowego okresu pr\u00f3bnego",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Odtwarzaj zewn\u0119trznym odtwarzaczem",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

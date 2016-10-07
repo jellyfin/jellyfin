@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Kil\u00e9p\u00e9s",
     "LabelApiDocumentation": "Api dokument\u00e1ci\u00f3",
     "LabelBrowseLibrary": "M\u00e9diat\u00e1r tall\u00f3z\u00e1sa",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "El\u00e9rhet\u0151 szolg\u00e1ltat\u00e1sok",
     "MessageNoServicesInstalled": "Nincs szolg\u00e1ltat\u00e1s telep\u00edtve",
     "HeaderToAccessPleaseEnterEasyPinCode": "Az el\u00e9r\u00e9shez k\u00e9rlek add meg a PIN k\u00f3dod",
-    "KidsModeAdultInstruction": "Click the lock icon in the bottom right to configure or leave kids mode. Your pin code will be required.",
     "ButtonConfigurePinCode": "Pin k\u00f3d be\u00e1ll\u00edt\u00e1sa",
     "RegisterWithPayPal": "Regisztr\u00e1ci\u00f3 PayPal haszn\u00e1lat\u00e1val",
     "HeaderEnjoyDayTrial": "Enjoy a 14 Day Free Trial",
@@ -90,7 +90,7 @@
     "LabelCountry": "Orsz\u00e1g:",
     "LabelLanguage": "Nyelv:",
     "LabelTimeLimitHours": "Id\u0151limit (\u00f3ra):",
-    "HeaderPreferredMetadataLanguage": "El\u0151nyben r\u00e9szes\u00edtett metaadat nyelv:",
+    "HeaderPreferredMetadataLanguage": "El\u0151nyben r\u00e9szes\u00edtett metaadat nyelv",
     "LabelSaveLocalMetadata": "Save artwork and metadata into media folders",
     "LabelSaveLocalMetadataHelp": "Saving artwork and metadata directly into media folders will put them in a place where they can be easily edited.",
     "LabelDownloadInternetMetadata": "Download artwork and metadata from the internet",
@@ -310,7 +310,7 @@
     "TitleAdvanced": "Halad\u00f3",
     "OptionRelease": "Official Release",
     "OptionBeta": "Beta",
-    "OptionDev": "Dev (Unstable)",
+    "OptionDev": "Dev",
     "LabelAllowServerAutoRestart": "Automatikus \u00fajraind\u00edt\u00e1s enged\u00e9lyez\u00e9se a szervernek a friss\u00edt\u00e9sek telep\u00edt\u00e9s\u00e9hez",
     "LabelAllowServerAutoRestartHelp": "A szerver csak akkor indul \u00fajra ha nincs felhaszn\u00e1l\u00f3i tev\u00e9kenys\u00e9g",
     "LabelRunServerAtStartup": "Szerver futtat\u00e1sa ind\u00edt\u00e1skor",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "\u00dctemezett feladatok",
     "MessageItemsAdded": "Elem hozz\u00e1adva",
     "HeaderSelectCertificatePath": "Select Certificate Path",
-    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
+    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, click Scheduled Tasks.",
     "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "\u00dcdv\u00f6z\u00f6llek az Emby Szerver Vez\u00e9rl\u0151pultj\u00e1ban",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Lej\u00e1tsz\u00e1s k\u00fcls\u0151 lej\u00e1tsz\u00f3val",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

@@ -920,7 +920,6 @@
             }
 
             similarCollapsible.classList.remove('hide');
-            similarCollapsible.querySelector('.similiarHeader').innerHTML = Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name);
 
             var html = '';
 

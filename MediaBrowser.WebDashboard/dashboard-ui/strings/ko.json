@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "\uc885\ub8cc",
     "LabelApiDocumentation": "Api \ubb38\uc11c",
     "LabelBrowseLibrary": "\ub77c\uc774\ube0c\ub7ec\ub9ac \ud0d0\uc0c9",
@@ -40,7 +41,7 @@
     "LabelAddConnectSupporterHelp": "\ubaa9\ub85d\uc5d0 \uc5c6\ub294 \uc0ac\uc6a9\uc790\ub97c \ucd94\uac00\ud558\ub824\uba74 \uc0ac\uc6a9\uc790 \ud504\ub85c\ud30c\uc77c \ud398\uc774\uc9c0\uc5d0\uc11c Emby Connect\uc5d0 \uba3c\uc800 \uc5f0\uacb0\ud558\uc5ec\uc57c \ud569\ub2c8\ub2e4.",
     "LabelPinCode": "PIN \ucf54\ub4dc:",
     "OptionHideWatchedContentFromLatestMedia": "\ucd5c\uadfc \ubbf8\ub514\uc5b4\uc5d0\uc11c \uc2dc\uccad\ud55c \ucf58\ud150\uce20 \uc228\uae40",
-    "HeaderSync": "Sync",
+    "HeaderSync": "\ub3d9\uae30\ud654",
     "ButtonOk": "OK",
     "ButtonCancel": "\ucde8\uc18c",
     "ButtonExit": "\uc885\ub8cc",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "\uc0ac\uc6a9 \uac00\ub2a5\ud55c \uc11c\ube44\uc2a4",
     "MessageNoServicesInstalled": "\ud604\uc7ac \uc124\uce58\ub41c \uc11c\ube44\uc2a4\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.",
     "HeaderToAccessPleaseEnterEasyPinCode": "\uc811\uc18d\ud558\ub824\uba74 \uac04\ud3b8 PIN \ucf54\ub4dc\ub97c \uc785\ub825\ud558\uc138\uc694",
-    "KidsModeAdultInstruction": "\uc624\ub978\ucabd \ud558\ub2e8\uc758 \uc790\ubb3c\uc1e0 \uc544\uc774\ucf58\uc744 \ub20c\ub7ec \uc124\uc815\ud558\uac70\ub098 \uc790\ub140 \ubcf4\ud638 \ubaa8\ub4dc\uc5d0\uc11c \ub098\uac11\ub2c8\ub2e4. PIN \ucf54\ub4dc\uac00 \ud544\uc694\ud569\ub2c8\ub2e4.",
     "ButtonConfigurePinCode": "PIN \ucf54\ub4dc \uc124\uc815",
     "RegisterWithPayPal": "PayPal\ub85c \ub4f1\ub85d\ud558\uae30",
     "HeaderEnjoyDayTrial": "14\uc77c \ubb34\ub8cc \uccb4\ud5d8\ud558\uae30",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "\uc678\ubd80 \ud50c\ub808\uc774\uc5b4\ub85c \uc7ac\uc0dd",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

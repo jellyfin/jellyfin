@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Sortir",
     "LabelApiDocumentation": "Documentaci\u00f3 de l'API",
     "LabelBrowseLibrary": "Examina la Biblioteca",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Serveis Disponibles",
     "MessageNoServicesInstalled": "No hi ha serveis instal\u00b7lats actualment.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Per accedir, si et plau introdueix el teu codi pin senzill",
-    "KidsModeAdultInstruction": "Fes clic a la icona del candau abaix a la dreta per a configurar o sortir del mode per a nens. Far\u00e0 falta el teu codi pin.",
     "ButtonConfigurePinCode": "Configura codi pin",
     "RegisterWithPayPal": "Registra amb PayPal",
     "HeaderEnjoyDayTrial": "Gaudeix una Prova Gratu\u00efta de 14 Dies",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Scheduled tasks",
     "MessageItemsAdded": "\u00cdtems afegits",
     "HeaderSelectCertificatePath": "Select Certificate Path",
-    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
+    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, click Scheduled Tasks.",
     "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Benvingut al Tauler de Control del Servidor Emby",
     "HeaderWelcomeToProjectWebClient": "Benvingut a Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Play with external player",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }
