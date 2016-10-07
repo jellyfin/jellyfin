@@ -14,6 +14,7 @@ namespace MediaBrowser.Controller.LiveTv
         public ITunerHost TunerHost { get; set; }
         public string OriginalStreamId { get; set; }
         public bool EnableStreamSharing { get; set; }
+        public string UniqueId = Guid.NewGuid().ToString("N");
 
         public LiveStream(MediaSourceInfo mediaSource)
         {

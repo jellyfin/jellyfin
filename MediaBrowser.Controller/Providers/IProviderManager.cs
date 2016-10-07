@@ -95,15 +95,8 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        /// <param name="imageProviders">The image providers.</param>
-        /// <param name="metadataServices">The metadata services.</param>
-        /// <param name="metadataProviders">The metadata providers.</param>
-        /// <param name="savers">The savers.</param>
-        /// <param name="imageSavers">The image savers.</param>
-        /// <param name="externalIds">The external ids.</param>
         void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> savers,
-            IEnumerable<IImageSaver> imageSavers,
             IEnumerable<IExternalId> externalIds);
 
         /// <summary>

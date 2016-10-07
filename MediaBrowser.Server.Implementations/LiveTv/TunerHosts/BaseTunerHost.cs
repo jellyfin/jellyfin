@@ -233,25 +233,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         protected abstract Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
 
-        private async Task AddMediaInfo(LiveStream stream, bool isAudio, CancellationToken cancellationToken)
-        {
-            //await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            //try
-            //{
-            //    await AddMediaInfoInternal(mediaSource, isAudio, cancellationToken).ConfigureAwait(false);
-
-            //    // Leave the resource locked. it will be released upstream
-            //}
-            //catch (Exception)
-            //{
-            //    // Release the resource if there's some kind of failure.
-            //    resourcePool.Release();
-
-            //    throw;
-            //}
-        }
-
         protected abstract bool IsValidChannelId(string channelId);
 
         protected LiveTvOptions GetConfiguration()

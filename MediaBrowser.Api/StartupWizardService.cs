@@ -116,6 +116,7 @@ namespace MediaBrowser.Api
             config.EnableCaseSensitiveItemIds = true;
             //config.EnableFolderView = true;
             config.SchemaVersion = 109;
+            config.EnableSimpleArtistDetection = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

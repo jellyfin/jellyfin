@@ -156,7 +156,6 @@ namespace MediaBrowser.Dlna.Eventing
             }
             catch (OperationCanceledException)
             {
-                throw;
             }
             catch
             {
