@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Afslut",
     "LabelApiDocumentation": "Api dokumentation",
     "LabelBrowseLibrary": "Gennemse bibliotek",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Tilg\u00e6ngelige tjenester",
     "MessageNoServicesInstalled": "Ingen tjenester er installeret.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Indtast din pinkode for adgang",
-    "KidsModeAdultInstruction": "Klik p\u00e5 l\u00e5seikonet i nederste h\u00f8jre hj\u00f8rne for at konfigurere eller forlade b\u00f8rnetilstand. Du vil blive bedt om din pinkode.",
     "ButtonConfigurePinCode": "Konfigurer pinkode",
     "RegisterWithPayPal": "Registrer med PayPal",
     "HeaderEnjoyDayTrial": "Nyd en 14-dages gratis pr\u00f8veperiode",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Planlagte opgaver",
     "MessageItemsAdded": "Elementer tilf\u00f8jet",
     "HeaderSelectCertificatePath": "V\u00e6lg certifikatsti",
-    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
+    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, click Scheduled Tasks.",
     "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Velkommen til Emby betjeningspanel",
     "HeaderWelcomeToProjectWebClient": "Velkommen til Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Afspil med ekstern afspiller",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

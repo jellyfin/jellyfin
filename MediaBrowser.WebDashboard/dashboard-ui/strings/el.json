@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "\u0388\u03be\u03bf\u03b4\u03bf\u03c2",
     "LabelApiDocumentation": "Api Documentation",
     "LabelBrowseLibrary": "\u03a0\u03b5\u03c1\u03b9\u03b7\u03b3\u03b7\u03b8\u03b5\u03af\u03c4\u03b5 \u03c3\u03c4\u03b7 \u03b2\u03b9\u03b2\u03bb\u03b9\u03bf\u03b8\u03ae\u03ba\u03b7",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "\u0394\u03b9\u03b1\u03b8\u03ad\u03c3\u03b9\u03bc\u03b5\u03c2 \u03a5\u03c0\u03b7\u03c1\u03b5\u03c3\u03af\u03b5\u03c2",
     "MessageNoServicesInstalled": "\u039a\u03b1\u03bc\u03af\u03b1 \u03c5\u03c0\u03b7\u03c1\u03b5\u03c3\u03af\u03b1 \u03b4\u03b5\u03bd \u03b5\u03af\u03bd\u03b1\u03b9 \u03b5\u03b3\u03ba\u03b1\u03c4\u03b5\u03c3\u03c4\u03b7\u03bc\u03ad\u03bd\u03b7.",
     "HeaderToAccessPleaseEnterEasyPinCode": "\u0393\u03b9\u03b1 \u03c0\u03c1\u03cc\u03c3\u03b2\u03b1\u03c3\u03b7, \u03c0\u03b1\u03c1\u03b1\u03ba\u03b1\u03bb\u03ce \u03b4\u03ce\u03c3\u03c4\u03b5 \u03c4\u03bf\u03bd \u03ba\u03c9\u03b4\u03b9\u03ba\u03cc \u03c3\u03b1\u03c2",
-    "KidsModeAdultInstruction": "Click the lock icon in the bottom right to configure or leave kids mode. Your pin code will be required.",
     "ButtonConfigurePinCode": "Configure pin code",
     "RegisterWithPayPal": "\u0395\u03b3\u03b3\u03c1\u03b1\u03c6\u03ae \u03bc\u03b5 Paypal",
     "HeaderEnjoyDayTrial": "\u0391\u03c0\u03bf\u03bb\u03b1\u03cd\u03c3\u03c4\u03b5 14 \u039c\u03ad\u03c1\u03b5\u03c2 \u0394\u03bf\u03ba\u03b9\u03bc\u03b1\u03c3\u03c4\u03b9\u03ba\u03ae\u03c2 \u03a0\u03b5\u03c1\u03b9\u03cc\u03b4\u03bf\u03c5",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Scheduled tasks",
     "MessageItemsAdded": "Items added",
     "HeaderSelectCertificatePath": "Select Certificate Path",
-    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
+    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, click Scheduled Tasks.",
     "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Play with external player",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

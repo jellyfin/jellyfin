@@ -2534,13 +2534,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        class LiveStreamData
-        {
-            internal MediaSourceInfo Info;
-            internal string ItemId;
-            internal bool IsChannel;
-        }
-
         public async Task CloseLiveStream(string id)
         {
             var parts = id.Split(new[] { '_' }, 2);

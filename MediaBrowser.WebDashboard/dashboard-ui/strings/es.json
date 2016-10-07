@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Salir",
     "LabelApiDocumentation": "Documentaci\u00f3n API",
     "LabelBrowseLibrary": "Navegar biblioteca",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Servicios Disponibles",
     "MessageNoServicesInstalled": "No hay servicios instalados.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Para acceder, por favor introduzca su c\u00f3digo PIN f\u00e1cil.",
-    "KidsModeAdultInstruction": "Haga clic en el icono en la parte de abajo derecha para configurar o salir del modo de menores. Su codigo PIN es requerido.",
     "ButtonConfigurePinCode": "Configurar contrase\u00f1a",
     "RegisterWithPayPal": "Registrese con PayPal",
     "HeaderEnjoyDayTrial": "Disfrute 14 Dias Gratis de Prueba",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Reproducir con un reproductor externo",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

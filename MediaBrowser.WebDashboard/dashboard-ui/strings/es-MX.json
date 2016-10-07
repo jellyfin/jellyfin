@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Salir",
     "LabelApiDocumentation": "Documentaci\u00f3n de la API",
     "LabelBrowseLibrary": "Explorar Biblioteca",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Servicios Disponibles",
     "MessageNoServicesInstalled": "No hay servicios instalados en este momento.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Para acceder, por favor introduzca su c\u00f3digo pin sencillo",
-    "KidsModeAdultInstruction": "Haga clic en el icono de candado en la esquina inferior derecha para configurar o abandonar el modo para ni\u00f1os.",
     "ButtonConfigurePinCode": "Configurar c\u00f3digo pin",
     "RegisterWithPayPal": "Registrar con PayPal",
     "HeaderEnjoyDayTrial": "Disfrute de una Prueba Gratuita por 14 D\u00edas",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Tareas programadas",
     "MessageItemsAdded": "\u00cdtems agregados",
     "HeaderSelectCertificatePath": "Seleccione la Ruta del Certificado",
-    "ConfirmMessageScheduledTaskButton": "Esta operaci\u00f3n normalmente se ejecuta de manera autom\u00e1tica como una tarea programada y no requiere de ningun esfuerzo manual. Para configurar la tarea programada, vea:",
+    "ConfirmMessageScheduledTaskButton": "Esta operaci\u00f3n normalmente se ejecuta de manera autom\u00e1tica como una tarea programada y no requiere de ning\u00fan esfuerzo manual. Para configurar la tarea programada, de click en Tareas Programadas",
     "HeaderSupporterBenefit": "Una suscripci\u00f3n Emby Premiere activa provee beneficios adicionales como acceso a sincronizacion, complementos premium, contenido de canales de internet, y mas. {0}Conocer mas{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Bienvenido al Panel de Control de Emby",
     "HeaderWelcomeToProjectWebClient": "Bienvenido a Emby",
@@ -1965,7 +1965,7 @@
     "ErrorMessageUsernameInUse": "El Nombre de Usuario ya esta en uso. Por favor seleccione un nuevo nombre e intente de nuevo.",
     "ErrorMessageEmailInUse": "La direcci\u00f3n de correo electr\u00f3nico ya esta en uso. Por favor ingrese un correo electr\u00f3nico nuevo e intente de nuevo, o si olvido la contrase\u00f1a use la opci\u00f3n \"Olvide mi contrase\u00f1a\".",
     "MessageThankYouForConnectSignUp": "Gracias por registrarse a Emby Connect. Un correo electr\u00f3nico sera enviado a su direcci\u00f3n con instrucciones de como confirmar su nueva cuenta. Por favor confirme la cuente y regrese aqu\u00ed para iniciar sesi\u00f3n.",
-    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
+    "MessageThankYouForConnectSignUpNoValidation": "\u00a1Gracias por registrarse en Emby Connect! Ahora se le solicitara iniciar sesi\u00f3n con su informaci\u00f3n de Emby Connect.",
     "ButtonShare": "Compartir",
     "HeaderConfirm": "Confirmar",
     "MessageConfirmDeleteTunerDevice": "\u00bfEst\u00e1 seguro de querer eliminar este dispositivo?",
@@ -2139,6 +2139,9 @@
     "HeaderRecordingGroups": "Grupos de Grabaciones",
     "LabelConvertRecordingsTo": "Convertir grabaciones a:",
     "HeaderUpcomingOnTV": "Pr\u00f3ximamente en TV",
-    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPath": "(Opcional) Carpeta de red compartida:",
+    "LabelOptionalNetworkPathHelp": "Si esta carpeta es compartida en su red, proveer la ruta del recurso compartido de red puede permitir a las aplicaciones Emby en otros dispositivos acceder a los archivos de medios directamente.",
+    "ButtonPlayExternalPlayer": "Reproducir con un reproductor externo",
+    "WillRecord": "Se Grabar\u00e1",
+    "NotScheduledToRecord": "No esta programado para grabar"
 }

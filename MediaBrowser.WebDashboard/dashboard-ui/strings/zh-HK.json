@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "\u96e2\u958b",
     "LabelApiDocumentation": "Api \u6587\u4ef6",
     "LabelBrowseLibrary": "\u700f\u89bd\u8cc7\u6599\u5eab",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "\u53ef\u63d0\u4f9b\u7684\u670d\u52d9",
     "MessageNoServicesInstalled": "\u6c92\u6709\u5b89\u88dd\u7684\u670d\u52d9\u3002",
     "HeaderToAccessPleaseEnterEasyPinCode": "\u8981\u7e7c\u7e8c\u8a2a\u554f\uff0c\u8acb\u9078\u64c7\u60a8\u7684\u7c21\u6613 PIN \u78bc",
-    "KidsModeAdultInstruction": "\u9ede\u64ca\u53f3\u4e0b\u89d2\u7684\u9396\u5b9a\u6a19\u8a8c\uff0c\u8a2d\u7f6e\u6216\u96e2\u958b\u5152\u7ae5\u6a21\u5f0f\u3002\u60a8\u7684 PIN \u78bc\u662f\u5fc5\u9700\u7684\u3002",
     "ButtonConfigurePinCode": "\u8a2d\u7f6e PIN \u78bc",
     "RegisterWithPayPal": "\u7531 PayPal \u8a3b\u518a",
     "HeaderEnjoyDayTrial": "\u4eab\u53d7\u514d\u8cbb14\u5929\u8a66\u7528\u671f",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Scheduled tasks",
     "MessageItemsAdded": "Items added",
     "HeaderSelectCertificatePath": "Select Certificate Path",
-    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, see:",
+    "ConfirmMessageScheduledTaskButton": "This operation normally runs automatically as a scheduled task and does not require any manual effort. To configure the scheduled task, click Scheduled Tasks.",
     "HeaderSupporterBenefit": "An active Emby Premiere subscription provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "HeaderWelcomeToProjectServerDashboard": "\u6b61\u8fce\u4f86\u5230 Emby \u4f3a\u670d\u5668\u7cfb\u7d71\u6982\u89bd",
     "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Convert recordings to:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Play with external player",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

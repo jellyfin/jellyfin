@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Afsluiten",
     "LabelApiDocumentation": "Api documentatie",
     "LabelBrowseLibrary": "Bekijk bibliotheek",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Beschikbare diensten",
     "MessageNoServicesInstalled": "Er zijn momenteel geen diensten ge\u00efnstalleerd.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Voor toegang toets uw pincode",
-    "KidsModeAdultInstruction": "Klik op het slotje in de rechterbenedenhoek om te configureren of blijf in de kindermodus. Uw pincode is vereist.",
     "ButtonConfigurePinCode": "Configureer pincode",
     "RegisterWithPayPal": "Registreer met PayPal",
     "HeaderEnjoyDayTrial": "Geniet van een 14-daagse gratis proefversie",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Converteer opnames naar:",
     "HeaderUpcomingOnTV": "Upcoming On TV",
     "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
-    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly."
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Speel in externe speler",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

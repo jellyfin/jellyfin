@@ -1,8 +1,11 @@
 {
-    "SortChannelsBy": "Sort channels by:",
-    "ChannelNumber": "Channel number",
-    "RecentlyWatched": "Recently watched",
-    "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
+    "SortChannelsBy": "Ordenar canales por:",
+    "ChannelNumber": "Numero de canal",
+    "RecentlyWatched": "Visto recientemente",
+    "PlaceFavoriteChannelsAtBeginning": "Colocar canales favoritos al inicio",
+    "SeriesCancelled": "Series cancelled.",
+    "HeaderKeepSeries": "Keep Series",
+    "HeaderCancelSeries": "Cancel Series",
     "ValueSpecialEpisodeName": "Especial - {0}",
     "Share": "Compartir",
     "Add": "Agregar",
@@ -312,10 +315,10 @@
     "LabelKeep:": "Mantener:",
     "UntilIDelete": "Hasta que yo lo borre",
     "UntilSpaceNeeded": "Hasta que se necesite espacio",
-    "Categories": "Categories",
-    "Sports": "Sports",
-    "News": "News",
-    "Movies": "Movies",
-    "Kids": "Kids",
-    "EnableColorCodedBackgrounds": "Enable color coded backgrounds"
+    "Categories": "Categor\u00edas",
+    "Sports": "Deportes",
+    "News": "Noticias",
+    "Movies": "Pel\u00edculas",
+    "Kids": "Ni\u00f1os",
+    "EnableColorCodedBackgrounds": "Habilitar fondos con c\u00f3digo de color"
 }

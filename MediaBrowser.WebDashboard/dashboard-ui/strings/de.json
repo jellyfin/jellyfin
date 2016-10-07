@@ -1,4 +1,5 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
     "LabelExit": "Beenden",
     "LabelApiDocumentation": "Api Dokumentation",
     "LabelBrowseLibrary": "Bibliothek durchsuchen",
@@ -57,7 +58,6 @@
     "HeaderAvailableServices": "Verf\u00fcgbare Dienste",
     "MessageNoServicesInstalled": "Zur Zeit sind keine Dienste installiert.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Um Zugang zu erhalten, geben Sie bitte Ihren einfachen PIN Code ein",
-    "KidsModeAdultInstruction": "Verwenden Sie das Schloss-Symbol in der rechten unteren Ecke um den Kindermodus zu konfigurieren oder zu verlassen. Sie ben\u00f6tigen daf\u00fcr Ihren PIN Code.",
     "ButtonConfigurePinCode": "PIN Code festlegen",
     "RegisterWithPayPal": "Registrieren mit PayPal",
     "HeaderEnjoyDayTrial": "Genie\u00dfen Sie eine 14 Tage Testversion",
@@ -1431,7 +1431,7 @@
     "ButtonScheduledTasks": "Geplante Aufgaben",
     "MessageItemsAdded": "Eintr\u00e4ge hinzugef\u00fcgt",
     "HeaderSelectCertificatePath": "W\u00e4hlen Sie einen Zertifikat Ordner",
-    "ConfirmMessageScheduledTaskButton": "Dieser Vorgang l\u00e4uft in der Regel automatisch als geplante Aufgabe ab und erfordert keine manuellen Eingabe. Um die geplante Aufgabe zu konfigurieren, finden Sie unter:",
+    "ConfirmMessageScheduledTaskButton": "Dieser Vorgang l\u00e4uft in der Regel automatisch als geplante Aufgabe ab und erfordert keine manuellen Eingabe. Um die geplante Aufgabe zu konfigurieren, klicke auf Geplante Aufnahmen.",
     "HeaderSupporterBenefit": "Eine aktive Emby Premiere Mitgliedschaft erm\u00f6glicht weitere Vorteile wie z.B.  Zugriff auf Sync, Premium Plugins, Internet Channel Inhalte, und mehr. {0}Erfahren Sie mehr{1}.",
     "HeaderWelcomeToProjectServerDashboard": "Willkommen zur Emby Server \u00dcbersicht",
     "HeaderWelcomeToProjectWebClient": "Willkommen zu Emby",
@@ -2140,5 +2140,8 @@
     "LabelConvertRecordingsTo": "Konvertiere Aufnahmen nach:",
     "HeaderUpcomingOnTV": "Bevorstehend im TV",
     "LabelOptionalNetworkPath": "(Optionaler) Gemeinsamer Netzwerkordner",
-    "LabelOptionalNetworkPathHelp": "Wenn dieser Ordner in deinem Netzwerk geteilt wird, kann die Weitergabe des Netzwerkpfades Emby Apps auf anderen Ger\u00e4ten direkten Zugang zu den Mediendateien erm\u00f6glichen."
+    "LabelOptionalNetworkPathHelp": "Wenn dieser Ordner in deinem Netzwerk geteilt wird, kann die Weitergabe des Netzwerkpfades Emby Apps auf anderen Ger\u00e4ten direkten Zugang zu den Mediendateien erm\u00f6glichen.",
+    "ButtonPlayExternalPlayer": "Auf externem Ger\u00e4t abspielen",
+    "WillRecord": "Wird aufgenommen",
+    "NotScheduledToRecord": "Nicht geplant zur Aufnahme"
 }
