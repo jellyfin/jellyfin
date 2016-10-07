@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         public void Start(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
-            Task.Run(StartInternal);
+            Task.Run(() => StartInternal());
         }
 
         private byte[] Dequeue()
