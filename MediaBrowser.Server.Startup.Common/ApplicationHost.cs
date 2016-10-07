@@ -677,19 +677,11 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            try
-            {
-                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamProvider);
+            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamProvider);
 
-                await repo.Initialize().ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
-                return repo;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error opening user db", ex);
-                throw;
-            }
+            return repo;
         }
 
         /// <summary>
@@ -818,7 +810,6 @@ namespace MediaBrowser.Server.Startup.Common
                                      GetExports<IMetadataService>(),
                                      GetExports<IMetadataProvider>(),
                                      GetExports<IMetadataSaver>(),
-                                     GetExports<IImageSaver>(),
                                      GetExports<IExternalId>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());

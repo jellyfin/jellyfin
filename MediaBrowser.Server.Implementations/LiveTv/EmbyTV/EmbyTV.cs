@@ -841,21 +841,37 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return new Tuple<MediaSourceInfo, IDirectStreamProvider>(result.Item2, result.Item1 as IDirectStreamProvider);
         }
 
-        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, int consumerId, bool enableStreamSharing)
+        private MediaSourceInfo CloneMediaSource(MediaSourceInfo mediaSource, bool enableStreamSharing)
         {
             var json = _jsonSerializer.SerializeToString(mediaSource);
             mediaSource = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
 
             mediaSource.Id = Guid.NewGuid().ToString("N") + "_" + mediaSource.Id;
 
-            if (mediaSource.DateLiveStreamOpened.HasValue && enableStreamSharing)
-            {
-                var ticks = (DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value).Ticks - TimeSpan.FromSeconds(10).Ticks;
-                ticks = Math.Max(0, ticks);
-                mediaSource.Path += "?t=" + ticks.ToString(CultureInfo.InvariantCulture) + "&s=" + mediaSource.DateLiveStreamOpened.Value.Ticks.ToString(CultureInfo.InvariantCulture);
-            }
+            //if (mediaSource.DateLiveStreamOpened.HasValue && enableStreamSharing)
+            //{
+            //    var ticks = (DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value).Ticks - TimeSpan.FromSeconds(10).Ticks;
+            //    ticks = Math.Max(0, ticks);
+            //    mediaSource.Path += "?t=" + ticks.ToString(CultureInfo.InvariantCulture) + "&s=" + mediaSource.DateLiveStreamOpened.Value.Ticks.ToString(CultureInfo.InvariantCulture);
+            //}
 
             return mediaSource;
+        }
+
+        public async Task<LiveStream> GetLiveStream(string uniqueId)
+        {
+            await _liveStreamsSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                return _liveStreams.Values
+                    .FirstOrDefault(i => string.Equals(i.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
+            }
+            finally
+            {
+                _liveStreamsSemaphore.Release();
+            }
+
         }
 
         private async Task<Tuple<LiveStream, MediaSourceInfo, ITunerHost>> GetChannelStreamInternal(string channelId, string streamId, CancellationToken cancellationToken)
@@ -872,7 +888,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                 _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
-                var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.ConsumerCount - 1, result.EnableStreamSharing);
+                var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
                 _liveStreamsSemaphore.Release();
                 return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
             }
@@ -885,7 +901,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
                         result = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
 
-                        var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, 0, result.EnableStreamSharing);
+                        var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
 
                         _liveStreams[openedMediaSource.Id] = result;
 
@@ -1542,6 +1558,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     if (timer.IsKids)
                     {
                         AddGenre(timer.Genres, "Kids");
+                        AddGenre(timer.Genres, "Children");
                     }
                     if (timer.IsNews)
                     {

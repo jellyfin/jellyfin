@@ -10,30 +10,9 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(['confirm'], function (confirm) {
+            require(['recordingHelper'], function (recordingHelper) {
 
-                confirm({
-
-                    title: globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation'),
-                    text: globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'),
-                    confirmText: globalize.translate('sharedcomponents#HeaderCancelRecording'),
-                    cancelText: globalize.translate('sharedcomponents#HeaderKeepRecording'),
-                    primary: 'cancel'
-
-                }).then(function () {
-
-                    loading.show();
-
-                    apiClient.cancelLiveTvTimer(timerId).then(function () {
-
-                        require(['toast'], function (toast) {
-                            toast(globalize.translate('sharedcomponents#RecordingCancelled'));
-                        });
-
-                        loading.hide();
-                        resolve();
-                    });
-                });
+                recordingHelper.cancelTimerWithConfirmation(timerId, apiClient.serverId()).then(resolve, reject);
             });
         });
     }

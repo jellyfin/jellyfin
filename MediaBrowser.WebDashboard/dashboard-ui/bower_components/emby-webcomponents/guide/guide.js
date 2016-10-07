@@ -374,7 +374,7 @@
                 return '<i class="md-icon programIcon seriesTimerIcon seriesTimerIcon-inactive">&#xE062;</i>';
             }
 
-            return '<i class="md-icon programIcon">&#xE061;</i>';
+            return '<i class="md-icon programIcon timerIcon">&#xE061;</i>';
         }
 
         function getChannelProgramsHtml(context, date, channel, programs, options) {

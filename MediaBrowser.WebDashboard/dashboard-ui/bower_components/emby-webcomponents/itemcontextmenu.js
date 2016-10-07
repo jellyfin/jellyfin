@@ -29,10 +29,17 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if ((item.Type == 'Timer') && user.Policy.EnableLiveTvManagement) {
+            if ((item.Type == 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#ButtonCancel'),
                     id: 'canceltimer'
+                });
+            }
+
+            if ((item.Type == 'SeriesTimer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#CancelSeries'),
+                    id: 'cancelseriestimer'
                 });
             }
 
@@ -479,6 +486,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 case 'canceltimer':
                     deleteTimer(apiClient, item, resolve, id);
                     break;
+                case 'cancelseriestimer':
+                    deleteSeriesTimer(apiClient, item, resolve, id);
+                    break;
                 default:
                     reject();
                     break;
@@ -488,25 +498,20 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
     function deleteTimer(apiClient, item, resolve, command) {
 
-        require(['confirm'], function (confirm) {
+        require(['recordingHelper'], function (recordingHelper) {
 
-            confirm(globalize.translate('sharedcomponents#MessageConfirmRecordingCancellation'), globalize.translate('sharedcomponents#HeaderConfirmRecordingCancellation')).then(function () {
+            recordingHelper.cancelTimerWithConfirmation(item.Id, item.ServerId).then(function() {
+                getResolveFunction(resolve, command, true)();
+            });
+        });
+    }
 
-                loading.show();
+    function deleteSeriesTimer(apiClient, item, resolve, command) {
 
-                var promise = item.Type == 'SeriesTimer' ?
-                    apiClient.cancelLiveTvSeriesTimer(item.Id) :
-                    apiClient.cancelLiveTvTimer(item.Id);
+        require(['recordingHelper'], function (recordingHelper) {
 
-                promise.then(function () {
-
-                    require(['toast'], function (toast) {
-                        toast(globalize.translate('sharedcomponents#RecordingCancelled'));
-                    });
-
-                    loading.hide();
-                    getResolveFunction(resolve, command, true)();
-                });
+            recordingHelper.cancelSeriesTimerWithConfirmation(item.Id, item.ServerId).then(function () {
+                getResolveFunction(resolve, command, true)();
             });
         });
     }

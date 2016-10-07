@@ -1,4 +1,4 @@
-﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
+﻿define(['cardBuilder', 'apphost', 'emby-itemscontainer'], function (cardBuilder, appHost) {
 
     return function (view, params) {
 
@@ -56,6 +56,8 @@
 
                 page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis') && (params.type == 'Recordings' || params.type == 'RecordingSeries');
+
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
                     shape: query.IsMovie || params.type == 'RecordingSeries' ? 'portrait' : "backdrop",
@@ -71,9 +73,11 @@
                     showAirTime: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     showAirDateTime: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     showChannelName: params.type != 'Recordings' && params.type != 'RecordingSeries',
-                    overlayMoreButton: true,
+                    overlayMoreButton: !supportsImageAnalysis,
                     showYear: query.IsMovie && params.type == 'Recordings',
-                    coverImage: true
+                    coverImage: true,
+                    cardLayout: supportsImageAnalysis,
+                    vibrant: supportsImageAnalysis
                 });
 
                 var elem = page.querySelector('.itemsContainer');

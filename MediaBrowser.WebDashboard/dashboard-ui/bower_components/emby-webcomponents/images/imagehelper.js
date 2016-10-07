@@ -52,9 +52,9 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
             imageFetcher.loadImage(elem, source).then(function () {
 
-                fillVibrant(elem, source);
+                var fillingVibrant = fillVibrant(elem, source);
 
-                if (enableFade && !layoutManager.tv && enableEffects !== false) {
+                if (enableFade && !layoutManager.tv && enableEffects !== false && !fillingVibrant) {
                     fadeIn(elem);
                 }
 
@@ -66,29 +66,26 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     function fillVibrant(img, url) {
 
         if (img.tagName != 'IMG') {
-            return;
+            return false;
         }
 
         var vibrantElement = img.getAttribute('data-vibrant');
         if (!vibrantElement) {
-            return;
+            return false;
         }
 
         if (window.Vibrant) {
             fillVibrantOnLoaded(img, url, vibrantElement);
-            return;
+            return true;
         }
 
         require(['vibrant'], function () {
             fillVibrantOnLoaded(img, url, vibrantElement);
         });
+        return true;
     }
 
     function fillVibrantOnLoaded(img, url, vibrantElement) {
-
-        if (img.tagName != 'IMG') {
-            return;
-        }
 
         vibrantElement = document.getElementById(vibrantElement);
         if (!vibrantElement) {
@@ -121,8 +118,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         url = url.split('?')[0];
 
-        console.log(url);
-        return 'vibrant3-' + url;
+        return 'vibrant5-' + url;
     }
 
     function getCachedVibrantInfo(url) {

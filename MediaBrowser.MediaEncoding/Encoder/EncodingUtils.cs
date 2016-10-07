@@ -76,7 +76,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public static string GetProbeSizeArgument(bool isDvd)
         {
-            return isDvd ? "-probesize 1G -analyzeduration 200M" : " -analyzeduration 2M";
+            return isDvd ? "-probesize 1G -analyzeduration 200M" : "";
         }
     }
 }

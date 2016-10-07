@@ -91,13 +91,6 @@ namespace MediaBrowser.Server.Implementations.Notifications
 
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.NewLibraryContentMultiple.ToString(),
-                     DefaultTitle = "{ItemCount} new items have been added to your media library.",
-                     Variables = new List<string>{"ItemCount"}
-                },
-
-                new NotificationTypeInfo
-                {
                      Type = NotificationType.AudioPlayback.ToString(),
                      DefaultTitle = "{UserName} is playing {ItemName} on {DeviceName}.",
                      Variables = new List<string>{"UserName", "ItemName", "DeviceName", "AppName"}

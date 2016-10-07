@@ -9,6 +9,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -139,7 +140,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                if (stream.MediaStreams.Any(i => i.Index != -1))
+                {
+                    await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
@@ -208,9 +216,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private async Task AddMediaInfoInternal(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        private async Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
             var originalRuntime = mediaSource.RunTimeTicks;
+
+            var now = DateTime.UtcNow;
 
             var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
@@ -220,6 +230,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExtractChapters = false
 
             }, cancellationToken).ConfigureAwait(false);
+
+            _logger.Info("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
 
             mediaSource.Bitrate = info.Bitrate;
             mediaSource.Container = info.Container;
@@ -272,6 +284,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         videoStream.BitRate = 1000000;
                     }
                 }
+
+                // This is coming up false and preventing stream copy
+                videoStream.IsAVC = null;
             }
 
             // Try to estimate this

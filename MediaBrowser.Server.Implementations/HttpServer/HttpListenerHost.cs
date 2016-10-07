@@ -94,12 +94,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
             // Custom format allows images
-            HostConfig.Instance.EnableFeatures = Feature.Csv | Feature.Html | Feature.Json | Feature.Jsv | Feature.Metadata | Feature.Xml | Feature.CustomFormat;
+            HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.CustomFormat;
 
             container.Adapter = _containerAdapter;
 
             Plugins.RemoveAll(x => x is NativeTypesFeature);
-            Plugins.Add(new SwaggerFeature());
+            //Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization"));
 
             //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
@@ -546,8 +546,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-
-            throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+            else
+            {
+                httpRes.Close();
+            }
         }
 
         /// <summary>
