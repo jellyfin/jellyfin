@@ -161,7 +161,6 @@
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\LoggerUtils.cs" />
-    <Compile Include="HttpServer\NativeWebSocket.cs" />
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
     <Compile Include="HttpServer\Security\AuthService.cs" />
@@ -247,6 +246,8 @@
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
+    <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
+    <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpAppPacket.cs" />

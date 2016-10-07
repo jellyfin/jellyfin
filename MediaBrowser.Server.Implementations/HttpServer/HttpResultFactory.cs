@@ -683,29 +683,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Gets the error result.
-        /// </summary>
-        /// <param name="statusCode">The status code.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        public void ThrowError(int statusCode, string errorMessage, IDictionary<string, string> responseHeaders = null)
-        {
-            var error = new HttpError
-            {
-                Status = statusCode,
-                ErrorCode = errorMessage
-            };
-
-            if (responseHeaders != null)
-            {
-                AddResponseHeaders(error, responseHeaders);
-            }
-
-            throw error;
-        }
-
         public object GetAsyncStreamWriter(IAsyncStreamSource streamSource)
         {
             return new AsyncStreamWriter(streamSource);

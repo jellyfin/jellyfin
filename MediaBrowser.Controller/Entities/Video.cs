@@ -480,7 +480,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<string> GetDeletePaths()
         {
-            if (!IsInMixedFolder)
+            if (!DetectIsInMixedFolder())
             {
                 return new[] { ContainingFolderPath };
             }

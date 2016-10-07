@@ -81,20 +81,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public void Write(string text)
         {
-            try
-            {
-                var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-                response.ContentLength64 = bOutput.Length;
+            var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
+            response.ContentLength64 = bOutput.Length;
 
-                var outputStream = response.OutputStream;
-                outputStream.Write(bOutput, 0, bOutput.Length);
-                Close();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Could not WriteTextToResponse: " + ex.Message, ex);
-                throw;
-            }
+            var outputStream = response.OutputStream;
+            outputStream.Write(bOutput, 0, bOutput.Length);
+            Close();
         }
 
         public void Close()
