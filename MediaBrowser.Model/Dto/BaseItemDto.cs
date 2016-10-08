@@ -169,6 +169,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The game system.</value>
         public string GameSystem { get; set; }
 
+        public string[] ProductionLocations { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>

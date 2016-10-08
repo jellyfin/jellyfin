@@ -435,7 +435,8 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Disc
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
                 },
 
                 new MetadataOptions(1, 1280)
@@ -473,7 +474,8 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Logo
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
                 },
 
                 new MetadataOptions(1, 1280)

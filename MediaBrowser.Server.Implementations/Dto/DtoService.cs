@@ -1432,6 +1432,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                 SetBookProperties(dto, book);
             }
 
+            var movie = item as Movie;
+            if (movie != null)
+            {
+                dto.ProductionLocations = new string[] { };
+            }
+
             var photo = item as Photo;
             if (photo != null)
             {
