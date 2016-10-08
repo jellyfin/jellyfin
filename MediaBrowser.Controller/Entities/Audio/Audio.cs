@@ -23,8 +23,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
         IHasMediaSources,
-        IThemeMedia,
-        IArchivable
+        IThemeMedia
     {
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
@@ -81,21 +80,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return AlbumEntity;
-            }
-        }
-
-        [IgnoreDataMember]
-        public bool IsArchive
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
-
-                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
             }
         }
 

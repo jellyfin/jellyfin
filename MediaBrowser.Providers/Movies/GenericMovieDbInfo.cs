@@ -143,24 +143,19 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieData.tagline))
             {
-                var hasTagline = movie as IHasTaglines;
-                if (hasTagline != null)
-                {
-                    hasTagline.Taglines.Clear();
-                    hasTagline.AddTagline(movieData.tagline);
-                }
+                movie.Tagline = movieData.tagline;
             }
 
             if (movieData.production_countries != null)
             {
-                var hasProductionLocations = movie as IHasProductionLocations;
-                if (hasProductionLocations != null)
-                {
-                    hasProductionLocations.ProductionLocations = movieData
-                        .production_countries
-                        .Select(i => i.name)
-                        .ToList();
-                }
+                //var hasProductionLocations = movie as IHasProductionLocations;
+                //if (hasProductionLocations != null)
+                //{
+                //    hasProductionLocations.ProductionLocations = movieData
+                //        .production_countries
+                //        .Select(i => i.name)
+                //        .ToList();
+                //}
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));

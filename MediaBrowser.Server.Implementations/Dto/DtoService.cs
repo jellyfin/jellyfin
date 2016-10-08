@@ -907,9 +907,13 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Keywords = item.Keywords;
             }
 
-            if (fields.Contains(ItemFields.ProductionLocations))
+            if (fields.Contains(ItemFields.PlaceOfBirth))
             {
-                SetProductionLocations(item, dto);
+                var person = item as Person;
+                if (person != null)
+                {
+                    dto.PlaceOfBirth = person.PlaceOfBirth;
+                }
             }
 
             var hasAspectRatio = item as IHasAspectRatio;
@@ -998,8 +1002,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
             dto.Audio = item.Audio;
 
-            dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
-            dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
+            if (fields.Contains(ItemFields.Settings))
+            {
+                dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
+                dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
+            }
 
             dto.CriticRating = item.CriticRating;
 
@@ -1089,10 +1096,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Taglines))
             {
-                var hasTagline = item as IHasTaglines;
-                if (hasTagline != null)
+                if (!string.IsNullOrWhiteSpace(item.Tagline))
                 {
-                    dto.Taglines = hasTagline.Taglines;
+                    dto.Taglines = new List<string> { item.Tagline };
                 }
 
                 if (dto.Taglines == null)
@@ -1527,31 +1533,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             return path;
-        }
-
-        private void SetProductionLocations(BaseItem item, BaseItemDto dto)
-        {
-            var hasProductionLocations = item as IHasProductionLocations;
-
-            if (hasProductionLocations != null)
-            {
-                dto.ProductionLocations = hasProductionLocations.ProductionLocations;
-            }
-
-            var person = item as Person;
-            if (person != null)
-            {
-                dto.ProductionLocations = new List<string>();
-                if (!string.IsNullOrEmpty(person.PlaceOfBirth))
-                {
-                    dto.ProductionLocations.Add(person.PlaceOfBirth);
-                }
-            }
-
-            if (dto.ProductionLocations == null)
-            {
-                dto.ProductionLocations = new List<string>();
-            }
         }
 
         /// <summary>

@@ -63,7 +63,6 @@ namespace MediaBrowser.Api.Playback
             get { return Request is VideoStreamRequest; }
         }
         public bool IsInputVideo { get; set; }
-        public bool IsInputArchive { get; set; }
 
         public VideoType VideoType { get; set; }
         public IsoType? IsoType { get; set; }

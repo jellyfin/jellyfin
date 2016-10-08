@@ -117,6 +117,8 @@ namespace MediaBrowser.Api
             config.EnableFolderView = true;
             config.SchemaVersion = 109;
             config.EnableSimpleArtistDetection = true;
+            config.SkipDeserializationForBasicTypes = true;
+            config.SkipDeserializationForPrograms = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

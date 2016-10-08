@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
+using System.Linq;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -157,11 +159,43 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }
 
+        public List<ItemFields> Fields { get; set; }
+
+        public bool HasField(ItemFields name)
+        {
+            switch (name)
+            {
+                case ItemFields.Keywords:
+                case ItemFields.Taglines:
+                case ItemFields.ShortOverview:
+                case ItemFields.CustomRating:
+                case ItemFields.DateCreated:
+                case ItemFields.SortName:
+                case ItemFields.Overview:
+                case ItemFields.OfficialRatingDescription:
+                case ItemFields.HomePageUrl:
+                case ItemFields.VoteCount:
+                case ItemFields.DisplayMediaType:
+                case ItemFields.ServiceName:
+                case ItemFields.Genres:
+                case ItemFields.Studios:
+                case ItemFields.Settings:
+                case ItemFields.OriginalTitle:
+                case ItemFields.Tags:
+                case ItemFields.DateLastMediaAdded:
+                case ItemFields.CriticRatingSummary:
+                    return Fields.Count == 0 || Fields.Contains(name);
+                default:
+                    return true;
+            }
+        }
+
         public InternalItemsQuery()
         {
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
 
+            Fields = new List<ItemFields>();
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };
             ExcludeArtistIds = new string[] { };

@@ -869,7 +869,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortBy = query.SortBy,
                 SortOrder = query.SortOrder ?? SortOrder.Ascending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
-                TopParentIds = new[] { topFolder.Id.ToString("N") }
+                TopParentIds = new[] { topFolder.Id.ToString("N") },
+                Fields = options.Fields
             };
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
@@ -920,7 +921,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        public async Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(query.UserId);
 
@@ -937,7 +938,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsKids = query.IsKids,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 SortBy = new[] { ItemSortBy.StartDate },
-                TopParentIds = new[] { topFolder.Id.ToString("N") }
+                TopParentIds = new[] { topFolder.Id.ToString("N") },
+                Fields = options.Fields
             };
 
             if (query.Limit.HasValue)
@@ -987,7 +989,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
-            var internalResult = await GetRecommendedProgramsInternal(query, cancellationToken).ConfigureAwait(false);
+            var internalResult = await GetRecommendedProgramsInternal(query, options, cancellationToken).ConfigureAwait(false);
 
             var user = _userManager.GetUserById(query.UserId);
 
@@ -1315,6 +1317,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         }
                     }
 
+                    _logger.Debug("Channel {0} has {1} new programs and {2} updated programs", currentChannel.Name, newPrograms.Count, updatedPrograms.Count);
+
                     if (newPrograms.Count > 0)
                     {
                         await _libraryManager.CreateItems(newPrograms, cancellationToken).ConfigureAwait(false);
@@ -1476,7 +1480,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, User user)
+        private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, User user)
         {
             if (user == null || (query.IsInProgress ?? false))
             {
@@ -1552,7 +1556,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
-                Genres = genres.ToArray()
+                Genres = genres.ToArray(),
+                Fields = dtoOptions.Fields
             });
         }
 
@@ -1625,7 +1630,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (_services.Count == 1)
             {
-                return GetEmbyRecordings(query, user);
+                return GetEmbyRecordings(query, new DtoOptions(), user);
             }
 
             await RefreshRecordings(cancellationToken).ConfigureAwait(false);
@@ -2717,7 +2722,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true)
         {
-            info = (TunerHostInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(TunerHostInfo));
+            info = _jsonSerializer.DeserializeFromString<TunerHostInfo>(_jsonSerializer.SerializeToString(info));
 
             var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
@@ -2758,7 +2763,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            info = (ListingsProviderInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(ListingsProviderInfo));
+            info = _jsonSerializer.DeserializeFromString< ListingsProviderInfo>(_jsonSerializer.SerializeToString(info));
 
             var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 

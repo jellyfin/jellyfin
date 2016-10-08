@@ -91,10 +91,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostConfig.Instance.DebugMode = false;
 
             HostConfig.Instance.LogFactory = LogManager.LogFactory;
+            HostConfig.Instance.AllowJsonpRequests = false;
 
             // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
             // Custom format allows images
-            HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.CustomFormat;
+            HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.Xml | Feature.CustomFormat;
 
             container.Adapter = _containerAdapter;
 
