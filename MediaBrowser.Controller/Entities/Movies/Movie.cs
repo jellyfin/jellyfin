@@ -15,13 +15,12 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasBudget, IHasTrailers, IHasThemeMedia, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
-        public List<string> ProductionLocations { get; set; }
 
         public Movie()
         {
@@ -32,7 +31,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             ThemeSongIds = new List<Guid>();
             ThemeVideoIds = new List<Guid>();
             Taglines = new List<string>();
-            ProductionLocations = new List<string>();
         }
 
         public string AwardSummary { get; set; }

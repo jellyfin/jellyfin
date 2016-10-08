@@ -174,8 +174,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var video = item as Video;
 
-            if (item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder &&
-                !video.IsShortcut && !video.IsArchive)
+            if (item.LocationType == LocationType.FileSystem && video != null && !video.IsPlaceHolder && !video.IsShortcut)
             {
                 return true;
             }

@@ -130,6 +130,8 @@
         /// </summary>
         Metascore,
 
+        OfficialRatingDescription,
+
         OriginalTitle,
 
         /// <summary>
@@ -151,6 +153,8 @@
         /// The list of people for the item
         /// </summary>
         People,
+
+        PlaceOfBirth,
 
         /// <summary>
         /// The production locations

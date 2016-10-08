@@ -156,7 +156,6 @@
                 AirDays: getSelectedAirDays(form),
                 AirTime: form.querySelector('#txtAirTime').value,
                 Genres: editableListViewValues(form.querySelector("#listGenres")),
-                ProductionLocations: editableListViewValues(form.querySelector("#listCountries")),
                 Tags: editableListViewValues(form.querySelector("#listTags")),
                 Keywords: editableListViewValues(form.querySelector("#listKeywords")),
                 Studios: editableListViewValues(form.querySelector("#listStudios")).map(function (element) { return { Name: element }; }),
@@ -683,12 +682,6 @@
             showElement('#fldCustomRating', context);
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicArtist") {
-            showElement('#countriesCollapsible', context);
-        } else {
-            hideElement('#countriesCollapsible', context);
-        }
-
         if (item.Type == "TvChannel") {
             hideElement('#tagsCollapsible', context);
             hideElement('#metadataSettingsCollapsible', context);
@@ -809,7 +802,6 @@
             el.checked = (item.AirDays || []).indexOf(el.getAttribute('data-day')) != -1;
         });
 
-        populateListView(context.querySelector('#listCountries'), item.ProductionLocations || []);
         populateListView(context.querySelector('#listGenres'), item.Genres);
         populatePeople(context, item.People || []);
 

@@ -68,15 +68,15 @@ define(['imageLoader', 'itemShortcuts', 'connectionManager', 'layoutManager'], f
         }
 
         var nameHtml = '';
-        nameHtml += '<div class="cardText">' + person.Name + '</div>';
+        nameHtml += '<div class="cardText cardTextCentered">' + person.Name + '</div>';
 
         if (person.Role) {
-            nameHtml += '<div class="cardText cardText-secondary">as ' + person.Role + '</div>';
+            nameHtml += '<div class="cardText cardText-secondary cardTextCentered">as ' + person.Role + '</div>';
         }
         else if (person.Type) {
-            nameHtml += '<div class="cardText cardText-secondary">' + Globalize.translate('core#' + person.Type) + '</div>';
+            nameHtml += '<div class="cardText cardText-secondary cardTextCentered">' + Globalize.translate('core#' + person.Type) + '</div>';
         } else {
-            nameHtml += '<div class="cardText cardText-secondary">&nbsp;</div>';
+            nameHtml += '<div class="cardText cardText-secondary cardTextCentered">&nbsp;</div>';
         }
 
         var cardBoxCssClass = 'visualCardBox cardBox';

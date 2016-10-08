@@ -239,9 +239,9 @@
             }
 
             var itemBirthLocation = page.querySelector('#itemBirthLocation');
-            if (item.Type == "Person" && item.ProductionLocations && item.ProductionLocations.length) {
+            if (item.Type == "Person" && item.PlaceOfBirth) {
 
-                var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
+                var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.PlaceOfBirth + '">' + item.PlaceOfBirth + '</a>';
 
                 itemBirthLocation.classList.remove('hide');
                 itemBirthLocation.innerHTML = Globalize.translate('BirthPlaceValue').replace('{0}', gmap);

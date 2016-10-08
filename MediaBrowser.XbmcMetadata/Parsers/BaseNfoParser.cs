@@ -492,13 +492,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasTagline = item as IHasTaglines;
-                        if (hasTagline != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasTagline.AddTagline(val);
-                            }
+                            item.Tagline = val;
                         }
                         break;
                     }
@@ -507,20 +503,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasProductionLocations = item as IHasProductionLocations;
-                        if (hasProductionLocations != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                var parts = val.Split('/')
-                                    .Select(i => i.Trim())
-                                    .Where(i => !string.IsNullOrWhiteSpace(i));
-
-                                foreach (var p in parts)
-                                {
-                                    hasProductionLocations.AddProductionLocation(p);
-                                }
-                            }
+                            //var countries = val.Split('/')
+                            //    .Select(i => i.Trim())
+                            //    .Where(i => !string.IsNullOrWhiteSpace(i));
                         }
                         break;
                     }

@@ -274,10 +274,9 @@ namespace MediaBrowser.Api
 
             item.Tags = request.Tags;
 
-            var hasTaglines = item as IHasTaglines;
-            if (hasTaglines != null)
+            if (request.Taglines != null)
             {
-                hasTaglines.Taglines = request.Taglines;
+                item.Tagline = request.Taglines.FirstOrDefault();
             }
 
             var hasShortOverview = item as IHasShortOverview;
@@ -303,8 +302,6 @@ namespace MediaBrowser.Api
             item.ProductionYear = request.ProductionYear;
             item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
             item.CustomRating = request.CustomRating;
-
-            SetProductionLocations(item, request);
 
             item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
             item.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
@@ -411,24 +408,6 @@ namespace MediaBrowser.Api
                 series.Status = request.SeriesStatus;
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
-            }
-        }
-
-        private void SetProductionLocations(BaseItem item, BaseItemDto request)
-        {
-            var hasProductionLocations = item as IHasProductionLocations;
-
-            if (hasProductionLocations != null)
-            {
-                hasProductionLocations.ProductionLocations = request.ProductionLocations;
-            }
-
-            var person = item as Person;
-            if (person != null)
-            {
-                person.PlaceOfBirth = request.ProductionLocations == null
-                    ? null
-                    : request.ProductionLocations.FirstOrDefault();
             }
         }
     }
