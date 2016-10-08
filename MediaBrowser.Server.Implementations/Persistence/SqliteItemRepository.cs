@@ -742,7 +742,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Id;
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
-                    _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item, _memoryStreamProvider);
+
+                    if (TypeRequiresDeserialization(item.GetType()))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item, _memoryStreamProvider);
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.GetParameter(index++).Value = item.Path;
 
