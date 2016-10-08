@@ -893,14 +893,6 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    var hasProductionLocations = item as IHasProductionLocations;
-                                    if (hasProductionLocations != null)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            hasProductionLocations.AddProductionLocation(val);
-                                        }
-                                    }
                                 }
                                 break;
                             }
@@ -934,14 +926,7 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    var hasTaglines = item as IHasTaglines;
-                                    if (hasTaglines != null)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            hasTaglines.AddTagline(val);
-                                        }
-                                    }
+                                    item.Tagline = val;
                                 }
                                 break;
                             }

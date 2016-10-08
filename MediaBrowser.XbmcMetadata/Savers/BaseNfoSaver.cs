@@ -80,7 +80,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "imdbid",
                     "imdb_id",
                     "plotkeyword",
-                    "country",
+                    //"country",
                     "audiodbalbumid",
                     "audiodbartistid",
                     "awardsummary",
@@ -718,23 +718,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("runtime", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
             }
 
-            var hasTaglines = item as IHasTaglines;
-            if (hasTaglines != null)
+            if (!string.IsNullOrWhiteSpace(item.Tagline))
             {
-                foreach (var tagline in hasTaglines.Taglines)
-                {
-                    writer.WriteElementString("tagline", tagline);
-                }
+                writer.WriteElementString("tagline", item.Tagline);
             }
 
-            var hasProductionLocations = item as IHasProductionLocations;
-            if (hasProductionLocations != null)
-            {
-                foreach (var country in hasProductionLocations.ProductionLocations)
-                {
-                    writer.WriteElementString("country", country);
-                }
-            }
+            //foreach (var country in hasProductionLocations.ProductionLocations)
+            //{
+            //    writer.WriteElementString("country", country);
+            //}
 
             foreach (var genre in item.Genres)
             {

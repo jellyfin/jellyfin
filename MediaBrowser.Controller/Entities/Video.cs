@@ -25,8 +25,7 @@ namespace MediaBrowser.Controller.Entities
         ISupportsPlaceHolders,
         IHasMediaSources,
         IHasShortOverview,
-        IThemeMedia,
-        IArchivable
+        IThemeMedia
     {
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
@@ -195,21 +194,6 @@ namespace MediaBrowser.Controller.Entities
         public bool HasLocalAlternateVersions
         {
             get { return LocalAlternateVersions.Count > 0; }
-        }
-
-        [IgnoreDataMember]
-        public bool IsArchive
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
-
-                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
-            }
         }
 
         public IEnumerable<Guid> GetAdditionalPartIds()

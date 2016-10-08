@@ -47,7 +47,7 @@ namespace MediaBrowser.Providers.TV
             return RunInternal(progress, cancellationToken);
         }
 
-        private async Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
+        private Task RunInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var seriesList = _libraryManager.GetItemList(new InternalItemsQuery()
             {
@@ -59,34 +59,7 @@ namespace MediaBrowser.Providers.TV
 
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-            await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
-                .Run(seriesGroups, true, cancellationToken).ConfigureAwait(false);
-
-            var numComplete = 0;
-
-            foreach (var series in seriesList)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var episodes = series.GetRecursiveChildren(i => i is Episode)
-                    .Cast<Episode>()
-                    .ToList();
-
-                var physicalEpisodes = episodes.Where(i => i.LocationType != LocationType.Virtual)
-                    .ToList();
-
-                series.SpecialFeatureIds = physicalEpisodes
-                    .Where(i => i.ParentIndexNumber.HasValue && i.ParentIndexNumber.Value == 0)
-                    .Select(i => i.Id)
-                    .ToList();
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= seriesList.Count;
-                percent *= 100;
-
-                progress.Report(percent);
-            }
+            return new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem).Run(seriesGroups, true, cancellationToken);
         }
 
         internal static IEnumerable<IGrouping<string, Series>> FindSeriesGroups(List<Series> seriesList)

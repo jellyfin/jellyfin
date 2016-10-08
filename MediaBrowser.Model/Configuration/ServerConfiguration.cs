@@ -168,6 +168,8 @@ namespace MediaBrowser.Model.Configuration
         public MetadataOptions[] MetadataOptions { get; set; }
 
         public bool EnableAutomaticRestart { get; set; }
+        public bool SkipDeserializationForBasicTypes { get; set; }
+        public bool SkipDeserializationForPrograms { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
 

@@ -96,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
                             Limit = query.Limit,
                             IsAiring = true
 
-                        }, CancellationToken.None).ConfigureAwait(false);
+                        }, new Dto.DtoOptions(), CancellationToken.None).ConfigureAwait(false);
 
                         return GetResult(result);
                     }

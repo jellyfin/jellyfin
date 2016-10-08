@@ -17,17 +17,14 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer, IHasOriginalTitle
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, IHasOriginalTitle
     {
-        public List<Guid> SpecialFeatureIds { get; set; }
-
         public int? AnimeSeriesIndex { get; set; }
 
         public Series()
         {
             AirDays = new List<DayOfWeek>();
 
-            SpecialFeatureIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();

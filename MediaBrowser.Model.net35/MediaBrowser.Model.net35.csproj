@@ -1128,9 +1128,6 @@
     <Compile Include="..\MediaBrowser.Model\Updates\PackageTargetSystem.cs">
       <Link>Updates\PackageTargetSystem.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Updates\PackageType.cs">
-      <Link>Updates\PackageType.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionClass.cs">
       <Link>Updates\PackageVersionClass.cs</Link>
     </Compile>
