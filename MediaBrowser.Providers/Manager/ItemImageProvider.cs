@@ -555,12 +555,6 @@ namespace MediaBrowser.Providers.Manager
                     return false;
                 case ImageType.Thumb:
                     return false;
-                case ImageType.Logo:
-                    return false;
-                case ImageType.Backdrop:
-                    return false;
-                case ImageType.Screenshot:
-                    return false;
                 default:
                     return true;
             }

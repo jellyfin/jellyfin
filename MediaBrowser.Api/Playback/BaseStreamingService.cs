@@ -1857,9 +1857,6 @@ namespace MediaBrowser.Api.Playback
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-            var archivable = item as IArchivable;
-            state.IsInputArchive = archivable != null && archivable.IsArchive;
-
             MediaSourceInfo mediaSource = null;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
