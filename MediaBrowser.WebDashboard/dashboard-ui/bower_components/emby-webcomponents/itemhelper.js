@@ -60,6 +60,7 @@ define(['apphost'], function (appHost) {
     }
 
     function supportsAddingToPlaylist(item) {
+
         if (item.Type == 'Program') {
             return false;
         }
@@ -69,7 +70,7 @@ define(['apphost'], function (appHost) {
         if (item.Type == 'SeriesTimer') {
             return false;
         }
-        return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
+        return item.MediaType || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
     }
 
     function canEdit(user, itemType) {

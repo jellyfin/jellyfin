@@ -21,7 +21,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
         if (item.SeriesTimerId) {
 
-            if (status != 'Cancelled' && status != 'Aborted') {
+            if (status != 'Cancelled') {
                 return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
             }
 

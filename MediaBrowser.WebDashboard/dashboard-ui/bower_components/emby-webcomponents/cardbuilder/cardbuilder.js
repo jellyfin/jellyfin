@@ -109,7 +109,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (screenWidth >= 2500) {
                         return 6;
                     }
-                    if (screenWidth >= 2100) {
+                    if (screenWidth >= 1600) {
                         return 5;
                     }
                     if (screenWidth >= 1200) {
