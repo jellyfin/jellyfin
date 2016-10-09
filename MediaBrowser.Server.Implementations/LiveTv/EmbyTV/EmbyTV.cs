@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
     public class EmbyTV : ILiveTvService, ISupportsDirectStreamProvider, ISupportsNewTimerIds, IDisposable
     {
-        private readonly IApplicationHost _appHpst;
+        private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
@@ -64,11 +65,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder)
+        public EmbyTV(IServerApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService, IMediaEncoder mediaEncoder)
         {
             Current = this;
 
-            _appHpst = appHost;
+            _appHost = appHost;
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
@@ -293,7 +294,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             status.Tuners = list;
             status.Status = LiveTvServiceStatus.Ok;
-            status.Version = _appHpst.ApplicationVersion.ToString();
+            status.Version = _appHost.ApplicationVersion.ToString();
             status.IsVisible = false;
             return status;
         }
@@ -659,7 +660,63 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
         {
-            return new List<RecordingInfo>();
+            return _activeRecordings.Values.ToList().Select(GetRecordingInfo).ToList();
+        }
+
+        public string GetActiveRecordingPath(string id)
+        {
+            ActiveRecordingInfo info;
+
+            if (_activeRecordings.TryGetValue(id, out info))
+            {
+                return info.Path;
+            }
+            return null;
+        }
+
+        private RecordingInfo GetRecordingInfo(ActiveRecordingInfo info)
+        {
+            var timer = info.Timer;
+            var program = info.Program;
+
+            var result = new RecordingInfo
+            {
+                ChannelId = timer.ChannelId,
+                CommunityRating = timer.CommunityRating,
+                DateLastUpdated = DateTime.UtcNow,
+                EndDate = timer.EndDate,
+                EpisodeTitle = timer.EpisodeTitle,
+                Genres = timer.Genres,
+                Id = "recording" + timer.Id,
+                IsKids = timer.IsKids,
+                IsMovie = timer.IsMovie,
+                IsNews = timer.IsNews,
+                IsRepeat = timer.IsRepeat,
+                IsSeries = timer.IsProgramSeries,
+                IsSports = timer.IsSports,
+                Name = timer.Name,
+                OfficialRating = timer.OfficialRating,
+                OriginalAirDate = timer.OriginalAirDate,
+                Overview = timer.Overview,
+                ProgramId = timer.ProgramId,
+                SeriesTimerId = timer.SeriesTimerId,
+                StartDate = timer.StartDate,
+                Status = RecordingStatus.InProgress,
+                TimerId = timer.Id
+            };
+
+            if (program != null)
+            {
+                result.Audio = program.Audio;
+                result.ImagePath = program.ImagePath;
+                result.ImageUrl = program.ImageUrl;
+                result.IsHD = program.IsHD;
+                result.IsLive = program.IsLive;
+                result.IsPremiere = program.IsPremiere;
+                result.ShowId = program.ShowId;
+            }
+
+            return result;
         }
 
         public Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken)
@@ -954,7 +1011,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            ActiveRecordingInfo info;
+
+            recordingId = recordingId.Replace("recording", string.Empty);
+
+            if (_activeRecordings.TryGetValue(recordingId, out info))
+            {
+                return Task.FromResult(new List<MediaSourceInfo>
+                {
+                    new MediaSourceInfo
+                    {
+                        Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveRecordings/" + recordingId + "/stream",
+                        Id = recordingId,
+                        SupportsDirectPlay = false,
+                        SupportsDirectStream = true,
+                        SupportsTranscoding = true,
+                        IsInfiniteStream = true,
+                        RequiresOpening = false,
+                        RequiresClosing = false,
+                        Protocol = Model.MediaInfo.MediaProtocol.Http,
+                        BufferMs = 0
+                    }
+                });
+            }
+
+            throw new FileNotFoundException();
         }
 
         public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
@@ -1031,7 +1112,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 var activeRecordingInfo = new ActiveRecordingInfo
                 {
                     CancellationTokenSource = new CancellationTokenSource(),
-                    TimerId = timer.Id
+                    Timer = timer
                 };
 
                 if (_activeRecordings.TryAdd(timer.Id, activeRecordingInfo))
@@ -1168,6 +1249,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             if (programInfo != null)
             {
                 RecordingHelper.CopyProgramInfoToTimerInfo(programInfo, timer);
+                activeRecordingInfo.Program = programInfo;
             }
 
             string seriesPath = null;
@@ -1394,7 +1476,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return true;
             }
 
-            var hasRecordingAtPath = _activeRecordings.Values.ToList().Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.TimerId, timerId, StringComparison.OrdinalIgnoreCase));
+            var hasRecordingAtPath = _activeRecordings
+                .Values
+                .ToList()
+                .Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
 
             if (hasRecordingAtPath)
             {
@@ -1878,7 +1963,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         class ActiveRecordingInfo
         {
             public string Path { get; set; }
-            public string TimerId { get; set; }
+            public TimerInfo Timer { get; set; }
+            public ProgramInfo Program { get; set; }
             public CancellationTokenSource CancellationTokenSource { get; set; }
         }
     }

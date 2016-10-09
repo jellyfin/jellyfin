@@ -37,6 +37,8 @@ namespace MediaBrowser.Controller.Entities
     {
         protected BaseItem()
         {
+            ThemeSongIds = new List<Guid>();
+            ThemeVideoIds = new List<Guid>();
             Keywords = new List<string>();
             Tags = new List<string>();
             Genres = new List<string>();
@@ -45,6 +47,7 @@ namespace MediaBrowser.Controller.Entities
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
             InheritedTags = new List<string>();
+            ProductionLocations = new List<string>();
         }
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
@@ -64,6 +67,9 @@ namespace MediaBrowser.Controller.Entities
         public static string ThemeSongsFolderName = "theme-music";
         public static string ThemeSongFilename = "theme";
         public static string ThemeVideosFolderName = "backdrops";
+
+        public List<Guid> ThemeSongIds { get; set; }
+        public List<Guid> ThemeVideoIds { get; set; }
 
         [IgnoreDataMember]
         public string PreferredMetadataCountryCode { get; set; }
@@ -876,6 +882,7 @@ namespace MediaBrowser.Controller.Entities
         public List<string> Tags { get; set; }
 
         public List<string> Keywords { get; set; }
+        public List<string> ProductionLocations { get; set; }
 
         /// <summary>
         /// Gets or sets the home page URL.
@@ -991,7 +998,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the theme songs.
         /// </summary>
         /// <returns>List{Audio.Audio}.</returns>
-        private IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
+        private static IEnumerable<Audio.Audio> LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
@@ -1027,7 +1034,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads the video backdrops.
         /// </summary>
         /// <returns>List{Video}.</returns>
-        private IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
+        private static IEnumerable<Video> LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.Where(i => i.IsDirectory)
                 .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
@@ -1113,6 +1120,12 @@ namespace MediaBrowser.Controller.Entities
             get { return true; }
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsThemeMedia
+        {
+            get { return false; }
+        }
+
         /// <summary>
         /// Refreshes owned items such as trailers, theme videos, special features, etc.
         /// Returns true or false indicating if changes were found.
@@ -1131,14 +1144,13 @@ namespace MediaBrowser.Controller.Entities
 
             if (LocationType == LocationType.FileSystem && GetParent() != null)
             {
-                var hasThemeMedia = this as IHasThemeMedia;
-                if (hasThemeMedia != null)
+                if (SupportsThemeMedia)
                 {
                     if (!DetectIsInMixedFolder())
                     {
-                        themeSongsChanged = await RefreshThemeSongs(hasThemeMedia, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+                        themeSongsChanged = await RefreshThemeSongs(this, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
-                        themeVideosChanged = await RefreshThemeVideos(hasThemeMedia, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
+                        themeVideosChanged = await RefreshThemeVideos(this, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -1176,7 +1188,7 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged;
         }
 
-        private async Task<bool> RefreshThemeVideos(IHasThemeMedia item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        private static async Task<bool> RefreshThemeVideos(BaseItem item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService).ToList();
 
@@ -1207,7 +1219,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private async Task<bool> RefreshThemeSongs(IHasThemeMedia item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        private static async Task<bool> RefreshThemeSongs(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();

@@ -165,6 +165,7 @@ namespace MediaBrowser.Controller.Entities
         {
             switch (name)
             {
+                case ItemFields.ProductionLocations:
                 case ItemFields.Keywords:
                 case ItemFields.Taglines:
                 case ItemFields.ShortOverview:

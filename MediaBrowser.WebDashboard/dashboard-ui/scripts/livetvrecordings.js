@@ -93,6 +93,10 @@
         ImageLoader.lazyChildren(recordingItems);
     }
 
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
     function renderActiveRecordings(context, promise) {
 
         promise.then(function (result) {
@@ -102,8 +106,18 @@
                 result.Items = [];
             }
 
-            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
-                indexByDate: false
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                cardLayout: true,
+                vibrant: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
             });
         });
     }
@@ -162,29 +176,11 @@
         });
     }
 
-    function renderTimers(context, timers, options) {
-
-        LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
-
-            var elem = context;
-
-            if (html) {
-                elem.classList.remove('hide');
-            } else {
-                elem.classList.add('hide');
-            }
-
-            elem.querySelector('.recordingItems').innerHTML = html;
-
-            ImageLoader.lazyChildren(elem);
-        });
-    }
-
     function onMoreClick(e) {
 
         var type = this.getAttribute('data-type');
 
-        switch(type) {
+        switch (type) {
             case 'latest':
                 Dashboard.navigate('livetvitems.html?type=Recordings');
                 break;
@@ -230,8 +226,14 @@
         });
 
         self.preRender = function () {
-            activeRecordingsPromise = ApiClient.getLiveTvTimers({
-                IsActive: true
+
+            activeRecordingsPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                IsInProgress: true,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                EnableImageTypes: "Primary,Thumb,Backdrop"
             });
 
             latestPromise = ApiClient.getLiveTvRecordings({

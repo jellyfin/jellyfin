@@ -10,6 +10,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -124,6 +125,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days);
+
+            if (!string.IsNullOrWhiteSpace(info.SeriesId))
+            {
+                var program = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                    ExternalSeriesId = info.SeriesId,
+                    Limit = 1,
+                    ImageTypes = new ImageType[] { ImageType.Primary }
+
+                }).FirstOrDefault();
+
+                if (program != null)
+                {
+                    var image = program.GetImageInfo(ImageType.Primary, 0);
+                    if (image != null)
+                    {
+                        try
+                        {
+                            dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
+                            dto.ParentPrimaryImageItemId = program.Id.ToString("N");
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
+            }
 
             return dto;
         }

@@ -11,8 +11,6 @@
         $('#chkBlastAliveMessages', page).checked(config.BlastAliveMessages);
         $('#txtBlastInterval', page).val(config.BlastAliveMessageIntervalSeconds);
 
-        $('#chkEnableMovieFolders', page).checked(config.EnableMovieFolders);
-
         var usersHtml = users.map(function (u) {
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
@@ -39,8 +37,6 @@
             config.BlastAliveMessages = $('#chkBlastAliveMessages', form).checked();
             config.BlastAliveMessageIntervalSeconds = $('#txtBlastInterval', form).val();
             config.DefaultUserId = $('#selectUser', form).val();
-
-            config.EnableMovieFolders = $('#chkEnableMovieFolders', form).checked();
 
             ApiClient.updateNamedConfiguration("dlna", config).then(Dashboard.processServerConfigurationUpdateResult);
         });

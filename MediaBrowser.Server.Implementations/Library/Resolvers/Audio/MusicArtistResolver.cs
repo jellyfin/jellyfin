@@ -51,9 +51,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
         {
             if (!args.IsDirectory) return null;
 
-            // Avoid mis-identifying top folders
-            if (args.Parent.IsRoot) return null;
-
             // Don't allow nested artists
             if (args.HasParent<MusicArtist>() || args.HasParent<MusicAlbum>())
             {
@@ -70,18 +67,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
                 return null;
             }
 
-            if (args.IsDirectory)
+            if (args.ContainsFileSystemEntryByName("artist.nfo"))
             {
-                if (args.ContainsFileSystemEntryByName("artist.nfo"))
-                {
-                    return new MusicArtist();
-                }
+                return new MusicArtist();
             }
 
             if (_config.Configuration.EnableSimpleArtistDetection)
             {
                 return null;
             }
+
+            // Avoid mis-identifying top folders
+            if (args.Parent.IsRoot) return null;
 
             var directoryService = args.DirectoryService;
 

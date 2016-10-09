@@ -88,7 +88,6 @@
                 showAirTime: true,
                 showAirEndTime: true,
                 showChannelName: true,
-                lazy: true,
                 cardLayout: true,
                 vibrant: true,
                 action: 'edit',

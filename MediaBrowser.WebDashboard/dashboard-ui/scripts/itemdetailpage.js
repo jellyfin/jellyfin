@@ -239,9 +239,9 @@
             }
 
             var itemBirthLocation = page.querySelector('#itemBirthLocation');
-            if (item.Type == "Person" && item.PlaceOfBirth) {
+            if (item.Type == "Person" && item.ProductionLocations && item.ProductionLocations.length) {
 
-                var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.PlaceOfBirth + '">' + item.PlaceOfBirth + '</a>';
+                var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
 
                 itemBirthLocation.classList.remove('hide');
                 itemBirthLocation.innerHTML = Globalize.translate('BirthPlaceValue').replace('{0}', gmap);
@@ -899,7 +899,7 @@
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: 8,
+            limit: item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? 8 : 10,
             fields: "PrimaryImageAspectRatio,UserData,CanDelete"
         };
 
@@ -942,7 +942,7 @@
             });
             html += '</div>';
 
-            var similarContent = page.querySelector('#similarContent');
+            var similarContent = similarCollapsible.querySelector('.similarContent');
             similarContent.innerHTML = html;
             ImageLoader.lazyChildren(similarContent);
         });

@@ -56,10 +56,17 @@ define(['apphost'], function (appHost) {
 
         var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'TvChannel', 'Program', 'MusicAlbum', 'Timer'];
 
+        if (item.Type == 'Recording') {
+            if (item.Status != 'Completed') {
+                return false;
+            }
+        }
+
         return !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
     }
 
     function supportsAddingToPlaylist(item) {
+
         if (item.Type == 'Program') {
             return false;
         }
@@ -69,10 +76,19 @@ define(['apphost'], function (appHost) {
         if (item.Type == 'SeriesTimer') {
             return false;
         }
-        return item.RunTimeTicks || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
+
+        if (item.Type == 'Recording') {
+            if (item.Status != 'Completed') {
+                return false;
+            }
+        }
+
+        return item.MediaType || item.IsFolder || item.Type == "Genre" || item.Type == "MusicGenre" || item.Type == "MusicArtist";
     }
 
-    function canEdit(user, itemType) {
+    function canEdit(user, item) {
+
+        var itemType = item.Type;
 
         if (itemType == "UserRootFolder" || /*itemType == "CollectionFolder" ||*/ itemType == "UserView") {
             return false;
@@ -82,12 +98,13 @@ define(['apphost'], function (appHost) {
             return false;
         }
 
-        if (user.Policy.IsAdministrator) {
-
-            return true;
+        if (item.Type == 'Recording') {
+            if (item.Status != 'Completed') {
+                return false;
+            }
         }
 
-        return false;
+        return user.Policy.IsAdministrator;
     }
 
     return {
@@ -118,7 +135,9 @@ define(['apphost'], function (appHost) {
 
         canEdit: canEdit,
 
-        canEditImages: function (user, itemType) {
+        canEditImages: function (user, item) {
+
+            var itemType = item.Type;
 
             if (itemType == 'UserView') {
                 if (user.Policy.IsAdministrator) {
@@ -129,7 +148,13 @@ define(['apphost'], function (appHost) {
                 return false;
             }
 
-            return itemType != 'Timer' && itemType != 'SeriesTimer' && canEdit(user, itemType);
+            if (item.Type == 'Recording') {
+                if (item.Status != 'Completed') {
+                    return false;
+                }
+            }
+
+            return itemType != 'Timer' && itemType != 'SeriesTimer' && canEdit(user, item);
         },
 
         canSync: function (user, item) {
@@ -148,6 +173,11 @@ define(['apphost'], function (appHost) {
             }
             if (item.Type == 'SeriesTimer') {
                 return false;
+            }
+            if (item.Type == 'Recording') {
+                if (item.Status != 'Completed') {
+                    return false;
+                }
             }
             return user.Policy.EnablePublicSharing && appHost.supports('sharing');
         }

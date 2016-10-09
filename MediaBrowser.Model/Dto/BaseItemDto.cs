@@ -169,6 +169,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The game system.</value>
         public string GameSystem { get; set; }
 
+        public string[] ProductionLocations { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
@@ -1211,7 +1213,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
-        public RecordingStatus TimerStatus { get; set; }
         /// <summary>
         /// Gets or sets the current program.
         /// </summary>

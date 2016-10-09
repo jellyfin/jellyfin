@@ -117,7 +117,7 @@
             parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#RecordSeries');
         }
 
-        if (program.TimerId && program.TimerStatus != 'Cancelled') {
+        if (program.TimerId && program.Status != 'Cancelled') {
             parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
             parent.querySelector('.singleRecordingButton .recordingIcon').classList.add('recordingIcon-active');
             parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#DoNotRecord');
@@ -138,7 +138,7 @@
         return apiClient.getLiveTvProgram(options.programId, apiClient.getCurrentUserId()).then(function (program) {
 
             instance.TimerId = program.TimerId;
-            instance.TimerStatus = program.TimerStatus;
+            instance.Status = program.Status;
             instance.SeriesTimerId = program.SeriesTimerId;
 
             loadData(options.parent, program, apiClient);
@@ -162,7 +162,7 @@
 
         var options = this.options;
 
-        if (!this.TimerId || this.TimerStatus == 'Cancelled') {
+        if (!this.TimerId || this.Status == 'Cancelled') {
             return;
         }
 
@@ -213,7 +213,7 @@
         var button = dom.parentWithTag(e.target, 'BUTTON');
         var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
-        var hasEnabledTimer = this.TimerId && this.TimerStatus != 'Cancelled';
+        var hasEnabledTimer = this.TimerId && this.Status != 'Cancelled';
 
         if (isChecked) {
             if (!hasEnabledTimer) {

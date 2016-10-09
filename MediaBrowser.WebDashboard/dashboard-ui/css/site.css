@@ -123,43 +123,6 @@ h1 a:hover {
     background-color: #fff;
 }
 
-input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
-    -webkit-appearance: none;
-    -webkit-font-smoothing: antialiased;
-    -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-size: inherit;
-    height: 28.5938px;
-    letter-spacing: normal;
-    line-height: 18.2px;
-    list-style-image: none;
-    list-style-position: outside;
-    list-style-type: none;
-    min-height: 28.6px;
-    padding-bottom: 5.2px;
-    padding-left: 5.2px;
-    padding-right: 5.2px;
-    padding-top: 5.2px;
-    text-align: left;
-    text-indent: 0px;
-    text-rendering: auto;
-    text-shadow: none;
-    text-transform: none;
-    white-space: nowrap;
-    word-spacing: 0px;
-    writing-mode: lr-tb;
-    -webkit-writing-mode: horizontal-tb;
-    background: white;
-    width: 100%;
-    border: 1px solid #ccc;
-    color: #000;
-    margin: 0 0 3px 0;
-    border-radius: 4px;
-    display: block;
-}
-
 .ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
     border-color: #ccc !important;

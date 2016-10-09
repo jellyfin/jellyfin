@@ -29,9 +29,8 @@
         });
     }
 
-    function updateBubble(range, bubble) {
+    function updateBubble(range, value, bubble) {
 
-        var value = range.value;
         bubble.style.left = (value - 1) + '%';
 
         if (range.getBubbleText) {
@@ -72,16 +71,26 @@
 
         this.addEventListener('input', function (e) {
             this.dragging = true;
-            updateBubble(this, sliderBubble);
+        });
+        this.addEventListener('change', function () {
+            this.dragging = false;
+            updateValues(this, backgroundLower, backgroundUpper);
+        });
+
+        this.addEventListener('mousemove', function (e) {
+
+            var rect = this.getBoundingClientRect();
+            var clientX = e.clientX;
+            var bubbleValue = (clientX - rect.left) / rect.width;
+            bubbleValue *= 100;
+            updateBubble(this, Math.round(bubbleValue), sliderBubble);
 
             if (hasHideClass) {
                 sliderBubble.classList.remove('hide');
                 hasHideClass = false;
             }
         });
-        this.addEventListener('change', function () {
-            this.dragging = false;
-            updateValues(this, backgroundLower, backgroundUpper);
+        this.addEventListener('mouseleave', function () {
             sliderBubble.classList.add('hide');
             hasHideClass = true;
         });

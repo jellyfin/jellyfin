@@ -171,7 +171,7 @@ progress {
 .adminDrawer .sidebarLink {
     color: #333 !important;
     font-weight: 400 !important;
-    padding: .7em 0 .7em 1.5em;
+    padding: .7em 0 .7em 2em;
 }
 
 .adminDrawer .sidebarHeader {
@@ -215,135 +215,10 @@ progress {
     }
 }
 
-/* A
------------------------------------------------------------------------------------------------------------*/
-
-/* Bar: Toolbars, dividers, slider track */
-.ui-bar-a,
-.ui-page-theme-a .ui-bar-inherit,
-html .ui-bar-a .ui-bar-inherit,
-html .ui-body-a .ui-bar-inherit,
-html body .ui-group-theme-a .ui-bar-inherit {
-    background-color: #e9e9e9 /*{a-bar-background-color}*/;
-    border-color: #ddd /*{a-bar-border}*/;
-    color: #333 /*{a-bar-color}*/;
-    font-weight: bold;
-}
-
-.ui-bar-a {
-    border-width: 1px;
-    border-style: solid;
-}
-
-/* Page and overlay */
-.ui-page-theme-a .ui-panel-wrapper {
-    background-color: #f9f9f9 /*{a-page-background-color}*/;
-    border-color: #bbb /*{a-page-border}*/;
-    color: #333 /*{a-page-color}*/;
-}
-
-/* Body: Read-only lists, text inputs, collapsible content */
-.ui-page-theme-a .ui-body-inherit,
-html .ui-bar-a .ui-body-inherit,
-html .ui-body-a .ui-body-inherit,
-html body .ui-group-theme-a .ui-body-inherit,
-html .ui-panel-page-container-a {
-    background-color: #fff /*{a-body-background-color}*/;
-    border-color: #ddd /*{a-body-border}*/;
-    color: #333 /*{a-body-color}*/;
-}
-
 /* Links */
-.ui-page-theme-a a,
-html .ui-bar-a a,
-html .ui-body-a a,
-html body .ui-group-theme-a a {
+.ui-body-a a {
     color: #388E3C /*{a-link-color}*/;
     font-weight: 500;
-}
-
-    .ui-page-theme-a a:visited,
-    html .ui-bar-a a:visited,
-    html .ui-body-a a:visited,
-    html body .ui-group-theme-a a:visited {
-        color: #388E3C /*{a-link-visited}*/;
-    }
-
-    .ui-page-theme-a a:hover,
-    html .ui-bar-a a:hover,
-    html .ui-body-a a:hover,
-    html body .ui-group-theme-a a:hover {
-        color: #1B5E20 /*{a-link-hover}*/;
-    }
-
-    .ui-page-theme-a a:active,
-    html .ui-bar-a a:active,
-    html .ui-body-a a:active,
-    html body .ui-group-theme-a a:active {
-        color: #1B5E20 /*{a-link-active}*/;
-    }
-
-/* Button up */
-.ui-page-theme-a .ui-btn,
-html .ui-bar-a .ui-btn,
-html .ui-body-a .ui-btn,
-html body .ui-group-theme-a .ui-btn,
-html head + body .ui-btn.ui-btn-a,
-/* Button visited */
-.ui-page-theme-a .ui-btn:visited,
-html .ui-bar-a .ui-btn:visited,
-html .ui-body-a .ui-btn:visited,
-html body .ui-group-theme-a .ui-btn:visited,
-html head + body .ui-btn.ui-btn-a:visited,
-ul[data-role="listview"] a + a {
-    background-color: #f6f6f6 /*{a-bup-background-color}*/;
-    border-color: #ddd /*{a-bup-border}*/;
-    color: #333 /*{a-bup-color}*/;
-}
-    /* Button hover */
-    .ui-page-theme-a .ui-btn:hover,
-    html .ui-bar-a .ui-btn:hover,
-    html .ui-body-a .ui-btn:hover,
-    html body .ui-group-theme-a .ui-btn:hover,
-    html head + body .ui-btn.ui-btn-a:hover {
-        background-color: #ededed /*{a-bhover-background-color}*/;
-        border-color: #ddd /*{a-bhover-border}*/;
-        color: #333 /*{a-bhover-color}*/;
-    }
-    /* Button down */
-    .ui-page-theme-a .ui-btn:active,
-    html .ui-bar-a .ui-btn:active,
-    html .ui-body-a .ui-btn:active,
-    html body .ui-group-theme-a .ui-btn:active,
-    html head + body .ui-btn.ui-btn-a:active {
-        background-color: #e8e8e8 /*{a-bdown-background-color}*/;
-        border-color: #ddd /*{a-bdown-border}*/;
-        color: #333 /*{a-bdown-color}*/;
-    }
-
-    /* Active button */
-    .ui-page-theme-a .ui-btn.ui-btn-active,
-    html .ui-bar-a .ui-btn.ui-btn-active,
-    html .ui-body-a .ui-btn.ui-btn-active,
-    html body .ui-group-theme-a .ui-btn.ui-btn-active,
-    html head + body .ui-btn.ui-btn-a.ui-btn-active,
-    /* Active checkbox icon */
-    .ui-page-theme-a .ui-checkbox-on:after,
-    html .ui-bar-a .ui-checkbox-on:after,
-    html .ui-body-a .ui-checkbox-on:after,
-    html body .ui-group-theme-a .ui-checkbox-on:after,
-    .ui-btn.ui-checkbox-on.ui-btn-a:after {
-        background-color: #3388cc /*{a-active-background-color}*/;
-        border-color: #3388cc /*{a-active-border}*/;
-        color: #fff /*{a-active-color}*/;
-    }
-/* Active radio button icon */
-.ui-page-theme-a .ui-radio-on:after,
-html .ui-bar-a .ui-radio-on:after,
-html .ui-body-a .ui-radio-on:after,
-html body .ui-group-theme-a .ui-radio-on:after,
-.ui-btn.ui-radio-on.ui-btn-a:after {
-    border-color: #3388cc /*{a-active-background-color}*/;
 }
 
 div[data-role="controlgroup"] a[data-role='button'] {
@@ -373,26 +248,6 @@ div[data-role="controlgroup"] a[data-role='button'] {
 div[data-role="controlgroup"] a.ui-btn-active {
     background: #38c !important;
     color: #fff !important;
-}
-
-.ui-listview li h3 {
-    font-weight: 400;
-}
-
-.ui-listview > .ui-li-divider {
-    line-height: 1.5;
-    line-height: initial;
-}
-
-.ui-slider-track.ui-mini .ui-slider-handle {
-    height: 18px;
-    width: 18px;
-    margin: -10px 0 0 -10px;
-}
-
-.ui-btn {
-    font-family: inherit;
-    font-weight: 500 !important;
 }
 
 a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearButton):not([is]) {
@@ -530,10 +385,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
         margin-left: 2em;
         min-width: 300px;
     }
-
-        .firstDashboardHomeRightColumn .ui-collapsible-content {
-            min-height: 585px;
-        }
 }
 
 @media all and (min-width: 1580px) {
@@ -544,11 +395,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
         width: 300px;
         min-width: 300px;
     }
-
-        .dashboardHomeRightColumn .ui-collapsible-content {
-            height: auto;
-            min-height: 585px;
-        }
 }
 
 @media all and (min-width: 1680px) {
@@ -668,10 +514,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
     height: 7px;
     width: 100%;
     opacity: .95;
-}
-
-.activeDevicesCollapsible .ui-collapsible-content {
-    padding: .5em .5em !important;
 }
 
 .activeSession:not(.playingSession) .sessionNowPlayingContent {
@@ -813,39 +655,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 .appLinks img {
     height: 36px;
 }
-
-/*
-    Media Library Page
-    */
-.mediaFolderButtons {
-    margin-top: 10px;
-}
-
-.mediaFolderLocations {
-    margin: 1em .25em !important;
-}
-
-.mediaLocationsHeader {
-    padding-top: .75em !important;
-    padding-bottom: .75em !important;
-}
-
-    .mediaLocationsHeader .ui-btn {
-        position: absolute;
-        right: -3px;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-        top: 4px;
-    }
-
-.btnShowStatusMessage {
-    font-weight: normal !important;
-    text-decoration: none;
-}
-
-    .btnShowStatusMessage:hover {
-        text-decoration: underline;
-    }
 
 .supporterMembershipDisabled .tabSupporterMembership {
     display: none;

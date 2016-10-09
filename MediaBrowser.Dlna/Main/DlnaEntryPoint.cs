@@ -220,7 +220,7 @@ namespace MediaBrowser.Dlna.Main
                 return;
             }
 
-            var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds * 2;
+            var cacheLength = _config.GetDlnaConfiguration().BlastAliveMessageIntervalSeconds;
             _Publisher.SupportPnpRootDevice = false;
 
             var addresses = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).ToList();

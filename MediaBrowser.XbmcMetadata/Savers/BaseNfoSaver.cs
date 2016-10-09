@@ -80,7 +80,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     "imdbid",
                     "imdb_id",
                     "plotkeyword",
-                    //"country",
+                    "country",
                     "audiodbalbumid",
                     "audiodbartistid",
                     "awardsummary",
@@ -723,10 +723,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("tagline", item.Tagline);
             }
 
-            //foreach (var country in hasProductionLocations.ProductionLocations)
-            //{
-            //    writer.WriteElementString("country", country);
-            //}
+            foreach (var country in item.ProductionLocations)
+            {
+                writer.WriteElementString("country", country);
+            }
 
             foreach (var genre in item.Genres)
             {

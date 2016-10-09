@@ -21,10 +21,13 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Server.Implementations.Devices;
+using MediaBrowser.Server.Implementations.Playlists;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -279,6 +282,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "Keywords", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "ProviderIds", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "Images", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ProductionLocations", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ThemeSongIds", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ThemeVideoIds", "Text");
 
             _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
@@ -428,7 +434,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Tagline",
             "Keywords",
             "ProviderIds",
-            "Images"
+            "Images",
+            "ProductionLocations",
+            "ThemeSongIds",
+            "ThemeVideoIds"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -556,7 +565,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Tagline",
                 "Keywords",
                 "ProviderIds",
-                "Images"
+                "Images",
+                "ProductionLocations",
+                "ThemeSongIds",
+                "ThemeVideoIds"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -742,7 +754,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Id;
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
-                    _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item, _memoryStreamProvider);
+
+                    if (TypeRequiresDeserialization(item.GetType()))
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item, _memoryStreamProvider);
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.GetParameter(index++).Value = item.Path;
 
@@ -999,9 +1019,45 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.ExternalSeriesId;
                     _saveItemCommand.GetParameter(index++).Value = item.ShortOverview;
                     _saveItemCommand.GetParameter(index++).Value = item.Tagline;
-                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Keywords.ToArray());
+
+                    if (item.Keywords.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Keywords.ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
                     _saveItemCommand.GetParameter(index++).Value = SerializeProviderIds(item);
                     _saveItemCommand.GetParameter(index++).Value = SerializeImages(item);
+
+                    if (item.ProductionLocations.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.ProductionLocations.ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (item.ThemeSongIds.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.ThemeSongIds.Select(i => i.ToString("N")).ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (item.ThemeVideoIds.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.ThemeVideoIds.Select(i => i.ToString("N")).ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1206,6 +1262,46 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     return false;
                 }
                 if (type == typeof(Book))
+                {
+                    return false;
+                }
+                if (type == typeof(Person))
+                {
+                    return false;
+                }
+                if (type == typeof(RecordingGroup))
+                {
+                    return false;
+                }
+                if (type == typeof(Channel))
+                {
+                    return false;
+                }
+                if (type == typeof(ManualCollectionsFolder))
+                {
+                    return false;
+                }
+                if (type == typeof(CameraUploadsFolder))
+                {
+                    return false;
+                }
+                if (type == typeof(PlaylistsFolder))
+                {
+                    return false;
+                }
+                if (type == typeof(UserRootFolder))
+                {
+                    return false;
+                }
+                if (type == typeof(PhotoAlbum))
+                {
+                    return false;
+                }
+                if (type == typeof(Season))
+                {
+                    return false;
+                }
+                if (type == typeof(MusicArtist))
                 {
                     return false;
                 }
@@ -1767,12 +1863,42 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             index++;
 
+            if (query.HasField(ItemFields.ProductionLocations))
+            {
+                if (!reader.IsDBNull(index))
+                {
+                    item.ProductionLocations = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+                }
+                index++;
+            }
+
+            if (!reader.IsDBNull(index))
+            {
+                item.ThemeSongIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.ThemeVideoIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+            }
+            index++;
+
             if (string.IsNullOrWhiteSpace(item.Tagline))
             {
                 var movie = item as Movie;
                 if (movie != null && movie.Taglines.Count > 0)
                 {
                     movie.Tagline = movie.Taglines[0];
+                }
+            }
+
+            if (type == typeof(Person) && item.ProductionLocations.Count == 0)
+            {
+                var person = (Person)item;
+                if (!string.IsNullOrWhiteSpace(person.PlaceOfBirth))
+                {
+                    item.ProductionLocations = new List<string> { person.PlaceOfBirth };
                 }
             }
 

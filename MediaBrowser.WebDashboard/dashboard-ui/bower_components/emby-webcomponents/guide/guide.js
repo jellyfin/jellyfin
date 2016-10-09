@@ -355,7 +355,7 @@
             }
             else if (item.TimerId) {
 
-                status = item.TimerStatus;
+                status = item.Status;
             }
             else if (item.Type == 'Timer') {
 
@@ -367,7 +367,7 @@
 
             if (item.SeriesTimerId) {
 
-                if (status != 'Cancelled' && status != 'Aborted') {
+                if (status != 'Cancelled') {
                     return '<i class="md-icon programIcon seriesTimerIcon">&#xE062;</i>';
                 }
 

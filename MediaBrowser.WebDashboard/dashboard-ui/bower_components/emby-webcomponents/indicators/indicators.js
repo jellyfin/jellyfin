@@ -105,7 +105,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
         }
         else if (item.TimerId) {
 
-            status = item.TimerStatus;
+            status = item.Status;
         }
         else if (item.Type == 'Timer') {
 
@@ -117,7 +117,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
         if (item.SeriesTimerId) {
 
-            if (status != 'Cancelled' && status != 'Aborted') {
+            if (status != 'Cancelled') {
                 return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
             }
 

@@ -1,6 +1,5 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'userSettings', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, userSettings, embyRouter, globalize) {
 
-    var lastPlaylistId = '';
     var currentServerId;
 
     function parentWithClass(elem, className) {
@@ -26,7 +25,7 @@
         var apiClient = connectionManager.getApiClient(currentServerId);
 
         if (playlistId) {
-            lastPlaylistId = playlistId;
+            userSettings.set('playlisteditor-lastplaylistid', playlistId);
             addToPlaylist(apiClient, panel, playlistId);
         } else {
             createPlaylist(apiClient, panel);
@@ -126,7 +125,7 @@
             });
 
             select.innerHTML = html;
-            select.value = lastPlaylistId || '';
+            select.value = userSettings.get('playlisteditor-lastplaylistid') || '';
             triggerChange(select);
 
             loading.hide();
