@@ -235,20 +235,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await GetLiveStream(id, mediaSourceId, true, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
         {
-            var item = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
-            var service = GetService(item);
+            var baseItem = (BaseItem)item;
+            var service = GetService(baseItem);
 
-            return await service.GetRecordingStreamMediaSources(id, cancellationToken).ConfigureAwait(false);
+            return await service.GetRecordingStreamMediaSources(baseItem.ExternalId, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
         {
-            var item = GetInternalChannel(id);
-            var service = GetService(item);
+            var baseItem = (LiveTvChannel)item;
+            var service = GetService(baseItem);
 
-            var sources = await service.GetChannelStreamMediaSources(item.ExternalId, cancellationToken).ConfigureAwait(false);
+            var sources = await service.GetChannelStreamMediaSources(baseItem.ExternalId, cancellationToken).ConfigureAwait(false);
 
             if (sources.Count == 0)
             {
@@ -259,7 +259,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             foreach (var source in list)
             {
-                Normalize(source, service, item.ChannelType == ChannelType.TV);
+                Normalize(source, service, baseItem.ChannelType == ChannelType.TV);
             }
 
             return list;
@@ -738,6 +738,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             recording.IsRepeat = info.IsRepeat;
             recording.IsSports = info.IsSports;
             recording.SeriesTimerId = info.SeriesTimerId;
+            recording.TimerId = info.TimerId;
             recording.StartDate = info.StartDate;
 
             if (!dataChanged)
@@ -1083,10 +1084,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 if (timer != null)
                 {
-                    program.TimerId = _tvDtoService.GetInternalTimerId(serviceName, timer.Id)
-                        .ToString("N");
+                    if (timer.Status != RecordingStatus.Cancelled && timer.Status != RecordingStatus.Error)
+                    {
+                        program.TimerId = _tvDtoService.GetInternalTimerId(serviceName, timer.Id)
+                            .ToString("N");
 
-                    program.TimerStatus = timer.Status;
+                        program.Status = timer.Status.ToString();
+                    }
 
                     if (!string.IsNullOrEmpty(timer.SeriesTimerId))
                     {
@@ -1432,7 +1436,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private DateTime _lastRecordingRefreshTime;
         private async Task RefreshRecordings(CancellationToken cancellationToken)
         {
-            const int cacheMinutes = 5;
+            const int cacheMinutes = 3;
 
             if ((DateTime.UtcNow - _lastRecordingRefreshTime).TotalMinutes < cacheMinutes)
             {
@@ -1482,7 +1486,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private QueryResult<BaseItem> GetEmbyRecordings(RecordingQuery query, DtoOptions dtoOptions, User user)
         {
-            if (user == null || (query.IsInProgress ?? false))
+            if (user == null)
+            {
+                return new QueryResult<BaseItem>();
+            }
+
+            if ((query.IsInProgress ?? false))
             {
                 return new QueryResult<BaseItem>();
             }
@@ -1628,7 +1637,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return new QueryResult<BaseItem>();
             }
 
-            if (_services.Count == 1)
+            if (_services.Count == 1 && !(query.IsInProgress ?? false))
             {
                 return GetEmbyRecordings(query, new DtoOptions(), user);
             }
@@ -1823,6 +1832,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
                 : _tvDtoService.GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N");
+
+            dto.TimerId = string.IsNullOrEmpty(info.TimerId)
+                ? null
+                : _tvDtoService.GetInternalTimerId(service.Name, info.TimerId).ToString("N");
 
             dto.StartDate = info.StartDate;
             dto.RecordingStatus = info.Status;

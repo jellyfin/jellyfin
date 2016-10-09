@@ -58,7 +58,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (itemHelper.canEdit(user, item.Type)) {
+            if (itemHelper.canEdit(user, item)) {
 
                 if (options.edit !== false && item.Type != 'SeriesTimer') {
 
@@ -71,7 +71,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (itemHelper.canEditImages(user, item.Type)) {
+            if (itemHelper.canEditImages(user, item)) {
 
                 if (options.editImages !== false) {
                     commands.push({
@@ -81,9 +81,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (itemHelper.canEdit(user, item.Type)) {
+            if (itemHelper.canEdit(user, item)) {
 
-                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual') {
+                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual' && !(item.Type == 'Recording' && item.Status != 'Completed')) {
                     if (options.editSubtitles !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#EditSubtitles'),
@@ -176,7 +176,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (user.Policy.IsAdministrator) {
 
-                if (item.Type != 'Timer' && item.Type != 'SeriesTimer' && item.Type != 'Program') {
+                if (item.Type != 'Timer' && item.Type != 'SeriesTimer' && item.Type != 'Program' && !(item.Type == 'Recording' && item.Status != 'Completed')) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Refresh'),
                         id: 'refresh'

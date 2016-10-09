@@ -34,6 +34,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool IsPhysicalRoot
+        {
+            get { return true; }
+        }
+
         public override bool CanDelete()
         {
             return false;

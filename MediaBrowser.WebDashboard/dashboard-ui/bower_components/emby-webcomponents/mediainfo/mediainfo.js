@@ -9,7 +9,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         }
         else if (item.TimerId) {
 
-            status = item.TimerStatus;
+            status = item.Status;
         }
         else if (item.Type == 'Timer') {
 

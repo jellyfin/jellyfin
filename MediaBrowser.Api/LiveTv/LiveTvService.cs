@@ -677,6 +677,12 @@ namespace MediaBrowser.Api.LiveTv
         public string Container { get; set; }
     }
 
+    [Route("/LiveTv/LiveRecordings/{Id}/stream", "GET", Summary = "Gets a live tv channel")]
+    public class GetLiveRecordingFile
+    {
+        public string Id { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -698,13 +704,32 @@ namespace MediaBrowser.Api.LiveTv
             _fileSystem = fileSystem;
         }
 
+        public async Task<object> Get(GetLiveRecordingFile request)
+        {
+            var path = EmbyTV.Current.GetActiveRecordingPath(request.Id);
+
+            if (path == null)
+            {
+                throw new FileNotFoundException();
+            }
+
+            var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType(path);
+
+            var streamSource = new ProgressiveFileCopier(_fileSystem, path, outputHeaders, null, Logger, CancellationToken.None)
+            {
+                AllowEndOfFile = false
+            };
+            return ResultFactory.GetAsyncStreamWriter(streamSource);
+        }
+
         public async Task<object> Get(GetLiveStreamFile request)
         {
             var directStreamProvider = (await EmbyTV.Current.GetLiveStream(request.Id).ConfigureAwait(false)) as IDirectStreamProvider;
             var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // TODO: Don't hardcode this
-            outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file.ts");
+            outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file." + request.Container);
 
             var streamSource = new ProgressiveFileCopier(directStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
             {

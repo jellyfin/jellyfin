@@ -938,7 +938,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (min-width: 1000px) {
 
     .itemDetailPage .portraitCard-scalable {
-        width: 25% !important;
+        width: 20% !important;
     }
 
     .itemDetailPage .squareCard-scalable {

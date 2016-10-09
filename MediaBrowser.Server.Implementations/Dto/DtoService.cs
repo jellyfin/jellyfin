@@ -907,15 +907,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Keywords = item.Keywords;
             }
 
-            if (fields.Contains(ItemFields.PlaceOfBirth))
-            {
-                var person = item as Person;
-                if (person != null)
-                {
-                    dto.PlaceOfBirth = person.PlaceOfBirth;
-                }
-            }
-
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)
             {
@@ -1432,10 +1423,9 @@ namespace MediaBrowser.Server.Implementations.Dto
                 SetBookProperties(dto, book);
             }
 
-            var movie = item as Movie;
-            if (movie != null)
+            if (item.ProductionLocations.Count > 0 || item is Movie)
             {
-                dto.ProductionLocations = new string[] { };
+                dto.ProductionLocations = item.ProductionLocations.ToArray();
             }
 
             var photo = item as Photo;

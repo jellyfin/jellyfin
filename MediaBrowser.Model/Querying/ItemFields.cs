@@ -154,8 +154,6 @@
         /// </summary>
         People,
 
-        PlaceOfBirth,
-
         /// <summary>
         /// The production locations
         /// </summary>

@@ -86,7 +86,7 @@
 
         var html = '';
         html += '<div class="listItem ' + cssClass + '" data-type="' + type + '" data-path="' + path + '" style="border-bottom:1px solid #e0e0e0;">';
-        html += '<div class="listItemBody" style="min-height:2em;padding-left:0;">';
+        html += '<div class="listItemBody" style="padding-left:0;padding-top:.5em;padding-bottom:.5em;">';
         html += '<div class="listItemBodyText">';
         html += name;
         html += '</div>';

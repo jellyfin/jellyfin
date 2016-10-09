@@ -355,7 +355,7 @@
             }
             else if (item.TimerId) {
 
-                status = item.TimerStatus;
+                status = item.Status;
             }
             else if (item.Type == 'Timer') {
 

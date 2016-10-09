@@ -63,6 +63,12 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsThemeMedia
+        {
+            get { return true; }
+        }
+
         public int? TotalBitrate { get; set; }
         public ExtraType? ExtraType { get; set; }
 
@@ -164,7 +170,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
-            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
+            get { return true; }
         }
 
         [IgnoreDataMember]
