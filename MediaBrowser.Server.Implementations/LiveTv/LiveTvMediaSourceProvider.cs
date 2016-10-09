@@ -65,12 +65,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (item is ILiveTvRecording)
                 {
-                    sources = await _liveTvManager.GetRecordingMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetRecordingMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
                 else
                 {
-                    sources = await _liveTvManager.GetChannelMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
             }

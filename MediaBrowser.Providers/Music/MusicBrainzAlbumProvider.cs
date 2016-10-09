@@ -85,7 +85,8 @@ namespace MediaBrowser.Providers.Music
             {
                 var result = new RemoteSearchResult
                 {
-                    Name = i.Title
+                    Name = i.Title,
+                    ProductionYear = i.Year
                 };
 
                 if (!string.IsNullOrWhiteSpace(i.ReleaseId))
@@ -94,7 +95,7 @@ namespace MediaBrowser.Providers.Music
                 }
                 if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
                 {
-                    result.SetProviderId(MetadataProviders.MusicBrainzAlbum, i.ReleaseGroupId);
+                    result.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, i.ReleaseGroupId);
                 }
 
                 return result;
@@ -117,16 +118,22 @@ namespace MediaBrowser.Providers.Music
 
                 var releaseResult = await GetReleaseResult(artistMusicBrainzId, id.GetAlbumArtist(), id.Name, cancellationToken).ConfigureAwait(false);
 
-                if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
+                if (releaseResult != null)
                 {
-                    releaseId = releaseResult.ReleaseId;
-                    result.HasMetadata = true;
-                }
+                    if (!string.IsNullOrEmpty(releaseResult.ReleaseId))
+                    {
+                        releaseId = releaseResult.ReleaseId;
+                        result.HasMetadata = true;
+                    }
 
-                if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
-                {
-                    releaseGroupId = releaseResult.ReleaseGroupId;
-                    result.HasMetadata = true;
+                    if (!string.IsNullOrEmpty(releaseResult.ReleaseGroupId))
+                    {
+                        releaseGroupId = releaseResult.ReleaseGroupId;
+                        result.HasMetadata = true;
+                    }
+
+                    result.Item.ProductionYear = releaseResult.Year;
+                    result.Item.Overview = releaseResult.Overview;
                 }
             }
 
@@ -205,6 +212,8 @@ namespace MediaBrowser.Providers.Music
             public string ReleaseId;
             public string ReleaseGroupId;
             public string Title;
+            public string Overview;
+            public int? Year;
 
             public static List<ReleaseResult> Parse(XmlDocument doc, int? limit = null)
             {
@@ -237,7 +246,9 @@ namespace MediaBrowser.Providers.Music
                             {
                                 ReleaseId = releaseId,
                                 ReleaseGroupId = releaseGroupId,
-                                Title = GetTitleFromReleaseNode(node)
+                                Title = GetValueFromReleaseNode(node, "title"),
+                                Overview = GetValueFromReleaseNode(node, "annotation"),
+                                Year = GetYearFromReleaseNode(node, "date")
                             });
 
                             if (limit.HasValue && list.Count >= limit.Value)
@@ -251,14 +262,37 @@ namespace MediaBrowser.Providers.Music
                 return list;
             }
 
-            private static string GetTitleFromReleaseNode(XmlNode node)
+            private static int? GetYearFromReleaseNode(XmlNode node, string name)
             {
                 var subNodes = node.ChildNodes;
                 if (subNodes != null)
                 {
                     foreach (var subNode in subNodes.Cast<XmlNode>())
                     {
-                        if (string.Equals(subNode.Name, "title", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(subNode.Name, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            DateTime date;
+                            if (DateTime.TryParse(subNode.InnerText, out date))
+                            {
+                                return date.Year;
+                            }
+
+                            return null;
+                        }
+                    }
+                }
+
+                return null;
+            }
+
+            private static string GetValueFromReleaseNode(XmlNode node, string name)
+            {
+                var subNodes = node.ChildNodes;
+                if (subNodes != null)
+                {
+                    foreach (var subNode in subNodes.Cast<XmlNode>())
+                    {
+                        if (string.Equals(subNode.Name, name, StringComparison.OrdinalIgnoreCase))
                         {
                             return subNode.InnerText;
                         }

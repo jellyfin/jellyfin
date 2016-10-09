@@ -428,14 +428,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
                     return ApplyPaging(result, startIndex, limit);
                 }
-                if (stubType.Value == StubType.Folder)
-                {
-                    var movie = item as Movie;
-                    if (movie != null)
-                    {
-                        return ApplyPaging(await GetMovieItems(movie).ConfigureAwait(false), startIndex, limit);
-                    }
-                }
 
                 var person = item as Person;
                 if (person != null)
@@ -468,14 +460,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             }).ConfigureAwait(false);
 
-            var options = _config.GetDlnaConfiguration();
-
             var serverItems = queryResult
                 .Items
                 .Select(i => new ServerItem
                 {
-                    Item = i,
-                    StubType = GetDisplayStubType(i, item, options)
+                    Item = i
                 })
                 .ToArray();
 
@@ -519,29 +508,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return result;
         }
 
-        private StubType? GetDisplayStubType(BaseItem item, BaseItem context, DlnaOptions options)
-        {
-            if (context == null || context.IsFolder)
-            {
-                var movie = item as Movie;
-                if (movie != null && options.EnableMovieFolders)
-                {
-                    if (movie.GetTrailerIds().Count > 0 ||
-                        movie.SpecialFeatureIds.Count > 0)
-                    {
-                        return StubType.Folder;
-                    }
-
-                    if (EnablePeopleDisplay(item))
-                    {
-                        return StubType.Folder;
-                    }
-                }
-            }
-
-            return null;
-        }
-
         private bool EnablePeopleDisplay(BaseItem item)
         {
             if (_libraryManager.GetPeopleNames(new InternalPeopleQuery
@@ -554,31 +520,6 @@ namespace MediaBrowser.Dlna.ContentDirectory
             }
 
             return false;
-        }
-
-        private Task<QueryResult<ServerItem>> GetMovieItems(Movie item)
-        {
-            var list = new List<BaseItem>();
-
-            list.Add(item);
-
-            list.AddRange(item.GetTrailerIds().Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
-            list.AddRange(item.SpecialFeatureIds.Select(i => _libraryManager.GetItemById(i)).Where(i => i != null));
-
-            var serverItems = list.Select(i => new ServerItem { Item = i, StubType = null })
-                .ToList();
-
-            serverItems.Add(new ServerItem
-            {
-                Item = item,
-                StubType = StubType.People
-            });
-
-            return Task.FromResult(new QueryResult<ServerItem>
-            {
-                Items = serverItems.ToArray(),
-                TotalRecordCount = serverItems.Count
-            });
         }
 
         private ServerItem GetItemFromObjectId(string id, User user)

@@ -505,9 +505,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            //var countries = val.Split('/')
-                            //    .Select(i => i.Trim())
-                            //    .Where(i => !string.IsNullOrWhiteSpace(i));
+                            item.ProductionLocations = val.Split('/')
+                                .Select(i => i.Trim())
+                                .Where(i => !string.IsNullOrWhiteSpace(i))
+                                .ToList();
                         }
                         break;
                     }

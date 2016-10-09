@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Providers
                             var person = item as Person;
                             if (person != null)
                             {
-                                person.PlaceOfBirth = val;
+                                person.ProductionLocations = new List<string> { val };
                             }
                         }
 
@@ -790,7 +790,7 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 default:
-                {
+                    {
                         string readerName = reader.Name;
                         string providerIdValue;
                         if (_validProviderIds.TryGetValue(readerName, out providerIdValue))

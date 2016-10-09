@@ -335,15 +335,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        /// <summary>
-        /// Updates the item in library cache.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        private void UpdateItemInLibraryCache(BaseItem item)
-        {
-            RegisterItem(item);
-        }
-
         public void RegisterItem(BaseItem item)
         {
             if (item == null)
@@ -1777,7 +1768,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var item in list)
             {
-                UpdateItemInLibraryCache(item);
+                RegisterItem(item);
             }
 
             if (ItemAdded != null)
@@ -1818,7 +1809,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             await ItemRepository.SaveItem(item, cancellationToken).ConfigureAwait(false);
 
-            UpdateItemInLibraryCache(item);
+            RegisterItem(item);
 
             if (ItemUpdated != null)
             {
