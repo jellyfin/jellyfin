@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public Container Container { get; set; }
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
-        private IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {

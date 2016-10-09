@@ -149,7 +149,6 @@
     <Compile Include="Entities\IHasShortOverview.cs" />
     <Compile Include="Entities\IHasSpecialFeatures.cs" />
     <Compile Include="Entities\IHasStartDate.cs" />
-    <Compile Include="Entities\IHasThemeMedia.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IHasUserData.cs" />
     <Compile Include="Entities\IHiddenFromDisplay.cs" />

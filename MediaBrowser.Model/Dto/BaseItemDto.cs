@@ -1213,7 +1213,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
-        public RecordingStatus TimerStatus { get; set; }
         /// <summary>
         /// Gets or sets the current program.
         /// </summary>

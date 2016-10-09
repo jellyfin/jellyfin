@@ -22,13 +22,18 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Folder
     /// </summary>
-    public class Folder : BaseItem, IHasThemeMedia
+    public class Folder : BaseItem
     {
         public static IUserManager UserManager { get; set; }
         public static IUserViewManager UserViewManager { get; set; }
 
-        public List<Guid> ThemeSongIds { get; set; }
-        public List<Guid> ThemeVideoIds { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is root.
+        /// </summary>
+        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
+        public bool IsRoot { get; set; }
+
+        public virtual List<LinkedChild> LinkedChildren { get; set; }
 
         [IgnoreDataMember]
         public DateTime? DateLastMediaAdded { get; set; }
@@ -36,13 +41,22 @@ namespace MediaBrowser.Controller.Entities
         public Folder()
         {
             LinkedChildren = new List<LinkedChild>();
+        }
 
-            ThemeSongIds = new List<Guid>();
-            ThemeVideoIds = new List<Guid>();
+        [IgnoreDataMember]
+        public override bool SupportsThemeMedia
+        {
+            get { return true; }
         }
 
         [IgnoreDataMember]
         public virtual bool IsPreSorted
+        {
+            get { return false; }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool IsPhysicalRoot
         {
             get { return false; }
         }
@@ -117,19 +131,6 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is physical root.
-        /// </summary>
-        /// <value><c>true</c> if this instance is physical root; otherwise, <c>false</c>.</value>
-        public bool IsPhysicalRoot { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is root.
-        /// </summary>
-        /// <value><c>true</c> if this instance is root; otherwise, <c>false</c>.</value>
-        public bool IsRoot { get; set; }
-
-        public virtual List<LinkedChild> LinkedChildren { get; set; }
-
         [IgnoreDataMember]
         protected virtual bool SupportsShortcutChildren
         {
@@ -178,8 +179,6 @@ namespace MediaBrowser.Controller.Entities
             item.SetParent(null);
         }
 
-        #region Indexing
-
         /// <summary>
         /// Returns the valid set of index by options for this folder type.
         /// Override or extend to modify.
@@ -206,8 +205,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get { return GetIndexByOptions(); }
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the actual children.

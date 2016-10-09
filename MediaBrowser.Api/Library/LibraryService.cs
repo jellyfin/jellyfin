@@ -835,14 +835,14 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            while (GetThemeSongIds(item).Count == 0 && request.InheritFromParent && item.GetParent() != null)
+            while (item.ThemeSongIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {
                 item = item.GetParent();
             }
 
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = GetThemeSongIds(item).Select(_libraryManager.GetItemById)
+            var dtos = item.ThemeSongIds.Select(_libraryManager.GetItemById)
                             .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
@@ -879,14 +879,14 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            while (GetThemeVideoIds(item).Count == 0 && request.InheritFromParent && item.GetParent() != null)
+            while (item.ThemeVideoIds.Count == 0 && request.InheritFromParent && item.GetParent() != null)
             {
                 item = item.GetParent();
             }
 
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = GetThemeVideoIds(item).Select(_libraryManager.GetItemById)
+            var dtos = item.ThemeVideoIds.Select(_libraryManager.GetItemById)
                             .Where(i => i != null)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
@@ -899,30 +899,6 @@ namespace MediaBrowser.Api.Library
                 TotalRecordCount = items.Length,
                 OwnerId = _dtoService.GetDtoId(item)
             };
-        }
-
-        private List<Guid> GetThemeVideoIds(BaseItem item)
-        {
-            var i = item as IHasThemeMedia;
-
-            if (i != null)
-            {
-                return i.ThemeVideoIds;
-            }
-
-            return new List<Guid>();
-        }
-
-        private List<Guid> GetThemeSongIds(BaseItem item)
-        {
-            var i = item as IHasThemeMedia;
-
-            if (i != null)
-            {
-                return i.ThemeSongIds;
-            }
-
-            return new List<Guid>();
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");

@@ -179,7 +179,11 @@ namespace MediaBrowser.Providers.People
 
                 item.Name = info.name;
                 item.HomePageUrl = info.homepage;
-                item.PlaceOfBirth = info.place_of_birth;
+
+                if (!string.IsNullOrWhiteSpace(info.place_of_birth))
+                {
+                    item.ProductionLocations = new List<string> { info.place_of_birth };
+                }
                 item.Overview = info.biography;
 
                 DateTime date;

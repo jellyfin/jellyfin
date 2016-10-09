@@ -170,6 +170,14 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            if (!lockedFields.Contains(MetadataFields.ProductionLocations))
+            {
+                if (replaceData || target.ProductionLocations.Count == 0)
+                {
+                    target.ProductionLocations = source.ProductionLocations;
+                }
+            }
+
             if (replaceData || !target.VoteCount.HasValue)
             {
                 target.VoteCount = source.VoteCount;
