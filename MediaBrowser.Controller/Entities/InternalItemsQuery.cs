@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
 using System.Linq;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
@@ -159,10 +160,12 @@ namespace MediaBrowser.Controller.Entities
         public DateTime? MinDateCreated { get; set; }
         public DateTime? MinDateLastSaved { get; set; }
 
-        public List<ItemFields> Fields { get; set; }
+        public DtoOptions DtoOptions { get; set; }
 
         public bool HasField(ItemFields name)
         {
+            var fields = DtoOptions.Fields;
+
             switch (name)
             {
                 case ItemFields.ProductionLocations:
@@ -185,7 +188,7 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.Tags:
                 case ItemFields.DateLastMediaAdded:
                 case ItemFields.CriticRatingSummary:
-                    return Fields.Count == 0 || Fields.Contains(name);
+                    return fields.Count == 0 || fields.Contains(name);
                 default:
                     return true;
             }
@@ -196,7 +199,7 @@ namespace MediaBrowser.Controller.Entities
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
 
-            Fields = new List<ItemFields>();
+            DtoOptions = new DtoOptions();
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };
             ExcludeArtistIds = new string[] { };

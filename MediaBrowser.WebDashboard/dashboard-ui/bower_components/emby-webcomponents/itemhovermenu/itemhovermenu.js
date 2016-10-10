@@ -246,7 +246,7 @@
         showOverlayTimeout = setTimeout(function () {
             onShowTimerExpired(card);
 
-        }, 1200);
+        }, 1400);
     }
 
     function preventTouchHover() {

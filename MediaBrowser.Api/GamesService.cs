@@ -210,7 +210,7 @@ namespace MediaBrowser.Api
                         typeof(Game).Name
                 },
                 SimilarTo = item,
-                Fields = dtoOptions.Fields
+                DtoOptions = dtoOptions
 
             }).ToList();
 

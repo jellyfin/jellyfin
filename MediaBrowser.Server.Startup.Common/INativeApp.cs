@@ -24,8 +24,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <param name="tempDirectory">The temporary directory.</param>
         void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory);
 
-        bool PortsRequireAuthorization(string applicationPath);
-
         /// <summary>
         /// Gets the environment.
         /// </summary>
