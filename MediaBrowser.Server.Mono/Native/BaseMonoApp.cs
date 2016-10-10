@@ -277,10 +277,5 @@ namespace MediaBrowser.Server.Mono.Native
         {
 
         }
-
-        public bool PortsRequireAuthorization(string applicationPath)
-        {
-            return false;
-        }
     }
 }

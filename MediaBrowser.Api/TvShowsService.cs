@@ -312,7 +312,7 @@ namespace MediaBrowser.Api
                         typeof(Series).Name
                 },
                 SimilarTo = item,
-                Fields = dtoOptions.Fields
+                DtoOptions = dtoOptions
 
             }).ToList();
 
@@ -346,7 +346,7 @@ namespace MediaBrowser.Api
                 Limit = request.Limit,
                 ParentId = parentIdGuid,
                 Recursive = true,
-                Fields = options.Fields
+                DtoOptions = options
 
             }).ToList();
 

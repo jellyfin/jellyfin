@@ -106,7 +106,12 @@ namespace MediaBrowser.Api
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 Recursive = true,
                 EnableTotalRecordCount = false,
-                Fields = new List<ItemFields> { ItemFields.Genres, ItemFields.Tags }
+                DtoOptions = new Controller.Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields> { ItemFields.Genres, ItemFields.Tags },
+                    EnableImages = false,
+                    EnableUserData = false
+                }
             };
 
             return query;
