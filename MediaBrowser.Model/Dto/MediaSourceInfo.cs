@@ -54,8 +54,6 @@ namespace MediaBrowser.Model.Dto
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
 
-        public DateTime? DateLiveStreamOpened { get; set; }
-
         public MediaSourceInfo()
         {
             Formats = new List<string>();

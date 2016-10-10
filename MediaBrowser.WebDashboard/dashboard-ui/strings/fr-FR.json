@@ -1,5 +1,6 @@
 {
     "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
+    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Quitter",
     "LabelApiDocumentation": "Documentation Api",
     "LabelBrowseLibrary": "Parcourir la Biblioth\u00e8que",

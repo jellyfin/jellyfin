@@ -82,7 +82,7 @@ namespace MediaBrowser.Api
             {
                 IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
                 Recursive = true,
-                Fields = dtoOptions.Fields
+                DtoOptions = dtoOptions
             };
 
             // ExcludeArtistIds

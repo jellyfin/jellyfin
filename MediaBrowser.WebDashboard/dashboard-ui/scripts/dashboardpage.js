@@ -858,11 +858,13 @@
 
         renderUrls: function (page, systemInfo) {
 
+            var helpButton = '<a href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank" style="margin-left:1em;color:#fff;background:#52B54B;padding:.25em 1em;border-radius:.5em;">' + Globalize.translate('ButtonHelp') + '</a>';
+
             if (systemInfo.LocalAddress) {
 
                 var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
 
-                $('.localUrl', page).html(localAccessHtml).show().trigger('create');
+                $('.localUrl', page).html(localAccessHtml + helpButton).show().trigger('create');
             } else {
                 $('.externalUrl', page).hide();
             }
@@ -873,7 +875,7 @@
 
                 var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
 
-                $('.externalUrl', page).html(remoteAccessHtml).show().trigger('create');
+                $('.externalUrl', page).html(remoteAccessHtml + helpButton).show().trigger('create');
             } else {
                 $('.externalUrl', page).hide();
             }

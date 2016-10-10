@@ -1857,11 +1857,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             index++;
 
-            if (!reader.IsDBNull(index))
+            if (query.DtoOptions.EnableImages)
             {
-                DeserializeImages(reader.GetString(index), item);
+                if (!reader.IsDBNull(index))
+                {
+                    DeserializeImages(reader.GetString(index), item);
+                }
+                index++;
             }
-            index++;
 
             if (query.HasField(ItemFields.ProductionLocations))
             {
@@ -2257,6 +2260,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         list.Remove(fieldToRemove);
                     }
                 }
+            }
+
+            if (!query.DtoOptions.EnableImages)
+            {
+                list.Remove("Images");
             }
 
             if (EnableJoinUserData(query))

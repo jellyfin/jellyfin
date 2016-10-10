@@ -560,12 +560,23 @@ button {
     .backdropCard-scalable {
         width: 20%;
     }
+
+    .squareCard-scalable {
+        width: 12.5%;
+    }
 }
 
 @media all and (min-width: 1800px) {
 
+    .smallBackdropCard-scalable {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+
     .squareCard-scalable {
-        width: 12.5%;
+        width: 11.111111111111111111111111111111%;
     }
 
     .smallBackdropCard-scalable {
@@ -574,10 +585,6 @@ button {
 }
 
 @media all and (min-width: 2100px) {
-
-    .squareCard-scalable {
-        width: 11.111111111111111111111111111111%;
-    }
 
     .backdropCard-scalable {
         width: 20%;

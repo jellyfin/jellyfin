@@ -966,19 +966,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         protected override void FindParts()
         {
-            var isAuthorized = ServerConfigurationManager.Configuration.IsPortAuthorized;
-            if (isAuthorized)
-            {
-                try
-                {
-                    isAuthorized = !NativeApp.PortsRequireAuthorization(ConfigurationManager.CommonApplicationPaths.ApplicationPath);
-                }
-                catch
-                {
-
-                }
-            }
-            if (!isAuthorized)
+            if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
             {
                 RegisterServerWithAdministratorAccess();
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;

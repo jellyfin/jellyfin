@@ -10,13 +10,11 @@
     min-height: 100%;
     position: absolute;
     border: 0;
+    background: #fff;
 }
 
-.ui-popup.ui-body-a {
-    background: #f4f4f4;
-}
-.ui-popup.ui-body-b {
-    background: #222;
+.ui-popup {
+    background: #fff;
 }
 .ui-popup-open .ui-header-fixed,
 .ui-popup-open .ui-footer-fixed {

@@ -31,7 +31,14 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if ((item.Type == 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
-                    name: globalize.translate('sharedcomponents#ButtonCancel'),
+                    name: globalize.translate('sharedcomponents#CancelRecording'),
+                    id: 'canceltimer'
+                });
+            }
+
+            if ((item.Type == 'Recording' && item.Status == 'InProgress') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#CancelRecording'),
                     id: 'canceltimer'
                 });
             }
@@ -500,7 +507,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         require(['recordingHelper'], function (recordingHelper) {
 
-            recordingHelper.cancelTimerWithConfirmation(item.Id, item.ServerId).then(function() {
+            var timerId = item.TimerId || item.Id;
+
+            recordingHelper.cancelTimerWithConfirmation(timerId, item.ServerId).then(function () {
                 getResolveFunction(resolve, command, true)();
             });
         });

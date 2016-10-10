@@ -280,6 +280,7 @@
   "RepeatEpisodes": "Repeat episodes",
   "DvrSubscriptionRequired": "Emby DVR requires an active Emby Premiere subscription.",
   "HeaderCancelRecording": "Cancel Recording",
+  "CancelRecording": "Cancel recording",
   "HeaderKeepRecording": "Keep Recording",
   "HeaderCancelSeries": "Cancel Series",
   "HeaderKeepSeries": "Keep Series",
