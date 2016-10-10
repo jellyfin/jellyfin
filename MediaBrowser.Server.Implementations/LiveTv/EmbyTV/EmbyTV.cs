@@ -882,7 +882,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         }
 
         private readonly SemaphoreSlim _liveStreamsSemaphore = new SemaphoreSlim(1, 1);
-        private readonly Dictionary<string, LiveStream> _liveStreams = new Dictionary<string, LiveStream>();
+        private readonly List<LiveStream> _liveStreams = new List<LiveStream>();
 
         public async Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
@@ -921,7 +921,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                return _liveStreams.Values
+                return _liveStreams
                     .FirstOrDefault(i => string.Equals(i.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
             }
             finally
@@ -937,16 +937,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             await _liveStreamsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var result = _liveStreams.Values.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
+            var result = _liveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
 
             if (result != null && result.EnableStreamSharing)
             {
-                result.ConsumerCount++;
+                var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
+                result.SharedStreamIds.Add(openedMediaSource.Id);
+                _liveStreamsSemaphore.Release();
 
                 _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
 
-                var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
-                _liveStreamsSemaphore.Release();
                 return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
             }
 
@@ -960,9 +960,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                         var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
 
-                        _liveStreams[openedMediaSource.Id] = result;
+                        result.SharedStreamIds.Add(openedMediaSource.Id);
+                        _liveStreams.Add(result);
 
-                        result.ConsumerCount++;
                         result.TunerHost = hostInstance;
                         result.OriginalStreamId = streamId;
 
@@ -1047,16 +1047,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
-                LiveStream stream;
-                if (_liveStreams.TryGetValue(id, out stream))
+                var stream = _liveStreams.FirstOrDefault(i => i.SharedStreamIds.Contains(id));
+                if (stream != null)
                 {
-                    stream.ConsumerCount--;
+                    stream.SharedStreamIds.Remove(id);
 
                     _logger.Info("Live stream {0} consumer count is now {1}", id, stream.ConsumerCount);
 
                     if (stream.ConsumerCount <= 0)
                     {
-                        _liveStreams.Remove(id);
+                        _liveStreams.Remove(stream);
 
                         _logger.Info("Closing live stream {0}", id);
 

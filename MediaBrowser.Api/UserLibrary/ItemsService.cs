@@ -239,7 +239,7 @@ namespace MediaBrowser.Api.UserLibrary
                 AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
                 ExcludeItemIds = request.GetExcludeItemIds(),
-                Fields = dtoOptions.Fields
+                DtoOptions = dtoOptions
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))

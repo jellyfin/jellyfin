@@ -871,7 +871,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortOrder = query.SortOrder ?? SortOrder.Ascending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
-                Fields = options.Fields
+                DtoOptions = options
             };
 
             if (!string.IsNullOrWhiteSpace(query.SeriesTimerId))
@@ -940,7 +940,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 SortBy = new[] { ItemSortBy.StartDate },
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
-                Fields = options.Fields
+                DtoOptions = options
             };
 
             if (query.Limit.HasValue)
@@ -1566,7 +1566,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 ExcludeItemTypes = excludeItemTypes.ToArray(),
                 Genres = genres.ToArray(),
-                Fields = dtoOptions.Fields
+                DtoOptions = dtoOptions
             });
         }
 
