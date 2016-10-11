@@ -45,9 +45,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="offset">The offset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
-        Task<string> ExtractVideoImage(string[] inputFiles, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string[] inputFiles, string container, MediaProtocol protocol, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.

@@ -8,6 +8,7 @@ using CommonIO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
@@ -16,6 +17,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
@@ -24,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
 
-        public SatIpHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
+        public SatIpHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
@@ -113,11 +115,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             return new List<MediaSourceInfo>();
         }
 
-        protected override async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo tuner, string channelId, string streamId, CancellationToken cancellationToken)
+        protected override async Task<LiveStream> GetChannelStream(TunerHostInfo tuner, string channelId, string streamId, CancellationToken cancellationToken)
         {
             var sources = await GetChannelStreamMediaSources(tuner, channelId, cancellationToken).ConfigureAwait(false);
 
-            return sources.First();
+            var liveStream = new LiveStream(sources.First());
+
+            return liveStream;
         }
 
         protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)

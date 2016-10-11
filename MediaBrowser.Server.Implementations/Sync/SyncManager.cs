@@ -30,6 +30,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -51,6 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly Func<IMediaSourceManager> _mediaSourceManager;
         private readonly IJsonSerializer _json;
         private readonly ITaskManager _taskManager;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         private ISyncProvider[] _providers = { };
 
@@ -60,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IServerApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager, Func<IMediaSourceManager> mediaSourceManager, IJsonSerializer json, ITaskManager taskManager)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IServerApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager, Func<IMediaSourceManager> mediaSourceManager, IJsonSerializer json, ITaskManager taskManager, IMemoryStreamProvider memoryStreamProvider)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -78,6 +80,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _mediaSourceManager = mediaSourceManager;
             _json = json;
             _taskManager = taskManager;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         public void AddParts(IEnumerable<ISyncProvider> providers)
@@ -95,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public ISyncDataProvider GetDataProvider(IServerSyncProvider provider, SyncTarget target)
         {
-            return _dataProviders.GetOrAdd(target.Id, key => new TargetDataProvider(provider, target, _appHost, _logger, _json, _fileSystem, _config.CommonApplicationPaths));
+            return _dataProviders.GetOrAdd(target.Id, key => new TargetDataProvider(provider, target, _appHost, _logger, _json, _fileSystem, _config.CommonApplicationPaths, _memoryStreamProvider));
         }
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
@@ -539,6 +542,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
 
                 return true;
+            }
+
+            if (item.SourceType == SourceType.Channel)
+            {
+                return BaseItem.ChannelManager.SupportsSync(item.ChannelId);
             }
 
             return item.LocationType == LocationType.FileSystem || item is Season;

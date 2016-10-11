@@ -530,6 +530,19 @@ namespace MediaBrowser.Server.Implementations.Channels
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
         }
 
+        public bool SupportsSync(string channelId)
+        {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
+            //var channel = GetChannel(channelId);
+            var channelProvider = GetChannelProvider(channelId);
+
+            return channelProvider.GetChannelFeatures().SupportsContentDownloading;
+        }
+
         public ChannelFeatures GetChannelFeaturesDto(Channel channel,
             IChannel provider,
             InternalChannelFeatures features)
@@ -1450,6 +1463,24 @@ namespace MediaBrowser.Server.Implementations.Channels
             return result;
         }
 
+        internal IChannel GetChannelProvider(string internalChannelId)
+        {
+            if (internalChannelId == null)
+            {
+                throw new ArgumentNullException("internalChannelId");
+            }
+
+            var result = GetAllChannels()
+                .FirstOrDefault(i => string.Equals(GetInternalChannelId(i.Name).ToString("N"), internalChannelId, StringComparison.OrdinalIgnoreCase));
+
+            if (result == null)
+            {
+                throw new ResourceNotFoundException("No channel provider found for channel id " + internalChannelId);
+            }
+
+            return result;
+        }
+
         private IEnumerable<BaseItem> ApplyFilters(IEnumerable<BaseItem> items, IEnumerable<ItemFilter> filters, User user)
         {
             foreach (var filter in filters.OrderByDescending(f => (int)f))
@@ -1545,98 +1576,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             var name = _localization.GetLocalizedString("ViewTypeChannels");
 
             return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task DownloadChannelItem(BaseItem item, string destination,
-            IProgress<double> progress, CancellationToken cancellationToken)
-        {
-            var sources = await GetDynamicMediaSources(item, cancellationToken)
-                .ConfigureAwait(false);
-
-            var list = sources.Where(i => i.Protocol == MediaProtocol.Http).ToList();
-
-            foreach (var source in list)
-            {
-                await TryDownloadChannelItem(source, item, destination, progress, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-        }
-
-        private async Task TryDownloadChannelItem(MediaSourceInfo source,
-            BaseItem item,
-            string destination,
-            IProgress<double> progress,
-            CancellationToken cancellationToken)
-        {
-            var options = new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = source.Path,
-                Progress = new Progress<double>()
-            };
-
-            var channel = GetChannel(item.ChannelId);
-            var channelProvider = GetChannelProvider(channel);
-            var features = channelProvider.GetChannelFeatures();
-
-            if (!features.SupportsContentDownloading)
-            {
-                throw new ArgumentException("The channel does not support downloading.");
-            }
-
-            var limit = features.DailyDownloadLimit;
-
-            foreach (var header in source.RequiredHttpHeaders)
-            {
-                options.RequestHeaders[header.Key] = header.Value;
-            }
-
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(destination));
-
-            // Determine output extension
-            var response = await _httpClient.GetTempFileResponse(options).ConfigureAwait(false);
-
-            if (response.ContentType.StartsWith("text/html"))
-            {
-                throw new HttpException("File not found")
-                {
-                    StatusCode = HttpStatusCode.NotFound
-                };
-            }
-
-            if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase) && response.ContentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
-            {
-                var extension = response.ContentType.Split('/')
-                        .Last()
-                        .Replace("quicktime", "mov", StringComparison.OrdinalIgnoreCase);
-
-                destination += "." + extension;
-            }
-            else if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) && response.ContentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
-            {
-                var extension = response.ContentType.Replace("audio/mpeg", "audio/mp3", StringComparison.OrdinalIgnoreCase)
-                        .Split('/')
-                        .Last();
-
-                destination += "." + extension;
-            }
-            else
-            {
-                _fileSystem.DeleteFile(response.TempFilePath);
-
-                throw new ApplicationException("Unexpected response type encountered: " + response.ContentType);
-            }
-
-            _fileSystem.CopyFile(response.TempFilePath, destination, true);
-
-            try
-            {
-                _fileSystem.DeleteFile(response.TempFilePath);
-            }
-            catch
-            {
-
-            }
         }
     }
 }

@@ -541,6 +541,7 @@ namespace MediaBrowser.Model.Dlna
                             float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
                             bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
                             string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
+                            bool? isAvc = videoStream == null ? null : videoStream.IsAVC;
 
                             TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
                             int? packetLength = videoStream == null ? null : videoStream.PacketLength;
@@ -549,7 +550,7 @@ namespace MediaBrowser.Model.Dlna
                             int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                             int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
-                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                             {
                                 LogConditionFailure(options.Profile, "VideoCodecProfile", applyCondition, item);
                                 applyConditions = false;
@@ -602,33 +603,20 @@ namespace MediaBrowser.Model.Dlna
 
         private int GetAudioBitrate(string subProtocol, int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            var defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
+            int defaultBitrate = audioStream == null ? 192000 : audioStream.BitRate ?? 192000;
             // Reduce the bitrate if we're downmixing
             if (targetAudioChannels.HasValue && audioStream != null && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
             {
                 defaultBitrate = StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3") ? 192000 : 128000;
             }
 
-            if (targetAudioChannels.HasValue)
+            if (StringHelper.EqualsIgnoreCase(subProtocol, "hls"))
             {
-                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1200000)
-                {
-                    if (StringHelper.EqualsIgnoreCase(targetAudioCodec, "ac3"))
-                    {
-                        if (string.Equals(subProtocol, "hls", StringComparison.OrdinalIgnoreCase))
-                        {
-                            defaultBitrate = Math.Max(384000, defaultBitrate);
-                        }
-                        else
-                        {
-                            defaultBitrate = Math.Max(448000, defaultBitrate);
-                        }
-                    }
-                    else
-                    {
-                        defaultBitrate = Math.Max(320000, defaultBitrate);
-                    }
-                }
+                defaultBitrate = Math.Min(384000, defaultBitrate);
+            }
+            else
+            {
+                defaultBitrate = Math.Min(448000, defaultBitrate);
             }
 
             int encoderAudioBitrateLimit = int.MaxValue;
@@ -644,6 +632,14 @@ namespace MediaBrowser.Model.Dlna
                     {
                         encoderAudioBitrateLimit = 64000;
                     }
+                }
+            }
+
+            if (maxTotalBitrate.HasValue)
+            {
+                if (maxTotalBitrate.Value < 640000)
+                {
+                    defaultBitrate = Math.Min(128000, defaultBitrate);
                 }
             }
 
@@ -723,6 +719,7 @@ namespace MediaBrowser.Model.Dlna
             float? videoFramerate = videoStream == null ? null : videoStream.AverageFrameRate ?? videoStream.AverageFrameRate;
             bool? isAnamorphic = videoStream == null ? null : videoStream.IsAnamorphic;
             string videoCodecTag = videoStream == null ? null : videoStream.CodecTag;
+            bool? isAvc = videoStream == null ? null : videoStream.IsAVC;
 
             int? audioBitrate = audioStream == null ? null : audioStream.BitRate;
             int? audioChannels = audioStream == null ? null : audioStream.Channels;
@@ -738,7 +735,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -765,7 +762,7 @@ namespace MediaBrowser.Model.Dlna
                     bool applyConditions = true;
                     foreach (ProfileCondition applyCondition in i.ApplyConditions)
                     {
-                        if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                        if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                         {
                             LogConditionFailure(profile, "VideoCodecProfile", applyCondition, mediaSource);
                             applyConditions = false;
@@ -785,7 +782,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 

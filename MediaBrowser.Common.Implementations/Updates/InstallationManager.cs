@@ -148,14 +148,10 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// <summary>
         /// Gets all available packages.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="withRegistration">if set to <c>true</c> [with registration].</param>
-        /// <param name="packageType">Type of the package.</param>
-        /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
-            PackageType? packageType = null,
+            string packageType = null,
             Version applicationVersion = null)
         {
             var data = new Dictionary<string, string>
@@ -293,7 +289,7 @@ namespace MediaBrowser.Common.Implementations.Updates
             return packages;
         }
 
-        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, PackageType? packageType, Version applicationVersion)
+        protected IEnumerable<PackageInfo> FilterPackages(List<PackageInfo> packages, string packageType, Version applicationVersion)
         {
             foreach (var package in packages)
             {
@@ -301,9 +297,9 @@ namespace MediaBrowser.Common.Implementations.Updates
                     .OrderByDescending(GetPackageVersion).ToList();
             }
 
-            if (packageType.HasValue)
+            if (!string.IsNullOrWhiteSpace(packageType))
             {
-                packages = packages.Where(p => p.type == packageType.Value).ToList();
+                packages = packages.Where(p => string.Equals(p.type, packageType, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             // If an app version was supplied, filter the versions for each package to only include supported versions

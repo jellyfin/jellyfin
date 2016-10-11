@@ -15,6 +15,7 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -38,9 +39,31 @@ namespace MediaBrowser.ServerApplication
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetDllDirectory(string lpPathName);
 
+        public static bool TryGetLocalFromUncDirectory(string local, out string unc)
+        {
+            if ((local == null) || (local == ""))
+            {
+                unc = "";
+                throw new ArgumentNullException("local");
+            }
+
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_share WHERE path ='" + local.Replace("\\", "\\\\") + "'");
+            ManagementObjectCollection coll = searcher.Get();
+            if (coll.Count == 1)
+            {
+                foreach (ManagementObject share in searcher.Get())
+                {
+                    unc = share["Name"] as String;
+                    unc = "\\\\" + SystemInformation.ComputerName + "\\" + unc;
+                    return true;
+                }
+            }
+            unc = "";
+            return false;
+        }
         /// <summary>
-        /// Defines the entry point of the application.
-        /// </summary>
+         /// Defines the entry point of the application.
+         /// </summary>
         public static void Main()
         {
             var options = new StartupOptions();
@@ -312,7 +335,6 @@ namespace MediaBrowser.ServerApplication
                              ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
             }
 
-
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
 
@@ -352,7 +374,7 @@ namespace MediaBrowser.ServerApplication
             Application.Run();
         }
 
-        private static SplashForm _splash;
+        internal static SplashForm _splash;
         private static Thread _splashThread;
         private static void ShowSplashScreen(Version appVersion, Progress<double> progress, ILogger logger)
         {

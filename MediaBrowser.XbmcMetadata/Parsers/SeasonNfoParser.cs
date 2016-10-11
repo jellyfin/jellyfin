@@ -9,7 +9,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeasonNfoParser : BaseNfoParser<Season>
     {
-        public SeasonNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
+        public SeasonNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager) : base(logger, config, providerManager)
         {
         }
 

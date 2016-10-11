@@ -13,8 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
@@ -23,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
 
-        public M3UTunerHost(IConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
+        public M3UTunerHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
@@ -63,11 +65,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        protected override async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
+        protected override async Task<LiveStream> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
             var sources = await GetChannelStreamMediaSources(info, channelId, cancellationToken).ConfigureAwait(false);
 
-            return sources.First();
+            var liveStream = new LiveStream(sources.First());
+            return liveStream;
         }
 
         public async Task Validate(TunerHostInfo info)
@@ -136,7 +139,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     RequiresOpening = false,
                     RequiresClosing = false,
 
-                    ReadAtNativeFramerate = false
+                    ReadAtNativeFramerate = false,
+
+                    Id = channel.Path.GetMD5().ToString("N"),
+                    IsInfiniteStream = true
                 };
 
                 return new List<MediaSourceInfo> { mediaSource };
@@ -147,11 +153,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         protected override Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
-        }
-
-        public string ApplyDuration(string streamPath, TimeSpan duration)
-        {
-            return streamPath;
         }
     }
 }

@@ -11,6 +11,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Events;
+using Rssdp;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
@@ -20,211 +22,114 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        private SsdpHandler _ssdpHandler;
         private readonly CancellationTokenSource _tokenSource;
-        private readonly IServerApplicationHost _appHost;
 
-        public event EventHandler<SsdpMessageEventArgs> DeviceDiscovered;
-        public event EventHandler<SsdpMessageEventArgs> DeviceLeft;
-        private readonly INetworkManager _networkManager;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
+        public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IServerApplicationHost appHost, INetworkManager networkManager)
+        private SsdpDeviceLocator _DeviceLocator;
+
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config)
         {
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
             _config = config;
-            _appHost = appHost;
-            _networkManager = networkManager;
         }
 
-		private List<IPAddress> GetLocalIpAddresses()
-		{
-		    return _networkManager.GetLocalIpAddresses().ToList();
-		}
-
-        public void Start(SsdpHandler ssdpHandler)
+        // Call this method from somewhere in your code to start the search.
+        public void BeginSearch()
         {
-            _ssdpHandler = ssdpHandler;
-            _ssdpHandler.MessageReceived += _ssdpHandler_MessageReceived;
+            _DeviceLocator = new SsdpDeviceLocator();
 
-            foreach (var localIp in GetLocalIpAddresses())
-			{
-				try
-				{
-					CreateListener(localIp);
-				}
-				catch (Exception e)
-				{
-					_logger.ErrorException("Failed to Initilize Socket", e);
-				}
-			}
+            // (Optional) Set the filter so we only see notifications for devices we care about 
+            // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
+            // DiscoverdSsdpDevice.NotificationType property or that is used with the searchTarget parameter of the Search method).
+            //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
+
+            // Connect our event handler so we process devices as they are found
+            _DeviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
+            _DeviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
+
+            // Perform a search so we don't have to wait for devices to broadcast notifications 
+            // again to get any results right away (notifications are broadcast periodically).
+            StartAsyncSearch();
         }
 
-        async void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
-        {
-            string nts;
-            e.Headers.TryGetValue("NTS", out nts);
-
-            if (String.Equals(e.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase) &&
-                String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase) &&
-                !_disposed)
-            {
-                EventHelper.FireEventIfNotNull(DeviceLeft, this, e, _logger);
-                return;
-            }
-
-            try
-            {
-                if (e.LocalEndPoint == null)
-                {
-                    var ip = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
-                    if (ip != null)
-                    {
-                        e.LocalEndPoint = new IPEndPoint(ip, 0);
-                    }
-                }
-
-                if (e.LocalEndPoint != null)
-                {
-                    TryCreateDevice(e);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error creating play to controller", ex);
-            }
-        }
-
-        private void CreateListener(IPAddress localIp)
+        private void StartAsyncSearch()
         {
             Task.Factory.StartNew(async (o) =>
             {
-                try
+                while (!_tokenSource.IsCancellationRequested)
                 {
-					_logger.Info("Creating SSDP listener on {0}", localIp);
-
-					var endPoint = new IPEndPoint(localIp, 1900);
-
-                    using (var socket = GetMulticastSocket(localIp, endPoint))
+                    try
                     {
-                        var receiveBuffer = new byte[64000];
+                        // Enable listening for notifications (optional)
+                        _DeviceLocator.StartListeningForNotifications();
 
-                        CreateNotifier(localIp);
-
-                        while (!_tokenSource.IsCancellationRequested)
-                        {
-                            var receivedBytes = await socket.ReceiveAsync(receiveBuffer, 0, 64000);
-
-                            if (receivedBytes > 0)
-                            {
-                                var args = SsdpHelper.ParseSsdpResponse(receiveBuffer);
-                                args.EndPoint = endPoint;
-                                args.LocalEndPoint = new IPEndPoint(localIp, 0);
-
-                                _ssdpHandler.LogMessageReceived(args, true);
-
-                                TryCreateDevice(args);
-                            }
-                        }
+                        await _DeviceLocator.SearchAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error searching for devices", ex);
                     }
 
-                    _logger.Info("SSDP listener - Task completed");
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception e)
-                {
-                    _logger.ErrorException("Error in listener", e);
+                    var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
+
+                    await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
                 }
 
-            }, _tokenSource.Token, TaskCreationOptions.LongRunning);
+            }, CancellationToken.None, TaskCreationOptions.LongRunning);
         }
 
-        private void CreateNotifier(IPAddress localIp)
+        // Process each found device in the event handler
+        void deviceLocator_DeviceAvailable(object sender, DeviceAvailableEventArgs e)
         {
-            Task.Factory.StartNew(async (o) =>
+            var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
+
+            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+
+            var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
+
+            var args = new GenericEventArgs<UpnpDeviceInfo>
             {
-                try
+                Argument = new UpnpDeviceInfo
                 {
-                    while (true)
-                    {
-                        _ssdpHandler.SendSearchMessage(new IPEndPoint(localIp, 1900));
-
-                        var delay = _config.GetDlnaConfiguration().ClientDiscoveryIntervalSeconds * 1000;
-
-                        await Task.Delay(delay, _tokenSource.Token).ConfigureAwait(false);
-                    }
+                    Location = e.DiscoveredDevice.DescriptionLocation,
+                    Headers = headers
                 }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in notifier", ex);
-                }
-
-            }, _tokenSource.Token, TaskCreationOptions.LongRunning);
-        }
-
-        private Socket GetMulticastSocket(IPAddress localIpAddress, EndPoint localEndpoint)
-        {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIpAddress));
-            socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
-
-            socket.Bind(localEndpoint);
-
-            return socket;
-        }
-
-        private void TryCreateDevice(SsdpMessageEventArgs args)
-        {
-            string nts;
-            args.Headers.TryGetValue("NTS", out nts);
-
-            if (String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
-            {
-                if (String.Equals(args.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!_disposed)
-                    {
-                        EventHelper.FireEventIfNotNull(DeviceLeft, this, args, _logger);
-                    }
-                }
-
-                return;
-            }
-
-            string usn;
-            if (!args.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
-
-            string nt;
-            if (!args.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
-
-            // Need to be able to download device description
-            string location;
-            if (!args.Headers.TryGetValue("Location", out location) ||
-                string.IsNullOrEmpty(location))
-            {
-                return;
-            }
+            };
 
             EventHelper.FireEventIfNotNull(DeviceDiscovered, this, args, _logger);
         }
 
+        private void _DeviceLocator_DeviceUnavailable(object sender, DeviceUnavailableEventArgs e)
+        {
+            var originalHeaders = e.DiscoveredDevice.ResponseHeaders;
+
+            var headerDict = originalHeaders == null ? new Dictionary<string, KeyValuePair<string, IEnumerable<string>>>() : originalHeaders.ToDictionary(i => i.Key, StringComparer.OrdinalIgnoreCase);
+
+            var headers = headerDict.ToDictionary(i => i.Key, i => i.Value.Value.FirstOrDefault(), StringComparer.OrdinalIgnoreCase);
+
+            var args = new GenericEventArgs<UpnpDeviceInfo>
+            {
+                Argument = new UpnpDeviceInfo
+                {
+                    Location = e.DiscoveredDevice.DescriptionLocation,
+                    Headers = headers
+                }
+            };
+
+            EventHelper.FireEventIfNotNull(DeviceLeft, this, args, _logger);
+        }
+
+        public void Start()
+        {
+            BeginSearch();
+        }
+
         public void Dispose()
         {
-            if (_ssdpHandler != null)
-            {
-                _ssdpHandler.MessageReceived -= _ssdpHandler_MessageReceived;
-            }
-
             if (!_disposed)
             {
                 _disposed = true;

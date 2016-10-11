@@ -22,8 +22,6 @@ namespace MediaBrowser.Providers.Genres
 
         private readonly SemaphoreSlim _listResourcePool = new SemaphoreSlim(1, 1);
 
-        public static SemaphoreSlim ImageDownloadResourcePool = new SemaphoreSlim(5, 5);
-
         public GenreImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _config = config;
@@ -38,7 +36,7 @@ namespace MediaBrowser.Providers.Genres
 
         public static string ProviderName
         {
-            get { return "Media Browser Designs"; }
+            get { return "Emby Designs"; }
         }
 
         public bool Supports(IHasImages item)
@@ -138,7 +136,7 @@ namespace MediaBrowser.Providers.Genres
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = ImageDownloadResourcePool
+                BufferContent = false
             });
         }
     }

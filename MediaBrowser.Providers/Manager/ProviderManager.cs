@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Manager
@@ -57,13 +58,13 @@ namespace MediaBrowser.Providers.Manager
         private IMetadataService[] _metadataServices = { };
         private IMetadataProvider[] _metadataProviders = { };
         private IEnumerable<IMetadataSaver> _savers;
-        private IImageSaver[] _imageSavers;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
 
         private IExternalId[] _externalIds;
 
         private readonly Func<ILibraryManager> _libraryManagerFactory;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
@@ -73,7 +74,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory, IJsonSerializer json)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory, IJsonSerializer json, IMemoryStreamProvider memoryStreamProvider)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
@@ -83,26 +84,20 @@ namespace MediaBrowser.Providers.Manager
             _appPaths = appPaths;
             _libraryManagerFactory = libraryManagerFactory;
             _json = json;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        /// <param name="imageProviders">The image providers.</param>
-        /// <param name="metadataServices">The metadata services.</param>
-        /// <param name="metadataProviders">The metadata providers.</param>
-        /// <param name="metadataSavers">The metadata savers.</param>
-        /// <param name="imageSavers">The image savers.</param>
-        /// <param name="externalIds">The external ids.</param>
         public void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices,
                              IEnumerable<IMetadataProvider> metadataProviders, IEnumerable<IMetadataSaver> metadataSavers,
-                             IEnumerable<IImageSaver> imageSavers, IEnumerable<IExternalId> externalIds)
+                             IEnumerable<IExternalId> externalIds)
         {
             ImageProviders = imageProviders.ToArray();
 
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _imageSavers = imageSavers.ToArray();
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
 
             _savers = metadataSavers.Where(i =>
@@ -142,12 +137,12 @@ namespace MediaBrowser.Providers.Manager
 
         public Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
         public Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
         {
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, source, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, source, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
         }
 
         public Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
@@ -159,7 +154,7 @@ namespace MediaBrowser.Providers.Manager
 
             var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
 
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, fileStream, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken)

@@ -54,14 +54,23 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             if (args.IsDirectory)
             {
+                if (args.HasParent<Series>() || args.HasParent<Season>())
+                {
+                    return null;
+                }
+
+                if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                {
+                    return new Series
+                    {
+                        Path = args.Path,
+                        Name = Path.GetFileName(args.Path)
+                    };
+                }
+
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (args.HasParent<Series>())
-                    {
-                        return null;
-                    }
-
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
@@ -72,27 +81,20 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                         };
                     }
                 }
-                else
+                else if (string.IsNullOrWhiteSpace(collectionType))
                 {
-                    if (string.IsNullOrWhiteSpace(collectionType))
+                    if (args.Parent.IsRoot)
                     {
-                        if (args.HasParent<Series>())
-                        {
-                            return null;
-                        }
+                        return null;
+                    }
 
-                        if (args.Parent.IsRoot)
+                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, args.GetLibraryOptions(), false))
+                    {
+                        return new Series
                         {
-                            return null;
-                        }
-                        if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, args.GetLibraryOptions(), false))
-                        {
-                            return new Series
-                            {
-                                Path = args.Path,
-                                Name = Path.GetFileName(args.Path)
-                            };
-                        }
+                            Path = args.Path,
+                            Name = Path.GetFileName(args.Path)
+                        };
                     }
                 }
             }

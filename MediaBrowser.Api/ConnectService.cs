@@ -7,6 +7,7 @@ using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Session;
 
 namespace MediaBrowser.Api
 {
@@ -76,12 +77,12 @@ namespace MediaBrowser.Api
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
-        private readonly IUserManager _userManager;
+        private readonly ISessionManager _sessionManager;
 
-        public ConnectService(IConnectManager connectManager, IUserManager userManager)
+        public ConnectService(IConnectManager connectManager, ISessionManager sessionManager)
         {
             _connectManager = connectManager;
-            _userManager = userManager;
+            _sessionManager = sessionManager;
         }
 
         public object Post(CreateConnectLink request)
@@ -141,10 +142,33 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException();
             }
 
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+
+            if (string.IsNullOrWhiteSpace(auth.Client))
+            {
+                return ToOptimizedResult(new ConnectAuthenticationExchangeResult
+                {
+                    AccessToken = user.ConnectAccessKey,
+                    LocalUserId = user.Id.ToString("N")
+                });
+            }
+
+            var session = await _sessionManager.CreateNewSession(new AuthenticationRequest
+            {
+                App = auth.Client,
+                AppVersion = auth.Version,
+                DeviceId = auth.DeviceId,
+                DeviceName = auth.Device,
+                RemoteEndPoint = Request.RemoteIp,
+                Username = user.Name,
+                UserId = user.Id.ToString("N")
+
+            }).ConfigureAwait(false);
+
             return ToOptimizedResult(new ConnectAuthenticationExchangeResult
             {
-                AccessToken = user.ConnectAccessKey,
-                LocalUserId = user.Id.ToString("N")
+                AccessToken = session.AccessToken,
+                LocalUserId = session.User.Id
             });
         }
     }

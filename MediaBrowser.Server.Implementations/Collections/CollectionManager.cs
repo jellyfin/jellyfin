@@ -219,7 +219,9 @@ namespace MediaBrowser.Server.Implementations.Collections
 
             foreach (var itemId in itemIds)
             {
-                var child = collection.LinkedChildren.FirstOrDefault(i => i.ItemId.HasValue && i.ItemId.Value == itemId);
+                var childItem = _libraryManager.GetItemById(itemId);
+
+                var child = collection.LinkedChildren.FirstOrDefault(i => (i.ItemId.HasValue && i.ItemId.Value == itemId) || (childItem != null && string.Equals(childItem.Path, i.Path, StringComparison.OrdinalIgnoreCase)));
 
                 if (child == null)
                 {
@@ -228,47 +230,15 @@ namespace MediaBrowser.Server.Implementations.Collections
 
                 list.Add(child);
 
-                var childItem = _libraryManager.GetItemById(itemId);
-
                 if (childItem != null)
                 {
                     itemList.Add(childItem);
                 }
             }
 
-            var shortcutFiles = _fileSystem
-                .GetFilePaths(collection.Path)
-                .Where(i => _fileSystem.IsShortcut(i))
-                .ToList();
-
-            var shortcutFilesToDelete = list.Where(child => !string.IsNullOrWhiteSpace(child.Path) && child.Type == LinkedChildType.Shortcut)
-                .Select(child => shortcutFiles.FirstOrDefault(i => string.Equals(child.Path, _fileSystem.ResolveShortcut(i), StringComparison.OrdinalIgnoreCase)))
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
-
-            foreach (var file in shortcutFilesToDelete)
+            foreach (var child in list)
             {
-                _iLibraryMonitor.ReportFileSystemChangeBeginning(file);
-            }
-
-            try
-            {
-                foreach (var file in shortcutFilesToDelete)
-                {
-                    _fileSystem.DeleteFile(file);
-                }
-
-                foreach (var child in list)
-                {
-                    collection.LinkedChildren.Remove(child);
-                }
-            }
-            finally
-            {
-                foreach (var file in shortcutFilesToDelete)
-                {
-                    _iLibraryMonitor.ReportFileSystemChangeComplete(file, false);
-                }
+                collection.LinkedChildren.Remove(child);
             }
 
             collection.UpdateRatingToContent();

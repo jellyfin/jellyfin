@@ -130,6 +130,8 @@
         /// </summary>
         Metascore,
 
+        OfficialRatingDescription,
+
         OriginalTitle,
 
         /// <summary>

@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -70,8 +71,9 @@ namespace MediaBrowser.Api.Playback
         private readonly INetworkManager _networkManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
+        private readonly IJsonSerializer _json;
 
-        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager)
+        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager, IJsonSerializer json)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
@@ -80,6 +82,7 @@ namespace MediaBrowser.Api.Playback
             _networkManager = networkManager;
             _mediaEncoder = mediaEncoder;
             _userManager = userManager;
+            _json = json;
         }
 
         public object Get(GetBitrateTestBytes request)
@@ -104,7 +107,7 @@ namespace MediaBrowser.Api.Playback
         {
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
-            var result = await _mediaSourceManager.OpenLiveStream(request, false, CancellationToken.None).ConfigureAwait(false);
+            var result = await _mediaSourceManager.OpenLiveStream(request, true, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
             if (profile == null)
@@ -137,7 +140,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Post(CloseMediaSource request)
         {
-            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId, CancellationToken.None);
+            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId);
             Task.WaitAll(task);
         }
 
@@ -146,6 +149,8 @@ namespace MediaBrowser.Api.Playback
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
+
+            //Logger.Info("GetPostedPlaybackInfo profile: {0}", _json.SerializeToString(profile));
 
             if (profile == null)
             {

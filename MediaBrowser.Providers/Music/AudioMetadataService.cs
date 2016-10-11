@@ -6,6 +6,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
 using System.Collections.Generic;
+using System.Linq;
 using CommonIO;
 
 namespace MediaBrowser.Providers.Music
@@ -21,7 +22,7 @@ namespace MediaBrowser.Providers.Music
 
             if (replaceData || targetItem.Artists.Count == 0)
             {
-                targetItem.Artists = sourceItem.Artists;
+                targetItem.Artists = sourceItem.Artists.ToList();
             }
 
             if (replaceData || string.IsNullOrEmpty(targetItem.Album))
