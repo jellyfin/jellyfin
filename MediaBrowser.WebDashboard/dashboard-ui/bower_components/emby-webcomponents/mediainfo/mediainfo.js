@@ -7,9 +7,9 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         if (item.Type == 'SeriesTimer') {
             return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
         }
-        else if (item.TimerId) {
+        else if (item.TimerId || item.SeriesTimerId) {
 
-            status = item.Status;
+            status = item.Status || 'Cancelled';
         }
         else if (item.Type == 'Timer') {
 

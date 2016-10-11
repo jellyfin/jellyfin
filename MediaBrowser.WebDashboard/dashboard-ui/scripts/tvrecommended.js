@@ -45,11 +45,10 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    centerText: true,
+                    centerText: !supportsImageAnalysis,
                     overlayPlayButton: true,
                     cardLayout: supportsImageAnalysis,
-                    vibrant: supportsImageAnalysis,
-                    cardFooterAside: 'none'
+                    vibrant: supportsImageAnalysis
                 });
 
                 Dashboard.hideLoadingMsg();
@@ -107,9 +106,10 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    centerText: true,
+                    centerText: false,
                     overlayPlayButton: true,
-                    allowBottomPadding: allowBottomPadding
+                    allowBottomPadding: allowBottomPadding,
+                    cardLayout: true
                 });
             });
         }

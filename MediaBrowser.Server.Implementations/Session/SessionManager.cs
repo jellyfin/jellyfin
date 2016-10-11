@@ -633,9 +633,13 @@ namespace MediaBrowser.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
-            if (!(item is Video))
+            if (!(item is Video) && item.SupportsPlayedStatus)
             {
                 data.Played = true;
+            }
+            else
+            {
+                data.Played = false;
             }
 
             await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
@@ -847,11 +851,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
                 }
-                else
+                else 
                 {
                     // If the client isn't able to report this, then we'll just have to make an assumption
                     data.PlayCount++;
-                    data.Played = true;
+                    data.Played = item.SupportsPlayedStatus;
                     data.PlaybackPositionTicks = 0;
                     playedToCompletion = true;
                 }

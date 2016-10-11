@@ -120,7 +120,7 @@
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true,
+                centerText: !supportsImageAnalysis,
                 showParentTitle: true,
                 allowBottomPadding: allowBottomPadding,
                 cardLayout: supportsImageAnalysis,

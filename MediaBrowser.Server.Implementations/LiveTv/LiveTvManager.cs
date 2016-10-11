@@ -121,7 +121,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             foreach (var service in _services)
             {
                 service.DataSourceChanged += service_DataSourceChanged;
+                service.RecordingStatusChanged += Service_RecordingStatusChanged;
             }
+        }
+
+        private void Service_RecordingStatusChanged(object sender, RecordingStatusChangedEventArgs e)
+        {
+            _lastRecordingRefreshTime = DateTime.MinValue;
         }
 
         public List<ITunerHost> TunerHosts
@@ -2298,6 +2304,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
+
+            info.RecordAnyChannel = true;
+            info.RecordAnyTime = true;
+            info.Days = new List<DayOfWeek>
+            {
+                DayOfWeek.Sunday,
+                DayOfWeek.Monday,
+                DayOfWeek.Tuesday,
+                DayOfWeek.Wednesday,
+                DayOfWeek.Thursday,
+                DayOfWeek.Friday,
+                DayOfWeek.Saturday
+            };
 
             info.Id = null;
 

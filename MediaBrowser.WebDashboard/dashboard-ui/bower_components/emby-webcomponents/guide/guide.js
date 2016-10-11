@@ -353,9 +353,9 @@
             if (item.Type == 'SeriesTimer') {
                 return '<i class="md-icon programIcon seriesTimerIcon">&#xE062;</i>';
             }
-            else if (item.TimerId) {
+            else if (item.TimerId || item.SeriesTimerId) {
 
-                status = item.Status;
+                status = item.Status || 'Cancelled';
             }
             else if (item.Type == 'Timer') {
 

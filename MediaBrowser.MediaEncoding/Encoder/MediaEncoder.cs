@@ -426,10 +426,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputFiles = MediaEncoderHelpers.GetInputArgument(FileSystem, request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
-            var probeSizeArgument = GetProbeSizeArgument(inputFiles, request.Protocol);
+            var probeSize = EncodingUtils.GetProbeSizeArgument(inputFiles.Length);
+            string analyzeDuration;
+
+            if (request.AnalyzeDurationSections > 0)
+            {
+                analyzeDuration = "-analyzeduration " +
+                                  (request.AnalyzeDurationSections*1000000).ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                analyzeDuration = EncodingUtils.GetAnalyzeDurationArgument(inputFiles.Length);
+            }
+
+            probeSize = probeSize + " " + analyzeDuration;
+            probeSize = probeSize.Trim();
 
             return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
-                probeSizeArgument, request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
+                probeSize, request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
         }
 
         /// <summary>
@@ -450,9 +464,23 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        public string GetProbeSizeArgument(string[] inputFiles, MediaProtocol protocol)
+        public string GetProbeSizeAndAnalyzeDurationArgument(string[] inputFiles, MediaProtocol protocol)
         {
-            return EncodingUtils.GetProbeSizeArgument(inputFiles.Length > 1);
+            var results = new List<string>();
+
+            var probeSize = EncodingUtils.GetProbeSizeArgument(inputFiles.Length);
+            var analyzeDuration = EncodingUtils.GetAnalyzeDurationArgument(inputFiles.Length);
+
+            if (!string.IsNullOrWhiteSpace(probeSize))
+            {
+                results.Add(probeSize);
+            }
+
+            if (!string.IsNullOrWhiteSpace(analyzeDuration))
+            {
+                results.Add(analyzeDuration);
+            }
+            return string.Join(" ", results.ToArray());
         }
 
         /// <summary>
@@ -871,7 +899,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = useIFrame ? string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}{4}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, thumbnail) :
                 string.Format("-i {0}{3} -threads 0 -v quiet -vframes 1 -vf \"{2}\" -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg);
 
-            var probeSize = GetProbeSizeArgument(new[] { inputPath }, protocol);
+            var probeSize = GetProbeSizeAndAnalyzeDurationArgument(new[] { inputPath }, protocol);
 
             if (!string.IsNullOrEmpty(probeSize))
             {
@@ -982,7 +1010,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var args = string.Format("-i {0} -threads 0 -v quiet -vf \"{2}\" -f image2 \"{1}\"", inputArgument, outputPath, vf);
 
-            var probeSize = GetProbeSizeArgument(new[] { inputArgument }, protocol);
+            var probeSize = GetProbeSizeAndAnalyzeDurationArgument(new[] { inputArgument }, protocol);
 
             if (!string.IsNullOrEmpty(probeSize))
             {

@@ -20,5 +20,7 @@ namespace MediaBrowser.Controller.Entities
         Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user);
 
         bool EnableRememberingTrackSelections { get; }
+
+        bool SupportsPlayedStatus { get; }
     }
 }

@@ -29,13 +29,13 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return Album;
+                return AlbumEntity;
             }
         }
 
 
         [IgnoreDataMember]
-        public PhotoAlbum Album
+        public PhotoAlbum AlbumEntity
         {
             get
             {

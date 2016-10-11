@@ -118,7 +118,7 @@
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true,
+                centerText: !supportsImageAnalysis,
                 context: 'home-upcoming',
                 overlayMoreButton: !supportsImageAnalysis,
                 showParentTitle: true,

@@ -32,6 +32,15 @@ namespace MediaBrowser.Controller.Playlists
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return string.Equals(MediaType, "Video", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool AlwaysScanInternalMetadataPath
         {
             get
