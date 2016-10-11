@@ -292,8 +292,9 @@ button {
     margin-right: 2em;
 }
 
-.cardCenteredText {
+.cardDefaultText {
     white-space: normal;
+    text-align: center;
 }
 
 .textActionButton {

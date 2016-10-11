@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'fnchecked', 'jqmlistview'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'jqmlistview', 'emby-select', 'emby-button', 'emby-input', 'emby-checkbox'], function ($) {
 
     var currentProfile;
 

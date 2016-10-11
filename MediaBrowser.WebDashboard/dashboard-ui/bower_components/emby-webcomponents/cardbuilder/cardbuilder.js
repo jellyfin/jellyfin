@@ -804,7 +804,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             var showMediaTitle = (showTitle && !titleAdded) || (options.showParentTitleOrTitle && !lines.length);
-            if (!showMediaTitle && showTitle && forceName && !titleAdded) {
+            if (!showMediaTitle && !titleAdded && (showTitle || forceName)) {
                 showMediaTitle = true;
             }
 
@@ -959,7 +959,12 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         lines.push(globalize.translate('sharedcomponents#SeriesYearToPresent', item.ProductionYear || ''));
 
                     } else {
-                        lines.push(item.ProductionYear || '');
+
+                        if (item.EndDate && item.ProductionYear) {
+                            lines.push(item.ProductionYear + ' - ' + datetime.parseISO8601Date(item.EndDate).getFullYear());
+                        } else {
+                            lines.push(item.ProductionYear || '');
+                        }
                     }
 
                 }
@@ -1160,7 +1165,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var imgInfo = getCardImageUrl(item, apiClient, options);
             var imgUrl = imgInfo.imgUrl;
 
-            var forceName = imgInfo.forceName || !imgUrl;
+            var forceName = imgInfo.forceName;
 
             var showTitle = options.showTitle === 'auto' ? true : (options.showTitle || item.Type === 'PhotoAlbum' || item.Type === 'Folder');
             var overlayText = options.overlayText;
@@ -1336,7 +1341,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (!imgUrl) {
                 var defaultName = item.Type === 'Program' || item.Type == 'Timer' || item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
-                cardImageContainerOpen += '<div class="cardText cardCenteredText">' + defaultName + '</div>';
+                cardImageContainerOpen += '<div class="cardText cardDefaultText">' + defaultName + '</div>';
             }
 
             var tagName = (layoutManager.tv || !scalable) && !overlayButtons ? 'button' : 'div';

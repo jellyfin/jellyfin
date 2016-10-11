@@ -1774,7 +1774,7 @@
   "HeaderUnaired": "Unaired",
   "HeaderMissing": "Missing",
   "ButtonWebsite": "Website",
-  "ValueSeriesYearToPresent": "{0}-Present",
+  "ValueSeriesYearToPresent": "{0} - Present",
   "ValueAwards": "Awards: {0}",
   "ValueBudget": "Budget: {0}",
   "ValueRevenue": "Revenue: {0}",

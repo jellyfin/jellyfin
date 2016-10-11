@@ -17,91 +17,85 @@
                 <br />
                 <div class="tabContent tabInfo">
 
-                    <div>
-                        <label for="txtName">${LabelName}</label>
-                        <input type="text" id="txtName" required="required" />
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="txtName" required="required" label="${LabelName}" />
                     </div>
-                    <br />
-                    <div>
-                        <label for="selectUser">${LabelUserLibrary}</label>
-                        <select id="selectUser" data-mini="true"></select>
+                    <div class="selectContainer">
+                        <select is="emby-select" id="selectUser" label="${LabelUserLibrary}"></select>
                         <div class="fieldDescription">${LabelUserLibraryHelp}</div>
                     </div>
+
+                    <div>
+                        <h3 class="checkboxListLabel">${LabelSupportedMediaTypes}</h3>
+                        <div class="checkboxList paperList checkboxList-paperList">
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkAudio" data-value="Audio" class="chkMediaType" />
+                                <span>${OptionProfileAudio}</span>
+                            </label>
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkPhoto" data-value="Photo" class="chkMediaType" />
+                                <span>${OptionProfilePhoto}</span>
+                            </label>
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkVideo" data-value="Video" class="chkMediaType" />
+                                <span>${OptionProfileVideo}</span>
+                            </label>
+                        </div>
+                    </div>
                     <br />
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" label="${LabelMaxStreamingBitrate}" />
+                        <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" label="${LabelMusicStreamingTranscodingBitrate}" />
+                        <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
+                    </div>
+                    <div style="display:none;">
+                        <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
+                        <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
+                        <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
+                    </div>
 
-                    <fieldset data-role="controlgroup">
-                        <legend>${LabelSupportedMediaTypes}</legend>
-                        <input type="checkbox" id="chkAudio" data-value="Audio" class="chkMediaType" />
-                        <label for="chkAudio">${OptionProfileAudio}</label>
-
-                        <input type="checkbox" id="chkPhoto" data-value="Photo" class="chkMediaType" />
-                        <label for="chkPhoto">${OptionProfilePhoto}</label>
-
-                        <input type="checkbox" id="chkVideo" data-value="Video" class="chkMediaType" />
-                        <label for="chkVideo">${OptionProfileVideo}</label>
-                    </fieldset>
-
-
-                    <br />
                     <div is="emby-collapse" title="${HeaderIdentification}">
                         <div class="collapseContent">
-                            <br />
-                            <p>${HeaderIdentificationCriteriaHelp}</p>
-                            <br />
-                            <div>
-                                <label for="txtIdFriendlyName">${LabelFriendlyName}</label>
-                                <input type="text" id="txtIdFriendlyName" />
+                            <h3>${HeaderIdentificationCriteriaHelp}</h3>
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdFriendlyName" label="${LabelFriendlyName}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdManufacturer">${LabelManufacturer}</label>
-                                <input type="text" id="txtIdManufacturer" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdManufacturer" label="${LabelManufacturer}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdManufacturerUrl">${LabelManufacturerUrl}</label>
-                                <input type="text" id="txtIdManufacturerUrl" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdManufacturerUrl" label="${LabelManufacturerUrl}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdModelName">${LabelModelName}</label>
-                                <input type="text" id="txtIdModelName" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdModelName" label="${LabelModelName}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdModelNumber">${LabelModelNumber}</label>
-                                <input type="text" id="txtIdModelNumber" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdModelNumber" label="${LabelModelNumber}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdModelDesription">${LabelModelDescription}</label>
-                                <input type="text" id="txtIdModelDesription" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdModelDesription" label="${LabelModelDescription}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdModelUrl">${LabelModelUrl}</label>
-                                <input type="text" id="txtIdModelUrl" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdModelUrl" label="${LabelModelUrl}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdSerialNumber">${LabelSerialNumber}</label>
-                                <input type="text" id="txtIdSerialNumber" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdSerialNumber" label="${LabelSerialNumber}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="txtIdDeviceDescription">${LabelDeviceDescription}</label>
-                                <input type="text" id="txtIdDeviceDescription" />
+                            <div class="inputContainer">
+                                <input is="emby-input" type="text" id="txtIdDeviceDescription" label="${LabelDeviceDescription}" />
                                 <div class="fieldDescription">${LabelIdentificationFieldHelp}</div>
                             </div>
-                            <br />
 
                             <div>
                                 <h2 style="vertical-align:middle;display:inline-block;">${HeaderHttpHeaders}</h2>
@@ -117,16 +111,20 @@
                     <div is="emby-collapse" title="${HeaderDisplaySettings}">
                         <div class="collapseContent">
                             <br />
-                            <div>
-                                <label for="chkRequiresPlainFolders">${OptionPlainStorageFolders}</label>
-                                <input type="checkbox" id="chkRequiresPlainFolders" data-mini="true" />
-                                <div class="fieldDescription">${OptionPlainStorageFoldersHelp}</div>
+
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label>
+                                    <input is="emby-checkbox" type="checkbox" id="chkRequiresPlainFolders" />
+                                    <span>${OptionPlainStorageFolders}</span>
+                                </label>
+                                <div class="fieldDescription checkboxFieldDescription">${OptionPlainStorageFoldersHelp}</div>
                             </div>
-                            <br />
-                            <div>
-                                <label for="chkRequiresPlainVideoItems">${OptionPlainVideoItems}</label>
-                                <input type="checkbox" id="chkRequiresPlainVideoItems" data-mini="true" />
-                                <div class="fieldDescription">${OptionPlainVideoItemsHelp}</div>
+                            <div class="checkboxContainer checkboxContainer-withDescription">
+                                <label>
+                                    <input is="emby-checkbox" type="checkbox" id="chkRequiresPlainVideoItems" />
+                                    <span>${OptionPlainVideoItems}</span>
+                                </label>
+                                <div class="fieldDescription checkboxFieldDescription">${OptionPlainVideoItemsHelp}</div>
                             </div>
                         </div>
                     </div>
@@ -174,29 +172,6 @@
                                 <label for="txtIconMaxHeight">${LabelIconMaxHeight}</label>
                                 <input type="number" id="txtIconMaxHeight" pattern="[0-9]*" min="1" />
                                 <div class="fieldDescription">${LabelIconMaxHeightHelp}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div is="emby-collapse" title="${HeaderPlaybackSettings}">
-                        <div class="collapseContent">
-                            <br />
-                            <div>
-                                <label for="txtMaxAllowedBitrate">${LabelMaxStreamingBitrate}</label>
-                                <input type="number" id="txtMaxAllowedBitrate" pattern="[0-9]*" min="1" />
-                                <div class="fieldDescription">${LabelMaxStreamingBitrateHelp}</div>
-                            </div>
-                            <br />
-                            <div>
-                                <label for="txtMusicStreamingTranscodingBitrate">${LabelMusicStreamingTranscodingBitrate}</label>
-                                <input type="number" id="txtMusicStreamingTranscodingBitrate" pattern="[0-9]*" min="1" />
-                                <div class="fieldDescription">${LabelMusicStreamingTranscodingBitrateHelp}</div>
-                            </div>
-                            <br />
-                            <div style="display:none;">
-                                <label for="chkIgnoreTranscodeByteRangeRequests">${OptionIgnoreTranscodeByteRangeRequests}</label>
-                                <input type="checkbox" id="chkIgnoreTranscodeByteRangeRequests" data-mini="true" />
-                                <div class="fieldDescription">${OptionIgnoreTranscodeByteRangeRequestsHelp}</div>
                             </div>
                         </div>
                     </div>
