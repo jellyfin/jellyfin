@@ -44,6 +44,15 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public override int GetChildCount(User user)
         {
             return GetChildren(user, true).Count();

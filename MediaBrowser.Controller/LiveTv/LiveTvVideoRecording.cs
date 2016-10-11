@@ -55,6 +55,15 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return Status == RecordingStatus.Completed && base.SupportsPlayedStatus;
+            }
+        }
+
+        [IgnoreDataMember]
         public override LocationType LocationType
         {
             get

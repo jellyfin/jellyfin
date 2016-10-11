@@ -44,6 +44,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (!string.IsNullOrWhiteSpace(PrimaryVersionId))

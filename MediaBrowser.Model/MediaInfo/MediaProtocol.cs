@@ -5,6 +5,7 @@ namespace MediaBrowser.Model.MediaInfo
         File = 0,
         Http = 1,
         Rtmp = 2,
-        Rtsp = 3
+        Rtsp = 3,
+        Udp = 4
     }
 }

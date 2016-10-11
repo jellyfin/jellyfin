@@ -269,9 +269,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 positionTicks = 0;
             }
 
-            if (item is Audio)
+            if (!item.SupportsPlayedStatus)
             {
                 positionTicks = 0;
+                data.Played = false;
             }
 
             data.PlaybackPositionTicks = positionTicks;

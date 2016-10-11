@@ -84,7 +84,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="inputFiles">The input files.</param>
         /// <param name="protocol">The protocol.</param>
         /// <returns>System.String.</returns>
-        string GetProbeSizeArgument(string[] inputFiles, MediaProtocol protocol);
+        string GetProbeSizeAndAnalyzeDurationArgument(string[] inputFiles, MediaProtocol protocol);
 
         /// <summary>
         /// Gets the input argument.

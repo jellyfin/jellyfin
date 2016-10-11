@@ -598,7 +598,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Altitude = item.Altitude;
             dto.IsoSpeedRating = item.IsoSpeedRating;
 
-            var album = item.Album;
+            var album = item.AlbumEntity;
 
             if (album != null)
             {
