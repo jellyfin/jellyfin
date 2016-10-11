@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Model.Entities;
+
 namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
@@ -61,9 +62,42 @@ namespace MediaBrowser.Model.LiveTv
         public bool AddCurrentProgram { get; set; }
         public bool EnableUserData { get; set; }
 
+        /// <summary>
+        /// Used to specific whether to return news or not
+        /// </summary>
+        /// <remarks>If set to null, all programs will be returned</remarks>
+        public bool? IsNews { get; set; }
+
+        /// <summary>
+        /// Used to specific whether to return movies or not
+        /// </summary>
+        /// <remarks>If set to null, all programs will be returned</remarks>
+        public bool? IsMovie { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>null</c> if [is kids] contains no value, <c>true</c> if [is kids]; otherwise, <c>false</c>.</value>
+        public bool? IsKids { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
+        public bool? IsSports { get; set; }
+        public bool? IsSeries { get; set; }
+
+        public string[] SortBy { get; set; }
+
+        /// <summary>
+        /// The sort order to return results with
+        /// </summary>
+        /// <value>The sort order.</value>
+        public SortOrder? SortOrder { get; set; }
+
         public LiveTvChannelQuery()
         {
             EnableUserData = true;
+            SortBy = new string[] { };
         }
     }
 }

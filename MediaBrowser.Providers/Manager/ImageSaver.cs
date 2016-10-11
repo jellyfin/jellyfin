@@ -38,6 +38,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver" /> class.
@@ -46,12 +47,13 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
-        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger)
+        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             _config = config;
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _logger = logger;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         /// <summary>
@@ -124,7 +126,7 @@ namespace MediaBrowser.Providers.Manager
             var retryPaths = GetSavePaths(item, type, imageIndex, mimeType, false);
 
             // If there are more than one output paths, the stream will need to be seekable
-            var memoryStream = new MemoryStream();
+            var memoryStream = _memoryStreamProvider.CreateNew();
             using (source)
             {
                 await source.CopyToAsync(memoryStream).ConfigureAwait(false);
@@ -205,6 +207,20 @@ namespace MediaBrowser.Providers.Manager
                 if (retry)
                 {
                     _logger.Error("UnauthorizedAccessException - Access to path {0} is denied. Will retry saving to {1}", path, retryPath);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            catch (IOException ex)
+            {
+                var retry = !string.IsNullOrWhiteSpace(retryPath) &&
+                    !string.Equals(path, retryPath, StringComparison.OrdinalIgnoreCase);
+
+                if (retry)
+                {
+                    _logger.Error("IOException saving to {0}. {2}. Will retry saving to {1}", path, retryPath, ex.Message);
                 }
                 else
                 {
@@ -355,7 +371,7 @@ namespace MediaBrowser.Providers.Manager
                     return Path.Combine(seriesFolder, imageFilename);
                 }
 
-                if (item.IsInMixedFolder)
+                if (item.DetectIsInMixedFolder())
                 {
                     return GetSavePathForItemInMixedFolder(item, type, "landscape", extension);
                 }
@@ -431,7 +447,7 @@ namespace MediaBrowser.Providers.Manager
                     path = Path.Combine(Path.GetDirectoryName(item.Path), "metadata", filename + extension);
                 }
 
-                else if (item.IsInMixedFolder)
+                else if (item.DetectIsInMixedFolder())
                 {
                     path = GetSavePathForItemInMixedFolder(item, type, filename, extension);
                 }
@@ -498,7 +514,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (imageIndex.Value == 0)
                 {
-                    if (item.IsInMixedFolder)
+                    if (item.DetectIsInMixedFolder())
                     {
                         return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart", extension) };
                     }
@@ -524,7 +540,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var outputIndex = imageIndex.Value;
 
-                if (item.IsInMixedFolder)
+                if (item.DetectIsInMixedFolder())
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
                 }
@@ -567,7 +583,7 @@ namespace MediaBrowser.Providers.Manager
                     return new[] { Path.Combine(seasonFolder, imageFilename) };
                 }
 
-                if (item.IsInMixedFolder || item is MusicVideo)
+                if (item.DetectIsInMixedFolder() || item is MusicVideo)
                 {
                     return new[] { GetSavePathForItemInMixedFolder(item, type, string.Empty, extension) };
                 }

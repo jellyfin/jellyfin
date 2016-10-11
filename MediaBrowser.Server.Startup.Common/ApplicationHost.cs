@@ -102,7 +102,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Api.Playback;
+using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -315,6 +320,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         public override async Task RunStartupTasks()
         {
+            await PerformPreInitMigrations().ConfigureAwait(false);
+
             if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
                 ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
             {
@@ -324,6 +331,15 @@ namespace MediaBrowser.Server.Startup.Common
             await base.RunStartupTasks().ConfigureAwait(false);
 
             await MediaEncoder.Init().ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(MediaEncoder.EncoderPath))
+            {
+                if (ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
+                {
+                    ServerConfigurationManager.Configuration.IsStartupWizardCompleted = false;
+                    ServerConfigurationManager.SaveConfiguration();
+                }
+            }
 
             Logger.Info("ServerId: {0}", SystemId);
             Logger.Info("Core startup complete");
@@ -336,6 +352,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var name = entryPoint.GetType().FullName;
                 Logger.Info("Starting entry point {0}", name);
+                var now = DateTime.UtcNow;
                 try
                 {
                     entryPoint.Run();
@@ -344,11 +361,200 @@ namespace MediaBrowser.Server.Startup.Common
                 {
                     Logger.ErrorException("Error in {0}", ex, name);
                 }
-                Logger.Info("Entry point completed: {0}", name);
+                Logger.Info("Entry point completed: {0}. Duration: {1} seconds", name, (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
+        }
+
+        protected override IJsonSerializer CreateJsonSerializer()
+        {
+            var result = base.CreateJsonSerializer();
+
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ShortOverview" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "Taglines" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "Keywords" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ShortOverview" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ShortOverview" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "PlaceOfBirth" };
+
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ProviderIds" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ProviderIds" };
+
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ImageInfos" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ImageInfos" };
+
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ProductionLocations" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ProductionLocations" };
+
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ThemeSongIds" };
+
+            ServiceStack.Text.JsConfig<LiveTvProgram>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<LiveTvChannel>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<LiveTvVideoRecording>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<LiveTvAudioRecording>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Series>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Audio>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<MusicAlbum>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<MusicArtist>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<MusicGenre>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<MusicVideo>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Playlist>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<AudioPodcast>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Trailer>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<BoxSet>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Episode>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Season>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Book>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<CollectionFolder>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Folder>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Game>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<GameGenre>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<GameSystem>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Genre>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Person>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Photo>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<PhotoAlbum>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Studio>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<UserRootFolder>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<UserView>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Video>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Year>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<Channel>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+            ServiceStack.Text.JsConfig<AggregateFolder>.ExcludePropertyNames = new[] { "ThemeVideoIds" };
+
+            return result;
         }
 
         public override Task Init(IProgress<double> progress)
@@ -356,20 +562,21 @@ namespace MediaBrowser.Server.Startup.Common
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
-            PerformPreInitMigrations();
-
             return base.Init(progress);
         }
 
-        private void PerformPreInitMigrations()
+        private async Task PerformPreInitMigrations()
         {
-            var migrations = new List<IVersionMigration>();
+            var migrations = new List<IVersionMigration>
+            {
+                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename, Logger)
+            };
 
             foreach (var task in migrations)
             {
                 try
                 {
-                    task.Run();
+                    await task.Run().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -382,11 +589,8 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new OmdbEpisodeProviderMigration(ServerConfigurationManager),
                 new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
-                new DbMigration(ServerConfigurationManager, TaskManager),
-                new UpdateLevelMigration(ServerConfigurationManager, this, HttpClient, JsonSerializer, _releaseAssetFilename),
-                new CollectionsViewMigration(ServerConfigurationManager, UserManager)
+                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -425,13 +629,12 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(UserDataManager);
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
-            RegisterSingleInstance(UserRepository);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector());
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector(), MemoryStreamProvider);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector());
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector(), MemoryStreamProvider);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -456,17 +659,17 @@ namespace MediaBrowser.Server.Startup.Common
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, this);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer, MemoryStreamProvider);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, "Emby", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html");
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager);
+            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamProvider);
             RegisterSingleInstance(ServerManager);
 
             var innerProgress = new ActionableProgress<double>();
@@ -478,7 +681,7 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamProvider);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
@@ -507,7 +710,7 @@ namespace MediaBrowser.Server.Startup.Common
             MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager);
             RegisterSingleInstance(MediaSourceManager);
 
-            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
             RegisterSingleInstance(SessionManager);
 
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer, this);
@@ -522,7 +725,7 @@ namespace MediaBrowser.Server.Startup.Common
             PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager, ProviderManager);
             RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager, SecurityManager);
             RegisterSingleInstance(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
@@ -540,7 +743,7 @@ namespace MediaBrowser.Server.Startup.Common
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
             RegisterSingleInstance(SubtitleManager);
 
-            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager, this, NetworkManager));
+            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager));
 
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
@@ -548,16 +751,12 @@ namespace MediaBrowser.Server.Startup.Common
             await RegisterMediaEncoder(innerProgress).ConfigureAwait(false);
             progress.Report(90);
 
-            EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager);
+            EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
-
-            RegisterSingleInstance(NativeApp.GetPowerManagement());
 
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
-
-            RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
 
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
             RegisterSingleInstance(activityLogRepo);
@@ -568,7 +767,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager));
 
-            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager);
+            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider);
             RegisterSingleInstance(SubtitleEncoder);
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
@@ -660,7 +859,7 @@ namespace MediaBrowser.Server.Startup.Common
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 HttpClient,
-                ZipClient);
+                ZipClient, MemoryStreamProvider);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -672,19 +871,11 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            try
-            {
-                var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector());
+            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamProvider);
 
-                await repo.Initialize().ConfigureAwait(false);
+            await repo.Initialize().ConfigureAwait(false);
 
-                return repo;
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error opening user db", ex);
-                throw;
-            }
+            return repo;
         }
 
         /// <summary>
@@ -801,7 +992,6 @@ namespace MediaBrowser.Server.Startup.Common
                                      GetExports<IMetadataService>(),
                                      GetExports<IMetadataProvider>(),
                                      GetExports<IMetadataSaver>(),
-                                     GetExports<IImageSaver>(),
                                      GetExports<IExternalId>());
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
@@ -809,7 +999,6 @@ namespace MediaBrowser.Server.Startup.Common
             LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
-            ChapterManager.AddParts(GetExports<IChapterProvider>());
 
             SessionManager.AddParts(GetExports<ISessionControllerFactory>());
 
@@ -833,12 +1022,12 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 var prefixes = new List<string>
                 {
-                    "http://"+i+":" + ServerConfigurationManager.Configuration.HttpServerPortNumber + "/"
+                    "http://"+i+":" + HttpPort + "/"
                 };
 
                 if (!string.IsNullOrWhiteSpace(CertificatePath))
                 {
-                    prefixes.Add("https://" + i + ":" + ServerConfigurationManager.Configuration.HttpsPortNumber + "/");
+                    prefixes.Add("https://" + i + ":" + HttpsPort + "/");
                 }
 
                 return prefixes;
@@ -851,6 +1040,23 @@ namespace MediaBrowser.Server.Startup.Common
         private void StartServer()
         {
             CertificatePath = GetCertificatePath(true);
+
+            try
+            {
+                ServerManager.Start(GetUrlPrefixes(), CertificatePath);
+                return;
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error starting http server", ex);
+
+                if (HttpPort == 8096)
+                {
+                    throw;
+                }
+            }
+
+            HttpPort = 8096;
 
             try
             {
@@ -948,7 +1154,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             if (!CanSelfRestart)
             {
-                throw new InvalidOperationException("The server is unable to self-restart. Please restart manually.");
+                throw new PlatformNotSupportedException("The server is unable to self-restart. Please restart manually.");
             }
 
             try
@@ -1098,7 +1304,9 @@ namespace MediaBrowser.Server.Startup.Common
                 LocalAddress = localAddress,
                 SupportsLibraryMonitor = SupportsLibraryMonitor,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
-                SystemArchitecture = NativeApp.Environment.SystemArchitecture
+                SystemArchitecture = NativeApp.Environment.SystemArchitecture,
+                SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
+                PackageName = _startupOptions.GetOption("package")
             };
         }
 
@@ -1156,20 +1364,24 @@ namespace MediaBrowser.Server.Startup.Common
 
         public async Task<List<IPAddress>> GetLocalIpAddresses()
         {
-            var localAddresses = NetworkManager.GetLocalIpAddresses()
-                .Where(IsIpAddressValid)
-                .ToList();
+            var addresses = NetworkManager.GetLocalIpAddresses().ToList();
+            var list = new List<IPAddress>();
 
-            return localAddresses;
+            foreach (var address in addresses)
+            {
+                var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
+                if (valid)
+                {
+                    list.Add(address);
+                }
+            }
+
+            return list;
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastAddressCacheClear;
-        private bool IsIpAddressValid(IPAddress address)
-        {
-            return IsIpAddressValidInternal(address).Result;
-        }
-        private async Task<bool> IsIpAddressValidInternal(IPAddress address)
+        private async Task<bool> IsIpAddressValidAsync(IPAddress address)
         {
             if (IPAddress.IsLoopback(address))
             {
@@ -1179,7 +1391,7 @@ namespace MediaBrowser.Server.Startup.Common
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
-            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 5)
+            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 10)
             {
                 _lastAddressCacheClear = DateTime.UtcNow;
                 _validAddressResults.Clear();
@@ -1199,7 +1411,8 @@ namespace MediaBrowser.Server.Startup.Common
                     LogErrorResponseBody = false,
                     LogErrors = false,
                     LogRequest = false,
-                    TimeoutMs = 30000
+                    TimeoutMs = 30000,
+                    BufferContent = false
 
                 }, "POST").ConfigureAwait(false))
                 {
@@ -1332,8 +1545,8 @@ namespace MediaBrowser.Server.Startup.Common
                 cacheLength = TimeSpan.FromMinutes(5);
             }
 
-            var result = await new GithubUpdater(HttpClient, JsonSerializer, cacheLength).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
-                    "MBServer", "Mbserver.zip", cancellationToken).ConfigureAwait(false);
+            var result = await new GithubUpdater(HttpClient, JsonSerializer).CheckForUpdateResult("MediaBrowser", "Emby", ApplicationVersion, updateLevel, _releaseAssetFilename,
+                    "MBServer", "Mbserver.zip", cacheLength, cancellationToken).ConfigureAwait(false);
 
             HasUpdateAvailable = result.IsUpdateAvailable;
 
@@ -1393,6 +1606,11 @@ namespace MediaBrowser.Server.Startup.Common
         public void LaunchUrl(string url)
         {
             NativeApp.LaunchUrl(url);
+        }
+
+        public void EnableLoopback(string appName)
+        {
+            NativeApp.EnableLoopback(appName);
         }
     }
 }

@@ -18,6 +18,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using UniversalDetector;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -32,8 +34,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json, IHttpClient httpClient, IMediaSourceManager mediaSourceManager)
+        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json, IHttpClient httpClient, IMediaSourceManager mediaSourceManager, IMemoryStreamProvider memoryStreamProvider)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -43,6 +46,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             _json = json;
             _httpClient = httpClient;
             _mediaSourceManager = mediaSourceManager;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         private string SubtitleCachePath
@@ -61,7 +65,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             bool preserveOriginalTimestamps,
             CancellationToken cancellationToken)
         {
-            var ms = new MemoryStream();
+            var ms = _memoryStreamProvider.CreateNew();
 
             try
             {
@@ -202,7 +206,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                             var bytes = Encoding.UTF8.GetBytes(text);
 
-                            return new MemoryStream(bytes);
+                            return _memoryStreamProvider.CreateNew(bytes);
                         }
                     }
                 }
@@ -818,14 +822,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public string GetSubtitleFileCharacterSetFromLanguage(string language)
         {
+            // https://developer.xamarin.com/api/type/System.Text.Encoding/
+
             switch (language.ToLower())
             {
+                case "hun":
+                    return "windows-1252";
                 case "pol":
                 case "cze":
                 case "ces":
                 case "slo":
                 case "slk":
-                case "hun":
                 case "slv":
                 case "srp":
                 case "hrv":

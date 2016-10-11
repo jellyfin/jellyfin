@@ -12,7 +12,7 @@ namespace MediaBrowser.Model.Updates
         /// The internal id of this package.
         /// </summary>
         /// <value>The id.</value>
-        public int id { get; set; }
+        public string id { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -66,7 +66,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
-        public PackageType type { get; set; }
+        public string type { get; set; }
 
         /// <summary>
         /// Gets or sets the target filename.
@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Updates
         /// Gets or sets the total number of ratings for this package.
         /// </summary>
         /// <value>The total ratings.</value>
-        public int totalRatings { get; set; }
+        public int? totalRatings { get; set; }
 
         /// <summary>
         /// Gets or sets the average rating for this package .

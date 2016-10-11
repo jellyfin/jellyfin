@@ -273,7 +273,8 @@ namespace MediaBrowser.Api.Images
         {
             var result = await _httpClient.GetResponse(new HttpRequestOptions
             {
-                Url = url
+                Url = url,
+                BufferContent = false
 
             }).ConfigureAwait(false);
 

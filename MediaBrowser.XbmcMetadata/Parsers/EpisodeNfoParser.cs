@@ -12,7 +12,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class EpisodeNfoParser : BaseNfoParser<Episode>
     {
-        public EpisodeNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
+        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager) : base(logger, config, providerManager)
         {
         }
 

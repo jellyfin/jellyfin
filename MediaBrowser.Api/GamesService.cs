@@ -200,6 +200,8 @@ namespace MediaBrowser.Api
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
+            var dtoOptions = GetDtoOptions(request);
+
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 Limit = request.Limit,
@@ -207,11 +209,10 @@ namespace MediaBrowser.Api
                 {
                         typeof(Game).Name
                 },
-                SimilarTo = item
+                SimilarTo = item,
+                DtoOptions = dtoOptions
 
             }).ToList();
-
-            var dtoOptions = GetDtoOptions(request);
 
             var result = new QueryResult<BaseItemDto>
             {

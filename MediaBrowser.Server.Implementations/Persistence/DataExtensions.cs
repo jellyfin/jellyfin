@@ -4,6 +4,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
 using System.IO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -51,18 +52,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <summary>
         /// Gets a stream from a DataReader at a given ordinal
         /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="ordinal">The ordinal.</param>
         /// <returns>Stream.</returns>
         /// <exception cref="System.ArgumentNullException">reader</exception>
-        public static Stream GetMemoryStream(this IDataReader reader, int ordinal)
+        public static Stream GetMemoryStream(this IDataReader reader, int ordinal, IMemoryStreamProvider streamProvider)
         {
             if (reader == null)
             {
                 throw new ArgumentNullException("reader");
             }
 
-            var memoryStream = new MemoryStream();
+            var memoryStream = streamProvider.CreateNew();
             var num = 0L;
             var array = new byte[4096];
             long bytes;
@@ -132,18 +131,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// <summary>
         /// Serializes to bytes.
         /// </summary>
-        /// <param name="json">The json.</param>
-        /// <param name="obj">The obj.</param>
         /// <returns>System.Byte[][].</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
+        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj, IMemoryStreamProvider streamProvider)
         {
             if (obj == null)
             {
                 throw new ArgumentNullException("obj");
             }
 
-            using (var stream = new MemoryStream())
+            using (var stream = streamProvider.CreateNew())
             {
                 json.SerializeToStream(obj, stream);
                 return stream.ToArray();

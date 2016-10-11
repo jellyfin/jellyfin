@@ -140,7 +140,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -386,6 +386,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (Options.Static)
                 {
                     return VideoStream == null ? null : VideoStream.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (Options.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAVC;
                 }
 
                 return false;

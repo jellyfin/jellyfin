@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
 {
@@ -72,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
         private bool _disposed;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
@@ -81,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager)
+        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, IMemoryStreamProvider memoryStreamProvider)
         {
             if (applicationHost == null)
             {
@@ -100,6 +102,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _jsonSerializer = jsonSerializer;
             _applicationHost = applicationHost;
             ConfigurationManager = configurationManager;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         /// <summary>
@@ -150,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger, _memoryStreamProvider)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,

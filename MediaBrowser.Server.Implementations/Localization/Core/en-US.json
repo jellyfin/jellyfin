@@ -47,7 +47,6 @@
   "NotificationOptionTaskFailed": "Scheduled task failure",
   "NotificationOptionInstallationFailed": "Installation failure",
   "NotificationOptionNewLibraryContent": "New content added",
-  "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
   "NotificationOptionCameraImageUploaded": "Camera image uploaded",
   "NotificationOptionUserLockedOut": "User locked out",
   "NotificationOptionServerRestartRequired": "Server restart required",

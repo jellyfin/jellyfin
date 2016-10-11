@@ -70,7 +70,8 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                BufferContent = false
             };
 
             options.RequestHeaders["HOST"] = ip + ":" + port.ToString(_usCulture);
@@ -87,7 +88,8 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                BufferContent = false
             };
 
             options.RequestHeaders["FriendlyName.DLNA.ORG"] = FriendlyName;
@@ -115,7 +117,8 @@ namespace MediaBrowser.Dlna.PlayTo
                 Url = url,
                 UserAgent = USERAGENT,
                 LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLog,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                BufferContent = false
             };
 
             options.RequestHeaders["SOAPAction"] = soapAction;

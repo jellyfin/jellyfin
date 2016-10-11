@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -70,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
                 {
-                    var channel = GetChannelnfo(extInf, tunerHostId);
+                    var channel = GetChannelnfo(extInf, tunerHostId, line);
                     channel.Id = channelIdPrefix + urlHash + line.GetMD5().ToString("N");
                     channel.Path = line;
                     channels.Add(channel);
@@ -79,7 +80,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             }
             return channels;
         }
-        private M3UChannel GetChannelnfo(string extInf, string tunerHostId)
+        private M3UChannel GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
         {
             var titleIndex = extInf.LastIndexOf(',');
             var channel = new M3UChannel();
@@ -87,8 +88,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
             channel.Number = extInf.Trim().Split(' ')[0] ?? "0";
             channel.Name = extInf.Substring(titleIndex + 1);
-            
-            if(channel.Number == "-1") { channel.Number = "0"; }         
 
             //Check for channel number with the format from SatIp            
             int number;                   
@@ -101,6 +100,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     channel.Name = channel.Name.Substring(numberIndex + 1);
                 }
             }
+
+            if (string.Equals(channel.Number, "-1", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(mediaUrl))
+            {
+                channel.Number = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+            }
+
+            if (string.Equals(channel.Number, "-1", StringComparison.OrdinalIgnoreCase))
+            {
+                channel.Number = "0";
+            }
+
             channel.ImageUrl = FindProperty("tvg-logo", extInf, null);
             channel.Number = FindProperty("tvg-id", extInf, channel.Number);
             channel.Number = FindProperty("channel-id", extInf, channel.Number);

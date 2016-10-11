@@ -120,8 +120,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 }, cancellationToken).ConfigureAwait(false);
 
                 var channels = channelResult.Items;
-
-                if (user.Configuration.EnableChannelView && channels.Length > 0)
+                
+                if (_config.Configuration.EnableChannelView && channels.Length > 0)
                 {
                     list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
                 }

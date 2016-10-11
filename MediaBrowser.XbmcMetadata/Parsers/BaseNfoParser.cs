@@ -25,19 +25,22 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// The logger
         /// </summary>
         protected ILogger Logger { get; private set; }
+        protected IProviderManager ProviderManager { get; private set; }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IConfigurationManager _config;
+        private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="config">The configuration.</param>
-        public BaseNfoParser(ILogger logger, IConfigurationManager config)
+        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
         {
             Logger = logger;
             _config = config;
+            ProviderManager = providerManager;
         }
 
         /// <summary>
@@ -67,6 +70,24 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 IgnoreComments = true,
                 ValidationType = ValidationType.None
             };
+
+            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+
+            var idInfos = ProviderManager.GetExternalIdInfos(item.Item);
+
+            foreach (var info in idInfos)
+            {
+                var id = info.Key + "Id";
+                if (!_validProviderIds.ContainsKey(id))
+                {
+                    _validProviderIds.Add(id, info.Key);
+                }
+            }
+
+            //Additional Mappings
+            _validProviderIds.Add("collectionnumber", "TmdbCollection");
+            _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("imdb_id", "Imdb");
 
             Fetch(item, metadataFile, settings, cancellationToken);
         }
@@ -471,13 +492,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasTagline = item as IHasTaglines;
-                        if (hasTagline != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasTagline.AddTagline(val);
-                            }
+                            item.Tagline = val;
                         }
                         break;
                     }
@@ -486,20 +503,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasProductionLocations = item as IHasProductionLocations;
-                        if (hasProductionLocations != null)
+                        if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                var parts = val.Split('/')
-                                    .Select(i => i.Trim())
-                                    .Where(i => !string.IsNullOrWhiteSpace(i));
-
-                                foreach (var p in parts)
-                                {
-                                    hasProductionLocations.AddProductionLocation(p);
-                                }
-                            }
+                            item.ProductionLocations = val.Split('/')
+                                .Select(i => i.Trim())
+                                .Where(i => !string.IsNullOrWhiteSpace(i))
+                                .ToList();
                         }
                         break;
                     }
@@ -760,14 +769,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "tvdbid":
-                    var tvdbId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(tvdbId))
-                    {
-                        item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
-                    }
-                    break;
-
                 case "votes":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -782,127 +783,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         }
                         break;
                     }
-                case "musicbrainzalbumid":
-                    {
-                        var mbz = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(mbz))
-                        {
-                            item.SetProviderId(MetadataProviders.MusicBrainzAlbum, mbz);
-                        }
-                        break;
-                    }
-                case "musicbrainzalbumartistid":
-                    {
-                        var mbz = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(mbz))
-                        {
-                            item.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, mbz);
-                        }
-                        break;
-                    }
-                case "musicbrainzartistid":
-                    {
-                        var mbz = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(mbz))
-                        {
-                            item.SetProviderId(MetadataProviders.MusicBrainzArtist, mbz);
-                        }
-                        break;
-                    }
-                case "musicbrainzreleasegroupid":
-                    {
-                        var mbz = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(mbz))
-                        {
-                            item.SetProviderId(MetadataProviders.MusicBrainzReleaseGroup, mbz);
-                        }
-                        break;
-                    }
-                case "tvrageid":
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(MetadataProviders.TvRage, id);
-                        }
-                        break;
-                    }
-                case "tvmazeid":
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(MetadataProviders.TvMaze, id);
-                        }
-                        break;
-                    }
-                case "audiodbartistid":
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(MetadataProviders.AudioDbArtist, id);
-                        }
-                        break;
-                    }
-                case "audiodbalbumid":
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(MetadataProviders.AudioDbAlbum, id);
-                        }
-                        break;
-                    }
-                case "rottentomatoesid":
-                    var rtId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(rtId))
-                    {
-                        item.SetProviderId(MetadataProviders.RottenTomatoes, rtId);
-                    }
-                    break;
-
-                case "tmdbid":
-                    var tmdb = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(tmdb))
-                    {
-                        item.SetProviderId(MetadataProviders.Tmdb, tmdb);
-                    }
-                    break;
-
-                case "collectionnumber":
-                case "tmdbcolid":
-                    var tmdbCollection = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(tmdbCollection))
-                    {
-                        item.SetProviderId(MetadataProviders.TmdbCollection, tmdbCollection);
-                    }
-                    break;
-
-                case "tvcomid":
-                    var TVcomId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(TVcomId))
-                    {
-                        item.SetProviderId(MetadataProviders.Tvcom, TVcomId);
-                    }
-                    break;
-
-                case "zap2itid":
-                    var zap2ItId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(zap2ItId))
-                    {
-                        item.SetProviderId(MetadataProviders.Zap2It, zap2ItId);
-                    }
-                    break;
-
-                case "imdb_id":
-                case "imdbid":
-                    var imDbId = reader.ReadElementContentAsString();
-                    if (!string.IsNullOrWhiteSpace(imDbId))
-                    {
-                        item.SetProviderId(MetadataProviders.Imdb, imDbId);
-                    }
-                    break;
 
                 case "genre":
                     {

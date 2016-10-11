@@ -60,6 +60,7 @@
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
     <Compile Include="IDependencyContainer.cs" />
+    <Compile Include="IO\IMemoryStreamProvider.cs" />
     <Compile Include="IO\ProgressStream.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />

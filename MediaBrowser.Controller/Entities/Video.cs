@@ -25,8 +25,7 @@ namespace MediaBrowser.Controller.Entities
         ISupportsPlaceHolders,
         IHasMediaSources,
         IHasShortOverview,
-        IThemeMedia,
-        IArchivable
+        IThemeMedia
     {
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
@@ -62,6 +61,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 return VideoType == VideoType.VideoFile || VideoType == VideoType.Iso;
             }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsThemeMedia
+        {
+            get { return true; }
         }
 
         public int? TotalBitrate { get; set; }
@@ -165,7 +170,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
-            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
+            get { return true; }
         }
 
         [IgnoreDataMember]
@@ -195,21 +200,6 @@ namespace MediaBrowser.Controller.Entities
         public bool HasLocalAlternateVersions
         {
             get { return LocalAlternateVersions.Count > 0; }
-        }
-
-        [IgnoreDataMember]
-        public bool IsArchive
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
-
-                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
-            }
         }
 
         public IEnumerable<Guid> GetAdditionalPartIds()
@@ -480,7 +470,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<string> GetDeletePaths()
         {
-            if (!IsInMixedFolder)
+            if (!DetectIsInMixedFolder())
             {
                 return new[] { ContainingFolderPath };
             }
@@ -600,7 +590,7 @@ namespace MediaBrowser.Controller.Entities
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = mediaStreams,
                 Name = GetMediaSourceName(i, mediaStreams),
-                Path = enablePathSubstitution ? GetMappedPath(i.Path, locationType) : i.Path,
+                Path = enablePathSubstitution ? GetMappedPath(i, i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,
                 Video3DFormat = i.Video3DFormat,
                 VideoType = i.VideoType,

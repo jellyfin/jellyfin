@@ -31,6 +31,8 @@ namespace MediaBrowser.Controller.Channels
         /// <returns>ChannelFeatures.</returns>
         ChannelFeatures GetChannelFeatures(string id);
 
+        bool SupportsSync(string channelId);
+
         /// <summary>
         /// Gets all channel features.
         /// </summary>
@@ -132,15 +134,5 @@ namespace MediaBrowser.Controller.Channels
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
         Task<BaseItemDto> GetChannelFolder(string userId, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Downloads the channel item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="destinationPath">The destination path.</param>
-        /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task DownloadChannelItem(BaseItem item, string destinationPath, IProgress<double> progress, CancellationToken cancellationToken);
     }
 }

@@ -10,6 +10,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,6 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 PostPaddingSeconds = info.PostPaddingSeconds,
                 IsPostPaddingRequired = info.IsPostPaddingRequired,
                 IsPrePaddingRequired = info.IsPrePaddingRequired,
+                KeepUntil = info.KeepUntil,
                 ExternalChannelId = info.ChannelId,
                 ExternalSeriesTimerId = info.SeriesTimerId,
                 ServiceName = service.Name,
@@ -71,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 dto.ProgramInfo = _dtoService.GetBaseItemDto(program, new DtoOptions());
 
                 dto.ProgramInfo.TimerId = dto.Id;
+
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
             }
 
@@ -100,6 +103,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Priority = info.Priority,
                 RecordAnyChannel = info.RecordAnyChannel,
                 RecordAnyTime = info.RecordAnyTime,
+                SkipEpisodesInLibrary = info.SkipEpisodesInLibrary,
+                KeepUpTo = info.KeepUpTo,
+                KeepUntil = info.KeepUntil,
                 RecordNewOnly = info.RecordNewOnly,
                 ExternalChannelId = info.ChannelId,
                 ExternalProgramId = info.ProgramId,
@@ -119,6 +125,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days);
+
+            if (!string.IsNullOrWhiteSpace(info.SeriesId))
+            {
+                var program = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new string[] { typeof(LiveTvProgram).Name },
+                    ExternalSeriesId = info.SeriesId,
+                    Limit = 1,
+                    ImageTypes = new ImageType[] { ImageType.Primary }
+
+                }).FirstOrDefault();
+
+                if (program != null)
+                {
+                    var image = program.GetImageInfo(ImageType.Primary, 0);
+                    if (image != null)
+                    {
+                        try
+                        {
+                            dto.ParentPrimaryImageTag = _imageProcessor.GetImageCacheTag(program, image);
+                            dto.ParentPrimaryImageItemId = program.Id.ToString("N");
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
+            }
 
             return dto;
         }
@@ -244,6 +278,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 PostPaddingSeconds = dto.PostPaddingSeconds,
                 IsPostPaddingRequired = dto.IsPostPaddingRequired,
                 IsPrePaddingRequired = dto.IsPrePaddingRequired,
+                KeepUntil = dto.KeepUntil,
                 Priority = dto.Priority,
                 SeriesTimerId = dto.ExternalSeriesTimerId,
                 ProgramId = dto.ExternalProgramId,
@@ -308,6 +343,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Priority = dto.Priority,
                 RecordAnyChannel = dto.RecordAnyChannel,
                 RecordAnyTime = dto.RecordAnyTime,
+                SkipEpisodesInLibrary = dto.SkipEpisodesInLibrary,
+                KeepUpTo = dto.KeepUpTo,
+                KeepUntil = dto.KeepUntil,
                 RecordNewOnly = dto.RecordNewOnly,
                 ProgramId = dto.ExternalProgramId,
                 ChannelId = dto.ExternalChannelId,

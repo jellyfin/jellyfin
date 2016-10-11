@@ -10,7 +10,6 @@ namespace MediaBrowser.Model.Configuration
         public int ClientDiscoveryIntervalSeconds { get; set; }
         public int BlastAliveMessageIntervalSeconds { get; set; }
         public string DefaultUserId { get; set; }
-        public bool EnableMovieFolders { get; set; }
 
         public DlnaOptions()
         {

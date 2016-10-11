@@ -8,11 +8,8 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasTrailers, IHasScreenshots, ISupportsPlaceHolders, IHasLookupInfo<GameInfo>
     {
-        public List<Guid> ThemeSongIds { get; set; }
-        public List<Guid> ThemeVideoIds { get; set; }
-
         public Game()
         {
             MultiPartGameFiles = new List<string>();
@@ -35,6 +32,12 @@ namespace MediaBrowser.Controller.Entities
 
         [IgnoreDataMember]
         public override bool EnableRefreshOnDateModifiedChange
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsThemeMedia
         {
             get { return true; }
         }
@@ -98,7 +101,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override IEnumerable<string> GetDeletePaths()
         {
-            if (!IsInMixedFolder)
+            if (!DetectIsInMixedFolder())
             {
                 return new[] { System.IO.Path.GetDirectoryName(Path) };
             }

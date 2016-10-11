@@ -38,8 +38,8 @@
   </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="asf" audioCodec="mp3,ac3,wmav2,wmapro,wmavoice" videoCodec="h264,mpeg4,mjpeg" type="Video" />
-    <DirectPlayProfile container="avi" audioCodec="mp3,ac3,dca" videoCodec="h264,mpeg4,mjpeg" type="Video" />
-    <DirectPlayProfile container="mkv" audioCodec="mp3,ac3,dca,aac" videoCodec="h264,mpeg4,mjpeg4" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="mp3,ac3,dca,dts" videoCodec="h264,mpeg4,mjpeg" type="Video" />
+    <DirectPlayProfile container="mkv" audioCodec="mp3,ac3,dca,aac,dts" videoCodec="h264,mpeg4,mjpeg4" type="Video" />
     <DirectPlayProfile container="mp4" audioCodec="mp3,aac" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="3gp" audioCodec="aac,he-aac" videoCodec="h264,mpeg4" type="Video" />
     <DirectPlayProfile container="mpg,mpeg" audioCodec="ac3,mp2,mp3,aac" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
@@ -100,7 +100,7 @@
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="ac3,wmav2,dca,aac,mp3">
+    <CodecProfile type="VideoAudio" codec="ac3,wmav2,dca,aac,mp3,dts">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
       </Conditions>

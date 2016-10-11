@@ -169,6 +169,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The game system.</value>
         public string GameSystem { get; set; }
 
+        public string[] ProductionLocations { get; set; }
+
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
@@ -787,11 +789,7 @@ namespace MediaBrowser.Model.Dto
         /// <value>The home page URL.</value>
         public string HomePageUrl { get; set; }
 
-        /// <summary>
-        /// Gets or sets the production locations.
-        /// </summary>
-        /// <value>The production locations.</value>
-        public List<string> ProductionLocations { get; set; }
+        public string PlaceOfBirth { get; set; }
 
         /// <summary>
         /// Gets or sets the budget.
@@ -826,6 +824,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series count.</value>
         public int? SeriesCount { get; set; }
+        public int? ProgramCount { get; set; }
         /// <summary>
         /// Gets or sets the episode count.
         /// </summary>

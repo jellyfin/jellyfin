@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,9 +11,10 @@
     <AssemblyName>MediaBrowser.Api</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <ReleaseVersion>
     </ReleaseVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -79,7 +80,6 @@
     <Compile Include="Dlna\DlnaService.cs" />
     <Compile Include="FilterService.cs" />
     <Compile Include="IHasDtoOptions.cs" />
-    <Compile Include="Library\ChapterService.cs" />
     <Compile Include="Playback\MediaInfoService.cs" />
     <Compile Include="Playback\TranscodingThrottler.cs" />
     <Compile Include="PlaylistService.cs" />
@@ -197,6 +197,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

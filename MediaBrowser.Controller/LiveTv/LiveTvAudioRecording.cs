@@ -20,6 +20,7 @@ namespace MediaBrowser.Controller.LiveTv
         [IgnoreDataMember]
         public bool IsSeries { get; set; }
         public string SeriesTimerId { get; set; }
+        public string TimerId { get; set; }
         [IgnoreDataMember]
         public DateTime StartDate { get; set; }
         public RecordingStatus Status { get; set; }
@@ -112,7 +113,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override bool CanDelete()
         {
-            return true;
+            return Status == RecordingStatus.Completed;
         }
 
         public override bool IsAuthorizedToDelete(User user)

@@ -81,7 +81,8 @@ namespace MediaBrowser.Api
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeTypes.Select(i => i.Name).ToArray(),
-                Recursive = true
+                Recursive = true,
+                DtoOptions = dtoOptions
             };
 
             // ExcludeArtistIds
