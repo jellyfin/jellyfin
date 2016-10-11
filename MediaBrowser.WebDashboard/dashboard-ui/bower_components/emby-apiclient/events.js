@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function getCallbacks(obj, name) {
 
@@ -32,7 +33,7 @@
             var list = getCallbacks(obj, eventName);
 
             var i = list.indexOf(fn);
-            if (i != -1) {
+            if (i !== -1) {
                 list.splice(i, 1);
             }
         },

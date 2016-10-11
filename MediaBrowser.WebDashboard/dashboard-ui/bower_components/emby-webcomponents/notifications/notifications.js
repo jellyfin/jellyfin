@@ -73,6 +73,7 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
         options.data = options.data || {};
         options.data.serverId = apiClient.serverInfo().Id;
         options.icon = options.icon || getIconUrl();
+        options.badge = options.badge || getIconUrl('badge.png');
 
         resetRegistration();
 
@@ -90,9 +91,15 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             return;
         }
 
+        var body = item.Name;
+
+        if (item.SeriesName) {
+            body = item.SeriesName + ' - ' + body;
+        }
+
         var notification = {
             title: "New " + item.Type,
-            body: item.Name,
+            body: body,
             vibrate: true,
             tag: "newItem" + item.Id,
             data: {

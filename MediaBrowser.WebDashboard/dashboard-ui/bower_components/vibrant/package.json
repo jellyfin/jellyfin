@@ -1,0 +1,44 @@
+{
+  "name": "vibrant",
+  "version": "1.0.0",
+  "description": "Get color variations from an image. Basically a JS port of Android's Palette",
+  "main": "src/Vibrant.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^10.2.1",
+    "gulp": "^3.8.11",
+    "gulp-closure-compiler": "^0.2.19",
+    "gulp-coffee": "^2.3.1",
+    "quantize": "^1.0.2",
+    "run-sequence": "^1.1.0",
+    "vinyl-source-stream": "^1.1.0",
+    "del": "^1.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jariz/vibrant.js.git"
+  },
+  "keywords": [
+    "color",
+    "detection",
+    "varation",
+    "image",
+    "picture",
+    "canvas",
+    "vibrant",
+    "muted",
+    "colour"
+  ],
+  "author": "Jari Zwarts",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jariz/vibrant.js/issues"
+  },
+  "homepage": "https://github.com/jariz/vibrant.js"
+}

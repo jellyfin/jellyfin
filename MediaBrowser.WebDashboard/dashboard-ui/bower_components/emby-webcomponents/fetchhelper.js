@@ -1,10 +1,11 @@
 ﻿define([], function () {
+    'use strict';
 
     function getFetchPromise(request) {
 
         var headers = request.headers || {};
 
-        if (request.dataType == 'json') {
+        if (request.dataType === 'json') {
             headers.accept = 'application/json';
         }
 
@@ -107,9 +108,9 @@
 
             if (response.status < 400) {
 
-                if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                if (request.dataType === 'json' || request.headers.accept === 'application/json') {
                     return response.json();
-                } else if (request.dataType == 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') == 0) {
+                } else if (request.dataType === 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') === 0) {
                     return response.text();
                 } else {
                     return response;

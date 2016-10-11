@@ -1,4 +1,4 @@
-﻿define([], function () {
+﻿define(['emby-checkbox'], function () {
 
     function reload(page, providerId) {
 

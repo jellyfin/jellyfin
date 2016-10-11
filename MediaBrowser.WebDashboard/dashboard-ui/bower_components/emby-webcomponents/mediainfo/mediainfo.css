@@ -54,8 +54,7 @@
 .mediaInfoProgramAttribute {
     color: #fff;
     text-transform: uppercase;
-    background: #EF6C00;
-    padding: .2em .5em;
-    border-radius: .25em;
-    font-size: 94%;
+    padding: .16em .6em;
+    border-radius: .15em;
+    font-size: 80%;
 }

@@ -6,6 +6,7 @@
         Stereo,
         Dolby,
         DolbyDigital,
-        Thx
+        Thx,
+        Atmos
     }
 }

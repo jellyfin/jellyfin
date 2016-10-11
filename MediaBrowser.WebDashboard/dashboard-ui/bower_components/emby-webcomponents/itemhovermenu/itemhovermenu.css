@@ -5,7 +5,8 @@
     bottom: 0;
     top: 0;
     background-color: rgba(0, 0, 0, .85);
-    z-index: 998;
+    /* Just enough to cover poster overlay buttons */
+    z-index: 1;
     line-height: initial;
     font-size: initial;
 }

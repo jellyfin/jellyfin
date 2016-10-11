@@ -110,7 +110,8 @@
                         coverImage: true,
                         showParentTitle: true,
                         lazy: true,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: true
                     });
                 }
                 else {

@@ -1,6 +1,5 @@
-﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, embyRouter, globalize) {
+﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'userSettings', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, userSettings, embyRouter, globalize) {
 
-    var lastPlaylistId = '';
     var currentServerId;
 
     function parentWithClass(elem, className) {
@@ -26,7 +25,7 @@
         var apiClient = connectionManager.getApiClient(currentServerId);
 
         if (playlistId) {
-            lastPlaylistId = playlistId;
+            userSettings.set('playlisteditor-lastplaylistid', playlistId);
             addToPlaylist(apiClient, panel, playlistId);
         } else {
             createPlaylist(apiClient, panel);
@@ -126,7 +125,7 @@
             });
 
             select.innerHTML = html;
-            select.value = lastPlaylistId || '';
+            select.value = userSettings.get('playlisteditor-lastplaylistid') || '';
             triggerChange(select);
 
             loading.hide();
@@ -154,8 +153,8 @@
         // newPlaylistInfo
         html += '</div>';
 
-        html += '<div>';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
         html += '</div>';
 
         html += '<input type="hidden" class="fldSelectedItemIds" />';
@@ -232,16 +231,15 @@
 
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += title;
-            html += '</div>';
+            html += '</h3>';
 
             html += '</div>';
 
             html += getEditorHtml();
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             initEditor(dlg, items);
 

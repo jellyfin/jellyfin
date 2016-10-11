@@ -115,7 +115,7 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "mkv",
                     VideoCodec = "mpeg4,h264",
-                    AudioCodec = "ac3,dca,aac,mp3,pcm",
+                    AudioCodec = "ac3,dca,aac,mp3,pcm,dts",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile

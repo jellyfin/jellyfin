@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'actionsheet', 'paper-checkbox', 'emby-input', 'paper-icon-button-light', 'emby-button', 'listViewStyle', 'material-icons', 'formDialogStyle'],
+﻿define(['dialogHelper', 'loading', 'connectionManager', 'globalize', 'actionsheet', 'emby-input', 'paper-icon-button-light', 'emby-button', 'listViewStyle', 'material-icons', 'formDialogStyle'],
 function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
     return function (options) {
@@ -172,16 +172,15 @@ function (dialogHelper, loading, connectionManager, globalize, actionsheet) {
 
             html += '<div class="formDialogHeader">';
             html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-            html += '<div class="formDialogHeaderTitle">';
+            html += '<h3 class="formDialogHeaderTitle">';
             html += title;
-            html += '</div>';
+            html += '</h3>';
 
             html += '</div>';
 
             html += getEditorHtml();
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             initEditor(dlg, options);
 

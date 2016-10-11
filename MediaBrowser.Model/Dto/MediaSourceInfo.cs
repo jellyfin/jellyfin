@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace MediaBrowser.Model.Dto
         public bool SupportsTranscoding { get; set; }
         public bool SupportsDirectStream { get; set; }
         public bool SupportsDirectPlay { get; set; }
-
+        public bool IsInfiniteStream { get; set; }
         public bool RequiresOpening { get; set; }
         public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }
@@ -52,7 +53,7 @@ namespace MediaBrowser.Model.Dto
         public string TranscodingUrl { get; set; }
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
-        
+
         public MediaSourceInfo()
         {
             Formats = new List<string>();

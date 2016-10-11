@@ -81,7 +81,8 @@ namespace MediaBrowser.Server.Implementations.News
             {
                 Url = "http://emby.media/community/index.php?/blog/rss/1-media-browser-developers-blog",
                 Progress = new Progress<double>(),
-                UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.42 Safari/537.36"
+                UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.42 Safari/537.36",
+                BufferContent = false
             };
 
             using (var stream = await _httpClient.Get(requestOptions).ConfigureAwait(false))

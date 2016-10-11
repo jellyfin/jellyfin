@@ -41,12 +41,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <summary>
         /// The _user data repository
         /// </summary>
-        private readonly IUserDataManager _userDataRepository;
-
-        /// <summary>
-        /// The _user repository
-        /// </summary>
-        private readonly IUserRepository _userRepository;
+        private readonly IUserDataManager _userDataManager;
 
         /// <summary>
         /// The _logger
@@ -99,11 +94,10 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
 
-        public SessionManager(IUserDataManager userDataRepository, ILogger logger, IUserRepository userRepository, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager)
+        public SessionManager(IUserDataManager userDataManager, ILogger logger, ILibraryManager libraryManager, IUserManager userManager, IMusicManager musicManager, IDtoService dtoService, IImageProcessor imageProcessor, IJsonSerializer jsonSerializer, IServerApplicationHost appHost, IHttpClient httpClient, IAuthenticationRepository authRepo, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager)
         {
-            _userDataRepository = userDataRepository;
+            _userDataManager = userDataManager;
             _logger = logger;
-            _userRepository = userRepository;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _musicManager = musicManager;
@@ -248,13 +242,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
                 user.LastActivityDate = activityDate;
 
-                // Don't log in the db anymore frequently than 10 seconds
-                if ((activityDate - userLastActivityDate).TotalSeconds > 10)
+                if ((activityDate - userLastActivityDate).TotalSeconds > 60)
                 {
                     try
                     {
-                        // Save this directly. No need to fire off all the events for this.
-                        await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+                        await _userManager.UpdateUser(user).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -294,11 +286,9 @@ namespace MediaBrowser.Server.Implementations.Session
                     var key = GetSessionKey(session.Client, session.DeviceId);
 
                     SessionInfo removed;
+                    _activeConnections.TryRemove(key, out removed);
 
-                    if (_activeConnections.TryRemove(key, out removed))
-                    {
-                        OnSessionEnded(removed);
-                    }
+                    OnSessionEnded(session);
                 }
             }
             finally
@@ -307,9 +297,9 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId)
+        private Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, string liveStreamId)
         {
-            return _mediaSourceManager.GetMediaSource(item, mediaSourceId, false);
+            return _mediaSourceManager.GetMediaSource(item, mediaSourceId, liveStreamId, false, CancellationToken.None);
         }
 
         /// <summary>
@@ -337,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     var hasMediaSources = libraryItem as IHasMediaSources;
                     if (hasMediaSources != null)
                     {
-                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId).ConfigureAwait(false);
+                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
 
                         if (mediaSource != null)
                         {
@@ -638,7 +628,7 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <returns>Task.</returns>
         private async Task OnPlaybackStart(Guid userId, IHasUserData item)
         {
-            var data = _userDataRepository.GetUserData(userId, item);
+            var data = _userDataManager.GetUserData(userId, item);
 
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
@@ -648,7 +638,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 data.Played = true;
             }
 
-            await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
+            await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackStart, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -715,17 +705,17 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private async Task OnPlaybackProgress(User user, BaseItem item, PlaybackProgressInfo info)
         {
-            var data = _userDataRepository.GetUserData(user.Id, item);
+            var data = _userDataManager.GetUserData(user.Id, item);
 
             var positionTicks = info.PositionTicks;
 
             if (positionTicks.HasValue)
             {
-                _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
+                _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
 
                 UpdatePlaybackSettings(user, info, data);
 
-                await _userDataRepository.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
+                await _userDataManager.SaveUserData(user.Id, item, data, UserDataSaveReason.PlaybackProgress, CancellationToken.None).ConfigureAwait(false);
             }
         }
 
@@ -792,7 +782,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     var hasMediaSources = libraryItem as IHasMediaSources;
                     if (hasMediaSources != null)
                     {
-                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId).ConfigureAwait(false);
+                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId, info.LiveStreamId).ConfigureAwait(false);
                     }
 
                     info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
@@ -820,7 +810,7 @@ namespace MediaBrowser.Server.Implementations.Session
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -851,11 +841,11 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!playbackFailed)
             {
-                var data = _userDataRepository.GetUserData(userId, item);
+                var data = _userDataManager.GetUserData(userId, item);
 
                 if (positionTicks.HasValue)
                 {
-                    playedToCompletion = _userDataRepository.UpdatePlayState(item, data, positionTicks.Value);
+                    playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
                 }
                 else
                 {
@@ -866,7 +856,7 @@ namespace MediaBrowser.Server.Implementations.Session
                     playedToCompletion = true;
                 }
 
-                await _userDataRepository.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
+                await _userDataManager.SaveUserData(userId, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None).ConfigureAwait(false);
             }
 
             return playedToCompletion;
@@ -1341,8 +1331,19 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
         {
-            var user = _userManager.Users
-                .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+            User user = null;
+            if (!string.IsNullOrWhiteSpace(request.UserId))
+            {
+                var idGuid = new Guid(request.UserId);
+                user = _userManager.Users
+                    .FirstOrDefault(i => i.Id == idGuid);
+            }
+
+            if (user == null)
+            {
+                user = _userManager.Users
+                    .FirstOrDefault(i => string.Equals(request.Username, i.Name, StringComparison.OrdinalIgnoreCase));
+            }
 
             if (user != null && !string.IsNullOrWhiteSpace(request.DeviceId))
             {

@@ -160,23 +160,11 @@
     <Compile Include="..\MediaBrowser.Model\Channels\ChannelQuery.cs">
       <Link>Channels\ChannelQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\ChapterProviderInfo.cs">
-      <Link>Chapters\ChapterProviderInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterInfo.cs">
-      <Link>Chapters\RemoteChapterInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Chapters\RemoteChapterResult.cs">
-      <Link>Chapters\RemoteChapterResult.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Collections\CollectionCreationResult.cs">
       <Link>Collections\CollectionCreationResult.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\AccessSchedule.cs">
       <Link>Configuration\AccessSchedule.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Configuration\AutoOnOff.cs">
-      <Link>Configuration\AutoOnOff.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
@@ -1176,9 +1164,6 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Updates\PackageTargetSystem.cs">
       <Link>Updates\PackageTargetSystem.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\Updates\PackageType.cs">
-      <Link>Updates\PackageType.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Updates\PackageVersionClass.cs">
       <Link>Updates\PackageVersionClass.cs</Link>

@@ -9,9 +9,11 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -63,12 +65,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (item is ILiveTvRecording)
                 {
-                    sources = await _liveTvManager.GetRecordingMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetRecordingMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
                 else
                 {
-                    sources = await _liveTvManager.GetChannelMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
             }
@@ -116,17 +118,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return list;
         }
 
-        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            MediaSourceInfo stream;
+            MediaSourceInfo stream = null;
             const bool isAudio = false;
 
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
+            IDirectStreamProvider directStreamProvider = null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
-                stream = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                stream = info.Item1;
+                directStreamProvider = info.Item2;
             }
             else
             {
@@ -135,14 +140,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                if (stream.MediaStreams.Any(i => i.Index != -1))
+                {
+                    await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error probing live tv stream", ex);
             }
 
-            return stream;
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(stream, directStreamProvider);
         }
 
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
@@ -204,9 +216,95 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        private async Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
-            return _liveTvManager.CloseLiveStream(liveStreamId, cancellationToken);
+            var originalRuntime = mediaSource.RunTimeTicks;
+
+            var now = DateTime.UtcNow;
+
+            var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                InputPath = mediaSource.Path,
+                Protocol = mediaSource.Protocol,
+                MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                ExtractChapters = false
+
+            }, cancellationToken).ConfigureAwait(false);
+
+            _logger.Info("Live tv media info probe took {0} seconds", (DateTime.UtcNow - now).TotalSeconds.ToString(CultureInfo.InvariantCulture));
+
+            mediaSource.Bitrate = info.Bitrate;
+            mediaSource.Container = info.Container;
+            mediaSource.Formats = info.Formats;
+            mediaSource.MediaStreams = info.MediaStreams;
+            mediaSource.RunTimeTicks = info.RunTimeTicks;
+            mediaSource.Size = info.Size;
+            mediaSource.Timestamp = info.Timestamp;
+            mediaSource.Video3DFormat = info.Video3DFormat;
+            mediaSource.VideoType = info.VideoType;
+
+            mediaSource.DefaultSubtitleStreamIndex = null;
+
+            // Null this out so that it will be treated like a live stream
+            if (!originalRuntime.HasValue)
+            {
+                mediaSource.RunTimeTicks = null;
+            }
+
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
+
+            if (audioStream == null || audioStream.Index == -1)
+            {
+                mediaSource.DefaultAudioStreamIndex = null;
+            }
+            else
+            {
+                mediaSource.DefaultAudioStreamIndex = audioStream.Index;
+            }
+
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
+            if (videoStream != null)
+            {
+                if (!videoStream.BitRate.HasValue)
+                {
+                    var width = videoStream.Width ?? 1920;
+
+                    if (width >= 1900)
+                    {
+                        videoStream.BitRate = 8000000;
+                    }
+
+                    else if (width >= 1260)
+                    {
+                        videoStream.BitRate = 3000000;
+                    }
+
+                    else if (width >= 700)
+                    {
+                        videoStream.BitRate = 1000000;
+                    }
+                }
+
+                // This is coming up false and preventing stream copy
+                videoStream.IsAVC = null;
+            }
+
+            // Try to estimate this
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
+
+                if (total > 0)
+                {
+                    mediaSource.Bitrate = total;
+                }
+            }
+        }
+
+
+        public Task CloseMediaSource(string liveStreamId)
+        {
+            return _liveTvManager.CloseLiveStream(liveStreamId);
         }
     }
 }

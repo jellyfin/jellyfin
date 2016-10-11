@@ -126,10 +126,6 @@
     color: #ccc;
 }
 
-.chkAirDay {
-    padding: 0 2em 1em 0;
-}
-
 .searchImage {
     background-position: center bottom;
     background-repeat: no-repeat;
@@ -166,10 +162,6 @@
     text-overflow: ellipsis;
 }
 
-.editorFieldset > div {
-    margin: 1.25em 0;
-}
-
 .jstree-anchor {
     font-weight: normal !important;
 }
@@ -199,133 +191,6 @@
     }
 }
 
-.libraryReportIndicator {
-    position: relative;
-    display: block;
-    text-align: center;
-    vertical-align: middle;
-    width: 24px;
-    height: 19px;
-    padding-top: 3px;
-    border-radius: 50%;
-    color: #fff;
-    background: rgb(204, 0, 0);
-    background: rgba(204, 0, 0, .8);
-}
-
-    .libraryReportIndicator div:after {
-        background-color: transparent !important;
-    }
-
-.clearLibraryReportIndicator {
-    background-color: transparent !important;
-}
-
-.editorTile {
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-}
-
-.editorTileInner {
-    margin: 1em .5em;
-}
-
-.imageEditorTile {
-    width: 100%;
-    padding: 0;
-}
-
-.editorTile h3 {
-    text-align: center;
-    margin: .5em 0 .7em;
-}
-
-.editorTile p {
-    margin: .5em 0;
-}
-
-.editorTileFooter {
-    padding: .5em;
-}
-
-.ui-body-a .editorTileFooter {
-    background-color: #fff;
-}
-
-.ui-body-b .editorTileFooter {
-    background-color: #282828;
-}
-
-.editorTile .ui-field-contain {
-    margin: 0 0 .5em;
-}
-
-.imageEditorCollapsible .ui-collapsible-content {
-    padding: 0 0 1em 0;
-}
-
-.remoteImage:hover, .searchImageContainer:hover {
-    -moz-box-shadow: 0 0 0 5px #38c;
-    -webkit-box-shadow: 0 0 0 5px #38c;
-    box-shadow: 0 0 0 5px #38c;
-}
-
-.tblLibraryReport img {
-    height: 18px;
-    margin-right: 10px;
-}
-
-.subtitleViewerContent {
-    overflow: auto;
-    width: 200px;
-    height: 200px;
-}
-
-@media all and (min-width: 400px) {
-
-    .subtitleViewerContent {
-        width: 300px;
-    }
-}
-
-@media all and (min-width: 500px) {
-
-    .subtitleViewerContent {
-        width: 400px;
-    }
-
-    .imageEditorTile {
-        width: 50%;
-    }
-}
-
-@media all and (min-width: 600px) {
-
-    .popupIdentify {
-        width: 400px;
-    }
-
-    .subtitleViewerContent {
-        width: 500px;
-    }
-}
-
-@media all and (min-width: 700px) {
-
-    .popupIdentify {
-        width: 500px;
-    }
-
-    .subtitleViewerContent {
-        width: 600px;
-    }
-
-    .imageEditorTile {
-        width: 33.3%;
-    }
-}
-
 @media all and (min-width: 800px) {
 
     .editPageSidebar {
@@ -342,53 +207,6 @@
         float: right;
         width: 67.5%;
     }
-
-    .popupIdentify {
-        width: 600px;
-    }
-}
-
-@media all and (min-width: 900px) {
-
-    .popupIdentify {
-        width: 700px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .popupIdentify {
-        width: 800px;
-    }
-
-    .imageEditorTile {
-        width: 25%;
-    }
-}
-
-@media all and (min-width: 1100px) {
-
-    .popupIdentify {
-        width: 900px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .popupIdentify {
-        width: 1000px;
-    }
-
-    .imageEditorTile {
-        width: 20%;
-    }
-}
-
-@media all and (min-width: 1400px) {
-
-    .imageEditorTile {
-        width: 16.666666666666666666666666666667%;
-    }
 }
 
 @media all and (min-width: 1800px) {
@@ -399,51 +217,5 @@
 
     .editPageInnerContent {
         width: 72.5%;
-    }
-
-    .imageEditorTile {
-        width: 14.285714285714285714285714285714%;
-    }
-}
-
-.collectionItemSearchResults {
-    max-height: 65%;
-    overflow-y: auto;
-}
-
-
-@media all and (min-height: 500px) {
-
-    .subtitleViewerContent {
-        height: 400px;
-    }
-}
-
-@media all and (min-height: 600px) {
-
-    .collectionItemSearchResults {
-        max-height: 70%;
-    }
-
-    .subtitleViewerContent {
-        height: 500px;
-    }
-}
-
-@media all and (min-height: 700px) {
-
-    .collectionItemSearchResults {
-        max-height: 75%;
-    }
-
-    .subtitleViewerContent {
-        height: 600px;
-    }
-}
-
-@media all and (min-height: 800px) {
-
-    .collectionItemSearchResults {
-        max-height: 80%;
     }
 }

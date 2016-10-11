@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom, appHost) {
 
     function itemsPerRow() {
 
@@ -34,6 +34,9 @@
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             elem.innerHTML = cardBuilder.getCardsHtml({
                 items: items,
                 showUnplayedIndicator: false,
@@ -43,8 +46,10 @@
                 showParentTitle: true,
                 lazy: true,
                 centerText: true,
-                overlayPlayButton: true,
-                allowBottomPadding: !enableScrollX()
+                overlayPlayButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(elem);
@@ -81,6 +86,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
@@ -90,8 +98,10 @@
                 action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true,
-                allowBottomPadding: !enableScrollX()
+                overlayMoreButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -128,6 +138,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
@@ -137,8 +150,10 @@
                 action: 'instantmix',
                 lazy: true,
                 centerText: true,
-                overlayMoreButton: true,
-                allowBottomPadding: !enableScrollX()
+                overlayMoreButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -172,6 +187,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: getSquareShape(),
@@ -180,8 +198,10 @@
                 coverImage: true,
                 showItemCounts: true,
                 centerText: true,
-                overlayPlayButton: true,
-                allowBottomPadding: !enableScrollX()
+                overlayPlayButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -360,12 +380,10 @@
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
-        if (AppInfo.enableHeadRoom) {
-            require(["headroom-window"], function (headroom) {
-                headroom.add(viewTabs);
-                self.headroom = headroom;
-            });
-        }
+        require(["headroom-window"], function (headroom) {
+            headroom.add(viewTabs);
+            self.headroom = headroom;
+        });
 
         view.addEventListener('viewdestroy', function (e) {
 

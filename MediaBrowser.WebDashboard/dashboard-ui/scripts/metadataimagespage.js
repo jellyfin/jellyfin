@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'listViewStyle'], function ($) {
+﻿define(['jQuery', 'dom', 'listViewStyle'], function ($, dom) {
 
     var currentType;
 
@@ -89,11 +89,12 @@
         $('.imageType', page).each(function () {
 
             var imageType = this.getAttribute('data-imagetype');
+            var container = dom.parentWithTag(this, 'LABEL');
 
             if (metadataInfo.SupportedImageTypes.indexOf(imageType) == -1) {
-                this.classList.add('hide');
+                container.classList.add('hide');
             } else {
-                this.classList.remove('hide');
+                container.classList.remove('hide');
             }
 
             if (getImageConfig(config, imageType).Limit) {
@@ -150,8 +151,8 @@
 
         var i, length, plugin, id;
 
-        html += '<div class="paperListLabel">' + Globalize.translate('LabelImageFetchers') + '</div>';
-        html += '<div class="paperList">';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('LabelImageFetchers') + '</h3>';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
 
@@ -161,7 +162,7 @@
 
             html += '<div class="listItem imageFetcherItem" data-pluginname="' + plugin.Name + '">';
 
-            html += '<paper-checkbox class="chkImageFetcher" data-pluginname="' + plugin.Name + '" item-icon' + isChecked + '></paper-checkbox>';
+            html += '<label class="listItemCheckboxContainer"><input type="checkbox" is="emby-checkbox" class="chkImageFetcher" data-pluginname="' + plugin.Name + '" ' + isChecked + '><span></span></label>';
 
             html += '<div class="listItemBody">';
 
@@ -220,8 +221,8 @@
             return;
         }
 
-        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataSavers') + '</div>';
-        html += '<div class="paperCheckboxList paperList">';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('LabelMetadataSavers') + '</h3>';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 
@@ -229,7 +230,7 @@
 
             var isChecked = config.DisabledMetadataSavers.indexOf(plugin.Name) == -1 ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkMetadataSaver"' + isChecked + ' data-pluginname="' + plugin.Name + '">' + plugin.Name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkMetadataSaver" data-pluginname="' + plugin.Name + '" ' + isChecked + '><span>' + plugin.Name + '</span></label>';
         }
 
         html += '</div>';
@@ -253,8 +254,8 @@
 
         var i, length, plugin;
 
-        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataDownloaders') + '</div>';
-        html += '<div class="paperList">';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('LabelMetadataDownloaders') + '</h3>';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (i = 0, length = plugins.length; i < length; i++) {
 
@@ -264,7 +265,7 @@
 
             html += '<div class="listItem metadataFetcherItem" data-pluginname="' + plugin.Name + '">';
 
-            html += '<paper-checkbox class="chkMetadataFetcher" data-pluginname="' + plugin.Name + '" item-icon' + isChecked + '></paper-checkbox>';
+            html += '<label class="listItemCheckboxContainer"><input type="checkbox" is="emby-checkbox" class="chkMetadataFetcher" data-pluginname="' + plugin.Name + '" ' + isChecked + '><span></span></label>';
 
             html += '<div class="listItemBody">';
 
@@ -323,8 +324,8 @@
             return;
         }
 
-        html += '<div class="paperListLabel">' + Globalize.translate('LabelMetadataReaders') + '</div>';
-        html += '<div class="paperList">';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('LabelMetadataReaders') + '</h3>';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = plugins.length; i < length; i++) {
 

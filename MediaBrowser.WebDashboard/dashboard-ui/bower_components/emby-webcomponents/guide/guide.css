@@ -8,6 +8,8 @@
     white-space: nowrap;
     width: 100%;
     flex-shrink: 0;
+    display: flex;
+    padding-left: 3.4em;
 }
 
 .tvProgramSectionHeader {
@@ -21,70 +23,21 @@
     position: relative;
 }
 
-.tvProgramTimeSlotInner {
-    padding: .5em;
-}
-
-.tvProgramInfo {
-    vertical-align: middle;
-    padding: .5em .5em;
-    border-bottom: .65vh solid #121212;
-}
-
-.tvProgramCurrentTimeSlot {
-    background-color: green;
-}
-
-.tvProgramName {
+.guideProgramIndicator {
+    text-transform: uppercase;
+    border-radius: 2px;
+    margin-right: .5em;
+    font-size: 74%;
+    padding: .2em .25em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     color: #fff;
-    margin-bottom: .5em;
-}
-
-.tvProgramTime {
-    color: #fff;
-}
-
-.newTvProgram {
-    color: yellow;
-    text-transform: uppercase;
-}
-
-.liveTvProgram {
-    color: #64A239;
-    text-transform: uppercase;
-}
-
-.premiereTvProgram {
-    color: orange;
-    text-transform: uppercase;
-}
-
-.programAccent {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-}
-
-.sportsAccent {
-    background-color: #0A7C33;
-}
-
-.newsAccent {
-    background-color: #523378;
-}
-
-.movieAccent {
-    background-color: #A43913;
-}
-
-.childAccent {
-    background-color: #0B487D;
 }
 
 .channelTimeslotHeader {
-    float: left;
+    flex-shrink: 0;
 }
 
 .timeslotHeaders {
@@ -94,15 +47,14 @@
 .programContainer {
     white-space: nowrap;
     position: relative;
-}
-
-.programGridContainer {
-    margin-left: 12.2vw;
+    display: flex;
+    align-items: flex-start;
 }
 
 .channelPrograms {
     white-space: nowrap;
     position: relative;
+    contain: strict;
 }
 
 .timeslotHeadersInner {
@@ -185,7 +137,6 @@
     background: rgba(40, 40, 40, .9);
     display: flex;
     align-items: center;
-    color: #fff !important;
     text-decoration: none;
     /* Needed in firefox */
     text-align: left;
@@ -221,22 +172,56 @@
 }
 
 .btnSelectDate {
-    color: #fff;
     padding-left: .5em;
+    text-transform: none;
+    font-weight: normal;
+}
+
+.btnSelectDateContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guideDateText {
+    font-size: 80%;
+}
+
+@media all and (min-width: 1600px) {
+
+    .guideDateText {
+        font-size: 92%;
+    }
+}
+
+.btnGuideViewSettings {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.btnGuideViewSettingsIcon {
+    font-size: 1.5em !important;
+}
+
+@media all and (max-width: 1280px) {
+
+    .btnGuideViewSettings {
+        display: none;
+    }
+}
+
+.selectDateIcon {
+    flex-shrink: 0;
 }
 
 .channelHeaderCell {
     border-bottom: .65vh solid #121212 !important;
     background-size: auto 70%;
-    background-position: 90% center;
+    background-position: 92% center;
     background-repeat: no-repeat;
 }
 
 @media all and (max-width: 800px) {
-
-    .guideCurrentDay {
-        display: none;
-    }
 
     .newTvProgram, .liveTvProgram, .premiereTvProgram, .guideHdIcon {
         display: none;
@@ -252,6 +237,12 @@
 
 .channelPrograms, .channelHeaderCell {
     height: 4em;
+    contain: strict;
+}
+
+.channelPrograms {
+    display: flex;
+    flex-direction: column;
 }
 
 .channelPrograms-tv, .channelHeaderCell-tv {
@@ -267,15 +258,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 3.5em;
-}
-
-.pointerInput .channelHeaderCell:hover {
-    background-color: #444;
-}
-
-.channelList {
-    float: left;
+    height: 3em;
 }
 
 .programGrid {
@@ -294,7 +277,6 @@
     border-left: .65vh solid #121212 !important;
     background-color: rgba(32, 32, 32, .95);
     display: flex;
-    color: #fff !important;
     text-decoration: none;
     overflow: hidden;
     align-items: center;
@@ -303,34 +285,48 @@
     contain: strict;
 }
 
-.timeslotCellInner {
+.programAccent {
     position: absolute;
     bottom: 0;
-    overflow: hidden;
-    width: 100%;
-    top: 0;
-    display: block;
-    text-decoration: none;
-    color: #fff !important;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.sportsAccent {
+    background-color: #3949AB;
+}
+
+.movieAccent {
+    background-color: #5E35B1;
+}
+
+.childAccent {
+    background-color: #039BE5;
+}
+
+.newsAccent {
+    background-color: #43A047;
+}
+
+.specialsAccent {
+    background-color: #FB8C00;
 }
 
 .guideProgramName {
     padding: 0 .5em 0;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.guideProgramTime {
-    padding: 0 .5em .35em;
-    color: #bbb;
+    display: flex;
+    align-items: center;
 }
 
 .programIcon {
     margin-left: auto;
-    margin-right: .5em;
-    height: 3.5vh;
-    width: 3.5vh;
-    font-size: 3.5vh;
+    margin-right: .25em;
+    height: auto;
+    width: auto;
+    font-size: 1.6em;
     color: #ddd;
     flex-shrink: 0;
 }
@@ -368,8 +364,41 @@
     }
 }
 
+.channelsContainer {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.btnCategories {
+    margin: 0 .3em 0 .5em !important;
+    padding: 0 !important;
+    flex-shrink: 0;
+    background: rgba(40, 40, 40, .9);
+    border-radius: 0 !important;
+    width: 2.6em;
+    font-weight: normal !important;
+    position: relative;
+}
+
+.btnCategoriesText {
+    transform: rotate(90deg);
+    text-transform: uppercase;
+    transform-origin: left;
+    margin-left: 1.2em;
+    letter-spacing: .25em;
+    position: absolute;
+    top: 0;
+    margin-top: 1em;
+    white-space: nowrap;
+}
+
+.channelList {
+    display: flex;
+    flex-direction: column;
+}
+
 .channelList, .programGrid {
-    height: auto !important;
+    contain: layout style;
 }
 
 .programCell, .channelHeaderCell, .btnSelectDate {
@@ -382,4 +411,46 @@
 
 .timerIcon, .seriesTimerIcon {
     color: #cc3333 !important;
+}
+
+.seriesTimerIcon-inactive {
+    color: inherit !important;
+    opacity: .7;
+}
+
+.visibleGuideScroller::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-button:start:decrement,
+.visibleGuideScroller::-webkit-scrollbar-button:end:increment {
+    display: none;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-track-piece {
+    background-color: #3b3b3b;
+}
+
+.visibleGuideScroller::-webkit-scrollbar-thumb:vertical, .visibleGuideScroller::-webkit-scrollbar-thumb:horizontal {
+    -webkit-border-radius: 2px;
+    background: #888 no-repeat center;
+}
+
+.guideOptions {
+    color: #eee;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+@media all and (max-width: 800px), all and (max-height: 600px) {
+
+    .tvGuideHeader {
+        padding-left: 0;
+    }
+
+    .btnCategories {
+        display: none;
+    }
 }

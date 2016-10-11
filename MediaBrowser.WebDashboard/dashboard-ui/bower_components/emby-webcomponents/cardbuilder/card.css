@@ -1,3 +1,12 @@
+button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+button {
+    -webkit-border-fit: border !important;
+}
+
 .card {
     border: 0;
     font-size: inherit !important;
@@ -71,18 +80,25 @@
 
 .cardBox-focustransform {
     will-change: transform;
-    /*transition: transform 200ms ease-out;*/
 }
 
-/*.card:focus > .cardBox-focustransform {
-    transition-delay: 50ms;
+.cardBox-focustransform-transition {
+    will-change: transform;
+    transition: transform 200ms ease-out;
+}
+
+.card-focusscale:focus > .cardBox-focustransform {
     transform: scale(1.16, 1.16);
-}*/
+}
+
+.cardBox-mobile {
+    margin: 1px;
+}
 
 @media all and (min-width: 600px) {
 
     .cardBox-mobile {
-        margin: 3px;
+        margin: 2px;
     }
 }
 
@@ -101,10 +117,11 @@
 }
 
 .btnCardOptions {
-    text-align: right;
-    float: right;
-    padding: 5px 0 2px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
     margin: 0 !important;
+    z-index: 1;
 }
 
 .mediaSourceIndicator {
@@ -143,7 +160,7 @@
 
     .cardImageContainer {
         /* Should be 0 with visualCardBox, but not really noticeable */
-        border-radius: 2px;
+        border-radius: 1px;
     }
 }
 
@@ -175,6 +192,8 @@
     bottom: 0;
     /* Needed in case this is a button */
     display: block;
+    /* Needed in safari */
+    height: 100%;
 }
 
 .cardImage {
@@ -188,6 +207,23 @@
     background-position: center bottom;
 }
 
+.cardImage-img {
+    max-height: 100%;
+    max-width: 100%;
+    /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
+    min-height: 70%;
+    min-width: 70%;
+    align-self: flex-end;
+    position: static;
+}
+
+.coveredImage-img {
+    max-height: none;
+    max-width: none;
+    height: 100%;
+    width: 100%;
+}
+
 .coveredImage {
     background-size: 100% 100%;
     background-position: center center;
@@ -199,6 +235,7 @@
 
 .cardFooter {
     padding: .5em .3em;
+    position: relative;
 }
 
 .visualCardBox-cardScalable, .visualCardBox-cardFooter {
@@ -206,12 +243,8 @@
 }
 
 .visualCardBox-cardFooter {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
 }
 
 .innerCardFooter {
@@ -240,6 +273,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     color: inherit;
+    text-align: left;
+}
+
+.singleCardText {
+    padding: .5em;
 }
 
 .cardTextCentered {
@@ -250,8 +288,37 @@
     opacity: .6;
 }
 
+.cardText-rightmargin {
+    margin-right: 2em;
+}
+
 .cardCenteredText {
     white-space: normal;
+}
+
+.textActionButton {
+    border: 0 !important;
+    background: transparent;
+    border: 0 !important;
+    padding: 0 !important;
+    cursor: pointer;
+    outline: none !important;
+    color: inherit;
+    vertical-align: middle;
+    font-family: inherit;
+    font-size: inherit;
+    /*display: flex;
+    align-items: center;
+    justify-content: center;*/
+}
+
+    .textActionButton:hover {
+        text-decoration: underline;
+        opacity: 1;
+    }
+
+.cardFooterLogo {
+    margin-right: 1em;
 }
 
 .cardImageIcon {
@@ -341,7 +408,7 @@
 }
 
 .overflowBackdropCard-scalable {
-    width: 84%;
+    width: 80%;
     max-width: 400px;
 }
 
@@ -480,7 +547,6 @@
     }
 }
 
-
 @media all and (min-width: 1600px) {
 
     .portraitCard-scalable {
@@ -490,12 +556,27 @@
     .smallBackdropCard-scalable {
         width: 12.5%;
     }
+
+    .backdropCard-scalable {
+        width: 20%;
+    }
+
+    .squareCard-scalable {
+        width: 12.5%;
+    }
 }
 
 @media all and (min-width: 1800px) {
 
+    .smallBackdropCard-scalable {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+
     .squareCard-scalable {
-        width: 12.5%;
+        width: 11.111111111111111111111111111111%;
     }
 
     .smallBackdropCard-scalable {
@@ -504,10 +585,6 @@
 }
 
 @media all and (min-width: 2100px) {
-
-    .squareCard-scalable {
-        width: 11.111111111111111111111111111111%;
-    }
 
     .backdropCard-scalable {
         width: 20%;
@@ -550,4 +627,12 @@
 
 .layout-tv .personCard-scalable {
     width: 14.285714285714285714285714285714%;
+}
+
+
+@media all and (min-width: 1600px) {
+
+    .layout-tv .backdropCard-scalable {
+        width: 25%;
+    }
 }

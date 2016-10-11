@@ -20,7 +20,7 @@
                 if (layoutManager.tv) {
                     dialogOptions.size = 'fullscreen';
                 } else {
-                    dialogOptions.size = 'medium';
+                    dialogOptions.size = 'medium-tall';
                 }
 
                 var dlg = dialogHelper.createDialog(dialogOptions);
@@ -33,7 +33,6 @@
                 html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
-                document.body.appendChild(dlg);
 
                 dlg.querySelector('.txtPersonName', dlg).value = person.Name || '';
                 dlg.querySelector('.selectPersonType', dlg).value = person.Type || '';
@@ -58,6 +57,15 @@
                     }
                 });
 
+                dlg.querySelector('.selectPersonType').addEventListener('change', function (e) {
+
+                    if (this.value == 'Actor') {
+                        dlg.querySelector('.fldRole').classList.remove('hide');
+                    } else {
+                        dlg.querySelector('.fldRole').classList.add('hide');
+                    }
+                });
+
                 dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
 
                     dialogHelper.close(dlg);
@@ -76,6 +84,10 @@
                     e.preventDefault();
                     return false;
                 });
+
+                dlg.querySelector('.selectPersonType').dispatchEvent(new CustomEvent('change', {
+                    bubbles: true
+                }));
             });
         });
     }

@@ -91,7 +91,8 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 size: 'fullscreen',
                 autoFocus: false,
                 scrollY: false,
-                exitAnimation: 'fadeout'
+                exitAnimation: 'fadeout',
+                removeOnClose: true
             });
 
             dlg.classList.add('slideshowDialog');
@@ -166,12 +167,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 }
             }
 
-            document.body.appendChild(dlg);
-
             dialogHelper.open(dlg).then(function () {
 
                 stopInterval();
-                dlg.parentNode.removeChild(dlg);
             });
 
             inputmanager.on(window, onInputCommand);
@@ -499,12 +497,14 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 case 'left':
                     if (!isOsdOpen()) {
                         e.preventDefault();
+                        e.stopPropagation();
                         previousImage();
                     }
                     break;
                 case 'right':
                     if (!isOsdOpen()) {
                         e.preventDefault();
+                        e.stopPropagation();
                         nextImage();
                     }
                     break;

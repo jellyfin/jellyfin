@@ -10,6 +10,7 @@ using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -18,10 +19,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IDbConnector dbConnector)
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
+
+        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IDbConnector dbConnector, IMemoryStreamProvider memoryStreamProvider)
             : base(logManager, dbConnector)
         {
             _jsonSerializer = jsonSerializer;
+            _memoryStreamProvider = memoryStreamProvider;
             DbFilePath = Path.Combine(appPaths.DataPath, "displaypreferences.db");
         }
 
@@ -82,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences);
+            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
 
             using (var connection = await CreateConnection().ConfigureAwait(false))
             {
@@ -166,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     foreach (var displayPreference in displayPreferences)
                     {
 
-                        var serialized = _jsonSerializer.SerializeToBytes(displayPreference);
+                        var serialized = _jsonSerializer.SerializeToBytes(displayPreference, _memoryStreamProvider);
 
                         using (var cmd = connection.CreateCommand())
                         {
@@ -246,7 +250,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         if (reader.Read())
                         {
-                            using (var stream = reader.GetMemoryStream(0))
+                            using (var stream = reader.GetMemoryStream(0, _memoryStreamProvider))
                             {
                                 return _jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream);
                             }
@@ -283,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         while (reader.Read())
                         {
-                            using (var stream = reader.GetMemoryStream(0))
+                            using (var stream = reader.GetMemoryStream(0, _memoryStreamProvider))
                             {
                                 list.Add(_jsonSerializer.DeserializeFromStream<DisplayPreferences>(stream));
                             }

@@ -1,4 +1,4 @@
-define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
+define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, dom, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -104,13 +104,11 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
         }
     }
 
-    var htmlCache = {};
-    var cacheParam = new Date().getTime();
     function loadContentUrl(ctx, next, route, request) {
 
         var url = route.contentPath || route.path;
 
-        if (url.toLowerCase().indexOf('http') != 0 && url.indexOf('file:') != 0) {
+        if (url.indexOf('://') == -1) {
 
             // Put a slash at the beginning but make sure to avoid a double slash
             if (url.indexOf('/') != 0) {
@@ -125,32 +123,10 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             url += '?' + ctx.querystring;
         }
 
-        if (route.enableCache !== false) {
-            var cachedHtml = htmlCache[url];
-            if (cachedHtml) {
-                loadContent(ctx, route, cachedHtml, request);
-                return;
-            }
-        }
+        require(['text!' + url], function (html) {
 
-        url += url.indexOf('?') == -1 ? '?' : '&';
-        url += 'v=' + cacheParam;
-
-        var xhr = new XMLHttpRequest();
-        xhr.onload = xhr.onerror = function () {
-            if (this.status < 400) {
-                var html = this.response;
-                if (route.enableCache !== false) {
-                    htmlCache[url.split('?')[0]] = html;
-                }
-                loadContent(ctx, route, html, request);
-            } else {
-                next();
-            }
-        };
-        xhr.onerror = next;
-        xhr.open('GET', url, true);
-        xhr.send();
+            loadContent(ctx, route, html, request);
+        });
     }
 
     function handleRoute(ctx, next, route) {
@@ -227,7 +203,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             return;
             //}
         }
-        viewManager.tryRestoreView(currentRequest).then(function () {
+        viewManager.tryRestoreView(currentRequest, function () {
 
             // done
             currentRouteInfo = {
@@ -235,7 +211,12 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
                 path: ctx.path
             };
 
-        }, onNewViewNeeded);
+        }).catch(function (result) {
+
+            if (!result || !result.cancelled) {
+                onNewViewNeeded();
+            }
+        });
     }
 
     var firstConnectionResult;
@@ -270,7 +251,7 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
 
     function enableHistory() {
 
-        if (browser.xboxOne) {
+        if (browser.xboxOne || browser.edgeUwp) {
             return false;
         }
 
@@ -500,11 +481,25 @@ define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'b
             }
         }
 
-        page.show(path, options);
         return new Promise(function (resolve, reject) {
-            setTimeout(resolve, 500);
+
+            resolveOnNextShow = resolve;
+            page.show(path, options);
         });
     }
+
+    var resolveOnNextShow;
+    dom.addEventListener(document, 'viewshow', function () {
+
+        var resolve = resolveOnNextShow;
+        if (resolve) {
+            resolveOnNextShow = null;
+            resolve();
+        }
+    }, {
+        passive: true,
+        once: true
+    });
 
     var currentRouteInfo;
     function current() {

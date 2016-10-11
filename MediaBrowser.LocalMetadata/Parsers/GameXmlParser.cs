@@ -16,8 +16,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public GameXmlParser(ILogger logger)
-            : base(logger)
+        public GameXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 

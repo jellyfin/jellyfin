@@ -50,7 +50,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 5 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             CollapseBoxSetItems: false,
@@ -330,12 +330,10 @@
             Events.off(MediaController, 'playbackstop', onPlaybackStop);
         });
 
-        if (AppInfo.enableHeadRoom) {
-            require(["headroom-window"], function (headroom) {
-                headroom.add(viewTabs);
-                self.headroom = headroom;
-            });
-        }
+        require(["headroom-window"], function (headroom) {
+            headroom.add(viewTabs);
+            self.headroom = headroom;
+        });
 
         view.addEventListener('viewdestroy', function (e) {
             if (self.headroom) {

@@ -52,7 +52,6 @@
     </Compile>
     <Compile Include="Configuration\NfoOptions.cs" />
     <Compile Include="EntryPoint.cs" />
-    <Compile Include="Images\XbmcImageSaver.cs" />
     <Compile Include="Parsers\BaseNfoParser.cs" />
     <Compile Include="Parsers\EpisodeNfoParser.cs" />
     <Compile Include="Parsers\MovieNfoParser.cs" />

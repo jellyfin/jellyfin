@@ -3,12 +3,13 @@
 }
 
 .collapseContent {
-    border-width: 0 1px 1px 1px;
+    border-width: 0;
     padding: 1.25em 1.25em;
     height: 0;
     transition-property: height;
     transition-duration: 300ms;
     overflow: hidden;
+    background: #222;
 }
 
 .emby-collapsible-button {
@@ -18,13 +19,27 @@
     text-transform: none;
     width: 100%;
     text-align: left;
+    border: 0;
+    text-transform: none;
+    border-bottom: 1px solid #333;
+    padding-left: .1em;
+    background: transparent;
+    box-shadow: none;
 }
 
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;
     transition: transform 180ms ease-out;
+    position: absolute;
+    right: .5em;
+    font-size: 1.5em;
 }
 
 .emby-collapse-expandIconExpanded {
     transform: rotate(180deg);
+}
+
+.emby-collapsible-title {
+    margin: 0;
+    padding: 0;
 }

@@ -113,7 +113,8 @@
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
-                        showItemCounts: true
+                        showItemCounts: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -141,10 +142,10 @@
                         shape: "auto",
                         context: 'movies',
                         showTitle: true,
-                        showYear: true,
-                        lazy: true,
+                        centerText: false,
                         cardLayout: true,
-                        showItemCounts: true
+                        showItemCounts: true,
+                        vibrant: true
                     });
                 }
                 else {

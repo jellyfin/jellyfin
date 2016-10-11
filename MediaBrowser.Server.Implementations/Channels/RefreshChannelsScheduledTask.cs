@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public string Category
         {
-            get { return "Channels"; }
+            get { return "Internet Channels"; }
         }
 
         public async Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)

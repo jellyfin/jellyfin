@@ -167,6 +167,10 @@
     overflow-x: auto;
 }
 
+.tabScenes, .tabCast {
+    display: flex;
+}
+
 #videoPlayer .nowPlayingText {
     font-weight: normal;
     margin: 0 0 0 1em;
@@ -186,6 +190,7 @@
 
 .videoNowPlayingOverview, .videoNowPlayingRating {
     margin: 1em 0;
+    display: flex;
 }
 
 .videoTopControlsLogo {

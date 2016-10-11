@@ -93,11 +93,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-
-            if (responseHeaders != null)
+            if (responseHeaders == null)
             {
-                AddResponseHeaders(result, responseHeaders);
+                responseHeaders = new Dictionary<string, string>();
             }
+
+            responseHeaders["Expires"] = "-1";
+            AddResponseHeaders(result, responseHeaders);
 
             return result;
         }
@@ -679,29 +681,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 hasOptions.Options[item.Key] = item.Value;
             }
-        }
-
-        /// <summary>
-        /// Gets the error result.
-        /// </summary>
-        /// <param name="statusCode">The status code.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>System.Object.</returns>
-        public void ThrowError(int statusCode, string errorMessage, IDictionary<string, string> responseHeaders = null)
-        {
-            var error = new HttpError
-            {
-                Status = statusCode,
-                ErrorCode = errorMessage
-            };
-
-            if (responseHeaders != null)
-            {
-                AddResponseHeaders(error, responseHeaders);
-            }
-
-            throw error;
         }
 
         public object GetAsyncStreamWriter(IAsyncStreamSource streamSource)

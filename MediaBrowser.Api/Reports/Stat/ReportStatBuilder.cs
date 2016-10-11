@@ -36,7 +36,6 @@ namespace MediaBrowser.Api.Reports
             result = this.GetResultStudios(result, items, topItem);
             result = this.GetResultPersons(result, items, topItem);
             result = this.GetResultProductionYears(result, items, topItem);
-            result = this.GetResulProductionLocations(result, items, topItem);
             result = this.GetResultCommunityRatings(result, items, topItem);
             result = this.GetResultParentalRatings(result, items, topItem);
 
@@ -98,30 +97,6 @@ namespace MediaBrowser.Api.Reports
                 group.Items.AddRange(top);
                 result.Groups.Add(group);
             }
-        }
-
-        /// <summary> Gets resul production locations. </summary>
-        /// <param name="result"> The result. </param>
-        /// <param name="items"> The items. </param>
-        /// <param name="topItem"> The top item. </param>
-        /// <returns> The resul production locations. </returns>
-        private ReportStatResult GetResulProductionLocations(ReportStatResult result, BaseItem[] items, int topItem = 5)
-        {
-            this.GetGroups(result, GetLocalizedHeader(HeaderMetadata.Countries), topItem,
-                        items.OfType<IHasProductionLocations>()
-                        .Where(x => x.ProductionLocations != null)
-                        .SelectMany(x => x.ProductionLocations)
-                        .GroupBy(x => x)
-                        .OrderByDescending(x => x.Count())
-                        .Take(topItem)
-                        .Select(x => new ReportStatItem
-                        {
-                            Name = x.Key.ToString(),
-                            Value = x.Count().ToString()
-                        })
-            );
-
-            return result;
         }
 
         /// <summary> Gets result community ratings. </summary>

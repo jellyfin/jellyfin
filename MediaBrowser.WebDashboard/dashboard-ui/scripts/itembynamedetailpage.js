@@ -10,7 +10,13 @@
                 type: 'MusicArtist'
             });
         }
+        if (item.ProgramCount && item.Type == 'Person') {
 
+            sections.push({
+                name: Globalize.translate('HeaderUpcomingOnTV'),
+                type: 'Program'
+            });
+        }
         if (item.MovieCount) {
 
             sections.push({
@@ -108,6 +114,26 @@
 
         switch (type) {
 
+            case 'Program':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Program",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "backdrop",
+                    showTitle: true,
+                    centerText: true,
+                    overlayMoreButton: true,
+                    preferThumb: true,
+                    overlayText: false,
+                    showAirTime: true,
+                    showAirDateTime: true,
+                    showChannelName: true
+                });
+                break;
+
             case 'Movie':
                 loadItems(element, item, type, {
                     MediaTypes: "",
@@ -119,7 +145,8 @@
                     shape: "portrait",
                     showTitle: true,
                     centerText: true,
-                    overlayMoreButton: true
+                    overlayMoreButton: true,
+                    overlayText: false
                 });
                 break;
 

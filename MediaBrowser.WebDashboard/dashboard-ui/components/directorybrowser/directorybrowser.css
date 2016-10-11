@@ -12,12 +12,5 @@
     background: #fff3a5;
     padding: 1em;
     border-radius: 5px;
-    margin-top: 2em;
-}
-
-.directoryPicker paper-item {
-    min-height: 36px;
-    border-bottom: 1px solid #eee;
-    outline: none;
-    cursor: pointer;
+    margin-bottom: 1.5em;
 }

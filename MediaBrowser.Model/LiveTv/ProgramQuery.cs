@@ -41,6 +41,7 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
+        public string SeriesTimerId { get; set; }
 
         /// <summary>
         /// The earliest date for which a program starts to return
@@ -63,6 +64,12 @@ namespace MediaBrowser.Model.LiveTv
         public DateTime? MaxEndDate { get; set; }
 
         /// <summary>
+        /// Used to specific whether to return news or not
+        /// </summary>
+        /// <remarks>If set to null, all programs will be returned</remarks>
+        public bool? IsNews { get; set; }
+
+        /// <summary>
         /// Used to specific whether to return movies or not
         /// </summary>
         /// <remarks>If set to null, all programs will be returned</remarks>
@@ -83,6 +90,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
         public int? StartIndex { get; set; }
+        public bool? IsSeries { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance has aired.

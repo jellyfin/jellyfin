@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
 
     // The base query options
     var data = {};
@@ -43,15 +43,20 @@
         promise.then(function (result) {
 
             var elem = context.querySelector('#items');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             cardBuilder.buildCards(result.Items, {
                 itemsContainer: elem,
                 shape: "backdrop",
                 preferThumb: true,
-                showTitle: false,
+                showTitle: supportsImageAnalysis,
                 scalable: true,
                 showItemCounts: true,
-                centerText: true,
-                overlayMoreButton: true
+                centerText: !supportsImageAnalysis,
+                overlayMoreButton: !supportsImageAnalysis,
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
             });
 
             Dashboard.hideLoadingMsg();

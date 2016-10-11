@@ -30,21 +30,22 @@
         </div>
     </div>
     <div>
-        <paper-checkbox class="chkAllTuners">${OptionEnableForAllTuners}</paper-checkbox>
+        <label class="checkboxContainer">
+            <input type="checkbox" is="emby-checkbox" class="chkAllTuners" />
+            <span>${OptionEnableForAllTuners}</span>
+        </label>
         <div class="selectTunersSection hide">
-            <br /><br />
-            <div class="paperListLabel">${HeaderTuners}</div>
-            <div class="paperCheckboxList paperList tunerList">
+            <h3 class="checkboxListLabel">${HeaderTuners}</h3>
+            <div class="checkboxList paperList checkboxList-paperList tunerList">
             </div>
         </div>
     </div>
-    <br />
     <div class="paperList" style="padding:1em;border-radius:5px;">
         <div class="premiereHelp"></div>
         <a class="lnkPremiere" href="https://emby.media/premiere">${ButtonLearnMore}</a>
     </div><br />
     <div>
-        <button is="emby-button" type="submit" class="raised submit block btnSubmitListings hide"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-        <button is="emby-button" type="button" class="raised cancel block btnCancel hide" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+        <button is="emby-button" type="submit" class="raised button-submit block btnSubmitListings hide"><span>${ButtonSave}</span></button>
+        <button is="emby-button" type="button" class="raised button-cancel block btnCancel hide" onclick="history.back();"><span>${ButtonCancel}</span></button>
     </div>
 </form>

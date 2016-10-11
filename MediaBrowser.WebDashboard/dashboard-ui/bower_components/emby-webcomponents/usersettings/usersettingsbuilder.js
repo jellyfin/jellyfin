@@ -1,27 +1,44 @@
-define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, apiClientResolver, events) {
+define(['appSettings', 'events', 'browser'], function (appsettings, events, browser) {
+    'use strict';
 
-    return function (configuredUserId) {
+    return function () {
 
         var self = this;
+        var currentUserId;
+        var currentApiClient;
+        var displayPrefs;
 
-        function getUserId(apiClient) {
+        self.setUserInfo = function (userId, apiClient) {
 
-            if (configuredUserId) {
-                return configuredUserId;
+            currentUserId = userId;
+            currentApiClient = apiClient;
+
+            if (!userId) {
+                displayPrefs = null;
+                return Promise.resolve();
             }
 
-            var apiClientInstance = apiClient || apiClientResolver();
+            return apiClient.getDisplayPreferences('usersettings', userId, 'emby').then(function (result) {
+                result.CustomPrefs = result.CustomPrefs || {};
+                displayPrefs = result;
+            });
+        };
 
-            if (apiClientInstance) {
-                return apiClientInstance.getCurrentUserId();
+        var saveTimeout;
+        function onSaveTimeout() {
+            saveTimeout = null;
+            currentApiClient.updateDisplayPreferences('usersettings', displayPrefs, currentUserId, 'emby');
+        }
+        function saveServerPreferences() {
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
             }
-
-            return null;
+            saveTimeout = setTimeout(onSaveTimeout, 50);
         }
 
-        self.set = function (name, value) {
+        self.set = function (name, value, enableOnServer) {
 
-            var userId = getUserId();
+            var userId = currentUserId;
             if (!userId) {
                 throw new Error('userId cannot be null');
             }
@@ -29,16 +46,28 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
             var currentValue = self.get(name);
             appsettings.set(name, value, userId);
 
-            if (currentValue != value) {
+            if (enableOnServer !== false && displayPrefs) {
+                displayPrefs.CustomPrefs[name] = value == null ? value : value.toString();
+                saveServerPreferences();
+            }
+
+            if (currentValue !== value) {
                 events.trigger(self, 'change', [name]);
             }
         };
 
-        self.get = function (name) {
-            var userId = getUserId();
+        self.get = function (name, enableOnServer) {
+            var userId = currentUserId;
             if (!userId) {
                 throw new Error('userId cannot be null');
             }
+
+            if (enableOnServer !== false) {
+                if (displayPrefs) {
+                    return displayPrefs.CustomPrefs[name];
+                }
+            }
+
             return appsettings.get(name, userId);
         };
 
@@ -48,13 +77,43 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
                 self.set('enableCinemaMode', val.toString());
             }
 
-            val = self.get('enableCinemaMode');
+            val = self.get('enableCinemaMode', false);
 
             if (val) {
-                return val != 'false';
+                return val !== 'false';
             }
 
             return true;
+        };
+
+        self.enableThemeSongs = function (val) {
+
+            if (val != null) {
+                self.set('enableThemeSongs', val.toString());
+            }
+
+            val = self.get('enableThemeSongs', false);
+
+            if (val) {
+                return val !== 'false';
+            }
+
+            return true;
+        };
+
+        self.enableThemeVideos = function (val) {
+
+            if (val != null) {
+                self.set('enableThemeVideos', val.toString());
+            }
+
+            val = self.get('enableThemeVideos', false);
+
+            if (val) {
+                return val !== 'false';
+            }
+
+            return !browser.slow;
         };
 
         self.language = function (val) {
@@ -86,15 +145,15 @@ define(['appSettings', 'apiClientResolver', 'events'], function (appsettings, ap
 
         self.serverConfig = function (config) {
 
-            var apiClient = apiClientResolver();
+            var apiClient = currentApiClient;
 
             if (config) {
 
-                return apiClient.updateUserConfiguration(getUserId(apiClient), config);
+                return apiClient.updateUserConfiguration(currentUserId, config);
 
             } else {
 
-                return apiClient.getUser(getUserId(apiClient)).then(function (user) {
+                return apiClient.getUser(currentUserId).then(function (user) {
 
                     return user.Configuration;
                 });

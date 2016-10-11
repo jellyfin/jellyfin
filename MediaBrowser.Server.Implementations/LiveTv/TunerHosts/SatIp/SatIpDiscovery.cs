@@ -14,6 +14,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 using System.Xml.Linq;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {
@@ -26,7 +27,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _json;
-
+        private int _tunerCountDVBS=0;
+        private int _tunerCountDVBC=0;
+        private int _tunerCountDVBT=0;
+        private bool  _supportsDVBS=false;
+        private bool  _supportsDVBC=false;
+        private bool  _supportsDVBT=false;
         public static SatIpDiscovery Current;
 
         public SatIpDiscovery(IDeviceDiscovery deviceDiscovery, IServerConfigurationManager config, ILogger logger, ILiveTvManager liveTvManager, IHttpClient httpClient, IJsonSerializer json)
@@ -45,18 +51,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
         }
 
-        void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
+        void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            var info = e.Argument;
+
             string st = null;
             string nt = null;
-            e.Headers.TryGetValue("ST", out st);
-            e.Headers.TryGetValue("NT", out nt);
+            info.Headers.TryGetValue("ST", out st);
+            info.Headers.TryGetValue("NT", out nt);
 
             if (string.Equals(st, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(nt, "urn:ses-com:device:SatIPServer:1", StringComparison.OrdinalIgnoreCase))
             {
                 string location;
-                if (e.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
+                if (info.Headers.TryGetValue("Location", out location) && !string.IsNullOrWhiteSpace(location))
                 {
                     _logger.Debug("SAT IP found at {0}", location);
 
@@ -167,7 +175,57 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         public void Dispose()
         {
         }
+ private void ReadCapability(string capability)
+        {
 
+            string[] cap = capability.Split('-');
+            switch (cap[0].ToLower())
+            {
+                case "dvbs":
+                case "dvbs2":
+                    {
+                        // Optional that you know what an device Supports can you add an flag 
+                        _supportsDVBS = true;
+
+                        for (int i = 0; i < int.Parse(cap[1]); i++)
+                        {
+                            //ToDo Create Digital Recorder / Tuner Capture Instance here for each with index FE param in Sat>Ip Spec for direct communication with this instance 
+                        }
+                        _tunerCountDVBS = int.Parse(cap[1]);
+                        break;
+                    }
+                case "dvbc":
+                case "dvbc2":
+                    {
+                        // Optional that you know what an device Supports can you add an flag 
+                        _supportsDVBC = true;
+
+                        for (int i = 0; i < int.Parse(cap[1]); i++)
+                        {
+                            //ToDo Create Digital Recorder / Tuner Capture Instance here for each with index FE param in Sat>Ip Spec for direct communication with this instance
+                            
+                        }
+                        _tunerCountDVBC = int.Parse(cap[1]);
+                        break;
+                    }
+                case "dvbt":
+                case "dvbt2":
+                    {
+                        // Optional that you know what an device Supports can you add an flag 
+                        _supportsDVBT = true;
+
+
+                        for (int i = 0; i < int.Parse(cap[1]); i++)
+                        {
+                            //ToDo Create Digital Recorder / Tuner Capture Instance here for each with index FE param in Sat>Ip Spec for direct communication with this instance  
+
+                        }
+                        _tunerCountDVBT = int.Parse(cap[1]);
+                        break;
+                    }
+            }
+
+        }
         public async Task<SatIpTunerHostInfo> GetInfo(string url, CancellationToken cancellationToken)
         {
             Uri locationUri = new Uri(url);
@@ -182,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
             string modelurl = "";
             string serialnumber = "";
             string presentationurl = "";
-            string capabilities = "";
+            //string capabilities = "";
             string m3u = "";
             var document = XDocument.Load(locationUri.AbsoluteUri);
             var xnm = new XmlNamespaceManager(new NameTable());
@@ -227,7 +285,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                     var presentationUrlElement = deviceElement.Element(n0 + "presentationURL");
                     if (presentationUrlElement != null) presentationurl = presentationUrlElement.Value;
                     var capabilitiesElement = deviceElement.Element(n1 + "X_SATIPCAP");
-                    if (capabilitiesElement != null) capabilities = capabilitiesElement.Value;
+                        if (capabilitiesElement != null)
+                        {
+                        //_capabilities = capabilitiesElement.Value;
+                        if (capabilitiesElement.Value.Contains(','))
+                        {
+                            string[] capabilities = capabilitiesElement.Value.Split(',');
+                            foreach (var capability in capabilities)
+                            {
+                                ReadCapability(capability);
+                            }
+                        }
+                        else
+                        {
+                            ReadCapability(capabilitiesElement.Value);
+                        }
+                    }
+                        else
+                        {
+                            _supportsDVBS = true;
+                            _tunerCountDVBS =1;
+                        }
                     var m3uElement = deviceElement.Element(n1 + "X_SATIPM3U");
                     if (m3uElement != null) m3u = m3uElement.Value;
                 }
@@ -239,8 +317,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
                 Id = uniquedevicename,
                 IsEnabled = true,
                 Type = SatIpHost.DeviceType,
-                Tuners = 1,
-                TunersAvailable = 1,
+                Tuners = _tunerCountDVBS,
+                TunersAvailable = _tunerCountDVBS,
                 M3UUrl = m3u
             };
 

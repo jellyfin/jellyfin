@@ -142,9 +142,15 @@ namespace MediaBrowser.Common.Implementations.Security
             }
             set
             {
-                if (value != LicenseFile.RegKey)
+                var newValue = value;
+                if (newValue != null)
                 {
-                    LicenseFile.RegKey = value;
+                    newValue = newValue.Trim();
+                }
+
+                if (newValue != LicenseFile.RegKey)
+                {
+                    LicenseFile.RegKey = newValue;
                     LicenseFile.Save();
 
                     // re-load registration info
@@ -163,7 +169,8 @@ namespace MediaBrowser.Common.Implementations.Security
             var options = new HttpRequestOptions()
             {
                 Url = AppstoreRegUrl,
-                CancellationToken = CancellationToken.None
+                CancellationToken = CancellationToken.None,
+                BufferContent = false
             };
             options.RequestHeaders.Add("X-Emby-Token", _appHost.SystemId);
             options.RequestContent = parameters;
@@ -263,7 +270,8 @@ namespace MediaBrowser.Common.Implementations.Security
                         Url = MBValidateUrl,
 
                         // Seeing block length errors
-                        EnableHttpCompression = false
+                        EnableHttpCompression = false,
+                        BufferContent = false
                     };
 
                     options.SetPostData(data);

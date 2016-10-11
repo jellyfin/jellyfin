@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'libraryBrowser'], function ($, libraryBrowser) {
+﻿define(['jQuery', 'libraryBrowser', 'fnchecked'], function ($, libraryBrowser) {
 
     var defaultSortBy = "SortName";
     var topItems = 5;
@@ -456,7 +456,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
 
         $('.chkVideoTypeFilter', page).each(function () {
@@ -466,7 +466,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.chkStatus', page).each(function () {
 
@@ -475,7 +475,7 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         $('.chkAirDays', page).each(function () {
 
@@ -484,33 +484,33 @@
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
-        $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
-        $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
+        $('#chk3D', page).checked(query.Is3D == true);
+        $('#chkHD', page).checked(query.IsHD == true);
+        $('#chkSD', page).checked(query.IsHD == false);
 
-        $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkMissingTrailer', page).checked(query.HasTrailer == false).checkboxradio('refresh');
-        $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('#chkSubtitle', page).checked(query.HasSubtitles == true);
+        $('#chkTrailer', page).checked(query.HasTrailer == true);
+        $('#chkMissingTrailer', page).checked(query.HasTrailer == false);
+        $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true);
+        $('#chkThemeSong', page).checked(query.HasThemeSong == true);
+        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true);
 
         $('#selectPageSize', page).val(query.Limit);
 
         //Management
-        $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
-        $('#chkMissingOverview', page).checked(query.HasOverview == false).checkboxradio('refresh');
-        $('#chkIsLocked', page).checked(query.IsLocked == true).checkboxradio('refresh');
-        $('#chkMissingImdbId', page).checked(query.HasImdbId == false).checkboxradio('refresh');
-        $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false).checkboxradio('refresh');
-        $('#chkMissingTvdbId', page).checked(query.HasTvdbId == false).checkboxradio('refresh');
+        $('#chkMissingRating', page).checked(query.HasOfficialRating == false);
+        $('#chkMissingOverview', page).checked(query.HasOverview == false);
+        $('#chkIsLocked', page).checked(query.IsLocked == true);
+        $('#chkMissingImdbId', page).checked(query.HasImdbId == false);
+        $('#chkMissingTmdbId', page).checked(query.HasTmdbId == false);
+        $('#chkMissingTvdbId', page).checked(query.HasTvdbId == false);
 
         //Episodes
-        $('#chkSpecialEpisode', page).checked(query.ParentIndexNumber == 0).checkboxradio('refresh');
-        $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
-        $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
+        $('#chkSpecialEpisode', page).checked(query.ParentIndexNumber == 0);
+        $('#chkMissingEpisode', page).checked(query.IsMissing == true);
+        $('#chkFutureEpisode', page).checked(query.IsUnaired == true);
 
         $('#selectIncludeItemTypes').val(query.IncludeItemTypes);
 

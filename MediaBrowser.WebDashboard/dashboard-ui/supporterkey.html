@@ -13,21 +13,20 @@
                     <div class="supporterContainer hide">
                         <br />
                         <a class="clearLink" href="http://emby.media/premiere" target="_blank">
-                            <button is="emby-button" type="button" class="raised block accent"><i class="md-icon">check</i><span>${HeaderBecomeProjectSupporter}</span></button>
+                            <button is="emby-button" type="button" class="raised block button-accent">
+                                <span>${HeaderBecomeProjectSupporter}</span>
+                            </button>
                         </a>
                     </div>
                 </div>
 
                 <form id="supporterKeyForm">
 
-                    <!-- Terrible, but this hidden field prevents the yellow background in chrome -->
-                    <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
-
                     <div style="margin: 3em 0 1em;">
 
                         <h1>${TabSupporterKey}</h1>
                         <div class="inputContainer">
-                            <input is="emby-input" type="password" id="txtSupporterKey" label="${LabelSupporterKey}" autocomplete="off" />
+                            <input is="emby-input" type="text" id="txtSupporterKey" label="${LabelSupporterKey}" autocomplete="off" />
                             <div class="fieldDescription">
                                 ${LabelSupporterKeyHelp}
                             </div>
@@ -44,7 +43,9 @@
 
                     </div>
                     <p>
-                        <button is="emby-button" type="submit" id="mbLegacyKeyBtn" class="raised block submit"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                        <button is="emby-button" type="submit" id="mbLegacyKeyBtn" class="raised block button-submit">
+                            <span>${ButtonSave}</span>
+                        </button>
                     </p>
                 </form>
                 <br />
@@ -56,7 +57,9 @@
                                 <div class="fieldDescription">${LabelSupporterEmailAddress}</div>
                             </div>
                             <p>
-                                <button is="emby-button" type="submit" id="mbRetrieveKeyBtn" class="raised block submit"><i class="md-icon">check</i><span>${ButtonRetrieveKey}</span></button>
+                                <button is="emby-button" type="submit" id="mbRetrieveKeyBtn" class="raised block button-submit">
+                                    <span>${ButtonRetrieveKey}</span>
+                                </button>
                             </p>
                         </form>
                     </div>
@@ -81,7 +84,9 @@
                                 <input is="emby-input" type="password" required id="txtOldKey" label="${LabelOldSupporterKey}" />
                             </div>
                             <p>
-                                <button is="emby-button" type="submit" id="mbLinkKeysBtn" class="raised block submit"><i class="md-icon">check</i><span>${ButtonLinkKeys}</span></button>
+                                <button is="emby-button" type="submit" id="mbLinkKeysBtn" class="raised block button-submit">
+                                    <span>${ButtonLinkKeys}</span>
+                                </button>
                             </p>
                         </form>
                     </div>

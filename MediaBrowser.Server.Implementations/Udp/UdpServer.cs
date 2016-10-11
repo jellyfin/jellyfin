@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private bool _isDisposed;
 
-        private readonly List<Tuple<string, byte[], Action<string, Encoding>>> _responders = new List<Tuple<string, byte[], Action<string, Encoding>>>();
+        private readonly List<Tuple<string, bool, Func<string, string, Encoding, Task>>> _responders = new List<Tuple<string, bool, Func<string, string, Encoding, Task>>>();
 
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
@@ -49,43 +49,35 @@ namespace MediaBrowser.Server.Implementations.Udp
             _appHost = appHost;
             _json = json;
 
-            AddMessageResponder("who is EmbyServer?", RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
-            AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
+            AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
+            AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }
 
-        private void AddMessageResponder(string message, Action<string, Encoding> responder)
+        private void AddMessageResponder(string message, bool isSubstring, Func<string, string, Encoding, Task> responder)
         {
-            var expectedMessageBytes = Encoding.UTF8.GetBytes(message);
-
-            _responders.Add(new Tuple<string, byte[], Action<string, Encoding>>(message, expectedMessageBytes, responder));
+            _responders.Add(new Tuple<string, bool, Func<string, string, Encoding, Task>>(message, isSubstring, responder));
         }
 
         /// <summary>
         /// Raises the <see cref="E:MessageReceived" /> event.
         /// </summary>
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
-        private void OnMessageReceived(UdpMessageReceivedEventArgs e)
+        private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
-            var responder = _responders.FirstOrDefault(i => i.Item2.SequenceEqual(e.Bytes));
             var encoding = Encoding.UTF8;
+            var responder = GetResponder(e.Bytes, encoding);
 
             if (responder == null)
             {
-                var text = Encoding.Unicode.GetString(e.Bytes);
-                responder = _responders.FirstOrDefault(i => string.Equals(i.Item1, text, StringComparison.OrdinalIgnoreCase));
-
-                if (responder != null)
-                {
-                    encoding = Encoding.Unicode;
-                }
+                encoding = Encoding.Unicode;
+                responder = GetResponder(e.Bytes, encoding);
             }
 
             if (responder != null)
             {
                 try
                 {
-                    responder.Item3(e.RemoteEndPoint, encoding);
+                    await responder.Item2.Item3(responder.Item1, e.RemoteEndPoint, encoding).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -94,33 +86,29 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
         }
 
-        private async void RespondToV1Message(string endpoint, Encoding encoding)
+        private Tuple<string, Tuple<string, bool, Func<string, string, Encoding, Task>>> GetResponder(byte[] bytes, Encoding encoding)
         {
-            var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
-
-            if (!string.IsNullOrEmpty(localUrl))
+            var text = encoding.GetString(bytes);
+            var responder = _responders.FirstOrDefault(i =>
             {
-                // This is how we did the old v1 search, so need to strip off the protocol
-                var index = localUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
-
-                if (index != -1)
+                if (i.Item2)
                 {
-                    localUrl = localUrl.Substring(index + 3);
+                    return text.IndexOf(i.Item1, StringComparison.OrdinalIgnoreCase) != -1;
                 }
+                return string.Equals(i.Item1, text, StringComparison.OrdinalIgnoreCase);
+            });
 
-                // Send a response back with our ip address and port
-                var response = String.Format("MediaBrowserServer|{0}", localUrl);
-
-                await SendAsync(Encoding.UTF8.GetBytes(response), endpoint);
-            }
-            else
+            if (responder == null)
             {
-                _logger.Warn("Unable to respond to udp request because the local ip address could not be determined.");
+                return null;
             }
+            return new Tuple<string, Tuple<string, bool, Func<string, string, Encoding, Task>>>(text, responder);
         }
 
-        private async void RespondToV2Message(string endpoint, Encoding encoding)
+        private async Task RespondToV2Message(string messageText, string endpoint, Encoding encoding)
         {
+            var parts = messageText.Split('|');
+
             var localUrl = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(localUrl))
@@ -132,7 +120,12 @@ namespace MediaBrowser.Server.Implementations.Udp
                     Name = _appHost.FriendlyName
                 };
 
-                await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint);
+                await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint).ConfigureAwait(false);
+                
+                if (parts.Length > 1)
+                {
+                    _appHost.EnableLoopback(parts[1]);
+                }
             }
             else
             {

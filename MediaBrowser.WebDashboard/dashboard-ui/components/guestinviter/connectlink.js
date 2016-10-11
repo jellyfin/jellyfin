@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'paper-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-collapse', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
 
     function updateUserInfo(user, newConnectUsername, actionCallback, noActionCallback) {
         var currentConnectUsername = user.ConnectUserName || '';
@@ -120,7 +120,6 @@
                     html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
                     dialogHelper.open(dlg);
 

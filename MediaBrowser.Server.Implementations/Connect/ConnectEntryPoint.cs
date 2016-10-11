@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Connect
         {
             LoadCachedAddress();
 
-            _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
+            _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(1));
             ((ConnectManager)_connectManager).Start();
         }
 
@@ -127,7 +127,8 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 // Seeing block length errors with our server
                 EnableHttpCompression = false,
-                PreferIpv4 = preferIpv4
+                PreferIpv4 = preferIpv4,
+                BufferContent = false
 
             }).ConfigureAwait(false))
             {

@@ -1,12 +1,12 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked'], function ($) {
 
     function loadMediaFolders(page, user, mediaFolders) {
 
         var html = '';
 
-        html += '<div class="paperListLabel">' + Globalize.translate('HeaderLibraries') + '</div>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderLibraries') + '</h3>';
 
-        html += '<div class="paperCheckboxList paperList">';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = mediaFolders.length; i < length; i++) {
 
@@ -15,7 +15,7 @@
             var isChecked = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1;
             var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkFolder" data-id="' + folder.Id + '" type="checkbox"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkFolder" data-id="' + folder.Id + '" ' + checkedAttribute + '><span>' + folder.Name + '</span></label>';
         }
 
         html += '</div>';
@@ -29,9 +29,9 @@
 
         var html = '';
 
-        html += '<div class="paperListLabel">' + Globalize.translate('HeaderChannels') + '</div>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderChannels') + '</h3>';
 
-        html += '<div class="paperCheckboxList paperList">';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -40,7 +40,7 @@
             var isChecked = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1;
             var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkChannel" data-id="' + folder.Id + '" type="checkbox"' + checkedAttribute + '>' + folder.Name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkChannel" data-id="' + folder.Id + '" ' + checkedAttribute + '><span>' + folder.Name + '</span></label>';
         }
 
         html += '</div>';
@@ -60,9 +60,9 @@
 
         var html = '';
 
-        html += '<div class="paperListLabel">' + Globalize.translate('HeaderDevices') + '</div>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderDevices') + '</h3>';
 
-        html += '<div class="paperCheckboxList paperList">';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = devices.length; i < length; i++) {
 
@@ -70,7 +70,7 @@
 
             var checkedAttribute = user.Policy.EnableAllDevices || user.Policy.EnabledDevices.indexOf(device.Id) != -1 ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkDevice" data-id="' + device.Id + '" type="checkbox"' + checkedAttribute + '>' + device.Name + ' - ' + device.AppName + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkDevice" data-id="' + device.Id + '" ' + checkedAttribute + '><span>' + device.Name + ' - ' + device.AppName + '</span></label>';
         }
 
         html += '</div>';
@@ -90,7 +90,7 @@
 
         $(page).trigger('userloaded', [user]);
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         loadChannels(page, user, channels);
         loadMediaFolders(page, user, mediaFolders);

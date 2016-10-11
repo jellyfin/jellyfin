@@ -1,10 +1,14 @@
-﻿define(['css!./appfooter'], function () {
+﻿define(['browser', 'css!./appfooter'], function (browser) {
 
     function render(options) {
 
         var elem = document.createElement('div');
 
         elem.classList.add('appfooter');
+
+        if (browser.safari) {
+            elem.classList.add('appfooter-blurred');
+        }
 
         document.body.appendChild(elem);
 

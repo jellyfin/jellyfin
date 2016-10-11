@@ -122,7 +122,7 @@
         function updateMultiEpisodePatternHelp() {
 
             var value = view.querySelector('#txtMultiEpisodePattern').value;
-            var fileName = getEpisodeFileName(value, false);
+            var fileName = getEpisodeFileName(value, true);
 
             var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', fileName);
 

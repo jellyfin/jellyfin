@@ -1,0 +1,47 @@
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${Settings}
+    </h3>
+</div>
+<div class="formDialogContent smoothScrollY">
+    <form class="dialogContentInner dialog-content-centered" style="padding-top:2em;">
+
+        <h3 class="checkboxListLabel">${SortChannelsBy}</h3>
+        <label class="radio-label-block"><input type="radio" is="emby-radio" name="ChannelSortOrder" value="Number" class="chkSortOrder" /><span>${ChannelNumber}</span></label>
+        <label class="radio-label-block"><input type="radio" is="emby-radio" name="ChannelSortOrder" value="DatePlayed" class="chkSortOrder" /><span>${RecentlyWatched}</span></label>
+        <br />
+        <label class="checkboxContainer">
+            <input type="checkbox" is="emby-checkbox" class="chkFavoriteChannelsAtTop" />
+            <span>${PlaceFavoriteChannelsAtBeginning}</span>
+        </label>
+        <h3 class="checkboxListLabel">${ShowIndicatorsFor}</h3>
+        <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkIndicator" data-type="hd" />
+                <span>${HDPrograms}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkIndicator" data-type="live" data-default="true" />
+                <span>${LiveBroadcasts}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkIndicator" data-type="new" />
+                <span>${NewEpisodes}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkIndicator" data-type="premiere" data-default="true" />
+                <span>${Premieres}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkIndicator" data-type="repeat" />
+                <span>${RepeatEpisodes}</span>
+            </label>
+        </div>
+        <br />
+        <label class="checkboxContainer">
+            <input type="checkbox" is="emby-checkbox" class="chkColorCodedBackgrounds" />
+            <span>${EnableColorCodedBackgrounds}</span>
+        </label>
+    </form>
+</div>

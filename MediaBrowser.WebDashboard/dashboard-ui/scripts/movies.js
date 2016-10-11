@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder, appHost) {
 
     return function (view, params, tabContent) {
 
@@ -18,7 +18,7 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Movie",
                         Recursive: true,
-                        Fields: "PrimaryImageAspectRatio,MediaSourceCount,SortName,BasicSyncInfo",
+                        Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
                         ImageTypeLimit: 1,
                         EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                         StartIndex: 0,
@@ -92,6 +92,8 @@
                 var html;
                 var viewStyle = self.getCurrentViewStyle();
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+
                 if (viewStyle == "Thumb") {
 
                     html = cardBuilder.getCardsHtml({
@@ -113,7 +115,8 @@
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
-                        showYear: true
+                        showYear: true,
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -143,7 +146,8 @@
                         showTitle: true,
                         showYear: true,
                         lazy: true,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else {

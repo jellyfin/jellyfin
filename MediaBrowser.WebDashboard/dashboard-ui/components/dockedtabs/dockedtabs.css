@@ -2,20 +2,29 @@
     flex-grow: 1;
     display: flex;
     padding: .5em 0;
+    /* Override size from librarymenu */
+    font-size: inherit;
 }
 
 .dockedtabs-tab-button {
     flex-grow: 1;
-    display: flex !important;
     align-items: center;
     justify-content: center;
     text-transform: none !important;
-    font-size: 12px !important;
+    font-size: 12.4px !important;
     padding: 0 !important;
     margin: 0 !important;
     text-align: center;
     border-color: transparent !important;
     border-width: 0 !important;
+}
+
+.dockedtabs-tab-button {
+    display: flex;
+}
+
+.dockedtabs-tab-button-noflex {
+    display: block;
 }
 
 .dockedtabs-tab-button, .dockedtabs-tab-button-foreground {
@@ -25,4 +34,20 @@
 .dockedtabs-tab-button-icon {
     margin-bottom: .25em;
     font-size: 20px;
+}
+
+.dockedtabs-dlg {
+    font-size: inherit !important;
+    background-color: #222 !important;
+    color: #eee;
+}
+
+.dockedtabs-dlg-menuitem:hover {
+    background-color: #333 !important;
+}
+
+@media all and (max-width: 800px) {
+    .dockedtab-midsize {
+        display: none !important;
+    }
 }

@@ -99,8 +99,9 @@ namespace MediaBrowser.Server.Implementations.Intros
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
                     TrailerTypes = trailerTypes.ToArray(),
                     SimilarTo = item,
-                    IsPlayed = config.EnableIntrosForWatchedContent ? (bool?) null : false,
+                    IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
                     MaxParentalRating = config.EnableIntrosParentalControl ? ratingLevel : null,
+                    BlockUnratedItems = config.EnableIntrosParentalControl ? new[] { UnratedItem.Trailer } : new UnratedItem[] { },
                     Limit = config.TrailerLimit
                 });
 
@@ -110,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                     Type = i.SourceType == SourceType.Channel ? ItemWithTrailerType.ChannelTrailer : ItemWithTrailerType.ItemWithTrailer,
                     LibraryManager = _libraryManager
                 }));
-            } 
+            }
 
             return GetResult(item, candidates, config);
         }
@@ -197,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }
 
                 returnResult.AddRange(GetMediaInfoIntrosByTags(allIntros, item.Tags).Take(1));
-                
+
                 return returnResult.DistinctBy(i => i.Path, StringComparer.OrdinalIgnoreCase);
             }
             catch (IOException)
@@ -216,7 +217,8 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             return allIntros
-                .Where(i => IsMatch(i.Path, codec));
+                .Where(i => IsMatch(i.Path, codec))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private IEnumerable<IntroInfo> GetMediaInfoIntrosByAudioStream(List<IntroInfo> allIntros, MediaStream stream)
@@ -229,13 +231,15 @@ namespace MediaBrowser.Server.Implementations.Intros
             }
 
             return allIntros
-                .Where(i => IsAudioMatch(i.Path, stream));
+                .Where(i => IsAudioMatch(i.Path, stream))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private IEnumerable<IntroInfo> GetMediaInfoIntrosByTags(List<IntroInfo> allIntros, List<string> tags)
         {
             return allIntros
-                .Where(i => tags.Any(t => IsMatch(i.Path, t)));
+                .Where(i => tags.Any(t => IsMatch(i.Path, t)))
+                .OrderBy(i => Guid.NewGuid());
         }
 
         private bool IsMatch(string file, string attribute)

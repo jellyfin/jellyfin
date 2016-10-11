@@ -409,26 +409,18 @@
             return;
         }
 
-        var msg = globalize.translate('sharedcomponents#TheSelectedItemsWillBeGrouped');
+        loading.show();
 
-        require(['confirm'], function (confirm) {
+        apiClient.ajax({
 
-            confirm(msg, globalize.translate('sharedcomponents#GroupVersions')).then(function () {
+            type: "POST",
+            url: apiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
 
-                loading.show();
+        }).then(function () {
 
-                apiClient.ajax({
-
-                    type: "POST",
-                    url: apiClient.getUrl("Videos/MergeVersions", { Ids: selection.join(',') })
-
-                }).then(function () {
-
-                    loading.hide();
-                    hideSelections();
-                    dispatchNeedsRefresh();
-                });
-            });
+            loading.hide();
+            hideSelections();
+            dispatchNeedsRefresh();
         });
     }
 

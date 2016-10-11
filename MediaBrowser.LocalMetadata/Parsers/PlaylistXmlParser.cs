@@ -11,8 +11,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class PlaylistXmlParser : BaseItemXmlParser<Playlist>
     {
-        public PlaylistXmlParser(ILogger logger)
-            : base(logger)
+        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
         }
 

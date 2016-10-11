@@ -15,13 +15,9 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasBudget, IHasTrailers, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
-
-        public List<Guid> ThemeSongIds { get; set; }
-        public List<Guid> ThemeVideoIds { get; set; }
-        public List<string> ProductionLocations { get; set; }
 
         public Movie()
         {
@@ -29,10 +25,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
-            ThemeSongIds = new List<Guid>();
-            ThemeVideoIds = new List<Guid>();
             Taglines = new List<string>();
-            ProductionLocations = new List<string>();
         }
 
         public string AwardSummary { get; set; }
@@ -81,7 +74,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             // Must have a parent to have special features
             // In other words, it must be part of the Parent/Child tree
-            if (LocationType == LocationType.FileSystem && GetParent() != null && !IsInMixedFolder)
+            if (LocationType == LocationType.FileSystem && GetParent() != null && !DetectIsInMixedFolder())
             {
                 var specialFeaturesChanged = await RefreshSpecialFeatures(options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
 
@@ -119,7 +112,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         {
             var info = GetItemLookupInfo<MovieInfo>();
 
-            if (!IsInMixedFolder)
+            if (!DetectIsInMixedFolder())
             {
                 info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
             }
@@ -145,7 +138,7 @@ namespace MediaBrowser.Controller.Entities.Movies
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!IsInMixedFolder)
+                    if (!DetectIsInMixedFolder())
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 
