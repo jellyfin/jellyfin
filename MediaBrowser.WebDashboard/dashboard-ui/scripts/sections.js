@@ -699,7 +699,7 @@
                 coverImage: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true,
+                centerText: !supportsImageAnalysis,
                 overlayText: false,
                 overlayPlayButton: true,
                 allowBottomPadding: !enableScrollX(),

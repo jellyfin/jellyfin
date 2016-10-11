@@ -17,7 +17,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public override bool IsVisible(User user)
         {
-            return base.IsVisible(user);
+            return base.IsVisible(user) && GetChildren(user, true).Any();
         }
 
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)

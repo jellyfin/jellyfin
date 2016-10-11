@@ -168,6 +168,8 @@ namespace MediaBrowser.Controller.Entities
 
             switch (name)
             {
+                case ItemFields.ThemeSongIds:
+                case ItemFields.ThemeVideoIds:
                 case ItemFields.ProductionLocations:
                 case ItemFields.Keywords:
                 case ItemFields.Taglines:

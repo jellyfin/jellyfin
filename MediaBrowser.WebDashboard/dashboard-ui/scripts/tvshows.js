@@ -144,7 +144,7 @@
                         shape: "portrait",
                         context: 'tv',
                         showTitle: true,
-                        showYear: true,
+                        showSeriesYear: true,
                         lazy: true,
                         cardLayout: true,
                         vibrant: supportsImageAnalysis
