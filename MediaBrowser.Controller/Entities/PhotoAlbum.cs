@@ -16,6 +16,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         protected override bool GetBlockUnratedValue(UserPolicy config)
         {
             return config.BlockUnratedItems.Contains(UnratedItem.Other);

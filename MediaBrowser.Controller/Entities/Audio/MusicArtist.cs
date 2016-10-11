@@ -48,6 +48,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             get { return true; }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public override bool CanDelete()
         {
             return !IsAccessedByName;

@@ -129,6 +129,15 @@ namespace MediaBrowser.Controller.Entities
             get { return false; }
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public bool DetectIsInMixedFolder()
         {
             if (SupportsIsInMixedFolderDetection)
