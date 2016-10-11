@@ -572,8 +572,7 @@
                     centerText: true,
                     allowBottomPadding: !enableScrollX(),
                     cardLayout: supportsImageAnalysis,
-                    vibrant: supportsImageAnalysis,
-                    cardFooterAside: 'none'
+                    vibrant: supportsImageAnalysis
                 });
                 html += '</div>';
             }
@@ -662,7 +661,7 @@
         });
     }
 
-    function loadLatestLiveTvRecordings(elem, userId, index) {
+    function loadLatestLiveTvRecordings(elem, userId) {
 
         return ApiClient.getLiveTvRecordings({
 
@@ -678,10 +677,8 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
-
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
                 html += '<a href="livetv.html?tab=3" onclick="LibraryBrowser.showTab(\'livetv.html\',3);" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
                 html += '</div>';
             }
@@ -708,8 +705,7 @@
                 allowBottomPadding: !enableScrollX(),
                 preferThumb: true,
                 cardLayout: supportsImageAnalysis,
-                vibrant: supportsImageAnalysis,
-                cardFooterAside: 'none'
+                vibrant: supportsImageAnalysis
 
             });
             html += '</div>';

@@ -1,4 +1,47 @@
-﻿define(['scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function () {
+﻿define(['cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder) {
+
+    function enableScrollX() {
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function renderRecordings(elem, recordings, cardOptions) {
+
+        if (recordings.length) {
+            elem.classList.remove('hide');
+        } else {
+            elem.classList.add('hide');
+        }
+
+        var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+            recordingItems.classList.remove('vertical-wrap');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+            recordingItems.classList.add('vertical-wrap');
+        }
+
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
+            items: recordings,
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
+            showTitle: true,
+            showParentTitle: true,
+            coverImage: true,
+            lazy: true,
+            cardLayout: true,
+            vibrant: true,
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
+        }, cardOptions || {}));
+
+        ImageLoader.lazyChildren(recordingItems);
+    }
+
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
 
     function renderActiveRecordings(context, promise) {
 
@@ -9,8 +52,18 @@
                 result.Items = [];
             }
 
-            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
-                indexByDate: false
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                cardLayout: true,
+                vibrant: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
             });
         });
     }
@@ -54,8 +107,13 @@
         });
 
         self.preRender = function () {
-            activeRecordingsPromise = ApiClient.getLiveTvTimers({
-                IsActive: true
+            activeRecordingsPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                IsInProgress: true,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                EnableImageTypes: "Primary,Thumb,Backdrop"
             });
 
             upcomingRecordingsPromise = ApiClient.getLiveTvTimers({

@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -59,8 +60,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public static EmbyTV Current;
 
-        public event EventHandler DataSourceChanged { add { } remove { } }
-        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged { add { } remove { } }
+        public event EventHandler DataSourceChanged;
+        public event EventHandler<RecordingStatusChangedEventArgs> RecordingStatusChanged;
 
         private readonly ConcurrentDictionary<string, ActiveRecordingInfo> _activeRecordings =
             new ConcurrentDictionary<string, ActiveRecordingInfo>(StringComparer.OrdinalIgnoreCase);
@@ -1009,7 +1010,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             throw new NotImplementedException();
         }
 
-        public Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)
+        public async Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)
         {
             ActiveRecordingInfo info;
 
@@ -1017,22 +1018,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (_activeRecordings.TryGetValue(recordingId, out info))
             {
-                return Task.FromResult(new List<MediaSourceInfo>
+                var stream = new MediaSourceInfo
                 {
-                    new MediaSourceInfo
-                    {
-                        Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveRecordings/" + recordingId + "/stream",
-                        Id = recordingId,
-                        SupportsDirectPlay = false,
-                        SupportsDirectStream = true,
-                        SupportsTranscoding = true,
-                        IsInfiniteStream = true,
-                        RequiresOpening = false,
-                        RequiresClosing = false,
-                        Protocol = Model.MediaInfo.MediaProtocol.Http,
-                        BufferMs = 0
-                    }
-                });
+                    Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveRecordings/" + recordingId + "/stream",
+                    Id = recordingId,
+                    SupportsDirectPlay = false,
+                    SupportsDirectStream = true,
+                    SupportsTranscoding = true,
+                    IsInfiniteStream = true,
+                    RequiresOpening = false,
+                    RequiresClosing = false,
+                    Protocol = Model.MediaInfo.MediaProtocol.Http,
+                    BufferMs = 0
+                };
+
+                var isAudio = false;
+                await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+
+                return new List<MediaSourceInfo>
+                {
+                    stream
+                };
             }
 
             throw new FileNotFoundException();
@@ -1258,6 +1264,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             string liveStreamId = null;
 
+            OnRecordingStatusChanged();
+
             try
             {
                 var allMediaSources = await GetChannelStreamMediaSources(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
@@ -1353,6 +1361,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _timerProvider.Delete(timer);
             }
+
+            OnRecordingStatusChanged();
+        }
+
+        private void OnRecordingStatusChanged()
+        {
+            EventHelper.FireEventIfNotNull(RecordingStatusChanged, this, new RecordingStatusChangedEventArgs
+            {
+
+            }, _logger);
         }
 
         private async void EnforceKeepUpTo(TimerInfo timer)

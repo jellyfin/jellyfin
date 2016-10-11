@@ -4,6 +4,70 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
+    function renderRecordings(elem, recordings, cardOptions) {
+
+        if (recordings.length) {
+            elem.classList.remove('hide');
+        } else {
+            elem.classList.add('hide');
+        }
+
+        var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+            recordingItems.classList.remove('vertical-wrap');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+            recordingItems.classList.add('vertical-wrap');
+        }
+
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
+            items: recordings,
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
+            showTitle: true,
+            showParentTitle: true,
+            coverImage: true,
+            lazy: true,
+            cardLayout: true,
+            vibrant: true,
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
+        }, cardOptions || {}));
+
+        ImageLoader.lazyChildren(recordingItems);
+    }
+
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function renderActiveRecordings(context, promise) {
+
+        promise.then(function (result) {
+
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
+
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                cardLayout: true,
+                vibrant: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
+            });
+        });
+    }
+
     function getPortraitShape() {
         return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
@@ -42,6 +106,14 @@
     function reload(page) {
 
         loadRecommendedPrograms(page);
+
+        renderActiveRecordings(page, ApiClient.getLiveTvRecordings({
+            UserId: Dashboard.getCurrentUserId(),
+            IsInProgress: true,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            EnableImageTypes: "Primary,Thumb,Backdrop"
+        }));
 
         ApiClient.getLiveTvRecommendedPrograms({
 
@@ -122,7 +194,7 @@
             shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showParentTitleOrTitle: true,
             showTitle: false,
-            centerText: true,
+            centerText: !supportsImageAnalysis,
             coverImage: true,
             overlayText: false,
             lazy: true,
@@ -134,7 +206,6 @@
             showChannelName: true,
             vibrant: true,
             cardLayout: supportsImageAnalysis
-            //cardFooterAside: 'logo'
         });
 
         var elem = page.querySelector('.' + sectionClass);
@@ -168,9 +239,6 @@
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
             reload(tabContent);
         };
-
-        var tabControllers = [];
-        var renderedTabs = [];
 
         var tabControllers = [];
         var renderedTabs = [];
@@ -247,7 +315,7 @@
 
                 if (renderedTabs.indexOf(index) == -1) {
 
-                    if (index < 2) {
+                    if (index === 1) {
                         renderedTabs.push(index);
                     }
                     controller.renderTab();

@@ -45,6 +45,15 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// The _virtual children
         /// </summary>

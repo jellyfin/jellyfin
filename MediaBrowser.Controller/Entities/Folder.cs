@@ -61,6 +61,15 @@ namespace MediaBrowser.Controller.Entities
             get { return false; }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>

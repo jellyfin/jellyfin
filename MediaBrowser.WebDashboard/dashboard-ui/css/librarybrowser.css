@@ -124,14 +124,14 @@
     }
 }
 
-@media all and (min-width: 1200px) {
+@media all and (min-width: 600px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 96%;
+        width: 98%;
     }
 }
 
-@media all and (min-width: 2560px) {
+@media all and (min-width: 1200px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 96%;
