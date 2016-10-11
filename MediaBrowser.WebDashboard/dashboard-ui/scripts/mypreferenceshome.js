@@ -103,7 +103,6 @@
     function loadForm(page, user, displayPreferences) {
 
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
-        page.querySelector('.chkDisplayChannelsInline').checked = !(user.Configuration.EnableChannelView || false);
 
         page.querySelector('#selectHomeSection1').value = displayPreferences.CustomPrefs.home0 || '';
         page.querySelector('#selectHomeSection2').value = displayPreferences.CustomPrefs.home1 || '';
@@ -153,8 +152,6 @@
     function saveUser(page, user, displayPreferences) {
 
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
-
-        user.Configuration.EnableChannelView = !page.querySelector('.chkDisplayChannelsInline').checked;
 
         user.Configuration.LatestItemsExcludes = getCheckboxItems(".chkIncludeInLatest", page, false).map(function (i) {
 

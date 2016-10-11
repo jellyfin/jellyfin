@@ -81,12 +81,10 @@
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
-        if (AppInfo.enableHeadRoom) {
-            require(["headroom-window"], function (headroom) {
-                headroom.add(viewTabs);
-                self.headroom = headroom;
-            });
-        }
+        require(["headroom-window"], function (headroom) {
+            headroom.add(viewTabs);
+            self.headroom = headroom;
+        });
 
         view.addEventListener('viewdestroy', function (e) {
 

@@ -1,4 +1,5 @@
 ﻿define(['globalize'], function (globalize) {
+    'use strict';
 
     function parseISO8601Date(s, toLocal) {
 
@@ -40,12 +41,12 @@
         }
 
         // if there's a timezone, calculate it
-        if (d[8] != "Z" && d[10]) {
+        if (d[8] !== "Z" && d[10]) {
             var offset = d[10] * 60 * 60 * 1000;
             if (d[11]) {
                 offset += d[11] * 60 * 1000;
             }
-            if (d[9] == "-") {
+            if (d[9] === "-") {
                 ms -= offset;
             } else {
                 ms += offset;
@@ -103,22 +104,36 @@
         return false;
     }();
 
-    function toLocaleDateString(date) {
+    function getCurrentLocale() {
+        var locale = globalize.getCurrentLocale();
 
-        var currentLocale = globalize.getCurrentLocale();
+        return locale;
+    }
+
+    function toLocaleString(date, options) {
+        var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleDateString(currentLocale) :
+            date.toLocaleString(currentLocale, options || {}) :
+            date.toLocaleString();
+    }
+
+    function toLocaleDateString(date, options) {
+
+        var currentLocale = getCurrentLocale();
+
+        return currentLocale && toLocaleTimeStringSupportsLocales ?
+            date.toLocaleDateString(currentLocale, options || {}) :
             date.toLocaleDateString();
     }
 
-    function toLocaleTimeString(date) {
+    function toLocaleTimeString(date, options) {
 
-        var currentLocale = globalize.getCurrentLocale();
+        var currentLocale = getCurrentLocale();
 
         return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale) :
-            date.toLocaleTimeString();
+            date.toLocaleTimeString(currentLocale, options || {}).toLowerCase() :
+            date.toLocaleTimeString().toLowerCase();
     }
 
     function getDisplayTime(date) {
@@ -133,36 +148,12 @@
             }
         }
 
-        var time = toLocaleTimeString(date);
+        return toLocaleTimeString(date, {
 
-        var timeLower = time.toLowerCase();
+            hour: 'numeric',
+            minute: '2-digit'
 
-        if (timeLower.indexOf('am') != -1 || timeLower.indexOf('pm') != -1) {
-
-            time = timeLower;
-            var hour = date.getHours() % 12;
-            var suffix = date.getHours() > 11 ? 'pm' : 'am';
-            if (!hour) {
-                hour = 12;
-            }
-            var minutes = date.getMinutes();
-
-            if (minutes < 10) {
-                minutes = '0' + minutes;
-            }
-            time = hour + ':' + minutes + suffix;
-        } else {
-
-            var timeParts = time.split(':');
-
-            // Trim off seconds
-            if (timeParts.length > 2) {
-                timeParts.length -= 1;
-                time = timeParts.join(':');
-            }
-        }
-
-        return time;
+        });
     }
 
     function isRelativeDay(date, offsetInDays) {
@@ -171,13 +162,14 @@
 
         yesterday.setDate(day); // automatically adjusts month/year appropriately
 
-        return date.getFullYear() == yesterday.getFullYear() && date.getMonth() == yesterday.getMonth() && date.getDate() == day;
+        return date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === day;
     }
 
     return {
         parseISO8601Date: parseISO8601Date,
         getDisplayRunningTime: getDisplayRunningTime,
         toLocaleDateString: toLocaleDateString,
+        toLocaleString: toLocaleString,
         getDisplayTime: getDisplayTime,
         isRelativeDay: isRelativeDay
     };

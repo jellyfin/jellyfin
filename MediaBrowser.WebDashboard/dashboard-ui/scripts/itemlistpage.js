@@ -120,6 +120,7 @@
                     posterOptions.showYear = true;
                     posterOptions.cardLayout = true;
                     posterOptions.centerText = false;
+                    posterOptions.vibrant = true;
 
                     html = cardBuilder.getCardsHtml(posterOptions);
                 }
@@ -241,36 +242,6 @@
             valueChangeEvent: 'click'
         });
 
-        function parentWithClass(elem, className) {
-
-            while (!elem.classList || !elem.classList.contains(className)) {
-                elem = elem.parentNode;
-
-                if (!elem) {
-                    return null;
-                }
-            }
-
-            return elem;
-        }
-
-        view.addEventListener('click', function (e) {
-
-            var mediaItem = parentWithClass(e.target, 'mediaItem');
-            if (mediaItem) {
-                var query = getQuery();
-                var info = libraryBrowser.getListItemInfo(mediaItem);
-
-                if (info.mediaType == 'Photo') {
-                    require(['scripts/photos'], function () {
-                        Photos.startSlideshow(view, query, info.id);
-                    });
-                    e.preventDefault();
-                    return false;
-                }
-            }
-        });
-
         function updateFilterControls() {
 
             var query = getQuery();
@@ -361,7 +332,6 @@
         view.addEventListener('viewbeforeshow', function (e) {
             reloadItems(view);
             updateFilterControls();
-            LibraryMenu.setBackButtonVisible(params.context);
         });
 
         view.addEventListener('viewdestroy', function (e) {

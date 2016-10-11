@@ -58,11 +58,6 @@ namespace MediaBrowser.WebDashboard.Api
     {
     }
 
-    [Route("/web/staticfiles", "GET")]
-    public class GetCacheFiles
-    {
-    }
-
     /// <summary>
     /// Class GetDashboardResource
     /// </summary>
@@ -143,37 +138,6 @@ namespace MediaBrowser.WebDashboard.Api
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
             return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
-        }
-
-        public object Get(GetCacheFiles request)
-        {
-            var allFiles = GetCacheFileList();
-
-            return ResultFactory.GetOptimizedResult(Request, _jsonSerializer.SerializeToString(allFiles));
-        }
-
-        private List<string> GetCacheFileList()
-        {
-            var creator = GetPackageCreator();
-            var directory = creator.DashboardUIPath;
-
-            var skipExtensions = GetDeployIgnoreExtensions();
-            var skipNames = GetDeployIgnoreFilenames();
-
-            return
-                Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
-                .Where(i => !skipExtensions.Contains(Path.GetExtension(i) ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                .Where(i => !skipNames.Any(s =>
-                {
-                    if (s.Item2)
-                    {
-                        return string.Equals(s.Item1, Path.GetFileName(i), StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    return (Path.GetFileName(i) ?? string.Empty).IndexOf(s.Item1, StringComparison.OrdinalIgnoreCase) != -1;
-                }))
-                .Select(i => i.Replace(directory, string.Empty, StringComparison.OrdinalIgnoreCase).Replace("\\", "/").TrimStart('/') + "?v=" + _appHost.ApplicationVersion.ToString())
-                .ToList();
         }
 
         /// <summary>
@@ -325,7 +289,7 @@ namespace MediaBrowser.WebDashboard.Api
             return list;
         }
 
-        private List<Tuple<string,bool>> GetDeployIgnoreFilenames()
+        private List<Tuple<string, bool>> GetDeployIgnoreFilenames()
         {
             var list = new List<Tuple<string, bool>>();
 
@@ -349,8 +313,11 @@ namespace MediaBrowser.WebDashboard.Api
 
         public async Task<object> Get(GetDashboardPackage request)
         {
-            var path = Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath,
-                "webclient-dump");
+            var mode = request.Mode;
+
+            var path = string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ?
+                Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath, "webclient-dump")
+                : "C:\\dev\\emby-web-mobile\\src";
 
             try
             {
@@ -368,10 +335,6 @@ namespace MediaBrowser.WebDashboard.Api
             string culture = null;
 
             var appVersion = _appHost.ApplicationVersion.ToString();
-
-            File.WriteAllText(Path.Combine(path, "staticfiles"), _jsonSerializer.SerializeToString(GetCacheFileList()));
-
-            var mode = request.Mode;
 
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
@@ -409,11 +372,6 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Delete things that are unneeded in an attempt to keep the output as trim as possible
                 _fileSystem.DeleteDirectory(Path.Combine(path, "css", "images", "tour"), true);
-            }
-            else
-            {
-                MinifyCssDirectory(path);
-                MinifyJsDirectory(path);
             }
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
@@ -482,78 +440,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
-        private void MinifyCssDirectory(string path)
-        {
-            foreach (var file in Directory.GetFiles(path, "*.css", SearchOption.AllDirectories))
-            {
-                if (file.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    continue;
-                }
-                if (file.IndexOf("bower_", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
-
-                    var result = new KristensenCssMinifier().Minify(text, false, Encoding.UTF8);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        Logger.Error("Error minifying css: " + result.Errors[0].Message);
-                    }
-                    else
-                    {
-                        text = result.MinifiedContent;
-                        _fileSystem.WriteAllText(file, text, Encoding.UTF8);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error minifying css", ex);
-                }
-            }
-        }
-
-        private void MinifyJsDirectory(string path)
-        {
-            foreach (var file in Directory.GetFiles(path, "*.js", SearchOption.AllDirectories))
-            {
-                if (file.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    continue;
-                }
-                if (file.IndexOf("bower_", StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var text = _fileSystem.ReadAllText(file, Encoding.UTF8);
-
-                    var result = new CrockfordJsMinifier().Minify(text, false, Encoding.UTF8);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        Logger.Error("Error minifying javascript: " + result.Errors[0].Message);
-                    }
-                    else
-                    {
-                        text = result.MinifiedContent;
-                        _fileSystem.WriteAllText(file, text, Encoding.UTF8);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error minifying css", ex);
-                }
-            }
-        }
-
         private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)
         {
             foreach (var file in Directory.GetFiles(source, "*", SearchOption.TopDirectoryOnly))
@@ -566,7 +452,7 @@ namespace MediaBrowser.WebDashboard.Api
 
         private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string mode, string culture, string appVersion)
         {
-            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, mode, culture, appVersion, true).ConfigureAwait(false))
+            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, mode, culture, appVersion, false).ConfigureAwait(false))
             {
                 using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {

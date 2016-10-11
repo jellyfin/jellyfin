@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Funq;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host;
@@ -16,11 +17,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public Container Container { get; set; }
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes, ILogger logger)
+        public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             this.OperationName = operationName;
             this.RequestAttributes = requestAttributes;
+            _memoryStreamProvider = memoryStreamProvider;
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
 
@@ -403,7 +406,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             set
             {
                 bufferedStream = value
-                    ? bufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                    ? bufferedStream ?? _memoryStreamProvider.CreateNew(request.InputStream.ReadFully())
                     : null;
             }
         }
@@ -447,7 +450,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
-        static Stream GetSubStream(Stream stream)
+        static Stream GetSubStream(Stream stream, IMemoryStreamProvider streamProvider)
         {
             if (stream is MemoryStream)
             {

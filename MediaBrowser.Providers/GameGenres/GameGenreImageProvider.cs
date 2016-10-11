@@ -37,7 +37,7 @@ namespace MediaBrowser.Providers.GameGenres
 
         public static string ProviderName
         {
-            get { return "Media Browser Designs"; }
+            get { return "Emby Designs"; }
         }
 
         public bool Supports(IHasImages item)
@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.GameGenres
             {
                 CancellationToken = cancellationToken,
                 Url = url,
-                ResourcePool = GenreImageProvider.ImageDownloadResourcePool
+                BufferContent = false
             });
         }
     }

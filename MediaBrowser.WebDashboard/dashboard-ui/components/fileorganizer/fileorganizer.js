@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'paper-checkbox', 'emby-input', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
+﻿define(['dialogHelper', 'emby-checkbox', 'emby-input', 'emby-button', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper) {
 
     var extractedName;
     var extractedYear;
@@ -214,7 +214,6 @@
                     html += Globalize.translateDocument(template);
 
                     dlg.innerHTML = html;
-                    document.body.appendChild(dlg);
 
                     dlg.querySelector('.formDialogHeaderTitle').innerHTML = Globalize.translate('FileOrganizeManually');
 

@@ -1,8 +1,8 @@
 ﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
-    <div class="formDialogHeaderTitle">
+    <h3 class="formDialogHeaderTitle">
         ${Identify}
-    </div>
+    </h3>
 </div>
 
 <div class="formDialogContent smoothScrollY">
@@ -20,12 +20,11 @@
             <div class="identifyProviderIds">
             </div>
 
-            <p>
-                <button is="emby-button" type="submit" class="raised submit block">
-                    <i class="md-icon">search</i>
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">
                     <span>${Search}</span>
                 </button>
-            </p>
+            </div>
         </form>
         <div class="identificationSearchResults hide">
 
@@ -42,10 +41,12 @@
                 <input type="checkbox" is="emby-checkbox" id="chkIdentifyReplaceImages" />
                 <span>${ReplaceExistingImages}</span>
             </label>
-            <button is="emby-button" type="submit" class="raised submit block btnSubmit">
-                <i class="md-icon">check</i>
-                <span>${ButtonOk}</span>
-            </button>
+
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised button-submit block btnSubmit formDialogFooterItem">
+                    <span>${ButtonOk}</span>
+                </button>
+            </div>
         </form>
     </div>
 </div>

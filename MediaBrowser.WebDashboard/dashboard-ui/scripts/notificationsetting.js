@@ -1,10 +1,10 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'emby-checkbox', 'fnchecked'], function ($) {
 
     var notificationsConfigurationKey = "notifications";
 
     function fillItems(elem, items, cssClass, idPrefix, currentList, isEnabledList) {
 
-        var html = '<div class="paperCheckboxList paperList" style="padding: .5em 1em;">';
+        var html = '<div class="checkboxList paperList" style="padding: .5em 1em;">';
 
         html += items.map(function (u) {
 
@@ -12,7 +12,7 @@
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            return '<paper-checkbox class="' + cssClass + '" type="checkbox" data-itemid="' + u.Id + '"' + checkedHtml + '>' + u.Name + '</paper-checkbox>';
+            return '<label><input is="emby-checkbox" class="' + cssClass + '" type="checkbox" data-itemid="' + u.Id + '"' + checkedHtml + '/><span>' + u.Name + '</span></label>';
 
         }).join('');
 
@@ -153,6 +153,7 @@
 
             ApiClient.updateNamedConfiguration(notificationsConfigurationKey, notificationOptions).then(function (r) {
 
+                Dashboard.processServerConfigurationUpdateResult();
                 Dashboard.navigate('notificationsettings.html');
             });
 

@@ -11,6 +11,9 @@
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
         $('#txtVaapiDevice', page).val(config.VaapiDevice || '');
 
+        page.querySelector('#selectH264Preset').value = config.H264Preset || '';
+        page.querySelector('#txtH264Crf').value = config.H264Crf || '';
+
         var selectEncoderPath = page.querySelector('#selectEncoderPath');
 
         selectEncoderPath.value = systemInfo.EncoderLocationType;
@@ -41,10 +44,6 @@
 
         return ApiClient.getSystemInfo().then(function (systemInfo) {
 
-            if (systemInfo.EncoderLocationType == "External") {
-                return;
-            }
-
             return ApiClient.ajax({
                 url: ApiClient.getUrl('System/MediaEncoder/Path'),
                 type: 'POST',
@@ -71,6 +70,9 @@
                 config.HardwareAccelerationType = $('#selectVideoDecoder', form).val();
                 config.VaapiDevice = $('#txtVaapiDevice', form).val();
 
+                config.H264Preset = form.querySelector('#selectH264Preset').value;
+                config.H264Crf = parseInt(form.querySelector('#txtH264Crf').value || '0');
+
                 config.EnableThrottling = form.querySelector('#chkEnableThrottle').checked;
 
                 ApiClient.updateNamedConfiguration("encoding", config).then(function () {
@@ -96,26 +98,6 @@
 
         // Disable default form submission
         return false;
-    }
-
-    function getTabs() {
-        return [
-        {
-            href: 'cinemamodeconfiguration.html',
-            name: Globalize.translate('TabCinemaMode')
-        },
-         {
-             href: 'playbackconfiguration.html',
-             name: Globalize.translate('TabResumeSettings')
-         },
-         {
-             href: 'streamingsettings.html',
-             name: Globalize.translate('TabStreaming')
-         },
-         {
-             href: 'encodingsettings.html',
-             name: Globalize.translate('TabTranscoding')
-         }];
     }
 
     function onSelectEncoderPathChange(e) {
@@ -199,18 +181,13 @@
 
         Dashboard.showLoadingMsg();
 
-        LibraryMenu.setTabs('playback', 3, getTabs);
         var page = this;
 
         ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
-                if (systemInfo.EncoderLocationType == "External") {
-                    page.querySelector('.fldSelectEncoderPathType').classList.add('hide');
-                } else {
-                    page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
-                }
+                page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
                 loadPage(page, config, systemInfo);
             });
         });

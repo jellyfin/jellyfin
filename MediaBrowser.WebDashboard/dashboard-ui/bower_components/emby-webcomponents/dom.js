@@ -1,8 +1,9 @@
 define([], function () {
+    'use strict';
 
     function parentWithAttribute(elem, name, value) {
 
-        while ((value ? elem.getAttribute(name) != value : !elem.getAttribute(name))) {
+        while ((value ? elem.getAttribute(name) !== value : !elem.getAttribute(name))) {
             elem = elem.parentNode;
 
             if (!elem || !elem.getAttribute) {
@@ -20,7 +21,7 @@ define([], function () {
             tagNames = [tagNames];
         }
 
-        while (tagNames.indexOf(elem.tagName || '') == -1) {
+        while (tagNames.indexOf(elem.tagName || '') === -1) {
             elem = elem.parentNode;
 
             if (!elem) {

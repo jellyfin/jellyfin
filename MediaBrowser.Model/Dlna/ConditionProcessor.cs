@@ -20,12 +20,15 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag)
+            string videoCodecTag,
+            bool? isAvc)
         {
             switch (condition.Property)
             {
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);
+                case ProfileConditionValue.IsAvc:
+                    return IsConditionSatisfied(condition, isAvc);
                 case ProfileConditionValue.VideoFramerate:
                     return IsConditionSatisfied(condition, videoFramerate);
                 case ProfileConditionValue.VideoLevel:

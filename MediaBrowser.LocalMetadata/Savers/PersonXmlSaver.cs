@@ -66,9 +66,9 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             XmlSaverHelpers.AddCommonNodes(person, _libraryManager, builder);
 
-            if (!string.IsNullOrEmpty(person.PlaceOfBirth))
+            if (person.ProductionLocations.Count > 0)
             {
-                builder.Append("<PlaceOfBirth>" + SecurityElement.Escape(person.PlaceOfBirth) + "</PlaceOfBirth>");
+                builder.Append("<PlaceOfBirth>" + SecurityElement.Escape(person.ProductionLocations[0]) + "</PlaceOfBirth>");
             }
 
             builder.Append("</Item>");

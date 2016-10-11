@@ -105,6 +105,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var includeItemTypes = (query.IncludeItemTypes ?? new string[] { }).ToList();
 
             excludeItemTypes.Add(typeof(Year).Name);
+            excludeItemTypes.Add(typeof(Folder).Name);
 
             if (query.IncludeGenres && (includeItemTypes.Count == 0 || includeItemTypes.Contains("Genre", StringComparer.OrdinalIgnoreCase)))
             {

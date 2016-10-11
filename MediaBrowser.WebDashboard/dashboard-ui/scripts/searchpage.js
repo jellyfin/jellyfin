@@ -45,9 +45,7 @@
         }
 
         function showTextSuggestions() {
-            if (AppInfo.enableAppLayouts) {
-                textSuggestions.classList.remove('hide');
-            }
+            textSuggestions.classList.remove('hide');
         }
 
         function getAdditionalTextLines(hint) {
@@ -176,10 +174,8 @@
             }, 300);
         }
 
-        if (AppInfo.enableAppLayouts) {
-            showTextSuggestions();
-            loadSuggestions(view);
-        }
+        showTextSuggestions();
+        loadSuggestions(view);
 
         view.querySelector('.txtSearch').addEventListener('input', function () {
             onSearchChange(this.value);
@@ -191,13 +187,11 @@
 
         view.addEventListener('viewbeforeshow', function (e) {
             document.body.classList.add('hiddenViewMenuBar');
-            LibraryMenu.setMenuButtonVisible(false);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
             document.body.classList.remove('hiddenViewMenuBar');
-            LibraryMenu.setMenuButtonVisible(true);
         });
 
     };

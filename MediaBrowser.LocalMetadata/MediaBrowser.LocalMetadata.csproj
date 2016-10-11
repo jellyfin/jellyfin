@@ -63,7 +63,6 @@
     <Compile Include="Parsers\MovieXmlParser.cs" />
     <Compile Include="Parsers\MusicVideoXmlParser.cs" />
     <Compile Include="Parsers\PlaylistXmlParser.cs" />
-    <Compile Include="Parsers\SeasonXmlParser.cs" />
     <Compile Include="Parsers\SeriesXmlParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BoxSetXmlProvider.cs" />
@@ -75,7 +74,6 @@
     <Compile Include="Providers\MusicVideoXmlProvider.cs" />
     <Compile Include="Providers\PersonXmlProvider.cs" />
     <Compile Include="Providers\PlaylistXmlProvider.cs" />
-    <Compile Include="Providers\SeasonXmlProvider.cs" />
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />

@@ -79,7 +79,6 @@
                         shape: "backdrop",
                         preferThumb: true,
                         context: 'movies',
-                        lazy: true,
                         overlayPlayButton: true
                     });
                 }
@@ -90,7 +89,6 @@
                         shape: "backdrop",
                         preferThumb: true,
                         context: 'movies',
-                        lazy: true,
                         cardLayout: true,
                         showTitle: true,
                         showYear: true
@@ -102,8 +100,7 @@
                         items: result.Items,
                         shape: "banner",
                         preferBanner: true,
-                        context: 'movies',
-                        lazy: true
+                        context: 'movies'
                     });
                 }
                 else if (viewStyle == "List") {
@@ -122,7 +119,6 @@
                         context: 'movies',
                         showTitle: true,
                         showYear: true,
-                        lazy: true,
                         cardLayout: true
                     });
                 }
@@ -134,7 +130,6 @@
                         shape: "portrait",
                         context: 'movies',
                         centerText: true,
-                        lazy: true,
                         overlayPlayButton: true
                     });
                 }

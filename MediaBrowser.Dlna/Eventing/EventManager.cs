@@ -141,7 +141,8 @@ namespace MediaBrowser.Dlna.Eventing
             {
                 RequestContent = builder.ToString(),
                 RequestContentType = "text/xml",
-                Url = subscription.CallbackUrl
+                Url = subscription.CallbackUrl,
+                BufferContent = false
             };
 
             options.RequestHeaders.Add("NT", subscription.NotificationType);
@@ -155,7 +156,6 @@ namespace MediaBrowser.Dlna.Eventing
             }
             catch (OperationCanceledException)
             {
-                throw;
             }
             catch
             {

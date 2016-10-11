@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -38,8 +39,9 @@ namespace MediaBrowser.Providers.TV
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager)
+        public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IMemoryStreamProvider memoryStreamProvider)
         {
             _zipClient = zipClient;
             _httpClient = httpClient;
@@ -47,6 +49,7 @@ namespace MediaBrowser.Providers.TV
             _config = config;
             _logger = logger;
             _libraryManager = libraryManager;
+            _memoryStreamProvider = memoryStreamProvider;
             Current = this;
         }
 
@@ -93,9 +96,11 @@ namespace MediaBrowser.Providers.TV
         public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo itemId, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Series>();
+            result.QueriedById = true;
 
             if (!IsValidSeries(itemId.ProviderIds))
             {
+                result.QueriedById = false;
                 await Identify(itemId).ConfigureAwait(false);
             }
 
@@ -159,7 +164,7 @@ namespace MediaBrowser.Providers.TV
             var seriesXmlPath = GetSeriesXmlPath(seriesProviderIds, metadataLanguage);
             var actorsXmlPath = Path.Combine(seriesDataPath, "actors.xml");
 
-            FetchSeriesInfo(series, seriesXmlPath, cancellationToken);
+            FetchSeriesInfo(result, seriesXmlPath, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -236,7 +241,7 @@ namespace MediaBrowser.Providers.TV
                 DeleteXmlFiles(seriesDataPath);
 
                 // Copy to memory stream because we need a seekable stream
-                using (var ms = new MemoryStream())
+                using (var ms = _memoryStreamProvider.CreateNew())
                 {
                     await zipStream.CopyToAsync(ms).ConfigureAwait(false);
 
@@ -607,7 +612,7 @@ namespace MediaBrowser.Providers.TV
             return name.Trim();
         }
 
-        private void FetchSeriesInfo(Series item, string seriesXmlPath, CancellationToken cancellationToken)
+        private void FetchSeriesInfo(MetadataResult<Series> result, string seriesXmlPath, CancellationToken cancellationToken)
         {
             var settings = new XmlReaderSettings
             {
@@ -639,7 +644,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         using (var subtree = reader.ReadSubtree())
                                         {
-                                            FetchDataFromSeriesNode(item, subtree, cancellationToken);
+                                            FetchDataFromSeriesNode(result, subtree, cancellationToken);
                                         }
                                         break;
                                     }
@@ -667,9 +672,9 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (item.Status.HasValue && item.Status.Value == SeriesStatus.Ended && episiodeAirDates.Count > 0)
+            if (result.Item.Status.HasValue && result.Item.Status.Value == SeriesStatus.Ended && episiodeAirDates.Count > 0)
             {
-                item.EndDate = episiodeAirDates.Max();
+                result.Item.EndDate = episiodeAirDates.Max();
             }
         }
 
@@ -861,8 +866,10 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private void FetchDataFromSeriesNode(Series item, XmlReader reader, CancellationToken cancellationToken)
+        private void FetchDataFromSeriesNode(MetadataResult<Series> result, XmlReader reader, CancellationToken cancellationToken)
         {
+            Series item = result.Item;
+
             reader.MoveToContent();
 
             // Loop through each element
@@ -883,6 +890,12 @@ namespace MediaBrowser.Providers.TV
                         case "Overview":
                             {
                                 item.Overview = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
+                                break;
+                            }
+
+                        case "Language":
+                            {
+                                result.ResultLanguage = (reader.ReadElementContentAsString() ?? string.Empty).Trim();
                                 break;
                             }
 

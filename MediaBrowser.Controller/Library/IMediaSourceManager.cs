@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -60,11 +61,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the static media source.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="mediaSourceId">The media source identifier.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <returns>MediaSourceInfo.</returns>
-        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
+        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Opens the media source.
@@ -82,6 +80,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
         Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken);
+
+        Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken);
         
         /// <summary>
         /// Pings the media source.
@@ -95,8 +95,12 @@ namespace MediaBrowser.Controller.Library
         /// Closes the media source.
         /// </summary>
         /// <param name="id">The live stream identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseLiveStream(string id, CancellationToken cancellationToken);
+        Task CloseLiveStream(string id);
+    }
+
+    public interface IDirectStreamProvider
+    {
+        Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
     }
 }

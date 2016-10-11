@@ -1,11 +1,12 @@
 ﻿define(['layoutManager', 'browser', 'actionsheet', 'css!./emby-select', 'registerElement'], function (layoutManager, browser, actionsheet) {
+    'use strict';
 
     var EmbySelectPrototype = Object.create(HTMLSelectElement.prototype);
 
     function enableNativeMenu() {
 
-        if (browser.xboxOne) {
-            return false;
+        if (browser.edgeUwp || browser.xboxOne) {
+            return true;
         }
 
         // Doesn't seem to work at all
@@ -36,7 +37,7 @@
         select.value = value;
     }
 
-    function showActionSheeet(select) {
+    function showActionSheet(select) {
 
         var labelElem = getLabel(select);
         var title = labelElem ? (labelElem.textContent || labelElem.innerText) : null;
@@ -54,7 +55,7 @@
 
     function getLabel(select) {
         var elem = select.previousSibling;
-        while (elem && elem.tagName != 'LABEL') {
+        while (elem && elem.tagName !== 'LABEL') {
             elem = elem.previousSibling;
         }
         return elem;
@@ -81,7 +82,7 @@
         // e.button=0 for primary (left) mouse button click
         if (!e.button && !enableNativeMenu()) {
             e.preventDefault();
-            showActionSheeet(this);
+            showActionSheet(this);
         }
     }
 
@@ -92,7 +93,7 @@
             case 13:
                 if (!enableNativeMenu()) {
                     e.preventDefault();
-                    showActionSheeet(this);
+                    showActionSheet(this);
                 }
                 return;
             case 37:
@@ -124,12 +125,6 @@
             this.id = 'embyselect' + inputId;
             inputId++;
         }
-
-        this.removeEventListener('focus', onFocus);
-        this.removeEventListener('blur', onBlur);
-
-        this.removeEventListener('mousedown', onMouseDown);
-        this.removeEventListener('keydown', onKeyDown);
 
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);

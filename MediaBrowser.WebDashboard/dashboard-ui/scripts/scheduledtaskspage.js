@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'listViewStyle'], function ($) {
+﻿define(['jQuery', 'humanedate', 'listViewStyle'], function ($) {
 
     function reloadList(page) {
 

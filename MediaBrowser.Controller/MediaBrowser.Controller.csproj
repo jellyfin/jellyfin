@@ -91,13 +91,11 @@
     <Compile Include="Channels\InternalChannelItemQuery.cs" />
     <Compile Include="Channels\IRequiresMediaInfoCallback.cs" />
     <Compile Include="Channels\ISearchableChannel.cs" />
-    <Compile Include="Chapters\ChapterSearchRequest.cs" />
     <Compile Include="Chapters\IChapterManager.cs" />
-    <Compile Include="Chapters\IChapterProvider.cs" />
-    <Compile Include="Chapters\ChapterResponse.cs" />
     <Compile Include="Collections\CollectionCreationOptions.cs" />
     <Compile Include="Collections\CollectionEvents.cs" />
     <Compile Include="Collections\ICollectionManager.cs" />
+    <Compile Include="Collections\ManualCollectionsFolder.cs" />
     <Compile Include="Connect\ConnectSupporterSummary.cs" />
     <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Connect\UserLinkResult.cs" />
@@ -134,7 +132,6 @@
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
     <Compile Include="Entities\GameSystem.cs" />
-    <Compile Include="Entities\IArchivable.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
@@ -146,15 +143,12 @@
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
     <Compile Include="Entities\IHasOriginalTitle.cs" />
-    <Compile Include="Entities\IHasProductionLocations.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
     <Compile Include="Entities\IHasShortOverview.cs" />
     <Compile Include="Entities\IHasSpecialFeatures.cs" />
     <Compile Include="Entities\IHasStartDate.cs" />
-    <Compile Include="Entities\IHasTaglines.cs" />
-    <Compile Include="Entities\IHasThemeMedia.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IHasUserData.cs" />
     <Compile Include="Entities\IHiddenFromDisplay.cs" />
@@ -198,9 +192,9 @@
     <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
-    <Compile Include="LiveTv\IHasRegistrationInfo.cs" />
     <Compile Include="LiveTv\IListingsProvider.cs" />
     <Compile Include="LiveTv\ITunerHost.cs" />
+    <Compile Include="LiveTv\LiveStream.cs" />
     <Compile Include="LiveTv\RecordingGroup.cs" />
     <Compile Include="LiveTv\RecordingStatusChangedEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
@@ -266,7 +260,6 @@
     <Compile Include="Playlists\IPlaylistManager.cs" />
     <Compile Include="Playlists\Playlist.cs" />
     <Compile Include="Plugins\ILocalizablePlugin.cs" />
-    <Compile Include="Power\IPowerManagement.cs" />
     <Compile Include="Providers\AlbumInfo.cs" />
     <Compile Include="Providers\ArtistInfo.cs" />
     <Compile Include="Providers\BookInfo.cs" />
@@ -290,9 +283,7 @@
     <Compile Include="Providers\IHasItemChangeMonitor.cs" />
     <Compile Include="Providers\IHasLookupInfo.cs" />
     <Compile Include="Providers\IHasOrder.cs" />
-    <Compile Include="Providers\IImageFileSaver.cs" />
     <Compile Include="Providers\IImageProvider.cs" />
-    <Compile Include="Providers\IImageSaver.cs" />
     <Compile Include="Providers\ILocalImageFileProvider.cs" />
     <Compile Include="Providers\ILocalMetadataProvider.cs" />
     <Compile Include="Providers\ImageRefreshMode.cs" />
@@ -319,7 +310,6 @@
     <Compile Include="Providers\SongInfo.cs" />
     <Compile Include="Providers\TrailerInfo.cs" />
     <Compile Include="Providers\VideoContentType.cs" />
-    <Compile Include="RelatedMedia\IRelatedMediaProvider.cs" />
     <Compile Include="Security\AuthenticationInfo.cs" />
     <Compile Include="Security\AuthenticationInfoQuery.cs" />
     <Compile Include="Security\IAuthenticationRepository.cs" />

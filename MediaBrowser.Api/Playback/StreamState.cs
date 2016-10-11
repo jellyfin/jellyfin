@@ -37,6 +37,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <value>The log file stream.</value>
         public Stream LogFileStream { get; set; }
+        public IDirectStreamProvider DirectStreamProvider { get; set; }
 
         public string InputContainer { get; set; }
 
@@ -62,7 +63,6 @@ namespace MediaBrowser.Api.Playback
             get { return Request is VideoStreamRequest; }
         }
         public bool IsInputVideo { get; set; }
-        public bool IsInputArchive { get; set; }
 
         public VideoType VideoType { get; set; }
         public IsoType? IsoType { get; set; }
@@ -88,9 +88,17 @@ namespace MediaBrowser.Api.Playback
                         return 10;
                     }
 
+                    if (!RunTimeTicks.HasValue)
+                    {
+                        return 3;
+                    }
                     return 6;
                 }
 
+                if (!RunTimeTicks.HasValue)
+                {
+                    return 3;
+                }
                 return 3;
             }
         }
@@ -112,6 +120,7 @@ namespace MediaBrowser.Api.Playback
         public string OutputVideoSync = "-1";
 
         public List<string> SupportedAudioCodecs { get; set; }
+        public List<string> SupportedVideoCodecs { get; set; }
         public string UserAgent { get; set; }
 
         public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger)
@@ -119,6 +128,7 @@ namespace MediaBrowser.Api.Playback
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
             SupportedAudioCodecs = new List<string>();
+            SupportedVideoCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -215,7 +225,7 @@ namespace MediaBrowser.Api.Playback
             {
                 try
                 {
-                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -504,6 +514,19 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 return false;
+            }
+        }
+
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return VideoStream == null ? null : VideoStream.IsAVC;
+                }
+
+                return true;
             }
         }
     }

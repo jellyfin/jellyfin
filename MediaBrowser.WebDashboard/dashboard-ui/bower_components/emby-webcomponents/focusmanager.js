@@ -1,4 +1,5 @@
 define(['dom'], function (dom) {
+    'use strict';
 
     var scopes = [];
     function pushScope(elem) {
@@ -48,7 +49,7 @@ define(['dom'], function (dom) {
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
     var focusableQuery = focusableTagNames.map(function (t) {
 
-        if (t == 'INPUT') {
+        if (t === 'INPUT') {
             t += ':not([type="range"])';
         }
         return t + ':not([tabindex="-1"]):not(:disabled)';
@@ -57,7 +58,7 @@ define(['dom'], function (dom) {
 
     function isFocusable(elem) {
 
-        if (focusableTagNames.indexOf(elem.tagName) != -1) {
+        if (focusableTagNames.indexOf(elem.tagName) !== -1) {
             return true;
         }
 
@@ -99,13 +100,13 @@ define(['dom'], function (dom) {
             return false;
         }
 
-        if (elem.getAttribute('tabindex') == "-1") {
+        if (elem.getAttribute('tabindex') === "-1") {
             return false;
         }
 
-        if (elem.tagName == 'INPUT') {
+        if (elem.tagName === 'INPUT') {
             var type = elem.type;
-            if (type == 'range') {
+            if (type === 'range') {
                 return false;
             }
         }
@@ -139,7 +140,7 @@ define(['dom'], function (dom) {
 
     function isFocusContainer(elem, direction) {
 
-        if (focusableContainerTagNames.indexOf(elem.tagName) != -1) {
+        if (focusableContainerTagNames.indexOf(elem.tagName) !== -1) {
             return true;
         }
         if (elem.classList.contains('focuscontainer')) {
@@ -151,7 +152,7 @@ define(['dom'], function (dom) {
                 return true;
             }
         }
-        else if (direction == 3) {
+        else if (direction === 3) {
             if (elem.classList.contains('focuscontainer-down')) {
                 return true;
             }
@@ -172,15 +173,7 @@ define(['dom'], function (dom) {
         return elem;
     }
 
-    function getWindowData(win, documentElement) {
-
-        return {
-            clientTop: documentElement.clientTop,
-            clientLeft: documentElement.clientLeft
-        };
-    }
-
-    function getOffset(elem, windowData) {
+    function getOffset(elem) {
 
         var box;
 
@@ -197,33 +190,21 @@ define(['dom'], function (dom) {
             };
         }
         return {
-            top: box.top - windowData.clientTop,
-            left: box.left - windowData.clientLeft,
+            top: box.top,
+            left: box.left,
             width: box.width,
             height: box.height
         };
     }
 
-    function getViewportBoundingClientRect(elem, windowData) {
+    function getViewportBoundingClientRect(elem) {
 
-        var offset = getOffset(elem, windowData);
+        var offset = getOffset(elem);
 
-        var posY = offset.top;
-        var posX = offset.left;
+        offset.right = offset.left + offset.width;
+        offset.bottom = offset.top + offset.height;
 
-        var width = offset.width;
-        var height = offset.height;
-        //var width = elem.offsetWidth;
-        //var height = elem.offsetHeight;
-
-        return {
-            left: posX,
-            top: posY,
-            width: width,
-            height: height,
-            right: posX + width,
-            bottom: posY + height
-        };
+        return offset;
     }
 
     function nav(activeElement, direction) {
@@ -243,20 +224,18 @@ define(['dom'], function (dom) {
 
         var focusableContainer = dom.parentWithClass(activeElement, 'focusable');
 
-        var doc = activeElement.ownerDocument;
-        var windowData = getWindowData(doc.defaultView, doc.documentElement);
-        var rect = getViewportBoundingClientRect(activeElement, windowData);
+        var rect = getViewportBoundingClientRect(activeElement);
         var focusableElements = [];
 
         var focusable = container.querySelectorAll(focusableQuery);
         for (var i = 0, length = focusable.length; i < length; i++) {
             var curr = focusable[i];
 
-            if (curr == activeElement) {
+            if (curr === activeElement) {
                 continue;
             }
             // Don't refocus into the same container
-            if (curr == focusableContainer) {
+            if (curr === focusableContainer) {
                 continue;
             }
 
@@ -264,7 +243,7 @@ define(['dom'], function (dom) {
             //    continue;
             //}
 
-            var elementRect = getViewportBoundingClientRect(curr, windowData);
+            var elementRect = getViewportBoundingClientRect(curr);
 
             // not currently visible
             if (!elementRect.width && !elementRect.height) {
@@ -278,7 +257,7 @@ define(['dom'], function (dom) {
                     if (elementRect.left >= rect.left) {
                         continue;
                     }
-                    if (elementRect.right == rect.right) {
+                    if (elementRect.right === rect.right) {
                         continue;
                     }
                     break;
@@ -287,7 +266,7 @@ define(['dom'], function (dom) {
                     if (elementRect.right <= rect.right) {
                         continue;
                     }
-                    if (elementRect.left == rect.left) {
+                    if (elementRect.left === rect.left) {
                         continue;
                     }
                     break;
@@ -326,8 +305,8 @@ define(['dom'], function (dom) {
 
             // See if there's a focusable container, and if so, send the focus command to that
             var nearestElementFocusableParent = dom.parentWithClass(nearestElement, 'focusable');
-            if (nearestElementFocusableParent && nearestElementFocusableParent != nearestElement && activeElement) {
-                if (dom.parentWithClass(activeElement, 'focusable') != nearestElementFocusableParent) {
+            if (nearestElementFocusableParent && nearestElementFocusableParent !== nearestElement && activeElement) {
+                if (dom.parentWithClass(activeElement, 'focusable') !== nearestElementFocusableParent) {
                     nearestElement = nearestElementFocusableParent;
                 }
             }
@@ -426,12 +405,12 @@ define(['dom'], function (dom) {
     function sortNodesT(a, b) {
 
         var result = a.distT - b.distT;
-        if (result != 0) {
+        if (result !== 0) {
             return result;
         }
 
         result = a.index - b.index;
-        if (result != 0) {
+        if (result !== 0) {
             return result;
         }
 

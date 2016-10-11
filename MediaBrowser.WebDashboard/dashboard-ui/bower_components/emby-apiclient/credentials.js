@@ -1,4 +1,5 @@
 ﻿define(['events', 'appStorage'], function (events, appStorage) {
+    'use strict';
 
     return function (key) {
 
@@ -57,7 +58,7 @@
             }
 
             var existing = list.filter(function (s) {
-                return s.Id == server.Id;
+                return s.Id === server.Id;
             })[0];
 
             if (existing) {
@@ -109,7 +110,7 @@
             server.Users = server.Users || [];
 
             var existing = server.Users.filter(function (s) {
-                return s.Id == user.Id;
+                return s.Id === user.Id;
             })[0];
 
             if (existing) {

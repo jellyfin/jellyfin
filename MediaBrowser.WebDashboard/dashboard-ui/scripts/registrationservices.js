@@ -90,22 +90,27 @@
 
     function showPlaybackOverlay(resolve, reject) {
 
-        require(['dialogHelper', 'listViewStyle', 'emby-button'], function (dialogHelper) {
+        require(['dialogHelper', 'listViewStyle', 'emby-button', 'formDialogStyle'], function (dialogHelper) {
 
             var dlg = dialogHelper.createDialog({
                 size: 'fullscreen-border',
-                removeOnClose: true
+                removeOnClose: true,
+                scrollY: false
             });
 
-            dlg.classList.add('ui-body-b');
-            dlg.classList.add('background-theme-b');
+            dlg.classList.add('formDialog');
 
             var html = '';
-            html += '<h2 class="dialogHeader">';
-            html += '<button is="emby-button" type="button" class="fab mini btnCancelSupporterInfo" tabindex="-1"><i class="md-icon">arrow_back</i></button>';
-            html += '</h2>';
+            html += '<div class="formDialogHeader">';
+            html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+            html += '<h3 class="formDialogHeaderTitle">';
+            html += '</h3>';
 
-            html += '<div class="readOnlyContent" style="margin:0 auto 0;color:#fff;padding:0 1em 1em;">';
+            html += '</div>';
+
+
+            html += '<div class="formDialogContent smoothScrollY">';
+            html += '<div class="dialogContentInner dialog-content-centered">';
 
             html += '<h1>' + Globalize.translate('HeaderTryEmbyPremiere') + '</h1>';
 
@@ -122,13 +127,13 @@
 
             html += '<br/>';
 
-            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised submit block" autoFocus><i class="md-icon">check</i><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></button></a>';
-            html += '<button is="emby-button" type="button" class="raised subdued block btnCancelSupporterInfo" style="background:#444;"><i class="md-icon">close</i><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></button>';
+            html += '<a class="clearLink" href="http://emby.media/premiere" target="_blank"><button is="emby-button" type="button" class="raised button-submit block" autoFocus><span>' + Globalize.translate('ButtonBecomeSupporter') + '</span></button></a>';
+            html += '<button is="emby-button" type="button" class="raised subdued block btnCancelSupporterInfo" style="background:#444;"><span>' + Globalize.translate('ButtonClosePlayVideo') + '</span></button>';
 
+            html += '</div>';
             html += '</div>';
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
             dlg.addEventListener('close', function (e) {

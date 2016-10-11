@@ -30,6 +30,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations
 {
@@ -192,6 +193,8 @@ namespace MediaBrowser.Common.Implementations
             get { return Environment.OSVersion.VersionString; }
         }
 
+        public IMemoryStreamProvider MemoryStreamProvider { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
@@ -230,6 +233,8 @@ namespace MediaBrowser.Common.Implementations
             progress.Report(1);
 
             JsonSerializer = CreateJsonSerializer();
+
+            MemoryStreamProvider = new MemoryStreamProvider();
 
             OnLoggerLoaded(true);
             LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
@@ -456,6 +461,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance(JsonSerializer);
 			RegisterSingleInstance(XmlSerializer);
+            RegisterSingleInstance(MemoryStreamProvider);
 
 			RegisterSingleInstance(LogManager);
 			RegisterSingleInstance(Logger);
@@ -464,7 +470,7 @@ namespace MediaBrowser.Common.Implementations
 
 			RegisterSingleInstance(FileSystemManager);
 
-            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager);
+            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamProvider);
 			RegisterSingleInstance(HttpClient);
 
 			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));

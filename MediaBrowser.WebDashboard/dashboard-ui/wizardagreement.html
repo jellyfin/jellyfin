@@ -1,4 +1,4 @@
-﻿<div id="wizardAgreementPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardagreement,paper-checkbox,emby-button">
+﻿<div id="wizardAgreementPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardagreement,emby-checkbox,emby-button">
 
     <div data-role="content">
 
@@ -13,16 +13,17 @@
 
                 <p style="margin:1.5em 0;"><a href="http://emby.media/privacy" target="_blank">${ButtonPrivacyPolicy}</a></p>
                 <p style="margin:1.5em 0;"><a href="http://emby.media/terms" target="_blank">${ButtonTermsOfService}</a></p>
-                <div>
-                    <paper-checkbox class="chkAccept" checked>${OptionIAcceptTermsOfService}</paper-checkbox>
-                </div>
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" class="chkAccept" />
+                    <span>${OptionIAcceptTermsOfService}</span>
+                </label>
 
                 <div class="wizardNavigation">
-                    <button is="emby-button" type="button" onclick="history.back();" class="raised subdued">
+                    <button is="emby-button" type="button" onclick="history.back();" class="raised button-cancel">
                         <i class="md-icon">arrow_back</i>
                         <span>${LabelPrevious}</span>
                     </button>
-                    <button is="emby-button" type="submit" class="raised raised accent">
+                    <button is="emby-button" type="submit" class="raised button-submit">
                         <span>${LabelNext}</span>
                         <i class="md-icon">arrow_forward</i>
                     </button>

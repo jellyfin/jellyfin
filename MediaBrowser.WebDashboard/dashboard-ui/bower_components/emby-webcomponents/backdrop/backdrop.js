@@ -1,4 +1,5 @@
 ﻿define(['browser', 'connectionManager', 'playbackManager', 'dom', 'css!./style'], function (browser, connectionManager, playbackManager, dom) {
+    'use strict';
 
     function enableAnimation(elem) {
 
@@ -18,7 +19,7 @@
         return true;
     }
 
-    function backdrop() {
+    function Backdrop() {
 
         var self = this;
         var isDestroyed;
@@ -52,7 +53,7 @@
                 currentAnimation = animation;
                 animation.onfinish = function () {
 
-                    if (animation == currentAnimation) {
+                    if (animation === currentAnimation) {
                         currentAnimation = null;
                     }
                     if (existingBackdropImage && existingBackdropImage.parentNode) {
@@ -166,14 +167,14 @@
         var elem = getBackdropContainer();
         var existingBackdropImage = elem.querySelector('.displayingBackdropImage');
 
-        if (existingBackdropImage && existingBackdropImage.getAttribute('data-url') == url) {
-            if (existingBackdropImage.getAttribute('data-url') == url) {
+        if (existingBackdropImage && existingBackdropImage.getAttribute('data-url') === url) {
+            if (existingBackdropImage.getAttribute('data-url') === url) {
                 return;
             }
             existingBackdropImage.classList.remove('displayingBackdropImage');
         }
 
-        var instance = new backdrop();
+        var instance = new Backdrop();
         instance.load(url, elem, existingBackdropImage);
         currentLoadingBackdrop = instance;
     }
@@ -215,28 +216,38 @@
 
         var list = [];
 
+        var onImg = function (img) {
+            list.push(img);
+        };
+
         for (var i = 0, length = items.length; i < length; i++) {
 
             var itemImages = getItemImageUrls(items[i]);
 
-            itemImages.forEach(function (img) {
-                list.push(img);
-            });
+            itemImages.forEach(onImg);
         }
 
         return list;
     }
 
     function arraysEqual(a, b) {
-        if (a === b) return true;
-        if (a == null || b == null) return false;
-        if (a.length != b.length) return false;
+        if (a === b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.length !== b.length) {
+            return false;
+        }
 
         // If you don't care about the order of the elements inside
         // the array, you should sort both arrays here.
 
         for (var i = 0; i < a.length; ++i) {
-            if (a[i] !== b[i]) return false;
+            if (a[i] !== b[i]) {
+                return false;
+            }
         }
         return true;
     }

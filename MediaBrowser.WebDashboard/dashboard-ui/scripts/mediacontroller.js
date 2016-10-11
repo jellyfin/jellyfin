@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'events'], function (appStorage, events) {
+﻿define(['appStorage', 'events', 'browser'], function (appStorage, events, browser) {
 
     var currentDisplayInfo;
     var datetime;
@@ -103,17 +103,22 @@
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
-                    enableHistory: enableHistory !== false,
-                    callback: function (id) {
 
-                        var target = targets.filter(function (t) {
-                            return t.id == id;
-                        })[0];
+                    // Unfortunately we can't allow the url to change or chromecast will throw a security error
+                    // Might be able to solve this in the future by moving the dialogs to hashbangs
+                    enableHistory: enableHistory !== false && !browser.chrome,
+                    resolveOnClick: true
 
-                        MediaController.trySetActivePlayer(target.playerName, target);
+                }).then(function (id) {
 
-                        mirrorIfEnabled();
-                    }
+                    var target = targets.filter(function (t) {
+                        return t.id == id;
+                    })[0];
+
+                    MediaController.trySetActivePlayer(target.playerName, target);
+
+                    mirrorIfEnabled();
+
                 });
             });
         });
@@ -143,7 +148,7 @@
 
         dlg.classList.add('promptDialog');
 
-        html += '<div class="promptDialogContent">';
+        html += '<div class="promptDialogContent" style="padding:1em;">';
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
         html += '</h2>';
@@ -174,8 +179,6 @@
 
         html += '</div>';
         dlg.innerHTML = html;
-
-        document.body.appendChild(dlg);
 
         var chkMirror = dlg.querySelector('.chkMirror');
 
@@ -313,6 +316,11 @@
                 console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
                 triggerPlayerChange(player, targetInfo, previousPlayer);
+            }, function () {
+
+                if (currentPairingId == targetInfo.id) {
+                    currentPairingId = null;
+                }
             });
         };
 
@@ -368,41 +376,36 @@
 
             if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
 
-                var menuItems = [];
+                require(['dialog'], function (dialog) {
 
-                menuItems.push({
-                    name: Globalize.translate('ButtonYes'),
-                    id: 'yes'
-                });
-                menuItems.push({
-                    name: Globalize.translate('ButtonNo'),
-                    id: 'no'
-                });
-                menuItems.push({
-                    name: Globalize.translate('ButtonCancel'),
-                    id: 'cancel'
-                });
+                    var menuItems = [];
 
-                require(['actionsheet'], function (actionsheet) {
+                    menuItems.push({
+                        name: Globalize.translate('ButtonYes'),
+                        id: 'yes'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonNo'),
+                        id: 'no'
+                    });
 
-                    actionsheet.show({
-                        items: menuItems,
+                    dialog({
+                        buttons: menuItems,
                         //positionTo: positionTo,
-                        title: Globalize.translate('ConfirmEndPlayerSession'),
-                        callback: function (id) {
+                        text: Globalize.translate('ConfirmEndPlayerSession')
 
-                            switch (id) {
+                    }).then(function (id) {
+                        switch (id) {
 
-                                case 'yes':
-                                    MediaController.getCurrentPlayer().endSession();
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                case 'no':
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                default:
-                                    break;
-                            }
+                            case 'yes':
+                                MediaController.getCurrentPlayer().endSession();
+                                self.setDefaultPlayerActive();
+                                break;
+                            case 'no':
+                                self.setDefaultPlayerActive();
+                                break;
+                            default:
+                                break;
                         }
                     });
 

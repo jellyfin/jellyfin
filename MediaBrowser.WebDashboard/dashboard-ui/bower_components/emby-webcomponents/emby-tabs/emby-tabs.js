@@ -1,4 +1,5 @@
 ﻿define(['dom', 'scroller', 'browser', 'registerElement', 'css!./emby-tabs', 'scrollStyles'], function (dom, scroller, browser) {
+    'use strict';
 
     var EmbyTabs = Object.create(HTMLDivElement.prototype);
     var buttonClass = 'emby-tab-button';
@@ -78,7 +79,7 @@
 
         var onAnimationFinish = function () {
 
-            //if (tabs.getAttribute('data-selectionbar') != 'false') {
+            //if (tabs.getAttribute('data-selectionbar') !== 'false') {
             //    showButtonSelectionBar(newButton);
             //}
             newButton.classList.add(activeButtonClass);
@@ -103,7 +104,7 @@
         var current = tabs.querySelector('.' + activeButtonClass);
         var tabButton = dom.parentWithClass(e.target, buttonClass);
 
-        if (tabButton && tabButton != current) {
+        if (tabButton && tabButton !== current) {
 
             if (current) {
                 current.classList.remove(activeButtonClass);
@@ -186,7 +187,7 @@
             return;
         }
 
-        if (tabs.getAttribute('data-selectionbar') == 'false') {
+        if (tabs.getAttribute('data-selectionbar') === 'false') {
             return;
         }
 
@@ -238,7 +239,7 @@
         this.selectionBar = null;
     };
 
-    EmbyTabs.selectedIndex = function (selected) {
+    EmbyTabs.selectedIndex = function (selected, triggerEvent) {
 
         var tabs = this;
 
@@ -253,7 +254,7 @@
 
         var tabButtons = tabs.querySelectorAll('.' + buttonClass);
 
-        if (current == selected) {
+        if (current === selected || triggerEvent === false) {
 
             tabs.dispatchEvent(new CustomEvent("beforetabchange", {
                 detail: {
@@ -266,7 +267,13 @@
                 }
             }));
 
-            moveSelectionBar(tabs, tabButtons[selected], tabButtons[selected], false);
+            var currentTabButton = tabButtons[current];
+            moveSelectionBar(tabs, tabButtons[selected], currentTabButton, false);
+
+            if (current !== selected && currentTabButton) {
+                currentTabButton.classList.remove(activeButtonClass);
+            }
+
         } else {
             tabButtons[selected].click();
         }

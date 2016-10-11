@@ -1,4 +1,4 @@
-﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true" data-menubutton="false">
+﻿<div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-backbutton="true">
     <div data-role="content">
         <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
             <div class="detailSection languageSection hide">
@@ -55,15 +55,6 @@
                     ${HeaderNavigation}
                 </h1>
                 <br />
-                <div class="selectContainer">
-                    <select id="selectThemeSong" is="emby-select" label="${LabelEnableThemeSongs}">
-                        <option value="">${OptionAuto}</option>
-                        <option value="1">${OptionYes}</option>
-                        <option value="0">${OptionNo}</option>
-                    </select>
-                    <div class="fieldDescription">${LabelEnableThemeSongsHelp}</div>
-                </div>
-                <br />
                 <div class="fldEnableBackdrops selectContainer">
                     <select id="selectBackdrop" is="emby-select" label="${LabelEnableBackdrops}">
                         <option value="">${OptionAuto}</option>
@@ -71,6 +62,13 @@
                         <option value="0">${OptionNo}</option>
                     </select>
                     <div class="fieldDescription">${LabelEnableBackdropsHelp}</div>
+                </div>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" id="chkThemeSong"/>
+                        <span>${LabelEnableThemeSongs}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelEnableThemeSongsHelp}</div>
                 </div>
             </div>
             <div class="detailSection requiresUserPreferences">
@@ -89,8 +87,7 @@
                     </label>
                 </div>
             </div>
-            <button is="emby-button" type="submit" class="raised submit block btnSave hide">
-                <i class="md-icon">check</i>
+            <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
                 <span>${ButtonSave}</span>
             </button>
         </form>

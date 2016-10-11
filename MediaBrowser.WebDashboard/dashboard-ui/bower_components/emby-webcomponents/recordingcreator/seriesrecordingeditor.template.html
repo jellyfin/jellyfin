@@ -1,0 +1,79 @@
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${HeaderSeriesOptions}
+    </h3>
+</div>
+
+<div class="formDialogContent smoothScrollY">
+    <div class="dialogContentInner dialog-content-centered" style="padding-top:2em;">
+
+        <form>
+            <div class="selectContainer">
+                <select is="emby-select" class="selectShowType" label="${LabelRecord}">
+                    <option value="new">${NewEpisodesOnly}</option>
+                    <option value="all">${AllEpisodes}</option>
+                </select>
+            </div>
+
+            <div class="checkboxContainer checkboxContainer-withDescription">
+                <label>
+                    <input type="checkbox" is="emby-checkbox" class="chkSkipEpisodesInLibrary"/>
+                    <span>${SkipEpisodesAlreadyInMyLibrary}</span>
+                </label>
+                <div class="fieldDescription checkboxFieldDescription">${SkipEpisodesAlreadyInMyLibraryHelp}</div>
+            </div>
+
+            <div class="selectContainer">
+                <select is="emby-select" class="selectChannels" label="${LabelChannels}">
+                    <option class="optionChannelOnly" value="one">${OneChannel}</option>
+                    <option value="all">${AllChannels}</option>
+                </select>
+            </div>
+
+            <div class="selectContainer">
+                <select is="emby-select" class="selectAirTime" label="${LabelAirtime}">
+                    <option class="optionAroundTime" value="original"></option>
+                    <option value="any">${Anytime}</option>
+                </select>
+            </div>
+
+            <div class="selectContainer">
+                <select is="emby-select" class="selectKeepUpTo" label="${LabelKeepUpTo}">
+                </select>
+            </div>
+
+            <div class="inputContainer">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex-grow: 1;">
+                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelStartWhenPossible}" />
+                    </div>
+                    <div class="fieldDescription" style="margin-left:.5em;font-size:90%;margin-top:1.3em;">
+                        ${MinutesBefore}
+                    </div>
+                </div>
+            </div>
+            <div class="inputContainer">
+                <div style="display: flex; align-items: center;">
+                    <div style="flex-grow: 1;">
+                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelStopWhenPossible}" />
+                    </div>
+                    <div class="fieldDescription" style="margin-left:.5em;font-size:90%;margin-top:1.3em;">
+                        ${MinutesAfter}
+                    </div>
+                </div>
+            </div>
+            <br />
+
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit hide">
+                    <span>${Save}</span>
+                </button>
+                <button is="emby-button" type="button" class="raised btnCancelRecording block formDialogFooterItem button-cancel" style="white-space: nowrap;">
+                    <span>${HeaderCancelRecording}</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

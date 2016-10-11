@@ -1,4 +1,4 @@
-﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="emby-select,emby-collapse,registrationservices,scripts/ratingdialog,scripts/addpluginpage">
+﻿<div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="emby-select,emby-collapse">
 
     <div data-role="content">
         <div class="content-primary">
@@ -26,8 +26,8 @@
                             </div>
 
                             <p id="btnInstallDiv" class="hide">
-                                <button is="emby-button" type="submit" id="btnInstall" class="raised submit block">
-                                    <i class="md-icon">check</i><span>${Install}</span>
+                                <button is="emby-button" type="submit" id="btnInstall" class="raised button-submit block">
+                                    <span>${Install}</span>
                                 </button>
                             </p>
                             <p id="nonServerMsg"></p>
@@ -64,8 +64,7 @@
                                         <input type="hidden" id="featureId" name="item_number" value="">
                                         <input type="hidden" name="notify_url" value="https://mb3admin.com/admin/service/services/ppipn.php">
                                         <input type="hidden" name="return" id="paypalReturnUrl" value="#">
-                                        <button is="emby-button" type="submit" id="ppButton" class="raised block" style="background-color: #179BD7;color:#fff;">
-                                            <i class="md-icon">check</i>
+                                        <button is="emby-button" type="submit" id="ppButton" class="raised block button-submit" style="background-color: #179BD7;color:#fff;">
                                             <span>${RegisterWithPayPal}</span>
                                         </button>
 
@@ -78,14 +77,6 @@
             </div>
             <br />
             <div class="readOnlyContent">
-                <div is="emby-collapse" title="${HeaderReviews}">
-                    <div class="collapseContent">
-                        <br />
-                        <div id="ratingLine"></div>
-                        <div id="latestReviews"></div>
-                    </div>
-                </div>
-
                 <div is="emby-collapse" title="${HeaderDeveloperInfo}">
                     <div class="collapseContent">
                         <p id="developer"></p>

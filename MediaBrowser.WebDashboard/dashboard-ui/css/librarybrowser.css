@@ -8,13 +8,11 @@
 }
 
 .background-theme-b .backgroundContainer, .dialog.background-theme-b {
-    background-color: #121314;
-    /*background: radial-gradient(circle, #282828, #141414);*/
+    background-color: #161616;
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
         background-color: rgba(6, 6,6, .9);
-        /*background: radial-gradient(circle, #282828, #141414);*/
     }
 
 .ui-body-b {
@@ -35,10 +33,6 @@
     z-index: -1;
 }
 
-.pageWithAbsoluteTabs neon-animatable {
-    z-index: 2;
-}
-
 .libraryPage .header {
     padding-bottom: 0;
 }
@@ -46,24 +40,6 @@
 .pageTabContent {
     contain: style;
 }
-
-.textActionButton {
-    border: 0 !important;
-    background: transparent;
-    border: 0 !important;
-    padding: 0 !important;
-    cursor: pointer;
-    outline: none !important;
-    color: inherit;
-    vertical-align: middle;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-    .textActionButton:hover {
-        text-decoration: underline;
-        opacity: 1;
-    }
 
 .pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
     padding-top: 10px;
@@ -534,25 +510,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-overflow: ellipsis;
     overflow: hidden;
     position: relative;
+    margin: 1.5em 0 1em;
+    display: flex;
+    align-items: center;
 }
 
-.ui-body-a .detailSectionHeader {
-    border: 1px solid #ddd;
-    border-width: 0 0 1px 0;
-}
-
-.ui-body-b .detailSectionHeader {
-    border: 1px solid #444;
-    border-width: 0 0 1px 0;
-}
-
-.detailSectionHeader, .detailSectionHeader h3 {
-    font-size: 20px;
-    font-weight: 400;
-}
-
-    .detailSectionHeader button {
-        font-size: 13px;
+    .detailSectionHeader > h1 {
+        margin: 0;
     }
 
 .detailSectionHeaderButton {
@@ -724,10 +688,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     align-items: center;
 }
 
-.mediaInfoItem {
-    white-space: nowrap;
-}
-
 @media all and (max-width: 600px) {
 
     .portraitDetailImageContainer + .primaryDetailsContainer {
@@ -849,7 +809,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: fixed;
     right: 0;
     bottom: 0;
-    z-index: 999;
     text-align: center;
     font-size: 90%;
     display: none;
@@ -962,10 +921,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.homeFavoritesDisabled .homeFavoritesTab {
-    display: none !important;
-}
-
 #criticReviewsContent.hiddenScrollX {
     white-space: nowrap;
 }
@@ -983,7 +938,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (min-width: 1000px) {
 
     .itemDetailPage .portraitCard-scalable {
-        width: 25% !important;
+        width: 20% !important;
     }
 
     .itemDetailPage .squareCard-scalable {

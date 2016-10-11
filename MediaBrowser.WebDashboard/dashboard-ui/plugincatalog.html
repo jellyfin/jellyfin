@@ -1,15 +1,14 @@
-﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/plugincatalogpage,emby-checkbox">
+﻿<div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage withTabs fullWidthContent" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/plugincatalogpage,emby-checkbox,emby-select">
     <div data-role="content">
         <div class="content-primary">
-            <div style="display: flex;align-items:center;">
-                <div>
-                    <label class="selectLabel" for="selectSystem">${LabelDisplayPluginsFor}</label>
-                    <select id="selectSystem">
+            <div style="display: flex;align-items:center; justify-content: flex-end;">
+                <div class="selectContainer" style="margin:0;">
+                    <select is="emby-select" id="selectSystem" label="${LabelDisplayPluginsFor}">
                         <option value="Server">${TabServer}</option>
                         <option value="MBClassic">${PluginTabAppClassic}</option>
                     </select>
                 </div>
-                <div style="margin-left:auto;" class="optionAdultContainer">
+                <div style="margin-left:2em;" class="optionAdultContainer">
                     <label style="width:auto;">
                         <input type="checkbox" is="emby-checkbox" id="chkAdult" />
                         <span>${OptionDisplayAdultContent}</span>

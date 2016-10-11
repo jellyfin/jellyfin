@@ -3,13 +3,8 @@
 }
 
 .headerSelectedPlayer {
-    display: inline-block;
-    vertical-align: middle;
-    color: #ddd;
-    font-weight: 400;
-    position: relative;
-    top: 2px;
-    max-width: 100px;
+    font-weight: normal;
+    max-width: 160px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;

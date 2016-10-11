@@ -174,21 +174,31 @@
 
         var html = '';
         var cssClass = "card scalableCard";
+        var cardBoxCssClass = 'cardBox visualCardBox';
+        var padderClass;
 
         if (currentItemType == "Episode") {
             cssClass += " backdropCard backdropCard-scalable";
+            padderClass = 'cardPadder-backdrop';
         }
         else if (currentItemType == "MusicAlbum" || currentItemType == "MusicArtist") {
             cssClass += " squareCard squareCard-scalable";
+            padderClass = 'cardPadder-square';
         }
         else {
             cssClass += " portraitCard portraitCard-scalable";
+            padderClass = 'cardPadder-portrait';
+        }
+
+        if (layoutManager.tv) {
+            cssClass += ' card-focusscale';
+            cardBoxCssClass += ' cardBox-focustransform cardBox-focustransform-transition';
         }
 
         html += '<button type="button" class="' + cssClass + '" data-index="' + index + '">';
-        html += '<div class="cardBox visualCardBox">';
+        html += '<div class="' + cardBoxCssClass + '">';
         html += '<div class="cardScalable visualCardBox-cardScalable">';
-        html += '<div class="cardPadder-portrait"></div>';
+        html += '<div class="' + padderClass + '"></div>';
 
         html += '<div class="cardContent searchImage">';
 
@@ -335,7 +345,6 @@
                 html += globalize.translateDocument(template, 'sharedcomponents');
 
                 dlg.innerHTML = html;
-                document.body.appendChild(dlg);
 
                 // Has to be assigned a z-index after the call to .open() 
                 dlg.addEventListener('close', onDialogClosed);
@@ -409,7 +418,6 @@
             html += globalize.translateDocument(template, 'sharedcomponents');
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             if (layoutManager.tv) {
                 scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);

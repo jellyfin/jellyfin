@@ -8,6 +8,8 @@ namespace MediaBrowser.Model.System
     /// </summary>
     public class SystemInfo : PublicSystemInfo
     {
+        public PackageVersionClass SystemUpdateLevel { get; set; }
+
         /// <summary>
         /// Gets or sets the display name of the operating system.
         /// </summary>
@@ -32,6 +34,8 @@ namespace MediaBrowser.Model.System
         /// <value>The mac address.</value>
         public string MacAddress { get; set; }
 
+        public string PackageName { get; set; }
+        
         /// <summary>
         /// Gets or sets a value indicating whether this instance has pending restart.
         /// </summary>

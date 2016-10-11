@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'datetime', 'listViewStyle', 'paper-icon-button-light'], function ($, datetime) {
 
     function populateRatings(allParentalRatings, page) {
 
@@ -55,9 +55,9 @@
 
         var html = '';
 
-        html += '<p class="paperListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</p>';
+        html += '<h3 class="checkboxListLabel">' + Globalize.translate('HeaderBlockItemsWithNoRating') + '</h3>';
 
-        html += '<div class="paperCheckboxList">';
+        html += '<div class="checkboxList paperList checkboxList-paperList">';
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -65,7 +65,7 @@
 
             var checkedAttribute = user.Policy.BlockUnratedItems.indexOf(item.value) != -1 ? ' checked="checked"' : '';
 
-            html += '<paper-checkbox class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox"' + checkedAttribute + '>' + item.name + '</paper-checkbox>';
+            html += '<label><input type="checkbox" is="emby-checkbox" class="chkUnratedItem" data-itemtype="' + item.value + '" type="checkbox"' + checkedAttribute + '><span>' + item.name + '</span></label>';
         }
 
         html += '</div>';
@@ -75,7 +75,7 @@
 
     function loadUser(page, user, allParentalRatings) {
 
-        Dashboard.setPageTitle(user.Name);
+        LibraryMenu.setTitle(user.Name);
 
         loadUnratedItems(page, user);
         loadBlockedTags(page, user.Policy.BlockedTags);
@@ -111,23 +111,27 @@
 
     function loadBlockedTags(page, tags) {
 
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + tags.map(function (h) {
+        var html = tags.map(function (h) {
 
-            var li = '<li>';
+            var li = '<div class="listItem">';
 
-            li += '<a href="#">';
+            li += '<div class="listItemBody">';
+            li += '<h3 class="listItemBodyText">';
+            li += h;
+            li += '</h3>';
+            li += '</div>';
 
-            li += '<div style="font-weight:normal;">' + h + '</div>';
+            li += '<button type="button" is="paper-icon-button-light" class="blockedTag btnDeleteTag listItemButton" data-tag="' + h + '"><i class="md-icon">delete</i></button>';
 
-            li += '</a>';
-
-            li += '<a class="blockedTag btnDeleteTag" href="#" data-tag="' + h + '" data-icon="delete"></a>';
-
-            li += '</li>';
+            li += '</div>';
 
             return li;
 
-        }).join('') + '</ul>';
+        }).join('');
+
+        if (html) {
+            html = '<div class="paperList">' + html + '</div>';
+        }
 
         var elem = $('.blockedTags', page).html(html).trigger('create');
 
@@ -152,24 +156,25 @@
 
     function renderAccessSchedule(page, schedules) {
 
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="minus">';
+        var html = '';
         var index = 0;
 
         html += schedules.map(function (a) {
 
             var itemHtml = '';
 
-            itemHtml += '<li class="liSchedule" data-day="' + a.DayOfWeek + '" data-start="' + a.StartHour + '" data-end="' + a.EndHour + '">';
+            itemHtml += '<div class="liSchedule listItem" data-day="' + a.DayOfWeek + '" data-start="' + a.StartHour + '" data-end="' + a.EndHour + '">';
 
-            itemHtml += '<a href="#">';
-            itemHtml += '<h3>' + Globalize.translate('Option' + a.DayOfWeek) + '</h3>';
-            itemHtml += '<p>' + getDisplayTime(a.StartHour) + ' - ' + getDisplayTime(a.EndHour) + '</p>';
-            itemHtml += '</a>';
+            itemHtml += '<div class="listItemBody two-line">';
+            itemHtml += '<h3 class="listItemBodyText">';
+            itemHtml += Globalize.translate('Option' + a.DayOfWeek);
+            itemHtml += '</h3>';
+            itemHtml += '<div class="listItemBodyText secondary">' + getDisplayTime(a.StartHour) + ' - ' + getDisplayTime(a.EndHour) + '</div>';
+            itemHtml += '</div>';
 
-            itemHtml += '<a href="#" data-icon="delete" class="btnDelete" data-index="' + index + '">';
-            itemHtml += '</a>';
+            itemHtml += '<button type="button" is="paper-icon-button-light" class="btnDelete listItemButton" data-index="' + index + '"><i class="md-icon">delete</i></button>';
 
-            itemHtml += '</li>';
+            itemHtml += '</div>';
 
             index++;
 
@@ -177,11 +182,10 @@
 
         }).join('');
 
-        html += '</ul>';
+        var accessScheduleList = page.querySelector('.accessScheduleList');
+        accessScheduleList.innerHTML = html;
 
-        var elem = $('.accessScheduleList', page).html(html).trigger('create');
-
-        $('.btnDelete', elem).on('click', function () {
+        $('.btnDelete', accessScheduleList).on('click', function () {
 
             deleteAccessSchedule(page, schedules, parseInt(this.getAttribute('data-index')));
         });
@@ -200,7 +204,7 @@
 
         user.Policy.MaxParentalRating = $('#selectMaxParentalRating', page).val() || null;
 
-        user.Policy.BlockUnratedItems = $('.chkUnratedItem', page).get().filter(function(i) {
+        user.Policy.BlockUnratedItems = $('.chkUnratedItem', page).get().filter(function (i) {
 
             return i.checked;
 
@@ -235,16 +239,6 @@
 
             // Disable default form submission
             return false;
-        },
-
-        onScheduleFormSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            saveSchedule(page);
-
-            // Disable default form submission
-            return false;
         }
     };
 
@@ -258,65 +252,29 @@
             minutes = parseInt(pct * 60);
         }
 
-        return new Date(2000, 1, 1, hours, minutes, 0, 0).toLocaleTimeString();
-    }
-
-    function populateHours(page) {
-
-        var html = '';
-
-        for (var i = 0; i < 24; i++) {
-
-            html += '<option value="' + i + '">' + getDisplayTime(i) + '</option>';
-        }
-
-        html += '<option value="24">' + getDisplayTime(0) + '</option>';
-
-        $('#selectStart', page).html(html);
-        $('#selectEnd', page).html(html);
+        return datetime.getDisplayTime(new Date(2000, 1, 1, hours, minutes, 0, 0));
     }
 
     function showSchedulePopup(page, schedule, index) {
 
         schedule = schedule || {};
 
-        $('#popupSchedule', page).popup('open');
+        require(['components/accessschedule/accessschedule'], function (accessschedule) {
+            accessschedule.show({
+                schedule: schedule
+            }).then(function (updatedSchedule) {
 
-        $('#fldScheduleIndex', page).val(index);
+                var schedules = getSchedulesFromPage(page);
 
-        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday');
-        $('#selectStart', page).val(schedule.StartHour || 0);
-        $('#selectEnd', page).val(schedule.EndHour || 0);
-    }
+                if (index == -1) {
+                    index = schedules.length;
+                }
 
-    function saveSchedule(page) {
+                schedules[index] = updatedSchedule;
 
-        var schedule = {
-            DayOfWeek: $('#selectDay', page).val(),
-            StartHour: $('#selectStart', page).val(),
-            EndHour: $('#selectEnd', page).val()
-        };
-
-        if (parseFloat(schedule.StartHour) >= parseFloat(schedule.EndHour)) {
-
-            alert(Globalize.translate('ErrorMessageStartHourGreaterThanEnd'));
-
-            return;
-        }
-
-        var schedules = getSchedulesFromPage(page);
-
-        var index = parseInt($('#fldScheduleIndex', page).val());
-
-        if (index == -1) {
-            index = schedules.length;
-        }
-
-        schedules[index] = schedule;
-
-        renderAccessSchedule(page, schedules);
-
-        $('#popupSchedule', page).popup('close');
+                renderAccessSchedule(page, schedules);
+            });
+        });
     }
 
     function getSchedulesFromPage(page) {
@@ -375,9 +333,6 @@
             showBlockedTagPopup(page);
         });
 
-        populateHours(page);
-
-        $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
         $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
 
     }).on('pageshow', "#userParentalControlPage", function () {

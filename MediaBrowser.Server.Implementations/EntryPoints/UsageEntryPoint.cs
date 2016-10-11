@@ -92,11 +92,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 DeviceId = session.DeviceId
             };
 
-            // Report usage to remote server, except for web client, since we already have data on that
-            if (!string.Equals(info.AppName, "Dashboard", StringComparison.OrdinalIgnoreCase))
-            {
-                ReportNewSession(info);
-            }
+            ReportNewSession(info);
 
             return info;
         }

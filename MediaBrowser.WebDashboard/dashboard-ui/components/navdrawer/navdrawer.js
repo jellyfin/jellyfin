@@ -24,7 +24,7 @@
             self = this;
 
             defaults = {
-                width: 280,
+                width: 260,
                 handleSize: 30,
                 disableMask: false,
                 maxMaskOpacity: 0.5

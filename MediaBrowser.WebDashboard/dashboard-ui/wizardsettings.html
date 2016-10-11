@@ -1,36 +1,23 @@
-﻿<div id="wizardSettingsPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardsettings,paper-checkbox,emby-button">
+﻿<div id="wizardSettingsPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardsettings,emby-checkbox,emby-button,emby-select">
 
     <div data-role="content">
 
         <div class="ui-corner-all ui-shadow wizardContent">
             <form class="wizardSettingsForm">
-                <h1>
-                    ${LabelConfigureSettings}
-                </h1>
-                <div style="margin: 3em 0;">
-                    <paper-checkbox class="chkEnableInternetProviders" checked>${LabelDownloadInternetMetadata}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
-                </div>
-                <div>
-                    <paper-checkbox class="chkSaveLocalMetadata">${LabelSaveLocalMetadata}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
+                <h1>${HeaderPreferredMetadataLanguage}</h1>
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectLanguage" required="required" label="${LabelLanguage}"></select>
                 </div>
 
-                <h1 style="margin-top: 1.5em;">${HeaderPreferredMetadataLanguage}</h1>
-
-                <div style="margin: 2em 0;">
-                    <label for="selectLanguage" class="selectLabel">${LabelLanguage}</label>
-                    <select name="selectLanguage" id="selectLanguage" data-mini="true" required="required"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectCountry" required="required" label="${LabelCountry}"></select>
                 </div>
-
-                <div style="margin: 2em 0;">
-                    <label for="selectCountry" class="selectLabel">${LabelCountry}</label>
-                    <select name="selectCountry" id="selectCountry" data-mini="true" required="required"></select>
-                </div>
+                <br />
 
                 <div class="wizardNavigation">
-                    <button is="emby-button" type="button" class="raised subdued" onclick="history.back();"><i class="md-icon">arrow_back</i><span>${LabelPrevious}</span></button>
-                    <button is="emby-button" type="submit" class="raised accent"><span>${LabelNext}</span><i class="md-icon">arrow_forward</i></button>
+                    <button is="emby-button" type="button" class="raised button-cancel" onclick="history.back();"><i class="md-icon">arrow_back</i><span>${LabelPrevious}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit"><span>${LabelNext}</span><i class="md-icon">arrow_forward</i></button>
                 </div>
             </form>
         </div>

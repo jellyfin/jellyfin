@@ -9,7 +9,7 @@
         html += '<button type="button" is="emby-button" class="fab mini autoSize blue" item-icon><i class="md-icon">live_tv</i></button>';
 
         html += '<div class="listItemBody two-line">';
-        html += '<a href="livetvrecordinglist.html?groupid=' + group.Id + '" class="clearLink">';
+        html += '<a href="livetvitems.html?type=Recordings&groupid=' + group.Id + '" class="clearLink">';
 
         html += '<div>';
         html += group.Name;
@@ -58,7 +58,7 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
-    function renderRecordings(elem, recordings) {
+    function renderRecordings(elem, recordings, cardOptions) {
 
         if (recordings.length) {
             elem.classList.remove('hide');
@@ -76,7 +76,7 @@
             recordingItems.classList.add('vertical-wrap');
         }
 
-        recordingItems.innerHTML = cardBuilder.getCardsHtml({
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
@@ -84,119 +84,226 @@
             coverImage: true,
             lazy: true,
             cardLayout: true,
-            allowBottomPadding: !enableScrollX()
-        });
+            vibrant: true,
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
+        }, cardOptions || {}));
 
         ImageLoader.lazyChildren(recordingItems);
     }
 
-    function renderActiveRecordings(context) {
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
 
-        ApiClient.getLiveTvTimers({
+    function renderActiveRecordings(context, promise) {
 
-            IsActive: true
-
-        }).then(function (result) {
+        promise.then(function (result) {
 
             // The IsActive param is new, so handle older servers that don't support it
             if (result.Items.length && result.Items[0].Status != 'InProgress') {
                 result.Items = [];
             }
 
-            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
-                indexByDate: false
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                cardLayout: true,
+                vibrant: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
             });
         });
-
-        //ApiClient.getLiveTvRecordings({
-
-        //    userId: Dashboard.getCurrentUserId(),
-        //    IsInProgress: true,
-        //    Fields: 'CanDelete'
-
-        //}).then(function (result) {
-
-        //    renderRecordings(context.querySelector('#activeRecordings'), result.Items);
-
-        //});
     }
 
-    function renderLatestRecordings(context) {
+    function renderLatestRecordings(context, promise) {
 
-        ApiClient.getLiveTvRecordings({
-
-            userId: Dashboard.getCurrentUserId(),
-            limit: enableScrollX() ? 12 : 4,
-            IsInProgress: false,
-            Fields: 'CanDelete,PrimaryImageAspectRatio',
-            EnableTotalRecordCount: false
-
-        }).then(function (result) {
+        promise.then(function (result) {
 
             renderRecordings(context.querySelector('#latestRecordings'), result.Items);
+
+            Dashboard.hideLoadingMsg();
         });
     }
 
-    function renderTimers(context, timers, options) {
+    function renderMovieRecordings(context, promise) {
 
-        LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
+        promise.then(function (result) {
 
-            var elem = context;
-
-            if (html) {
-                elem.classList.remove('hide');
-            } else {
-                elem.classList.add('hide');
-            }
-
-            elem.querySelector('.recordingItems').innerHTML = html;
-
-            ImageLoader.lazyChildren(elem);
+            renderRecordings(context.querySelector('#movieRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
         });
     }
 
-    function renderUpcomingRecordings(context) {
+    function renderEpisodeRecordings(context, promise) {
 
-        ApiClient.getLiveTvTimers({
-            IsActive: false
-        }).then(function (result) {
+        promise.then(function (result) {
 
-            renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
+            renderRecordings(context.querySelector('#episodeRecordings'), result.Items, {
+                showItemCounts: true,
+                showParentTitle: false
+            });
         });
     }
 
-    function reload(context) {
+    function renderSportsRecordings(context, promise) {
 
-        Dashboard.showLoadingMsg();
+        promise.then(function (result) {
 
-        renderUpcomingRecordings(context);
-        renderActiveRecordings(context);
-        renderLatestRecordings(context);
-
-        ApiClient.getLiveTvRecordingGroups({
-
-            userId: Dashboard.getCurrentUserId()
-
-        }).then(function (result) {
-
-            renderRecordingGroups(context, result.Items);
+            renderRecordings(context.querySelector('#sportsRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
         });
+    }
+
+    function renderKidsRecordings(context, promise) {
+
+        promise.then(function (result) {
+
+            renderRecordings(context.querySelector('#kidsRecordings'), result.Items, {
+                showYear: true,
+                showParentTitle: false
+            });
+        });
+    }
+
+    function onMoreClick(e) {
+
+        var type = this.getAttribute('data-type');
+
+        switch (type) {
+            case 'latest':
+                Dashboard.navigate('livetvitems.html?type=Recordings');
+                break;
+            case 'movies':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsMovie=true');
+                break;
+            case 'episodes':
+                Dashboard.navigate('livetvitems.html?type=RecordingSeries');
+                break;
+            case 'programs':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSeries=false&IsMovie=false');
+                break;
+            case 'kids':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsKids=true');
+                break;
+            case 'sports':
+                Dashboard.navigate('livetvitems.html?type=Recordings&IsSports=true');
+                break;
+            default:
+                break;
+        }
     }
 
     return function (view, params, tabContent) {
 
         var self = this;
+        var activeRecordingsPromise;
+        var sportsPromise;
+        var kidsPromise;
+        var moviesPromise;
+        var seriesPromise;
+        var latestPromise;
 
         categorysyncbuttons.init(tabContent);
+
+        var moreButtons = tabContent.querySelectorAll('.more');
+        for (var i = 0, length = moreButtons.length; i < length; i++) {
+            moreButtons[i].addEventListener('click', onMoreClick);
+        }
         tabContent.querySelector('#activeRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
-        });
-        tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
+            self.preRender();
+            self.renderTab();
         });
 
+        self.preRender = function () {
+
+            activeRecordingsPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                IsInProgress: true,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                EnableImageTypes: "Primary,Thumb,Backdrop"
+            });
+
+            latestPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                Limit: enableScrollX() ? 12 : 8,
+                IsInProgress: false,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                EnableImageTypes: "Primary,Thumb,Backdrop"
+            });
+
+            moviesPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                Limit: enableScrollX() ? 12 : 8,
+                IsInProgress: false,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                IsMovie: true
+            });
+
+            seriesPromise = ApiClient.getLiveTvRecordingSeries({
+
+                UserId: Dashboard.getCurrentUserId(),
+                Limit: enableScrollX() ? 12 : 8,
+                IsInProgress: false,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                IsSeries: true
+            });
+
+            kidsPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                Limit: enableScrollX() ? 12 : 8,
+                IsInProgress: false,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                IsKids: true
+            });
+
+            sportsPromise = ApiClient.getLiveTvRecordings({
+                UserId: Dashboard.getCurrentUserId(),
+                Limit: enableScrollX() ? 12 : 8,
+                IsInProgress: false,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                IsSports: true
+            });
+        };
+
         self.renderTab = function () {
-            reload(tabContent);
+            Dashboard.showLoadingMsg();
+
+            renderActiveRecordings(tabContent, activeRecordingsPromise);
+            renderLatestRecordings(tabContent, latestPromise);
+            renderMovieRecordings(tabContent, moviesPromise);
+            renderEpisodeRecordings(tabContent, seriesPromise);
+            renderSportsRecordings(tabContent, sportsPromise);
+            renderKidsRecordings(tabContent, kidsPromise);
+
+            ApiClient.getLiveTvRecordingGroups({
+
+                userId: Dashboard.getCurrentUserId()
+
+            }).then(function (result) {
+
+                renderRecordingGroups(tabContent, result.Items);
+            });
         };
     };
 

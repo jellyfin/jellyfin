@@ -8,7 +8,7 @@
 
             Dashboard.getCurrentUser().then(function (loggedInUser) {
 
-                Dashboard.setPageTitle(user.Name);
+                LibraryMenu.setTitle(user.Name);
 
                 var showPasswordSection = true;
                 var showLocalAccessSection = false;

@@ -16,9 +16,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
+    /* If this is raised, make sure it does not overlap bottom footer */
+    z-index: 1;
     margin: 0 !important;
-    width: 100% !important;
     /* Page needs to supply padding */
     top: 102px !important;
     transition: transform 200ms ease-out;
@@ -57,14 +57,7 @@
 }
 
 .headerButton {
-    margin: 0 5px;
-    background-color: transparent;
-    vertical-align: middle;
-    text-align: center;
-    border: 0 !important;
-    outline: none;
-    cursor: pointer;
-    display: inline-block;
+    flex-shrink: 0;
 }
 
 .menuArrow {
@@ -73,16 +66,6 @@
     width: 24px;
     display: inline-block;
 }
-
-.headerButtonRight {
-    border-width: 0 !important;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-    .headerButtonRight:first-child {
-        border-width: 0 !important;
-    }
 
 .hideMainDrawer .mainDrawerButton {
     display: none;
@@ -101,6 +84,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
+    margin-left: .75em;
+    font-size: 108%;
+    /* Avoid pushing right header off the screen */
+    flex-shrink: 1;
 }
 
 .viewMenuBar {
@@ -114,6 +101,7 @@
     height: 50px;
     display: flex;
     flex-direction: column;
+    font-size: 13px;
 }
 
 .hiddenViewMenuBar .viewMenuBar {
@@ -134,8 +122,11 @@
     align-items: center;
 }
 
+.emby-tabs {
+    font-size: 13px;
+}
+
 .ui-body-b .libraryViewNav {
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),1px 5px 1px rgba(0,0,0,.12);
     position: fixed;
     right: 0;
     left: 0;
@@ -164,7 +155,6 @@
 }
 
     .dashboardDocument .viewMenuBar {
-        background-color: #333;
         height: auto;
     }
 
@@ -174,10 +164,6 @@
 
     .dashboardDocument.withTallToolbar .primaryIcons {
         padding-bottom: 0;
-    }
-
-    .dashboardDocument .viewMenuBar #selectionBar {
-        height: 3px;
     }
 
 .viewMenuBarTabs {
@@ -228,13 +214,6 @@
     background-color: #1D1D20;
 }
 
-@media all and (max-width: 400px) {
-
-    .libraryMenuButtonText {
-        display: none;
-    }
-}
-
 @media all and (max-width: 800px) {
 
     /* The sidebar isn't visible at this size, so there's no way to navigate within the editor */
@@ -260,7 +239,7 @@ body:not(.dashboardDocument) .btnNotifications {
     }
 
 i.sidebarLinkIcon {
-    font-size: 150%;
+    font-size: 114%;
     height: auto;
     width: auto;
 }

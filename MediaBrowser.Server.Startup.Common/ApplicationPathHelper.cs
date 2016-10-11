@@ -18,9 +18,15 @@ namespace MediaBrowser.Server.Startup.Common
             useDebugPath = true;
 #endif
 
-            var programDataPath = useDebugPath ? ConfigurationManager.AppSettings["DebugProgramDataPath"] : ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
+            var programDataPath = useDebugPath ? 
+                ConfigurationManager.AppSettings["DebugProgramDataPath"] : 
+                ConfigurationManager.AppSettings["ReleaseProgramDataPath"];
 
             programDataPath = programDataPath.Replace("%ApplicationData%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+
+            programDataPath = programDataPath
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
 
             // If it's a relative path, e.g. "..\"
             if (!Path.IsPathRooted(programDataPath))

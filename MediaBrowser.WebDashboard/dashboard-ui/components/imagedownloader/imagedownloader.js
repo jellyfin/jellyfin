@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light'], function (dialogHelper) {
+﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light', 'css!css/metadataeditor.css'], function (dialogHelper) {
 
     var currentItemId;
     var currentItemType;
@@ -276,7 +276,7 @@
             reloadBrowsableImages(page);
         });
 
-        page.addEventListener('click', function(e) {
+        page.addEventListener('click', function (e) {
 
             var btnDownloadRemoteImage = parentWithClass(e.target, 'btnDownloadRemoteImage');
             if (btnDownloadRemoteImage) {
@@ -320,7 +320,6 @@
             html += '</div>';
 
             dlg.innerHTML = html;
-            document.body.appendChild(dlg);
 
             // Has to be assigned a z-index after the call to .open() 
             dlg.addEventListener('close', onDialogClosed);

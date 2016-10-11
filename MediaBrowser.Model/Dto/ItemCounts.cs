@@ -26,6 +26,7 @@
         /// <value>The game count.</value>
         public int GameCount { get; set; }
         public int ArtistCount { get; set; }
+        public int ProgramCount { get; set; }
         /// <summary>
         /// Gets or sets the game system count.
         /// </summary>

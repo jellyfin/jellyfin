@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
 
     function loadPage(page, config) {
 
@@ -13,6 +13,7 @@
         $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden);
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
+        $('#txtMetadataNetworkPath', page).val(config.MetadataNetworkPath || '');
 
         $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata);
         $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata);
@@ -35,17 +36,6 @@
         $('#txtFanartApiKey', page).val(config.UserApiKey || '');
     }
 
-    function loadChapters(page, config, providers) {
-
-        $('#chkChaptersMovies', page).checked(config.EnableMovieChapterImageExtraction);
-        $('#chkChaptersEpisodes', page).checked(config.EnableEpisodeChapterImageExtraction);
-        $('#chkChaptersOtherVideos', page).checked(config.EnableOtherVideoChapterImageExtraction);
-
-        $('#chkExtractChaptersDuringLibraryScan', page).checked(config.ExtractDuringLibraryScan);
-
-        Dashboard.hideLoadingMsg();
-    }
-
     function saveFanart(form) {
 
         ApiClient.getNamedConfiguration("fanart").then(function (config) {
@@ -66,20 +56,6 @@
         });
     }
 
-    function saveChapters(form) {
-
-        ApiClient.getNamedConfiguration("chapters").then(function (config) {
-
-            config.EnableMovieChapterImageExtraction = $('#chkChaptersMovies', form).checked();
-            config.EnableEpisodeChapterImageExtraction = $('#chkChaptersEpisodes', form).checked();
-            config.EnableOtherVideoChapterImageExtraction = $('#chkChaptersOtherVideos', form).checked();
-
-            config.ExtractDuringLibraryScan = $('#chkExtractChaptersDuringLibraryScan', form).checked();
-
-            ApiClient.updateNamedConfiguration("chapters", config);
-        });
-    }
-
     function onSubmit() {
         Dashboard.showLoadingMsg();
 
@@ -95,6 +71,7 @@
             config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.MetadataPath = $('#txtMetadataPath', form).val();
+            config.MetadataNetworkPath = $('#txtMetadataNetworkPath', form).val();
             config.FanartApiKey = $('#txtFanartApiKey', form).val();
 
             config.PeopleMetadataOptions.DownloadActorMetadata = $('#chkPeopleActors', form).checked();
@@ -108,7 +85,6 @@
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
-        saveChapters(form);
         saveMetadata(form);
         saveFanart(form);
 
@@ -120,7 +96,7 @@
         return [
         {
             href: 'library.html',
-            name: Globalize.translate('TabFolders')
+            name: Globalize.translate('HeaderLibraries')
         },
          {
              href: 'librarydisplay.html',
@@ -148,16 +124,21 @@
 
                 picker.show({
 
-                    callback: function (path) {
+                    path: $('#txtMetadataPath', view).val(),
+                    networkSharePath: $('#txtMetadataNetworkPath', view).val(),
+                    callback: function (path, networkPath) {
                         if (path) {
                             $('#txtMetadataPath', view).val(path);
+                            $('#txtMetadataNetworkPath', view).val(networkPath);
                         }
                         picker.close();
                     },
 
                     header: Globalize.translate('HeaderSelectMetadataPath'),
 
-                    instruction: Globalize.translate('HeaderSelectMetadataPathHelp')
+                    instruction: Globalize.translate('HeaderSelectMetadataPathHelp'),
+
+                    enableNetworkSharePath: true
                 });
             });
 
@@ -184,14 +165,6 @@
             ApiClient.getNamedConfiguration("fanart").then(function (metadata) {
 
                 loadFanartConfig(page, metadata);
-            });
-
-            var promise1 = ApiClient.getNamedConfiguration("chapters");
-            var promise2 = ApiClient.getJSON(ApiClient.getUrl("Providers/Chapters"));
-
-            Promise.all([promise1, promise2]).then(function (responses) {
-
-                loadChapters(page, responses[0], responses[1]);
             });
         });
     };

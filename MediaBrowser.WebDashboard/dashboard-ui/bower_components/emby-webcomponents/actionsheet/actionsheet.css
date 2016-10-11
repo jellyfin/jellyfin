@@ -4,10 +4,21 @@
     padding: 0;
     border: none;
     max-height: 84%;
+    border-radius: 1px !important;
+    color: #fff;
+}
+
+.actionsheet-not-fullscreen {
+    background-color: #2a2a2a;
+}
+
+.actionSheetMenuItem:hover {
+    background-color: #333;
 }
 
 .actionsheet-fullscreen {
     max-height: none;
+    border-radius: 0 !important;
 }
 
 .actionSheetContent-centered {
@@ -35,6 +46,8 @@
     font-weight: inherit;
     align-items: center;
     flex-shrink: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .actionSheetMenuItem-noflex {
@@ -42,11 +55,15 @@
 }
 
 .actionSheetItemText {
-    padding: .8em 0;
+    padding: .7em 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
+}
+
+.actionSheetItemText-extraspacing {
+    padding: .8em 0;
 }
 
 .emby-button-noflex .actionSheetItemText {
@@ -84,4 +101,10 @@
 
 .actionsheet-extraSpacing {
     font-size: 108%;
+}
+
+.btnCloseActionSheet {
+    position: fixed;
+    top: .75em;
+    left: .5em;
 }

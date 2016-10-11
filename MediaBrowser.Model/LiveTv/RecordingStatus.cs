@@ -7,7 +7,6 @@ namespace MediaBrowser.Model.LiveTv
         Scheduled,
         InProgress,
         Completed,
-        Aborted,
         Cancelled,
         ConflictedOk,
         ConflictedNotOk,

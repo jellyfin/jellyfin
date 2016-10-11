@@ -111,7 +111,8 @@
                         coverImage: true,
                         lazy: true,
                         cardLayout: true,
-                        showSongCount: true
+                        showSongCount: true,
+                        vibrant: true
                     });
                 }
                 else {

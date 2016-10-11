@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -18,11 +19,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private readonly ILogger _logger;
         private readonly string _certificatePath;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public WebSocketSharpListener(ILogger logger, string certificatePath)
+        public WebSocketSharpListener(ILogger logger, string certificatePath, IMemoryStreamProvider memoryStreamProvider)
         {
             _logger = logger;
             _certificatePath = certificatePath;
+            _memoryStreamProvider = memoryStreamProvider;
         }
 
         public Action<Exception, IRequest> ErrorHandler { get; set; }
@@ -148,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             var operationName = httpContext.Request.GetOperationName();
 
-            var req = new WebSocketSharpRequest(httpContext, operationName, RequestAttributes.None, _logger);
+            var req = new WebSocketSharpRequest(httpContext, operationName, RequestAttributes.None, _logger, _memoryStreamProvider);
             req.RequestAttributes = req.GetAttributes();
 
             return req;

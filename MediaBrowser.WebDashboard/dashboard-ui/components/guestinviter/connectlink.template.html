@@ -2,25 +2,32 @@
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1">
         <i class="md-icon">&#xE5C4;</i>
     </button>
-    <div class="formDialogHeaderTitle">
+    <h3 class="formDialogHeaderTitle">
         Emby Connect
-    </div>
+    </h3>
 </div>
 
-<form class="addUserForm" style="max-width: none;margin:0;">
+<div class="formDialogContent smoothScrollY">
+    <form class="addUserForm dialogContentInner dialog-content-centered">
 
-    <p style="color: orangered;">${MessageConnectAccountRequiredToInviteGuest}</p>
+        <p style="color: orangered;">${MessageConnectAccountRequiredToInviteGuest}</p>
 
-    <div class="inputContainer">
-        <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectUserName}" required />
-        <div class="fieldDescription">
-            <div>${LabelConnectUserNameHelp}</div>
-            <div style="margin-top: .25em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+        <div class="inputContainer">
+            <input is="emby-input" type="text" id="txtConnectUsername" value="" label="${LabelConnectUserName}" required />
+            <div class="fieldDescription">
+                <div>${LabelConnectUserNameHelp}</div>
+                <div style="margin-top: .25em;">
+                    <a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <button is="emby-button" type="submit" class="raised submit block">
-        <i class="md-icon">check</i>
-        <span>${ButtonSendInvitation}</span>
-    </button>
-</form>
+        <div class="formDialogFooter">
+            <button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">
+                <span>${ButtonSendInvitation}</span>
+            </button>
+        </div>
+
+    </form>
+</div>
+
