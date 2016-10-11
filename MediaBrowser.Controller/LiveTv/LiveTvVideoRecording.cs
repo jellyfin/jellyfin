@@ -55,6 +55,15 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
+        protected override bool SupportsIsInMixedFolderDetection
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get

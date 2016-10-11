@@ -512,29 +512,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             if (EnableLocalBuffer())
             {
                 var liveStream = new HdHomerunLiveStream(mediaSource, streamId, _fileSystem, _httpClient, Logger, Config.ApplicationPaths, _appHost);
-                if (info.AllowHWTranscoding)
-                {
-                    var model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
-
-                    if ((model ?? string.Empty).IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        liveStream.EnableStreamSharing = !info.AllowHWTranscoding;
-                    }
-                    else
-                    {
-                        liveStream.EnableStreamSharing = true;
-                    }
-                }
-                else
-                {
-                    liveStream.EnableStreamSharing = true;
-                }
+                liveStream.EnableStreamSharing = true;
                 return liveStream;
             }
             else
             {
                 var liveStream = new LiveStream(mediaSource);
-                liveStream.EnableStreamSharing = false;
+                liveStream.EnableStreamSharing = true;
+                //liveStream.EnableStreamSharing = false;
                 return liveStream;
             }
         }

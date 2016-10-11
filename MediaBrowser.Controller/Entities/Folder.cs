@@ -807,18 +807,6 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            if (query.HasThemeSong.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasThemeSong");
-                return true;
-            }
-
-            if (query.HasThemeVideo.HasValue)
-            {
-                Logger.Debug("Query requires post-filtering due to HasThemeVideo");
-                return true;
-            }
-
             // Filter by VideoType
             if (query.VideoTypes.Length > 0)
             {

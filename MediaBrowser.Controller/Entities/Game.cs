@@ -16,8 +16,6 @@ namespace MediaBrowser.Controller.Entities
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
-            ThemeSongIds = new List<Guid>();
-            ThemeVideoIds = new List<Guid>();
         }
 
         public List<Guid> LocalTrailerIds { get; set; }

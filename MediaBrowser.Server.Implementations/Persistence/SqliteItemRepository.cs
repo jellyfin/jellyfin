@@ -1875,17 +1875,23 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (query.HasField(ItemFields.ThemeSongIds))
             {
-                item.ThemeSongIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+                if (!reader.IsDBNull(index))
+                {
+                    item.ThemeSongIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+                }
+                index++;
             }
-            index++;
 
-            if (!reader.IsDBNull(index))
+            if (query.HasField(ItemFields.ThemeVideoIds))
             {
-                item.ThemeVideoIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+                if (!reader.IsDBNull(index))
+                {
+                    item.ThemeVideoIds = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList();
+                }
+                index++;
             }
-            index++;
 
             if (string.IsNullOrWhiteSpace(item.Tagline))
             {
@@ -3825,6 +3831,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 clause += ")";
                 whereClauses.Add(clause);
+            }
+            if (query.HasThemeSong.HasValue)
+            {
+                if (query.HasThemeSong.Value)
+                {
+                    whereClauses.Add("ThemeSongIds not null");
+                }
+                else
+                {
+                    whereClauses.Add("ThemeSongIds is null");
+                }
+            }
+            if (query.HasThemeVideo.HasValue)
+            {
+                if (query.HasThemeVideo.Value)
+                {
+                    whereClauses.Add("ThemeVideoIds not null");
+                }
+                else
+                {
+                    whereClauses.Add("ThemeVideoIds is null");
+                }
             }
 
             //var enableItemsByName = query.IncludeItemsByName ?? query.IncludeItemTypes.Length > 0;

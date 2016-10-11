@@ -53,6 +53,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        protected override bool SupportsIsInMixedFolderDetection
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (!string.IsNullOrWhiteSpace(PrimaryVersionId))
