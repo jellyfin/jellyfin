@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function stringToArrayBuffer(string) {
         // UTF-16LE
@@ -79,7 +80,7 @@
 
                     console.log(info);
 
-                    if (info != null && info.socketId == socketId) {
+                    if (info != null && info.socketId === socketId) {
                         var json = arrayBufferToString(info.data);
                         console.log('Server discovery json: ' + json);
                         var server = JSON.parse(json);
@@ -119,7 +120,7 @@
                 console.log('chrome.sockets.udp.bind');
                 chrome.sockets.udp.bind(createInfo.socketId, '0.0.0.0', 0, function (bindResult) {
 
-                    if (getResultCode(bindResult) != 0) {
+                    if (getResultCode(bindResult) !== 0) {
                         console.log('bind fail: ' + bindResult);
                         return;
                     }
@@ -130,7 +131,7 @@
 
                     chrome.sockets.udp.send(createInfo.socketId, data, '255.255.255.255', port, function (sendResult) {
 
-                        if (getResultCode(sendResult) != 0) {
+                        if (getResultCode(sendResult) !== 0) {
                             console.log('send fail: ' + sendResult);
 
                         } else {

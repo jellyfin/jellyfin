@@ -153,6 +153,12 @@ define(['playbackManager', 'focusManager', 'embyRouter', 'dom'], function (playb
             case 'togglemute':
                 playbackManager.toggleMute();
                 break;
+            case 'channelup':
+                playbackManager.nextTrack();
+                break;
+            case 'channeldown':
+                playbackManager.previousTrack();
+                break;
             case 'volumedown':
                 playbackManager.volumeDown();
                 break;

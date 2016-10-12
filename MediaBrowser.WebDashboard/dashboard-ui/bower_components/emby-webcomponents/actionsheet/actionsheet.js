@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'layoutManager', 'globalize', 'browser', 'dom', 'emby-button', 'css!./actionsheet', 'material-icons', 'scrollStyles'], function (dialogHelper, layoutManager, globalize, browser, dom) {
+    'use strict';
 
     function getOffsets(elems) {
 
@@ -25,7 +26,9 @@
 
             results[i] = {
                 top: box.top,
-                left: box.left
+                left: box.left,
+                width: box.width,
+                height: box.height
             };
         }
 
@@ -44,11 +47,11 @@
 
         var pos = getOffsets([options.positionTo])[0];
 
-        if (options.positionY != 'top') {
-            pos.top += options.positionTo.offsetHeight / 2;
+        if (options.positionY !== 'top') {
+            pos.top += (pos.height || 0) / 2;
         }
 
-        pos.left += options.positionTo.offsetWidth / 2;
+        pos.left += (pos.width || 0) / 2;
 
         var height = dlg.offsetHeight || 300;
         var width = dlg.offsetWidth || 160;
@@ -119,6 +122,8 @@
 
         if (isFullscreen) {
             dlg.classList.add('actionsheet-fullscreen');
+        } else {
+            dlg.classList.add('actionsheet-not-fullscreen');
         }
 
         var extraSpacing = !layoutManager.tv;

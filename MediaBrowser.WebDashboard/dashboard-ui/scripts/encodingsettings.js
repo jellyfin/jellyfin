@@ -44,10 +44,6 @@
 
         return ApiClient.getSystemInfo().then(function (systemInfo) {
 
-            if (systemInfo.EncoderLocationType == "External") {
-                return;
-            }
-
             return ApiClient.ajax({
                 url: ApiClient.getUrl('System/MediaEncoder/Path'),
                 type: 'POST',
@@ -102,26 +98,6 @@
 
         // Disable default form submission
         return false;
-    }
-
-    function getTabs() {
-        return [
-        {
-            href: 'cinemamodeconfiguration.html',
-            name: Globalize.translate('TabCinemaMode')
-        },
-         {
-             href: 'playbackconfiguration.html',
-             name: Globalize.translate('TabResumeSettings')
-         },
-         {
-             href: 'streamingsettings.html',
-             name: Globalize.translate('TabStreaming')
-         },
-         {
-             href: 'encodingsettings.html',
-             name: Globalize.translate('TabTranscoding')
-         }];
     }
 
     function onSelectEncoderPathChange(e) {
@@ -205,18 +181,13 @@
 
         Dashboard.showLoadingMsg();
 
-        LibraryMenu.setTabs('playback', 3, getTabs);
         var page = this;
 
         ApiClient.getNamedConfiguration("encoding").then(function (config) {
 
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
-                if (systemInfo.EncoderLocationType == "External") {
-                    page.querySelector('.fldSelectEncoderPathType').classList.add('hide');
-                } else {
-                    page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
-                }
+                page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
                 loadPage(page, config, systemInfo);
             });
         });

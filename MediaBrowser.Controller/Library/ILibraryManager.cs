@@ -506,6 +506,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
         QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
 
+        string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem = null);
+
         /// <summary>
         /// Substitutes the path.
         /// </summary>
@@ -554,9 +556,10 @@ namespace MediaBrowser.Controller.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         bool IgnoreFile(FileSystemMetadata file, BaseItem parent);
 
-        void AddVirtualFolder(string name, string collectionType, string[] mediaPaths, LibraryOptions options, bool refreshLibrary);
+        void AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
         void RemoveVirtualFolder(string name, bool refreshLibrary);
-        void AddMediaPath(string virtualFolderName, string path);
+        void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
         void RemoveMediaPath(string virtualFolderName, string path);
 
         QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);

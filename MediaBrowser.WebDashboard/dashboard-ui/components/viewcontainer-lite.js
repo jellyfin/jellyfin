@@ -45,12 +45,10 @@ define(['browser'], function (browser) {
 
         if (isPluginpage) {
             dependencies.push('jqmpopup');
-            dependencies.push('jqmcollapsible');
-            dependencies.push('jqmcheckbox');
             dependencies.push('legacy/dashboard');
             dependencies.push('legacy/selectmenu');
-            dependencies.push('jqmcontrolgroup');
             dependencies.push('jqmlistview');
+            dependencies.push('fnchecked');
         }
 
         if (isPluginpage || (newView.classList && newView.classList.contains('type-interior'))) {

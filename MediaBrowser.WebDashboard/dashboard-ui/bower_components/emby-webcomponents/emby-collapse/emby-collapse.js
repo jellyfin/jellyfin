@@ -1,4 +1,5 @@
 ﻿define(['browser', 'css!./emby-collapse', 'registerElement'], function (browser) {
+    'use strict';
 
     var EmbyButtonPrototype = Object.create(HTMLDivElement.prototype);
 
@@ -9,7 +10,9 @@
         elem.style.height = 'auto';
         var height = elem.offsetHeight + 'px';
         elem.style.height = '0';
-        elem.offsetHeight;
+
+        // trigger reflow
+        var newHeight = elem.offsetHeight;
         elem.style.height = height;
 
         setTimeout(function () {
@@ -29,7 +32,8 @@
     function slideUpToHide(button, elem) {
 
         elem.style.height = elem.offsetHeight + 'px';
-        elem.offsetHeight;
+        // trigger reflow
+        var newHeight = elem.offsetHeight;
 
         elem.classList.remove('expanded');
         elem.style.height = '0';
@@ -49,14 +53,15 @@
 
     function onButtonClick(e) {
 
-        var collapseContent = this.parentNode.querySelector('.collapseContent');
+        var button = this;
+        var collapseContent = button.parentNode.querySelector('.collapseContent');
 
         if (collapseContent.expanded) {
             collapseContent.expanded = false;
-            slideUpToHide(this, collapseContent);
+            slideUpToHide(button, collapseContent);
         } else {
             collapseContent.expanded = true;
-            slideDownToShow(this, collapseContent);
+            slideDownToShow(button, collapseContent);
         }
     }
 
@@ -75,10 +80,7 @@
 
         var title = this.getAttribute('title');
 
-        var html = '<button is="emby-button" type="button" on-click="toggleExpand" id="expandButton" class="emby-collapsible-button iconRight">\
-                <h3 class="emby-collapsible-title" title="' + title + '">' + title + '</h3>\
-                <i class="md-icon emby-collapse-expandIcon">expand_more</i>\
-            </button>';
+        var html = '<button is="emby-button" type="button" on-click="toggleExpand" id="expandButton" class="emby-collapsible-button iconRight"><h3 class="emby-collapsible-title" title="' + title + '">' + title + '</h3><i class="md-icon emby-collapse-expandIcon">expand_more</i></button>';
 
         this.insertAdjacentHTML('afterbegin', html);
 
@@ -86,7 +88,7 @@
 
         button.addEventListener('click', onButtonClick);
 
-        if (this.getAttribute('data-expanded') == 'true') {
+        if (this.getAttribute('data-expanded') === 'true') {
             onButtonClick.call(button);
         }
     };

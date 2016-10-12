@@ -1,4 +1,4 @@
-﻿<div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderHomeScreenSettings}" data-menubutton="false">
+﻿<div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderHomeScreenSettings}" data-backbutton="true">
 
     <div data-role="content">
         <form class="homeScreenPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
@@ -9,9 +9,8 @@
                 </h1>
 
                 <br />
-                <div>
-                    <label for="selectHomeSection1" class="selectLabel">${LabelHomePageSection1}</label>
-                    <select id="selectHomeSection1" data-mini="true">
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectHomeSection1" label="${LabelHomePageSection1}">
                         <option value="">${OptionAuto}</option>
                         <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
@@ -23,26 +22,8 @@
                         <option value="resume">${OptionResumablemedia}</option>
                     </select>
                 </div>
-                <br />
-                <div>
-                    <label for="selectHomeSection2" class="selectLabel">${LabelHomePageSection2}</label>
-                    <select id="selectHomeSection2" data-mini="true">
-                        <option value="">${OptionAuto}</option>
-                        <option value="latestmedia">${OptionLatestMedia}</option>
-                        <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
-                        <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
-                        <option value="nextup">${HeaderNextUp}</option>
-                        <option value="librarytiles">${OptionMyMedia}</option>
-                        <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
-                        <option value="librarybuttons">${OptionMyMediaButtons}</option>
-                        <option value="resume">${OptionResumablemedia}</option>
-                        <option value="none">${OptionNone}</option>
-                    </select>
-                </div>
-                <br />
-                <div>
-                    <label for="selectHomeSection3" class="selectLabel">${LabelHomePageSection3}</label>
-                    <select id="selectHomeSection3" data-mini="true">
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectHomeSection2" label="${LabelHomePageSection2}">
                         <option value="">${OptionAuto}</option>
                         <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
@@ -55,10 +36,22 @@
                         <option value="none">${OptionNone}</option>
                     </select>
                 </div>
-                <br />
-                <div>
-                    <label for="selectHomeSection4" class="selectLabel">${LabelHomePageSection4}</label>
-                    <select id="selectHomeSection4" data-mini="true">
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectHomeSection3" label="${LabelHomePageSection3}">
+                        <option value="">${OptionAuto}</option>
+                        <option value="latestmedia">${OptionLatestMedia}</option>
+                        <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
+                        <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
+                        <option value="nextup">${HeaderNextUp}</option>
+                        <option value="librarytiles">${OptionMyMedia}</option>
+                        <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
+                        <option value="librarybuttons">${OptionMyMediaButtons}</option>
+                        <option value="resume">${OptionResumablemedia}</option>
+                        <option value="none">${OptionNone}</option>
+                    </select>
+                </div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectHomeSection4" label="${LabelHomePageSection4}">
                         <option value="">${OptionAuto}</option>
                         <option value="latestmedia">${OptionLatestMedia}</option>
                         <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
@@ -112,7 +105,6 @@
 
             </div>
             <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
-                <i class="md-icon">check</i>
                 <span>${ButtonSave}</span>
             </button>
         </form>

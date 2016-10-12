@@ -61,16 +61,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var key in keys)
             {
-                try
-                {
-                    await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error saving user data", ex);
-
-                    throw;
-                }
+                await Repository.SaveUserData(userId, key, userData, cancellationToken).ConfigureAwait(false);
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
@@ -107,18 +98,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            try
-            {
-                await Repository.SaveAllUserData(userId, userData, cancellationToken).ConfigureAwait(false);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error saving user data", ex);
-
-                throw;
-            }
-
+            await Repository.SaveAllUserData(userId, userData, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -289,6 +269,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 positionTicks = 0;
             }
 
+            if (!item.SupportsPlayedStatus)
+            {
+                positionTicks = 0;
+                data.Played = false;
+            }
             if (item is Audio)
             {
                 positionTicks = 0;

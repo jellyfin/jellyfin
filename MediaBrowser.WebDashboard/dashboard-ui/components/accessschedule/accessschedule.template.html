@@ -1,0 +1,39 @@
+﻿<div class="formDialogHeader">
+    <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
+    <h3 class="formDialogHeaderTitle">
+        ${HeaderAccessSchedule}
+    </h3>
+</div>
+<div class="formDialogContent smoothScrollY" style="padding-top:2em;">
+    <div class="dialogContentInner dialog-content-centered">
+        <form class="scheduleForm" style="margin:auto;">
+
+            <div class="selectContainer">
+                <select is="emby-select" id="selectDay" label="${LabelAccessDay}">
+                    <option value="Sunday">${OptionSunday}</option>
+                    <option value="Monday">${OptionMonday}</option>
+                    <option value="Tuesday">${OptionTuesday}</option>
+                    <option value="Wednesday">${OptionWednesday}</option>
+                    <option value="Thursday">${OptionThursday}</option>
+                    <option value="Friday">${OptionFriday}</option>
+                    <option value="Saturday">${OptionSaturday}</option>
+                    <option value="Everyday">${OptionEveryday}</option>
+                    <option value="Weekday">${OptionWeekdays}</option>
+                    <option value="Weekend">${OptionWeekends}</option>
+                </select>
+            </div>
+            <div class="selectContainer">
+                <select is="emby-select" class="selectHour" id="selectStart" label="${LabelAccessStart}"></select>
+            </div>
+            <div class="selectContainer">
+                <select is="emby-select" class="selectHour" id="selectEnd" label="${LabelAccessEnd}"></select>
+            </div>
+
+            <div class="formDialogFooter">
+                <button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">
+                    <span>${ButtonAdd}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

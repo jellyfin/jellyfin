@@ -1,338 +1,100 @@
-﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'shell', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, shell) {
+﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'datetime', 'imageLoader', 'recordingFields', 'events', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, datetime, imageLoader, recordingFields, events) {
 
-    var currentProgramId;
-    var currentServerId;
     var currentDialog;
-    var recordingCreated = false;
+    var closeAction;
+    var currentRecordingFields;
 
-    function getDaysOfWeek() {
+    function closeDialog() {
 
-        return [
-         'Sunday',
-         'Monday',
-         'Tuesday',
-         'Wednesday',
-         'Thursday',
-         'Friday',
-         'Saturday'
-        ];
-    }
-
-    function getDays(context) {
-
-        var daysOfWeek = getDaysOfWeek();
-
-        var days = [];
-
-        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
-
-            var day = daysOfWeek[i];
-
-            if (context.querySelector('#chk' + day).checked) {
-                days.push(day);
-            }
-
-        }
-
-        return days;
-    }
-
-    function hideSeriesRecordingFields(context) {
-
-        slideUpToHide(context.querySelector('.seriesFields'));
-        slideUpToHide(context.querySelector('.seriesDays'));
-        context.querySelector('.btnSubmit').classList.remove('hide');
-        context.querySelector('.supporterContainer').classList.add('hide');
-    }
-
-    function closeDialog(isSubmitted) {
-
-        recordingCreated = isSubmitted;
         dialogHelper.close(currentDialog);
-    }
-
-    function onSubmit(e) {
-
-        loading.show();
-
-        var form = this;
-
-        var apiClient = connectionManager.getApiClient(currentServerId);
-
-        apiClient.getNamedConfiguration("livetv").then(function (config) {
-
-            config.EnableRecordingEncoding = form.querySelector('#chkConvertRecordings').checked;
-
-            apiClient.updateNamedConfiguration("livetv", config);
-        });
-
-        apiClient.getNewLiveTvTimerDefaults({ programId: currentProgramId }).then(function (item) {
-
-            item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
-            item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-
-            item.RecordNewOnly = form.querySelector('#chkNewOnly').checked;
-            item.RecordAnyChannel = form.querySelector('#chkAllChannels').checked;
-            item.RecordAnyTime = form.querySelector('#chkAnyTime').checked;
-
-            item.Days = getDays(form);
-
-            if (form.querySelector('#chkRecordSeries').checked) {
-
-                apiClient.createLiveTvSeriesTimer(item).then(function () {
-
-                    loading.hide();
-                    closeDialog(true);
-                });
-
-            } else {
-                apiClient.createLiveTvTimer(item).then(function () {
-
-                    loading.hide();
-                    closeDialog(true);
-                });
-            }
-        });
-
-        // Disable default form submission
-        e.preventDefault();
-        return false;
-    }
-
-    function getRegistration(apiClient, programId, feature) {
-
-        loading.show();
-
-        return apiClient.getJSON(apiClient.getUrl('LiveTv/Registration', {
-
-            ProgramId: programId,
-            Feature: feature
-
-        })).then(function (result) {
-
-            loading.hide();
-            return result;
-
-        }, function () {
-
-            loading.hide();
-
-            return {
-                TrialVersion: true,
-                IsValid: true,
-                IsRegistered: false
-            };
-        });
-    }
-
-    function showSeriesDays(context) {
-        
-        if (context.querySelector('#chkAnyTime').checked) {
-            slideUpToHide(context.querySelector('.seriesDays'));
-        } else {
-            slideDownToShow(context.querySelector('.seriesDays'));
-        }
-    }
-
-    function showSeriesRecordingFields(context, apiClient) {
-
-        slideDownToShow(context.querySelector('.seriesFields'));
-        showSeriesDays(context);
-        context.querySelector('.btnSubmit').classList.remove('hide');
-
-        getRegistration(apiClient, currentProgramId, 'seriesrecordings').then(function (regInfo) {
-
-            if (regInfo.IsRegistered) {
-                context.querySelector('.btnSubmit').classList.remove('hide');
-                context.querySelector('.supporterContainer').classList.add('hide');
-
-            } else {
-
-                context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#MessageActiveSubscriptionRequiredSeriesRecordings');
-                context.querySelector('.supporterContainer').classList.remove('hide');
-                context.querySelector('.btnSubmit').classList.add('hide');
-            }
-        });
-    }
-
-    function showSingleRecordingFields(context, apiClient) {
-
-        context.querySelector('.btnSubmit').classList.remove('hide');
-
-        getRegistration(apiClient, currentProgramId, 'dvr').then(function (regInfo) {
-
-            if (regInfo.IsRegistered) {
-                context.querySelector('.btnSubmit').classList.remove('hide');
-                context.querySelector('.supporterContainer').classList.add('hide');
-
-            } else {
-
-                context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#DvrSubscriptionRequired');
-                context.querySelector('.supporterContainer').classList.remove('hide');
-                context.querySelector('.btnSubmit').classList.add('hide');
-            }
-        });
-    }
-
-    function slideDownToShow(elem) {
-
-        if (!elem.classList.contains('hide')) {
-            return;
-        }
-
-        elem.classList.remove('hide');
-
-        elem.style.overflowY = 'hidden';
-
-        requestAnimationFrame(function () {
-
-            elem.animate([{
-                height: 0
-            }, {
-                height: elem.offsetHeight + 'px'
-
-            }], { duration: 400, easing: 'ease' }).onfinish = function () {
-                elem.classList.remove('hide');
-            };
-        });
-    }
-
-    function slideUpToHide(elem) {
-
-        if (elem.classList.contains('hide')) {
-            return;
-        }
-
-        elem.style.overflowY = 'hidden';
-
-        requestAnimationFrame(function () {
-
-            elem.animate([{
-                height: elem.offsetHeight + 'px'
-            }, {
-                height: 0
-            }], { duration: 400, easing: 'ease' }).onfinish = function () {
-                elem.classList.add('hide');
-            };
-        });
     }
 
     function init(context) {
 
-        var apiClient = connectionManager.getApiClient(currentServerId);
+        context.querySelector('.btnPlay').addEventListener('click', function () {
 
-        context.querySelector('#chkRecordSeries').addEventListener('change', function () {
-
-            if (this.checked) {
-                showSeriesRecordingFields(context, apiClient);
-            } else {
-                hideSeriesRecordingFields(context);
-                showSingleRecordingFields(context, apiClient);
-            }
+            closeAction = 'play';
+            closeDialog();
         });
 
         context.querySelector('.btnCancel').addEventListener('click', function () {
 
-            closeDialog(false);
+            closeAction = null;
+            closeDialog();
         });
+    }
 
-        context.querySelector('#chkAnyTime').addEventListener('change', function () {
+    function getImageUrl(item, apiClient, imageHeight) {
 
-            showSeriesDays(context);
-        });
+        var imageTags = item.ImageTags || {};
 
-        context.querySelector('form', context).addEventListener('submit', onSubmit);
+        if (item.PrimaryImageTag) {
+            imageTags.Primary = item.PrimaryImageTag;
+        }
 
-        var supporterButtons = context.querySelectorAll('.btnSupporter');
-        for (var i = 0, length = supporterButtons.length; i < length; i++) {
-            if (appHost.supports('externalpremium')) {
-                supporterButtons[i].classList.remove('hide');
+        if (imageTags.Primary) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Primary
+            });
+        }
+        else if (imageTags.Thumb) {
+
+            return apiClient.getScaledImageUrl(item.Id, {
+                type: "Thumb",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Thumb
+            });
+        }
+
+        return null;
+    }
+
+    function renderRecording(context, defaultTimer, program, apiClient, refreshRecordingStateOnly) {
+
+        if (!refreshRecordingStateOnly) {
+            var imgUrl = getImageUrl(program, apiClient, 200);
+            var imageContainer = context.querySelector('.recordingDialog-imageContainer');
+
+            if (imgUrl) {
+                imageContainer.innerHTML = '<img src="' + require.toUrl('.').split('?')[0] + '/empty.png" data-src="' + imgUrl + '" class="recordingDialog-img lazy" />';
+                imageContainer.classList.remove('hide');
+
+                imageLoader.lazyChildren(imageContainer);
             } else {
-                supporterButtons[i].classList.add('hide');
+                imageContainer.innerHTML = '';
+                imageContainer.classList.add('hide');
             }
+
+            context.querySelector('.recordingDialog-itemName').innerHTML = program.Name;
+            context.querySelector('.formDialogHeaderTitle').innerHTML = program.Name;
+            context.querySelector('.itemGenres').innerHTML = (program.Genres || []).join(' / ');
+            context.querySelector('.itemOverview').innerHTML = program.Overview || '';
+
+            var formDialogFooter = context.querySelector('.formDialogFooter');
+            var now = new Date();
+            if (now >= datetime.parseISO8601Date(program.StartDate, true) && now < datetime.parseISO8601Date(program.EndDate, true)) {
+                formDialogFooter.classList.remove('hide');
+            } else {
+                formDialogFooter.classList.add('hide');
+            }
+
+            context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
         }
 
-        apiClient.getNamedConfiguration("livetv").then(function (config) {
-
-            context.querySelector('#chkConvertRecordings').checked = config.EnableRecordingEncoding;
+        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program, {
         });
-
-        if (layoutManager.tv) {
-            context.querySelector('.advanced').classList.add('hide');
-        } else {
-            context.querySelector('.advanced').classList.remove('hide');
-        }
-    }
-
-    function selectDays(page, days) {
-
-        var daysOfWeek = getDaysOfWeek();
-
-        for (var i = 0, length = daysOfWeek.length; i < length; i++) {
-
-            var day = daysOfWeek[i];
-
-            page.querySelector('#chk' + day).checked = days.indexOf(day) != -1;
-        }
-    }
-
-    function renderRecording(context, defaultTimer, program, apiClient) {
-
-        context.querySelector('.itemName').innerHTML = program.Name;
-
-        context.querySelector('.itemMiscInfoPrimary').innerHTML = mediaInfo.getPrimaryMediaInfoHtml(program);
-        context.querySelector('.itemMiscInfoSecondary').innerHTML = mediaInfo.getSecondaryMediaInfoHtml(program);
-
-        context.querySelector('#chkNewOnly').checked = defaultTimer.RecordNewOnly;
-        context.querySelector('#chkAllChannels').checked = defaultTimer.RecordAnyChannel;
-        context.querySelector('#chkAnyTime').checked = defaultTimer.RecordAnyTime;
-
-        context.querySelector('#txtPrePaddingMinutes').value = defaultTimer.PrePaddingSeconds / 60;
-        context.querySelector('#txtPostPaddingMinutes').value = defaultTimer.PostPaddingSeconds / 60;
-
-        if (program.IsSeries) {
-            context.querySelector('#eligibleForSeriesFields').classList.remove('hide');
-        } else {
-            context.querySelector('#eligibleForSeriesFields').classList.add('hide');
-        }
-
-        selectDays(context, defaultTimer.Days);
-
-        context.querySelector('.convertRecordingsContainer').classList.remove('hide');
-        showConvertRecordingsUnlockMessage(context, apiClient);
 
         loading.hide();
     }
 
-    function showConvertRecordingsUnlockMessage(context, apiClient) {
-
-        apiClient.getPluginSecurityInfo().then(function (regInfo) {
-
-            if (regInfo.IsMBSupporter) {
-                context.querySelector('.btnSupporterForConverting').classList.add('hide');
-            } else {
-                context.querySelector('.btnSupporterForConverting').classList.remove('hide');
-            }
-
-        }, function () {
-
-            context.querySelector('.btnSupporterForConverting').classList.remove('hide');
-        });
-    }
-
-    function onSupporterButtonClick() {
-        if (appHost.supports('externalpremium')) {
-            shell.openUrl('https://emby.media/premiere');
-        } else {
-
-        }
-    }
-
-    function reload(context, programId) {
+    function reload(context, programId, serverId, refreshRecordingStateOnly) {
 
         loading.show();
 
-        var apiClient = connectionManager.getApiClient(currentServerId);
+        var apiClient = connectionManager.getApiClient(serverId);
 
         var promise1 = apiClient.getNewLiveTvTimerDefaults({ programId: programId });
         var promise2 = apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId());
@@ -342,17 +104,33 @@
             var defaults = responses[0];
             var program = responses[1];
 
-            renderRecording(context, defaults, program, apiClient);
+            renderRecording(context, defaults, program, apiClient, refreshRecordingStateOnly);
         });
+    }
+
+    function executeCloseAction(action, programId, serverId) {
+
+        if (action == 'play') {
+
+            require(['playbackManager'], function (playbackManager) {
+
+                var apiClient = connectionManager.getApiClient(serverId);
+
+                apiClient.getLiveTvProgram(programId, apiClient.getCurrentUserId()).then(function (item) {
+
+                    playbackManager.play(item.ChannelId, serverId);
+                });
+            });
+            return;
+        }
     }
 
     function showEditor(itemId, serverId) {
 
         return new Promise(function (resolve, reject) {
 
-            recordingCreated = false;
-            currentProgramId = itemId;
-            currentServerId = serverId;
+            closeAction = null;
+
             loading.show();
 
             require(['text!./recordingcreator.template.html'], function (template) {
@@ -381,12 +159,16 @@
 
                 currentDialog = dlg;
 
+                function onRecordingChanged() {
+                    reload(dlg, itemId, serverId, true);
+                }
+
                 dlg.addEventListener('close', function () {
 
-                    if (recordingCreated) {
-                        require(['toast'], function (toast) {
-                            toast(globalize.translate('sharedcomponents#RecordingScheduled'));
-                        });
+                    events.off(currentRecordingFields, 'recordingchanged', onRecordingChanged);
+                    executeCloseAction(closeAction, itemId, serverId);
+
+                    if (currentRecordingFields && currentRecordingFields.hasChanged()) {
                         resolve();
                     } else {
                         reject();
@@ -397,13 +179,17 @@
                     scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
                 }
 
-                dlg.querySelector('.btnSupporterForConverting').addEventListener('click', onSupporterButtonClick);
-
-                hideSeriesRecordingFields(dlg);
-                showSingleRecordingFields(dlg, connectionManager.getApiClient(serverId));
                 init(dlg);
 
-                reload(dlg, itemId);
+                reload(dlg, itemId, serverId);
+
+                currentRecordingFields = new recordingFields({
+                    parent: dlg.querySelector('.recordingFields'),
+                    programId: itemId,
+                    serverId: serverId
+                });
+
+                events.on(currentRecordingFields, 'recordingchanged', onRecordingChanged);
 
                 dialogHelper.open(dlg);
             });

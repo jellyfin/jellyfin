@@ -84,12 +84,8 @@
     <Compile Include="Channels\ChannelMediaContentType.cs" />
     <Compile Include="Channels\ChannelMediaType.cs" />
     <Compile Include="Channels\ChannelQuery.cs" />
-    <Compile Include="Chapters\ChapterProviderInfo.cs" />
-    <Compile Include="Chapters\RemoteChapterInfo.cs" />
-    <Compile Include="Chapters\RemoteChapterResult.cs" />
     <Compile Include="Collections\CollectionCreationResult.cs" />
     <Compile Include="Configuration\AccessSchedule.cs" />
-    <Compile Include="Configuration\AutoOnOff.cs" />
     <Compile Include="Configuration\ChannelOptions.cs" />
     <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
@@ -400,7 +396,6 @@
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />
-    <Compile Include="Updates\PackageType.cs" />
     <Compile Include="Updates\PackageVersionClass.cs" />
     <Compile Include="Entities\EmptyRequestResult.cs" />
     <Compile Include="Configuration\UserConfiguration.cs" />

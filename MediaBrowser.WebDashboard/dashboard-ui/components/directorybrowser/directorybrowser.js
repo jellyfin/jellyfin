@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'listViewStyle', 'emby-input', 'emby-button', 'paper-icon-button-light', 'css!./directorybrowser', 'formDialogStyle'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'dom', 'listViewStyle', 'emby-input', 'emby-button', 'paper-icon-button-light', 'css!./directorybrowser', 'formDialogStyle'], function (dialogHelper, dom) {
 
     var systemInfo;
     function getSystemInfo() {
@@ -29,12 +29,6 @@
         }
         Dashboard.showLoadingMsg();
 
-        if (path) {
-            $('.networkHeadline').hide();
-        } else {
-            $('.networkHeadline').show();
-        }
-
         var promises = [];
 
         if (path === "Network") {
@@ -53,7 +47,7 @@
             var folders = responses[0];
             var parentPath = responses[1] || '';
 
-            $('#txtDirectoryPickerPath', page).val(path || "");
+            page.querySelector('#txtDirectoryPickerPath').value = path || "";
 
             var html = '';
 
@@ -75,14 +69,14 @@
                 html += getItem("lnkPath lnkDirectory", "", "Network", Globalize.translate('ButtonNetwork'));
             }
 
-            $('.results', page).html(html);
+            page.querySelector('.results').innerHTML = html;
 
             Dashboard.hideLoadingMsg();
 
         }, function () {
 
-            $('#txtDirectoryPickerPath', page).val("");
-            $('.results', page).html('');
+            page.querySelector('#txtDirectoryPickerPath').value = "";
+            page.querySelector('.results').innerHTML = '';
 
             Dashboard.hideLoadingMsg();
         });
@@ -92,7 +86,7 @@
 
         var html = '';
         html += '<div class="listItem ' + cssClass + '" data-type="' + type + '" data-path="' + path + '" style="border-bottom:1px solid #e0e0e0;">';
-        html += '<div class="listItemBody" style="min-height:2em;padding-left:0;">';
+        html += '<div class="listItemBody" style="padding-left:0;padding-top:.5em;padding-bottom:.5em;">';
         html += '<div class="listItemBodyText">';
         html += name;
         html += '</div>';
@@ -108,44 +102,63 @@
         var html = '';
 
         html += '<div class="formDialogContent smoothScrollY">';
-        html += '<div class="dialogContentInner dialog-content-centered">';
+        html += '<div class="dialogContentInner dialog-content-centered" style="padding-top:2em;">';
 
-        var instruction = options.instruction ? options.instruction + '<br/><br/>' : '';
+        if (!options.pathReadOnly) {
+            var instruction = options.instruction ? options.instruction + '<br/><br/>' : '';
 
-        html += '<p class="directoryPickerHeadline">';
-        html += instruction;
-        html += Globalize.translate('MessageDirectoryPickerInstruction')
-            .replace('{0}', '<b>\\\\server</b>')
-            .replace('{1}', '<b>\\\\192.168.1.101</b>');
+            html += '<div class="directoryPickerHeadline">';
+            html += instruction;
+            html += Globalize.translate('MessageDirectoryPickerInstruction')
+                .replace('{0}', '<b>\\\\server</b>')
+                .replace('{1}', '<b>\\\\192.168.1.101</b>');
 
-        if (systemInfo.OperatingSystem.toLowerCase() == 'bsd') {
+            if (systemInfo.OperatingSystem.toLowerCase() == 'bsd') {
 
-            html += '<br/>';
-            html += '<br/>';
-            html += Globalize.translate('MessageDirectoryPickerBSDInstruction');
-            html += '<br/>';
-            html += '<a href="http://doc.freenas.org/9.3/freenas_jails.html#add-storage" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a>';
+                html += '<br/>';
+                html += '<br/>';
+                html += Globalize.translate('MessageDirectoryPickerBSDInstruction');
+                html += '<br/>';
+                html += '<a href="http://doc.freenas.org/9.3/freenas_jails.html#add-storage" target="_blank">' + Globalize.translate('ButtonMoreInformation') + '</a>';
+            }
+            else if (systemInfo.OperatingSystem.toLowerCase() == 'linux') {
+
+                html += '<br/>';
+                html += '<br/>';
+                html += Globalize.translate('MessageDirectoryPickerLinuxInstruction');
+                html += '<br/>';
+            }
+
+            html += '</div>';
         }
-        else if (systemInfo.OperatingSystem.toLowerCase() == 'linux') {
-
-            html += '<br/>';
-            html += '<br/>';
-            html += Globalize.translate('MessageDirectoryPickerLinuxInstruction');
-            html += '<br/>';
-        }
-
-        html += '</p>';
 
         html += '<form style="margin:auto;">';
 
         html += '<div class="inputContainer" style="display: flex; align-items: center;">';
         html += '<div style="flex-grow:1;">';
-        html += '<input is="emby-input" id="txtDirectoryPickerPath" type="text" required="required" label="' + Globalize.translate('LabelCurrentPath') + '"/>';
-        html += '</div>';
-        html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><i class="md-icon">search</i></button>';
+        var labelKey = options.includeFiles !== true ? 'LabelFolder' : 'LabelPath';
+        var readOnlyAttribute = options.pathReadOnly ? ' readonly' : '';
+        html += '<input is="emby-input" id="txtDirectoryPickerPath" type="text" required="required" ' + readOnlyAttribute + ' label="' + Globalize.translate(labelKey) + '"/>';
         html += '</div>';
 
-        html += '<div class="results paperList" style="max-height: 300px; overflow-y: auto;"></div>';
+        if (!readOnlyAttribute) {
+            html += '<button type="button" is="paper-icon-button-light" class="btnRefreshDirectories" title="' + Globalize.translate('ButtonRefresh') + '"><i class="md-icon">search</i></button>';
+        }
+
+        html += '</div>';
+
+        if (!readOnlyAttribute) {
+            html += '<div class="results paperList" style="max-height: 200px; overflow-y: auto;"></div>';
+        }
+
+        if (options.enableNetworkSharePath) {
+            html += '<div class="inputContainer" style="margin-top:2em;">';
+            html += '<input is="emby-input" id="txtNetworkPath" type="text" label="' + Globalize.translate('LabelOptionalNetworkPath') + '"/>';
+            html += '<div class="fieldDescription">';
+            html += Globalize.translate('LabelOptionalNetworkPathHelp');
+            html += '</div>';
+            html += '</div>';
+        }
 
         html += '<div class="formDialogFooter">';
         html += '<button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem">' + Globalize.translate('ButtonOk') + '</button>';
@@ -162,32 +175,49 @@
 
     function initEditor(content, options, fileOptions) {
 
-        $(content).on("click", ".lnkPath", function () {
+        content.addEventListener("click", function (e) {
 
-            var path = this.getAttribute('data-path');
+            var lnkPath = dom.parentWithClass(e.target, 'lnkPath');
+            if (lnkPath) {
+                var path = lnkPath.getAttribute('data-path');
 
-            if ($(this).hasClass('lnkFile')) {
-                $('#txtDirectoryPickerPath', content).val(path);
-            } else {
-                refreshDirectoryBrowser(content, path, fileOptions);
+                if (lnkPath.classList.contains('lnkFile')) {
+                    content.querySelector('#txtDirectoryPickerPath').value = path;
+                } else {
+                    refreshDirectoryBrowser(content, path, fileOptions);
+                }
             }
-        }).on("click", ".btnRefreshDirectories", function () {
-
-            var path = $('#txtDirectoryPickerPath', content).val();
-
-            refreshDirectoryBrowser(content, path, fileOptions);
-
-        }).on("change", "#txtDirectoryPickerPath", function () {
-
-            refreshDirectoryBrowser(content, this.value, fileOptions);
         });
 
-        $('form', content).on('submit', function () {
+        content.addEventListener("click", function (e) {
+
+            var btnRefreshDirectories = dom.parentWithClass(e.target, 'btnRefreshDirectories');
+            if (btnRefreshDirectories) {
+                var path = content.querySelector('#txtDirectoryPickerPath').value;
+
+                refreshDirectoryBrowser(content, path, fileOptions);
+            }
+        });
+
+        content.addEventListener("change", function (e) {
+
+            var txtDirectoryPickerPath = dom.parentWithTag(e.target, 'INPUT');
+            if (txtDirectoryPickerPath && txtDirectoryPickerPath.id == 'txtDirectoryPickerPath') {
+                refreshDirectoryBrowser(content, txtDirectoryPickerPath.value, fileOptions);
+            }
+        });
+
+        content.querySelector('form').addEventListener('submit', function (e) {
 
             if (options.callback) {
-                options.callback(this.querySelector('#txtDirectoryPickerPath').value);
+
+                var networkSharePath = this.querySelector('#txtNetworkPath');
+                networkSharePath = networkSharePath ? networkSharePath.value : null;
+                options.callback(this.querySelector('#txtDirectoryPickerPath').value, networkSharePath);
             }
 
+            e.preventDefault();
+            e.stopPropagation();
             return false;
         });
     }
@@ -259,15 +289,11 @@
 
                 initEditor(dlg, options, fileOptions);
 
-                // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-opened', function () {
-                    this.querySelector('#txtDirectoryPickerPath input').focus();
-                });
-                $(dlg).on('close', onDialogClosed);
+                dlg.addEventListener('close', onDialogClosed);
 
                 dialogHelper.open(dlg);
 
-                $('.btnCloseDialog', dlg).on('click', function () {
+                dlg.querySelector('.btnCloseDialog').addEventListener('click', function () {
 
                     dialogHelper.close(dlg);
                 });
@@ -276,7 +302,15 @@
 
                 var txtCurrentPath = dlg.querySelector('#txtDirectoryPickerPath');
                 txtCurrentPath.value = initialPath;
-                refreshDirectoryBrowser(dlg, txtCurrentPath.value);
+
+                var txtNetworkPath = dlg.querySelector('#txtNetworkPath');
+                if (txtNetworkPath) {
+                    txtNetworkPath.value = options.networkSharePath || '';
+                }
+
+                if (!options.pathReadOnly) {
+                    refreshDirectoryBrowser(dlg, txtCurrentPath.value);
+                }
 
             });
         };

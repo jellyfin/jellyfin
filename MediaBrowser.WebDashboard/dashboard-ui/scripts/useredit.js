@@ -112,9 +112,19 @@
 
                 });
 
-            }, function () {
+            }, function (response) {
 
-                showEmbyConnectErrorMessage('.');
+                if (response.status == 500) {
+
+                    Dashboard.alert({
+
+                        message: Globalize.translate('ErrorAddingEmbyConnectAccount3')
+
+                    });
+
+                } else {
+                    showEmbyConnectErrorMessage('.');
+                }
             });
 
         } else {

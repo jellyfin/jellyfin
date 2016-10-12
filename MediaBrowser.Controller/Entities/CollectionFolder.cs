@@ -38,6 +38,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public override bool CanDelete()
         {
             return false;
@@ -48,24 +57,14 @@ namespace MediaBrowser.Controller.Entities
         private static readonly Dictionary<string, LibraryOptions> LibraryOptions = new Dictionary<string, LibraryOptions>();
         public LibraryOptions GetLibraryOptions()
         {
-            lock (LibraryOptions)
-            {
-                LibraryOptions options;
-                if (!LibraryOptions.TryGetValue(Path, out options))
-                {
-                    options = LoadLibraryOptions();
-                    LibraryOptions[Path] = options;
-                }
-
-                return options;
-            }
+            return GetLibraryOptions(Path);
         }
 
-        private LibraryOptions LoadLibraryOptions()
+        private static LibraryOptions LoadLibraryOptions(string path)
         {
             try
             {
-                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(Path)) as LibraryOptions;
+                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
 
                 if (result == null)
                 {
@@ -100,13 +99,28 @@ namespace MediaBrowser.Controller.Entities
             SaveLibraryOptions(Path, options);
         }
 
+        public static LibraryOptions GetLibraryOptions(string path)
+        {
+            lock (LibraryOptions)
+            {
+                LibraryOptions options;
+                if (!LibraryOptions.TryGetValue(path, out options))
+                {
+                    options = LoadLibraryOptions(path);
+                    LibraryOptions[path] = options;
+                }
+
+                return options;
+            }
+        }
+
         public static void SaveLibraryOptions(string path, LibraryOptions options)
         {
             lock (LibraryOptions)
             {
                 LibraryOptions[path] = options;
 
-                options.SchemaVersion = 2;
+                options.SchemaVersion = 3;
                 XmlSerializer.SerializeToFile(options, GetLibraryOptionsPath(path));
             }
         }

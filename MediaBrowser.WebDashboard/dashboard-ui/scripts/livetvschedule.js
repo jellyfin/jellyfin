@@ -1,24 +1,74 @@
-﻿define(['scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function () {
+﻿define(['cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder, appHost) {
 
-    function renderActiveRecordings(context) {
+    function enableScrollX() {
+        return browserInfo.mobile && AppInfo.enableAppLayouts;
+    }
 
-        ApiClient.getLiveTvTimers({
+    function renderRecordings(elem, recordings, cardOptions) {
 
-            IsActive: true
+        if (recordings.length) {
+            elem.classList.remove('hide');
+        } else {
+            elem.classList.add('hide');
+        }
 
-        }).then(function (result) {
+        var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+            recordingItems.classList.remove('vertical-wrap');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+            recordingItems.classList.add('vertical-wrap');
+        }
+
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+        var cardLayout = appHost.preferVisualCards || supportsImageAnalysis;
+
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
+            items: recordings,
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
+            showTitle: true,
+            showParentTitle: true,
+            coverImage: true,
+            cardLayout: cardLayout,
+            centerText: !cardLayout,
+            vibrant: supportsImageAnalysis,
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
+        }, cardOptions || {}));
+
+        ImageLoader.lazyChildren(recordingItems);
+    }
+
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function renderActiveRecordings(context, promise) {
+
+        promise.then(function (result) {
 
             // The IsActive param is new, so handle older servers that don't support it
             if (result.Items.length && result.Items[0].Status != 'InProgress') {
                 result.Items = [];
             }
 
-            renderTimers(context.querySelector('#activeRecordings'), result.Items, {
-                indexByDate: false
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
             });
         });
     }
-    
+
     function renderTimers(context, timers, options) {
 
         LiveTvHelpers.getTimersHtml(timers, options).then(function (html) {
@@ -37,35 +87,47 @@
         });
     }
 
-    function renderUpcomingRecordings(context) {
+    function renderUpcomingRecordings(context, promise) {
 
-        ApiClient.getLiveTvTimers({
-            IsActive: false
-        }).then(function (result) {
+        promise.then(function (result) {
 
             renderTimers(context.querySelector('#upcomingRecordings'), result.Items);
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function reload(context) {
-
-        Dashboard.showLoadingMsg();
-
-        renderActiveRecordings(context);
-        renderUpcomingRecordings(context);
-    }
-
     return function (view, params, tabContent) {
 
         var self = this;
+        var activeRecordingsPromise;
+        var upcomingRecordingsPromise;
 
         tabContent.querySelector('#upcomingRecordings .recordingItems').addEventListener('timercancelled', function () {
-            reload(tabContent);
+            self.preRender();
+            self.renderTab();
         });
 
+        self.preRender = function () {
+            activeRecordingsPromise = ApiClient.getLiveTvRecordings({
+
+                UserId: Dashboard.getCurrentUserId(),
+                IsInProgress: true,
+                Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+                EnableTotalRecordCount: false,
+                EnableImageTypes: "Primary,Thumb,Backdrop"
+            });
+
+            upcomingRecordingsPromise = ApiClient.getLiveTvTimers({
+                IsActive: false,
+                IsScheduled: true
+            });
+        };
+
         self.renderTab = function () {
-            reload(tabContent);
+            Dashboard.showLoadingMsg();
+
+            renderActiveRecordings(tabContent, activeRecordingsPromise);
+            renderUpcomingRecordings(tabContent, upcomingRecordingsPromise);
         };
     };
 

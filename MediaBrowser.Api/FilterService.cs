@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -104,7 +105,13 @@ namespace MediaBrowser.Api
                 MediaTypes = request.GetMediaTypes(),
                 IncludeItemTypes = request.GetIncludeItemTypes(),
                 Recursive = true,
-                EnableTotalRecordCount = false
+                EnableTotalRecordCount = false,
+                DtoOptions = new Controller.Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields> { ItemFields.Genres, ItemFields.Tags },
+                    EnableImages = false,
+                    EnableUserData = false
+                }
             };
 
             return query;

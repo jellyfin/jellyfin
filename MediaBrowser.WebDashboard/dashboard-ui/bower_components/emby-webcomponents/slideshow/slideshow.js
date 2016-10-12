@@ -497,12 +497,14 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 case 'left':
                     if (!isOsdOpen()) {
                         e.preventDefault();
+                        e.stopPropagation();
                         previousImage();
                     }
                     break;
                 case 'right':
                     if (!isOsdOpen()) {
                         e.preventDefault();
+                        e.stopPropagation();
                         nextImage();
                     }
                     break;

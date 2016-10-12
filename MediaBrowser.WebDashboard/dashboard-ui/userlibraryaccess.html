@@ -1,4 +1,4 @@
-﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userlibraryaccess,paper-checkbox,emby-button">
+﻿<div id="userLibraryAccessPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userlibraryaccess,emby-checkbox,emby-button">
 
     <div data-role="content">
         <div class="content-primary">
@@ -12,11 +12,11 @@
 
                 <div class="folderAccessContainer">
                     <h2>${HeaderLibraryAccess}</h2>
-                    <div>
-                        <paper-checkbox id="chkEnableAllFolders">${OptionEnableAccessToAllLibraries}</paper-checkbox>
-                    </div>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableAllFolders" />
+                        <span>${OptionEnableAccessToAllLibraries}</span>
+                    </label>
                     <div class="folderAccessListContainer">
-                        <br />
                         <div class="folderAccess">
                         </div>
                         <div class="fieldDescription">${LibraryAccessHelp}</div>
@@ -25,11 +25,11 @@
                 <br />
                 <div class="channelAccessContainer" style="display:none;">
                     <h2>${HeaderChannelAccess}</h2>
-                    <div>
-                        <paper-checkbox id="chkEnableAllChannels">${OptionEnableAccessToAllChannels}</paper-checkbox>
-                    </div>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableAllChannels" />
+                        <span>${OptionEnableAccessToAllChannels}</span>
+                    </label>
                     <div class="channelAccessListContainer">
-                        <br />
                         <div class="channelAccess">
                         </div>
                         <div class="fieldDescription">${ChannelAccessHelp}</div>
@@ -38,11 +38,11 @@
                 <br />
                 <div class="deviceAccessContainer hide">
                     <h2>${HeaderDeviceAccess}</h2>
-                    <div>
-                        <paper-checkbox id="chkEnableAllDevices">${OptionEnableAccessFromAllDevices}</paper-checkbox>
-                    </div>
+                    <label class="checkboxContainer">
+                        <input type="checkbox" is="emby-checkbox" id="chkEnableAllDevices" />
+                        <span>${OptionEnableAccessFromAllDevices}</span>
+                    </label>
                     <div class="deviceAccessListContainer">
-                        <br />
                         <div class="deviceAccess">
                         </div>
                         <div class="fieldDescription">${DeviceAccessHelp}</div>
@@ -51,9 +51,9 @@
                 </div>
                 <br />
                 <div>
-                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-
-                    <button is="emby-button" type="button" class="raised button-cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>${ButtonSave}</span>
+                    </button>
                 </div>
             </form>
         </div>

@@ -1,4 +1,5 @@
 ﻿define(['localassetmanager'], function (localAssetManager) {
+    'use strict';
 
     return function (connectionManager) {
 
@@ -43,9 +44,9 @@
 
                 return uploadHistory.FilesUploaded.filter(function (u) {
 
-                    return getUploadId(file) == u.Id;
+                    return getUploadId(file) === u.Id;
 
-                }).length == 0;
+                }).length === 0;
             });
         }
 

@@ -1,4 +1,5 @@
 ﻿define(['serversync'], function (ServerSync) {
+    'use strict';
 
     function syncNext(connectionManager, servers, index, options, resolve, reject) {
 

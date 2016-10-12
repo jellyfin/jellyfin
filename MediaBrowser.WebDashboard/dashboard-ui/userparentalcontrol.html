@@ -1,4 +1,4 @@
-﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="jqmpopup,scripts/userparentalcontrol,paper-checkbox,emby-button,emby-collapse">
+﻿<div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userparentalcontrol,emby-checkbox,emby-button,emby-select">
 
     <div data-role="content">
         <div class="content-primary">
@@ -10,9 +10,8 @@
             </div>
             <form class="userParentalControlForm">
 
-                <div>
-                    <label for="selectMaxParentalRating" class="selectLabel">${LabelMaxParentalRating}</label>
-                    <select name="selectMaxParentalRating" id="selectMaxParentalRating" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectMaxParentalRating" label="${LabelMaxParentalRating}"></select>
                     <div class="fieldDescription">${MaxParentalRatingHelp}</div>
                 </div>
 
@@ -23,9 +22,9 @@
                 <br />
 
                 <div>
-                    <div>
-                        <h1 style="display:inline-block;vertical-align:middle;">${LabelBlockContentWithTags}</h1>
-                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit mini" style="margin-left:1em;" title="${ButtonAdd}">
+                    <div class="detailSectionHeader">
+                        <h1>${LabelBlockContentWithTags}</h1>
+                        <button is="emby-button" type="button" class="raised btnAddBlockedTag submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
                             <i class="md-icon">add</i>
                             <span>${ButtonAdd}</span>
                         </button>
@@ -36,73 +35,29 @@
                 </div>
                 <br />
 
-                <div class="accessScheduleSection" style="display: none;">
-                    <div is="emby-collapse" title="${HeaderAccessSchedule}">
-                        <div class="collapseContent">
-                            <p>${HeaderAccessScheduleHelp}</p>
+                <div class="accessScheduleSection">
+                    <div class="detailSectionHeader">
+                        <h1>${HeaderAccessSchedule}</h1>
+                        <button is="emby-button" type="button" class="raised btnAddSchedule submit mini" style="margin-left:1em;" title="${ButtonAddUser}">
+                            <i class="md-icon">add</i>
+                            <span>${ButtonAdd}</span>
+                        </button>
+                    </div>
+                    <p>${HeaderAccessScheduleHelp}</p>
+                    <div class="accessScheduleList paperList">
 
-                            <button class="btnAddSchedule" type="button" data-icon="plus" data-mini="true">${ButtonAddSchedule}</button>
-
-                            <div class="accessScheduleList">
-
-                            </div>
-                        </div>
                     </div>
                     <br />
                 </div>
+
+                <br />
                 <div>
-                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>${ButtonSave}</span>
+                    </button>
                 </div>
 
             </form>
-
-            <div data-role="popup" id="popupSchedule" class="popup" data-theme="a">
-
-                <div class="ui-bar-a" style="text-align: center; padding: 5px 20px;">
-                    <h3 style="margin: .5em;">${HeaderSchedule}</h3>
-                </div>
-
-                <div style="padding:10px 5px 0;">
-
-                    <form class="scheduleForm" style="min-width:210px;">
-
-                        <div>
-                            <label for="selectDay">${LabelAccessDay}</label>
-                            <select id="selectDay" data-mini="true">
-                                <option value="Sunday">${OptionSunday}</option>
-                                <option value="Monday">${OptionMonday}</option>
-                                <option value="Tuesday">${OptionTuesday}</option>
-                                <option value="Wednesday">${OptionWednesday}</option>
-                                <option value="Thursday">${OptionThursday}</option>
-                                <option value="Friday">${OptionFriday}</option>
-                                <option value="Saturday">${OptionSaturday}</option>
-                                <option value="Everyday">${OptionEveryday}</option>
-                                <option value="Weekday">${OptionWeekdays}</option>
-                                <option value="Weekend">${OptionWeekends}</option>
-                            </select>
-                        </div>
-                        <br />
-                        <div>
-                            <label for="selectStart">${LabelAccessStart}</label>
-                            <select class="selectHour" id="selectStart" data-mini="true"></select>
-                        </div>
-                        <br />
-                        <div>
-                            <label for="selectEnd">${LabelAccessEnd}</label>
-                            <select class="selectHour" id="selectEnd" data-mini="true"></select>
-                        </div>
-                        <br />
-                        <div>
-                            <input type="hidden" id="fldScheduleIndex" />
-                            <button type="submit" data-icon="plus" data-theme="b" data-mini="true">${ButtonAdd}</button>
-                            <button type="button" data-icon="delete" data-mini="true" onclick="$(this).parents('.popup').popup('close');">${ButtonCancel}</button>
-                        </div>
-                        <br />
-                    </form>
-
-                </div>
-
-            </div>
         </div>
     </div>
 </div>

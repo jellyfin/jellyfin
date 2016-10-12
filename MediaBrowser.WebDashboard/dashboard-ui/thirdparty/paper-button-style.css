@@ -1,10 +1,10 @@
-﻿.ui-body-a .raised {
-    background: #3388cc;
+﻿.raised {
+    background: #404040;
     color: #fff;
 }
 
-.ui-body-b .raised {
-    background: #404040;
+.ui-body-a .raised {
+    background: #3388cc;
     color: #fff;
 }
 
@@ -16,9 +16,10 @@
 .ui-body-a .button-cancel {
     background: #fff;
     color: inherit;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 
-.ui-body-b .button-submit {
+.button-submit {
     background: #52B54B;
     color: #fff;
 }
@@ -28,7 +29,7 @@
     color: #fff;
 }
 
-.ui-body-b .button-accent {
+.button-accent {
     background: #52B54B;
     color: #fff;
 }
@@ -92,7 +93,7 @@ div.dialogHeader {
 }
 
 .ui-body-a div.formDialogFooter {
-    background-color: #fff;
+    background-color: #f0f0f0;
     border-top: 1px solid #ddd;
     color: inherit;
 }

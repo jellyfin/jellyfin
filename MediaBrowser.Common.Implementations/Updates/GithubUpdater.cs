@@ -30,7 +30,8 @@ namespace MediaBrowser.Common.Implementations.Updates
                 Url = url,
                 EnableKeepAlive = false,
                 CancellationToken = cancellationToken,
-                UserAgent = "Emby/3.0"
+                UserAgent = "Emby/3.0",
+                BufferContent = false
             };
 
             if (cacheLength.Ticks > 0)
@@ -105,7 +106,8 @@ namespace MediaBrowser.Common.Implementations.Updates
                 Url = url,
                 EnableKeepAlive = false,
                 CancellationToken = cancellationToken,
-                UserAgent = "Emby/3.0"
+                UserAgent = "Emby/3.0",
+                BufferContent = false
             };
 
             using (var stream = await _httpClient.Get(options).ConfigureAwait(false))

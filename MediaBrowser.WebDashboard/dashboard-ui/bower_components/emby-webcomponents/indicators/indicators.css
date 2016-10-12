@@ -28,6 +28,10 @@
     color: #CB272A;
 }
 
+.timerIndicator-inactive {
+    color: #888;
+}
+
 .indicator + .indicator {
     margin-left: .25em;
 }

@@ -108,7 +108,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
         var url = route.contentPath || route.path;
 
-        if (url.toLowerCase().indexOf('http') != 0 && url.indexOf('file:') != 0) {
+        if (url.indexOf('://') == -1) {
 
             // Put a slash at the beginning but make sure to avoid a double slash
             if (url.indexOf('/') != 0) {

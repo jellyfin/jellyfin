@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'paper-icon-button-light', 'cardStyle'], function ($) {
+﻿define(['jQuery', 'humanedate', 'paper-icon-button-light', 'cardStyle'], function ($) {
 
     function deleteUser(page, id) {
 
@@ -6,7 +6,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(msg, Globalize.translate('DeleteUser')).then(function () {
+            confirm({
+                
+                title: Globalize.translate('DeleteUser'),
+                text: msg,
+                confirmText: Globalize.translate('ButtonDelete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 Dashboard.showLoadingMsg();
 
@@ -145,6 +152,16 @@
         html += user.Name;
         html += "</div>";
 
+        html += '<div class="cardText cardText-secondary">';
+        var lastSeen = getLastSeenText(user.LastActivityDate);
+        if (lastSeen != "") {
+            html += lastSeen;
+        }
+        else {
+            html += "&nbsp;";
+        }
+        html += '</div>';
+
         // cardFooter
         html += "</div>";
 
@@ -155,6 +172,15 @@
         html += "</div>";
 
         return html;
+    }
+
+    function getLastSeenText(lastActivityDate) {
+
+        if (!lastActivityDate) {
+            return "";
+        }
+
+        return "Last seen " + humane_date(lastActivityDate);
     }
 
     function getUserSectionHtml(users, addConnectIndicator) {

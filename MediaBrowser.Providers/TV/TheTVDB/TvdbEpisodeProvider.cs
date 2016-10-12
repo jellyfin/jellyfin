@@ -108,6 +108,7 @@ namespace MediaBrowser.Providers.TV
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<Episode>();
+            result.QueriedById = true;
 
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) && 
 				(searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
@@ -711,6 +712,17 @@ namespace MediaBrowser.Providers.TV
 									{
 										AddPeople(result, val, PersonType.Writer);
 									}
+								}
+
+								break;
+							}
+						case "Language":
+							{
+								var val = reader.ReadElementContentAsString();
+
+								if (!string.IsNullOrWhiteSpace(val))
+								{
+                                    result.ResultLanguage = val;
 								}
 
 								break;

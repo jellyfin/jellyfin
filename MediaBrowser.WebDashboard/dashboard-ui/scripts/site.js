@@ -482,13 +482,18 @@ var Dashboard = {
             icon: 'play_circle_filled',
             color: '#E5342E',
             href: "cinemamodeconfiguration.html",
-            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage', 'encodingSettingsPage']
+            pageIds: ['cinemaModeConfigurationPage', 'playbackConfigurationPage', 'streamingSettingsPage']
         }, {
             name: Globalize.translate('TabSync'),
             icon: 'sync',
             href: "syncactivity.html",
             pageIds: ['syncActivityPage', 'syncJobPage', 'devicesUploadPage', 'syncSettingsPage'],
             color: '#009688'
+        }, {
+            name: Globalize.translate('TabTranscoding'),
+            icon: 'transform',
+            href: "encodingsettings.html",
+            pageIds: ['encodingSettingsPage']
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -670,7 +675,7 @@ var Dashboard = {
         });
     },
 
-    getDeviceProfile: function (maxHeight) {
+    getDeviceProfile: function (maxHeight, profileOptions) {
 
         return new Promise(function (resolve, reject) {
 
@@ -838,11 +843,12 @@ var Dashboard = {
                     supportsCustomSeeking = true;
                 }
 
-                var profile = profileBuilder({
+                var profile = profileBuilder(Object.assign(profileOptions || {}, {
                     supportsCustomSeeking: supportsCustomSeeking
-                });
+                }));
 
-                if (!(AppInfo.isNativeApp && browserInfo.android)) {
+                if (!(AppInfo.isNativeApp && browserInfo.android) && !browserInfo.edge && !browserInfo.msie) {
+                    // libjass not working here
                     profile.SubtitleProfiles.push({
                         Format: 'ass',
                         Method: 'External'
@@ -1149,15 +1155,16 @@ var AppInfo = {};
 
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
+            vibrant: bowerPath + "/vibrant/dist/vibrant",
             ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
             playlisteditor: 'components/playlisteditor/playlisteditor',
             medialibrarycreator: 'components/medialibrarycreator/medialibrarycreator',
             medialibraryeditor: 'components/medialibraryeditor/medialibraryeditor',
-            howler: bowerPath + '/howler.js/howler.min',
+            howler: bowerPath + '/howlerjs/howler.min',
             sortable: bowerPath + '/Sortable/Sortable.min',
             isMobile: bowerPath + '/isMobile/isMobile.min',
-            headroom: bowerPath + '/headroom.js/dist/headroom',
+            headroom: bowerPath + '/headroomjs/dist/headroom',
             masonry: bowerPath + '/masonry/dist/masonry.pkgd.min',
             humanedate: 'components/humanedate',
             libraryBrowser: 'scripts/librarybrowser',
@@ -1178,12 +1185,11 @@ var AppInfo = {};
             globalize: embyWebComponentsBowerPath + "/globalize",
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
-            imageLoader: embyWebComponentsBowerPath + "/images/imagehelper",
             serverNotifications: embyWebComponentsBowerPath + '/servernotifications',
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
-        paths.hlsjs = bowerPath + "/hls.js/dist/hls.min";
+        paths.hlsjs = bowerPath + "/hlsjs/dist/hls.min";
 
         if ((window.chrome && window.chrome.sockets) || Dashboard.isRunningInCordova()) {
             paths.serverdiscovery = apiClientBowerPath + "/serverdiscovery-chrome";
@@ -1206,6 +1212,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("imageLoader", [embyWebComponentsBowerPath + "/images/imagehelper"], returnFirstDependency);
         define("syncJobList", ["components/syncjoblist/syncjoblist"], returnFirstDependency);
         define("appfooter", ["components/appfooter/appfooter"], returnFirstDependency);
         define("dockedtabs", ["components/dockedtabs/dockedtabs"], returnFirstDependency);
@@ -1226,12 +1233,16 @@ var AppInfo = {};
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
         define("emby-slider", [embyWebComponentsBowerPath + "/emby-slider/emby-slider"], returnFirstDependency);
         define("emby-checkbox", [embyWebComponentsBowerPath + "/emby-checkbox/emby-checkbox"], returnFirstDependency);
+        define("emby-toggle", [embyWebComponentsBowerPath + "/emby-toggle/emby-toggle"], returnFirstDependency);
         define("emby-radio", [embyWebComponentsBowerPath + "/emby-radio/emby-radio"], returnFirstDependency);
         define("emby-textarea", [embyWebComponentsBowerPath + "/emby-textarea/emby-textarea"], returnFirstDependency);
         define("collectionEditor", [embyWebComponentsBowerPath + "/collectioneditor/collectioneditor"], returnFirstDependency);
         define("playlistEditor", [embyWebComponentsBowerPath + "/playlisteditor/playlisteditor"], returnFirstDependency);
         define("recordingCreator", [embyWebComponentsBowerPath + "/recordingcreator/recordingcreator"], returnFirstDependency);
         define("recordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/recordingeditor"], returnFirstDependency);
+        define("seriesRecordingEditor", [embyWebComponentsBowerPath + "/recordingcreator/seriesrecordingeditor"], returnFirstDependency);
+        define("recordingFields", [embyWebComponentsBowerPath + "/recordingcreator/recordingfields"], returnFirstDependency);
+        define("recordingHelper", [embyWebComponentsBowerPath + "/recordingcreator/recordinghelper"], returnFirstDependency);
         define("subtitleEditor", [embyWebComponentsBowerPath + "/subtitleeditor/subtitleeditor"], returnFirstDependency);
         define("itemIdentifier", [embyWebComponentsBowerPath + "/itemidentifier/itemidentifier"], returnFirstDependency);
         define("mediaInfo", [embyWebComponentsBowerPath + "/mediainfo/mediainfo"], returnFirstDependency);
@@ -1250,8 +1261,10 @@ var AppInfo = {};
         define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);
         define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
 
-        define("tvguide", [embyWebComponentsBowerPath + "/guide/guide", 'embyRouter'], returnFirstDependency);
+        define("tvguide", [embyWebComponentsBowerPath + "/guide/guide"], returnFirstDependency);
+        define("programStyles", ['css!' + embyWebComponentsBowerPath + "/guide/programs"], returnFirstDependency);
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
+        define("guide-categories-dialog", [embyWebComponentsBowerPath + "/guide/guide-categories"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
@@ -1315,31 +1328,21 @@ var AppInfo = {};
         define("cryptojs-sha1", [sha1Path]);
         define("cryptojs-md5", [md5Path]);
 
-        define("paper-checkbox", ["html!" + bowerPath + "/paper-checkbox/paper-checkbox.html"]);
-
         define("jstree", [bowerPath + "/jstree/dist/jstree", "css!thirdparty/jstree/themes/default/style.min.css"]);
 
         define("dashboardcss", ['css!css/dashboard']);
 
-        define("jqmbase", ['dashboardcss', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css']);
-        define("jqmicons", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css']);
-        define("jqmtable", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table", 'css!thirdparty/jquerymobile-1.4.5/jqm.table.css']);
 
-        define("jqmwidget", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.widget"]);
+        define("jqmwidget", ["thirdparty/jquerymobile-1.4.5/jqm.widget"]);
 
-        define("jqmslider", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider", 'css!thirdparty/jquerymobile-1.4.5/jqm.slider.css']);
 
-        define("jqmpopup", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup", 'css!thirdparty/jquerymobile-1.4.5/jqm.popup.css']);
 
-        define("jqmlistview", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
+        define("jqmlistview", ['css!thirdparty/jquerymobile-1.4.5/jqm.listview.css']);
 
-        define("jqmcontrolgroup", ['jqmbase', 'css!thirdparty/jquerymobile-1.4.5/jqm.controlgroup.css']);
-
-        define("jqmcollapsible", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.collapsible", 'css!thirdparty/jquerymobile-1.4.5/jqm.collapsible.css']);
-
-        define("jqmcheckbox", ['jqmbase', "jqmicons", "thirdparty/jquerymobile-1.4.5/jqm.checkbox", 'css!thirdparty/jquerymobile-1.4.5/jqm.checkbox.css']);
-
-        define("jqmpanel", ['jqmbase', "thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
+        define("jqmpanel", ["thirdparty/jquerymobile-1.4.5/jqm.panel", 'css!thirdparty/jquerymobile-1.4.5/jqm.panel.css']);
 
         define("slideshow", [embyWebComponentsBowerPath + "/slideshow/slideshow"], returnFirstDependency);
 
@@ -1357,12 +1360,6 @@ var AppInfo = {};
         define("listViewStyle", ['css!' + embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
         define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
-
-        if ('registerElement' in document && 'content' in document.createElement('template')) {
-            define('webcomponentsjs', []);
-        } else {
-            define('webcomponentsjs', [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
-        }
 
         if (Dashboard.isRunningInCordova()) {
             define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
@@ -1410,7 +1407,6 @@ var AppInfo = {};
 
         define("jQuery", [bowerPath + '/jquery/dist/jquery.slim.min'], function () {
 
-            require(['fnchecked']);
             if (window.ApiClient) {
                 jQuery.ajax = ApiClient.ajax;
             }
@@ -1424,13 +1420,6 @@ var AppInfo = {};
             dialoghelper.setOnOpen(onDialogOpen);
             return dialoghelper;
         });
-
-        if (!('registerElement' in document)) {
-            //define("registerElement", ['bower_components/webcomponentsjs/CustomElements.min']);
-            define("registerElement", ['webcomponentsjs']);
-        } else {
-            define("registerElement", []);
-        }
 
         // alias
         define("historyManager", [], function () {
@@ -1619,12 +1608,10 @@ var AppInfo = {};
     }
 
     function onDialogOpen(dlg) {
-        if (dlg.classList.contains('formDialog')) {
-            if (!dlg.classList.contains('background-theme-a')) {
+        if (!dlg.classList.contains('background-theme-a') && !dlg.classList.contains('actionSheet')) {
 
-                dlg.classList.add('background-theme-b');
-                dlg.classList.add('ui-body-b');
-            }
+            dlg.classList.add('background-theme-b');
+            dlg.classList.add('ui-body-b');
         }
     }
 
@@ -1634,13 +1621,23 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
+        if (!('registerElement' in document)) {
+            if (browser.msie) {
+                define("registerElement", [bowerPath + '/webcomponentsjs/webcomponents-lite.min.js']);
+            } else {
+                define("registerElement", [bowerPath + '/document-register-element/build/document-register-element']);
+            }
+        } else {
+            define("registerElement", []);
+        }
+
         if (Dashboard.isRunningInCordova() && browser.safari) {
             define("imageFetcher", ['cordova/ios/imagestore'], returnFirstDependency);
         } else {
             define("imageFetcher", [embyWebComponentsBowerPath + "/images/basicimagefetcher"], returnFirstDependency);
         }
 
-        var preferNativeAlerts = browser.mobile || browser.tv || browser.xboxOne;
+        var preferNativeAlerts = (browser.mobile && !browser.animate) || browser.tv || browser.xboxOne || browser.ps4;
         // use native alerts if preferred and supported (not supported in opera tv)
         if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -1697,7 +1694,7 @@ var AppInfo = {};
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/audioplayer"]);
+            define("audiorenderer", ["cordova/ios/audioplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
@@ -1854,7 +1851,8 @@ var AppInfo = {};
             path: '/addplugin.html',
             dependencies: [],
             autoFocus: false,
-            roles: 'admin'
+            roles: 'admin',
+            controller: 'scripts/addpluginpage'
         });
 
         defineRoute({
@@ -1941,7 +1939,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/dashboardhosting.html',
-            dependencies: ['paper-checkbox', 'emby-input', 'emby-button'],
+            dependencies: ['emby-input', 'emby-button'],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/dashboardhosting'
@@ -2125,7 +2123,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/librarysettings.html',
-            dependencies: ['emby-collapse', 'emby-input', 'paper-checkbox', 'emby-button', 'emby-select'],
+            dependencies: ['emby-collapse', 'emby-input', 'emby-button', 'emby-select'],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/librarysettings'
@@ -2189,7 +2187,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/livetvtunerprovider-satip.html',
-            dependencies: ['emby-input', 'paper-checkbox'],
+            dependencies: ['emby-input'],
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/livetvtunerprovider-satip'
@@ -2204,7 +2202,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/login.html',
-            dependencies: ['emby-button', 'humanedate', 'emby-input'],
+            dependencies: ['emby-button', 'emby-input'],
             autoFocus: false,
             anonymous: true,
             startup: true,
@@ -2272,7 +2270,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceshome.html',
-            dependencies: ['emby-checkbox', 'emby-button'],
+            dependencies: ['emby-checkbox', 'emby-button', 'emby-select'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mypreferenceshome'
@@ -2280,7 +2278,7 @@ var AppInfo = {};
 
         defineRoute({
             path: '/mypreferenceslanguages.html',
-            dependencies: ['emby-button', 'emby-checkbox'],
+            dependencies: ['emby-button', 'emby-checkbox', 'emby-select'],
             autoFocus: false,
             transition: 'fade',
             controller: 'scripts/mypreferenceslanguages'
@@ -2703,12 +2701,9 @@ var AppInfo = {};
                     postInitDependencies.push('cordova/android/mediasession');
                     postInitDependencies.push('cordova/android/chromecast');
 
-                } else {
-                    postInitDependencies.push('cordova/volume');
-                }
+                } else if (browserInfo.safari) {
 
-                if (browserInfo.safari) {
-
+                    postInitDependencies.push('cordova/ios/volume');
                     postInitDependencies.push('cordova/ios/chromecast');
                     postInitDependencies.push('cordova/ios/orientation');
                     postInitDependencies.push('cordova/ios/remotecontrols');
@@ -2805,7 +2800,6 @@ var AppInfo = {};
             initRequireWithBrowser(browser);
 
             window.browserInfo = browser;
-
             setAppInfo();
             setDocumentClasses(browser);
 

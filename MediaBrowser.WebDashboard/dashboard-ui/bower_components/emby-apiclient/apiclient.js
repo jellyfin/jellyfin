@@ -1,4 +1,5 @@
 ﻿define(['events'], function (events) {
+    'use strict';
 
     /**
      * Creates a new api client instance
@@ -29,11 +30,11 @@
 
             if (val != null) {
 
-                if (val.toLowerCase().indexOf('http') != 0) {
+                if (val.toLowerCase().indexOf('http') !== 0) {
                     throw new Error('Invalid url: ' + val);
                 }
 
-                var changed = val != serverAddress;
+                var changed = val !== serverAddress;
 
                 serverAddress = val;
 
@@ -189,7 +190,7 @@
 
             var headers = request.headers || {};
 
-            if (request.dataType == 'json') {
+            if (request.dataType === 'json') {
                 headers.accept = 'application/json';
             }
 
@@ -274,16 +275,16 @@
                 self.setRequestHeaders(request.headers);
             }
 
-            if (self.enableAutomaticNetworking === false || request.type != "GET") {
+            if (self.enableAutomaticNetworking === false || request.type !== "GET") {
                 console.log('Requesting url without automatic networking: ' + request.url);
 
                 return getFetchPromise(request).then(function (response) {
 
                     if (response.status < 400) {
 
-                        if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                        if (request.dataType === 'json' || request.headers.accept === 'application/json') {
                             return response.json();
-                        } else if (request.dataType == 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') == 0) {
+                        } else if (request.dataType === 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') === 0) {
                             return response.text();
                         } else {
                             return response;
@@ -349,7 +350,7 @@
 
             console.log("Attempting reconnection to " + url);
 
-            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
+            var timeout = connectionMode === MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
             fetchWithTimeout(url + "/system/info/public", {
 
@@ -406,9 +407,9 @@
 
                 if (response.status < 400) {
 
-                    if (request.dataType == 'json' || request.headers.accept == 'application/json') {
+                    if (request.dataType === 'json' || request.headers.accept === 'application/json') {
                         return response.json();
-                    } else if (request.dataType == 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') == 0) {
+                    } else if (request.dataType === 'text' || (response.headers.get('Content-Type') || '').toLowerCase().indexOf('text/') === 0) {
                         return response.text();
                     } else {
                         return response;
@@ -478,11 +479,11 @@
                 throw new Error("serverAddress is yet not set");
             }
             var lowered = url.toLowerCase();
-            if (lowered.indexOf('/emby') == -1 && lowered.indexOf('/mediabrowser') == -1) {
+            if (lowered.indexOf('/emby') === -1 && lowered.indexOf('/mediabrowser') === -1) {
                 url += '/emby';
             }
 
-            if (name.charAt(0) != '/') {
+            if (name.charAt(0) !== '/') {
                 url += '/';
             }
 
@@ -535,7 +536,11 @@
                 return;
             }
 
-            self.openWebSocket();
+            try {
+                self.openWebSocket();
+            } catch (err) {
+                console.log("Error opening web socket: " + err);
+            }
         };
 
         function replaceAll(originalString, strReplace, strWith) {
@@ -598,7 +603,7 @@
             else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
 
                 var user = msg.Data;
-                if (user.Id == self.getCurrentUserId()) {
+                if (user.Id === self.getCurrentUserId()) {
 
                     currentUser = null;
                 }
@@ -670,13 +675,13 @@
             return self.getDownloadSpeed(1000000).then(function (bitrate) {
 
                 if (bitrate < 1000000) {
-                    return Math.round(bitrate * .8);
+                    return Math.round(bitrate * 0.8);
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
                     return self.getDownloadSpeed(2400000).then(function (bitrate) {
 
-                        return Math.round(bitrate * .8);
+                        return Math.round(bitrate * 0.8);
                     });
                 }
 
@@ -1735,7 +1740,7 @@
        * Adds a virtual folder
        * @param {String} name
        */
-        self.addVirtualFolder = function (name, type, refreshLibrary, initialPaths, libraryOptions) {
+        self.addVirtualFolder = function (name, type, refreshLibrary, libraryOptions) {
 
             if (!name) {
                 throw new Error("null name");
@@ -1758,7 +1763,6 @@
                 type: "POST",
                 url: url,
                 data: JSON.stringify({
-                    Paths: initialPaths,
                     LibraryOptions: libraryOptions
                 }),
                 contentType: 'application/json'
@@ -1813,7 +1817,7 @@
         * Adds an additional mediaPath to an existing virtual folder
         * @param {String} name
         */
-        self.addMediaPath = function (virtualFolderName, mediaPath, refreshLibrary) {
+        self.addMediaPath = function (virtualFolderName, mediaPath, networkSharePath, refreshLibrary) {
 
             if (!virtualFolderName) {
                 throw new Error("null virtualFolderName");
@@ -1825,15 +1829,50 @@
 
             var url = "Library/VirtualFolders/Paths";
 
+            var pathInfo = {
+                Path: mediaPath
+            };
+            if (networkSharePath) {
+                pathInfo.NetworkPath = networkSharePath;
+            }
+
             url = self.getUrl(url, {
-                refreshLibrary: refreshLibrary ? true : false,
-                path: mediaPath,
-                name: virtualFolderName
+                refreshLibrary: refreshLibrary ? true : false
             });
 
             return self.ajax({
                 type: "POST",
-                url: url
+                url: url,
+                data: JSON.stringify({
+                    Name: virtualFolderName,
+                    PathInfo: pathInfo
+                }),
+                contentType: 'application/json'
+            });
+        };
+
+        self.updateMediaPath = function (virtualFolderName, pathInfo) {
+
+            if (!virtualFolderName) {
+                throw new Error("null virtualFolderName");
+            }
+
+            if (!pathInfo) {
+                throw new Error("null pathInfo");
+            }
+
+            var url = "Library/VirtualFolders/Paths/Update";
+
+            url = self.getUrl(url);
+
+            return self.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify({
+                    Name: virtualFolderName,
+                    PathInfo: pathInfo
+                }),
+                contentType: 'application/json'
             });
         };
 
@@ -2035,7 +2074,7 @@
                 throw new Error("File must be an image.");
             }
 
-            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+            if (file.type !== "image/png" && file.type !== "image/jpeg" && file.type !== "image/jpeg") {
                 throw new Error("File must be an image.");
             }
 
@@ -2092,7 +2131,7 @@
                 throw new Error("File must be an image.");
             }
 
-            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+            if (file.type !== "image/png" && file.type !== "image/jpeg" && file.type !== "image/jpeg") {
                 throw new Error("File must be an image.");
             }
 
@@ -2326,7 +2365,7 @@
         };
 
         self.getDefaultImageQuality = function (imageType) {
-            return imageType.toLowerCase() == 'backdrop' ? 80 : 90;
+            return imageType.toLowerCase() === 'backdrop' ? 80 : 90;
         };
 
         function normalizeImageOptions(options) {
@@ -2866,7 +2905,7 @@
 
             var url;
 
-            if ((typeof userId).toString().toLowerCase() == 'string') {
+            if ((typeof userId).toString().toLowerCase() === 'string') {
                 url = self.getUrl("Users/" + userId + "/Items", options);
             } else {
 

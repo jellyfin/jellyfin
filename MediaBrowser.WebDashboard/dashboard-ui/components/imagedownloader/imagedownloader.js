@@ -7,14 +7,7 @@
     var hasChanges = false;
 
     // These images can be large and we're seeing memory problems in safari
-    var browsableImagePageSize;
-
-    // This can handle more
-    if (window.IntersectionObserver) {
-        browsableImagePageSize = 100;
-    } else {
-        browsableImagePageSize = browserInfo.slow ? 6 : 30;
-    }
+    var browsableImagePageSize = browserInfo.slow ? 6 : 30;
 
     var browsableImageStartIndex = 0;
     var browsableImageType = 'Primary';

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom, appHost) {
 
     function itemsPerRow() {
 
@@ -34,6 +34,9 @@
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).then(function (items) {
 
             var elem = page.querySelector('#recentlyAddedSongs');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             elem.innerHTML = cardBuilder.getCardsHtml({
                 items: items,
                 showUnplayedIndicator: false,
@@ -42,9 +45,11 @@
                 showTitle: true,
                 showParentTitle: true,
                 lazy: true,
-                centerText: true,
-                overlayPlayButton: true,
-                allowBottomPadding: !enableScrollX()
+                centerText: !supportsImageAnalysis,
+                overlayPlayButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(elem);
@@ -81,6 +86,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
@@ -89,9 +97,11 @@
                 showParentTitle: true,
                 action: 'instantmix',
                 lazy: true,
-                centerText: true,
-                overlayMoreButton: true,
-                allowBottomPadding: !enableScrollX()
+                centerText: !supportsImageAnalysis,
+                overlayMoreButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -128,6 +138,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
@@ -136,9 +149,11 @@
                 showParentTitle: true,
                 action: 'instantmix',
                 lazy: true,
-                centerText: true,
-                overlayMoreButton: true,
-                allowBottomPadding: !enableScrollX()
+                centerText: !supportsImageAnalysis,
+                overlayMoreButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -172,6 +187,9 @@
             }
 
             var itemsContainer = elem.querySelector('.itemsContainer');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             itemsContainer.innerHTML = cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: getSquareShape(),
@@ -179,9 +197,11 @@
                 lazy: true,
                 coverImage: true,
                 showItemCounts: true,
-                centerText: true,
-                overlayPlayButton: true,
-                allowBottomPadding: !enableScrollX()
+                centerText: !supportsImageAnalysis,
+                overlayPlayButton: !supportsImageAnalysis,
+                allowBottomPadding: !enableScrollX(),
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             ImageLoader.lazyChildren(itemsContainer);

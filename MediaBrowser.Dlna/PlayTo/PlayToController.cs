@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -122,16 +123,18 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        void _deviceDiscovery_DeviceLeft(object sender, SsdpMessageEventArgs e)
+        void _deviceDiscovery_DeviceLeft(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            var info = e.Argument;
+
             string nts;
-            e.Headers.TryGetValue("NTS", out nts);
+            info.Headers.TryGetValue("NTS", out nts);
 
             string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
+            if (!info.Headers.TryGetValue("USN", out usn)) usn = String.Empty;
 
             string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
+            if (!info.Headers.TryGetValue("NT", out nt)) nt = String.Empty;
 
             if (usn.IndexOf(_device.Properties.UUID, StringComparison.OrdinalIgnoreCase) != -1 &&
                 !_disposed)
@@ -537,7 +540,8 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetRefFrames,
                     streamInfo.TargetVideoStreamCount,
                     streamInfo.TargetAudioStreamCount,
-                    streamInfo.TargetVideoCodecTag);
+                    streamInfo.TargetVideoCodecTag,
+                    streamInfo.IsTargetAVC);
 
                 return list.FirstOrDefault();
             }
@@ -653,7 +657,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 _device.PlaybackProgress -= _device_PlaybackProgress;
                 _device.PlaybackStopped -= _device_PlaybackStopped;
                 _device.MediaChanged -= _device_MediaChanged;
-                _deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
+                //_deviceDiscovery.DeviceLeft -= _deviceDiscovery_DeviceLeft;
                 _device.OnDeviceUnavailable = null;
 
                 _device.Dispose();
@@ -824,6 +828,7 @@ namespace MediaBrowser.Dlna.PlayTo
             public string DeviceId { get; set; }
 
             public string MediaSourceId { get; set; }
+            public string LiveStreamId { get; set; }
 
             public BaseItem Item { get; set; }
             public MediaSourceInfo MediaSource { get; set; }
@@ -907,6 +912,10 @@ namespace MediaBrowser.Dlna.PlayTo
                     {
                         request.StartPositionTicks = long.Parse(val, CultureInfo.InvariantCulture);
                     }
+                    else if (i == 22)
+                    {
+                        request.LiveStreamId = val;
+                    }
                 }
 
                 request.Item = string.IsNullOrWhiteSpace(request.ItemId)
@@ -917,7 +926,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 request.MediaSource = hasMediaSources == null
                     ? null
-                    : (await mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).ConfigureAwait(false));
+                    : (await mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, request.LiveStreamId, false, CancellationToken.None).ConfigureAwait(false));
 
                 return request;
             }

@@ -1,0 +1,45 @@
+{
+  "name": "vibrant",
+  "main": "dist/Vibrant.js",
+  "authors": [
+    "Jari Zwarts <jarizw@gmail.com>"
+  ],
+  "description": "Get color variations from an image. Basically a JS port of Android's Palette",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "color",
+    "detection",
+    "variation",
+    "image",
+    "picture",
+    "canvas",
+    "vibrant",
+    "muted",
+    "colour"
+  ],
+  "license": "MIT",
+  "homepage": "http://jari.io/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "closure-compiler": "~0.2.6"
+  },
+  "_release": "3a3c848035",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "3a3c8480356c68ef96ced5b188ac3f3155504b57"
+  },
+  "_source": "https://github.com/jariz/vibrant.js.git",
+  "_target": "*",
+  "_originalSource": "vibrant",
+  "_direct": true
+}

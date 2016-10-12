@@ -50,7 +50,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 4 : 3),
+            Limit: screenWidth >= 1920 ? 5 : (screenWidth >= 1600 ? 5 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
             CollapseBoxSetItems: false,

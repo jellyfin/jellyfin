@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Playback
         {
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
-            var result = await _mediaSourceManager.OpenLiveStream(request, false, CancellationToken.None).ConfigureAwait(false);
+            var result = await _mediaSourceManager.OpenLiveStream(request, true, CancellationToken.None).ConfigureAwait(false);
 
             var profile = request.DeviceProfile;
             if (profile == null)
@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Post(CloseMediaSource request)
         {
-            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId, CancellationToken.None);
+            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId);
             Task.WaitAll(task);
         }
 

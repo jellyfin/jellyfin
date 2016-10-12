@@ -1,3 +1,12 @@
+button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+}
+
+button {
+    -webkit-border-fit: border !important;
+}
+
 .card {
     border: 0;
     font-size: inherit !important;
@@ -82,10 +91,14 @@
     transform: scale(1.16, 1.16);
 }
 
+.cardBox-mobile {
+    margin: 1px;
+}
+
 @media all and (min-width: 600px) {
 
     .cardBox-mobile {
-        margin: 3px;
+        margin: 2px;
     }
 }
 
@@ -147,7 +160,7 @@
 
     .cardImageContainer {
         /* Should be 0 with visualCardBox, but not really noticeable */
-        border-radius: 2px;
+        border-radius: 1px;
     }
 }
 
@@ -179,6 +192,8 @@
     bottom: 0;
     /* Needed in case this is a button */
     display: block;
+    /* Needed in safari */
+    height: 100%;
 }
 
 .cardImage {
@@ -190,6 +205,23 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
+}
+
+.cardImage-img {
+    max-height: 100%;
+    max-width: 100%;
+    /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
+    min-height: 70%;
+    min-width: 70%;
+    align-self: flex-end;
+    position: static;
+}
+
+.coveredImage-img {
+    max-height: none;
+    max-width: none;
+    height: 100%;
+    width: 100%;
 }
 
 .coveredImage {
@@ -211,12 +243,8 @@
 }
 
 .visualCardBox-cardFooter {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-    -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -ms-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
 }
 
 .innerCardFooter {
@@ -245,6 +273,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     color: inherit;
+    text-align: left;
+}
+
+.singleCardText {
+    padding: .5em;
 }
 
 .cardTextCentered {
@@ -259,8 +292,9 @@
     margin-right: 2em;
 }
 
-.cardCenteredText {
+.cardDefaultText {
     white-space: normal;
+    text-align: center;
 }
 
 .textActionButton {
@@ -315,14 +349,20 @@
 
 .cardOverlayButton {
     color: #fff !important;
-    background-color: rgba(0,0,0,.7) !important;
+    background-color: rgba(0,0,0,.8) !important;
     border-radius: 500px;
     position: absolute;
     bottom: 0;
     right: 0;
     margin: 0 .35em .5em 0;
     z-index: 1;
+    /*opacity: 0;
+    transition: opacity 0.5s ease-in; /* vendorless fallback */ */;
 }
+
+    /*.card:hover .cardOverlayButton {
+    opacity: 1;
+}*/
 
     .cardOverlayButton:hover {
         background-color: rgba(0,0,0,.9) !important;
@@ -375,7 +415,7 @@
 }
 
 .overflowBackdropCard-scalable {
-    width: 84%;
+    width: 80%;
     max-width: 400px;
 }
 
@@ -514,7 +554,6 @@
     }
 }
 
-
 @media all and (min-width: 1600px) {
 
     .portraitCard-scalable {
@@ -524,12 +563,27 @@
     .smallBackdropCard-scalable {
         width: 12.5%;
     }
+
+    .backdropCard-scalable {
+        width: 20%;
+    }
+
+    .squareCard-scalable {
+        width: 12.5%;
+    }
 }
 
 @media all and (min-width: 1800px) {
 
+    .smallBackdropCard-scalable {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 1920px) {
+
     .squareCard-scalable {
-        width: 12.5%;
+        width: 11.111111111111111111111111111111%;
     }
 
     .smallBackdropCard-scalable {
@@ -538,10 +592,6 @@
 }
 
 @media all and (min-width: 2100px) {
-
-    .squareCard-scalable {
-        width: 11.111111111111111111111111111111%;
-    }
 
     .backdropCard-scalable {
         width: 20%;
@@ -582,6 +632,10 @@
     width: 16.66666666666666667%;
 }
 
-.layout-tv .personCard-scalable {
-    width: 14.285714285714285714285714285714%;
+
+@media all and (min-width: 1600px) {
+
+    .layout-tv .backdropCard-scalable {
+        width: 25%;
+    }
 }

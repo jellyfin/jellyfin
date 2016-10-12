@@ -302,6 +302,8 @@ namespace MediaBrowser.Api
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
+            var dtoOptions = GetDtoOptions(request);
+
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 Limit = request.Limit,
@@ -309,11 +311,10 @@ namespace MediaBrowser.Api
                 {
                         typeof(Series).Name
                 },
-                SimilarTo = item
+                SimilarTo = item,
+                DtoOptions = dtoOptions
 
             }).ToList();
-
-            var dtoOptions = GetDtoOptions(request);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -333,6 +334,8 @@ namespace MediaBrowser.Api
 
             var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
+            var options = GetDtoOptions(request);
+
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
@@ -342,11 +345,10 @@ namespace MediaBrowser.Api
                 StartIndex = request.StartIndex,
                 Limit = request.Limit,
                 ParentId = parentIdGuid,
-                Recursive = true
+                Recursive = true,
+                DtoOptions = options
 
             }).ToList();
-
-            var options = GetDtoOptions(request);
 
             var returnItems = (await _dtoService.GetBaseItemDtos(itemsResult, options, user).ConfigureAwait(false)).ToArray();
 

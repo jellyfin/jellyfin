@@ -39,11 +39,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             if (boundary == null)
                 return;
 
-            using (var requestStream = GetSubStream(InputStream))
+            using (var requestStream = GetSubStream(InputStream, _memoryStreamProvider))
             {
                 //DB: 30/01/11 - Hack to get around non-seekable stream and received HTTP request
                 //Not ending with \r\n?
-                var ms = new MemoryStream(32 * 1024);
+                var ms = _memoryStreamProvider.CreateNew(32 * 1024);
                 await requestStream.CopyToAsync(ms).ConfigureAwait(false);
 
                 var input = ms;
@@ -229,9 +229,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         async Task LoadWwwForm()
         {
-            using (Stream input = GetSubStream(InputStream))
+            using (Stream input = GetSubStream(InputStream, _memoryStreamProvider))
             {
-                using (var ms = new MemoryStream())
+                using (var ms = _memoryStreamProvider.CreateNew())
                 {
                     await input.CopyToAsync(ms).ConfigureAwait(false);
                     ms.Position = 0;

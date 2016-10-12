@@ -4,10 +4,21 @@
     padding: 0;
     border: none;
     max-height: 84%;
+    border-radius: 1px !important;
+    color: #fff;
+}
+
+.actionsheet-not-fullscreen {
+    background-color: #2a2a2a;
+}
+
+.actionSheetMenuItem:hover {
+    background-color: #333;
 }
 
 .actionsheet-fullscreen {
     max-height: none;
+    border-radius: 0 !important;
 }
 
 .actionSheetContent-centered {
@@ -35,6 +46,8 @@
     font-weight: inherit;
     align-items: center;
     flex-shrink: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .actionSheetMenuItem-noflex {

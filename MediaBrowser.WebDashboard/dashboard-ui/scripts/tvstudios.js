@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
 
     // The base query options
     var data = {};
@@ -43,6 +43,7 @@
         promise.then(function (result) {
 
             var elem = context.querySelector('#items');
+
             cardBuilder.buildCards(result.Items, {
                 itemsContainer: elem,
                 shape: "backdrop",

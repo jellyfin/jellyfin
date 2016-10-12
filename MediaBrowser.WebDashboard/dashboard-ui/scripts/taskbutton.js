@@ -1,4 +1,4 @@
-﻿define(['appStorage', 'emby-button'], function (appStorage) {
+﻿define(['userSettings', 'emby-button'], function (userSettings) {
 
     return function (options) {
 
@@ -77,32 +77,54 @@
         function onButtonClick() {
 
             var button = this;
-            var id = button.getAttribute('data-taskid');
+            var buttonTextElement = this.querySelector('span') || this;
+            var text = buttonTextElement.textContent || buttonTextElement.innerText;
+            var taskId = button.getAttribute('data-taskid');
 
             var key = 'scheduledTaskButton' + options.taskKey;
             var expectedValue = new Date().getMonth() + '6';
 
-            if (appStorage.getItem(key) == expectedValue) {
-                onScheduledTaskMessageConfirmed(id);
+            if (userSettings.get(key) == expectedValue) {
+                onScheduledTaskMessageConfirmed(taskId);
             } else {
 
-                var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
-                msg += '<br/>';
-                msg += '<div style="margin-top:1em;">';
-                msg += '<a class="clearLink" href="scheduledtasks.html"><button is="emby-button" type="button" style="color:#3f51b5!important;margin:0;">' + Globalize.translate('ButtonScheduledTasks') + '</button></a>';
-                msg += '</div>';
+                require(['dialog'], function (dialog) {
 
-                require(['confirm'], function (confirm) {
+                    var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
 
-                    confirm({
+                    var menuItems = [];
 
-                        title: Globalize.translate('HeaderConfirmation'),
-                        html: msg,
-                        text: Globalize.translate('ConfirmMessageScheduledTaskButton') + "\n\n" + Globalize.translate('ButtonScheduledTasks')
+                    menuItems.push({
+                        name: text,
+                        id: 'task'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonScheduledTasks'),
+                        id: 'tasks'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonCancel'),
+                        id: 'cancel'
+                    });
 
-                    }).then(function () {
-                        appStorage.setItem(key, expectedValue);
-                        onScheduledTaskMessageConfirmed(id);
+                    dialog({
+                        buttons: menuItems,
+                        text: msg
+
+                    }).then(function (id) {
+                        switch (id) {
+
+                            case 'task':
+                                userSettings.set(key, expectedValue);
+                                onScheduledTaskMessageConfirmed(taskId);
+                                break;
+                            case 'tasks':
+                                userSettings.set(key, expectedValue);
+                                Dashboard.navigate('scheduledtasks.html');
+                                break;
+                            default:
+                                break;
+                        }
                     });
 
                 });
@@ -161,7 +183,7 @@
             Events.off(ApiClient, 'websocketopen', onSocketOpen);
             stopInterval();
 
-        } else  {
+        } else {
 
             button.addEventListener('click', onButtonClick);
 

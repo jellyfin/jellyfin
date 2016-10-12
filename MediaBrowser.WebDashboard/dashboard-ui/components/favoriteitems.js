@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, dom) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, dom, appHost) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -21,7 +21,7 @@
         return [
             { name: 'HeaderFavoriteMovies', types: "Movie", id: "favoriteMovies", shape: getPosterShape(), showTitle: false, overlayPlayButton: true },
             { name: 'HeaderFavoriteShows', types: "Series", id: "favoriteShows", shape: getPosterShape(), showTitle: false, overlayPlayButton: true },
-            { name: 'HeaderFavoriteEpisodes', types: "Episode", id: "favoriteEpisode", shape: getThumbShape(), preferThumb: false, showTitle: true, showParentTitle: true, overlayPlayButton: true },
+            { name: 'HeaderFavoriteEpisodes', types: "Episode", id: "favoriteEpisode", shape: getThumbShape(), preferThumb: false, showTitle: true, showParentTitle: true, overlayPlayButton: true, overlayText: false, centerText: true },
             { name: 'HeaderFavoriteGames', types: "Game", id: "favoriteGames", shape: getSquareShape(), preferThumb: false, showTitle: true },
             { name: 'HeaderFavoriteArtists', types: "MusicArtist", id: "favoriteArtists", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
             { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true },
@@ -88,10 +88,13 @@
                     html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+                var cardLayout = (appHost.preferVisualCards || supportsImageAnalysis) && section.showTitle;
+
                 html += cardBuilder.getCardsHtml(result.Items, {
                     preferThumb: section.preferThumb,
                     shape: section.shape,
-                    centerText: section.centerText,
+                    centerText: section.centerText && !cardLayout,
                     overlayText: section.overlayText !== false,
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
@@ -99,7 +102,9 @@
                     overlayPlayButton: section.overlayPlayButton,
                     overlayMoreButton: section.overlayMoreButton,
                     action: section.action,
-                    allowBottomPadding: !enableScrollX()
+                    allowBottomPadding: !enableScrollX(),
+                    cardLayout: cardLayout,
+                    vibrant: supportsImageAnalysis && cardLayout
                 });
 
                 html += '</div>';

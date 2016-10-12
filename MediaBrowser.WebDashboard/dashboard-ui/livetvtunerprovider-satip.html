@@ -54,15 +54,17 @@
                                 <option value="">${OptionNone}</option>
                             </select>
                         </div>
-                        <div>
-                            <br />
-                            <paper-checkbox class="chkEnabled" checked>${LabelEnableThisTuner}</paper-checkbox>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelEnableThisTunerHelp}</div>
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input type="checkbox" is="emby-checkbox" class="chkEnabled" />
+                                <span>${LabelEnableThisTuner}</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">${LabelEnableThisTunerHelp}</div>
                         </div>
-                        <br /><br />
+                        <br />
                         <div>
-                            <button is="emby-button" type="submit" class="raised submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
-                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
+                            <button is="emby-button" type="submit" class="raised submit block"><span>${ButtonSave}</span></button>
+                            <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><span>${ButtonCancel}</span></button>
                         </div>
                     </div>
                 </form>

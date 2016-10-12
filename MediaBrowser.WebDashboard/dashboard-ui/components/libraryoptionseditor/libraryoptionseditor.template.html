@@ -1,4 +1,18 @@
 ﻿<h1>${HeaderSettings}</h1>
+<div class="checkboxContainer checkboxContainer-withDescription chkEnableInternetProvidersContainer hide">
+    <label>
+        <input is="emby-checkbox" type="checkbox" id="chkEnableInternetProviders" />
+        <span>${LabelDownloadInternetMetadata}</span>
+    </label>
+    <div class="fieldDescription checkboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
+</div>
+<div class="checkboxContainer checkboxContainer-withDescription chkSaveLocalContainer hide">
+    <label>
+        <input is="emby-checkbox" type="checkbox" id="chkSaveLocal" />
+        <span>${LabelSaveLocalMetadata}</span>
+    </label>
+    <div class="fieldDescription checkboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
+</div>
 <div class="checkboxContainer checkboxContainer-withDescription chkEnablePhotosContainer">
     <label>
         <input type="checkbox" is="emby-checkbox" class="chkEnablePhotos" checked />
@@ -8,10 +22,18 @@
 </div>
 <div class="checkboxContainer checkboxContainer-withDescription">
     <label>
-        <input type="checkbox" is="emby-checkbox" class="chkEnableRealtimeMonitor"/>
+        <input type="checkbox" is="emby-checkbox" class="chkEnableRealtimeMonitor" />
         <span>${LabelEnableRealtimeMonitor}</span>
     </label>
     <div class="fieldDescription checkboxFieldDescription">${LabelEnableRealtimeMonitorHelp}</div>
+</div>
+
+<div class="checkboxContainer checkboxContainer-withDescription hide chkDownloadImagesInAdvanceContainer">
+    <label>
+        <input is="emby-checkbox" type="checkbox" id="chkDownloadImagesInAdvance" />
+        <span>${OptionDownloadImagesInAdvance}</span>
+    </label>
+    <div class="fieldDescription checkboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
 </div>
 
 <div class="checkboxContainer checkboxContainer-withDescription fldExtractChapterImages hide">

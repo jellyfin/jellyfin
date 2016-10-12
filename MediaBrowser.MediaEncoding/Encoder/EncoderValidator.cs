@@ -26,6 +26,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
 
+        public bool ValidateVersion(string encoderAppPath)
+        {
+            string output = string.Empty;
+            try
+            {
+                output = GetProcessOutput(encoderAppPath, "-version");
+            }
+            catch
+            {
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                return false;
+            }
+
+            if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private List<string> GetDecoders(string encoderAppPath)
         {
             string output = string.Empty;

@@ -6,27 +6,12 @@
 
             <form class="metadataConfigurationForm">
 
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkEnableInternetProviders" />
-                        <span>${LabelDownloadInternetMetadata}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelDownloadInternetMetadataHelp}</div>
+                <div style="margin:1em 0;background: #e8e8e8;padding: 1em;">
+                    <h1 style="margin-top:.5em;">Some metadata settings have moved</h1>
+                    <p>You can now configure internet providers and saving of local metadata on a per-library basis.</p>
+                    <p>To do this, go to Library setup and click on a library to view the options.</p>
                 </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkSaveLocal" />
-                        <span>${LabelSaveLocalMetadata}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${LabelSaveLocalMetadataHelp}</div>
-                </div>
-                <div class="checkboxContainer checkboxContainer-withDescription">
-                    <label>
-                        <input is="emby-checkbox" type="checkbox" id="chkDownloadImagesInAdvance" />
-                        <span>${OptionDownloadImagesInAdvance}</span>
-                    </label>
-                    <div class="fieldDescription checkboxFieldDescription">${OptionDownloadImagesInAdvanceHelp}</div>
-                </div>
+                <br/>
                 <div class="selectContainer">
                     <select is="emby-select" id="selectLanguage" label="${LabelMetadataDownloadLanguage}" required="required"></select>
                 </div>
@@ -35,7 +20,7 @@
                 </div>
                 <br />
                 <div>
-                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button>
                 </div>
             </form>
         </div>

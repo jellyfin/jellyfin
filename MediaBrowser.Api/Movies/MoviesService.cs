@@ -156,17 +156,18 @@ namespace MediaBrowser.Api.Movies
                 itemTypes.Add(typeof(LiveTvProgram).Name);
             }
 
+            var dtoOptions = GetDtoOptions(request);
+
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 Limit = request.Limit,
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
                 SimilarTo = item,
-                EnableGroupByMetadataKey = true
+                EnableGroupByMetadataKey = true,
+                DtoOptions = dtoOptions
 
             }).ToList();
-
-            var dtoOptions = GetDtoOptions(request);
 
             var result = new QueryResult<BaseItemDto>
             {
@@ -198,7 +199,8 @@ namespace MediaBrowser.Api.Movies
                 Limit = 7,
                 ParentId = parentIdGuid,
                 Recursive = true,
-                IsPlayed = true
+                IsPlayed = true,
+                DtoOptions = dtoOptions
             };
 
             var recentlyPlayedMovies = _libraryManager.GetItemList(query).ToList();
@@ -221,7 +223,8 @@ namespace MediaBrowser.Api.Movies
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id.ToString("N")).ToArray(),
                 EnableGroupByMetadataKey = true,
                 ParentId = parentIdGuid,
-                Recursive = true
+                Recursive = true,
+                DtoOptions = dtoOptions
 
             }).ToList();
 
@@ -302,7 +305,8 @@ namespace MediaBrowser.Api.Movies
                     PersonTypes = new[] { PersonType.Director },
                     IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
-                    EnableGroupByMetadataKey = true
+                    EnableGroupByMetadataKey = true,
+                    DtoOptions = dtoOptions
 
                 }).DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .Take(itemLimit)
@@ -339,7 +343,8 @@ namespace MediaBrowser.Api.Movies
                     Limit = itemLimit + 2,
                     IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
-                    EnableGroupByMetadataKey = true
+                    EnableGroupByMetadataKey = true,
+                    DtoOptions = dtoOptions
 
                 }).DistinctBy(i => i.GetProviderId(MetadataProviders.Imdb) ?? Guid.NewGuid().ToString("N"))
                 .Take(itemLimit)
@@ -375,7 +380,8 @@ namespace MediaBrowser.Api.Movies
                     IncludeItemTypes = itemTypes.ToArray(),
                     IsMovie = true,
                     SimilarTo = item,
-                    EnableGroupByMetadataKey = true
+                    EnableGroupByMetadataKey = true,
+                    DtoOptions = dtoOptions
 
                 }).ToList();
 

@@ -10,16 +10,12 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasCriticRating, IHasProductionLocations, IHasBudget, IHasTaglines, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasCriticRating, IHasBudget, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
     {
-        public List<string> ProductionLocations { get; set; }
-
         public Trailer()
         {
             RemoteTrailers = new List<MediaUrl>();
-            Taglines = new List<string>();
             Keywords = new List<string>();
-            ProductionLocations = new List<string>();
             TrailerTypes = new List<TrailerType> { TrailerType.LocalTrailer };
         }
 
@@ -34,12 +30,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get { return TrailerTypes.Contains(TrailerType.LocalTrailer); }
         }
-
-        /// <summary>
-        /// Gets or sets the taglines.
-        /// </summary>
-        /// <value>The taglines.</value>
-        public List<string> Taglines { get; set; }
 
         /// <summary>
         /// Gets or sets the budget.
@@ -64,7 +54,7 @@ namespace MediaBrowser.Controller.Entities
 
             info.IsLocalTrailer = TrailerTypes.Contains(TrailerType.LocalTrailer);
 
-            if (!IsInMixedFolder && LocationType == LocationType.FileSystem)
+            if (!DetectIsInMixedFolder() && LocationType == LocationType.FileSystem)
             {
                 info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
             }
@@ -90,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!IsInMixedFolder)
+                    if (!DetectIsInMixedFolder())
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

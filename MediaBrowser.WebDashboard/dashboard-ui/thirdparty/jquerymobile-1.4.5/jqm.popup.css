@@ -1,8 +1,20 @@
-﻿.ui-popup.ui-body-a {
-    background: #f4f4f4;
+﻿.ui-popup-container {
+    z-index: 99999;
 }
-.ui-popup.ui-body-b {
-    background: #222;
+
+/* "page" containers - full-screen views, one should always be in view post-pageload */
+.ui-mobile [data-role=dialog] {
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    position: absolute;
+    border: 0;
+    background: #fff;
+}
+
+.ui-popup {
+    background: #fff;
 }
 .ui-popup-open .ui-header-fixed,
 .ui-popup-open .ui-footer-fixed {

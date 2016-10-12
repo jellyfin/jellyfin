@@ -6,7 +6,6 @@
 
                 <p>${AutoOrganizeHelp}</p>
 
-                <p>${AutoOrganizeTvHelp}</p>
                 <div>
                     <label class="checkboxContainer">
                         <input type="checkbox" is="emby-checkbox" id="chkEnableTvSorting" />
@@ -19,7 +18,7 @@
                             <input is="emby-input" id="txtWatchFolder" type="text" label="${LabelWatchFolder}" />
                             <div class="fieldDescription">${LabelWatchFolderHelp}</div>
                         </div>
-                        <button type="button" is="emby-button" id="btnSelectWatchFolder" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
+                        <button type="button" is="paper-icon-button-light" id="btnSelectWatchFolder" title="${ButtonSelectDirectory}" class="autoSize"><i class="md-icon">search</i></button>
                     </div>
                 </div>
                 <div class="inputContainer">
@@ -34,8 +33,6 @@
                     <input is="emby-input" id="txtSeasonZeroName" type="text" label="${LabelSeasonZeroFolderName}" required />
                     <div class="fieldDescription"></div>
                 </div>
-
-                <br />
 
                 <div is="emby-collapse" title="${HeaderEpisodeFilePattern}">
                     <div class="collapseContent">
@@ -157,7 +154,7 @@
                     <div class="fieldDescription checkboxFieldDescription">${LabelDeleteEmptyFoldersHelp}</div>
                 </div>
                 <div>
-                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button>
                 </div>
             </form>
 

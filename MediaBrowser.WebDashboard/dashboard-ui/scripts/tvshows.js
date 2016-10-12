@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder, appHost) {
 
     return function (view, params, tabContent) {
 
@@ -92,6 +92,8 @@
                 var html;
                 var viewStyle = self.getCurrentViewStyle();
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+
                 if (viewStyle == "Thumb") {
 
                     html = cardBuilder.getCardsHtml({
@@ -113,7 +115,8 @@
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
-                        showSeriesYear: true
+                        showSeriesYear: true,
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -141,9 +144,10 @@
                         shape: "portrait",
                         context: 'tv',
                         showTitle: true,
-                        showYear: true,
+                        showSeriesYear: true,
                         lazy: true,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis
                     });
                 }
                 else {

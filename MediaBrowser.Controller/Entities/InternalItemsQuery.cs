@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
+using System.Linq;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -101,6 +104,8 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsMovie { get; set; }
         public bool? IsSports { get; set; }
         public bool? IsKids { get; set; }
+        public bool? IsNews { get; set; }
+        public bool? IsSeries { get; set; }
 
         public int? MinPlayers { get; set; }
         public int? MaxPlayers { get; set; }
@@ -137,6 +142,7 @@ namespace MediaBrowser.Controller.Entities
         public DayOfWeek[] AirDays { get; set; }
         public SeriesStatus[] SeriesStatuses { get; set; }
         public string AlbumArtistStartsWithOrGreater { get; set; }
+        public string ExternalSeriesId { get; set; }
 
         public string[] AlbumNames { get; set; }
         public string[] ArtistNames { get; set; }
@@ -149,11 +155,53 @@ namespace MediaBrowser.Controller.Entities
         public Dictionary<string, string> ExcludeProviderIds { get; set; }
         public bool EnableGroupByMetadataKey { get; set; }
 
+        public List<Tuple<string, SortOrder>> OrderBy { get; set; }
+
+        public DateTime? MinDateCreated { get; set; }
+        public DateTime? MinDateLastSaved { get; set; }
+
+        public DtoOptions DtoOptions { get; set; }
+
+        public bool HasField(ItemFields name)
+        {
+            var fields = DtoOptions.Fields;
+
+            switch (name)
+            {
+                case ItemFields.ThemeSongIds:
+                case ItemFields.ThemeVideoIds:
+                case ItemFields.ProductionLocations:
+                case ItemFields.Keywords:
+                case ItemFields.Taglines:
+                case ItemFields.ShortOverview:
+                case ItemFields.CustomRating:
+                case ItemFields.DateCreated:
+                case ItemFields.SortName:
+                case ItemFields.Overview:
+                case ItemFields.OfficialRatingDescription:
+                case ItemFields.HomePageUrl:
+                case ItemFields.VoteCount:
+                case ItemFields.DisplayMediaType:
+                case ItemFields.ServiceName:
+                case ItemFields.Genres:
+                case ItemFields.Studios:
+                case ItemFields.Settings:
+                case ItemFields.OriginalTitle:
+                case ItemFields.Tags:
+                case ItemFields.DateLastMediaAdded:
+                case ItemFields.CriticRatingSummary:
+                    return fields.Count == 0 || fields.Contains(name);
+                default:
+                    return true;
+            }
+        }
+
         public InternalItemsQuery()
         {
             GroupByPresentationUniqueKey = true;
             EnableTotalRecordCount = true;
 
+            DtoOptions = new DtoOptions();
             AlbumNames = new string[] { };
             ArtistNames = new string[] { };
             ExcludeArtistIds = new string[] { };
@@ -191,6 +239,7 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = new TrailerType[] { };
             AirDays = new DayOfWeek[] { };
             SeriesStatuses = new SeriesStatus[] { };
+            OrderBy = new List<Tuple<string, SortOrder>>();
         }
 
         public InternalItemsQuery(User user)
