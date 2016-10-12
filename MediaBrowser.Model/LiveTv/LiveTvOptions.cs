@@ -60,6 +60,7 @@ namespace MediaBrowser.Model.LiveTv
         public TunerHostInfo()
         {
             IsEnabled = true;
+            AllowHWTranscoding = true;
         }
     }
 
