@@ -789,8 +789,6 @@ namespace MediaBrowser.Model.Dto
         /// <value>The home page URL.</value>
         public string HomePageUrl { get; set; }
 
-        public string PlaceOfBirth { get; set; }
-
         /// <summary>
         /// Gets or sets the budget.
         /// </summary>

@@ -1,4 +1,5 @@
 define(['cryptojs-md5'], function () {
+    'use strict';
 
     function loadImage(elem, url) {
 
@@ -20,7 +21,7 @@ define(['cryptojs-md5'], function () {
 
     function createDir(rootDirEntry, folders, callback, errorCallback) {
         // Throw out './' or '/' and move on to prevent something like '/foo/.//bar'.
-        if (folders[0] == '.' || folders[0] == '') {
+        if (folders[0] === '.' || folders[0] === '') {
             folders = folders.slice(1);
         }
         rootDirEntry.getDirectory(folders[0], { create: true }, function (dirEntry) {
@@ -140,12 +141,12 @@ define(['cryptojs-md5'], function () {
         // Try to strip off the domain to share the cache between local and remote connections
         var index = url.indexOf('://');
 
-        if (index != -1) {
+        if (index !== -1) {
             url = url.substring(index + 3);
 
             index = url.indexOf('/');
 
-            if (index != -1) {
+            if (index !== -1) {
                 url = url.substring(index + 1);
             }
 
@@ -163,12 +164,12 @@ define(['cryptojs-md5'], function () {
         xhr.responseType = "arraybuffer";
 
         xhr.onload = function (e) {
-            if (this.status == 200) {
+            if (this.status === 200) {
                 writeData(dir, filename, this.getResponseHeader('Content-Type'), this.response, callback, errorCallback);
             } else {
                 errorCallback();
             }
-        }
+        };
 
         xhr.send();
     }
@@ -200,7 +201,7 @@ define(['cryptojs-md5'], function () {
 
         return new Promise(function (resolve, reject) {
 
-            if (originalUrl.indexOf('tag=') != -1) {
+            if (originalUrl.indexOf('tag=') !== -1) {
                 originalUrl += "&accept=webp";
             }
 

@@ -98,6 +98,8 @@
 
                 var container = view.querySelector('#resumableItems');
 
+                var cardLayout = appHost.preferVisualCards;
+
                 cardBuilder.buildCards(result.Items, {
                     itemsContainer: container,
                     preferThumb: true,
@@ -106,10 +108,10 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    centerText: false,
+                    centerText: !cardLayout,
                     overlayPlayButton: true,
                     allowBottomPadding: allowBottomPadding,
-                    cardLayout: true
+                    cardLayout: cardLayout
                 });
             });
         }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Model.Querying;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {
@@ -36,6 +38,12 @@ namespace MediaBrowser.Server.Implementations.Playlists
         public override string CollectionType
         {
             get { return Model.Entities.CollectionType.Playlists; }
+        }
+
+        protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
+        {
+            query.Recursive = false;
+            return base.GetItemsInternal(query);
         }
     }
 

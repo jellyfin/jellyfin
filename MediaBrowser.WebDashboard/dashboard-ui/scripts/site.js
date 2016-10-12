@@ -1155,7 +1155,7 @@ var AppInfo = {};
 
         var paths = {
             velocity: bowerPath + "/velocity/velocity.min",
-            vibrant: bowerPath + "/vibrant/dist/vibrant.min",
+            vibrant: bowerPath + "/vibrant/dist/vibrant",
             ironCardList: 'components/ironcardlist/ironcardlist',
             scrollThreshold: 'components/scrollthreshold',
             playlisteditor: 'components/playlisteditor/playlisteditor',
@@ -1185,7 +1185,6 @@ var AppInfo = {};
             globalize: embyWebComponentsBowerPath + "/globalize",
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
-            imageLoader: embyWebComponentsBowerPath + "/images/imagehelper",
             serverNotifications: embyWebComponentsBowerPath + '/servernotifications',
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
@@ -1213,6 +1212,7 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        define("imageLoader", [embyWebComponentsBowerPath + "/images/imagehelper"], returnFirstDependency);
         define("syncJobList", ["components/syncjoblist/syncjoblist"], returnFirstDependency);
         define("appfooter", ["components/appfooter/appfooter"], returnFirstDependency);
         define("dockedtabs", ["components/dockedtabs/dockedtabs"], returnFirstDependency);

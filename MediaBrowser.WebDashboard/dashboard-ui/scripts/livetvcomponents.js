@@ -1,4 +1,4 @@
-﻿define(['datetime', 'cardBuilder', 'listView'], function (datetime, cardBuilder, listView) {
+﻿define(['datetime', 'cardBuilder', 'apphost'], function (datetime, cardBuilder, appHost) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -81,6 +81,9 @@
                 html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+            var cardLayout = appHost.preferVisualCards || supportsImageAnalysis;
+
             html += cardBuilder.getCardsHtml({
                 items: group.items,
                 shape: getBackdropShape(),
@@ -88,8 +91,9 @@
                 showAirTime: true,
                 showAirEndTime: true,
                 showChannelName: true,
-                cardLayout: true,
-                vibrant: true,
+                cardLayout: cardLayout,
+                centerText: !cardLayout,
+                vibrant: supportsImageAnalysis,
                 action: 'edit',
                 cardFooterAside: 'none',
                 preferThumb: true,

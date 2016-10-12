@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost) {
 
     function getRecordingGroupHtml(group) {
 
@@ -76,6 +76,9 @@
             recordingItems.classList.add('vertical-wrap');
         }
 
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+        var cardLayout = appHost.preferVisualCards || supportsImageAnalysis;
+
         recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
@@ -83,8 +86,9 @@
             showParentTitle: true,
             coverImage: true,
             lazy: true,
-            cardLayout: true,
-            vibrant: true,
+            cardLayout: cardLayout,
+            centerText: !cardLayout,
+            vibrant: supportsImageAnalysis,
             allowBottomPadding: !enableScrollX(),
             preferThumb: 'auto'
 
