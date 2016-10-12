@@ -166,7 +166,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                             var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
                             if (imageIndex > -1)
                             {
-                                programDict[schedule.programID].images = GetProgramLogo(ApiUrl, images[imageIndex]);
+                                var programEntry = programDict[schedule.programID];
+
+                                var data = images[imageIndex].data ?? new List<ScheduleDirect.ImageData>();
+                                data = data.OrderByDescending(GetSizeOrder).ToList();
+
+                                programEntry.primaryImage = GetProgramImage(ApiUrl, data, "Logo", true, 600);
+                                //programEntry.thumbImage = GetProgramImage(ApiUrl, data, "Iconic", false);
+                                //programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
+                                //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
+                                //    GetProgramImage(ApiUrl, data, "Banner-LO", false) ??
+                                //    GetProgramImage(ApiUrl, data, "Banner-LOT", false);
                             }
                         }
 
@@ -177,6 +187,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
 
             return programsInfo;
+        }
+
+        private int GetSizeOrder(ScheduleDirect.ImageData image)
+        {
+            if (!string.IsNullOrWhiteSpace(image.height))
+            {
+                int value;
+                if (int.TryParse(image.height, out value))
+                {
+                    return value;
+                }
+            }
+
+            return 0;
         }
 
         private readonly object _channelCacheLock = new object();
@@ -315,13 +339,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     channelNumber = channelNumber.TrimStart('0');
 
                     _logger.Debug("Found channel: " + channelNumber + " in Schedules Direct");
-                    if (root.stations != null)
+
+                    var schChannel = (root.stations ?? new List<ScheduleDirect.Station>()).FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                    if (schChannel != null)
                     {
-                        var schChannel = root.stations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
-                        if (schChannel != null)
+                        AddToChannelPairCache(listingsId, channelNumber, schChannel);
+                    }
+                    else
+                    {
+                        AddToChannelPairCache(listingsId, channelNumber, new ScheduleDirect.Station
                         {
-                            AddToChannelPairCache(listingsId, channelNumber, schChannel);
-                        }
+                            stationID = map.stationID
+                        });
                     }
                 }
                 _logger.Info("Added " + GetChannelPairCacheCount(listingsId) + " channels to the dictionary");
@@ -337,8 +366,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                             channel.ImageUrl = station.logo.URL;
                             channel.HasImage = true;
                         }
-                        string channelName = station.name;
-                        channel.Name = channelName;
+
+                        if (!string.IsNullOrWhiteSpace(station.name))
+                        {
+                            channel.Name = station.name;
+                        }
                     }
                     else
                     {
@@ -389,13 +421,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 episodeTitle = details.episodeTitle150;
             }
 
-            string imageUrl = null;
-
-            if (details.hasImageArtwork)
-            {
-                imageUrl = details.images;
-            }
-
             var showType = details.showType ?? string.Empty;
 
             var info = new ProgramInfo
@@ -411,7 +436,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Audio = audioType,
                 IsRepeat = repeat,
                 IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
-                ImageUrl = imageUrl,
+                ImageUrl = details.primaryImage,
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
                 IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
@@ -460,7 +485,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(details.originalAirDate))
+            if (!string.IsNullOrWhiteSpace(details.originalAirDate) && (!info.IsSeries || info.IsRepeat))
             {
                 info.OriginalAirDate = DateTime.Parse(details.originalAirDate);
             }
@@ -490,36 +515,69 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return date;
         }
 
-        private string GetProgramLogo(string apiUrl, ScheduleDirect.ShowImages images)
+        private string GetProgramImage(string apiUrl, List<ScheduleDirect.ImageData> images, string category, bool returnDefaultImage, int desiredWidth)
         {
             string url = null;
-            if (images.data != null)
-            {
-                var smallImages = images.data.Where(i => i.size == "Sm").ToList();
-                if (smallImages.Any())
-                {
-                    images.data = smallImages;
-                }
-                var logoIndex = images.data.FindIndex(i => i.category == "Logo");
-                if (logoIndex == -1)
-                {
-                    logoIndex = 0;
-                }
-                var uri = images.data[logoIndex].uri;
 
-                if (!string.IsNullOrWhiteSpace(uri))
+            var matches = images
+                .Where(i => string.Equals(i.category, category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (matches.Count == 0)
+            {
+                if (!returnDefaultImage)
                 {
-                    if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+                    return null;
+                }
+                matches = images;
+            }
+
+            var match = matches.FirstOrDefault(i =>
+            {
+                if (!string.IsNullOrWhiteSpace(i.width))
+                {
+                    int value;
+                    if (int.TryParse(i.width, out value))
                     {
-                        url = uri;
-                    }
-                    else
-                    {
-                        url = apiUrl + "/image/" + uri;
+                        return value <= desiredWidth;
                     }
                 }
-                //_logger.Debug("URL for image is : " + url);
+
+                return false;
+            });
+
+            if (match == null)
+            {
+                // Get the second lowest quality image, when possible
+                if (matches.Count > 1)
+                {
+                    match = matches[matches.Count - 2];
+                }
+                else
+                {
+                    match = matches.FirstOrDefault();
+                }
             }
+
+            if (match == null)
+            {
+                return null;
+            }
+
+            var uri = match.uri;
+
+            if (!string.IsNullOrWhiteSpace(uri))
+            {
+                if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    url = uri;
+                }
+                else
+                {
+                    url = apiUrl + "/image/" + uri;
+                }
+            }
+            //_logger.Debug("URL for image is : " + url);
             return url;
         }
 
@@ -788,7 +846,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Url = ApiUrl + "/lineups/" + info.ListingsId,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken,
-                LogErrorResponseBody = true
+                LogErrorResponseBody = true,
+                BufferContent = false
             };
 
             httpOptions.RequestHeaders["token"] = token;
@@ -943,7 +1002,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     var name = channelNumber;
                     var station = GetStation(listingsId, channelNumber, null);
 
-                    if (station != null)
+                    if (station != null && !string.IsNullOrWhiteSpace(station.name))
                     {
                         name = station.name;
                     }
@@ -1209,7 +1268,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 public List<Crew> crew { get; set; }
                 public string showType { get; set; }
                 public bool hasImageArtwork { get; set; }
-                public string images { get; set; }
+                public string primaryImage { get; set; }
+                public string thumbImage { get; set; }
+                public string bannerImage { get; set; }
                 public string imageID { get; set; }
                 public string md5 { get; set; }
                 public List<string> contentAdvisory { get; set; }
