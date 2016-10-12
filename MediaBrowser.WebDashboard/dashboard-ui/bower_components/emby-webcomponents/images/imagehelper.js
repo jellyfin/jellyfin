@@ -176,7 +176,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         url = url.split('?')[0];
 
-        var cacheKey = 'vibrant8';
+        var cacheKey = 'vibrant11';
         return cacheKey + url;
     }
 
@@ -200,24 +200,24 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         if (swatch) {
             value += swatch.getHex() + '|' + swatch.getBodyTextColor();
         }
-        swatch = swatches.DarkMuted;
-        if (swatch) {
-            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        } else {
-            value += '||';
-        }
-        swatch = swatches.Vibrant;
-        if (swatch) {
-            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        } else {
-            value += '||';
-        }
-        swatch = swatches.Muted;
-        if (swatch) {
-            value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        } else {
-            value += '||';
-        }
+        //swatch = swatches.DarkMuted;
+        //if (swatch) {
+        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        //} else {
+        //    value += '||';
+        //}
+        //swatch = swatches.Vibrant;
+        //if (swatch) {
+        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        //} else {
+        //    value += '||';
+        //}
+        //swatch = swatches.Muted;
+        //if (swatch) {
+        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
+        //} else {
+        //    value += '||';
+        //}
 
         appSettings.set(getSettingsKey(url), value);
 
