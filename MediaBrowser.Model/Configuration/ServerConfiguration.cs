@@ -73,6 +73,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The metadata path.</value>
         public string MetadataPath { get; set; }
+        public string MetadataNetworkPath { get; set; }
 
         public string LastVersion { get; set; }
 
@@ -167,6 +168,8 @@ namespace MediaBrowser.Model.Configuration
         public MetadataOptions[] MetadataOptions { get; set; }
 
         public bool EnableAutomaticRestart { get; set; }
+        public bool SkipDeserializationForBasicTypes { get; set; }
+        public bool SkipDeserializationForPrograms { get; set; }
 
         public PathSubstitution[] PathSubstitutions { get; set; }
 
@@ -183,8 +186,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int RemoteClientBitrateLimit { get; set; }
 
-        public AutoOnOff EnableLibraryMonitor { get; set; }
-
         public int SharingExpirationDays { get; set; }
 
         public string[] Migrations { get; set; }
@@ -192,8 +193,6 @@ namespace MediaBrowser.Model.Configuration
         public int MigrationVersion { get; set; }
         public int SchemaVersion { get; set; }
         public int SqliteCacheSize { get; set; }
-
-        public bool DownloadImagesInAdvance { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
@@ -206,6 +205,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] CodecsUsed { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
+        public bool EnableSimpleArtistDetection { get; set; }
 
         public int ImageExtractionTimeoutMs { get; set; }
         /// <summary>
@@ -244,7 +244,6 @@ namespace MediaBrowser.Model.Configuration
             // 5 minutes
             MinResumeDurationSeconds = 300;
 
-            EnableLibraryMonitor = AutoOnOff.Auto;
             LibraryMonitorDelay = 60;
 
             EnableInternetProviders = true;
@@ -436,7 +435,8 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Disc
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
                 },
 
                 new MetadataOptions(1, 1280)
@@ -474,7 +474,8 @@ namespace MediaBrowser.Model.Configuration
                             Limit = 0,
                             Type = ImageType.Logo
                         }
-                    }
+                    },
+                    DisabledMetadataFetchers = new []{ "TheAudioDB" }
                 },
 
                 new MetadataOptions(1, 1280)

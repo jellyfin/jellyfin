@@ -72,13 +72,6 @@ namespace MediaBrowser.Providers.MediaInfo
             CancellationToken cancellationToken)
             where T : Video
         {
-            if (item.IsArchive)
-            {
-                var ext = Path.GetExtension(item.Path) ?? string.Empty;
-                item.Container = ext.TrimStart('.');
-                return ItemUpdateType.MetadataImport;
-            }
-
             var isoMount = await MountIsoIfNeeded(item, cancellationToken).ConfigureAwait(false);
 
             BlurayDiscInfo blurayDiscInfo = null;
@@ -238,22 +231,6 @@ namespace MediaBrowser.Providers.MediaInfo
             if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh ||
                 options.MetadataRefreshMode == MetadataRefreshMode.Default)
             {
-                var chapterOptions = _chapterManager.GetConfiguration();
-
-                try
-                {
-                    var remoteChapters = await DownloadChapters(video, chapters, chapterOptions, cancellationToken).ConfigureAwait(false);
-
-                    if (remoteChapters.Count > 0)
-                    {
-                        chapters = remoteChapters;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error downloading chapters", ex);
-                }
-
                 if (chapters.Count == 0 && mediaStreams.Any(i => i.Type == MediaStreamType.Video))
                 {
                     AddDummyChapters(video, chapters);
@@ -262,8 +239,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 NormalizeChapterNames(chapters);
 
                 var libraryOptions = _libraryManager.GetLibraryOptions(video);
-                var extractDuringScan = chapterOptions.ExtractDuringLibraryScan;
-                if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
+                var extractDuringScan = false;
+                if (libraryOptions != null)
                 {
                     extractDuringScan = libraryOptions.ExtractChapterImagesDuringLibraryScan;
                 }
@@ -559,52 +536,6 @@ namespace MediaBrowser.Providers.MediaInfo
             video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).OrderBy(i => i).ToList();
 
             currentStreams.AddRange(externalSubtitleStreams);
-        }
-
-        private async Task<List<ChapterInfo>> DownloadChapters(Video video, List<ChapterInfo> currentChapters, ChapterOptions options, CancellationToken cancellationToken)
-        {
-            if ((options.DownloadEpisodeChapters &&
-                 video is Episode) ||
-                (options.DownloadMovieChapters &&
-                 video is Movie))
-            {
-                var results = await _chapterManager.Search(video, cancellationToken).ConfigureAwait(false);
-
-                var result = results.FirstOrDefault();
-
-                if (result != null)
-                {
-                    var chapters = await _chapterManager.GetChapters(result.Id, cancellationToken).ConfigureAwait(false);
-
-                    var chapterInfos = chapters.Chapters.Select(i => new ChapterInfo
-                    {
-                        Name = i.Name,
-                        StartPositionTicks = i.StartPositionTicks
-
-                    }).ToList();
-
-                    if (chapterInfos.All(i => i.StartPositionTicks == 0))
-                    {
-                        if (currentChapters.Count >= chapterInfos.Count)
-                        {
-                            var index = 0;
-                            foreach (var info in chapterInfos)
-                            {
-                                info.StartPositionTicks = currentChapters[index].StartPositionTicks;
-                                index++;
-                            }
-                        }
-                        else
-                        {
-                            chapterInfos.Clear();
-                        }
-                    }
-
-                    return chapterInfos;
-                }
-            }
-
-            return new List<ChapterInfo>();
         }
 
         /// <summary>

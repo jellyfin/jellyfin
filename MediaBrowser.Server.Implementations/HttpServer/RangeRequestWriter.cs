@@ -191,15 +191,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-            catch (IOException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in range request writer", ex);
-                throw;
-            }
             finally
             {
                 if (OnComplete != null)
@@ -250,15 +241,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                         await CopyToInternalAsync(source, responseStream, RangeLength).ConfigureAwait(false);
                     }
                 }
-            }
-            catch (IOException ex)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error in range request writer", ex);
-                throw;
             }
             finally
             {

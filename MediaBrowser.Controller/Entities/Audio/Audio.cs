@@ -23,8 +23,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
         IHasMediaSources,
-        IThemeMedia,
-        IArchivable
+        IThemeMedia
     {
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
@@ -61,9 +60,18 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
-            get { return LocationType == LocationType.FileSystem && RunTimeTicks.HasValue; }
+            get { return true; }
         }
 
         [IgnoreDataMember]
@@ -81,21 +89,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             get
             {
                 return AlbumEntity;
-            }
-        }
-
-        [IgnoreDataMember]
-        public bool IsArchive
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Path))
-                {
-                    return false;
-                }
-                var ext = System.IO.Path.GetExtension(Path) ?? string.Empty;
-
-                return new[] { ".zip", ".rar", ".7z" }.Contains(ext, StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -262,7 +255,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
                 MediaStreams = MediaSourceManager.GetMediaStreams(i.Id).ToList(),
                 Name = i.Name,
-                Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
+                Path = enablePathSubstituion ? GetMappedPath(i, i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,
                 Container = i.Container,
                 Size = i.Size

@@ -162,7 +162,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var audio = item as Audio;
 
-            return item.LocationType == LocationType.FileSystem && audio != null && !audio.IsArchive;
+            return item.LocationType == LocationType.FileSystem && audio != null;
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -32,18 +33,46 @@ namespace MediaBrowser.ServerApplication
         private static ILogger _logger;
 
         private static bool _isRunningAsService = false;
+        private static bool _canRestartService = false;
         private static bool _appHostDisposed;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetDllDirectory(string lpPathName);
 
+        public static bool TryGetLocalFromUncDirectory(string local, out string unc)
+        {
+            if ((local == null) || (local == ""))
+            {
+                unc = "";
+                throw new ArgumentNullException("local");
+            }
+
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_share WHERE path ='" + local.Replace("\\", "\\\\") + "'");
+            ManagementObjectCollection coll = searcher.Get();
+            if (coll.Count == 1)
+            {
+                foreach (ManagementObject share in searcher.Get())
+                {
+                    unc = share["Name"] as String;
+                    unc = "\\\\" + SystemInformation.ComputerName + "\\" + unc;
+                    return true;
+                }
+            }
+            unc = "";
+            return false;
+        }
         /// <summary>
-        /// Defines the entry point of the application.
-        /// </summary>
+         /// Defines the entry point of the application.
+         /// </summary>
         public static void Main()
         {
             var options = new StartupOptions();
             _isRunningAsService = options.ContainsOption("-service");
+
+            if (_isRunningAsService)
+            {
+                _canRestartService = CanRestartWindowsService();
+            }
 
             var currentProcess = Process.GetCurrentProcess();
 
@@ -238,7 +267,14 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                return !_isRunningAsService;
+                if (_isRunningAsService)
+                {
+                    return _canRestartService;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
@@ -250,7 +286,14 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                return !_isRunningAsService;
+                if (_isRunningAsService)
+                {
+                    return _canRestartService;
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
@@ -591,7 +634,11 @@ namespace MediaBrowser.ServerApplication
         {
             DisposeAppHost();
 
-            if (!_isRunningAsService)
+            if (_isRunningAsService)
+            {
+                RestartWindowsService();
+            }
+            else
             {
                 //_logger.Info("Hiding server notify icon");
                 //_serverNotifyIcon.Visible = false;
@@ -643,6 +690,47 @@ namespace MediaBrowser.ServerApplication
             if (service.Status == ServiceControllerStatus.Running)
             {
                 service.Stop();
+            }
+        }
+
+        private static void RestartWindowsService()
+        {
+            _logger.Info("Restarting background service");
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false,
+                Arguments = String.Format("/c sc stop {0} & sc start {0} & sc start {0}", BackgroundService.GetExistingServiceName())
+            };
+            Process.Start(startInfo);
+        }
+
+        private static bool CanRestartWindowsService()
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                Verb = "runas",
+                ErrorDialog = false,
+                Arguments = String.Format("/c sc query {0}", BackgroundService.GetExistingServiceName())
+            };
+            using (var process = Process.Start(startInfo))
+            {
+                process.WaitForExit();
+                if (process.ExitCode == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

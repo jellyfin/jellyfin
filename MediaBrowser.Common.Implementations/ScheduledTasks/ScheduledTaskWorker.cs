@@ -390,12 +390,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             try
             {
-                var localTask = ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress);
-
                 if (options != null && options.MaxRuntimeMs.HasValue)
                 {
                     CurrentCancellationTokenSource.CancelAfter(options.MaxRuntimeMs.Value);
                 }
+
+                var localTask = ScheduledTask.Execute(CurrentCancellationTokenSource.Token, progress);
 
                 await localTask.ConfigureAwait(false);
 

@@ -68,8 +68,6 @@ namespace MediaBrowser.Api.Playback.Hls
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
-        // TODO: Deprecate with new iOS app
-
         public string PlaylistId { get; set; }
 
         /// <summary>
@@ -113,7 +111,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, file);
 
-            var normalizedPlaylistId = request.PlaylistId.Replace("-low", string.Empty);
+            var normalizedPlaylistId = request.PlaylistId;
 
             var playlistPath = Directory.EnumerateFiles(_config.ApplicationPaths.TranscodingTempPath, "*")
                 .FirstOrDefault(i => string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase) && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);

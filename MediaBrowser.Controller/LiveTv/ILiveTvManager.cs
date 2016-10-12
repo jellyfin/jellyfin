@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -37,7 +38,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{SeriesTimerInfoDto}.</returns>
         Task<SeriesTimerInfoDto> GetNewTimerDefaults(string programId, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Deletes the recording.
         /// </summary>
@@ -51,7 +52,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="recording">The recording.</param>
         /// <returns>Task.</returns>
         Task DeleteRecording(BaseItem recording);
-        
+
         /// <summary>
         /// Cancels the timer.
         /// </summary>
@@ -83,7 +84,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
         Task<BaseItemDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
-        
+
         /// <summary>
         /// Gets the timer.
         /// </summary>
@@ -125,14 +126,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{SeriesTimerInfoDto}}.</returns>
         Task<QueryResult<SeriesTimerInfoDto>> GetSeriesTimers(SeriesTimerQuery query, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the channel.
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>Channel.</returns>
         LiveTvChannel GetInternalChannel(string id);
-        
+
         /// <summary>
         /// Gets the recording.
         /// </summary>
@@ -156,8 +157,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{StreamResponseInfo}.</returns>
-        Task<MediaSourceInfo> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken);
-        
+        Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken);
+
         /// <summary>
         /// Gets the program.
         /// </summary>
@@ -220,9 +221,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// Closes the live stream.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseLiveStream(string id, CancellationToken cancellationToken);
+        Task CloseLiveStream(string id);
 
         /// <summary>
         /// Gets the guide information.
@@ -242,10 +242,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recommended programs internal.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;QueryResult&lt;LiveTvProgram&gt;&gt;.</returns>
-        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv information.
@@ -303,18 +301,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the recording media sources.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;IEnumerable&lt;MediaSourceInfo&gt;&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(string id, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(IHasMediaSources item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel media sources.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;IEnumerable&lt;MediaSourceInfo&gt;&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(string id, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(IHasMediaSources item, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the information to recording dto.
@@ -331,8 +323,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="fields">The fields.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        Task AddInfoToProgramDto(List<Tuple<BaseItem,BaseItemDto>> programs, List<ItemFields> fields, User user = null);
-      
+        Task AddInfoToProgramDto(List<Tuple<BaseItem, BaseItemDto>> programs, List<ItemFields> fields, User user = null);
+
         /// <summary>
         /// Saves the tuner host.
         /// </summary>
@@ -395,7 +387,7 @@ namespace MediaBrowser.Controller.LiveTv
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
-        List<IListingsProvider> ListingProviders { get;}
+        List<IListingsProvider> ListingProviders { get; }
 
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;

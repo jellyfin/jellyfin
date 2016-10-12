@@ -46,7 +46,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The name.</value>
         [ApiMember(Name = "PackageType", Description = "Optional package type filter (System/UserInstalled)", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public PackageType? PackageType { get; set; }
+        public string PackageType { get; set; }
 
         [ApiMember(Name = "TargetSystems", Description = "Optional. Filter by target system type. Allows multiple, comma delimited.", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET", AllowMultiple = true)]
         public string TargetSystems { get; set; }
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The name.</value>
         [ApiMember(Name = "PackageType", Description = "Package type filter (System/UserInstalled)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public PackageType PackageType { get; set; }
+        public string PackageType { get; set; }
     }
 
     /// <summary>
@@ -149,12 +149,12 @@ namespace MediaBrowser.Api
         {
             var result = new List<PackageVersionInfo>();
 
-            if (request.PackageType == PackageType.UserInstalled || request.PackageType == PackageType.All)
+            if (string.Equals(request.PackageType, "UserInstalled", StringComparison.OrdinalIgnoreCase) || string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
             {
                 result.AddRange(_installationManager.GetAvailablePluginUpdates(_appHost.ApplicationVersion, false, CancellationToken.None).Result.ToList());
             }
 
-            else if (request.PackageType == PackageType.System || request.PackageType == PackageType.All)
+            else if (string.Equals(request.PackageType, "System", StringComparison.OrdinalIgnoreCase) || string.Equals(request.PackageType, "All", StringComparison.OrdinalIgnoreCase))
             {
                 var updateCheckResult = _appHost.CheckForApplicationUpdate(CancellationToken.None, new Progress<double>()).Result;
 

@@ -19,6 +19,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Extensions;
@@ -45,16 +46,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         public HttpListenerHost(IApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, params Assembly[] assembliesWithServices)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamProvider memoryStreamProvider, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
+            _memoryStreamProvider = memoryStreamProvider;
             _config = config;
 
             _logger = logManager.GetLogger("HttpServer");
@@ -88,14 +91,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             HostConfig.Instance.DebugMode = false;
 
             HostConfig.Instance.LogFactory = LogManager.LogFactory;
+            HostConfig.Instance.AllowJsonpRequests = false;
 
             // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
             // Custom format allows images
-            HostConfig.Instance.EnableFeatures = Feature.Csv | Feature.Html | Feature.Json | Feature.Jsv | Feature.Metadata | Feature.Xml | Feature.CustomFormat;
+            HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.Xml | Feature.CustomFormat;
 
             container.Adapter = _containerAdapter;
 
-            Plugins.Add(new SwaggerFeature());
+            Plugins.RemoveAll(x => x is NativeTypesFeature);
+            //Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization"));
 
             //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
@@ -179,7 +184,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            return new WebSocketSharpListener(_logger, CertificatePath);
+            return new WebSocketSharpListener(_logger, CertificatePath, _memoryStreamProvider);
         }
 
         private void OnWebSocketConnecting(WebSocketConnectingEventArgs args)
@@ -542,8 +547,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
-
-            throw new NotImplementedException("Cannot execute handler: " + handler + " at PathInfo: " + httpReq.PathInfo);
+            else
+            {
+                httpRes.Close();
+            }
         }
 
         /// <summary>

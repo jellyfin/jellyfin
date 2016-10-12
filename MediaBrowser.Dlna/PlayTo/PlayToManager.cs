@@ -12,7 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -61,16 +63,17 @@ namespace MediaBrowser.Dlna.PlayTo
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
         }
 
-        async void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
+        async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            var info = e.Argument;
+
             string usn;
-            if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
+            if (!info.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
             string nt;
-            if (!e.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
+            if (!info.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
 
-            string location;
-            if (!e.Headers.TryGetValue("Location", out location)) location = string.Empty;
+            string location = info.Location.ToString();
 
             // It has to report that it's a media renderer
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
@@ -100,7 +103,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     }
                 }
 
-                var uri = new Uri(location);
+                var uri = info.Location;
                 _logger.Debug("Attempting to create PlayToController from location {0}", location);
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
@@ -121,7 +124,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    var serverAddress = GetServerAddress(e.LocalEndPoint.Address);
+                    var serverAddress = await GetServerAddress(info.LocalEndPoint == null ? null : info.LocalEndPoint.Address).ConfigureAwait(false);
                     string accessToken = null;
 
                     sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
@@ -173,9 +176,14 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private string GetServerAddress(IPAddress localIp)
+        private Task<string> GetServerAddress(IPAddress localIp)
         {
-            return _appHost.GetLocalApiUrl(localIp);
+            if (localIp == null)
+            {
+                return _appHost.GetLocalApiUrl();
+            }
+
+            return Task.FromResult(_appHost.GetLocalApiUrl(localIp));
         }
 
         public void Dispose()

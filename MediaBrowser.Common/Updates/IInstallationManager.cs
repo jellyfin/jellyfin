@@ -51,7 +51,7 @@ namespace MediaBrowser.Common.Updates
         /// <returns>Task{List{PackageInfo}}.</returns>
         Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
             bool withRegistration = true,
-                                                                                  PackageType? packageType = null,
+                                                                                  string packageType = null,
                                                                                   Version applicationVersion = null);
 
         /// <summary>

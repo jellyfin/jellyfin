@@ -113,6 +113,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += GetGraphicalSubtitleParam(state, codec);
             }
 
+            args += " -flags -global_header";
+
             return args;
         }
 

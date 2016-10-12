@@ -38,13 +38,6 @@ namespace MediaBrowser.Providers.MediaInfo
         public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
             where T : Audio
         {
-            if (item.IsArchive)
-            {
-                var ext = Path.GetExtension(item.Path) ?? string.Empty;
-                item.Container = ext.TrimStart('.');
-                return ItemUpdateType.MetadataImport;
-            }
-
             var result = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();

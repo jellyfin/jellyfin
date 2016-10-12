@@ -14,6 +14,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Providers.Movies
 {
@@ -125,11 +126,7 @@ namespace MediaBrowser.Providers.Movies
 
             movie.Name = movieData.GetTitle() ?? movie.Name;
 
-            var hasOriginalTitle = movie as IHasOriginalTitle;
-            if (hasOriginalTitle != null)
-            {
-                hasOriginalTitle.OriginalTitle = movieData.GetOriginalTitle();
-            }
+            movie.OriginalTitle = movieData.GetOriginalTitle();
 
             // Bug in Mono: WebUtility.HtmlDecode should return null if the string is null but in Mono it generate an System.ArgumentNullException.
             movie.Overview = movieData.overview != null ? WebUtility.HtmlDecode(movieData.overview) : null;
@@ -146,24 +143,15 @@ namespace MediaBrowser.Providers.Movies
 
             if (!string.IsNullOrEmpty(movieData.tagline))
             {
-                var hasTagline = movie as IHasTaglines;
-                if (hasTagline != null)
-                {
-                    hasTagline.Taglines.Clear();
-                    hasTagline.AddTagline(movieData.tagline);
-                }
+                movie.Tagline = movieData.tagline;
             }
 
             if (movieData.production_countries != null)
             {
-                var hasProductionLocations = movie as IHasProductionLocations;
-                if (hasProductionLocations != null)
-                {
-                    hasProductionLocations.ProductionLocations = movieData
-                        .production_countries
-                        .Select(i => i.name)
-                        .ToList();
-                }
+                movie.ProductionLocations = movieData
+                    .production_countries
+                    .Select(i => i.name)
+                    .ToList();
             }
 
             movie.SetProviderId(MetadataProviders.Tmdb, movieData.id.ToString(_usCulture));
@@ -197,13 +185,17 @@ namespace MediaBrowser.Providers.Movies
             {
                 var releases = movieData.releases.countries.Where(i => !string.IsNullOrWhiteSpace(i.certification)).ToList();
 
-                var ourRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase));
-                var usRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase));
+                var ourRelease = releases.FirstOrDefault(c => string.Equals(c.iso_3166_1, preferredCountryCode, StringComparison.OrdinalIgnoreCase));
+                var usRelease = releases.FirstOrDefault(c => string.Equals(c.iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
 
                 if (ourRelease != null)
                 {
                     var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
-                    movie.OfficialRating = ratingPrefix + ourRelease.certification;
+                    var newRating = ratingPrefix + ourRelease.certification;
+
+                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
+
+                    movie.OfficialRating = newRating;
                 }
                 else if (usRelease != null)
                 {

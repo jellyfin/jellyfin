@@ -201,7 +201,8 @@ namespace OpenSubtitlesHandler
                 // Response parsing will fail with this enabled
                 EnableHttpCompression = false,
 
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = false
             };
 
             if (string.IsNullOrEmpty(options.UserAgent))

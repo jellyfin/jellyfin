@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using ServiceStack;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -17,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private ILogger Logger { get; set; }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
+
         /// <summary>
         /// Gets or sets the source stream.
         /// </summary>
@@ -39,6 +40,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
+        private readonly byte[] _bytes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
@@ -73,6 +75,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public StreamWriter(byte[] source, string contentType, ILogger logger)
             : this(new MemoryStream(source), contentType, logger)
         {
+            if (string.IsNullOrEmpty(contentType))
+            {
+                throw new ArgumentNullException("contentType");
+            }
+
+            _bytes = source;
+            Logger = logger;
+
+            Options["Content-Type"] = contentType;
+
+            Options["Content-Length"] = source.Length.ToString(UsCulture);
         }
 
         private const int BufferSize = 81920;
@@ -85,9 +98,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             try
             {
-                using (var src = SourceStream)
+                if (_bytes != null)
                 {
-                    src.CopyTo(responseStream, BufferSize);
+                    responseStream.Write(_bytes, 0, _bytes.Length);
+                }
+                else
+                {
+                    using (var src = SourceStream)
+                    {
+                        src.CopyTo(responseStream, BufferSize);
+                    }
                 }
             }
             catch (Exception ex)
@@ -114,9 +134,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             try
             {
-                using (var src = SourceStream)
+                if (_bytes != null)
                 {
-                    await src.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                    await responseStream.WriteAsync(_bytes, 0, _bytes.Length);
+                }
+                else
+                {
+                    using (var src = SourceStream)
+                    {
+                        await src.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                    }
                 }
             }
             catch (Exception ex)

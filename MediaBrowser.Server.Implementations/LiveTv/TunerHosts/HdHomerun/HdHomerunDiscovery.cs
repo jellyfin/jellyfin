@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
@@ -39,13 +40,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
         }
 
-        void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
+        void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
             string server = null;
-            if (e.Headers.TryGetValue("SERVER", out server) && server.IndexOf("HDHomeRun", StringComparison.OrdinalIgnoreCase) != -1)
+            var info = e.Argument;
+
+            if (info.Headers.TryGetValue("SERVER", out server) && server.IndexOf("HDHomeRun", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 string location;
-                if (e.Headers.TryGetValue("Location", out location))
+                if (info.Headers.TryGetValue("Location", out location))
                 {
                     //_logger.Debug("HdHomerun found at {0}", location);
 
@@ -85,7 +88,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (var stream = await _httpClient.Get(new HttpRequestOptions
                 {
                     Url = string.Format("{0}/discover.json", url),
-                    CancellationToken = CancellationToken.None
+                    CancellationToken = CancellationToken.None,
+                    BufferContent = false
                 }))
                 {
                     var response = _json.DeserializeFromStream<HdHomerunHost.DiscoverResponse>(stream);
