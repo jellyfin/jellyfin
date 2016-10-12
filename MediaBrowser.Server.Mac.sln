@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "Ope
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Nat", "Mono.Nat\Mono.Nat.csproj", "{D7453B88-2266-4805-B39B-2B5A2A33E1BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -268,6 +270,20 @@ Global
 		{C97B98FA-00D4-4880-88B8-C76017A418AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C97B98FA-00D4-4880-88B8-C76017A418AB}.Release|x86.ActiveCfg = Release|Any CPU
 		{C97B98FA-00D4-4880-88B8-C76017A418AB}.Release|x86.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|Any CPU.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|x86.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|x86.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|x86.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
