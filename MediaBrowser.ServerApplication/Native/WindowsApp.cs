@@ -9,7 +9,6 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using CommonIO;
-using MediaBrowser.Controller.Power;
 using MediaBrowser.Model.System;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
@@ -148,11 +147,6 @@ namespace MediaBrowser.ServerApplication.Native
             MainStartup.Invoke(Standby.AllowSleep);
         }
 
-        public IPowerManagement GetPowerManagement()
-        {
-            return new WindowsPowerManagement(_logger);
-        }
-
         public FFMpegInstallInfo GetFfmpegInstallInfo()
         {
             var info = new FFMpegInstallInfo();
@@ -210,16 +204,6 @@ namespace MediaBrowser.ServerApplication.Native
             LoopUtil.Run(appName);
         }
 
-        private bool Confirm()
-        {
-            if (MainStartup._splash == null)
-            {
-                return false;
-            }
-
-            return MessageBox.Show(MainStartup._splash, "Emby has detected that a rule has been added to Windows Firewall that may prevent your other devices from accessing Emby Server. Click OK to remove this rule, or cancel to proceed anyway.", "Windows Firewall", MessageBoxButtons.OKCancel) == DialogResult.OK;
-        }
-
         public bool PortsRequireAuthorization(string applicationPath)
         {
             var appNameSrch = Path.GetFileName(applicationPath);
@@ -248,7 +232,6 @@ namespace MediaBrowser.ServerApplication.Native
                     if (data.IndexOf("Block", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         _logger.Info("Found potential windows firewall rule blocking Emby Server: " + data);
-                        return Confirm();
                     }
 
                     //var parts = data.Split('\n');

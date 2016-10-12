@@ -34,7 +34,8 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 UserAgent = "Emby",
                 RequestContentType = "text/xml; charset=\"utf-8\"",
                 LogErrorResponseBody = true,
-                Url = request.ContentDirectoryUrl
+                Url = request.ContentDirectoryUrl,
+                BufferContent = false
             };
 
             options.RequestHeaders["SOAPACTION"] = "urn:schemas-upnp-org:service:ContentDirectory:1#Browse";

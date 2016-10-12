@@ -99,8 +99,10 @@ namespace MediaBrowser.Api.UserLibrary
         private async Task<ItemsResult> GetItems(GetItems request)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
-        
-            var result = await GetQueryResult(request, user).ConfigureAwait(false);
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = await GetQueryResult(request, dtoOptions, user).ConfigureAwait(false);
 
             if (result == null)
             {
@@ -111,8 +113,6 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 throw new InvalidOperationException("GetItemsToSerialize result.Items returned null");
             }
-
-            var dtoOptions = GetDtoOptions(request);
 
             var dtoList = await _dtoService.GetBaseItemDtos(result.Items, dtoOptions, user).ConfigureAwait(false);
 
@@ -131,22 +131,29 @@ namespace MediaBrowser.Api.UserLibrary
         /// <summary>
         /// Gets the items to serialize.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, User user)
+        private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
-                user == null ? _libraryManager.RootFolder : user.RootFolder :
+                null :
                 _libraryManager.GetItemById(request.ParentId);
 
             if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
             {
-                //item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+                if (item == null || user != null)
+                {
+                    item = _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, "PlaylistsFolder", StringComparison.OrdinalIgnoreCase));
+                }
             }
             else if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
             {
                 item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+            }
+
+            if (item == null)
+            {
+                item = string.IsNullOrEmpty(request.ParentId) ?
+                    user == null ? _libraryManager.RootFolder : user.RootFolder :
+                    _libraryManager.GetItemById(request.ParentId);
             }
 
             // Default list type = children
@@ -159,14 +166,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             if (request.Recursive || !string.IsNullOrEmpty(request.Ids) || user == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
             }
 
             var userRoot = item as UserRootFolder;
 
             if (userRoot == null)
             {
-                return await folder.GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                return await folder.GetItems(GetItemsQuery(request, dtoOptions, user)).ConfigureAwait(false);
             }
 
             IEnumerable<BaseItem> items = folder.GetChildren(user, true);
@@ -180,7 +187,7 @@ namespace MediaBrowser.Api.UserLibrary
             };
         }
 
-        private InternalItemsQuery GetItemsQuery(GetItems request, User user)
+        private InternalItemsQuery GetItemsQuery(GetItems request, DtoOptions dtoOptions, User user)
         {
             var query = new InternalItemsQuery(user)
             {
@@ -241,7 +248,8 @@ namespace MediaBrowser.Api.UserLibrary
                 AiredDuringSeason = request.AiredDuringSeason,
                 AlbumArtistStartsWithOrGreater = request.AlbumArtistStartsWithOrGreater,
                 EnableTotalRecordCount = request.EnableTotalRecordCount,
-                ExcludeItemIds = request.GetExcludeItemIds()
+                ExcludeItemIds = request.GetExcludeItemIds(),
+                DtoOptions = dtoOptions
             };
 
             if (!string.IsNullOrWhiteSpace(request.Ids))

@@ -9,9 +9,11 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
@@ -63,12 +65,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 if (item is ILiveTvRecording)
                 {
-                    sources = await _liveTvManager.GetRecordingMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetRecordingMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
                 else
                 {
-                    sources = await _liveTvManager.GetChannelMediaSources(item.Id.ToString("N"), cancellationToken)
+                    sources = await _liveTvManager.GetChannelMediaSources(item, cancellationToken)
                                 .ConfigureAwait(false);
                 }
             }
@@ -116,17 +118,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return list;
         }
 
-        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
+        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            MediaSourceInfo stream;
+            MediaSourceInfo stream = null;
             const bool isAudio = false;
 
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
+            IDirectStreamProvider directStreamProvider = null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
-                stream = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                var info = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
+                stream = info.Item1;
+                directStreamProvider = info.Item2;
             }
             else
             {
@@ -135,14 +140,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                if (stream.MediaStreams.Any(i => i.Index != -1))
+                {
+                    await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await new LiveStreamHelper(_mediaEncoder, _logger).AddMediaInfoWithProbe(stream, isAudio, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error probing live tv stream", ex);
             }
 
-            return stream;
+            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(stream, directStreamProvider);
         }
 
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
@@ -204,9 +216,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId)
         {
-            return _liveTvManager.CloseLiveStream(liveStreamId, cancellationToken);
+            return _liveTvManager.CloseLiveStream(liveStreamId);
         }
     }
 }

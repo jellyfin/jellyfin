@@ -437,6 +437,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.TrailerCount = taggedItems.Count(i => i is Trailer);
                 dto.MusicVideoCount = taggedItems.Count(i => i is MusicVideo);
                 dto.SeriesCount = taggedItems.Count(i => i is Series);
+                dto.ProgramCount = taggedItems.Count(i => i is LiveTvProgram);
                 dto.SongCount = taggedItems.Count(i => i is Audio);
             }
 
@@ -597,7 +598,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             dto.Altitude = item.Altitude;
             dto.IsoSpeedRating = item.IsoSpeedRating;
 
-            var album = item.Album;
+            var album = item.AlbumEntity;
 
             if (album != null)
             {
@@ -906,11 +907,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.Keywords = item.Keywords;
             }
 
-            if (fields.Contains(ItemFields.ProductionLocations))
-            {
-                SetProductionLocations(item, dto);
-            }
-
             var hasAspectRatio = item as IHasAspectRatio;
             if (hasAspectRatio != null)
             {
@@ -997,8 +993,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
             dto.Audio = item.Audio;
 
-            dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
-            dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
+            if (fields.Contains(ItemFields.Settings))
+            {
+                dto.PreferredMetadataCountryCode = item.PreferredMetadataCountryCode;
+                dto.PreferredMetadataLanguage = item.PreferredMetadataLanguage;
+            }
 
             dto.CriticRating = item.CriticRating;
 
@@ -1088,10 +1087,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (fields.Contains(ItemFields.Taglines))
             {
-                var hasTagline = item as IHasTaglines;
-                if (hasTagline != null)
+                if (!string.IsNullOrWhiteSpace(item.Tagline))
                 {
-                    dto.Taglines = hasTagline.Taglines;
+                    dto.Taglines = new List<string> { item.Tagline };
                 }
 
                 if (dto.Taglines == null)
@@ -1175,6 +1173,12 @@ namespace MediaBrowser.Server.Implementations.Dto
                     .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
+                        // This should not be necessary but we're seeing some cases of it
+                        if (string.IsNullOrWhiteSpace(i))
+                        {
+                            return null;
+                        }
+
                         var artist = _libraryManager.GetArtist(i);
                         if (artist != null)
                         {
@@ -1419,6 +1423,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 SetBookProperties(dto, book);
             }
 
+            if (item.ProductionLocations.Count > 0 || item is Movie)
+            {
+                dto.ProductionLocations = item.ProductionLocations.ToArray();
+            }
+
             var photo = item as Photo;
             if (photo != null)
             {
@@ -1508,7 +1517,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private string GetMappedPath(IHasMetadata item)
+        private string GetMappedPath(BaseItem item)
         {
             var path = item.Path;
 
@@ -1516,38 +1525,10 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (locationType == LocationType.FileSystem || locationType == LocationType.Offline)
             {
-                foreach (var map in _config.Configuration.PathSubstitutions)
-                {
-                    path = _libraryManager.SubstitutePath(path, map.From, map.To);
-                }
+                path = _libraryManager.GetPathAfterNetworkSubstitution(path, item);
             }
 
             return path;
-        }
-
-        private void SetProductionLocations(BaseItem item, BaseItemDto dto)
-        {
-            var hasProductionLocations = item as IHasProductionLocations;
-
-            if (hasProductionLocations != null)
-            {
-                dto.ProductionLocations = hasProductionLocations.ProductionLocations;
-            }
-
-            var person = item as Person;
-            if (person != null)
-            {
-                dto.ProductionLocations = new List<string>();
-                if (!string.IsNullOrEmpty(person.PlaceOfBirth))
-                {
-                    dto.ProductionLocations.Add(person.PlaceOfBirth);
-                }
-            }
-
-            if (dto.ProductionLocations == null)
-            {
-                dto.ProductionLocations = new List<string>();
-            }
         }
 
         /// <summary>

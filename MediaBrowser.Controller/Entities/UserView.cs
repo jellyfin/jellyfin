@@ -13,7 +13,6 @@ namespace MediaBrowser.Controller.Entities
     public class UserView : Folder
     {
         public string ViewType { get; set; }
-        public Guid ParentId { get; set; }
         public Guid DisplayParentId { get; set; }
 
         public Guid? UserId { get; set; }
@@ -43,6 +42,15 @@ namespace MediaBrowser.Controller.Entities
                 list.Add(Id);
             }
             return list;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return false;
+            }
         }
 
         public override int GetChildCount(User user)

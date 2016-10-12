@@ -74,12 +74,6 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            if (!_config.Configuration.EnableInternetProviders)
-            {
-                progress.Report(100);
-                return;
-            }
-
             var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
             if (seriesConfig != null && seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
@@ -116,7 +110,9 @@ namespace MediaBrowser.Providers.TV
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 Recursive = true,
                 GroupByPresentationUniqueKey = false
-            }).Cast<Series>();
+
+            }).Cast<Series>()
+            .ToList();
 
             var seriesIdsInLibrary = seriesList
                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
@@ -125,6 +121,13 @@ namespace MediaBrowser.Providers.TV
 
             var missingSeries = seriesIdsInLibrary.Except(existingDirectories, StringComparer.OrdinalIgnoreCase)
                 .ToList();
+
+            var enableInternetProviders = seriesList.Count == 0 ? false : seriesList[0].IsInternetMetadataEnabled();
+            if (!enableInternetProviders)
+            {
+                progress.Report(100);
+                return;
+            }
 
             // If this is our first time, update all series
             if (string.IsNullOrEmpty(lastUpdateTime))

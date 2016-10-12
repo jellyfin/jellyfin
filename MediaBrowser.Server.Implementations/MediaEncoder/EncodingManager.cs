@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
-            if (libraryOptions != null && libraryOptions.SchemaVersion >= 2)
+            if (libraryOptions != null)
             {
                 if (!libraryOptions.EnableChapterImageExtraction)
                 {
@@ -70,29 +70,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
             }
             else
             {
-                var options = _chapterManager.GetConfiguration();
-
-                if (video is Movie)
-                {
-                    if (!options.EnableMovieChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
-                else if (video is Episode)
-                {
-                    if (!options.EnableEpisodeChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (!options.EnableOtherVideoChapterImageExtraction)
-                    {
-                        return false;
-                    }
-                }
+                return false;
             }
 
             // Can't extract images if there are no video streams
@@ -160,7 +138,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
 
                             _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-                            var tempFile = await _encoder.ExtractVideoImage(inputPath, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
+                            var container = video.Container;
+
+                            var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
                             File.Copy(tempFile, path, true);
 
                             try

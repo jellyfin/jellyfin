@@ -377,27 +377,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 DisposeLibraryUpdateTimer();
             }
 
-            if (items.Count == 1)
-            {
-                var item = items.First();
+            items = items.Take(10).ToList();
 
+            foreach (var item in items)
+            {
                 var notification = new NotificationRequest
                 {
                     NotificationType = NotificationType.NewLibraryContent.ToString()
                 };
 
                 notification.Variables["Name"] = GetItemName(item);
-
-                await SendNotification(notification).ConfigureAwait(false);
-            }
-            else
-            {
-                var notification = new NotificationRequest
-                {
-                    NotificationType = NotificationType.NewLibraryContentMultiple.ToString()
-                };
-
-                notification.Variables["ItemCount"] = items.Count.ToString(CultureInfo.InvariantCulture);
 
                 await SendNotification(notification).ConfigureAwait(false);
             }

@@ -99,8 +99,9 @@ namespace MediaBrowser.Server.Implementations.Intros
                     IncludeItemTypes = new[] { typeof(Trailer).Name },
                     TrailerTypes = trailerTypes.ToArray(),
                     SimilarTo = item,
-                    IsPlayed = config.EnableIntrosForWatchedContent ? (bool?) null : false,
+                    IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
                     MaxParentalRating = config.EnableIntrosParentalControl ? ratingLevel : null,
+                    BlockUnratedItems = config.EnableIntrosParentalControl ? new[] { UnratedItem.Trailer } : new UnratedItem[] { },
                     Limit = config.TrailerLimit
                 });
 
@@ -110,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                     Type = i.SourceType == SourceType.Channel ? ItemWithTrailerType.ChannelTrailer : ItemWithTrailerType.ItemWithTrailer,
                     LibraryManager = _libraryManager
                 }));
-            } 
+            }
 
             return GetResult(item, candidates, config);
         }
@@ -197,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 }
 
                 returnResult.AddRange(GetMediaInfoIntrosByTags(allIntros, item.Tags).Take(1));
-                
+
                 return returnResult.DistinctBy(i => i.Path, StringComparer.OrdinalIgnoreCase);
             }
             catch (IOException)

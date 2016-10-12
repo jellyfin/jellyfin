@@ -47,25 +47,60 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
                     _logger.Info("Copying recording stream to file {0}", targetFile);
 
-                    if (mediaSource.RunTimeTicks.HasValue)
-                    {
-                        // The media source already has a fixed duration
-                        // But add another stop 1 minute later just in case the recording gets stuck for any reason
-                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
-                    else
-                    {
-                        // The media source if infinite so we need to handle stopping ourselves
-                        var durationToken = new CancellationTokenSource(duration);
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
+                    // The media source if infinite so we need to handle stopping ourselves
+                    var durationToken = new CancellationTokenSource(duration);
+                    cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
-                    await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken).ConfigureAwait(false);
+                    await CopyUntilCancelled(response.Content, output, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             _logger.Info("Recording completed to file {0}", targetFile);
+        }
+
+        private const int BufferSize = 81920;
+        public static Task CopyUntilCancelled(Stream source, Stream target, CancellationToken cancellationToken)
+        {
+            return CopyUntilCancelled(source, target, null, cancellationToken);
+        }
+        public static async Task CopyUntilCancelled(Stream source, Stream target, Action onStarted, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var bytesRead = await CopyToAsyncInternal(source, target, BufferSize, onStarted, cancellationToken).ConfigureAwait(false);
+
+                onStarted = null;
+
+                //var position = fs.Position;
+                //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);
+
+                if (bytesRead == 0)
+                {
+                    await Task.Delay(100).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private static async Task<int> CopyToAsyncInternal(Stream source, Stream destination, Int32 bufferSize, Action onStarted, CancellationToken cancellationToken)
+        {
+            byte[] buffer = new byte[bufferSize];
+            int bytesRead;
+            int totalBytesRead = 0;
+
+            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            {
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+
+                totalBytesRead += bytesRead;
+
+                if (onStarted != null)
+                {
+                    onStarted();
+                }
+                onStarted = null;
+            }
+
+            return totalBytesRead;
         }
     }
 }

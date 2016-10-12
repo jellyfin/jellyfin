@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 using UniversalDetector;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
@@ -19,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
     public class WebSocketConnection : IWebSocketConnection
     {
         public event EventHandler<EventArgs> Closed;
-        
+
         /// <summary>
         /// The _socket
         /// </summary>
@@ -34,11 +35,6 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// The _cancellation token source
         /// </summary>
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        /// <summary>
-        /// The _send semaphore
-        /// </summary>
-        private readonly SemaphoreSlim _sendSemaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// The logger
@@ -78,7 +74,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// </summary>
         /// <value>The query string.</value>
         public NameValueCollection QueryString { get; set; }
-        
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
@@ -87,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             if (socket == null)
             {
@@ -113,6 +110,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _socket.OnReceive = OnReceiveInternal;
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
+            _memoryStreamProvider = memoryStreamProvider;
 
             socket.Closed += socket_Closed;
         }
@@ -149,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             try
             {
-                using (var ms = new MemoryStream(bytes))
+                using (var ms = _memoryStreamProvider.CreateNew(bytes))
                 {
                     var detector = new CharsetDetector();
                     detector.Feed(ms);
@@ -207,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 _logger.ErrorException("Error processing web socket message", ex);
             }
         }
-        
+
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
@@ -234,7 +232,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="buffer">The buffer.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
+        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
         {
             if (buffer == null)
             {
@@ -243,33 +241,10 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Per msdn docs, attempting to send simultaneous messages will result in one failing.
-            // This should help us workaround that and ensure all messages get sent
-            await _sendSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await _socket.SendAsync(buffer, true, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.Info("WebSocket message to {0} was cancelled", RemoteEndPoint);
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error sending WebSocket message {0}", ex, RemoteEndPoint);
-
-                throw;
-            }
-            finally
-            {
-                _sendSemaphore.Release();
-            }
+            return _socket.SendAsync(buffer, true, cancellationToken);
         }
 
-        public async Task SendAsync(string text, CancellationToken cancellationToken)
+        public Task SendAsync(string text, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -278,30 +253,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Per msdn docs, attempting to send simultaneous messages will result in one failing.
-            // This should help us workaround that and ensure all messages get sent
-            await _sendSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            try
-            {
-                await _socket.SendAsync(text, true, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.Info("WebSocket message to {0} was cancelled", RemoteEndPoint);
-
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error sending WebSocket message {0}", ex, RemoteEndPoint);
-
-                throw;
-            }
-            finally
-            {
-                _sendSemaphore.Release();
-            }
+            return _socket.SendAsync(text, true, cancellationToken);
         }
 
         /// <summary>

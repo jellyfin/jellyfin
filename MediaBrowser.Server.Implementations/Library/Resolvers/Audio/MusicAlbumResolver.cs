@@ -54,8 +54,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             if (!args.IsDirectory) return null;
 
             // Avoid mis-identifying top folders
-            if (args.Parent.IsRoot) return null;
             if (args.HasParent<MusicAlbum>()) return null;
+            if (args.Parent.IsRoot) return null;
 
             var collectionType = args.GetCollectionType();
 

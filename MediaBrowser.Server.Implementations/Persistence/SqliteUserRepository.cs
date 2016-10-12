@@ -9,6 +9,7 @@ using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -18,10 +19,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserRepository : BaseSqliteRepository, IUserRepository
     {
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public SqliteUserRepository(ILogManager logManager, IServerApplicationPaths appPaths, IJsonSerializer jsonSerializer, IDbConnector dbConnector) : base(logManager, dbConnector)
+        public SqliteUserRepository(ILogManager logManager, IServerApplicationPaths appPaths, IJsonSerializer jsonSerializer, IDbConnector dbConnector, IMemoryStreamProvider memoryStreamProvider) : base(logManager, dbConnector)
         {
             _jsonSerializer = jsonSerializer;
+            _memoryStreamProvider = memoryStreamProvider;
 
             DbFilePath = Path.Combine(appPaths.DataPath, "users.db");
         }
@@ -75,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var serialized = _jsonSerializer.SerializeToBytes(user);
+            var serialized = _jsonSerializer.SerializeToBytes(user, _memoryStreamProvider);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -150,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         {
                             var id = reader.GetGuid(0);
 
-                            using (var stream = reader.GetMemoryStream(1))
+                            using (var stream = reader.GetMemoryStream(1, _memoryStreamProvider))
                             {
                                 var user = _jsonSerializer.DeserializeFromStream<User>(stream);
                                 user.Id = id;

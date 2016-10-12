@@ -347,7 +347,7 @@ namespace MediaBrowser.Controller.Providers
                             var person = item as Person;
                             if (person != null)
                             {
-                                person.PlaceOfBirth = val;
+                                person.ProductionLocations = new List<string> { val };
                             }
                         }
 
@@ -790,7 +790,7 @@ namespace MediaBrowser.Controller.Providers
                     }
 
                 default:
-                {
+                    {
                         string readerName = reader.Name;
                         string providerIdValue;
                         if (_validProviderIds.TryGetValue(readerName, out providerIdValue))
@@ -893,14 +893,6 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    var hasProductionLocations = item as IHasProductionLocations;
-                                    if (hasProductionLocations != null)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            hasProductionLocations.AddProductionLocation(val);
-                                        }
-                                    }
                                 }
                                 break;
                             }
@@ -934,14 +926,7 @@ namespace MediaBrowser.Controller.Providers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    var hasTaglines = item as IHasTaglines;
-                                    if (hasTaglines != null)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            hasTaglines.AddTagline(val);
-                                        }
-                                    }
+                                    item.Tagline = val;
                                 }
                                 break;
                             }
