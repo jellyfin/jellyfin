@@ -1,4 +1,4 @@
-﻿define(['datetime', 'cardBuilder', 'imageLoader', 'paper-icon-button-light', 'emby-button'], function (datetime, cardBuilder, imageLoader) {
+﻿define(['datetime', 'cardBuilder', 'imageLoader', 'apphost', 'paper-icon-button-light', 'emby-button'], function (datetime, cardBuilder, imageLoader, appHost) {
 
     var query = {
 
@@ -10,17 +10,22 @@
 
         var html = '';
 
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+        var cardLayout = appHost.preferVisualCards || supportsImageAnalysis;
+
         html += cardBuilder.getCardsHtml({
             items: timers,
             shape: 'backdrop',
             showTitle: true,
-            cardLayout: true,
-            vibrant: true,
+            cardLayout: cardLayout,
+            vibrant: supportsImageAnalysis,
             preferThumb: true,
             coverImage: true,
             overlayText: false,
             showSeriesTimerTime: true,
-            showSeriesTimerChannel: true
+            showSeriesTimerChannel: true,
+            centerText: !cardLayout,
+            overlayMoreButton: !cardLayout
         });
 
         var elem = context.querySelector('#items');

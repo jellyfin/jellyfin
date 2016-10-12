@@ -148,7 +148,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             features.push('fullscreen');
         }
 
-        if (!browser.slow) {
+        if (browser.chrome || (browser.safari && !browser.mobile)) {
             features.push('imageanalysis');
         }
 
@@ -211,7 +211,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             });
         },
         capabilities: getCapabilities,
-
+        preferVisualCards: browser.android || browser.chrome,
         moreIcon: browser.safari || browser.edge ? 'dots-horiz' : 'dots-vert'
     };
 });

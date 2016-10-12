@@ -1,4 +1,4 @@
-﻿define(['listView', 'cardBuilder', 'libraryBrowser', 'emby-itemscontainer'], function (listView, cardBuilder, libraryBrowser) {
+﻿define(['listView', 'cardBuilder', 'libraryBrowser', 'apphost', 'emby-itemscontainer'], function (listView, cardBuilder, libraryBrowser, appHost) {
 
     return function (view, params) {
 
@@ -18,7 +18,7 @@
                         StartIndex: 0,
                         Limit: LibraryBrowser.getDefaultPageSize()
                     },
-                    view: LibraryBrowser.getSavedView(key) || 'PosterCard'
+                    view: LibraryBrowser.getSavedView(key) || appHost.preferVisualCards ? 'PosterCard' : 'Poster'
                 };
 
                 pageData.query.ParentId = LibraryMenu.getTopParentId();
@@ -117,7 +117,8 @@
                             lazy: true,
                             coverImage: true,
                             showItemCounts: true,
-                            cardLayout: true
+                            cardLayout: true,
+                            vibrant: true
                         });
                     }
                     else if (viewStyle == "Thumb") {
@@ -139,7 +140,8 @@
                             lazy: true,
                             preferThumb: true,
                             cardLayout: true,
-                            showItemCounts: true
+                            showItemCounts: true,
+                            vibrant: true
                         });
                     }
                     else {

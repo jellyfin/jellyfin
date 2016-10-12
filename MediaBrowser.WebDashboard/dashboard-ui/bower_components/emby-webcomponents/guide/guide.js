@@ -1,4 +1,5 @@
 ﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+    'use strict';
 
     function showViewSettings(instance) {
 
@@ -176,11 +177,11 @@
                 channelQuery.EnableImageTypes = "Primary";
 
                 var categories = self.categoryOptions.categories || [];
-                var displayMovieContent = !categories.length || categories.indexOf('movies') != -1;
-                var displaySportsContent = !categories.length || categories.indexOf('sports') != -1;
-                var displayNewsContent = !categories.length || categories.indexOf('news') != -1;
-                var displayKidsContent = !categories.length || categories.indexOf('kids') != -1;
-                var displaySeriesContent = !categories.length || categories.indexOf('series') != -1;
+                var displayMovieContent = !categories.length || categories.indexOf('movies') !== -1;
+                var displaySportsContent = !categories.length || categories.indexOf('sports') !== -1;
+                var displayNewsContent = !categories.length || categories.indexOf('news') !== -1;
+                var displayKidsContent = !categories.length || categories.indexOf('kids') !== -1;
+                var displaySeriesContent = !categories.length || categories.indexOf('series') !== -1;
 
                 if (displayMovieContent && displaySportsContent && displayNewsContent && displayKidsContent) {
                     channelQuery.IsMovie = null;
@@ -206,7 +207,7 @@
                     }
                 }
 
-                if (userSettings.get('livetv-channelorder') == 'Number') {
+                if (userSettings.get('livetv-channelorder') === 'Number') {
                     channelQuery.SortBy = "SortName";
                     channelQuery.SortOrder = "Ascending";
                 } else {
@@ -350,14 +351,14 @@
 
             var status;
 
-            if (item.Type == 'SeriesTimer') {
+            if (item.Type === 'SeriesTimer') {
                 return '<i class="md-icon programIcon seriesTimerIcon">&#xE062;</i>';
             }
             else if (item.TimerId || item.SeriesTimerId) {
 
                 status = item.Status || 'Cancelled';
             }
-            else if (item.Type == 'Timer') {
+            else if (item.Type === 'Timer') {
 
                 status = item.Status;
             }
@@ -367,7 +368,7 @@
 
             if (item.SeriesTimerId) {
 
-                if (status != 'Cancelled') {
+                if (status !== 'Cancelled') {
                     return '<i class="md-icon programIcon seriesTimerIcon">&#xE062;</i>';
                 }
 
@@ -385,7 +386,7 @@
             var endMs = startMs + msPerDay - 1;
 
             programs = programs.filter(function (curr) {
-                return curr.ChannelId == channel.Id;
+                return curr.ChannelId === channel.Id;
             });
 
             var outerCssClass = layoutManager.tv ? 'channelPrograms channelPrograms-tv' : 'channelPrograms';
@@ -395,18 +396,18 @@
             var clickAction = layoutManager.tv ? 'link' : 'programdialog';
 
             var categories = self.categoryOptions.categories || [];
-            var displayMovieContent = !categories.length || categories.indexOf('movies') != -1;
-            var displaySportsContent = !categories.length || categories.indexOf('sports') != -1;
-            var displayNewsContent = !categories.length || categories.indexOf('news') != -1;
-            var displayKidsContent = !categories.length || categories.indexOf('kids') != -1;
-            var displaySeriesContent = !categories.length || categories.indexOf('series') != -1;
-            var enableColorCodedBackgrounds = userSettings.get('guide-colorcodedbackgrounds') == 'true';
+            var displayMovieContent = !categories.length || categories.indexOf('movies') !== -1;
+            var displaySportsContent = !categories.length || categories.indexOf('sports') !== -1;
+            var displayNewsContent = !categories.length || categories.indexOf('news') !== -1;
+            var displayKidsContent = !categories.length || categories.indexOf('kids') !== -1;
+            var displaySeriesContent = !categories.length || categories.indexOf('series') !== -1;
+            var enableColorCodedBackgrounds = userSettings.get('guide-colorcodedbackgrounds') === 'true';
 
             for (var i = 0, length = programs.length; i < length; i++) {
 
                 var program = programs[i];
 
-                if (program.ChannelId != channel.Id) {
+                if (program.ChannelId !== channel.Id) {
                     continue;
                 }
 
@@ -533,11 +534,11 @@
             var allowIndicators = dom.getWindowSize().innerWidth >= 600;
 
             var options = {
-                showHdIcon: allowIndicators && userSettings.get('guide-indicator-hd') == 'true',
-                showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') != 'false',
-                showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') != 'false',
-                showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') == 'true',
-                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') == 'true'
+                showHdIcon: allowIndicators && userSettings.get('guide-indicator-hd') === 'true',
+                showLiveIndicator: allowIndicators && userSettings.get('guide-indicator-live') !== 'false',
+                showPremiereIndicator: allowIndicators && userSettings.get('guide-indicator-premiere') !== 'false',
+                showNewIndicator: allowIndicators && userSettings.get('guide-indicator-new') === 'true',
+                showRepeatIndicator: allowIndicators && userSettings.get('guide-indicator-repeat') === 'true'
             };
 
             for (var i = 0, length = channels.length; i < length; i++) {
@@ -661,7 +662,7 @@
 
                 var focusElem;
                 if (itemId) {
-                    focusElem = context.querySelector('[data-id="' + itemId + '"]')
+                    focusElem = context.querySelector('[data-id="' + itemId + '"]');
                 }
 
                 if (focusElem) {
@@ -671,7 +672,7 @@
                     var autoFocusParent;
 
                     if (channelRowId) {
-                        autoFocusParent = context.querySelector('[data-channelid="' + channelRowId + '"]')
+                        autoFocusParent = context.querySelector('[data-channelid="' + channelRowId + '"]');
                     }
 
                     if (!autoFocusParent) {
@@ -788,7 +789,7 @@
 
             var selectedDate = currentDate || new Date();
             dateOptions.forEach(function (d) {
-                d.selected = new Date(d.id).getDate() == selectedDate.getDate();
+                d.selected = new Date(d.id).getDate() === selectedDate.getDate();
             });
 
             require(['actionsheet'], function (actionsheet) {
@@ -961,7 +962,7 @@
 
             self.refresh();
         });
-    };
+    }
 
     return Guide;
 });

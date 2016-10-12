@@ -1,4 +1,4 @@
-﻿define(['cardBuilder', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder) {
+﻿define(['cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder, appHost) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -22,15 +22,18 @@
             recordingItems.classList.add('vertical-wrap');
         }
 
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+        var cardLayout = appHost.preferVisualCards || supportsImageAnalysis;
+
         recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
             items: recordings,
             shape: (enableScrollX() ? 'autooverflow' : 'auto'),
             showTitle: true,
             showParentTitle: true,
             coverImage: true,
-            lazy: true,
-            cardLayout: true,
-            vibrant: true,
+            cardLayout: cardLayout,
+            centerText: !cardLayout,
+            vibrant: supportsImageAnalysis,
             allowBottomPadding: !enableScrollX(),
             preferThumb: 'auto'
 
@@ -59,8 +62,6 @@
                 showAirTime: true,
                 showAirEndTime: true,
                 showChannelName: true,
-                cardLayout: true,
-                vibrant: true,
                 preferThumb: true,
                 coverImage: true,
                 overlayText: false

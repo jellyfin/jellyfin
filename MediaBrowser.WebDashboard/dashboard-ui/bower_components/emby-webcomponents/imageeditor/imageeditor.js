@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'connectionManager', 'loading', 'dom', 'layoutManager', 'focusManager', 'globalize', 'scrollHelper', 'imageLoader', 'require', 'cardStyle', 'formDialogStyle', 'emby-button', 'paper-icon-button-light'], function (dialogHelper, connectionManager, loading, dom, layoutManager, focusManager, globalize, scrollHelper, imageLoader, require) {
+    'use strict';
 
     var currentItem;
     var hasChanges = false;
@@ -78,11 +79,11 @@
         options.type = type;
         options.index = index;
 
-        if (type == 'Backdrop') {
+        if (type === 'Backdrop') {
             options.tag = item.BackdropImageTags[index];
-        } else if (type == 'Screenshot') {
+        } else if (type === 'Screenshot') {
             options.tag = item.ScreenshotImageTags[index];
-        } else if (type == 'Primary') {
+        } else if (type === 'Primary') {
             options.tag = item.PrimaryImageTag || item.ImageTags[type];
         } else {
             options.tag = item.ImageTags[type];
@@ -101,7 +102,7 @@
 
         cssClass += " backdropCard backdropCard-scalable";
 
-        if (tagName == 'button') {
+        if (tagName === 'button') {
             cssClass += ' card-focusscale btnImageCard';
             cardBoxCssClass += ' cardBox-focustransform cardBox-focustransform-transition';
 
@@ -142,7 +143,7 @@
         if (enableFooterButtons) {
             html += '<div class="cardText cardTextCentered">';
 
-            if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
+            if (image.ImageType === "Backdrop" || image.ImageType === "Screenshot") {
 
                 if (index > 0) {
                     html += '<button type="button" is="paper-icon-button-light" class="btnMoveImage autoSize" data-imagetype="' + image.ImageType + '" data-index="' + image.ImageIndex + '" data-newindex="' + (image.ImageIndex - 1) + '" title="' + globalize.translate('sharedcomponents#MoveLeft') + '"><i class="md-icon">chevron_left</i></button>';
@@ -243,7 +244,7 @@
     function renderStandardImages(page, apiClient, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
-            return i.ImageType != "Screenshot" && i.ImageType != "Backdrop" && i.ImageType != "Chapter";
+            return i.ImageType !== "Screenshot" && i.ImageType !== "Backdrop" && i.ImageType !== "Chapter";
         });
 
         renderImages(page, item, apiClient, images, imageProviders, page.querySelector('#images'));
@@ -252,7 +253,7 @@
     function renderBackdrops(page, apiClient, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
-            return i.ImageType == "Backdrop";
+            return i.ImageType === "Backdrop";
 
         }).sort(function (a, b) {
             return a.ImageIndex - b.ImageIndex;
@@ -269,7 +270,7 @@
     function renderScreenshots(page, apiClient, item, imageInfos, imageProviders) {
 
         var images = imageInfos.filter(function (i) {
-            return i.ImageType == "Screenshot";
+            return i.ImageType === "Screenshot";
 
         }).sort(function (a, b) {
             return a.ImageIndex - b.ImageIndex;
@@ -318,7 +319,7 @@
                 id: 'delete'
             });
 
-            if (type == 'Backdrop' || type == 'Screenshot') {
+            if (type === 'Backdrop' || type === 'Screenshot') {
                 if (index > 0) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#MoveLeft'),
@@ -411,7 +412,7 @@
         addListeners(context, 'btnDeleteImage', 'click', function () {
             var type = this.getAttribute('data-imagetype');
             var index = this.getAttribute('data-index');
-            index = index == "null" ? null : parseInt(index);
+            index = index === "null" ? null : parseInt(index);
             var apiClient = connectionManager.getApiClient(currentItem.ServerId);
             deleteImage(context, currentItem.Id, type, index, apiClient, true);
         });

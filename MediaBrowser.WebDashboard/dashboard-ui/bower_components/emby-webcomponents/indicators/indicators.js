@@ -1,9 +1,10 @@
 define(['css!./indicators.css', 'material-icons'], function () {
+    'use strict';
 
     function enableProgressIndicator(item) {
 
-        if (item.MediaType == 'Video') {
-            if (item.Type != 'TvChannel') {
+        if (item.MediaType === 'Video') {
+            if (item.Type !== 'TvChannel') {
                 return true;
             }
         }
@@ -27,7 +28,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
     function getProgressBarHtml(item, options) {
 
         if (enableProgressIndicator(item)) {
-            if (item.Type == "Recording" && item.CompletionPercentage) {
+            if (item.Type === "Recording" && item.CompletionPercentage) {
 
                 return getProgressHtml(item.CompletionPercentage, options);
             }
@@ -48,9 +49,9 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
     function enablePlayedIndicator(item) {
 
-        if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
+        if (item.Type === "Series" || item.Type === "Season" || item.Type === "BoxSet" || item.MediaType === "Video" || item.MediaType === "Game" || item.MediaType === "Book") {
 
-            if (item.Type != 'TvChannel') {
+            if (item.Type !== 'TvChannel') {
                 return true;
             }
         }
@@ -100,14 +101,14 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
         var status;
 
-        if (item.Type == 'SeriesTimer') {
+        if (item.Type === 'SeriesTimer') {
             return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
         }
         else if (item.TimerId || item.SeriesTimerId) {
 
             status = item.Status || 'Cancelled';
         }
-        else if (item.Type == 'Timer') {
+        else if (item.Type === 'Timer') {
 
             status = item.Status;
         }
@@ -117,7 +118,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
         if (item.SeriesTimerId) {
 
-            if (status != 'Cancelled') {
+            if (status !== 'Cancelled') {
                 return '<i class="md-icon timerIndicator indicatorIcon">&#xE062;</i>';
             }
 
@@ -129,7 +130,7 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
     function getSyncIndicator(item) {
 
-        if (item.SyncPercent == 100) {
+        if (item.SyncPercent === 100) {
             return '<div class="syncIndicator indicator fullSyncIndicator"><i class="md-icon indicatorIcon">file_download</i></div>';
         } else if (item.SyncPercent != null) {
             return '<div class="syncIndicator indicator emptySyncIndicator"><i class="md-icon indicatorIcon">file_download</i></div>';

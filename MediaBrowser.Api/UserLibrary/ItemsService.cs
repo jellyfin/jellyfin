@@ -134,16 +134,26 @@ namespace MediaBrowser.Api.UserLibrary
         private async Task<QueryResult<BaseItem>> GetQueryResult(GetItems request, DtoOptions dtoOptions, User user)
         {
             var item = string.IsNullOrEmpty(request.ParentId) ?
-                user == null ? _libraryManager.RootFolder : user.RootFolder :
+                null :
                 _libraryManager.GetItemById(request.ParentId);
 
             if (string.Equals(request.IncludeItemTypes, "Playlist", StringComparison.OrdinalIgnoreCase))
             {
-                //item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+                if (item == null || user != null)
+                {
+                    item = _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, "PlaylistsFolder", StringComparison.OrdinalIgnoreCase));
+                }
             }
             else if (string.Equals(request.IncludeItemTypes, "BoxSet", StringComparison.OrdinalIgnoreCase))
             {
                 item = user == null ? _libraryManager.RootFolder : user.RootFolder;
+            }
+
+            if (item == null)
+            {
+                item = string.IsNullOrEmpty(request.ParentId) ?
+                    user == null ? _libraryManager.RootFolder : user.RootFolder :
+                    _libraryManager.GetItemById(request.ParentId);
             }
 
             // Default list type = children

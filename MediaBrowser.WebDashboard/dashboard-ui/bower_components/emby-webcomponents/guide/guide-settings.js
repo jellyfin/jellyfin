@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'emby-radio', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
+    'use strict';
 
     function save(context) {
 
@@ -32,28 +33,28 @@
 
             var type = chkIndicators[i].getAttribute('data-type');
 
-            if (chkIndicators[i].getAttribute('data-default') == 'true') {
-                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) != 'false';
+            if (chkIndicators[i].getAttribute('data-default') === 'true') {
+                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) !== 'false';
             } else {
-                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) == 'true';
+                chkIndicators[i].checked = userSettings.get('guide-indicator-' + type) === 'true';
             }
         }
 
-        context.querySelector('.chkColorCodedBackgrounds').checked = userSettings.get('guide-colorcodedbackgrounds') == 'true';
-        context.querySelector('.chkFavoriteChannelsAtTop').checked = userSettings.get('livetv-favoritechannelsattop') != 'false';
+        context.querySelector('.chkColorCodedBackgrounds').checked = userSettings.get('guide-colorcodedbackgrounds') === 'true';
+        context.querySelector('.chkFavoriteChannelsAtTop').checked = userSettings.get('livetv-favoritechannelsattop') !== 'false';
 
         var sortByValue = userSettings.get('livetv-channelorder') || 'DatePlayed';
 
         var sortBys = context.querySelectorAll('.chkSortOrder');
         for (i = 0, length = sortBys.length; i < length; i++) {
-            sortBys[i].checked = sortBys[i].value == sortByValue;
+            sortBys[i].checked = sortBys[i].value === sortByValue;
         }
     }
 
     function onSortByChange() {
         var newValue = this.value;
         if (this.checked) {
-            var changed = options.query.SortBy != newValue;
+            var changed = options.query.SortBy !== newValue;
 
             options.query.SortBy = newValue.replace('_', ',');
             options.query.StartIndex = 0;

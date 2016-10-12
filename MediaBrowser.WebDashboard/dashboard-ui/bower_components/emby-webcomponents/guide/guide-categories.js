@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
+    'use strict';
 
     function save(context, options) {
 
@@ -32,7 +33,7 @@
 
             var type = chkCategorys[i].getAttribute('data-type');
 
-            chkCategorys[i].checked = !selectedCategories.length || selectedCategories.indexOf(type) != -1;
+            chkCategorys[i].checked = !selectedCategories.length || selectedCategories.indexOf(type) !== -1;
         }
     }
 

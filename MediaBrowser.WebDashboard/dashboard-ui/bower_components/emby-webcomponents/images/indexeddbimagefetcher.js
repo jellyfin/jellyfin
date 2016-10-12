@@ -1,4 +1,5 @@
 define(['cryptojs-md5'], function () {
+    'use strict';
 
     var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB;
     var dbVersion = 1;
@@ -30,20 +31,18 @@ define(['cryptojs-md5'], function () {
 
         // Interim solution for Google Chrome to create an objectStore. Will be deprecated
         if (localDb.setVersion) {
-            if (localDb.version != dbVersion) {
+            if (localDb.version !== dbVersion) {
                 var setVersion = localDb.setVersion(dbVersion);
                 setVersion.onsuccess = function () {
                     createObjectStore(localDb);
                 };
-            }
-            else {
+            } else {
                 db = localDb;
             }
-        }
-        else {
+        } else {
             db = localDb;
         }
-    }
+    };
 
     function revoke(url) {
 
@@ -71,12 +70,12 @@ define(['cryptojs-md5'], function () {
         // Try to strip off the domain to share the cache between local and remote connections
         var index = url.indexOf('://');
 
-        if (index != -1) {
+        if (index !== -1) {
             url = url.substring(index + 3);
 
             index = url.indexOf('/');
 
-            if (index != -1) {
+            if (index !== -1) {
                 url = url.substring(index + 1);
             }
 
