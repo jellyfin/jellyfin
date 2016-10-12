@@ -5,10 +5,6 @@
 
             <form class="dashboardGeneralForm">
 
-                <div class="inputContainer">
-                    <input is="emby-input" type="text" id="txtServerName" label="${LabelFriendlyServerName}" />
-                    <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
-                </div>
                 <div class="selectContainer">
                     <select is="emby-select" id="selectLocalizationLanguage" label="${LabelPreferredDisplayLanguage}"></select>
                     <div class="fieldDescription">
@@ -92,7 +88,9 @@
                 </div>
                 <br />
                 <div>
-                    <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                    <button is="emby-button" type="submit" class="raised button-submit block">
+                        <span>${ButtonSave}</span>
+                    </button>
                 </div>
             </form>
 

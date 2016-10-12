@@ -1,4 +1,5 @@
 ﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
+    'use strict';
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
 
@@ -33,9 +34,8 @@
         }, false);
     }
 
-    function animateButton(e) {
+    function animateButton(e, btn) {
 
-        var btn = this;
         requestAnimationFrame(function () {
             animateButtonInternal(e, btn);
         });
@@ -43,9 +43,14 @@
 
     function onKeyDown(e) {
 
-        if (e.keyCode == 13) {
-            animateButton.call(this, e);
+        if (e.keyCode === 13) {
+            animateButton(e, this);
         }
+    }
+
+    function onClick(e) {
+
+        animateButton(e, this);
     }
 
     EmbyButtonPrototype.createdCallback = function () {
@@ -60,7 +65,7 @@
             dom.addEventListener(this, 'keydown', onKeyDown, {
                 passive: true
             });
-            dom.addEventListener(this, 'click', animateButton, {
+            dom.addEventListener(this, 'click', onClick, {
                 passive: true
             });
         }

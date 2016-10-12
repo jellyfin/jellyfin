@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Model", "MediaBrowser.Model\MediaBrowser.Model.csproj", "{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}"
 EndProject
@@ -34,6 +34,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Startup.Common", "MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj", "{B90AB8F2-1BFF-4568-A3FD-2A338A435A75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Nat", "Mono.Nat\Mono.Nat.csproj", "{D7453B88-2266-4805-B39B-2B5A2A33E1BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -203,6 +205,18 @@ Global
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|Any CPU.Build.0 = Release|Any CPU
 		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Debug|x86.Build.0 = Debug|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|x86.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release Mono|x86.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|x86.ActiveCfg = Release|Any CPU
+		{D7453B88-2266-4805-B39B-2B5A2A33E1BA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

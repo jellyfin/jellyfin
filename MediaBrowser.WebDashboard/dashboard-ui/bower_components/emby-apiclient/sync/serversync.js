@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     return function (connectionManager) {
 
@@ -20,7 +21,7 @@
 
             return connectionManager.connectToServer(server, connectionOptions).then(function (result) {
 
-                if (result.State == MediaBrowser.ConnectionState.SignedIn) {
+                if (result.State === MediaBrowser.ConnectionState.SignedIn) {
                     return performSync(server, options);
                 } else {
                     console.log('Unable to connect to server id: ' + server.Id);
@@ -42,7 +43,7 @@
 
             var uploadPhotos = options.uploadPhotos !== false;
 
-            if (options.cameraUploadServers && options.cameraUploadServers.indexOf(server.Id) == -1) {
+            if (options.cameraUploadServers && options.cameraUploadServers.indexOf(server.Id) === -1) {
                 uploadPhotos = false;
             }
 

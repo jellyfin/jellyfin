@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder) {
+﻿define(['libraryBrowser', 'dom', 'components/categorysyncbuttons', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, dom, categorysyncbuttons, cardBuilder, appHost) {
 
     return function (view, params) {
 
@@ -34,6 +34,9 @@
                 }
 
                 var container = view.querySelector('#nextUpItems');
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+
                 cardBuilder.buildCards(result.Items, {
                     itemsContainer: container,
                     preferThumb: true,
@@ -42,8 +45,10 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
+                    centerText: !supportsImageAnalysis,
+                    overlayPlayButton: true,
+                    cardLayout: supportsImageAnalysis,
+                    vibrant: supportsImageAnalysis
                 });
 
                 Dashboard.hideLoadingMsg();
@@ -62,7 +67,8 @@
 
             var parentId = LibraryMenu.getTopParentId();
 
-            var limit = 6;
+            var screenWidth = dom.getWindowSize().innerWidth;
+            var limit = screenWidth >= 1600 ? 5 : 6;
 
             var options = {
 
@@ -91,6 +97,9 @@
                 var allowBottomPadding = !enableScrollX();
 
                 var container = view.querySelector('#resumableItems');
+
+                var cardLayout = appHost.preferVisualCards;
+
                 cardBuilder.buildCards(result.Items, {
                     itemsContainer: container,
                     preferThumb: true,
@@ -99,9 +108,10 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    centerText: true,
+                    centerText: !cardLayout,
                     overlayPlayButton: true,
-                    allowBottomPadding: allowBottomPadding
+                    allowBottomPadding: allowBottomPadding,
+                    cardLayout: cardLayout
                 });
             });
         }

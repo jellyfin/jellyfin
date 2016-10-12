@@ -1,0 +1,15 @@
+.newTvProgram {
+    background: #64A239;
+}
+
+.liveTvProgram {
+    background: #EC407A;
+}
+
+.premiereTvProgram {
+    background: #EF6C00;
+}
+
+.repeatTvProgram {
+    background: #009688;
+}

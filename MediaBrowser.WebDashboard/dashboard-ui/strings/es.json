@@ -1,4 +1,6 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
+    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Salir",
     "LabelApiDocumentation": "Documentaci\u00f3n API",
     "LabelBrowseLibrary": "Navegar biblioteca",
@@ -57,7 +59,6 @@
     "HeaderAvailableServices": "Servicios Disponibles",
     "MessageNoServicesInstalled": "No hay servicios instalados.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Para acceder, por favor introduzca su c\u00f3digo PIN f\u00e1cil.",
-    "KidsModeAdultInstruction": "Haga clic en el icono en la parte de abajo derecha para configurar o salir del modo de menores. Su codigo PIN es requerido.",
     "ButtonConfigurePinCode": "Configurar contrase\u00f1a",
     "RegisterWithPayPal": "Registrese con PayPal",
     "HeaderEnjoyDayTrial": "Disfrute 14 Dias Gratis de Prueba",
@@ -1457,7 +1458,6 @@
     "HeaderPlaybackError": "Error de reproducci\u00f3n",
     "MessagePlaybackErrorNotAllowed": "No est\u00e1s autorizado a reproducir este contenido. Contacta con el administrador para m\u00e1s detalles.",
     "MessagePlaybackErrorNoCompatibleStream": "No tienes disponible ninguna calidad por ahora. Int\u00e9ntalo m\u00e1s tarde o contacta con el administrador para m\u00e1s detalles.",
-    "MessagePlaybackErrorRateLimitExceeded": "Has sobrepasado el ratio l\u00edmite de reproducci\u00f3n. Contacta con el administrador para m\u00e1s detalles.",
     "MessagePlaybackErrorPlaceHolder": "El contenido elegido no se puede reproducir desde este dispositivo.",
     "HeaderSelectAudio": "Seleccionar Audio",
     "HeaderSelectSubtitles": "Seleccionar Subt\u00edtulos",
@@ -1966,6 +1966,7 @@
     "ErrorMessageUsernameInUse": "El usuario ya est\u00e1 en uso. Por favor elige otro nombre e int\u00e9ntalo de nuevo.",
     "ErrorMessageEmailInUse": "La direcci\u00f3n de correo ya est\u00e1 en uso. Por favor introduce una nueva direcci\u00f3n de correo e int\u00e9ntalo de nuevo, o utiliza la caracter\u00edstica de restablecer contrase\u00f1a.",
     "MessageThankYouForConnectSignUp": "Gracias por iniciar sesi\u00f3n con Emby Connect. Se te ha enviado un correo con las instrucciones para confirmar tu nueva cuenta. Por favor confirma la cuenta y vuelve aqu\u00ed para iniciar sesi\u00f3n.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Compartir",
     "HeaderConfirm": "Confirmar",
     "MessageConfirmDeleteTunerDevice": "\u00bfEst\u00e1s seguro de que quieres borrar este dispositivo?",
@@ -2026,6 +2027,7 @@
     "ErrorRemovingEmbyConnectAccount": "Ha habido un error quitando la cuenta de Emby Connect. Por favor aseg\u00farate de que tienes una conexi\u00f3n a internet activa e int\u00e9ntalo otra vez.",
     "ErrorAddingEmbyConnectAccount1": "Ha habido un error a\u00f1adiendo la cuenta de Emby Connect. \u00bfTe has creado una cuenta de Emby primero? Reg\u00edstrate en {0}.",
     "ErrorAddingEmbyConnectAccount2": "Por favor aseg\u00farate de que la cuenta de Emby ha sido activada siguiendo las instrucciones del correo que se te envi\u00f3 despu\u00e9s de crear tu cuenta. Si no has recibido el correo, por favor m\u00e1ndanos un correo a {0} desde la direcci\u00f3n que has usado para crearte la cuenta de Emby.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Artistas favoritos",
     "HeaderFavoriteSongs": "Canciones favoritas",
     "HeaderConfirmPluginInstallation": "Confirmar la instalaci\u00f3n del Plugin",
@@ -2136,5 +2138,11 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Reproducir con un reproductor externo",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

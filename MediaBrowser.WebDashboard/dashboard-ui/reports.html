@@ -1,4 +1,4 @@
-﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-title="${HeaderReports}" data-require="jQuery,paper-icon-button-light,jqmcheckbox,jqmpanel,jqmcollapsible,jqmtable,scripts/reports,detailtablecss">
+﻿<div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-title="${HeaderReports}" data-require="jQuery,paper-icon-button-light,jqmpanel,jqmtable,scripts/reports,detailtablecss">
     <style>
         /* Page and overlay */
         .ui-page-theme-b .ui-panel-wrapper {
@@ -19,8 +19,38 @@
         .ui-panel .ui-panel-inner {
             overflow: auto;
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;  
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .libraryReportIndicator {
+            position: relative;
+            display: block;
+            text-align: center;
+            vertical-align: middle;
+            width: 24px;
+            height: 19px;
+            padding-top: 3px;
+            border-radius: 50%;
+            color: #fff;
+            background: rgb(204, 0, 0);
+            background: rgba(204, 0, 0, .8);
+        }
+
+            .libraryReportIndicator div:after {
+                background-color: transparent !important;
+            }
+
+        .clearLibraryReportIndicator {
+            background-color: transparent !important;
+        }
+
+        .tblLibraryReport img {
+            height: 18px;
+            margin-right: 10px;
         }
     </style>
     <div data-role="content">

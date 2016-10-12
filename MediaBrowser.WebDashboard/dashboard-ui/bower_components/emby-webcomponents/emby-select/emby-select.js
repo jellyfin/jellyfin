@@ -1,4 +1,5 @@
 ﻿define(['layoutManager', 'browser', 'actionsheet', 'css!./emby-select', 'registerElement'], function (layoutManager, browser, actionsheet) {
+    'use strict';
 
     var EmbySelectPrototype = Object.create(HTMLSelectElement.prototype);
 
@@ -54,7 +55,7 @@
 
     function getLabel(select) {
         var elem = select.previousSibling;
-        while (elem && elem.tagName != 'LABEL') {
+        while (elem && elem.tagName !== 'LABEL') {
             elem = elem.previousSibling;
         }
         return elem;

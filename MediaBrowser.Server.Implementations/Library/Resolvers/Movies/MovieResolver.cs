@@ -48,12 +48,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             string collectionType,
             IDirectoryService directoryService)
         {
-            if (parent != null && parent.Path != null && parent.Path.IndexOf("disney", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                var b = true;
-                var a = b;
-            }
-
             var result = ResolveMultipleInternal(parent, files, collectionType, directoryService);
 
             if (result != null)
@@ -213,26 +207,22 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Find movies with their own folders
             if (args.IsDirectory)
             {
-                var files = args.FileSystemChildren
-                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
-                    .ToList();
-
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<MusicVideo>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                    return null;
                 }
 
                 if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
                 {
-                    return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                    return null;
                 }
 
                 if (string.IsNullOrEmpty(collectionType))
                 {
-                    // Owned items should just use the plain video type
+                    // Owned items will be caught by the plain video resolver
                     if (args.Parent == null)
                     {
-                        return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                        return null;
                     }
 
                     if (args.HasParent<Series>())
@@ -240,11 +230,21 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                         return null;
                     }
 
-                    return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                    {
+                        var files = args.FileSystemChildren
+                            .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                            .ToList();
+
+                        return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                    }
                 }
 
                 if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
                 {
+                    var files = args.FileSystemChildren
+                        .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                        .ToList();
+
                     return FindMovie<Movie>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                 }
 

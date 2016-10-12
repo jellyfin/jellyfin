@@ -4,13 +4,13 @@
     var hasChanges;
     var currentOptions;
 
-    function addMediaLocation(page, path) {
+    function addMediaLocation(page, path, networkSharePath) {
 
         var virtualFolder = currentOptions.library;
 
         var refreshAfterChange = currentOptions.refresh;
 
-        ApiClient.addMediaPath(virtualFolder.Name, path, refreshAfterChange).then(function () {
+        ApiClient.addMediaPath(virtualFolder.Name, path, networkSharePath, refreshAfterChange).then(function () {
 
             hasChanges = true;
             refreshLibraryFromServer(page);
@@ -23,9 +23,29 @@
         });
     }
 
-    function onRemoveClick() {
+    function updateMediaLocation(page, path, networkSharePath) {
+        var virtualFolder = currentOptions.library;
+        ApiClient.updateMediaPath(virtualFolder.Name, {
 
-        var button = this;
+            Path: path,
+            NetworkPath: networkSharePath
+
+        }).then(function () {
+
+            hasChanges = true;
+            refreshLibraryFromServer(page);
+
+        }, function () {
+
+            require(['toast'], function (toast) {
+                toast(Globalize.translate('ErrorAddingMediaPathToVirtualFolder'));
+            });
+        });
+    }
+
+    function onRemoveClick(btnRemovePath) {
+
+        var button = btnRemovePath;
         var index = parseInt(button.getAttribute('data-index'));
 
         var virtualFolder = currentOptions.library;
@@ -34,7 +54,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(Globalize.translate('MessageConfirmRemoveMediaLocation'), Globalize.translate('HeaderRemoveMediaLocation')).then(function () {
+            confirm({
+
+                title: Globalize.translate('HeaderRemoveMediaLocation'),
+                text: Globalize.translate('MessageConfirmRemoveMediaLocation'),
+                confirmText: Globalize.translate('ButtonDelete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 var refreshAfterChange = currentOptions.refresh;
 
@@ -53,18 +80,42 @@
         });
     }
 
-    function getFolderHtml(path, index) {
+    function onListItemClick(e) {
+
+        var btnRemovePath = dom.parentWithClass(e.target, 'btnRemovePath');
+        if (btnRemovePath) {
+            onRemoveClick(btnRemovePath);
+            return;
+        }
+
+        var listItem = dom.parentWithClass(e.target, 'listItem');
+        if (!listItem) {
+            return;
+        }
+
+        var index = parseInt(listItem.getAttribute('data-index'));
+        var page = dom.parentWithClass(listItem, 'dlg-libraryeditor');
+        showDirectoryBrowser(page, index);
+    }
+
+    function getFolderHtml(pathInfo, index) {
 
         var html = '';
 
-        html += '<div class="listItem lnkPath">';
+        html += '<div class="listItem lnkPath" data-index="' + index + '">';
 
         html += '<i class="listItemIcon md-icon">folder</i>';
 
-        html += '<div class="listItemBody">';
+        var cssClass = pathInfo.NetworkPath ? 'listItemBody two-line' : 'listItemBody';
+
+        html += '<div class="' + cssClass + '">';
+
         html += '<h3 class="listItemBodyText">';
-        html += path;
+        html += pathInfo.Path;
         html += '</h3>';
+        if (pathInfo.NetworkPath) {
+            html += '<div class="listItemBodyText secondary">' + pathInfo.NetworkPath + '</div>';
+        }
         html += '</div>';
 
         html += '<button is="paper-icon-button-light" class="listItemButton btnRemovePath" data-index="' + index + '"><i class="md-icon">remove_circle</i></button>';
@@ -92,13 +143,24 @@
     }
 
     function renderLibrary(page, options) {
-        var foldersHtml = options.library.Locations.map(getFolderHtml).join('');
+
+        var pathInfos = (options.library.LibraryOptions || {}).PathInfos || [];
+
+        if (!pathInfos.length) {
+            pathInfos = options.library.Locations.map(function (p) {
+                return {
+                    Path: p
+                };
+            });
+        }
+
+        var foldersHtml = pathInfos.map(getFolderHtml).join('');
 
         page.querySelector('.folderList').innerHTML = foldersHtml;
 
-        var btnRemovePath = page.querySelectorAll('.btnRemovePath');
-        for (var i = 0, length = btnRemovePath.length; i < length; i++) {
-            btnRemovePath[i].addEventListener('click', onRemoveClick);
+        var listItems = page.querySelectorAll('.listItem');
+        for (var i = 0, length = listItems.length; i < length; i++) {
+            listItems[i].addEventListener('click', onListItemClick);
         }
     }
 
@@ -106,16 +168,35 @@
 
         var page = dom.parentWithClass(this, 'dlg-libraryeditor');
 
+        showDirectoryBrowser(page);
+    }
+
+    function showDirectoryBrowser(context, listIndex) {
+
         require(['directorybrowser'], function (directoryBrowser) {
 
             var picker = new directoryBrowser();
 
+            var pathInfos = (currentOptions.library.LibraryOptions || {}).PathInfos || [];
+            var pathInfo = listIndex == null ? {} : (pathInfos[listIndex] || {});
+            // legacy
+            var location = listIndex == null ? null : (currentOptions.library.Locations[listIndex]);
+            var originalPath = pathInfo.Path || location;
+
             picker.show({
 
-                callback: function (path) {
+                enableNetworkSharePath: true,
+                pathReadOnly: listIndex != null,
+                path: originalPath,
+                networkSharePath: pathInfo.NetworkPath,
+                callback: function (path, networkSharePath) {
 
                     if (path) {
-                        addMediaLocation(page, path);
+                        if (originalPath) {
+                            updateMediaLocation(context, originalPath, networkSharePath);
+                        } else {
+                            addMediaLocation(context, path, networkSharePath);
+                        }
                     }
                     picker.close();
                 }
@@ -137,6 +218,8 @@
         var dlg = this;
 
         var libraryOptions = libraryoptionseditor.getLibraryOptions(dlg.querySelector('.libraryOptions'));
+
+        libraryOptions = Object.assign(currentOptions.library.LibraryOptions || {}, libraryOptions);
 
         ApiClient.updateVirtualFolderOptions(currentOptions.library.ItemId, libraryOptions);
     }

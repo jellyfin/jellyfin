@@ -1,4 +1,5 @@
 ﻿define(['layoutManager', 'browser', 'dom', 'css!./emby-input', 'registerElement'], function (layoutManager, browser, dom) {
+    'use strict';
 
     var EmbyInputPrototype = Object.create(HTMLInputElement.prototype);
 
@@ -19,7 +20,7 @@
                     bubbles: false,
                     cancelable: false
                 }));
-            }
+            };
 
             Object.defineProperty(HTMLInputElement.prototype, 'value', descriptor);
             supportsFloatingLabel = true;
@@ -86,7 +87,7 @@
             label.classList.remove('inputLabel-float');
         } else {
 
-            var instanceSupportsFloat = supportsFloatingLabel && this.type != 'date' && this.type != 'time';
+            var instanceSupportsFloat = supportsFloatingLabel && this.type !== 'date' && this.type !== 'time';
 
             if (instanceSupportsFloat) {
                 label.classList.add('inputLabel-float');

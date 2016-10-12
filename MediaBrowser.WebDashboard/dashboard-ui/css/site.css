@@ -35,8 +35,16 @@ html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'San Francisco', 'Helvetica Neue', Roboto, 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
     font-size: 14px;
+}
+
+h1 {
+    font-family: -apple-system-headline, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
+}
+
+h2 {
+    font-family: -apple-system-subheadline, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
 }
 
 body {
@@ -68,11 +76,6 @@ body {
     overflow-x: visible !important;
     /* jqm often wants to assign a background color to this */
     background-color: transparent !important;
-}
-
-/* Undo this from jqm which may cause the page to have it's own scrollbar */
-.ui-mobile .ui-page-active {
-    overflow-x: visible;
 }
 
 .bodyWithPopupOpen {
@@ -116,77 +119,22 @@ h1 a:hover {
     color: #52B54B !important;
 }
 
-input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([is='emby-input']) {
-    -webkit-appearance: none;
-    -webkit-font-smoothing: antialiased;
-    -webkit-rtl-ordering: logical;
-    -webkit-user-select: text;
-    box-sizing: border-box;
-    font-family: inherit;
-    font-size: inherit;
-    height: 28.5938px;
-    letter-spacing: normal;
-    line-height: 18.2px;
-    list-style-image: none;
-    list-style-position: outside;
-    list-style-type: none;
-    min-height: 28.6px;
-    padding-bottom: 5.2px;
-    padding-left: 5.2px;
-    padding-right: 5.2px;
-    padding-top: 5.2px;
-    text-align: left;
-    text-indent: 0px;
-    text-rendering: auto;
-    text-shadow: none;
-    text-transform: none;
-    white-space: nowrap;
-    word-spacing: 0px;
-    writing-mode: lr-tb;
-    -webkit-writing-mode: horizontal-tb;
-    background: white;
-    width: 100%;
-    border: 1px solid #ccc;
-    color: #000;
-    margin: 0 0 3px 0;
-    border-radius: 4px;
-    display: block;
+.ui-body-a .paperList {
+    background-color: #fff;
 }
 
-select {
-    width: 100%;
-    margin: 0 0 .5em 0;
+.ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
-    border: 1px solid rgb(221, 221, 221);
-    border-width: 0 0 1px 0;
-    /* Prefixed box-sizing rules necessary for older browsers */
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    /* Remove select styling */
-    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
-    font-size: inherit;
-    /* General select styles: change as needed */
-    font-family: inherit;
-    font-weight: bold;
-    color: inherit;
-    padding: .6em .8em .3em 0;
-    cursor: pointer;
+    border-color: #ccc !important;
 }
 
-    select:not([data-inline='true']) {
-        display: block;
-    }
-
-.ui-body-b select, .ui-body-b [is="emby-input"] {
-    background: none;
-    border-color: #454545;
+.ui-body-a .secondaryText {
+    color: #ccc;
 }
 
-    .ui-body-b select option {
-        background: #333;
-        color: #fff;
-    }
+.ui-body-b .secondaryText {
+    color: #aaa;
+}
 
 div[data-role='page'] {
     outline: none;
@@ -212,48 +160,6 @@ div[data-role='page'] {
     transform: translateY(-210%);
 }
 
-.checkboxContainer {
-    white-space: nowrap;
-}
-
-    .checkboxContainer input:not([is=emby-checkbox]) {
-        width: 20px;
-        height: 20px;
-        vertical-align: middle;
-        display: inline-block;
-        margin: 0;
-        padding: 0;
-    }
-
-    .checkboxContainer label:not(.mdl-checkbox) {
-        vertical-align: middle;
-        display: inline-block;
-        padding: .7em .5em;
-    }
-
-textarea {
-    width: 100%;
-}
-
-    pre, textarea.pre {
-        display: block;
-        padding: 8.5px;
-        font-size: 12.025px;
-        line-height: 18px;
-        word-break: break-all;
-        word-wrap: break-word;
-        white-space: pre;
-        white-space: pre-wrap;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        border-radius: 4px;
-        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-        color: #000;
-    }
-
 .hide {
     display: none !important;
 }
@@ -273,10 +179,6 @@ textarea {
     .imgLogoIcon + span {
         margin-left: 10px;
     }
-
-.ui-popup-container {
-    z-index: 99999;
-}
 
 @media all and (max-height: 800px) {
 
@@ -308,15 +210,11 @@ textarea {
 }
 
 .background-theme-a .backgroundContainer {
-    background-color: #f5f5f5;
+    background-color: #f6f6f6;
 }
 
 .dialog.background-theme-a {
     background-color: #f0f0f0;
-}
-
-.dialog:not(.background-theme-a):not(.background-theme-b) {
-    background-color: #fff;
 }
 
 .sidebarLinks {
@@ -391,113 +289,6 @@ textarea {
     }
 }
 
-/*
- * Gradient Shadow
- */
-
-/* All HTML5 progress enabled browsers */
-progress {
-    /* Turns off styling - not usually needed, but good to know. */
-    appearance: none;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    /* gets rid of default border in Firefox and Opera. */
-    border: solid #cccccc 2px;
-    border-radius: 4px;
-    margin: 0;
-}
-
-    /* Polyfill */
-    progress[role]:after {
-        background-image: none; /* removes default background from polyfill */
-    }
-
-/*
- * Background of the progress bar background
- */
-
-/* Firefox and Polyfill */
-progress {
-    background: #cccccc !important; /* !important only needed in polyfill */
-}
-
-    /* Chrome */
-    progress::-webkit-progress-bar {
-        background: #cccccc;
-    }
-
-    /*
- * Background of the progress bar value
- */
-
-    /* Firefox */
-    progress::-moz-progress-bar {
-        border-radius: 5px;
-        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
-
-    /* Chrome */
-    progress::-webkit-progress-value {
-        border-radius: 5px;
-        background-image: -webkit-gradient( linear, left bottom, left top, color-stop(0, rgb(43,194,83)), color-stop(1, rgb(84,240,84)) );
-        background-image: -webkit-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
-
-    /* Polyfill */
-    progress[aria-valuenow]:before {
-        border-radius: 5px;
-        background-image: -moz-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-        background-image: -ms-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-        background-image: -o-linear-gradient( center bottom, rgb(43,194,83) 37%, rgb(84,240,84) 69% );
-    }
-
-/* Detail Page*/
-
-.btnUserItemRating {
-    vertical-align: middle;
-    color: #aaa !important;
-    display: inline-block !important;
-}
-
-.btnUserItemRatingOn {
-    color: #cc3333 !important;
-}
-
-.imgUserItemRating {
-    height: 16px;
-    width: 16px;
-    margin-right: .75em;
-    cursor: pointer;
-    vertical-align: top;
-}
-
-    .imgUserItemRating:last-child {
-        margin-right: 0;
-    }
-
-    .imgUserItemRating:hover {
-        opacity: .5;
-    }
-
-.dashboardFooter {
-    margin-top: 50px;
-    text-align: center;
-}
-
-    .dashboardFooter a {
-        text-decoration: none;
-        font-weight: normal;
-        margin: 0 .7em;
-    }
-
-    .dashboardFooter .appLinks a {
-        margin: .25em;
-    }
-
-    .dashboardFooter .appLinks img {
-        height: 16px;
-    }
-
 .supporterPromotionContainer {
     margin: 0 0 2em;
 }
@@ -558,10 +349,6 @@ progress {
     color: #bbb;
 }
 
-.actionSheetMenuItem:hover {
-    background-color: #e8e8e8;
-}
-
 .ui-body-a select {
     background: none;
     border-color: #757575;
@@ -594,6 +381,12 @@ progress {
 
 .ui-body-a .visualCardBox-cardScalable, .ui-body-a .visualCardBox-cardFooter {
     background-color: #fff;
+}
+
+.ui-body-a .visualCardBox {
+    border: 0;
+    margin: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .ui-body-a .cardFooter .cardText + .cardText {

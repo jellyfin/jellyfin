@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasProductionLocations, IHasBudget, IHasLookupInfo<MusicVideoInfo>
+    public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasBudget, IHasLookupInfo<MusicVideoInfo>
     {
         /// <summary>
         /// Gets or sets the budget.
@@ -19,12 +19,10 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The revenue.</value>
         public double? Revenue { get; set; }
-        public List<string> ProductionLocations { get; set; }
         public List<string> Artists { get; set; }
 
         public MusicVideo()
         {
-            ProductionLocations = new List<string>();
             Artists = new List<string>();
         }
 
@@ -34,6 +32,15 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 return Artists;
+            }
+        }
+
+        [IgnoreDataMember]
+        protected override bool SupportsIsInMixedFolderDetection
+        {
+            get
+            {
+                return true;
             }
         }
 
@@ -65,7 +72,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     // Try to get the year from the folder name
-                    if (!IsInMixedFolder)
+                    if (!DetectIsInMixedFolder())
                     {
                         info = LibraryManager.ParseName(System.IO.Path.GetFileName(ContainingFolderPath));
 

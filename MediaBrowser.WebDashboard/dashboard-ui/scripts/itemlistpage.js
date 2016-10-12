@@ -120,6 +120,7 @@
                     posterOptions.showYear = true;
                     posterOptions.cardLayout = true;
                     posterOptions.centerText = false;
+                    posterOptions.vibrant = true;
 
                     html = cardBuilder.getCardsHtml(posterOptions);
                 }

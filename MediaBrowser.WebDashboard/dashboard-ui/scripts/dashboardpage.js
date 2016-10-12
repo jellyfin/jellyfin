@@ -1,4 +1,4 @@
-﻿define(['datetime', 'jQuery', 'cardStyle'], function (datetime, $) {
+﻿define(['datetime', 'jQuery', 'dom', 'humanedate', 'cardStyle', 'listViewStyle'], function (datetime, $, dom) {
 
     function renderNoHealthAlertsMessage(page) {
 
@@ -22,6 +22,38 @@
         return false;
     }
 
+    function onEditServerNameClick(e) {
+
+        var page = dom.parentWithClass(this, 'page');
+
+        require(['prompt'], function (prompt) {
+
+            prompt({
+                label: Globalize.translate('LabelFriendlyServerName'),
+                description: Globalize.translate('LabelFriendlyServerNameHelp'),
+                value: page.querySelector('.serverNameHeader').innerHTML,
+                confirmText: Globalize.translate('ButtonSave')
+
+            }).then(function (value) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getServerConfiguration().then(function (config) {
+
+                    config.ServerName = value;
+
+                    ApiClient.updateServerConfiguration(config).then(function () {
+                        page.querySelector('.serverNameHeader').innerHTML = value;
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+            });
+        });
+
+        e.preventDefault();
+        return false;
+    }
+
     window.DashboardPage = {
 
         newsStartIndex: 0,
@@ -31,6 +63,7 @@
             var page = this;
 
             page.querySelector('.btnConnectionHelp').addEventListener('click', onConnectionHelpClick);
+            page.querySelector('.btnEditServerName').addEventListener('click', onEditServerNameClick);
         },
 
         onPageShow: function () {
@@ -123,9 +156,9 @@
                 $('#appVersionNumber', page).html(localizedVersion);
 
                 if (systemInfo.SupportsHttps) {
-                    $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', '<b>' + systemInfo.HttpServerPortNumber + '</b>', '<b>' + systemInfo.HttpsPortNumber + '</b>'));
+                    $('#ports', page).html(Globalize.translate('LabelRunningOnPorts', systemInfo.HttpServerPortNumber, systemInfo.HttpsPortNumber));
                 } else {
-                    $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
+                    $('#ports', page).html(Globalize.translate('LabelRunningOnPort', systemInfo.HttpServerPortNumber));
                 }
 
                 if (systemInfo.CanSelfRestart) {
@@ -143,6 +176,12 @@
                 } else {
                     $('#btnUpdateApplicationContainer', page).hide();
                     $('#btnManualUpdateContainer', page).show();
+                }
+
+                if (systemInfo.PackageName == 'synology') {
+                    $('#btnManualUpdateContainer').html(Globalize.translate('SynologyUpdateInstructions'));
+                } else {
+                    $('#btnManualUpdateContainer').html('<a href="http://emby.media/download" target="_blank">' + Globalize.translate('PleaseUpdateManually') + '</a>');
                 }
 
                 DashboardPage.renderPaths(page, systemInfo);
@@ -168,20 +207,20 @@
 
                     itemHtml += '<i class="listItemIcon md-icon">dvr</i>';
 
-                    itemHtml += '<div class="listItemBody three-line">';
+                    itemHtml += '<div class="listItemBody two-line">';
 
-                    itemHtml += '<h3 class="listItemBodyText">';
+                    itemHtml += '<div class="listItemBodyText">';
                     itemHtml += item.Title;
-                    itemHtml += '</h3>';
+                    itemHtml += '</div>';
 
                     itemHtml += '<div class="listItemBodyText secondary">';
                     var date = datetime.parseISO8601Date(item.Date, true);
                     itemHtml += date.toLocaleDateString();
                     itemHtml += '</div>';
 
-                    itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
-                    itemHtml += item.Description;
-                    itemHtml += '</div>';
+                    //itemHtml += '<div class="listItemBodyText secondary listItemBodyText-nowrap">';
+                    //itemHtml += item.Description;
+                    //itemHtml += '</div>';
 
                     itemHtml += '</div>';
 
@@ -819,11 +858,13 @@
 
         renderUrls: function (page, systemInfo) {
 
+            var helpButton = '<a href="https://github.com/MediaBrowser/Wiki/wiki/Connectivity" target="_blank" style="margin-left:1em;color:#fff;background:#52B54B;padding:.25em 1em;border-radius:.5em;">' + Globalize.translate('ButtonHelp') + '</a>';
+
             if (systemInfo.LocalAddress) {
 
                 var localAccessHtml = Globalize.translate('LabelLocalAccessUrl', '<a href="' + systemInfo.LocalAddress + '" target="_blank">' + systemInfo.LocalAddress + '</a>');
 
-                $('.localUrl', page).html(localAccessHtml).show().trigger('create');
+                $('.localUrl', page).html(localAccessHtml + helpButton).show().trigger('create');
             } else {
                 $('.externalUrl', page).hide();
             }
@@ -834,7 +875,7 @@
 
                 var remoteAccessHtml = Globalize.translate('LabelRemoteAccessUrl', '<a href="' + externalUrl + '" target="_blank">' + externalUrl + '</a>');
 
-                $('.externalUrl', page).html(remoteAccessHtml).show().trigger('create');
+                $('.externalUrl', page).html(remoteAccessHtml + helpButton).show().trigger('create');
             } else {
                 $('.externalUrl', page).hide();
             }
@@ -953,7 +994,7 @@
 
                     html += '<p><strong>' + Globalize.translate('NewVersionOfSomethingAvailable').replace('{0}', update.name) + '</strong></p>';
 
-                    html += '<button type="button" data-icon="arrow-d" data-theme="b" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">' + Globalize.translate('ButtonUpdateNow') + '</button>';
+                    html += '<button type="button" is="emby-button" class="raised block" onclick="DashboardPage.installPluginUpdate(this);" data-name="' + update.name + '" data-guid="' + update.guid + '" data-version="' + update.versionStr + '" data-classification="' + update.classification + '">' + Globalize.translate('ButtonUpdateNow') + '</button>';
                 }
 
                 elem.html(html);
@@ -1016,7 +1057,14 @@
 
             require(['confirm'], function (confirm) {
 
-                confirm(Globalize.translate('MessageConfirmRestart'), Globalize.translate('HeaderRestart')).then(function () {
+                confirm({
+
+                    title: Globalize.translate('HeaderRestart'),
+                    text: Globalize.translate('MessageConfirmRestart'),
+                    confirmText: Globalize.translate('ButtonRestart'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     $('#btnRestartServer').buttonEnabled(false);
                     $('#btnShutdown').buttonEnabled(false);
@@ -1029,7 +1077,14 @@
 
             require(['confirm'], function (confirm) {
 
-                confirm(Globalize.translate('MessageConfirmShutdown'), Globalize.translate('HeaderShutdown')).then(function () {
+                confirm({
+
+                    title: Globalize.translate('HeaderShutdown'),
+                    text: Globalize.translate('MessageConfirmShutdown'),
+                    confirmText: Globalize.translate('ButtonShutdown'),
+                    primary: 'cancel'
+
+                }).then(function () {
 
                     $('#btnRestartServer').buttonEnabled(false);
                     $('#btnShutdown').buttonEnabled(false);
@@ -1067,9 +1122,9 @@
 
             html += '<div class="listItemBody three-line">';
 
-            html += '<h3 class="listItemBodyText">';
+            html += '<div class="listItemBodyText">';
             html += entry.Name;
-            html += '</h3>';
+            html += '</div>';
 
             html += '<div class="listItemBodyText secondary">';
             var date = datetime.parseISO8601Date(entry.Date, true);

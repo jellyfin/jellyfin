@@ -49,7 +49,6 @@
 .nowPlayingBar {
     /* Above everything, except for the video player and popup overlays */
     color: #fff;
-    background: #222326;
     text-align: center;
     /*box-shadow: 0 -2px 2px 0 rgba(0,0,0,.14),-1px 5px 1px rgba(0,0,0,.12);*/
     will-change: transform;

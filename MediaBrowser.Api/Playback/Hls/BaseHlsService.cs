@@ -87,7 +87,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!FileSystem.FileExists(playlist))
             {
-                await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                var transcodingLock = ApiEntryPoint.Instance.GetTranscodingLock(playlist);
+                await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                 try
                 {
                     if (!FileSystem.FileExists(playlist))
@@ -104,13 +105,13 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        var waitForSegments = state.SegmentLength >= 10 ? 2 : 3;
+                        var waitForSegments = state.SegmentLength >= 10 ? 2 : (state.SegmentLength > 3 || !isLive ? 3 : 3);
                         await WaitForMinimumSegmentCount(playlist, waitForSegments, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
                 finally
                 {
-                    ApiEntryPoint.Instance.TranscodingStartLock.Release();
+                    transcodingLock.Release();
                 }
             }
 
@@ -128,10 +129,9 @@ namespace MediaBrowser.Api.Playback.Hls
             var audioBitrate = state.OutputAudioBitrate ?? 0;
             var videoBitrate = state.OutputVideoBitrate ?? 0;
 
-            var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
 
-            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
+            var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, baselineStreamBitrate);
 
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
 
@@ -151,9 +151,10 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var text = reader.ReadToEnd();
 
+                    text = text.Replace("#EXTM3U", "#EXTM3U\n#EXT-X-PLAYLIST-TYPE:EVENT");
+
                     var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture);
 
-                    // ffmpeg pads the reported length by a full second
                     text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
                     return text;
@@ -161,7 +162,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, bool includeBaselineStream, int baselineStreamBitrate)
+        private string GetMasterPlaylistFileText(string firstPlaylist, int bitrate, int baselineStreamBitrate)
         {
             var builder = new StringBuilder();
 
@@ -175,14 +176,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "/stream.m3u8");
             builder.AppendLine(playlistUrl);
 
-            // Low bitrate stream
-            if (includeBaselineStream)
-            {
-                builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + baselineStreamBitrate.ToString(UsCulture));
-                playlistUrl = "hls/" + Path.GetFileName(firstPlaylist).Replace(".m3u8", "-low/stream.m3u8");
-                builder.AppendLine(playlistUrl);
-            }
-
             return builder.ToString();
         }
 
@@ -190,32 +183,41 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (var fileStream = GetPlaylistFileStream(playlist))
+                try
                 {
-                    using (var reader = new StreamReader(fileStream))
+                    // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                    using (var fileStream = GetPlaylistFileStream(playlist))
                     {
-                        var count = 0;
-
-                        while (!reader.EndOfStream)
+                        using (var reader = new StreamReader(fileStream))
                         {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+                            var count = 0;
 
-                            if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
+                            while (!reader.EndOfStream)
                             {
-                                count++;
-                                if (count >= segmentCount)
+                                var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                                if (line.IndexOf("#EXTINF:", StringComparison.OrdinalIgnoreCase) != -1)
                                 {
-                                    Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                    return;
+                                    count++;
+                                    if (count >= segmentCount)
+                                    {
+                                        Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                        return;
+                                    }
                                 }
                             }
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                         }
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     }
                 }
+                catch (IOException)
+                {
+                    // May get an error if the file is locked
+                }
+
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
         }
 

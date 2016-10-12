@@ -79,7 +79,8 @@
                         showItemCounts: true,
                         cardLayout: true,
                         showTitle: true,
-                        lazy: true
+                        lazy: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
@@ -90,7 +91,8 @@
                         showItemCounts: true,
                         lazy: true,
                         cardLayout: true,
-                        showTitle: true
+                        showTitle: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "Poster") {

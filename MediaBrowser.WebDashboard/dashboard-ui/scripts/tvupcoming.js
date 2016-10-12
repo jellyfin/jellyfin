@@ -1,4 +1,4 @@
-﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder) {
+﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder, appHost) {
 
     function getUpcomingPromise(context, params) {
 
@@ -110,6 +110,8 @@
                 html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
 
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             html += cardBuilder.getCardsHtml({
                 items: group.items,
                 showLocationTypeIndicator: false,
@@ -118,10 +120,11 @@
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true,
-                overlayMoreButton: true,
+                centerText: !supportsImageAnalysis,
                 showParentTitle: true,
-                allowBottomPadding: allowBottomPadding
+                allowBottomPadding: allowBottomPadding,
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
 
             });
             html += '</div>';

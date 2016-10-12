@@ -328,8 +328,6 @@
 
                 $('.sliderValue', elem).html(tooltext);
 
-                console.log("slidin", pct, self.currentDurationTicks, time);
-
             });
         });
     }

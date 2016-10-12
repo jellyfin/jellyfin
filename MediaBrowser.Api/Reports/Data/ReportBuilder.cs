@@ -517,10 +517,6 @@ namespace MediaBrowser.Api.Reports
                     internalHeader = HeaderMetadata.Album;
                     break;
 
-                case HeaderMetadata.Countries:
-                    option.Column = (i, r) => this.GetListAsString(this.GetObject<IHasProductionLocations, List<string>>(i, (x) => x.ProductionLocations));
-                    break;
-
                 case HeaderMetadata.Disc:
                     option.Column = (i, r) => i.ParentIndexNumber;
                     break;

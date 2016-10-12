@@ -30,12 +30,12 @@ namespace MediaBrowser.Server.Implementations.Channels
             return Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
         }
 
-        public Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId)
         {
             throw new NotImplementedException();
         }

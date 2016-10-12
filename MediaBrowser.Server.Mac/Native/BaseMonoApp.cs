@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using MediaBrowser.Controller.Power;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using System.Diagnostics;
@@ -200,11 +199,6 @@ namespace MediaBrowser.Server.Mac
             return new NetworkManager(logger);
         }
 
-		public IPowerManagement GetPowerManagement() 
-		{
-			return new NullPowerManagement ();
-		}
-
 		public void EnableLoopback(string appName)
 		{
 
@@ -274,13 +268,5 @@ namespace MediaBrowser.Server.Mac
             public string sysname = string.Empty;
             public string machine = string.Empty;
         }
-
-		private class NullPowerManagement : IPowerManagement
-		{
-			public void ScheduleWake(DateTime utcTime) 
-			{
-				throw new NotImplementedException ();
-			}
-		}
     }
 }

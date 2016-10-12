@@ -130,6 +130,8 @@
         /// </summary>
         Metascore,
 
+        OfficialRatingDescription,
+
         OriginalTitle,
 
         /// <summary>
@@ -258,6 +260,8 @@
         /// <summary>
         /// The service name
         /// </summary>
-        ServiceName
+        ServiceName,
+        ThemeSongIds,
+        ThemeVideoIds
     }
 }

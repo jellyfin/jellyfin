@@ -32,6 +32,15 @@ namespace MediaBrowser.Controller.Playlists
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPlayedStatus
+        {
+            get
+            {
+                return string.Equals(MediaType, "Video", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool AlwaysScanInternalMetadataPath
         {
             get
@@ -198,15 +207,15 @@ namespace MediaBrowser.Controller.Playlists
 
         public override bool IsVisible(User user)
         {
-            if (base.IsVisible(user))
-            {
-                var userId = user.Id.ToString("N");
+            var userId = user.Id.ToString("N");
 
-                return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
-                    string.Equals(OwnerUserId, userId, StringComparison.OrdinalIgnoreCase);
-            }
+            return Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)) ||
+                string.Equals(OwnerUserId, userId, StringComparison.OrdinalIgnoreCase);
+        }
 
-            return false;
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisible(user);
         }
     }
 }

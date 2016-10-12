@@ -1,79 +1,27 @@
 ﻿<div id="liveTvSeriesTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-title="${HeaderLiveTv}" data-menubutton="false">
 
+    <style>
+        @media all and (min-width: 800px) {
+
+            .seriesTimerSchedule .backdropCard {
+                width: 33.333333333333333333333333333333%;
+            }
+        }
+    </style>
     <div data-role="content">
 
-        <div style="margin:auto; max-width: 900px;">
+        <div style="margin:auto; max-width: 700px;">
             <div>
                 <h1 class="itemName"></h1>
             </div>
-            <form class="liveTvSeriesTimerForm" style="max-width: initial;">
-                <div>
-                    <h1>${HeaderDays}</h1>
-                </div>
-                <div class="checkboxList">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkSunday" />
-                        <span>${OptionSunday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkMonday" />
-                        <span>${OptionMonday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkTuesday" />
-                        <span>${OptionTuesday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkWednesday" />
-                        <span>${OptionWednesday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkThursday" />
-                        <span>${OptionThursday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkFriday" />
-                        <span>${OptionFriday}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkSaturday" />
-                        <span>${OptionSaturday}</span>
-                    </label>
-                </div>
-                <div>
-                    <h1>${HeaderRepeatingOptions}</h1>
-                </div>
-                <div class="checkboxList">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkNewOnly" />
-                        <span>${OptionRecordOnlyNewEpisodes}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkAnyTime" />
-                        <span>${OptionRecordAnytime}</span>
-                    </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkAllChannels" />
-                        <span>${OptionRecordOnAllChannels}</span>
-                    </label>
-                </div>
-                <h1>
-                    ${HeaderAdvanced}
-                </h1>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" id="txtPostPaddingMinutes" type="number" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
-                </div>
 
-                <div class="hide">
-                    <button is="emby-button" type="submit" class="raised submit block btnSubmit"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+            <div class="recordingEditor">
 
-                    <button is="emby-button" type="button" class="raised cancel block btnCancel" onclick="history.back();"><i class="md-icon">close</i><span>${ButtonCancel}</span></button>
-                </div>
-            </form>
-            <div class="scheduleTab"></div>
+            </div>
+
+            <h1 style="margin-top:0;">${HeaderSchedule}</h1>
+            <div class="scheduleTab seriesTimerSchedule">
+            </div>
         </div>
     </div>
 

@@ -154,8 +154,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
 
-            var id = Guid.NewGuid().ToString("N");
-
             var items = GetEpisodes(user).Where(filter);
 
             var result = PostFilterAndSort(items, query, false, false);

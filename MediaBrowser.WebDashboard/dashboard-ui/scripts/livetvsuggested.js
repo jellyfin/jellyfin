@@ -1,7 +1,71 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, appHost) {
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function renderRecordings(elem, recordings, cardOptions) {
+
+        if (recordings.length) {
+            elem.classList.remove('hide');
+        } else {
+            elem.classList.add('hide');
+        }
+
+        var recordingItems = elem.querySelector('.recordingItems');
+
+        if (enableScrollX()) {
+            recordingItems.classList.add('hiddenScrollX');
+            recordingItems.classList.remove('vertical-wrap');
+        } else {
+            recordingItems.classList.remove('hiddenScrollX');
+            recordingItems.classList.add('vertical-wrap');
+        }
+
+        recordingItems.innerHTML = cardBuilder.getCardsHtml(Object.assign({
+            items: recordings,
+            shape: (enableScrollX() ? 'autooverflow' : 'auto'),
+            showTitle: true,
+            showParentTitle: true,
+            coverImage: true,
+            lazy: true,
+            cardLayout: true,
+            vibrant: true,
+            allowBottomPadding: !enableScrollX(),
+            preferThumb: 'auto'
+
+        }, cardOptions || {}));
+
+        ImageLoader.lazyChildren(recordingItems);
+    }
+
+    function getBackdropShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function renderActiveRecordings(context, promise) {
+
+        promise.then(function (result) {
+
+            // The IsActive param is new, so handle older servers that don't support it
+            if (result.Items.length && result.Items[0].Status != 'InProgress') {
+                result.Items = [];
+            }
+
+            renderRecordings(context.querySelector('#activeRecordings'), result.Items, {
+                shape: getBackdropShape(),
+                showParentTitle: false,
+                showTitle: true,
+                showAirTime: true,
+                showAirEndTime: true,
+                showChannelName: true,
+                cardLayout: true,
+                vibrant: true,
+                preferThumb: true,
+                coverImage: true,
+                overlayText: false
+            });
+        });
     }
 
     function getPortraitShape() {
@@ -28,7 +92,8 @@
             IsAiring: true,
             limit: limit,
             ImageTypeLimit: 1,
-            EnableImageTypes: "Primary",
+            EnableImageTypes: "Primary,Thumb,Backdrop",
+            EnableTotalRecordCount: false,
             Fields: "ChannelInfo"
 
         }).then(function (result) {
@@ -42,6 +107,14 @@
 
         loadRecommendedPrograms(page);
 
+        renderActiveRecordings(page, ApiClient.getLiveTvRecordings({
+            UserId: Dashboard.getCurrentUserId(),
+            IsInProgress: true,
+            Fields: 'CanDelete,PrimaryImageAspectRatio,BasicSyncInfo',
+            EnableTotalRecordCount: false,
+            EnableImageTypes: "Primary,Thumb,Backdrop"
+        }));
+
         ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
@@ -53,7 +126,8 @@
             IsKids: false,
             IsSeries: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -68,7 +142,8 @@
             limit: getLimit(),
             IsMovie: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -83,7 +158,8 @@
             limit: getLimit(),
             IsSports: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -98,7 +174,8 @@
             limit: getLimit(),
             IsKids: true,
             EnableTotalRecordCount: false,
-            Fields: "ChannelInfo"
+            Fields: "ChannelInfo",
+            EnableImageTypes: "Primary,Thumb"
 
         }).then(function (result) {
 
@@ -108,20 +185,27 @@
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
 
+        var supportsImageAnalysis = appHost.supports('imageanalysis');
+
         var html = cardBuilder.getCardsHtml({
             items: items,
             preferThumb: !shape,
+            inheritThumb: false,
             shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
-            showTitle: true,
-            centerText: true,
+            showParentTitleOrTitle: true,
+            showTitle: false,
+            centerText: !supportsImageAnalysis,
             coverImage: true,
             overlayText: false,
             lazy: true,
-            overlayMoreButton: overlayButton != 'play',
+            overlayMoreButton: overlayButton != 'play' && !supportsImageAnalysis,
             overlayPlayButton: overlayButton == 'play',
             allowBottomPadding: !enableScrollX(),
-            showProgramAirInfo: true
-            //cardFooterAside: 'logo'
+            showAirTime: true,
+            showAirDateTime: true,
+            showChannelName: true,
+            vibrant: true,
+            cardLayout: supportsImageAnalysis
         });
 
         var elem = page.querySelector('.' + sectionClass);
@@ -159,9 +243,8 @@
         var tabControllers = [];
         var renderedTabs = [];
 
-        function loadTab(page, index) {
+        function getTabController(page, index, callback) {
 
-            var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
             var depends = [];
 
             switch (index) {
@@ -169,23 +252,18 @@
                 case 0:
                     break;
                 case 1:
-                    document.body.classList.add('autoScrollY');
                     depends.push('scripts/livetvguide');
                     break;
                 case 2:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvchannels');
                     break;
                 case 3:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvrecordings');
                     break;
                 case 4:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvschedule');
                     break;
                 case 5:
-                    document.body.classList.remove('autoScrollY');
                     depends.push('scripts/livetvseriestimers');
                     break;
                 default:
@@ -193,12 +271,14 @@
             }
 
             require(depends, function (controllerFactory) {
-
+                var tabContent;
                 if (index == 0) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     self.tabContent = tabContent;
                 }
                 var controller = tabControllers[index];
                 if (!controller) {
+                    tabContent = view.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                     controller = index ? new controllerFactory(view, params, tabContent) : self;
                     tabControllers[index] = controller;
 
@@ -207,8 +287,37 @@
                     }
                 }
 
+                callback(controller);
+            });
+        }
+
+
+        function preLoadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
                 if (renderedTabs.indexOf(index) == -1) {
-                    renderedTabs.push(index);
+                    if (controller.preRender) {
+                        controller.preRender();
+                    }
+                }
+            });
+        }
+
+        function loadTab(page, index) {
+
+            getTabController(page, index, function (controller) {
+
+                if (index === 1) {
+                    document.body.classList.add('autoScrollY');
+                } else {
+                    document.body.classList.remove('autoScrollY');
+                }
+
+                if (renderedTabs.indexOf(index) == -1) {
+
+                    if (index === 1) {
+                        renderedTabs.push(index);
+                    }
                     controller.renderTab();
                 }
             });
@@ -217,6 +326,10 @@
         var viewTabs = view.querySelector('.libraryViewNav');
 
         libraryBrowser.configurePaperLibraryTabs(view, viewTabs, view.querySelectorAll('.pageTabContent'), [0, 2, 3, 4, 5]);
+
+        viewTabs.addEventListener('beforetabchange', function (e) {
+            preLoadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
 
         viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));

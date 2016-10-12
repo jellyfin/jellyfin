@@ -42,6 +42,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         private readonly IApplicationPaths _appPaths;
 
         private readonly IFileSystem _fileSystem;
+        private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpClientManager" /> class.
@@ -52,7 +53,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <exception cref="System.ArgumentNullException">appPaths
         /// or
         /// logger</exception>
-        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        public HttpClientManager(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem, IMemoryStreamProvider memoryStreamProvider)
         {
             if (appPaths == null)
             {
@@ -65,6 +66,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             _logger = logger;
             _fileSystem = fileSystem;
+            _memoryStreamProvider = memoryStreamProvider;
             _appPaths = appPaths;
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
@@ -269,6 +271,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 Url = url,
                 ResourcePool = resourcePool,
                 CancellationToken = cancellationToken,
+                BufferContent = resourcePool != null
             });
         }
 
@@ -293,12 +296,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </exception>
         public async Task<HttpResponseInfo> SendAsync(HttpRequestOptions options, string httpMethod)
         {
-            HttpResponseInfo response;
-
             if (options.CacheMode == CacheMode.None)
             {
-                response = await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
-                return response;
+                return await SendAsyncInternal(options, httpMethod).ConfigureAwait(false);
             }
 
             var url = options.Url;
@@ -306,7 +306,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             var responseCachePath = Path.Combine(_appPaths.CachePath, "httpclient", urlHash);
 
-            response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
+            var response = await GetCachedResponse(responseCachePath, options.CacheLength, url).ConfigureAwait(false);
             if (response != null)
             {
                 return response;
@@ -332,7 +332,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     using (var stream = _fileSystem.GetFileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
                     {
-                        var memoryStream = new MemoryStream();
+                        var memoryStream = _memoryStreamProvider.CreateNew();
 
                         await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
                         memoryStream.Position = 0;
@@ -366,7 +366,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             using (var responseStream = response.Content)
             {
-                var memoryStream = new MemoryStream();
+                var memoryStream = _memoryStreamProvider.CreateNew();
                 await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
                 memoryStream.Position = 0;
 
@@ -458,7 +458,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     using (var stream = httpResponse.GetResponseStream())
                     {
-                        var memoryStream = new MemoryStream();
+                        var memoryStream = _memoryStreamProvider.CreateNew();
 
                         await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
@@ -553,7 +553,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 Url = url,
                 ResourcePool = resourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = resourcePool != null
 
             }, postData);
         }
@@ -563,7 +564,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// </summary>
         /// <param name="options">The options.</param>
         /// <returns>Task{System.String}.</returns>
-        /// <exception cref="System.ArgumentNullException">progress</exception>
         public async Task<string> GetTempFile(HttpRequestOptions options)
         {
             var response = await GetTempFileResponse(options).ConfigureAwait(false);

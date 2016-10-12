@@ -1,4 +1,5 @@
 define(['browser', 'appSettings', 'events'], function (browser, appSettings, events) {
+    'use strict';
 
     function setLayout(self, layout, selectedLayout) {
 
@@ -17,7 +18,7 @@ define(['browser', 'appSettings', 'events'], function (browser, appSettings, eve
 
         self.setLayout = function (layout, save) {
 
-            if (!layout || layout == 'auto') {
+            if (!layout || layout === 'auto') {
                 self.autoLayout();
 
                 if (save !== false) {

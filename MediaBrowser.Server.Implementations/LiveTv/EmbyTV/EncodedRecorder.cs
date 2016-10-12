@@ -68,93 +68,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            if (mediaSource.Path.IndexOf("m3u8", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                await RecordWithoutTempFile(mediaSource, targetFile, duration, onStarted, cancellationToken)
-                        .ConfigureAwait(false);
-
-                return;
-            }
-
-            var tempfile = Path.Combine(_appPaths.TranscodingTempPath, Guid.NewGuid().ToString("N") + ".ts");
-
-            try
-            {
-                await RecordWithTempFile(mediaSource, tempfile, targetFile, duration, onStarted, cancellationToken)
-                        .ConfigureAwait(false);
-            }
-            finally
-            {
-                try
-                {
-                    File.Delete(tempfile);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error deleting recording temp file", ex);
-                }
-            }
-        }
-
-        private async Task RecordWithoutTempFile(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
-        {
             var durationToken = new CancellationTokenSource(duration);
             cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
 
             await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
-
-            _logger.Info("Recording completed to file {0}", targetFile);
-        }
-
-        private async Task RecordWithTempFile(MediaSourceInfo mediaSource, string tempFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
-        {
-            var httpRequestOptions = new HttpRequestOptions()
-            {
-                Url = mediaSource.Path
-            };
-
-            httpRequestOptions.BufferContent = false;
-
-            using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
-            {
-                _logger.Info("Opened recording stream from tuner provider");
-
-                Directory.CreateDirectory(Path.GetDirectoryName(tempFile));
-
-                using (var output = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    //onStarted();
-
-                    _logger.Info("Copying recording stream to file {0}", tempFile);
-
-                    var bufferMs = 5000;
-
-                    if (mediaSource.RunTimeTicks.HasValue)
-                    {
-                        // The media source already has a fixed duration
-                        // But add another stop 1 minute later just in case the recording gets stuck for any reason
-                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMinutes(1)));
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
-                    else
-                    {
-                        // The media source if infinite so we need to handle stopping ourselves
-                        var durationToken = new CancellationTokenSource(duration.Add(TimeSpan.FromMilliseconds(bufferMs)));
-                        cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
-                    }
-
-                    var tempFileTask = response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, cancellationToken);
-
-                    // Give the temp file a little time to build up
-                    await Task.Delay(bufferMs, cancellationToken).ConfigureAwait(false);
-
-                    var recordTask = Task.Run(() => RecordFromFile(mediaSource, tempFile, targetFile, duration, onStarted, cancellationToken), cancellationToken);
-
-                    await tempFileTask.ConfigureAwait(false);
-
-                    await recordTask.ConfigureAwait(false);
-                }
-            }
 
             _logger.Info("Recording completed to file {0}", targetFile);
         }
@@ -200,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
 
-            process.Exited += (sender, args) => OnFfMpegProcessExited(process);
+            process.Exited += (sender, args) => OnFfMpegProcessExited(process, inputFile);
 
             process.Start();
 
@@ -213,6 +130,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
             StartStreamingLog(process.StandardError.BaseStream, _logFileStream);
+
+            _logger.Info("ffmpeg recording process started for {0}", _targetPath);
 
             return _taskCompletionSource.Task;
         }
@@ -234,16 +153,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             var durationParam = " -t " + _mediaEncoder.GetTimeParameter(duration.Ticks);
-            var commandLineArgs = "-fflags +genpts -async 1 -vsync -1 -re -i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+            var inputModifiers = "-fflags +genpts -async 1 -vsync -1";
+            var commandLineArgs = "-i \"{0}\"{4} -sn {2} -map_metadata -1 -threads 0 {3} -y \"{1}\"";
+
+            long startTimeTicks = 0;
+            //if (mediaSource.DateLiveStreamOpened.HasValue)
+            //{
+            //    var elapsed = DateTime.UtcNow - mediaSource.DateLiveStreamOpened.Value;
+            //    elapsed -= TimeSpan.FromSeconds(10);
+            //    if (elapsed.TotalSeconds >= 0)
+            //    {
+            //        startTimeTicks = elapsed.Ticks + startTimeTicks;
+            //    }
+            //}
 
             if (mediaSource.ReadAtNativeFramerate)
             {
-                commandLineArgs = "-re " + commandLineArgs;
+                inputModifiers += " -re";
+            }
+
+            if (startTimeTicks > 0)
+            {
+                inputModifiers = "-ss " + _mediaEncoder.GetTimeParameter(startTimeTicks) + " " + inputModifiers;
             }
 
             commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
 
-            return commandLineArgs;
+            return inputModifiers + " " + commandLineArgs;
         }
 
         private string GetAudioArgs(MediaSourceInfo mediaSource)
@@ -309,8 +245,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        /// <param name="process">The process.</param>
-        private void OnFfMpegProcessExited(Process process)
+        private void OnFfMpegProcessExited(Process process, string inputFile)
         {
             _hasExited = true;
 

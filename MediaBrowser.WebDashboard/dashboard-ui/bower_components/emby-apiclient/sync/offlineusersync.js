@@ -1,4 +1,5 @@
 ﻿define(['localassetmanager'], function (localAssetManager) {
+    'use strict';
 
     function syncNext(users, index, resolve, reject, apiClient, server) {
 

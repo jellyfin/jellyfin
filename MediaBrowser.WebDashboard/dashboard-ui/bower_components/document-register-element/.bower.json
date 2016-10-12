@@ -1,0 +1,35 @@
+{
+  "name": "document-register-element",
+  "description": "A stand-alone working lightweight version of the W3C Custom Elements specification",
+  "main": "./build/document-register-element.js",
+  "ignore": [
+    "test",
+    ".jshintrc",
+    ".travis.yml",
+    ".TO_LOCALE.md",
+    ".gitignore",
+    ".gitmodules",
+    ".npmignore",
+    "benchmark",
+    "dom4",
+    "ie8",
+    "src",
+    "template",
+    "package.json",
+    "index.html",
+    "testrhino.js",
+    "Makefile"
+  ],
+  "homepage": "https://github.com/WebReflection/document-register-element",
+  "version": "0.5.4",
+  "_release": "0.5.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.5.4",
+    "commit": "d1d0e80a1c8a0e3f9369280fca834e2cbac2ce6e"
+  },
+  "_source": "https://github.com/WebReflection/document-register-element.git",
+  "_target": "^0.5.4",
+  "_originalSource": "document-register-element",
+  "_direct": true
+}

@@ -112,11 +112,25 @@ namespace MediaBrowser.Api.Library
         /// <value>The name.</value>
         public string Path { get; set; }
 
+        public MediaPathInfo PathInfo { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [refresh library].
         /// </summary>
         /// <value><c>true</c> if [refresh library]; otherwise, <c>false</c>.</value>
         public bool RefreshLibrary { get; set; }
+    }
+
+    [Route("/Library/VirtualFolders/Paths/Update", "POST")]
+    public class UpdateMediaPath : IReturnVoid
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; set; }
+
+        public MediaPathInfo PathInfo { get; set; }
     }
 
     [Route("/Library/VirtualFolders/Paths", "DELETE")]
@@ -212,7 +226,12 @@ namespace MediaBrowser.Api.Library
         {
             var libraryOptions = request.LibraryOptions ?? new LibraryOptions();
 
-            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, request.Paths, libraryOptions, request.RefreshLibrary);
+            if (request.Paths != null && request.Paths.Length > 0)
+            {
+                libraryOptions.PathInfos = request.Paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
+            }
+
+            _libraryManager.AddVirtualFolder(request.Name, request.CollectionType, libraryOptions, request.RefreshLibrary);
         }
 
         /// <summary>
@@ -308,7 +327,16 @@ namespace MediaBrowser.Api.Library
 
             try
             {
-                _libraryManager.AddMediaPath(request.Name, request.Path);
+                var mediaPath = request.PathInfo;
+
+                if (mediaPath == null)
+                {
+                    mediaPath = new MediaPathInfo
+                    {
+                        Path = request.Path
+                    };
+                }
+                _libraryManager.AddMediaPath(request.Name, mediaPath);
             }
             finally
             {
@@ -330,6 +358,20 @@ namespace MediaBrowser.Api.Library
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Posts the specified request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        public void Post(UpdateMediaPath request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+            {
+                throw new ArgumentNullException("request");
+            }
+
+            _libraryManager.UpdateMediaPath(request.Name, request.PathInfo);
         }
 
         /// <summary>

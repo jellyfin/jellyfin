@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'jqmlistview', 'emby-select', 'emby-button', 'emby-input', 'emby-checkbox'], function ($) {
 
     var currentProfile;
 
@@ -41,10 +41,10 @@
         $('.chkMediaType', page).each(function () {
             this.checked = (profile.SupportedMediaTypes || '').split(',').indexOf(this.getAttribute('data-value')) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
-        $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl).checkboxradio('refresh');
-        $('#chkEnableSingleImageLimit', page).checked(profile.EnableSingleAlbumArtLimit).checkboxradio('refresh');
+        $('#chkEnableAlbumArtInDidl', page).checked(profile.EnableAlbumArtInDidl);
+        $('#chkEnableSingleImageLimit', page).checked(profile.EnableSingleAlbumArtLimit);
 
         renderXmlDocumentAttributes(page, profile.XmlRootAttributes || []);
 
@@ -78,13 +78,13 @@
         $('#txtIconMaxWidth', page).val(profile.MaxIconWidth || '');
         $('#txtIconMaxHeight', page).val(profile.MaxIconHeight || '');
 
-        $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests).checkboxradio('refresh');
+        $('#chkIgnoreTranscodeByteRangeRequests', page).checked(profile.IgnoreTranscodeByteRangeRequests);
         $('#txtMaxAllowedBitrate', page).val(profile.MaxStreamingBitrate || '');
 
         $('#txtMusicStreamingTranscodingBitrate', page).val(profile.MusicStreamingTranscodingBitrate || '');
 
-        $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders).checkboxradio('refresh');
-        $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems).checkboxradio('refresh');
+        $('#chkRequiresPlainFolders', page).checked(profile.RequiresPlainFolders);
+        $('#chkRequiresPlainVideoItems', page).checked(profile.RequiresPlainVideoItems);
 
         $('#txtProtocolInfo', page).val(profile.ProtocolInfo || '');
         $('#txtXDlnaCap', page).val(profile.XDlnaCap || '');
@@ -500,9 +500,9 @@
         $('#txtTranscodingVideoCodec', popup).val(transcodingProfile.VideoCodec || '');
         $('#selectTranscodingProtocol', popup).val(transcodingProfile.Protocol || 'Http');
 
-        $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false).checkboxradio('refresh');
-        $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false).checkboxradio('refresh');
-        $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes').checkboxradio('refresh');
+        $('#chkEnableMpegtsM2TsMode', popup).checked(transcodingProfile.EnableMpegtsM2TsMode || false);
+        $('#chkEstimateContentLength', popup).checked(transcodingProfile.EstimateContentLength || false);
+        $('#chkReportByteRangeRequests', popup).checked(transcodingProfile.TranscodeSeekInfo == 'Bytes');
 
         $('.radioTabButton:first', popup).trigger('click');
 

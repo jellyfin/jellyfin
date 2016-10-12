@@ -718,22 +718,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("runtime", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
             }
 
-            var hasTaglines = item as IHasTaglines;
-            if (hasTaglines != null)
+            if (!string.IsNullOrWhiteSpace(item.Tagline))
             {
-                foreach (var tagline in hasTaglines.Taglines)
-                {
-                    writer.WriteElementString("tagline", tagline);
-                }
+                writer.WriteElementString("tagline", item.Tagline);
             }
 
-            var hasProductionLocations = item as IHasProductionLocations;
-            if (hasProductionLocations != null)
+            foreach (var country in item.ProductionLocations)
             {
-                foreach (var country in hasProductionLocations.ProductionLocations)
-                {
-                    writer.WriteElementString("country", country);
-                }
+                writer.WriteElementString("country", country);
             }
 
             foreach (var genre in item.Genres)
@@ -1040,12 +1032,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private static string GetPathToSave(string path, ILibraryManager libraryManager, IServerConfigurationManager config)
         {
-            foreach (var map in config.Configuration.PathSubstitutions)
-            {
-                path = libraryManager.SubstitutePath(path, map.From, map.To);
-            }
-
-            return path;
+            return libraryManager.GetPathAfterNetworkSubstitution(path);
         }
 
         private static bool IsPersonType(PersonInfo person, string type)

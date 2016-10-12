@@ -1,4 +1,5 @@
 define(['connectionManager', 'userSettings', 'events'], function (connectionManager, userSettings, events) {
+    'use strict';
 
     var allTranslations = {};
     var currentCulture;
@@ -69,20 +70,20 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
 
         // If it's de-DE, convert to just de
         var parts = culture.split('-');
-        if (parts.length == 2) {
-            if (parts[0].toLowerCase() == parts[1].toLowerCase()) {
+        if (parts.length === 2) {
+            if (parts[0].toLowerCase() === parts[1].toLowerCase()) {
                 culture = parts[0].toLowerCase();
             }
         }
 
         var lower = culture.toLowerCase();
 
-        if (lower == 'ca-es') {
+        if (lower === 'ca-es') {
             return 'ca';
         }
 
         // normalize Swedish
-        if (lower == 'sv-se') {
+        if (lower === 'sv-se') {
             return 'sv';
         }
 
@@ -130,12 +131,12 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
         lang = normalizeLocaleName(lang);
 
         var filtered = translations.filter(function (t) {
-            return normalizeLocaleName(t.lang) == lang;
+            return normalizeLocaleName(t.lang) === lang;
         });
 
         if (!filtered.length) {
             filtered = translations.filter(function (t) {
-                return normalizeLocaleName(t.lang) == 'en-us';
+                return normalizeLocaleName(t.lang) === 'en-us';
             });
         }
 
@@ -148,7 +149,7 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
 
             var url = filtered[0].path;
 
-            url += url.indexOf('?') == -1 ? '?' : '&';
+            url += url.indexOf('?') === -1 ? '?' : '&';
             url += 'v=' + cacheParam;
 
             var xhr = new XMLHttpRequest();
@@ -217,14 +218,14 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
 
         var startIndex = html.indexOf('${');
 
-        if (startIndex == -1) {
+        if (startIndex === -1) {
             return html;
         }
 
         startIndex += 2;
         var endIndex = html.indexOf('}', startIndex);
 
-        if (endIndex == -1) {
+        if (endIndex === -1) {
             return html;
         }
 
@@ -250,7 +251,7 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
 
     events.on(connectionManager, 'localusersignedin', updateCurrentCulture);
     events.on(userSettings, 'change', function (e, name) {
-        if (name == 'language') {
+        if (name === 'language') {
             updateCurrentCulture();
         }
     });

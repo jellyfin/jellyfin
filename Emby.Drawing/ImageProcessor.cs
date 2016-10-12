@@ -829,18 +829,7 @@ namespace Emby.Drawing
             // Run the enhancers sequentially in order of priority
             foreach (var enhancer in imageEnhancers)
             {
-                var typeName = enhancer.GetType().Name;
-
-                try
-                {
-                    await enhancer.EnhanceImageAsync(item, inputPath, outputPath, imageType, imageIndex).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("{0} failed enhancing {1}", ex, typeName, item.Name);
-
-                    throw;
-                }
+                await enhancer.EnhanceImageAsync(item, inputPath, outputPath, imageType, imageIndex).ConfigureAwait(false);
 
                 // Feed the output into the next enhancer as input
                 inputPath = outputPath;

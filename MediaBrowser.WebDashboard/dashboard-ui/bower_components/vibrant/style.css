@@ -1,0 +1,31 @@
+.examples img {
+    width:100%;
+}
+
+.colors {
+    margin-top: 20px;
+}
+
+.colors > div {
+    display:inline-block;
+    text-align: center;
+    margin-bottom:10px;
+}
+
+.colors .color {
+    width:40px;
+    height:40px;
+    margin-left:25px;
+    margin-right:25px;
+    margin-bottom: 5px;
+}
+
+.footer {
+    padding-top:20px;
+    padding-bottom:20px;
+    color:#fff;
+}
+
+.footer a {
+    color: #E0F2F1;
+}

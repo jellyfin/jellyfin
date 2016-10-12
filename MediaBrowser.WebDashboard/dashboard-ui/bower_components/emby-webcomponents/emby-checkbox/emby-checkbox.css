@@ -2,7 +2,7 @@
     position: relative;
     z-index: 1;
     vertical-align: middle;
-    display: inline-flex;
+    display: inline-block;
     box-sizing: border-box;
     width: 100%;
     margin: 0;
@@ -18,7 +18,18 @@
 
 .checkboxContainer {
     margin-bottom: 1.8em;
-    display: flex;
+    display: block;
+}
+
+@supports (display: flex) {
+
+    .mdl-checkbox {
+        display: inline-flex;
+    }
+
+    .checkboxContainer {
+        display: flex;
+    }
 }
 
 .checkboxContainer-withDescription {
@@ -113,15 +124,17 @@
     cursor: auto;
 }
 
-.checkboxList .mdl-checkbox {
+.checkboxList > .mdl-checkbox {
     display: flex;
     margin: .5em 0;
 }
 
 .checkboxList-paperList {
     padding: 1em !important;
+    margin: .75em 0 !important;
 }
 
 .checkboxListLabel {
     opacity: .7;
+    margin-bottom: 0;
 }

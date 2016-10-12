@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.XmlTv.Classes;
+using Emby.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -115,7 +116,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             var reader = new XmlTvReader(path, GetLanguage(), null);
 
             var results = reader.GetProgrammes(channelNumber, startDateUtc, endDateUtc, cancellationToken);
-            return results.Select(p => new ProgramInfo()
+            return results.Select(p => GetProgramInfo(p, info));
+        }
+
+        private ProgramInfo GetProgramInfo(XmlTvProgram p, ListingsProviderInfo info)
+        {
+            var programInfo = new ProgramInfo
             {
                 ChannelId = p.ChannelId,
                 EndDate = GetDate(p.EndDate),
@@ -141,7 +147,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
                 SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
-            });
+            };
+
+            if (programInfo.IsMovie)
+            {
+                programInfo.IsSeries = false;
+                programInfo.EpisodeNumber = null;
+                programInfo.EpisodeTitle = null;
+            }
+
+            return programInfo;
         }
 
         private DateTime GetDate(DateTime date)

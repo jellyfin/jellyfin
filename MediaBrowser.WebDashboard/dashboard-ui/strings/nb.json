@@ -1,4 +1,6 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
+    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Avslutt",
     "LabelApiDocumentation": "API-dokumentasjon",
     "LabelBrowseLibrary": "Browse biblioteket",
@@ -57,7 +59,6 @@
     "HeaderAvailableServices": "Tilgjengelige tjenester",
     "MessageNoServicesInstalled": "Ingen programtillegg er installert.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Oppgi din enkle PIN-kode for \u00e5 f\u00e5 tilgang",
-    "KidsModeAdultInstruction": "Klikk p\u00e5 l\u00e5s-ikonet nede til h\u00f8yre for \u00e5 konfigurere eller forlate barnamodus. PIN-koden vil v\u00e6re n\u00f8dvendig.",
     "ButtonConfigurePinCode": "Konfigurer PIN-kode",
     "RegisterWithPayPal": "Registrer med PayPal",
     "HeaderEnjoyDayTrial": "Hygg deg med en 14-dagers gratis pr\u00f8veperiode",
@@ -1457,7 +1458,6 @@
     "HeaderPlaybackError": "Avspillingsfeil",
     "MessagePlaybackErrorNotAllowed": "Du er for \u00f8yeblikket ikke autorisert til \u00e5 spille dette innholdet. Ta kontakt med systemadministratoren for mer informasjon.",
     "MessagePlaybackErrorNoCompatibleStream": "Ingen kompatible streamer er tilgjengelig for \u00f8yeblikket. Vennligst pr\u00f8v igjen senere eller kontakt systemadministratoren for mer informasjon.",
-    "MessagePlaybackErrorRateLimitExceeded": "Avspillingshastighet grensen er overskredet. Ta kontakt med systemadministratoren for mer informasjon.",
     "MessagePlaybackErrorPlaceHolder": "Valgt innholdet, kan ikke avspilles fra denne enheten.",
     "HeaderSelectAudio": "Velg Lyd",
     "HeaderSelectSubtitles": "Velg Undertekst",
@@ -1966,6 +1966,7 @@
     "ErrorMessageUsernameInUse": "Brukernavnet er alt i bruk, Pr\u00f8v igjen med et annet brukernavn.",
     "ErrorMessageEmailInUse": "Epost addressee du oppgav er alt i bruk.  Velg en annen epost adresse eller bruk tilbakestilling av passord funksjonen.",
     "MessageThankYouForConnectSignUp": "Takk for din registering i Emby Connect nettverket. En e-post vil bli sendt til din adresse med instruksjoner om hvordan du bekrefte den nye kontoen. Vennligst bekreft kontoen og deretter kom tilbake hit for \u00e5 logge p\u00e5.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Del",
     "HeaderConfirm": "Bekreft",
     "MessageConfirmDeleteTunerDevice": "Er du sikker p\u00e5 at du vil slette denne enheten?",
@@ -2026,6 +2027,7 @@
     "ErrorRemovingEmbyConnectAccount": "Det oppstod en feil under fjerning Emby Connect-kontoen. Kontroller at du har en aktiv Internett-tilkobling og pr\u00f8v igjen.",
     "ErrorAddingEmbyConnectAccount1": "Det oppstod en feil \u00e5 legge den Emby Connect-kontoen. Har du opprettet en Emby konto? Meld deg p\u00e5 her {0}.",
     "ErrorAddingEmbyConnectAccount2": "S\u00f8rg for at Emby kontoen er aktivert ved \u00e5 f\u00f8lge instruksjonene i e-posten som ble sent etter at du opprettet kontoen. Hvis du ikke har mottatt denne e-posten s\u00e5 kan du sende en e-post til {0} fra e-postadressen som brukes med Emby konto.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Favoritt artist",
     "HeaderFavoriteSongs": "Favoritt sang",
     "HeaderConfirmPluginInstallation": "Bekreft Installasjon av Plugin",
@@ -2136,5 +2138,11 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "Spill i ekstern avspiller",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

@@ -1,4 +1,5 @@
 define(['dom'], function (dom) {
+    'use strict';
 
     var scopes = [];
     function pushScope(elem) {
@@ -48,7 +49,7 @@ define(['dom'], function (dom) {
     var focusableContainerTagNames = ['BODY', 'DIALOG'];
     var focusableQuery = focusableTagNames.map(function (t) {
 
-        if (t == 'INPUT') {
+        if (t === 'INPUT') {
             t += ':not([type="range"])';
         }
         return t + ':not([tabindex="-1"]):not(:disabled)';
@@ -57,7 +58,7 @@ define(['dom'], function (dom) {
 
     function isFocusable(elem) {
 
-        if (focusableTagNames.indexOf(elem.tagName) != -1) {
+        if (focusableTagNames.indexOf(elem.tagName) !== -1) {
             return true;
         }
 
@@ -99,13 +100,13 @@ define(['dom'], function (dom) {
             return false;
         }
 
-        if (elem.getAttribute('tabindex') == "-1") {
+        if (elem.getAttribute('tabindex') === "-1") {
             return false;
         }
 
-        if (elem.tagName == 'INPUT') {
+        if (elem.tagName === 'INPUT') {
             var type = elem.type;
-            if (type == 'range') {
+            if (type === 'range') {
                 return false;
             }
         }
@@ -139,7 +140,7 @@ define(['dom'], function (dom) {
 
     function isFocusContainer(elem, direction) {
 
-        if (focusableContainerTagNames.indexOf(elem.tagName) != -1) {
+        if (focusableContainerTagNames.indexOf(elem.tagName) !== -1) {
             return true;
         }
         if (elem.classList.contains('focuscontainer')) {
@@ -151,7 +152,7 @@ define(['dom'], function (dom) {
                 return true;
             }
         }
-        else if (direction == 3) {
+        else if (direction === 3) {
             if (elem.classList.contains('focuscontainer-down')) {
                 return true;
             }
@@ -230,11 +231,11 @@ define(['dom'], function (dom) {
         for (var i = 0, length = focusable.length; i < length; i++) {
             var curr = focusable[i];
 
-            if (curr == activeElement) {
+            if (curr === activeElement) {
                 continue;
             }
             // Don't refocus into the same container
-            if (curr == focusableContainer) {
+            if (curr === focusableContainer) {
                 continue;
             }
 
@@ -256,7 +257,7 @@ define(['dom'], function (dom) {
                     if (elementRect.left >= rect.left) {
                         continue;
                     }
-                    if (elementRect.right == rect.right) {
+                    if (elementRect.right === rect.right) {
                         continue;
                     }
                     break;
@@ -265,7 +266,7 @@ define(['dom'], function (dom) {
                     if (elementRect.right <= rect.right) {
                         continue;
                     }
-                    if (elementRect.left == rect.left) {
+                    if (elementRect.left === rect.left) {
                         continue;
                     }
                     break;
@@ -304,8 +305,8 @@ define(['dom'], function (dom) {
 
             // See if there's a focusable container, and if so, send the focus command to that
             var nearestElementFocusableParent = dom.parentWithClass(nearestElement, 'focusable');
-            if (nearestElementFocusableParent && nearestElementFocusableParent != nearestElement && activeElement) {
-                if (dom.parentWithClass(activeElement, 'focusable') != nearestElementFocusableParent) {
+            if (nearestElementFocusableParent && nearestElementFocusableParent !== nearestElement && activeElement) {
+                if (dom.parentWithClass(activeElement, 'focusable') !== nearestElementFocusableParent) {
                     nearestElement = nearestElementFocusableParent;
                 }
             }
@@ -404,12 +405,12 @@ define(['dom'], function (dom) {
     function sortNodesT(a, b) {
 
         var result = a.distT - b.distT;
-        if (result != 0) {
+        if (result !== 0) {
             return result;
         }
 
         result = a.index - b.index;
-        if (result != 0) {
+        if (result !== 0) {
             return result;
         }
 

@@ -1,4 +1,5 @@
 define(['viewcontainer', 'focusManager', 'queryString', 'layoutManager'], function (viewcontainer, focusManager, queryString, layoutManager) {
+    'use strict';
 
     var currentView;
     var dispatchPageEvents;
@@ -94,7 +95,7 @@ define(['viewcontainer', 'focusManager', 'queryString', 'layoutManager'], functi
         var url = options.url;
         var state = options.state;
         var index = url.indexOf('?');
-        var params = index == -1 ? {} : queryString.parse(url.substring(index + 1));
+        var params = index === -1 ? {} : queryString.parse(url.substring(index + 1));
 
         return {
             detail: {

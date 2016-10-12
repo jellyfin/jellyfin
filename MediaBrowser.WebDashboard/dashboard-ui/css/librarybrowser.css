@@ -8,13 +8,11 @@
 }
 
 .background-theme-b .backgroundContainer, .dialog.background-theme-b {
-    background-color: #121314;
-    /*background: radial-gradient(circle, #282828, #141414);*/
+    background-color: #161616;
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
         background-color: rgba(6, 6,6, .9);
-        /*background: radial-gradient(circle, #282828, #141414);*/
     }
 
 .ui-body-b {
@@ -126,14 +124,14 @@
     }
 }
 
-@media all and (min-width: 1200px) {
+@media all and (min-width: 600px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 96%;
+        width: 98%;
     }
 }
 
-@media all and (min-width: 2560px) {
+@media all and (min-width: 1200px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 96%;
@@ -512,25 +510,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-overflow: ellipsis;
     overflow: hidden;
     position: relative;
+    margin: 1.5em 0 1em;
+    display: flex;
+    align-items: center;
 }
 
-.ui-body-a .detailSectionHeader {
-    border: 1px solid #ddd;
-    border-width: 0 0 1px 0;
-}
-
-.ui-body-b .detailSectionHeader {
-    border: 1px solid #444;
-    border-width: 0 0 1px 0;
-}
-
-.detailSectionHeader, .detailSectionHeader h3 {
-    font-size: 20px;
-    font-weight: 400;
-}
-
-    .detailSectionHeader button {
-        font-size: 13px;
+    .detailSectionHeader > h1 {
+        margin: 0;
     }
 
 .detailSectionHeaderButton {
@@ -700,10 +686,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-}
-
-.mediaInfoItem {
-    white-space: nowrap;
 }
 
 @media all and (max-width: 600px) {
@@ -956,7 +938,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (min-width: 1000px) {
 
     .itemDetailPage .portraitCard-scalable {
-        width: 25% !important;
+        width: 20% !important;
     }
 
     .itemDetailPage .squareCard-scalable {

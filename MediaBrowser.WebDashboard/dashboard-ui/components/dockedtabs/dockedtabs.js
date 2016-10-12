@@ -39,6 +39,9 @@
             case 'manageserver':
                 Dashboard.navigate('dashboard.html');
                 break;
+            case 'remotecontrol':
+                Dashboard.navigate('nowplaying.html');
+                break;
             case 'sync':
                 Dashboard.navigate('mysync.html');
                 break;
@@ -114,6 +117,11 @@
                 id: 'reports'
             });
         }
+
+        commands.push({
+            name: globalize.translate('ButtonRemoteControl'),
+            id: 'remotecontrol'
+        });
 
         if (Dashboard.isConnectMode()) {
             commands.push({

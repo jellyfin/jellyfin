@@ -86,7 +86,7 @@ namespace MediaBrowser.Providers.Music
                     if (node.Attributes != null)
                     {
                         string name = null;
-
+                        string overview = null;
                         string mbzId = node.Attributes["id"].Value;
 
                         foreach (var child in node.ChildNodes.Cast<XmlNode>())
@@ -94,7 +94,10 @@ namespace MediaBrowser.Providers.Music
                             if (string.Equals(child.Name, "name", StringComparison.OrdinalIgnoreCase))
                             {
                                 name = child.InnerText;
-                                break;
+                            }
+                            if (string.Equals(child.Name, "annotation", StringComparison.OrdinalIgnoreCase))
+                            {
+                                overview = child.InnerText;
                             }
                         }
 
@@ -102,7 +105,8 @@ namespace MediaBrowser.Providers.Music
                         {
                             var result = new RemoteSearchResult
                             {
-                                Name = name
+                                Name = name,
+                                Overview = overview
                             };
 
                             result.SetProviderId(MetadataProviders.MusicBrainzArtist, mbzId);
@@ -135,6 +139,7 @@ namespace MediaBrowser.Providers.Music
                 {
                     musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
                     //result.Item.Name = singleResult.Name;
+                    result.Item.Overview = singleResult.Overview;
                 }
             }
 

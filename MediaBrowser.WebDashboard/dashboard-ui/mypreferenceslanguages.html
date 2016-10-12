@@ -1,4 +1,4 @@
-﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-menubutton="false">
+﻿<div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderPlaybackSettings}" data-backbutton="true">
 
     <div data-role="content">
 
@@ -10,11 +10,9 @@
                     ${HeaderAudioSettings}
                 </h1>
                 <br />
-                <div>
-                    <label for="selectAudioLanguage" class="selectLabel">${LabelAudioLanguagePreference}</label>
-                    <select id="selectAudioLanguage" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectAudioLanguage" label="${LabelAudioLanguagePreference}"></select>
                 </div>
-                <br />
                 <label class="checkboxContainer">
                     <input type="checkbox" is="emby-checkbox" class="chkPlayDefaultAudioTrack" />
                     <span>${LabelPlayDefaultAudioTrack}</span>
@@ -25,33 +23,30 @@
                     ${HeaderSubtitleSettings}
                 </h1>
                 <br />
-                <div>
-                    <label for="selectSubtitleLanguage" class="selectLabel">${LabelSubtitleLanguagePreference}</label>
-                    <select id="selectSubtitleLanguage" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectSubtitleLanguage" label="${LabelSubtitleLanguagePreference}"></select>
                 </div>
-                <br />
-                <div>
-                </div>  <br />
-                <label for="selectSubtitlePlaybackMode" class="selectLabel">${LabelSubtitlePlaybackMode}</label>
-                <select id="selectSubtitlePlaybackMode" data-mini="true">
-                    <option value="Default">${OptionDefaultSubtitles}</option>
-                    <option value="Smart">${OptionSmartSubtitles}</option>
-                    <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
-                    <option value="Always">${OptionAlwaysPlaySubtitles}</option>
-                    <option value="None">${OptionNoSubtitles}</option>
-                </select>
-                <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp hide">${OptionDefaultSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesSmartHelp subtitlesHelp hide">${OptionSmartSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp hide">${OptionAlwaysPlaySubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OptionOnlyForcedSubtitlesHelp}</div>
-                <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${OptionNoSubtitlesHelp}</div>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectSubtitlePlaybackMode" label="${LabelSubtitlePlaybackMode}">
+                        <option value="Default">${OptionDefaultSubtitles}</option>
+                        <option value="Smart">${OptionSmartSubtitles}</option>
+                        <option value="OnlyForced">${OptionOnlyForcedSubtitles}</option>
+                        <option value="Always">${OptionAlwaysPlaySubtitles}</option>
+                        <option value="None">${OptionNoSubtitles}</option>
+                    </select>
+                    <div class="fieldDescription subtitlesDefaultHelp subtitlesHelp hide">${OptionDefaultSubtitlesHelp}</div>
+                    <div class="fieldDescription subtitlesSmartHelp subtitlesHelp hide">${OptionSmartSubtitlesHelp}</div>
+                    <div class="fieldDescription subtitlesAlwaysHelp subtitlesHelp hide">${OptionAlwaysPlaySubtitlesHelp}</div>
+                    <div class="fieldDescription subtitlesOnlyForcedHelp subtitlesHelp hide">${OptionOnlyForcedSubtitlesHelp}</div>
+                    <div class="fieldDescription subtitlesNoneHelp subtitlesHelp hide">${OptionNoSubtitlesHelp}</div>
+                </div>
 
             </div>
             <div class="detailSection cinemaModeOptions hide">
                 <h1>
                     ${HeaderCinemaMode}
                 </h1>
-                <br/>
+                <br />
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input type="checkbox" is="emby-checkbox" class="chkEnableCinemaMode" />
@@ -67,16 +62,12 @@
                     ${HeaderAdvanced}
                 </h1>
                 <br />
-                <div>
-                    <label for="selectMaxBitrate" class="selectLabel">${LabelMaxStreamingBitrate}</label>
-                    <select id="selectMaxBitrate" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectMaxBitrate" label="${LabelMaxStreamingBitrate}"></select>
                 </div>
-                <br />
-                <div>
-                    <label for="selectMaxChromecastBitrate" class="selectLabel">${LabelMaxChromecastBitrate}</label>
-                    <select id="selectMaxChromecastBitrate" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectMaxChromecastBitrate" label="${LabelMaxChromecastBitrate}"></select>
                 </div>
-                <br />
                 <label class="checkboxContainer">
                     <input type="checkbox" is="emby-checkbox" class="chkEpisodeAutoPlay" />
                     <span>${OptionPlayNextEpisodeAutomatically}</span>
@@ -95,7 +86,6 @@
             </div>
 
             <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
-                <i class="md-icon">check</i>
                 <span>${ButtonSave}</span>
             </button>
         </form>

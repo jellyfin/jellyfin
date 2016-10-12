@@ -7,6 +7,7 @@ using CommonIO;
 using MediaBrowser.Controller.Net;
 using System.Collections.Generic;
 using ServiceStack.Web;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -23,11 +24,24 @@ namespace MediaBrowser.Api.Playback.Progressive
         private const int BufferSize = 81920;
 
         private long _bytesWritten = 0;
+        public long StartPosition { get; set; }
+        public bool AllowEndOfFile = true;
+
+        private IDirectStreamProvider _directStreamProvider;
 
         public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
             _fileSystem = fileSystem;
             _path = path;
+            _outputHeaders = outputHeaders;
+            _job = job;
+            _logger = logger;
+            _cancellationToken = cancellationToken;
+        }
+
+        public ProgressiveFileCopier(IDirectStreamProvider directStreamProvider, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
+        {
+            _directStreamProvider = directStreamProvider;
             _outputHeaders = outputHeaders;
             _job = job;
             _logger = logger;
@@ -42,17 +56,33 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
         }
 
+        private Stream GetInputStream()
+        {
+            return _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+        }
+
         public async Task WriteToAsync(Stream outputStream)
         {
             try
             {
+                if (_directStreamProvider != null)
+                {
+                    await _directStreamProvider.CopyToAsync(outputStream, _cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+
                 var eofCount = 0;
 
-                using (var fs = _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var inputStream = GetInputStream())
                 {
-                    while (eofCount < 15)
+                    if (StartPosition > 0)
                     {
-                        var bytesRead = await CopyToAsyncInternal(fs, outputStream, BufferSize, _cancellationToken).ConfigureAwait(false);
+                        inputStream.Position = StartPosition;
+                    }
+
+                    while (eofCount < 15 || !AllowEndOfFile)
+                    {
+                        var bytesRead = await CopyToAsyncInternal(inputStream, outputStream, BufferSize, _cancellationToken).ConfigureAwait(false);
 
                         //var position = fs.Position;
                         //_logger.Debug("Streamed {0} bytes to position {1} from file {2}", bytesRead, position, path);

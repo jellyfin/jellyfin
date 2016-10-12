@@ -1,4 +1,4 @@
-﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="emby-collapse,scripts/metadataimagespage,paper-checkbox,emby-button,emby-input,emby-select">
+﻿<div id="metadataImagesConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage withTabs" data-require="emby-collapse,scripts/metadataimagespage,emby-checkbox,emby-button,emby-input,emby-select">
 
     <div data-role="content">
 
@@ -40,26 +40,54 @@
                                 </div>
                             </div>
 
-                            <div class="paperListLabel">${HeaderFetchImages}</div>
-                            <div class="imageSelections paperCheckboxList">
+                            <h3 class="checkboxListLabel">${HeaderFetchImages}</h3>
+                            <div class="imageSelections checkboxList">
 
-                                <paper-checkbox class="imageType hide" data-imagetype="Primary">${OptionDownloadPrimaryImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Art">${OptionDownloadArtImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="BoxRear">${OptionDownloadBackImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Banner">${OptionDownloadBannerImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Box">${OptionDownloadBoxImage}</paper-checkbox>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Primary" />
+                                    <span>${OptionDownloadPrimaryImage}</span>
+                                </label>
 
-                                <paper-checkbox class="imageType hide" data-imagetype="Disc">${OptionDownloadDiscImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Logo">${OptionDownloadLogoImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Menu">${OptionDownloadMenuImage}</paper-checkbox>
-                                <paper-checkbox class="imageType hide" data-imagetype="Thumb">${OptionDownloadThumbImage}</paper-checkbox>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Art" />
+                                    <span>${OptionDownloadArtImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="BoxRear" />
+                                    <span>${OptionDownloadBackImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Banner" />
+                                    <span>${OptionDownloadBannerImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Box" />
+                                    <span>${OptionDownloadBoxImage}</span>
+                                </label>
+
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Disc" />
+                                    <span>${OptionDownloadDiscImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Logo" />
+                                    <span>${OptionDownloadLogoImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Menu" />
+                                    <span>${OptionDownloadMenuImage}</span>
+                                </label>
+                                <label class="hide">
+                                    <input type="checkbox" is="emby-checkbox" class="imageType" data-imagetype="Thumb" />
+                                    <span>${OptionDownloadThumbImage}</span>
+                                </label>
                             </div>
                         </div>
                     </div>
 
                     <br />
                     <br />
-                    <div><button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button></div>
+                    <div><button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button></div>
                 </form>
             </div>
 

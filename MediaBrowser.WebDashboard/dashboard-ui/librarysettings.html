@@ -19,35 +19,52 @@
                         <button type="button" is="paper-icon-button-light" id="btnSelectMetadataPath" title="${ButtonSelectDirectory}"><i class="md-icon">search</i></button>
                     </div>
                     <div class="fieldDescription">${LabelMetadataPathHelp}</div>
+                    <input type="hidden" id="txtMetadataNetworkPath" />
                 </div>
-                <div>
-                    <paper-checkbox id="chkSaveMetadataHidden">${OptionSaveMetadataAsHidden}</paper-checkbox>
-                    <div class="fieldDescription paperCheckboxFieldDescription">${OptionSaveMetadataAsHiddenHelp}</div>
-                    <br />
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label>
+                        <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkSaveMetadataHidden" data-filter="Sunday" />
+                        <span>${OptionSaveMetadataAsHidden}</span>
+                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${OptionSaveMetadataAsHiddenHelp}</div>
                 </div>
-                <br />
 
                 <div is="emby-collapse" title="${HeaderPeople}">
                     <div class="collapseContent">
                         <br />
                         <div>
-                            <div class="paperListLabel">${HeaderDownloadPeopleMetadataFor}</div>
-                            <div class="paperCheckboxList">
-                                <paper-checkbox id="chkPeopleActors">${OptionActors}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleComposers">${OptionComposers}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleDirectors">${OptionDirectors}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleGuestStars">${OptionGuestStars}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleProducers">${OptionProducers}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleWriters">${OptionWriters}</paper-checkbox>
-
-                                <paper-checkbox id="chkPeopleOthers">${OptionOthers}</paper-checkbox>
+                            <h3 class="checkboxListLabel">${HeaderDownloadPeopleMetadataFor}</h3>
+                            <div class="checkboxList">
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleActors" data-filter="Sunday" />
+                                    <span>${OptionActors}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleComposers" data-filter="Sunday" />
+                                    <span>${OptionComposers}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleDirectors" data-filter="Sunday" />
+                                    <span>${OptionDirectors}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleGuestStars" data-filter="Sunday" />
+                                    <span>${OptionGuestStars}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleProducers" data-filter="Sunday" />
+                                    <span>${OptionProducers}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleWriters" data-filter="Sunday" />
+                                    <span>${OptionWriters}</span>
+                                </label>
+                                <label>
+                                    <input type="checkbox" is="emby-checkbox" class="chkAirDays" id="chkPeopleOthers" data-filter="Sunday" />
+                                    <span>${OptionOthers}</span>
+                                </label>
                             </div>
-                            <div class="fieldDescription paperCheckboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
+                            <div class="fieldDescription checkboxFieldDescription">${HeaderDownloadPeopleMetadataForHelp}</div>
                         </div>
                     </div>
                 </div>
@@ -71,7 +88,7 @@
                 </div>
 
                 <br />
-                <button is="emby-button" type="submit" class="raised button-submit block"><i class="md-icon">check</i><span>${ButtonSave}</span></button>
+                <button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button>
 
             </form>
 

@@ -23,11 +23,16 @@
     text-transform: none;
     border-bottom: 1px solid #333;
     padding-left: .1em;
+    background: transparent;
+    box-shadow: none;
 }
 
 .emby-collapse-expandIcon {
     transform-origin: 50% 50%;
     transition: transform 180ms ease-out;
+    position: absolute;
+    right: .5em;
+    font-size: 1.5em;
 }
 
 .emby-collapse-expandIconExpanded {

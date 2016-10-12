@@ -10,7 +10,6 @@
     <div class="detailPageContent" style="position:relative;">
 
         <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}"><i class="md-icon">play_arrow</i></button>
-        <button is="emby-button" type="button" class="btnFloatingRecord detailFloatingButton hide fab autoSize" title="${ButtonRecord}"><i class="md-icon">videocam</i></button>
 
         <div class="detailImageContainer">
         </div>
@@ -29,8 +28,6 @@
                 <div class="detailButtonsContainer">
                     <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
                     <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
-                    <button is="emby-button" type="button" class="raised subdued btnRecord hide"><i class="md-icon">videocam</i><span>${ButtonRecord}</span></button>
-                    <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><i class="md-icon">delete</i><span>${ButtonCancelRecording}</span></button>
                     <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
                     <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
                     <div class="detailUserDataIcons userDataIcons"></div>
@@ -53,8 +50,6 @@
             <br />
             <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
             <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
-            <button is="emby-button" type="button" class="raised subdued btnRecord hide"><i class="md-icon">videocam</i><span>${ButtonRecord}</span></button>
-            <button is="emby-button" type="button" class="raised subdued hide btnCancelRecording"><i class="md-icon">delete</i><span>${ButtonCancelRecording}</span></button>
             <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
             <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
             <div class="detailUserDataIcons userDataIcons"></div>
@@ -68,12 +63,15 @@
     </div>
     <div data-role="content" style="padding-top:0;clear:both;">
         <div class="detailPageContent">
+            <div class="recordingFields hide" style="margin: 1em 0;">
+
+            </div>
             <div class="detailSection">
                 <div class="mobileDetails">
                     <p class="artist"></p>
                     <p class="itemGenres"></p>
                 </div>
-                <div class="desktopDetails" style="height:10px;"></div>
+                <div class="desktopDetails" style="height: 10px;"></div>
                 <h2 class="tagline"></h2>
                 <p id="itemBirthday"></p>
                 <p id="itemBirthLocation"></p>
@@ -93,7 +91,7 @@
                     <span id="childrenTitle"></span>
                 </h1>
                 <div id="childrenContent">
-                    <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align:left;"></div>
+                    <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align: left;"></div>
                 </div>
             </div>
             <div id="additionalPartsCollapsible" class="detailSection hide">
@@ -106,7 +104,7 @@
                 <h1 id="peopleHeader">
                     ${HeaderCastCrew}
                 </h1>
-                <div id="castContent" class="itemsContainer"></div>
+                <div id="castContent" is="emby-itemscontainer" class="itemsContainer"></div>
                 <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
             </div>
 
@@ -136,8 +134,8 @@
                 <div id="moreFromItems"></div>
             </div>
             <div id="similarCollapsible" class="detailSection hide">
-                <h1 class="similiarHeader"></h1>
-                <div id="similarContent"></div>
+                <h1>${HeaderMoreLikeThis}</h1>
+                <div class="similarContent"></div>
             </div>
             <div id="criticReviewsCollapsible" class="detailSection hide">
                 <h1>
@@ -147,7 +145,7 @@
                     <p id="awardSummary"></p>
                     <div class="paperList" id="criticRatingSummary">
                         <div class="listItem">
-                            <button is="emby-button" type="button" class="mini fab" style="flex-shrink:0;width:40px;height:40px;background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);"></button>
+                            <button is="emby-button" type="button" class="mini fab" style="flex-shrink: 0; width: 40px; height: 40px; background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);"></button>
                             <div class="listItemBody three-line">
                                 <h3 class="listItemBodyText">TOMATOMETER®</h3>
                                 <div class="listItemBodyText criticRatingScore"></div>
@@ -160,12 +158,9 @@
             </div>
 
             <div id="scenesCollapsible" class="detailSection hide">
-                <div style="display: flex; align-items: center; margin:.5em 0;">
-                    <h1 style="margin:0;">
-                        ${HeaderScenes}
-                    </h1>
-                    <button is="paper-icon-button-light" class="chapterSettingsButton hide"><i class="md-icon">settings</i></button>
-                </div>
+                <h1>
+                    ${HeaderScenes}
+                </h1>
                 <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer"></div>
                 <button is="emby-button" type="button" class="raised more moreScenes hide">${ButtonMore}</button>
             </div>
@@ -200,7 +195,7 @@
             <div class="detailSection audioVideoMediaInfo hide">
                 <h1>${HeaderMediaInfo}</h1>
                 <div>
-                    <div class="splitVersionContainer" style="border-bottom: 1px solid #444;padding:1em 0;">
+                    <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
                         <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
                     </div>
                     <div id="mediaInfoContent" class="mediaInfoContent"></div>

@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'appStorage', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, appStorage, connectionManager, loading, focusManager, dom, appHost) {
+﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'userSettings', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, userSettings, connectionManager, loading, focusManager, dom, appHost) {
 
     var currentItem;
     var hasChanges;
@@ -68,7 +68,14 @@
 
         require(['confirm'], function (confirm) {
 
-            confirm(msg, globalize.translate('sharedcomponents#ConfirmDeletion')).then(function () {
+            confirm({
+
+                title: globalize.translate('sharedcomponents#ConfirmDeletion'),
+                text: msg,
+                confirmText: globalize.translate('sharedcomponents#Delete'),
+                primary: 'cancel'
+
+            }).then(function () {
 
                 loading.show();
 
@@ -184,7 +191,7 @@
             return '<option value="' + l.ThreeLetterISOLanguageName + '">' + l.DisplayName + '</option>';
         });
 
-        var lastLanguage = appStorage.getItem('subtitleeditor-language');
+        var lastLanguage = userSettings.get('subtitleeditor-language');
         if (lastLanguage) {
             selectLanguage.value = lastLanguage;
         }
@@ -290,7 +297,7 @@
 
     function searchForSubtitles(context, language) {
 
-        appStorage.setItem('subtitleeditor-language', language);
+        userSettings.set('subtitleeditor-language', language);
 
         loading.show();
 

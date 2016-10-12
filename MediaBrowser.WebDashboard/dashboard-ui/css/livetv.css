@@ -1,12 +1,4 @@
-﻿.guideTabContent {
-    background: #121212;
-}
-
-.chkAdvanced {
-    margin-left: auto;
-}
-
-/* Allow vertical space for anything that slides up at the bottom */
+﻿/* Allow vertical space for anything that slides up at the bottom */
 .guideVerticalScroller {
     padding-bottom: 160px;
 }

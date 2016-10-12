@@ -1,20 +1,5 @@
 define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, dom, layoutManager, scrollHelper, globalize, require) {
-
-    function showTvDialog(options) {
-        return new Promise(function (resolve, reject) {
-
-            require(['actionsheet'], function (actionSheet) {
-
-                actionSheet.show({
-
-                    title: options.text,
-                    items: options.buttons,
-                    timeout: options.timeout
-
-                }).then(resolve, reject);
-            });
-        });
-    }
+    'use strict';
 
     function showDialog(options, template) {
 
@@ -23,10 +8,10 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
             scrollY: false
         };
 
-        if (layoutManager.tv) {
+        var enableTvLayout = layoutManager.tv;
+
+        if (enableTvLayout) {
             dialogOptions.size = 'fullscreen';
-        } else {
-            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
@@ -35,17 +20,29 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
 
         dlg.innerHTML = globalize.translateHtml(template, 'sharedcomponents');
 
-        if (layoutManager.tv) {
-            scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
+        dlg.style['align-items'] = 'center';
+        dlg.style['justify-content'] = 'center';
+        var formDialogContent = dlg.querySelector('.formDialogContent');
+        formDialogContent.style['flex-grow'] = 'initial';
+
+        if (enableTvLayout) {
+            formDialogContent.style['max-width'] = '50%';
+            formDialogContent.style['max-height'] = '60%';
+            scrollHelper.centerFocus.on(formDialogContent, false);
         } else {
-            dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
+            formDialogContent.style.maxWidth = (Math.min((options.buttons.length * 150) + 200, dom.getWindowSize().innerWidth - 50)) + 'px';
+            dlg.classList.add('dialog-fullscreen-lowres');
         }
 
         //dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
         //    dialogHelper.close(dlg);
         //});
 
-        dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
+        if (options.title) {
+            dlg.querySelector('.formDialogHeaderTitle').innerHTML = options.title || '';
+        } else {
+            dlg.querySelector('.formDialogHeaderTitle').classList.add('hide');
+        }
 
         dlg.querySelector('.text').innerHTML = options.html || options.text || '';
 
@@ -54,9 +51,9 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
         for (i = 0, length = options.buttons.length; i < length; i++) {
 
             var item = options.buttons[i];
-            var autoFocus = i == 0 ? ' autofocus' : '';
+            var autoFocus = i === 0 ? ' autofocus' : '';
 
-            var buttonClass = 'btnOption raised block formDialogFooterItem';
+            var buttonClass = 'btnOption raised formDialogFooterItem formDialogFooterItem-autosize';
 
             if (item.type) {
                 buttonClass += ' button-' + item.type;
@@ -64,8 +61,6 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
 
             html += '<button is="emby-button" type="button" class="' + buttonClass + '" data-id="' + item.id + '"' + autoFocus + '>' + item.name + '</button>';
         }
-
-        dlg.style.minWidth = (Math.min(options.buttons.length * 150, dom.getWindowSize().innerWidth - 50)) + 'px';
 
         dlg.querySelector('.formDialogFooter').innerHTML = html;
 
@@ -82,7 +77,7 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
 
         return dialogHelper.open(dlg).then(function () {
 
-            if (layoutManager.tv) {
+            if (enableTvLayout) {
                 scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
             }
 
@@ -104,10 +99,6 @@ define(['dialogHelper', 'dom', 'layoutManager', 'scrollHelper', 'globalize', 're
             };
         } else {
             options = text;
-        }
-
-        if (layoutManager.tv) {
-            return showTvDialog(options);
         }
 
         return new Promise(function (resolve, reject) {

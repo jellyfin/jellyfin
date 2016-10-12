@@ -26,6 +26,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return string.Format("\"{0}\"", url);
             }
+            if (protocol == MediaProtocol.Udp)
+            {
+                var url = inputFiles.First();
+
+                return string.Format("\"{0}\"", url);
+            }
 
             return GetConcatInputArgument(inputFiles);
         }
@@ -74,9 +80,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return path.Replace("\"", "\\\"");
         }
 
-        public static string GetProbeSizeArgument(bool isDvd)
+        public static string GetProbeSizeArgument(int numInputFiles)
         {
-            return isDvd ? "-probesize 1G -analyzeduration 200M" : string.Empty;
+            return numInputFiles > 1 ? "-probesize 1G" : "";
+        }
+
+        public static string GetAnalyzeDurationArgument(int numInputFiles)
+        {
+            return numInputFiles > 1 ? "-analyzeduration 200M" : "";
         }
     }
 }

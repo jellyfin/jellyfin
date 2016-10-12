@@ -1,4 +1,6 @@
 {
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
+    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Zav\u0159\u00edt",
     "LabelApiDocumentation": "Dokumentace API",
     "LabelBrowseLibrary": "Proch\u00e1zet knihovnu",
@@ -57,7 +59,6 @@
     "HeaderAvailableServices": "Dostupn\u00e9 slu\u017eby",
     "MessageNoServicesInstalled": "\u017d\u00e1dn\u00e9 slu\u017eby nejsou aktu\u00e1ln\u011b nainstalov\u00e1ny.",
     "HeaderToAccessPleaseEnterEasyPinCode": "Zadejte pros\u00edm sv\u016fj easy pin pro p\u0159\u00edstup",
-    "KidsModeAdultInstruction": "Klikn\u011bte na ikonu z\u00e1mku v prav\u00e9m doln\u00edm rohu, abyste nastavili nebo opustily re\u017eim d\u011bti. Bude nutn\u00e9 zadat PIN k\u00f3d.",
     "ButtonConfigurePinCode": "Konfigurace pin code",
     "RegisterWithPayPal": "Zaregistrujte se pomoc\u00ed PayPal",
     "HeaderEnjoyDayTrial": "U\u017eijte si 14 denn\u00ed zku\u0161ebn\u00ed verzi zdarma",
@@ -1457,7 +1458,6 @@
     "HeaderPlaybackError": "Chyba p\u0159ehr\u00e1v\u00e1n\u00ed",
     "MessagePlaybackErrorNotAllowed": "V sou\u010dasn\u00e9 dob\u011b nejste opr\u00e1vn\u011bni p\u0159ehr\u00e1vat tento obsah. Pro v\u00edce informac\u00ed se obra\u0165te se na spr\u00e1vce syst\u00e9mu.",
     "MessagePlaybackErrorNoCompatibleStream": "\u017d\u00e1dn\u00e9 kompatibiln\u00ed streamy nejsou v sou\u010dasn\u00e9 dob\u011b k dispozici. Zkuste to pros\u00edm pozd\u011bji nebo pro v\u00edce podrobnost\u00ed kontaktujte sv\u00e9ho spr\u00e1vce syst\u00e9mu",
-    "MessagePlaybackErrorRateLimitExceeded": "Limit rychlosti p\u0159ehr\u00e1v\u00e1n\u00ed byl p\u0159ekro\u010den. Pro v\u00edce informac\u00ed se obra\u0165te na spr\u00e1vce syst\u00e9mu.",
     "MessagePlaybackErrorPlaceHolder": "Zvolen\u00fd obsah nen\u00ed mo\u017en\u00e9 p\u0159ehr\u00e1t z tohoto za\u0159\u00edzen\u00ed.",
     "HeaderSelectAudio": "Vyber audio",
     "HeaderSelectSubtitles": "Vyber titulky",
@@ -1966,6 +1966,7 @@
     "ErrorMessageUsernameInUse": "U\u017eivatelsk\u00e9 jm\u00e9no se ji\u017e pou\u017e\u00edv\u00e1. Pros\u00edm, vyberte nov\u00fd n\u00e1zev a zkuste to znovu.",
     "ErrorMessageEmailInUse": "E-mailov\u00e1 adresa je ji\u017e pou\u017e\u00edv\u00e1na. Zadejte novou e-mailovou adresu a zkuste to znovu, nebo pou\u017eijte funkci zapomenut\u00e9ho hesla.",
     "MessageThankYouForConnectSignUp": "D\u011bkujeme za p\u0159ihl\u00e1\u0161en\u00ed se k Emby Connect. Dal\u0161\u00ed pokyny, jak potvrdit sv\u016fj nov\u00fd \u00fa\u010det, V\u00e1m budou zasl\u00e1ny na va\u0161\u00ed emailovou adresu. Pros\u00edm potvr\u010fte \u00fa\u010det a pak se vr\u00e1\u0165te pro p\u0159ihl\u00e1\u0161en\u00ed.",
+    "MessageThankYouForConnectSignUpNoValidation": "Thank you for signing up for Emby Connect! You will now be asked to login with your Emby Connect information.",
     "ButtonShare": "Sd\u00edlet",
     "HeaderConfirm": "Souhlas",
     "MessageConfirmDeleteTunerDevice": "Jste si jisti, \u017ee chcete smazat tento p\u0159\u00edstroj?",
@@ -2026,6 +2027,7 @@
     "ErrorRemovingEmbyConnectAccount": "Nastala chyba p\u0159i odebr\u00e1n\u00ed \u00fa\u010dtu Emby Connect. Zkontrolujte zda m\u00e1te aktivn\u00ed internetov\u00e9 p\u0159ipojen\u00ed a zkuste znovu.",
     "ErrorAddingEmbyConnectAccount1": "Nastala chyba p\u0159i p\u0159id\u00e1v\u00e1n\u00ed \u00fa\u010dtu Emby Connect. Opravdu m\u00e1te vytvo\u0159en \u00fa\u010det u Emby? P\u0159ihlaste se zde {0}.",
     "ErrorAddingEmbyConnectAccount2": "Pros\u00edm, ujist\u011bte se, \u017ee \u00fa\u010det Emby byl aktivov\u00e1n podle pokyn\u016f v e-mailu zaslan\u00e9m po vytvo\u0159en\u00ed \u00fa\u010dtu. Pokud jste neobdr\u017eeli e-mail, pak pros\u00edm po\u0161lete e-mail na adresu {0} z e-mailov\u00e9 adresy pou\u017eit\u00fd na \u00fa\u010dtu Emby.",
+    "ErrorAddingEmbyConnectAccount3": "The Emby account is already linked to an existing local user. An Emby account can only be linked to one local user at a time.",
     "HeaderFavoriteArtists": "Obl\u00edben\u00ed \u00fam\u011blci",
     "HeaderFavoriteSongs": "Obl\u00edben\u00e1 hudba",
     "HeaderConfirmPluginInstallation": "Potvrzen\u00ed instalace z\u00e1suvn\u00e9ho modulu",
@@ -2136,5 +2138,11 @@
     "Sports": "Sports",
     "HeaderForKids": "For Kids",
     "HeaderRecordingGroups": "Recording Groups",
-    "LabelConvertRecordingsTo": "Convert recordings to:"
+    "LabelConvertRecordingsTo": "Convert recordings to:",
+    "HeaderUpcomingOnTV": "Upcoming On TV",
+    "LabelOptionalNetworkPath": "(Optional) Shared network folder:",
+    "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
+    "ButtonPlayExternalPlayer": "P\u0159ehr\u00e1t s extern\u00edm p\u0159ehr\u00e1va\u010dem",
+    "WillRecord": "Will record",
+    "NotScheduledToRecord": "Not scheduled to record"
 }

@@ -13,14 +13,14 @@
 
 .dialog {
     margin: 0;
-    border-radius: 1px;
+    border-radius: 4px;
     -webkit-font-smoothing: antialiased;
-    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
     border: 0;
     padding: 0;
     will-change: transform;
     /* Strict does not work well with actionsheet */
     contain: style;
+    box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
 .dialog-fixedSize {
@@ -37,16 +37,19 @@
     left: 0;
     right: 0;
     margin: 0;
+    box-shadow: none;
 }
 
 @media all and (max-width: 1280px), all and (max-height: 720px) {
-    .dialog-fixedSize {
+
+    .dialog-fixedSize, .dialog-fullscreen-lowres {
         position: fixed !important;
         top: 0 !important;
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
         margin: 0 !important;
+        box-shadow: none;
     }
 }
 
@@ -92,5 +95,5 @@
 }
 
 .dialogBackdropOpened {
-    opacity: .7;
+    opacity: .6;
 }

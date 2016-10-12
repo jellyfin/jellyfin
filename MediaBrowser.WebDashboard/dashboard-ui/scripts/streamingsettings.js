@@ -50,10 +50,6 @@
          {
              href: 'streamingsettings.html',
              name: Globalize.translate('TabStreaming')
-         },
-         {
-             href: 'encodingsettings.html',
-             name: Globalize.translate('TabTranscoding')
          }];
     }
 

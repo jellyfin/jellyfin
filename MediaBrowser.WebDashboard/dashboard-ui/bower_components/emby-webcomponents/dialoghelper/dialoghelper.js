@@ -1,4 +1,5 @@
 ﻿define(['historyManager', 'focusManager', 'browser', 'layoutManager', 'inputManager', 'dom', 'css!./dialoghelper.css', 'scrollStyles'], function (historyManager, focusManager, browser, layoutManager, inputManager, dom) {
+    'use strict';
 
     var globalOnOpenCallback;
 
@@ -27,7 +28,7 @@
         }
     }
 
-    function dialogHashHandler(dlg, hash, resolve) {
+    function DialogHashHandler(dlg, hash, resolve) {
 
         var self = this;
         self.originalUrl = window.location.href;
@@ -36,7 +37,7 @@
 
         function onHashChange(e) {
 
-            var isBack = self.originalUrl == window.location.href;
+            var isBack = self.originalUrl === window.location.href;
 
             if (isBack || !isOpened(dlg)) {
                 window.removeEventListener('popstate', onHashChange);
@@ -50,10 +51,11 @@
 
         function onBackCommand(e) {
 
-            if (e.detail.command == 'back') {
+            if (e.detail.command === 'back') {
                 self.closedByBack = true;
-                closeDialog(dlg);
                 e.preventDefault();
+                e.stopPropagation();
+                closeDialog(dlg);
             }
         }
 
@@ -74,7 +76,7 @@
 
             if (!self.closedByBack && isHistoryEnabled(dlg)) {
                 var state = history.state || {};
-                if (state.dialogId == hash) {
+                if (state.dialogId === hash) {
                     history.back();
                 }
             }
@@ -83,7 +85,7 @@
                 activeElement.focus();
             }
 
-            if (dlg.getAttribute('data-removeonclose') != 'false') {
+            if (dlg.getAttribute('data-removeonclose') !== 'false') {
                 removeCenterFocus(dlg);
 
                 var dialogContainer = dlg.dialogContainer;
@@ -117,8 +119,12 @@
         addBackdropOverlay(dlg);
 
         dlg.classList.add('opened');
+        dlg.dispatchEvent(new CustomEvent('open', {
+            bubbles: false,
+            cancelable: false
+        }));
 
-        if (dlg.getAttribute('data-lockscroll') == 'true' && !document.body.classList.contains('noScroll')) {
+        if (dlg.getAttribute('data-lockscroll') === 'true' && !document.body.classList.contains('noScroll')) {
             document.body.classList.add('noScroll');
             removeScrollLockOnClose = true;
         }
@@ -126,7 +132,7 @@
         animateDialogOpen(dlg);
 
         if (isHistoryEnabled(dlg)) {
-            historyManager.pushState({ dialogId: hash }, "Dialog", hash);
+            historyManager.pushState({ dialogId: hash }, "Dialog", '#' + hash);
 
             window.addEventListener('popstate', onHashChange);
         } else {
@@ -149,7 +155,7 @@
         }, 0);
 
         dom.addEventListener((dlg.dialogContainer || backdrop), 'click', function (e) {
-            if (e.target == dlg.dialogContainer) {
+            if (e.target === dlg.dialogContainer) {
                 close(dlg);
             }
         }, {
@@ -158,7 +164,7 @@
     }
 
     function isHistoryEnabled(dlg) {
-        return dlg.getAttribute('data-history') == 'true';
+        return dlg.getAttribute('data-history') === 'true';
     }
 
     function open(dlg) {
@@ -180,7 +186,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            new dialogHashHandler(dlg, 'dlg' + new Date().getTime(), resolve);
+            new DialogHashHandler(dlg, 'dlg' + new Date().getTime(), resolve);
         });
     }
 
@@ -207,7 +213,7 @@
           { transform: 'scale(0)', offset: 0 },
           { transform: 'none', offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
-        return elem.animate(keyframes, timing).onfinish = onFinish;
+        elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
     function slideUp(elem, onFinish) {
@@ -216,7 +222,7 @@
           { transform: 'translate3d(0,30%,0)', opacity: 0, offset: 0 },
           { transform: 'none', opacity: 1, offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
-        return elem.animate(keyframes, timing).onfinish = onFinish;
+        elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
     function fadeIn(elem, onFinish) {
@@ -225,7 +231,7 @@
           { opacity: '0', offset: 0 },
           { opacity: '1', offset: 1 }];
         var timing = elem.animationConfig.entry.timing;
-        return elem.animate(keyframes, timing).onfinish = onFinish;
+        elem.animate(keyframes, timing).onfinish = onFinish;
     }
 
     function scaleDown(elem) {
@@ -277,18 +283,18 @@
                     }));
                 }
             };
-            if (!dlg.animationConfig || !dlg.animate) {
+            if (!dlg.animationConfig) {
                 onAnimationFinish();
                 return;
             }
 
             var animation;
 
-            if (dlg.animationConfig.exit.name == 'fadeout') {
+            if (dlg.animationConfig.exit.name === 'fadeout') {
                 animation = fadeOut(dlg);
-            } else if (dlg.animationConfig.exit.name == 'scaledown') {
+            } else if (dlg.animationConfig.exit.name === 'scaledown') {
                 animation = scaleDown(dlg);
-            } else if (dlg.animationConfig.exit.name == 'slidedown') {
+            } else if (dlg.animationConfig.exit.name === 'slidedown') {
                 animation = slideDown(dlg);
             } else {
                 onAnimationFinish();
@@ -303,20 +309,20 @@
 
         var onAnimationFinish = function () {
             focusManager.pushScope(dlg);
-            if (dlg.getAttribute('data-autofocus') == 'true') {
+            if (dlg.getAttribute('data-autofocus') === 'true') {
                 focusManager.autoFocus(dlg);
             }
         };
 
-        if (!dlg.animationConfig || !dlg.animate) {
+        if (!dlg.animationConfig) {
             onAnimationFinish();
             return;
         }
-        if (dlg.animationConfig.entry.name == 'fadein') {
+        if (dlg.animationConfig.entry.name === 'fadein') {
             fadeIn(dlg, onAnimationFinish);
-        } else if (dlg.animationConfig.entry.name == 'scaleup') {
+        } else if (dlg.animationConfig.entry.name === 'scaleup') {
             scaleUp(dlg, onAnimationFinish);
-        } else if (dlg.animationConfig.entry.name == 'slideup') {
+        } else if (dlg.animationConfig.entry.name === 'slideup') {
             slideUp(dlg, onAnimationFinish);
         }
     }
@@ -327,7 +333,7 @@
             return options.lockScroll;
         }
 
-        if (options.size == 'fullscreen') {
+        if (options.size === 'fullscreen') {
             return true;
         }
 

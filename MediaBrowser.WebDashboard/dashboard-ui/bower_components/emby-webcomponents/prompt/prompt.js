@@ -1,4 +1,4 @@
-define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, require) {
+define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, dom, require) {
 
     function setInputProperties(dlg, options) {
         var txtInput = dlg.querySelector('#txtInput');
@@ -20,8 +20,6 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
         if (layoutManager.tv) {
             dialogOptions.size = 'fullscreen';
-        } else {
-            //dialogOptions.size = 'mini';
         }
 
         var dlg = dialogHelper.createDialog(dialogOptions);
@@ -34,6 +32,7 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
             scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
         } else {
             dlg.querySelector('.dialogContentInner').classList.add('dialogContentInner-mini');
+            dlg.classList.add('dialog-fullscreen-lowres');
         }
 
         dlg.querySelector('.btnCancel').addEventListener('click', function (e) {
@@ -65,6 +64,10 @@ define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'require',
 
             return false;
         });
+
+        dlg.querySelector('.submitText').innerHTML = options.confirmText || globalize.translate('sharedcomponents#ButtonOk');
+
+        dlg.style.minWidth = (Math.min(400, dom.getWindowSize().innerWidth - 50)) + 'px';
 
         return dialogHelper.open(dlg).then(function () {
 

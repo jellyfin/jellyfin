@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     var myStore = {};
     var cache;
@@ -12,7 +13,7 @@
         localStorage.setItem(name, value);
 
         if (localData) {
-            var changed = localData[name] != value;
+            var changed = localData[name] !== value;
 
             if (changed) {
                 localData[name] = value;

@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -24,14 +26,16 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
+        private IJsonSerializer _json;
 
-        public SubtitleScheduledTask(ILibraryManager libraryManager, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
+        public SubtitleScheduledTask(ILibraryManager libraryManager, IJsonSerializer json, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _config = config;
             _subtitleManager = subtitleManager;
             _logger = logger;
             _mediaSourceManager = mediaSourceManager;
+            _json = json;
         }
 
         public string Name
@@ -58,38 +62,65 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var options = GetOptions();
 
-            var videos = _libraryManager.RootFolder
-                .GetRecursiveChildren(i =>
-                {
-                    if (!(i is Video))
-                    {
-                        return false;
-                    }
+            var types = new List<string>();
 
-                    if (i.LocationType == LocationType.Remote || i.LocationType == LocationType.Virtual)
-                    {
-                        return false;
-                    }
+            if (options.DownloadEpisodeSubtitles)
+            {
+                types.Add("Episode");
+            }
+            if (options.DownloadMovieSubtitles)
+            {
+                types.Add("Movie");
+            }
 
-                    return (options.DownloadEpisodeSubtitles &&
-                            i is Episode) ||
-                           (options.DownloadMovieSubtitles &&
-                            i is Movie);
-                })
-                .Cast<Video>()
+            if (types.Count == 0)
+            {
+                return;
+            }
+
+            var videos = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                MediaTypes = new string[] { MediaType.Video },
+                IsVirtualItem = false,
+                ExcludeLocationTypes = new LocationType[] { LocationType.Remote, LocationType.Virtual },
+                IncludeItemTypes = types.ToArray()
+
+            }).OfType<Video>()
                 .ToList();
+
+            var failHistoryPath = Path.Combine(_config.ApplicationPaths.CachePath, "subtitlehistory.json");
+            var history = GetHistory(failHistoryPath);
 
             var numComplete = 0;
 
             foreach (var video in videos)
             {
+                DateTime lastAttempt;
+                if (history.TryGetValue(video.Id.ToString("N"), out lastAttempt))
+                {
+                    if ((DateTime.UtcNow - lastAttempt).TotalDays <= 7)
+                    {
+                        continue;
+                    }
+                }
+
                 try
                 {
-                    await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
+                    var shouldRetry = await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
+
+                    if (shouldRetry)
+                    {
+                        history[video.Id.ToString("N")] = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        history.Remove(video.Id.ToString("N"));
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error downloading subtitles for {0}", ex, video.Path);
+                    history[video.Id.ToString("N")] = DateTime.UtcNow;
                 }
 
                 // Update progress
@@ -99,9 +130,23 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 progress.Report(100 * percent);
             }
+
+            _json.SerializeToFile(history, failHistoryPath);
         }
 
-        private async Task DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
+        private Dictionary<string,DateTime> GetHistory(string path)
+        {
+            try
+            {
+                return _json.DeserializeFromFile<Dictionary<string, DateTime>>(path);
+            }
+            catch
+            {
+                return new Dictionary<string, DateTime>();
+            }
+        }
+
+        private async Task<bool> DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
         {
             if ((options.DownloadEpisodeSubtitles &&
                 video is Episode) ||
@@ -124,8 +169,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (downloadedLanguages.Count > 0)
                 {
                     await video.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+                    return false;
                 }
+
+                return true;
             }
+
+            return false;
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()

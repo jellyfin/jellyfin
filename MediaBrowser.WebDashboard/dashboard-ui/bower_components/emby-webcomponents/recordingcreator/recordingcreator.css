@@ -2,13 +2,21 @@
     color: #cc3333;
 }
 
-.layout-tv .btnHeaderSave {
-    display: none;
+.recordingDialog-imageContainer {
+    flex-shrink: 0;
+    padding: 1em 1em 1em 0;
+    min-width: 17%;
+    max-width: 25%;
 }
 
-@media all and (max-height: 1400px) {
+.recordingDialog-img {
+    max-width: 100%;
+}
 
-    .layout-tv .recordingDialog .itemOverview {
-        display: none;
-    }
+.recordingDialog-itemName {
+    margin-top: .7em;
+}
+
+.recordingDialog-btnRecord {
+    background-color: #cc3333;
 }

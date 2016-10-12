@@ -15,17 +15,8 @@
     overflow: hidden;
 }
 
-.listItem-border {
-    border-bottom: 1px solid #2a2a2a;
-}
-
 .listItem-button {
     width: 100%;
-}
-
-.listItem-nosidepadding {
-    padding-left: 0;
-    padding-right: 0;
 }
 
 .listItem-largeImage {
@@ -46,6 +37,7 @@
     display: inline-block;
     vertical-align: middle;
     flex-shrink: 0;
+    contain: layout style;
 }
 
 .listViewDragHandle {
@@ -54,33 +46,20 @@
 
 .listItemBody {
     flex-grow: 1;
-    padding: 0 1em;
+    padding: .8em 1em;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-direction: column;
     vertical-align: middle;
     justify-content: center;
-    min-height: 3.44em;
 }
 
-.listItemBody-nogrow {
-    flex-grow: initial;
-    flex-shrink: 0;
-    width: 9em;
-    opacity: .7;
+.listItemBody-noleftpadding {
+    padding-left: 0;
 }
 
-@media all and (max-width: 800px) {
-
-    .listItemBody-nogrow {
-        width: 4em;
-    }
-}
-
-.two-line {
-    min-height: 5.15em;
-    padding-top: 0;
-    padding-bottom: 0;
+.listItem-odd {
+    background: #1c1c1c;
 }
 
 .three-line {
@@ -128,7 +107,6 @@
     background-color: #52B54B;
     padding: .5em;
     color: #fff;
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
 
 .listItemProgressBar {
@@ -169,6 +147,7 @@
     /* Don't display if flex not supported */
     display: none;
     align-items: center;
+    margin-right: 1em;
 }
 
 .listGroupHeader {
@@ -191,6 +170,7 @@
 
     .listItem, .listItemBody, .listItemMediaInfo {
         display: flex;
+        contain: layout style;
     }
 }
 
@@ -199,4 +179,8 @@
     .listItem .endsAt, .listItem .criticRating {
         display: none !important;
     }
+}
+
+.listItemCheckboxContainer {
+    width: auto !important;
 }

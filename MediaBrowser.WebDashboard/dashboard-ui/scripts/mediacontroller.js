@@ -148,7 +148,7 @@
 
         dlg.classList.add('promptDialog');
 
-        html += '<div class="promptDialogContent">';
+        html += '<div class="promptDialogContent" style="padding:1em;">';
         html += '<h2>';
         html += (playerInfo.deviceName || playerInfo.name);
         html += '</h2>';
@@ -376,41 +376,36 @@
 
             if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
 
-                var menuItems = [];
+                require(['dialog'], function (dialog) {
 
-                menuItems.push({
-                    name: Globalize.translate('ButtonYes'),
-                    id: 'yes'
-                });
-                menuItems.push({
-                    name: Globalize.translate('ButtonNo'),
-                    id: 'no'
-                });
-                menuItems.push({
-                    name: Globalize.translate('ButtonCancel'),
-                    id: 'cancel'
-                });
+                    var menuItems = [];
 
-                require(['actionsheet'], function (actionsheet) {
+                    menuItems.push({
+                        name: Globalize.translate('ButtonYes'),
+                        id: 'yes'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonNo'),
+                        id: 'no'
+                    });
 
-                    actionsheet.show({
-                        items: menuItems,
+                    dialog({
+                        buttons: menuItems,
                         //positionTo: positionTo,
-                        title: Globalize.translate('ConfirmEndPlayerSession'),
-                        callback: function (id) {
+                        text: Globalize.translate('ConfirmEndPlayerSession')
 
-                            switch (id) {
+                    }).then(function (id) {
+                        switch (id) {
 
-                                case 'yes':
-                                    MediaController.getCurrentPlayer().endSession();
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                case 'no':
-                                    self.setDefaultPlayerActive();
-                                    break;
-                                default:
-                                    break;
-                            }
+                            case 'yes':
+                                MediaController.getCurrentPlayer().endSession();
+                                self.setDefaultPlayerActive();
+                                break;
+                            case 'no':
+                                self.setDefaultPlayerActive();
+                                break;
+                            default:
+                                break;
                         }
                     });
 

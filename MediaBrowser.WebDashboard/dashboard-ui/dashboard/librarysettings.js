@@ -1,4 +1,4 @@
-﻿define(['jQuery'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
 
     function loadPage(page, config) {
 
@@ -13,6 +13,7 @@
         $('#chkSaveMetadataHidden', page).checked(config.SaveMetadataHidden);
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
+        $('#txtMetadataNetworkPath', page).val(config.MetadataNetworkPath || '');
 
         $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata);
         $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata);
@@ -70,6 +71,7 @@
             config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
             config.MetadataPath = $('#txtMetadataPath', form).val();
+            config.MetadataNetworkPath = $('#txtMetadataNetworkPath', form).val();
             config.FanartApiKey = $('#txtFanartApiKey', form).val();
 
             config.PeopleMetadataOptions.DownloadActorMetadata = $('#chkPeopleActors', form).checked();
@@ -94,7 +96,7 @@
         return [
         {
             href: 'library.html',
-            name: Globalize.translate('TabFolders')
+            name: Globalize.translate('HeaderLibraries')
         },
          {
              href: 'librarydisplay.html',
@@ -122,16 +124,21 @@
 
                 picker.show({
 
-                    callback: function (path) {
+                    path: $('#txtMetadataPath', view).val(),
+                    networkSharePath: $('#txtMetadataNetworkPath', view).val(),
+                    callback: function (path, networkPath) {
                         if (path) {
                             $('#txtMetadataPath', view).val(path);
+                            $('#txtMetadataNetworkPath', view).val(networkPath);
                         }
                         picker.close();
                     },
 
                     header: Globalize.translate('HeaderSelectMetadataPath'),
 
-                    instruction: Globalize.translate('HeaderSelectMetadataPathHelp')
+                    instruction: Globalize.translate('HeaderSelectMetadataPathHelp'),
+
+                    enableNetworkSharePath: true
                 });
             });
 
