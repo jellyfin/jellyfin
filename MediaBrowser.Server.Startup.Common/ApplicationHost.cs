@@ -1309,7 +1309,7 @@ namespace MediaBrowser.Server.Startup.Common
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = NativeApp.Environment.SystemArchitecture,
                 SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
-                PackageName = _startupOptions.GetOption("package")
+                PackageName = _startupOptions.GetOption("-package")
             };
         }
 

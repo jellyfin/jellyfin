@@ -148,7 +148,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             features.push('fullscreen');
         }
 
-        if (browser.chrome || (browser.safari && !browser.mobile)) {
+        if (browser.chrome || (browser.safari && !browser.slow) || (browser.edge && !browser.slow)) {
             features.push('imageanalysis');
         }
 
@@ -160,7 +160,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
     var version = window.dashboardVersion || '3.0';
 
     return {
-        dvrFeatureCode: Dashboard.isConnectMode() ? 'dvr' : 'dvrl',
+        dvrFeatureCode: 'dvr',
         getWindowState: function () {
             return document.windowState || 'Normal';
         },

@@ -157,7 +157,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         if (options.year !== false && item.ProductionYear && item.Type == "Series") {
 
             if (item.Status == "Continuing") {
-                miscInfo.push(globalize.translate('sharedcomponents#ValueSeriesYearToPresent', item.ProductionYear));
+                miscInfo.push(globalize.translate('sharedcomponents#SeriesYearToPresent', item.ProductionYear));
 
             }
             else if (item.ProductionYear) {

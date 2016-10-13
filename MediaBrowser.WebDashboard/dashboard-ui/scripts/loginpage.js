@@ -131,7 +131,7 @@
             html += '</div>';
 
             html += '<div class="cardFooter visualCardBox-cardFooter">';
-            html += '<div class="cardText singleCardText">' + user.Name + '</div>';
+            html += '<div class="cardText singleCardText cardTextCentered">' + user.Name + '</div>';
 
             html += '</div>';
             html += '</div>';

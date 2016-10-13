@@ -1,4 +1,4 @@
-﻿<div id="wizardTunerPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvtuner,emby-input,emby-button">
+﻿<div id="wizardTunerPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvtuner,emby-input,emby-button,emby-select">
 
     <div data-role="content">
 
@@ -13,14 +13,12 @@
                 </div>
 
                 <br />
-                <div>
-                    <label for="selectTunerType" class="selectLabel">${LabelTunerType}</label>
-                    <select id="selectTunerType" data-mini="true" required="required">
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectTunerType" label="${LabelTunerType}" required="required">
                         <option value="hdhomerun">HDHomerun</option>
                     </select>
                     <div class="fieldDescription">${AdditionalLiveTvProvidersCanBeInstalledLater}</div>
                 </div>
-                <br />
                 <div class="inputContainer">
                     <input is="emby-input" class="txtDevicePath" label="${LabelTunerIpAddress}" required="required" />
                     <div class="fieldDescription">${HelpMoreTunersCanBeAdded}</div>
