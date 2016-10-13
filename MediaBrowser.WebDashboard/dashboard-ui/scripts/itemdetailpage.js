@@ -862,14 +862,18 @@
 
             var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? getSquareShape() : getPortraitShape();
 
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
-                centerText: true,
+                centerText: !supportsImageAnalysis,
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",
                 coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                cardLayout: supportsImageAnalysis,
+                vibrant: supportsImageAnalysis
             });
             html += '</div>';
 
@@ -928,17 +932,22 @@
             } else {
                 html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
             }
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+
             html += cardBuilder.getCardsHtml({
                 items: result.Items,
                 shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
-                centerText: true,
+                centerText: !supportsImageAnalysis,
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",
                 context: context,
                 lazy: true,
                 showDetailsMenu: true,
                 coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
-                overlayPlayButton: true
+                overlayPlayButton: true,
+                cardLayout: supportsImageAnalysis && (item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist"),
+                vibrant: supportsImageAnalysis
             });
             html += '</div>';
 
