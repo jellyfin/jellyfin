@@ -356,8 +356,9 @@ button {
     right: 0;
     margin: 0 .35em .5em 0;
     z-index: 1;
+    padding: 6px;
     /*opacity: 0;
-    transition: opacity 0.5s ease-in; /* vendorless fallback */ */;
+    transition: opacity 0.5s ease-in;  */
 }
 
     /*.card:hover .cardOverlayButton {

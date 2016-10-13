@@ -64,7 +64,7 @@
                     preferThumb: !query.IsMovie && params.type != 'RecordingSeries',
                     inheritThumb: params.type == 'Recordings',
                     context: 'livetv',
-                    centerText: true,
+                    centerText: !supportsImageAnalysis,
                     lazy: true,
                     overlayText: false,
                     showParentTitleOrTitle: true,

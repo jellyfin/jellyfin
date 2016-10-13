@@ -38,7 +38,6 @@
     background: transparent;
     box-shadow: none;
     text-transform: uppercase;
-    color: #52B54B;
 }
 
 .emby-button > i {
@@ -151,8 +150,8 @@
     }
 
     .paper-icon-button-light > i {
-        width: auto;
-        height: auto;
+        width: 1em;
+        height: 1em;
         font-size: 1.6em;
         /* Make sure its on top of the ripple */
         position: relative;

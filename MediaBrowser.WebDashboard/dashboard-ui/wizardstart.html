@@ -1,4 +1,4 @@
-﻿<div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage,emby-button">
+﻿<div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage,emby-button,emby-select">
 
     <div data-role="content">
 
@@ -15,9 +15,8 @@
                 <br style="clear:both;" />
                 <p>${ThisWizardWillGuideYou}</p>
                 <br />
-                <div>
-                    <label for="selectLocalizationLanguage" class="selectLabel">${LabelPreferredDisplayLanguage}</label>
-                    <select id="selectLocalizationLanguage" data-mini="true"></select>
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectLocalizationLanguage" label="${LabelPreferredDisplayLanguage}"></select>
                 </div>
                 <br />
 

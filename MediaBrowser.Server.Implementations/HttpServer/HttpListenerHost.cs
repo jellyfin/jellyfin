@@ -100,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             container.Adapter = _containerAdapter;
 
             Plugins.RemoveAll(x => x is NativeTypesFeature);
-            //Plugins.Add(new SwaggerFeature());
+            Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization"));
 
             //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {

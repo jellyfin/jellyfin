@@ -90,7 +90,8 @@
             centerText: !cardLayout,
             vibrant: supportsImageAnalysis,
             allowBottomPadding: !enableScrollX(),
-            preferThumb: 'auto'
+            preferThumb: 'auto',
+            overlayText: false
 
         }, cardOptions || {}));
 
@@ -120,8 +121,7 @@
                 cardLayout: true,
                 vibrant: true,
                 preferThumb: true,
-                coverImage: true,
-                overlayText: false
+                coverImage: true
             });
         });
     }
@@ -217,6 +217,7 @@
         var moviesPromise;
         var seriesPromise;
         var latestPromise;
+        var lastFullRender = 0;
 
         categorysyncbuttons.init(tabContent);
 
@@ -229,6 +230,10 @@
             self.renderTab();
         });
 
+        function enableFullRender() {
+            return (new Date().getTime() - lastFullRender) > 300000;
+        }
+
         self.preRender = function () {
 
             activeRecordingsPromise = ApiClient.getLiveTvRecordings({
@@ -239,6 +244,10 @@
                 EnableTotalRecordCount: false,
                 EnableImageTypes: "Primary,Thumb,Backdrop"
             });
+
+            if (!enableFullRender()) {
+                return;
+            }
 
             latestPromise = ApiClient.getLiveTvRecordings({
 
@@ -291,23 +300,29 @@
         };
 
         self.renderTab = function () {
-            Dashboard.showLoadingMsg();
 
             renderActiveRecordings(tabContent, activeRecordingsPromise);
-            renderLatestRecordings(tabContent, latestPromise);
-            renderMovieRecordings(tabContent, moviesPromise);
-            renderEpisodeRecordings(tabContent, seriesPromise);
-            renderSportsRecordings(tabContent, sportsPromise);
-            renderKidsRecordings(tabContent, kidsPromise);
 
-            ApiClient.getLiveTvRecordingGroups({
+            if (enableFullRender()) {
+                Dashboard.showLoadingMsg();
 
-                userId: Dashboard.getCurrentUserId()
+                renderLatestRecordings(tabContent, latestPromise);
+                renderMovieRecordings(tabContent, moviesPromise);
+                renderEpisodeRecordings(tabContent, seriesPromise);
+                renderSportsRecordings(tabContent, sportsPromise);
+                renderKidsRecordings(tabContent, kidsPromise);
 
-            }).then(function (result) {
+                ApiClient.getLiveTvRecordingGroups({
 
-                renderRecordingGroups(tabContent, result.Items);
-            });
+                    userId: Dashboard.getCurrentUserId()
+
+                }).then(function (result) {
+
+                    renderRecordingGroups(tabContent, result.Items);
+                });
+
+                lastFullRender = new Date().getTime();
+            }
         };
     };
 

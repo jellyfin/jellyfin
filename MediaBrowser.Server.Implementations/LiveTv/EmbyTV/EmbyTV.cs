@@ -761,6 +761,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 defaults.SeriesId = program.SeriesId;
                 defaults.ProgramId = program.Id;
+                defaults.RecordNewOnly = !program.IsRepeat;
             }
 
             defaults.SkipEpisodesInLibrary = true;

@@ -103,9 +103,12 @@
         });
     }
 
-    function reload(page) {
+    var lastFullRender = 0;
+    function enableFullRender() {
+        return (new Date().getTime() - lastFullRender) > 300000;
+    }
 
-        loadRecommendedPrograms(page);
+    function reload(page) {
 
         renderActiveRecordings(page, ApiClient.getLiveTvRecordings({
             UserId: Dashboard.getCurrentUserId(),
@@ -114,6 +117,12 @@
             EnableTotalRecordCount: false,
             EnableImageTypes: "Primary,Thumb,Backdrop"
         }));
+
+        if (!enableFullRender()) {
+            return;
+        }
+
+        loadRecommendedPrograms(page);
 
         ApiClient.getLiveTvRecommendedPrograms({
 
@@ -181,6 +190,7 @@
 
             renderItems(page, result.Items, 'upcomingKidsItems');
         });
+        lastFullRender = new Date().getTime();
     }
 
     function renderItems(page, items, sectionClass, overlayButton, shape) {
