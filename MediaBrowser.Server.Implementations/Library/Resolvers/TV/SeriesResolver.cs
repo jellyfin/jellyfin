@@ -59,18 +59,18 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
-                if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
-                {
-                    return new Series
-                    {
-                        Path = args.Path,
-                        Name = Path.GetFileName(args.Path)
-                    };
-                }
-
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
+                    //if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                    //{
+                    //    return new Series
+                    //    {
+                    //        Path = args.Path,
+                    //        Name = Path.GetFileName(args.Path)
+                    //    };
+                    //}
+
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
@@ -83,6 +83,15 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 }
                 else if (string.IsNullOrWhiteSpace(collectionType))
                 {
+                    if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                    {
+                        return new Series
+                        {
+                            Path = args.Path,
+                            Name = Path.GetFileName(args.Path)
+                        };
+                    }
+
                     if (args.Parent.IsRoot)
                     {
                         return null;

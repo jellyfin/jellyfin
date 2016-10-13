@@ -1068,7 +1068,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var result = new Dictionary<Guid, BaseItem>();
 
-            AddChildrenToList(result, true, true, filter);
+            AddChildrenToList(result, includeLinkedChildren, true, filter);
 
             return result.Values.ToList();
         }
