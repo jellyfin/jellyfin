@@ -62,14 +62,14 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
-                    {
-                        return new Series
-                        {
-                            Path = args.Path,
-                            Name = Path.GetFileName(args.Path)
-                        };
-                    }
+                    //if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
+                    //{
+                    //    return new Series
+                    //    {
+                    //        Path = args.Path,
+                    //        Name = Path.GetFileName(args.Path)
+                    //    };
+                    //}
 
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))

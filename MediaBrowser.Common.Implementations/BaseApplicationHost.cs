@@ -234,7 +234,14 @@ namespace MediaBrowser.Common.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
-            MemoryStreamProvider = new MemoryStreamProvider();
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                MemoryStreamProvider = new RecyclableMemoryStreamProvider();
+            }
+            else
+            {
+                MemoryStreamProvider = new MemoryStreamProvider();
+            }
 
             OnLoggerLoaded(true);
             LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
