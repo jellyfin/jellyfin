@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'shell', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, shell) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -45,15 +45,16 @@
     function showSeriesRecordingFields(context, programId, apiClient) {
 
         getRegistration(apiClient, programId, 'seriesrecordings').then(function (regInfo) {
-
             if (regInfo.IsRegistered) {
                 context.querySelector('.supporterContainer').classList.add('hide');
                 context.querySelector('.convertRecordingsContainer').classList.add('hide');
+                context.querySelector('.recordSeriesContainer').classList.remove('hide');
 
             } else {
 
                 context.querySelector('.supporterContainerText').innerHTML = globalize.translate('sharedcomponents#MessageActiveSubscriptionRequiredSeriesRecordings');
                 context.querySelector('.supporterContainer').classList.remove('hide');
+                context.querySelector('.recordSeriesContainer').classList.add('hide');
                 context.querySelector('.convertRecordingsContainer').classList.add('hide');
             }
         });
@@ -97,13 +98,9 @@
 
         if (program.IsSeries) {
             parent.querySelector('.recordSeriesContainer').classList.remove('hide');
-        } else {
-            parent.querySelector('.recordSeriesContainer').classList.add('hide');
-        }
-
-        if (program.SeriesTimerId != null) {
             showSeriesRecordingFields(parent, program.Id, apiClient);
         } else {
+            parent.querySelector('.recordSeriesContainer').classList.add('hide');
             showSingleRecordingFields(parent, program.Id, apiClient);
         }
 
