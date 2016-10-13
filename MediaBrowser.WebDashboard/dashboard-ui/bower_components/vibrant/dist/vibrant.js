@@ -622,7 +622,7 @@ module.exports = MMCQ.quantize
       this.swatches = bind(this.swatches, this);
       var a, allPixels, b, cmap, g, i, image, imageData, offset, pixelCount, pixels, r;
       if (typeof colorCount === 'undefined') {
-        colorCount = 64;
+        colorCount = 16;
       }
       if (typeof quality === 'undefined') {
         quality = 5;
@@ -837,22 +837,29 @@ module.exports = MMCQ.quantize
    */
 
   window.CanvasImage = CanvasImage = (function() {
-      function CanvasImage(image, context) {
+      function CanvasImage(image) {
 
-          if (context) {
-            this.width = image.width;
-            this.height = image.height;
+          this.canvas = document.createElement('canvas');
 
-            this.context = context;
-        } else {
-            this.canvas = document.createElement('canvas');
-            this.width = this.canvas.width = image.width;
-            this.height = this.canvas.height = image.height;
+          this.context = this.canvas.getContext('2d');
 
-            this.context = this.canvas.getContext('2d');
-            this.context.drawImage(image, 0, 0, this.width, this.height);
-        }
-    }
+          var originalWidth = image.width;
+          var originalHeight = image.height;
+
+          var maxArea = 300 * 300;
+          var bitmapArea = originalWidth * originalHeight;
+          var scaleRatio = 1;
+          if (bitmapArea > maxArea) {
+              scaleRatio = maxArea / bitmapArea;
+          }
+
+          //console.log(scaleRatio);
+
+          this.width = this.canvas.width = originalWidth * scaleRatio;
+          this.height = this.canvas.height = originalHeight * scaleRatio;
+
+          this.context.drawImage(image, 0, 0, originalWidth, originalHeight, 0, 0, this.width, this.height);
+      }
 
     CanvasImage.prototype.getPixelCount = function() {
       return this.width * this.height;
