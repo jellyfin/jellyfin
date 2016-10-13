@@ -416,12 +416,13 @@ button {
 }
 
 .overflowBackdropCard-scalable {
-    width: 80%;
+    width: 70%;
     max-width: 400px;
 }
 
 .overflowSquareCard-scalable {
-    width: 42%;
+    width: 40%;
+    max-width: 200px;
 }
 
 @media all and (min-width: 420px) {
@@ -442,22 +443,29 @@ button {
     }
 }
 
+@media all and (min-width: 540px) {
+
+    .overflowPortraitCard-scalable {
+        width: 30%;
+    }
+
+    .overflowBackdropCard-scalable {
+        width: 64%;
+    }
+
+    .overflowSquareCard-scalable {
+        width: 30%;
+    }
+}
+
 @media all and (min-width: 640px) {
 
     .portraitCard-scalable {
         width: 25%;
     }
 
-    .overflowPortraitCard-scalable {
-        width: 36%;
-    }
-
     .overflowBackdropCard-scalable {
-        width: 60%;
-    }
-
-    .overflowSquareCard-scalable {
-        width: 30%;
+        width: 56%;
     }
 }
 
@@ -504,7 +512,7 @@ button {
     }
 
     .overflowPortraitCard-scalable {
-        width: 23%;
+        width: 22%;
     }
 
     .overflowBackdropCard-scalable {
