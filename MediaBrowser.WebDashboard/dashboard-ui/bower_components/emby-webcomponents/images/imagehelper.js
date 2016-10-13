@@ -138,7 +138,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         return true;
     }
 
-    function fillVibrantOnLoaded(img, url, vibrantElement, canvas, canvasContext) {
+    function fillVibrantOnLoaded(img, url, vibrantElement) {
 
         vibrantElement = document.getElementById(vibrantElement);
         if (!vibrantElement) {
@@ -148,7 +148,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         requestIdleCallback(function () {
 
             //var now = new Date().getTime();
-            var swatch = getVibrantInfo(canvas || img, url, canvasContext).split('|');
+            var swatch = getVibrantInfo(img, url).split('|');
             //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
             if (swatch.length) {
 
@@ -176,7 +176,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         url = url.split('?')[0];
 
-        var cacheKey = 'vibrant11';
+        var cacheKey = 'vibrant21';
         return cacheKey + url;
     }
 
@@ -185,14 +185,14 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         return appSettings.get(getSettingsKey(url));
     }
 
-    function getVibrantInfo(img, url, canvasContext) {
+    function getVibrantInfo(img, url) {
 
         var value = getCachedVibrantInfo(url);
         if (value) {
             return value;
         }
 
-        var vibrant = new Vibrant(img, canvasContext);
+        var vibrant = new Vibrant(img);
         var swatches = vibrant.swatches();
 
         value = '';

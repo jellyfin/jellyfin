@@ -160,7 +160,7 @@ progress {
         top: 0;
         right: 0;
         bottom: 0;
-        left: 280px;
+        left: 260px;
     }
 
     .dashboardDocument .adminDrawerLogo {
@@ -339,7 +339,6 @@ a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearB
 @media all and (min-width: 1200px) {
 
     .mainDrawerPanel:not([narrow]) .content-primary {
-        padding-right: 1.5em;
         padding-left: 2em;
     }
 }
