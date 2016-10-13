@@ -35,7 +35,7 @@
     <UseRefCounting>false</UseRefCounting>
     <Profiling>false</Profiling>
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
-    <TlsProvider>Legacy</TlsProvider>
+    <TlsProvider>Default</TlsProvider>
     <LinkMode>None</LinkMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
