@@ -100,7 +100,7 @@
                     showParentTitle: section.showParentTitle,
                     scalable: true,
                     overlayPlayButton: section.overlayPlayButton,
-                    overlayMoreButton: section.overlayMoreButton,
+                    overlayMoreButton: section.overlayMoreButton && !cardLayout,
                     action: section.action,
                     allowBottomPadding: !enableScrollX(),
                     cardLayout: cardLayout,

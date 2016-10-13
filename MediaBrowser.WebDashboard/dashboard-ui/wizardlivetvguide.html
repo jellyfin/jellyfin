@@ -1,4 +1,4 @@
-﻿<div id="wizardGuidePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvguide,emby-button">
+﻿<div id="wizardGuidePage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardlivetvguide,emby-button,emby-select">
 
     <div data-role="content">
 
@@ -12,15 +12,13 @@
             </div>
 
             <br />
-            <div>
-                <label for="selectType" class="selectLabel">${LabelDataProvider}</label>
-                <select id="selectType" data-mini="true" required="required">
+            <div class="selectContainer">
+                <select is="emby-select" id="selectType" label="${LabelDataProvider}" required="required">
                     <option value="SchedulesDirect">Schedules Direct</option>
                     <option value="xmltv">Xml TV</option>
                 </select>
                 <div class="fieldDescription">${AdditionalLiveTvProvidersCanBeInstalledLater}</div>
             </div>
-            <br />
             <div class="providerTemplate">
 
             </div>
