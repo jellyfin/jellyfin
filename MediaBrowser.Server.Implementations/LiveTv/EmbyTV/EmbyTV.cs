@@ -741,7 +741,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 PostPaddingSeconds = Math.Max(config.PostPaddingSeconds, 0),
                 PrePaddingSeconds = Math.Max(config.PrePaddingSeconds, 0),
-                RecordAnyChannel = true,
+                RecordAnyChannel = false,
                 RecordAnyTime = true,
                 RecordNewOnly = true,
 

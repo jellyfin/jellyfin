@@ -122,43 +122,55 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var identifier = string.IsNullOrWhiteSpace(usn) ? nt : usn;
 
-            if (info.Location != null && !_usnsHandled.Contains(identifier))
+            if (info.Location == null)
             {
-                _usnsHandled.Add(identifier);
+                return;
+            }
 
-                _logger.Debug("Calling Nat.Handle on " + identifier);
-
-                IPAddress address;
-                if (IPAddress.TryParse(info.Location.Host, out address))
+            lock (_usnsHandled)
+            {
+                if (_usnsHandled.Contains(identifier))
                 {
-                    // The Handle method doesn't need the port
-                    var endpoint = new IPEndPoint(address, info.Location.Port);
+                    return;
+                }
+                _usnsHandled.Add(identifier);
+            }
 
-                    IPAddress localAddress = null;
+            _logger.Debug("Calling Nat.Handle on " + identifier);
 
-                    try
-                    {
-                        var localAddressString = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+            IPAddress address;
+            if (IPAddress.TryParse(info.Location.Host, out address))
+            {
+                // The Handle method doesn't need the port
+                var endpoint = new IPEndPoint(address, info.Location.Port);
 
-                        if (!IPAddress.TryParse(localAddressString, out localAddress))
-                        {
-                            return;
-                        }
-                    }
-                    catch
+                IPAddress localAddress = null;
+
+                try
+                {
+                    var localAddressString = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
+
+                    if (!IPAddress.TryParse(localAddressString, out localAddress))
                     {
                         return;
                     }
-
-                    NatUtility.Handle(localAddress, info, endpoint, NatProtocol.Upnp);
                 }
+                catch
+                {
+                    return;
+                }
+
+                NatUtility.Handle(localAddress, info, endpoint, NatProtocol.Upnp);
             }
         }
 
         private void ClearCreatedRules(object state)
         {
             _createdRules = new List<string>();
-            _usnsHandled = new List<string>();
+            lock (_usnsHandled)
+            {
+                _usnsHandled.Clear();
+            }
         }
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
