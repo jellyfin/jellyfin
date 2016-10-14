@@ -189,6 +189,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             var features = [];
 
             features.push('playback');
+            features.push('livetv');
 
             return features;
         },
