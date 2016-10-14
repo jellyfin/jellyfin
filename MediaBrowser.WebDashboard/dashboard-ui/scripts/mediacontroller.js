@@ -99,17 +99,22 @@
 
                 Dashboard.hideLoadingMsg();
 
-                actionsheet.show({
+                var menuOptions = {
                     title: Globalize.translate('HeaderSelectPlayer'),
                     items: menuItems,
                     positionTo: button,
 
-                    // Unfortunately we can't allow the url to change or chromecast will throw a security error
-                    // Might be able to solve this in the future by moving the dialogs to hashbangs
-                    enableHistory: enableHistory !== false && !browser.chrome,
                     resolveOnClick: true
 
-                }).then(function (id) {
+                };
+
+                // Unfortunately we can't allow the url to change or chromecast will throw a security error
+                // Might be able to solve this in the future by moving the dialogs to hashbangs
+                if (!((enableHistory !== false && !browser.chrome) || AppInfo.isNativeApp)) {
+                    menuOptions.enableHistory = false;
+                }
+
+                actionsheet.show(menuOptions).then(function (id) {
 
                     var target = targets.filter(function (t) {
                         return t.id == id;
@@ -461,7 +466,7 @@
                 return;
             }
 
-            requirejs(["registrationservices"], function (registrationServices) {
+            requirejs(["registrationServices"], function (registrationServices) {
 
                 self.playbackTimeLimitMs = null;
 

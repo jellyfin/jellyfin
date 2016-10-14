@@ -1202,12 +1202,10 @@ var AppInfo = {};
         if (Dashboard.isRunningInCordova()) {
             paths.sharingMenu = "cordova/sharingwidget";
             paths.wakeonlan = "cordova/wakeonlan";
-            paths.actionsheet = "cordova/actionsheet";
         } else {
             paths.wakeonlan = apiClientBowerPath + "/wakeonlan";
 
             define("sharingMenu", [embyWebComponentsBowerPath + "/sharing/sharingmenu"], returnFirstDependency);
-            define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
@@ -1361,17 +1359,14 @@ var AppInfo = {};
         define("formDialogStyle", ['css!' + embyWebComponentsBowerPath + "/formdialog"], returnFirstDependency);
         define("indicators", [embyWebComponentsBowerPath + "/indicators/indicators"], returnFirstDependency);
 
-        if (Dashboard.isRunningInCordova()) {
-            define('registrationservices', ['cordova/registrationservices'], returnFirstDependency);
-
-        } else {
-            define('registrationservices', ['scripts/registrationservices'], returnFirstDependency);
-        }
+        define("registrationServices", [embyWebComponentsBowerPath + "/registrationservices/registrationservices"], returnFirstDependency);
 
         if (Dashboard.isRunningInCordova()) {
+            define("iapManager", ["cordova/iap"], returnFirstDependency);
             define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
             define("fileupload", ["cordova/fileupload"], returnFirstDependency);
         } else {
+            define("iapManager", ["components/iap"], returnFirstDependency);
             define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
             define("fileupload", [apiClientBowerPath + "/fileupload"], returnFirstDependency);
         }
@@ -1620,6 +1615,12 @@ var AppInfo = {};
         var bowerPath = getBowerPath();
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
+
+        if (Dashboard.isRunningInCordova() && browser.safari) {
+            paths.actionsheet = "cordova/actionsheet";
+        } else {
+            define("actionsheet", ["webActionSheet"], returnFirstDependency);
+        }
 
         if (!('registerElement' in document)) {
             if (browser.msie) {
@@ -2662,7 +2663,7 @@ var AppInfo = {};
         loadTheme();
 
         if (Dashboard.isRunningInCordova()) {
-            deps.push('registrationservices');
+            deps.push('registrationServices');
 
             if (browserInfo.android) {
                 deps.push('cordova/android/androidcredentials');

@@ -24,35 +24,6 @@
         }
     }
 
-    var initCount = 0;
-    function showTapHoldHelp(element) {
-
-        if (initCount >= 15) {
-            // All done
-            return;
-        }
-
-        initCount++;
-
-        if (initCount < 15) {
-            return;
-        }
-
-        var expectedValue = "8";
-        if (appStorage.getItem("tapholdhelp") == expectedValue) {
-            return;
-        }
-
-        appStorage.setItem("tapholdhelp", expectedValue);
-
-        require(['alert'], function (alert) {
-            alert({
-                text: globalize.translate('sharedcomponents#TryMultiSelectMessage'),
-                title: globalize.translate('sharedcomponents#TryMultiSelect')
-            });
-        });
-    }
-
     function onItemSelectionPanelClick(e, itemSelectionPanel) {
 
         // toggle the checkbox, if it wasn't clicked on
@@ -504,8 +475,6 @@
                     self.manager = manager;
                 });
             }
-
-            showTapHoldHelp(element);
         }
 
         initTapHold(container);

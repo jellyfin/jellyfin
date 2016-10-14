@@ -14,3 +14,13 @@
     bottom: 0;
     contain: layout style;
 }
+
+@keyframes backdrop-fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

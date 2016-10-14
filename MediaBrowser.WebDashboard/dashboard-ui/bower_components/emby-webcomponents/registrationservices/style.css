@@ -1,0 +1,26 @@
+.registrationDialog {
+    background: rgba(28, 28, 28, .98) !important;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.registrationDialogContent {
+    max-width: 50%;
+    justify-content: center;
+    align-items: center;
+}
+
+    .registrationDialogContent h1 {
+        margin-top: 0;
+    }
+
+.btnRegistrationBack {
+    z-index: 1002;
+    position: absolute;
+    top: .5em;
+    left: .5em;
+    width: 5.2vh;
+    height: 5.2vh;
+}

@@ -2,9 +2,13 @@
     width: 100%;
 }
 
-    .autoorganizetable > .table > tbody > tr > td {
-        padding: 0.4em;
-    }
+.autoorganizetable th {
+    padding: 0.4em;
+}
+
+.autoorganizetable > .table > tbody > tr > td {
+    padding: 0.4em;
+}
 
 .autoorganizetable .fileCell {
     word-wrap: break-word;

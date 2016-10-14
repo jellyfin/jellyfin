@@ -92,14 +92,7 @@ button {
 }
 
 .cardBox-mobile {
-    margin: 1px;
-}
-
-@media all and (min-width: 600px) {
-
-    .cardBox-mobile {
-        margin: 2px;
-    }
+    margin: 2px;
 }
 
 .card:focus {
@@ -154,14 +147,6 @@ button {
     color: #fff;
     /* This is only needed for scalable cards */
     height: 100%;
-}
-
-@media all and (min-width: 600px) {
-
-    .cardImageContainer {
-        /* Should be 0 with visualCardBox, but not really noticeable */
-        border-radius: 1px;
-    }
 }
 
 .chapterCardImageContainer {
@@ -411,17 +396,17 @@ button {
 }
 
 .overflowPortraitCard-scalable {
-    width: 40%;
+    width: 42%;
     max-width: 200px;
 }
 
 .overflowBackdropCard-scalable {
-    width: 70%;
+    width: 72%;
     max-width: 400px;
 }
 
 .overflowSquareCard-scalable {
-    width: 40%;
+    width: 42%;
     max-width: 200px;
 }
 
