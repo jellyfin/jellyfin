@@ -1,4 +1,4 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationservices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationServices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
     'use strict';
 
     function showViewSettings(instance) {
@@ -207,12 +207,12 @@
                     }
                 }
 
-                if (userSettings.get('livetv-channelorder') === 'Number') {
-                    channelQuery.SortBy = "SortName";
-                    channelQuery.SortOrder = "Ascending";
-                } else {
+                if (userSettings.get('livetv-channelorder') === 'DatePlayed') {
                     channelQuery.SortBy = "DatePlayed";
                     channelQuery.SortOrder = "Descending";
+                } else {
+                    channelQuery.SortBy = "SortName";
+                    channelQuery.SortOrder = "Ascending";
                 }
 
                 var date = newStartDate;

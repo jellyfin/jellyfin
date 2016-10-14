@@ -4,7 +4,7 @@
 
         view.querySelector('.btnSyncSupporter').addEventListener('click', function () {
 
-            requirejs(["registrationservices"], function (registrationServices) {
+            requirejs(["registrationServices"], function (registrationServices) {
                 registrationServices.validateFeature('sync');
             });
         });

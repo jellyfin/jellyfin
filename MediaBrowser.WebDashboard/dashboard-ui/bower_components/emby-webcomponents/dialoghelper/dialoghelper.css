@@ -40,6 +40,74 @@
     box-shadow: none;
 }
 
+@keyframes scaledown {
+    from {
+        opacity: 1;
+        transform: none;
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+
+@keyframes scaleup {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeout {
+
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideup {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 30%, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes slidedown {
+
+    from {
+        opacity: 1;
+        transform: none;
+    }
+
+    to {
+        opacity: 0;
+        transform: translate3d(0, 30%, 0);
+    }
+}
+
 @media all and (max-width: 1280px), all and (max-height: 720px) {
 
     .dialog-fixedSize, .dialog-fullscreen-lowres {

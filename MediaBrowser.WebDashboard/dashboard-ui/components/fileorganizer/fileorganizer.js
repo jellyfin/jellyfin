@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'emby-checkbox', 'emby-input', 'emby-button', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper) {
+﻿define(['dialogHelper', 'emby-checkbox', 'emby-input', 'emby-button', 'emby-select', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper) {
 
     var extractedName;
     var extractedYear;
@@ -107,10 +107,10 @@
         var resultId = dlg.querySelector('#hfResultId').value;
         var seriesId = dlg.querySelector('#selectSeries').value;
 
-        var targetFolder;
-        var newProviderIds;
-        var newSeriesName;
-        var newSeriesYear;
+        var targetFolder = null;
+        var newProviderIds = null;
+        var newSeriesName = null;
+        var newSeriesYear = null;
 
         if (seriesId == "##NEW##" && currentNewItem != null) {
             seriesId = null;

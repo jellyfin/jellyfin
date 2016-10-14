@@ -77,58 +77,8 @@
         function onButtonClick() {
 
             var button = this;
-            var buttonTextElement = this.querySelector('span') || this;
-            var text = buttonTextElement.textContent || buttonTextElement.innerText;
             var taskId = button.getAttribute('data-taskid');
-
-            var key = 'scheduledTaskButton' + options.taskKey;
-            var expectedValue = new Date().getMonth() + '6';
-
-            if (userSettings.get(key) == expectedValue) {
-                onScheduledTaskMessageConfirmed(taskId);
-            } else {
-
-                require(['dialog'], function (dialog) {
-
-                    var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
-
-                    var menuItems = [];
-
-                    menuItems.push({
-                        name: text,
-                        id: 'task'
-                    });
-                    menuItems.push({
-                        name: Globalize.translate('ButtonScheduledTasks'),
-                        id: 'tasks'
-                    });
-                    menuItems.push({
-                        name: Globalize.translate('ButtonCancel'),
-                        id: 'cancel'
-                    });
-
-                    dialog({
-                        buttons: menuItems,
-                        text: msg
-
-                    }).then(function (id) {
-                        switch (id) {
-
-                            case 'task':
-                                userSettings.set(key, expectedValue);
-                                onScheduledTaskMessageConfirmed(taskId);
-                                break;
-                            case 'tasks':
-                                userSettings.set(key, expectedValue);
-                                Dashboard.navigate('scheduledtasks.html');
-                                break;
-                            default:
-                                break;
-                        }
-                    });
-
-                });
-            }
+            onScheduledTaskMessageConfirmed(taskId);
         }
 
         function onSocketOpen() {

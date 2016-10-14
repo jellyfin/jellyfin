@@ -97,9 +97,7 @@
         var dialogOptions = {
             removeOnClose: true,
             enableHistory: options.enableHistory,
-            scrollY: false,
-            entryAnimation: options.entryAnimation,
-            exitAnimation: options.exitAnimation
+            scrollY: false
         };
 
         var backButton = false;
@@ -113,7 +111,7 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 140;
+            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 160;
             dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 180;
             dialogOptions.autoFocus = false;
         }

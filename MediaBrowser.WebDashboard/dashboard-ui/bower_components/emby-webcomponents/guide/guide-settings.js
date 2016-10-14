@@ -43,7 +43,7 @@
         context.querySelector('.chkColorCodedBackgrounds').checked = userSettings.get('guide-colorcodedbackgrounds') === 'true';
         context.querySelector('.chkFavoriteChannelsAtTop').checked = userSettings.get('livetv-favoritechannelsattop') !== 'false';
 
-        var sortByValue = userSettings.get('livetv-channelorder') || 'DatePlayed';
+        var sortByValue = userSettings.get('livetv-channelorder') || 'Number';
 
         var sortBys = context.querySelectorAll('.chkSortOrder');
         for (i = 0, length = sortBys.length; i < length; i++) {

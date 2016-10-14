@@ -7,7 +7,7 @@
             return false;
         }
 
-        return elem.animate;
+        return true;
     }
 
     function enableRotation() {
@@ -23,6 +23,7 @@
 
         var self = this;
         var isDestroyed;
+        var currentAnimatingElement;
 
         self.load = function (url, parent, existingBackdropImage) {
 
@@ -39,6 +40,7 @@
                 backdropImage.style.backgroundImage = "url('" + url + "')";
                 backdropImage.setAttribute('data-url', url);
 
+                backdropImage.style.animation = 'backdrop-fadein ' + 800 + 'ms ease-in normal both';
                 parent.appendChild(backdropImage);
 
                 if (!enableAnimation(backdropImage)) {
@@ -49,37 +51,26 @@
                     return;
                 }
 
-                var animation = fadeIn(backdropImage, 1);
-                currentAnimation = animation;
-                animation.onfinish = function () {
+                setTimeout(function () {
 
-                    if (animation === currentAnimation) {
-                        currentAnimation = null;
+                    if (backdropImage === currentAnimatingElement) {
+                        currentAnimatingElement = null;
                     }
                     if (existingBackdropImage && existingBackdropImage.parentNode) {
                         existingBackdropImage.parentNode.removeChild(existingBackdropImage);
                     }
-                };
+                }, 800);
 
                 internalBackdrop(true);
             };
             img.src = url;
         };
 
-        var currentAnimation;
-        function fadeIn(elem, iterations) {
-            var keyframes = [
-              { opacity: '0', offset: 0 },
-              { opacity: '1', offset: 1 }];
-            var timing = { duration: 800, iterations: iterations, easing: 'ease-in' };
-            return elem.animate(keyframes, timing);
-        }
-
         function cancelAnimation() {
-            var animation = currentAnimation;
-            if (animation) {
-                animation.cancel();
-                currentAnimation = null;
+            var elem = currentAnimatingElement;
+            if (elem) {
+                elem.style.animation = '';
+                currentAnimatingElement = null;
             }
         }
 
