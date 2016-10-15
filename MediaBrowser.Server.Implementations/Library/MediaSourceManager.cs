@@ -360,6 +360,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken)
         {
+            enableAutoClose = false;
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try

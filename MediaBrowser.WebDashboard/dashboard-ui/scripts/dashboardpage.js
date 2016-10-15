@@ -450,7 +450,7 @@
                 html += '<div style="display:flex;align-items:center;justify-content:center;text-transform:uppercase;">';
                 var userImage = DashboardPage.getUserImage(session);
                 if (userImage) {
-                    html += '<img style="border-radius:50px;margin-right:.5em;" src="' + userImage + '" />';
+                    html += '<img style="height:24px;border-radius:50px;margin-right:.5em;" src="' + userImage + '" />';
                 } else {
                     html += '<div style="height:24px;"></div>';
                 }

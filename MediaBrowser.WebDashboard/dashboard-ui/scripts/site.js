@@ -1417,9 +1417,7 @@ var AppInfo = {};
         });
 
         // alias
-        define("historyManager", [], function () {
-            return Emby.Page;
-        });
+        define("historyManager", ['embyRouter'], returnFirstDependency);
 
         define("headroom-window", ['headroom'], createWindowHeadroom);
         define("hammer-main", ['hammer'], createMainContentHammer);
@@ -2682,7 +2680,6 @@ var AppInfo = {};
 
             window.Emby = {};
             window.Emby.Page = pageObjects;
-            window.Emby.TransparencyLevel = pageObjects.TransparencyLevel;
             defineCoreRoutes();
             Emby.Page.start({
                 click: true,

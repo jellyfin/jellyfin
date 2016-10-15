@@ -1188,7 +1188,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
-            var parts = value.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
 
             var image = new ItemImageInfo();
 
@@ -1633,14 +1633,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             index++;
 
-            if (query.HasField(ItemFields.ServiceName))
+            // TODO: Even if not needed by apps, the server needs it internally
+            // But get this excluded from contexts where it is not needed
+            if (!reader.IsDBNull(index))
             {
-                if (!reader.IsDBNull(index))
-                {
-                    item.ServiceName = reader.GetString(index);
-                }
-                index++;
+                item.ServiceName = reader.GetString(index);
             }
+            index++;
 
             if (!reader.IsDBNull(index))
             {
