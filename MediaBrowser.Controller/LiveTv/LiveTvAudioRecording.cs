@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override bool CanDelete()
         {
-            return Status == RecordingStatus.Completed;
+            return Status == RecordingStatus.Completed || Status == RecordingStatus.New;
         }
 
         public override bool IsAuthorizedToDelete(User user)
