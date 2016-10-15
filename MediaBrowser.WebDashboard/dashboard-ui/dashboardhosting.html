@@ -10,19 +10,19 @@
                     <div class="fieldDescription">${LabelBindToLocalNetworkAddressHelp}</div>
                 </div>
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1" />
+                    <input is="emby-input" type="number" id="txtPortNumber" label="${LabelLocalHttpServerPortNumber}" pattern="[0-9]*" required="required" min="1" max="65535" />
                     <div class="fieldDescription">${LabelLocalHttpServerPortNumberHelp}</div>
                 </div>
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelHttpsPort}" />
+                    <input is="emby-input" type="number" id="txtHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelHttpsPort}" />
                     <div class="fieldDescription">${LabelHttpsPortHelp}</div>
                 </div>
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" />
+                    <input is="emby-input" type="number" label="${LabelPublicHttpPort}" id="txtPublicPort" pattern="[0-9]*" required="required" min="1" max="65535" />
                     <div class="fieldDescription">${LabelPublicHttpPortHelp}</div>
                 </div>
                 <div class="inputContainer">
-                    <input is="emby-input" type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" label="${LabelPublicHttpsPort}" />
+                    <input is="emby-input" type="number" id="txtPublicHttpsPort" pattern="[0-9]*" required="required" min="1" max="65535" label="${LabelPublicHttpsPort}" />
                     <div class="fieldDescription">${LabelPublicHttpsPortHelp}</div>
                 </div>
 
