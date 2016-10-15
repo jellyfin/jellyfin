@@ -1457,9 +1457,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 var value = listItemsMoreButton.getAttribute('data-indexvalue');
                 var parentid = listItemsMoreButton.getAttribute('data-parentid');
 
-                Emby.Page.showGenre({
-                    ParentId: parentid,
-                    Id: value
+                require(['embyRouter'], function (embyRouter) {
+                    embyRouter.showGenre({
+                        ParentId: parentid,
+                        Id: value
+                    });
                 });
             }
         }

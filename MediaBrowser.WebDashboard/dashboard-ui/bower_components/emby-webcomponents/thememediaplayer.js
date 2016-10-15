@@ -87,8 +87,8 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
 
     }, true);
 
-    //Events.on(Emby.PlaybackManager, 'playbackstart', function (e, player) {
-    //    var item = Emby.PlaybackManager.currentItem(player);
+    //Events.on(playbackManager, 'playbackstart', function (e, player) {
+    //    var item = playbackManager.currentItem(player);
     //    // User played something manually
     //    if (currentThemeIds.indexOf(item.Id) == -1) {
     //        currentOwnerId = null;

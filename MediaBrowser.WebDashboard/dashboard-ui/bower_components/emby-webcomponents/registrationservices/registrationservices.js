@@ -1,6 +1,7 @@
 ﻿define(['appSettings', 'loading', 'apphost', 'iapManager', 'events', 'shell', 'globalize', 'dialogHelper', 'connectionManager', 'layoutManager', 'emby-button'], function (appSettings, loading, appHost, iapManager, events, shell, globalize, dialogHelper, connectionManager, layoutManager) {
 
-    var validatedFeatures = [];
+    var currentDisplayingProductInfos = [];
+    var currentDisplayingResolve = null;
 
     function alertText(options) {
         return new Promise(function (resolve, reject) {
@@ -23,13 +24,11 @@
         });
     }
 
-    function validateFeature(feature) {
+    function validateFeature(feature, options) {
+
+        options = options || {};
 
         console.log('validateFeature: ' + feature);
-
-        if (validatedFeatures.indexOf(feature) != -1) {
-            return Promise.resolve();
-        }
 
         return iapManager.isUnlockedByDefault(feature).catch(function () {
 
@@ -79,6 +78,10 @@
                         feature: feature
                     };
 
+                    if (options.showDialog === false) {
+                        return Promise.reject();
+                    }
+
                     return showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, dialogOptions);
                 });
             });
@@ -92,9 +95,6 @@
             dialogHelper.close(elem);
         }
     }
-
-    var currentDisplayingProductInfos = [];
-    var currentDisplayingResolve = null;
 
     function clearCurrentDisplayingInfo() {
         currentDisplayingProductInfos = [];
@@ -211,7 +211,7 @@
             btnPurchases[i].addEventListener('click', onPurchaseButtonClick);
         }
 
-        var btnPurchases = dlg.querySelectorAll('.buttonPremiereInfo');
+        btnPurchases = dlg.querySelectorAll('.buttonPremiereInfo');
         for (i = 0, length = btnPurchases.length; i < length; i++) {
             btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
         }
@@ -242,7 +242,7 @@
         }
 
         var btnCloseDialogs = dlg.querySelectorAll('.btnCloseDialog');
-        for (var i = 0, length = btnCloseDialogs.length; i < length; i++) {
+        for (i = 0, length = btnCloseDialogs.length; i < length; i++) {
             btnCloseDialogs[i].addEventListener('click', onCloseButtonClick);
         }
 
