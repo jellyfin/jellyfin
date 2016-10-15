@@ -50,6 +50,15 @@
         return globalize.translate('sharedcomponents#ButtonAlreadyPaid');
     }
 
+    function getPeriodicMessageIntervalMs(feature) {
+
+        if (feature == 'playback') {
+            return 259200000;
+        }
+
+        return 0;
+    }
+
     return {
         getProductInfo: getProductInfo,
         beginPurchase: beginPurchase,
@@ -57,7 +66,8 @@
         getSubscriptionOptions: getSubscriptionOptions,
         isUnlockedByDefault: isUnlockedByDefault,
         getAdminFeatureName: getAdminFeatureName,
-        getRestoreButtonText: getRestoreButtonText
+        getRestoreButtonText: getRestoreButtonText,
+        getPeriodicMessageIntervalMs: getPeriodicMessageIntervalMs
     };
 
 });

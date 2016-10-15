@@ -346,5 +346,9 @@
     "ButtonAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Play One Minute",
     "PlaceFavoriteChannelsAtBeginning": "Place favourite channels at the beginning",
-    "HeaderUnlockFeature": "Unlock Feature"
+    "HeaderUnlockFeature": "Unlock Feature",
+    "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
+    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
+    "HeaderPlayMyMedia": "Play my Media",
+    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere"
 }

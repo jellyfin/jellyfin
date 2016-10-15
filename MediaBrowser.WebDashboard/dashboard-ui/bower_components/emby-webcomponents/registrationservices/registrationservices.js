@@ -1,6 +1,7 @@
 ﻿define(['appSettings', 'loading', 'apphost', 'iapManager', 'events', 'shell', 'globalize', 'dialogHelper', 'connectionManager', 'layoutManager', 'emby-button'], function (appSettings, loading, appHost, iapManager, events, shell, globalize, dialogHelper, connectionManager, layoutManager) {
 
-    var validatedFeatures = [];
+    var currentDisplayingProductInfos = [];
+    var currentDisplayingResolve = null;
 
     function alertText(options) {
         return new Promise(function (resolve, reject) {
@@ -23,15 +24,131 @@
         });
     }
 
-    function validateFeature(feature) {
+    function showPeriodicMessage(feature, settingsKey) {
 
-        console.log('validateFeature: ' + feature);
+        return new Promise(function (resolve, reject) {
 
-        if (validatedFeatures.indexOf(feature) != -1) {
+            appSettings.set(settingsKey, new Date().getTime());
+
+            require(['listViewStyle', 'emby-button', 'formDialogStyle'], function () {
+
+                var dlg = dialogHelper.createDialog({
+                    size: 'fullscreen-border',
+                    removeOnClose: true,
+                    scrollY: false
+                });
+
+                dlg.classList.add('formDialog');
+
+                var html = '';
+                html += '<div class="formDialogHeader">';
+                html += '<button is="paper-icon-button-light" class="btnCancelSupporterInfo autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+                html += '<h3 class="formDialogHeaderTitle">';
+                html += '</h3>';
+                html += '</div>';
+
+
+                html += '<div class="formDialogContent smoothScrollY">';
+                html += '<div class="dialogContentInner dialog-content-centered">';
+
+                html += '<h1>' + globalize.translate('sharedcomponents#HeaderDiscoverEmbyPremiere') + '</h1>';
+
+                html += '<p>' + globalize.translate('sharedcomponents#MessageDidYouKnowCinemaMode') + '</p>';
+                html += '<p>' + globalize.translate('sharedcomponents#MessageDidYouKnowCinemaMode2') + '</p>';
+
+                html += '<h1 style="margin-top:1.5em;">' + globalize.translate('sharedcomponents#HeaderBenefitsEmbyPremiere') + '</h1>';
+
+                html += '<div class="paperList">';
+                html += getSubscriptionBenefits().map(getSubscriptionBenefitHtml).join('');
+                html += '</div>';
+
+                html += '<br/>';
+
+                html += '<div class="formDialogFooter">';
+                html += '<button is="emby-button" type="button" class="raised button-submit block btnGetPremiere formDialogFooterItem" autoFocus><span>' + globalize.translate('sharedcomponents#HeaderBecomeProjectSupporter') + '</span></button>';
+                html += '<button is="emby-button" type="button" class="raised button-cancel block btnCancelSupporterInfo formDialogFooterItem"><span>' + globalize.translate('sharedcomponents#HeaderPlayMyMedia') + '</span></button>';
+                html += '</div>';
+
+                html += '</div>';
+                html += '</div>';
+
+                dlg.innerHTML = html;
+
+                if (layoutManager.tv) {
+                    centerFocus(dlg.querySelector('.formDialogContent'), false, true);
+                }
+
+                // Has to be assigned a z-index after the call to .open() 
+                dlg.addEventListener('close', function (e) {
+                    if (layoutManager.tv) {
+                        centerFocus(dlg.querySelector('.formDialogContent'), false, false);
+                    }
+
+                    appSettings.set(settingsKey, new Date().getTime());
+                    resolve();
+                });
+
+                dlg.querySelector('.btnGetPremiere').addEventListener('click', showPremiereInfo);
+
+                dialogHelper.open(dlg);
+
+                var onCancelClick = function () {
+                    dialogHelper.close(dlg);
+                };
+                var i, length;
+                var elems = dlg.querySelectorAll('.btnCancelSupporterInfo');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].addEventListener('click', onCancelClick);
+                }
+            });
+        });
+    }
+
+    function showPeriodicMessageIfNeeded(feature) {
+        var intervalMs = iapManager.getPeriodicMessageIntervalMs(feature);
+        if (intervalMs <= 0) {
             return Promise.resolve();
         }
 
-        return iapManager.isUnlockedByDefault(feature).catch(function () {
+        var settingsKey = 'periodicmessage-' + feature;
+        var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
+
+        if (!lastMessage) {
+
+            // Don't show on the very first playback attempt
+            appSettings.set(settingsKey, new Date().getTime());
+            return Promise.resolve();
+        }
+
+        if ((new Date().getTime() - lastMessage) > intervalMs) {
+
+            connectionManager.currentApiClient().getPluginSecurityInfo().then(function (regInfo) {
+
+                if (regInfo.IsMBSupporter) {
+                    appSettings.set(settingsKey, new Date().getTime());
+                    return Promise.resolve();
+                }
+
+                return showPeriodicMessage(feature, settingsKey);
+            }, function () {
+                return showPeriodicMessage(feature, settingsKey);
+            });
+        }
+
+        return Promise.resolve();
+    }
+
+    function validateFeature(feature, options) {
+
+        options = options || {};
+
+        console.log('validateFeature: ' + feature);
+
+        return iapManager.isUnlockedByDefault(feature).then(function () {
+
+            return showPeriodicMessageIfNeeded(feature);
+
+        }, function () {
 
             var unlockableFeatureCacheKey = 'featurepurchased-' + feature;
             if (appSettings.get(unlockableFeatureCacheKey) == '1') {
@@ -79,6 +196,10 @@
                         feature: feature
                     };
 
+                    if (options.showDialog === false) {
+                        return Promise.reject();
+                    }
+
                     return showInAppPurchaseInfo(subscriptionOptions, unlockableProductInfo, dialogOptions);
                 });
             });
@@ -92,9 +213,6 @@
             dialogHelper.close(elem);
         }
     }
-
-    var currentDisplayingProductInfos = [];
-    var currentDisplayingResolve = null;
 
     function clearCurrentDisplayingInfo() {
         currentDisplayingProductInfos = [];
@@ -157,8 +275,9 @@
         html += '</p>';
 
         var hasProduct = false;
+        var i, length;
 
-        for (var i = 0, length = subscriptionOptions.length; i < length; i++) {
+        for (i = 0, length = subscriptionOptions.length; i < length; i++) {
 
             hasProduct = true;
             html += '<p>';
@@ -205,13 +324,12 @@
         dlg.innerHTML = html;
         document.body.appendChild(dlg);
 
-        var i, length;
         var btnPurchases = dlg.querySelectorAll('.btnPurchase');
         for (i = 0, length = btnPurchases.length; i < length; i++) {
             btnPurchases[i].addEventListener('click', onPurchaseButtonClick);
         }
 
-        var btnPurchases = dlg.querySelectorAll('.buttonPremiereInfo');
+        btnPurchases = dlg.querySelectorAll('.buttonPremiereInfo');
         for (i = 0, length = btnPurchases.length; i < length; i++) {
             btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
         }
@@ -242,7 +360,7 @@
         }
 
         var btnCloseDialogs = dlg.querySelectorAll('.btnCloseDialog');
-        for (var i = 0, length = btnCloseDialogs.length; i < length; i++) {
+        for (i = 0, length = btnCloseDialogs.length; i < length; i++) {
             btnCloseDialogs[i].addEventListener('click', onCloseButtonClick);
         }
 

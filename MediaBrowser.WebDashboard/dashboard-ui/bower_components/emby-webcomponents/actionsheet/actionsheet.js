@@ -111,7 +111,9 @@
         } else {
 
             dialogOptions.modal = false;
-            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 160;
+            dialogOptions.entryAnimation = options.entryAnimation;
+            dialogOptions.exitAnimation = options.exitAnimation;
+            dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 140;
             dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 180;
             dialogOptions.autoFocus = false;
         }

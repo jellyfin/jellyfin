@@ -1264,7 +1264,7 @@
                 url: "https://connect.emby.media/service/user/authenticate",
                 data: {
                     nameOrEmail: username,
-                    password: password
+                    rawpw: password
                 },
                 dataType: "json",
                 contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
@@ -1313,7 +1313,7 @@
             var data = {
                 email: email,
                 userName: username,
-                password: password
+                rawpw: password
             };
 
             if (options.grecaptcha) {

@@ -298,13 +298,14 @@
             }
         });
 
-        view.querySelector('.btnCancelSignup').addEventListener('click', function () {
-            Emby.Page.back();
-        });
+        function goBack() {
+            require(['embyRouter'], function (embyRouter) {
+                embyRouter.back();
+            });
+        }
 
-        view.querySelector('.btnCancelManualServer').addEventListener('click', function () {
-            Emby.Page.back();
-        });
+        view.querySelector('.btnCancelSignup').addEventListener('click', goBack);
+        view.querySelector('.btnCancelManualServer').addEventListener('click', goBack);
 
         view.querySelector('.btnWelcomeNext').addEventListener('click', function () {
             Dashboard.navigate('connectlogin.html?mode=connect');
