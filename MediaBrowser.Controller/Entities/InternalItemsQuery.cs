@@ -182,7 +182,7 @@ namespace MediaBrowser.Controller.Entities
                 case ItemFields.HomePageUrl:
                 case ItemFields.VoteCount:
                 case ItemFields.DisplayMediaType:
-                case ItemFields.ServiceName:
+                //case ItemFields.ServiceName:
                 case ItemFields.Genres:
                 case ItemFields.Studios:
                 case ItemFields.Settings:
