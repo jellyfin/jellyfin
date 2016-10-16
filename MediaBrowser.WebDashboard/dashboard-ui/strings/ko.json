@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "\uc885\ub8cc",
     "LabelApiDocumentation": "Api \ubb38\uc11c",
     "LabelBrowseLibrary": "\ub77c\uc774\ube0c\ub7ec\ub9ac \ud0d0\uc0c9",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "\uc608\uc57d \uc791\uc5c5 \uc2e4\ud328",
     "NotificationOptionInstallationFailed": "\uc124\uce58 \uc2e4\ud328",
     "NotificationOptionNewLibraryContent": "\uc0c8 \ucf58\ud150\ud2b8 \ucd94\uac00\ub428",
-    "NotificationOptionNewLibraryContentMultiple": "\uc0c8 \ucf58\ub374\ud2b8 \ucd94\uac00\ub428 (\ubcf5\uc218)",
     "NotificationOptionCameraImageUploaded": "\uce74\uba54\ub77c \uc774\ubbf8\uc9c0 \uc5c5\ub85c\ub4dc\ub428",
     "NotificationOptionUserLockedOut": "User locked out",
     "HeaderSendNotificationHelp": "\uc54c\ub9bc\uc774 Emby \uc218\uc2e0\ud568\uc73c\ub85c \uc804\uc1a1\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ucd94\uac00 \uc635\uc158\uc744 \uc11c\ube44\uc2a4 \ud0ed\uc5d0\uc11c \uc124\uce58\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.",
@@ -1777,7 +1774,7 @@
     "HeaderUnaired": "Unaired",
     "HeaderMissing": "\ub204\ub77d",
     "ButtonWebsite": "\uc6f9\uc0ac\uc774\ud2b8",
-    "ValueSeriesYearToPresent": "{0}-Present",
+    "ValueSeriesYearToPresent": "{0} - Present",
     "ValueAwards": "Awards: {0}",
     "ValueBudget": "Budget: {0}",
     "ValueRevenue": "Revenue: {0}",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "\uc154\ud130 \uc18d\ub3c4",
     "MediaInfoSoftware": "\uc18c\ud504\ud2b8\uc6e8\uc5b4",
-    "HeaderIfYouLikeCheckTheseOut": "If you like {0}, check these out...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "\uc601\ud654",
     "HeaderAlbums": "\uc568\ubc94",
     "HeaderGames": "\uac8c\uc784",
@@ -2097,7 +2094,7 @@
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
     "LabelffmpegVersion": "FFmpeg version:",
-    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "LabelffmpegPathHelp": "The path to your downloaded ffmpeg application file, or folder containing ffmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "\uc678\ubd80 \ud50c\ub808\uc774\uc5b4\ub85c \uc7ac\uc0dd",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }

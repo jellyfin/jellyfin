@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Zav\u0159\u00edt",
     "LabelApiDocumentation": "Dokumentace API",
     "LabelBrowseLibrary": "Proch\u00e1zet knihovnu",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Chyba napl\u00e1novan\u00e9 \u00falohy",
     "NotificationOptionInstallationFailed": "Chyba instalace",
     "NotificationOptionNewLibraryContent": "P\u0159id\u00e1n nov\u00fd obsah",
-    "NotificationOptionNewLibraryContentMultiple": "P\u0159id\u00e1n nov\u00fd obsah (v\u00edcen\u00e1sobn\u00fd)",
     "NotificationOptionCameraImageUploaded": "Kamerov\u00fd z\u00e1znam nahr\u00e1n",
     "NotificationOptionUserLockedOut": "U\u017eivatel uzam\u010den",
     "HeaderSendNotificationHelp": "Ozn\u00e1men\u00ed jsou doru\u010dena do va\u0161\u00ed e-mailov\u00e9 schr\u00e1nky Emby. Dal\u0161\u00ed nastaven\u00ed lze instalovat z karty Slu\u017eby.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Zem\u011bpisn\u00e1 d\u00e9lka",
     "MediaInfoShutterSpeed": "Rychlost uz\u00e1v\u011brky",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Pokud se v\u00e1m l\u00edb\u00ed {0}, pak se m\u016f\u017ee l\u00edbit ...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Filmy",
     "HeaderAlbums": "Alba",
     "HeaderGames": "Hry",
@@ -2097,7 +2094,7 @@
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
     "LabelffmpegVersion": "FFmpeg version:",
-    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "LabelffmpegPathHelp": "The path to your downloaded ffmpeg application file, or folder containing ffmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "P\u0159ehr\u00e1t s extern\u00edm p\u0159ehr\u00e1va\u010dem",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }

@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Beenden",
     "LabelApiDocumentation": "Api Dokumentation",
     "LabelBrowseLibrary": "Bibliothek durchsuchen",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Fehler bei geplanter Aufgabe",
     "NotificationOptionInstallationFailed": "Installationsfehler",
     "NotificationOptionNewLibraryContent": "Neuer Inhalt hinzugef\u00fcgt",
-    "NotificationOptionNewLibraryContentMultiple": "Neuen Inhalte hinzugef\u00fcgt (mehrere)",
     "NotificationOptionCameraImageUploaded": "Kamera Bild hochgeladen",
     "NotificationOptionUserLockedOut": "Benutzer ausgeschlossen",
     "HeaderSendNotificationHelp": "Benachrichtigungen werden in Ihren Emby-Eingang angezeigt. Weitere Optionen k\u00f6nnen durch Installation im Service-Tab hinzugef\u00fcgt werden.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "L\u00e4nge",
     "MediaInfoShutterSpeed": "Verschlusszeit",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Wenn du {0} magst, schau dir einmal das an...",
+    "HeaderMoreLikeThis": "Mehr wie dieses",
     "HeaderMovies": "Filme",
     "HeaderAlbums": "Alben",
     "HeaderGames": "Spiele",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "Wenn dieser Ordner in deinem Netzwerk geteilt wird, kann die Weitergabe des Netzwerkpfades Emby Apps auf anderen Ger\u00e4ten direkten Zugang zu den Mediendateien erm\u00f6glichen.",
     "ButtonPlayExternalPlayer": "Auf externem Ger\u00e4t abspielen",
     "WillRecord": "Wird aufgenommen",
-    "NotScheduledToRecord": "Nicht geplant zur Aufnahme"
+    "NotScheduledToRecord": "Nicht geplant zur Aufnahme",
+    "SynologyUpdateInstructions": "Bitte logge dich in DSM ein und gehe in das Paketzentrum um ein Update durchzuf\u00fchren."
 }

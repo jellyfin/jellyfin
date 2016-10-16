@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Por favor inicie sesi\u00f3n en DSM y vaya al Centro de Paquetes para actualizar.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Salir",
     "LabelApiDocumentation": "Documentaci\u00f3n de la API",
     "LabelBrowseLibrary": "Explorar Biblioteca",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Falla de tarea programada",
     "NotificationOptionInstallationFailed": "Falla de instalaci\u00f3n",
     "NotificationOptionNewLibraryContent": "Nuevo contenido agregado",
-    "NotificationOptionNewLibraryContentMultiple": "Nuevo contenido agregado (varios)",
     "NotificationOptionCameraImageUploaded": "Imagen de la c\u00e1mara subida",
     "NotificationOptionUserLockedOut": "Usuario bloqueado",
     "HeaderSendNotificationHelp": "Las notificaciones son enviadas a su bandeja. Opciones adicionales pueden ser instaladas desde la pesta\u00f1a de Servicios.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitud",
     "MediaInfoShutterSpeed": "Velocidad del obturador",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Si te gust\u00f3 {0}, prueba con...",
+    "HeaderMoreLikeThis": "Mas Como Esto",
     "HeaderMovies": "Pel\u00edculas",
     "HeaderAlbums": "\u00c1lbumes",
     "HeaderGames": "Juegos",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "Si esta carpeta es compartida en su red, proveer la ruta del recurso compartido de red puede permitir a las aplicaciones Emby en otros dispositivos acceder a los archivos de medios directamente.",
     "ButtonPlayExternalPlayer": "Reproducir con un reproductor externo",
     "WillRecord": "Se Grabar\u00e1",
-    "NotScheduledToRecord": "No esta programado para grabar"
+    "NotScheduledToRecord": "No esta programado para grabar",
+    "SynologyUpdateInstructions": "Por favor inicie sesi\u00f3n en DSM y vaya al Centro de Paquetes para actualizar."
 }

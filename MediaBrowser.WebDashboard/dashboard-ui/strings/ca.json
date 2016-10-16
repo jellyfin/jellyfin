@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Sortir",
     "LabelApiDocumentation": "Documentaci\u00f3 de l'API",
     "LabelBrowseLibrary": "Examina la Biblioteca",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Tasca programada fallida",
     "NotificationOptionInstallationFailed": "Instal\u00b7laci\u00f3 fallida",
     "NotificationOptionNewLibraryContent": "Nou contingut afegit",
-    "NotificationOptionNewLibraryContentMultiple": "Nous continguts afegits",
     "NotificationOptionCameraImageUploaded": "Camera image uploaded",
     "NotificationOptionUserLockedOut": "Usuari blocat",
     "HeaderSendNotificationHelp": "Notifications are delivered to your Emby inbox. Additional options can be installed from the Services tab.",
@@ -1777,7 +1774,7 @@
     "HeaderUnaired": "No em\u00e8s",
     "HeaderMissing": "Missing",
     "ButtonWebsite": "Website",
-    "ValueSeriesYearToPresent": "{0}-Present",
+    "ValueSeriesYearToPresent": "{0} - Present",
     "ValueAwards": "Awards: {0}",
     "ValueBudget": "Budget: {0}",
     "ValueRevenue": "Revenue: {0}",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "Shutter speed",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Si t'agrada {0} mira't aquestes...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Pel\u00b7l\u00edcules",
     "HeaderAlbums": "Albums",
     "HeaderGames": "Jocs",
@@ -2097,7 +2094,7 @@
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
     "LabelffmpegVersion": "FFmpeg version:",
-    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "LabelffmpegPathHelp": "The path to your downloaded ffmpeg application file, or folder containing ffmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "Play with external player",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }

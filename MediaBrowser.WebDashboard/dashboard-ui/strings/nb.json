@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Avslutt",
     "LabelApiDocumentation": "API-dokumentasjon",
     "LabelBrowseLibrary": "Browse biblioteket",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Planlagt oppgave feilet",
     "NotificationOptionInstallationFailed": "Installasjon feilet",
     "NotificationOptionNewLibraryContent": "Nytt innhold er lagt til",
-    "NotificationOptionNewLibraryContentMultiple": "Nytt innhold lagt til (flere)",
     "NotificationOptionCameraImageUploaded": "Bilde fra kamera lastet opp",
     "NotificationOptionUserLockedOut": "Bruker er utestengt",
     "HeaderSendNotificationHelp": "Varsler blir levert til Emby innboks. Andre alternativer kan installeres fra Tjenester kategorien .",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Lengdegrad",
     "MediaInfoShutterSpeed": "Lukkerhastighet",
     "MediaInfoSoftware": "Programvare",
-    "HeaderIfYouLikeCheckTheseOut": "Hvis du liker {0}, sjekk ut disse...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Filmer",
     "HeaderAlbums": "Albumer",
     "HeaderGames": "Spill",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "Spill i ekstern avspiller",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }
