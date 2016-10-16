@@ -764,7 +764,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 defaults.RecordNewOnly = !program.IsRepeat;
             }
 
-            defaults.SkipEpisodesInLibrary = true;
+            defaults.SkipEpisodesInLibrary = defaults.RecordNewOnly;
             defaults.KeepUntil = KeepUntil.UntilDeleted;
 
             return Task.FromResult(defaults);
