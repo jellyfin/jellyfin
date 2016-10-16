@@ -427,7 +427,7 @@ namespace MediaBrowser.Controller.Entities
             if (IsStacked)
             {
                 var tasks = AdditionalParts
-                    .Select(i => RefreshMetadataForOwnedVideo(options, i, cancellationToken));
+                    .Select(i => RefreshMetadataForOwnedVideo(options, true, i, cancellationToken));
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
@@ -442,7 +442,7 @@ namespace MediaBrowser.Controller.Entities
                     RefreshLinkedAlternateVersions();
 
                     var tasks = LocalAlternateVersions
-                        .Select(i => RefreshMetadataForOwnedVideo(options, i, cancellationToken));
+                        .Select(i => RefreshMetadataForOwnedVideo(options, false, i, cancellationToken));
 
                     await Task.WhenAll(tasks).ConfigureAwait(false);
                 }
