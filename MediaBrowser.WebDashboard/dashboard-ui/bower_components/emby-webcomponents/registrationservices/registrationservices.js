@@ -43,7 +43,7 @@
                 var html = '';
                 html += '<div class="formDialogHeader">';
                 html += '<button is="paper-icon-button-light" class="btnCancelSupporterInfo autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
-                html += '<h3 class="formDialogHeaderTitle">';
+                html += '<h3 class="formDialogHeaderTitle">Emby Premiere';
                 html += '</h3>';
                 html += '</div>';
 
@@ -74,6 +74,12 @@
 
                 dlg.innerHTML = html;
 
+                var i, length;
+                var btnPurchases = dlg.querySelectorAll('.buttonPremiereInfo');
+                for (i = 0, length = btnPurchases.length; i < length; i++) {
+                    btnPurchases[i].addEventListener('click', showExternalPremiereInfo);
+                }
+
                 if (layoutManager.tv) {
                     centerFocus(dlg.querySelector('.formDialogContent'), false, true);
                 }
@@ -95,7 +101,6 @@
                 var onCancelClick = function () {
                     dialogHelper.close(dlg);
                 };
-                var i, length;
                 var elems = dlg.querySelectorAll('.btnCancelSupporterInfo');
                 for (i = 0, length = elems.length; i < length; i++) {
                     elems[i].addEventListener('click', onCancelClick);
@@ -111,6 +116,7 @@
         }
 
         var settingsKey = 'periodicmessage-' + feature;
+
         var lastMessage = parseInt(appSettings.get(settingsKey) || '0');
 
         if (!lastMessage) {
@@ -253,6 +259,7 @@
         html += '<div class="formDialogHeader">';
         html += '<button is="paper-icon-button-light" class="btnCloseDialog autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
         html += '<h3 class="formDialogHeaderTitle">';
+        html += dialogOptions.title || '';
         html += '</h3>';
         html += '</div>';
 
@@ -429,13 +436,13 @@
 
         var cssClass = "listItem";
 
-        cssClass += ' listItem-button';
-
         if (layoutManager.tv) {
             cssClass += ' listItem-focusscale';
         }
 
         if (enableLink) {
+            cssClass += ' listItem-button';
+
             html += '<button type="button" class="' + cssClass + ' buttonPremiereInfo">';
         } else {
             html += '<div class="' + cssClass + '">';
@@ -453,10 +460,12 @@
         html += item.text;
         html += '</div>';
 
+        html += '</div>';
+
         if (enableLink) {
-            html += '</div>';
-        } else {
             html += '</button>';
+        } else {
+            html += '</div>';
         }
 
         return html;

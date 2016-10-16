@@ -286,11 +286,6 @@
 
                 var supporterButtons = context.querySelectorAll('.btnSupporter');
                 for (var i = 0, length = supporterButtons.length; i < length; i++) {
-                    if (appHost.supports('externalpremium')) {
-                        supporterButtons[i].classList.remove('hide');
-                    } else {
-                        supporterButtons[i].classList.add('hide');
-                    }
                     supporterButtons[i].addEventListener('click', onSupporterButtonClick);
                 }
 
