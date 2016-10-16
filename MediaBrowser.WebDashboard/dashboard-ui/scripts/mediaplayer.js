@@ -157,7 +157,11 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             if (!AppInfo.isNativeApp) {
                 options.enableMkvProgressive = item.RunTimeTicks != null;
-                options.enableHls = !browserInfo.firefox || item.RunTimeTicks == null;
+
+                if (item.RunTimeTicks == null) {
+                    options.enableHls = true;
+                }
+
                 options.disableVideoAudioCodecs = disableVideoAudioCodecs;
             }
 

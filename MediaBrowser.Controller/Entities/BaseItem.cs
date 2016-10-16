@@ -1188,7 +1188,7 @@ namespace MediaBrowser.Controller.Entities
 
             var itemsChanged = !item.LocalTrailerIds.SequenceEqual(newItemIds);
 
-            var tasks = newItems.Select(i => i.RefreshMetadata(options, cancellationToken));
+            var tasks = newItems.Select(i => RefreshMetadataForOwnedItem(i, true, options, cancellationToken));
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -1197,7 +1197,7 @@ namespace MediaBrowser.Controller.Entities
             return itemsChanged;
         }
 
-        private static async Task<bool> RefreshThemeVideos(BaseItem item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeVideos(BaseItem item, MetadataRefreshOptions options, IEnumerable<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeVideos = LoadThemeVideos(fileSystemChildren, options.DirectoryService).ToList();
 
@@ -1215,7 +1215,7 @@ namespace MediaBrowser.Controller.Entities
                     subOptions.ForceSave = true;
                 }
 
-                return i.RefreshMetadata(subOptions, cancellationToken);
+                return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -1228,7 +1228,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the theme songs.
         /// </summary>
-        private static async Task<bool> RefreshThemeSongs(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
+        private async Task<bool> RefreshThemeSongs(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var newThemeSongs = LoadThemeSongs(fileSystemChildren, options.DirectoryService).ToList();
             var newThemeSongIds = newThemeSongs.Select(i => i.Id).ToList();
@@ -1245,7 +1245,7 @@ namespace MediaBrowser.Controller.Entities
                     subOptions.ForceSave = true;
                 }
 
-                return i.RefreshMetadata(subOptions, cancellationToken);
+                return RefreshMetadataForOwnedItem(i, true, subOptions, cancellationToken);
             });
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -2203,14 +2203,85 @@ namespace MediaBrowser.Controller.Entities
             return Task.FromResult(true);
         }
 
-        protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, string path, CancellationToken cancellationToken)
+        protected Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            var newOptions = new MetadataRefreshOptions(options.DirectoryService)
+            var newOptions = new MetadataRefreshOptions(options);
+            newOptions.SearchResult = null;
+
+            var item = this;
+
+            if (copyTitleMetadata)
             {
-                ImageRefreshMode = options.ImageRefreshMode,
-                MetadataRefreshMode = options.MetadataRefreshMode,
-                ReplaceAllMetadata = options.ReplaceAllMetadata
-            };
+                // Take some data from the main item, for querying purposes
+                if (!item.Genres.SequenceEqual(ownedItem.Genres, StringComparer.Ordinal))
+                {
+                    newOptions.ForceSave = true;
+                    ownedItem.Genres = item.Genres.ToList();
+                }
+                if (!item.Studios.SequenceEqual(ownedItem.Studios, StringComparer.Ordinal))
+                {
+                    newOptions.ForceSave = true;
+                    ownedItem.Studios = item.Studios.ToList();
+                }
+                if (!item.ProductionLocations.SequenceEqual(ownedItem.ProductionLocations, StringComparer.Ordinal))
+                {
+                    newOptions.ForceSave = true;
+                    ownedItem.ProductionLocations = item.ProductionLocations.ToList();
+                }
+                if (!item.Keywords.SequenceEqual(ownedItem.Keywords, StringComparer.Ordinal))
+                {
+                    newOptions.ForceSave = true;
+                    ownedItem.Keywords = item.Keywords.ToList();
+                }
+                if (item.CommunityRating != ownedItem.CommunityRating)
+                {
+                    ownedItem.CommunityRating = item.CommunityRating;
+                    newOptions.ForceSave = true;
+                }
+                if (item.CriticRating != ownedItem.CriticRating)
+                {
+                    ownedItem.CriticRating = item.CriticRating;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.Overview, ownedItem.Overview, StringComparison.Ordinal))
+                {
+                    ownedItem.Overview = item.Overview;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.ShortOverview, ownedItem.ShortOverview, StringComparison.Ordinal))
+                {
+                    ownedItem.ShortOverview = item.ShortOverview;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.OfficialRating, ownedItem.OfficialRating, StringComparison.Ordinal))
+                {
+                    ownedItem.OfficialRating = item.OfficialRating;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.CustomRating, ownedItem.CustomRating, StringComparison.Ordinal))
+                {
+                    ownedItem.CustomRating = item.CustomRating;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.CriticRatingSummary, ownedItem.CriticRatingSummary, StringComparison.Ordinal))
+                {
+                    ownedItem.CriticRatingSummary = item.CriticRatingSummary;
+                    newOptions.ForceSave = true;
+                }
+                if (!string.Equals(item.OfficialRatingDescription, ownedItem.OfficialRatingDescription, StringComparison.Ordinal))
+                {
+                    ownedItem.OfficialRatingDescription = item.OfficialRatingDescription;
+                    newOptions.ForceSave = true;
+                }
+            }
+
+            return ownedItem.RefreshMetadata(newOptions, cancellationToken);
+        }
+
+        protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
+        {
+            var newOptions = new MetadataRefreshOptions(options);
+            newOptions.SearchResult = null;
 
             var id = LibraryManager.GetNewItemId(path, typeof(Video));
 
@@ -2229,7 +2300,7 @@ namespace MediaBrowser.Controller.Entities
                 return Task.FromResult(true);
             }
 
-            return video.RefreshMetadata(newOptions, cancellationToken);
+            return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);
         }
 
         public string GetEtag(User user)

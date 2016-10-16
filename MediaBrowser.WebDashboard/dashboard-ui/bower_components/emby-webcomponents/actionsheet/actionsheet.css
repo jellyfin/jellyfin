@@ -12,6 +12,7 @@
     background-color: #121314;
     max-width: 90%;
     max-height: 90%;
+    color: #eee;
 }
 
 .actionSheetMenuItem:hover {
@@ -103,7 +104,7 @@
 }
 
 .actionsheet-extraSpacing {
-    font-size: 108%;
+    font-size: 112%;
 }
 
 .btnCloseActionSheet {

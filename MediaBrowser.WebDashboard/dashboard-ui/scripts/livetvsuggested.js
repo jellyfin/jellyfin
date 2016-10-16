@@ -98,7 +98,10 @@
 
         }).then(function (result) {
 
-            renderItems(page, result.Items, 'activeProgramItems', 'play');
+            renderItems(page, result.Items, 'activeProgramItems', 'play', {
+                showAirDateTime: false,
+                showAirEndTime: true
+            });
             Dashboard.hideLoadingMsg();
         });
     }
@@ -151,7 +154,10 @@
 
         }).then(function (result) {
 
-            renderItems(page, result.Items, 'upcomingTvMovieItems', null, getPortraitShape());
+            renderItems(page, result.Items, 'upcomingTvMovieItems', null, {
+                shape: getPortraitShape(),
+                preferThumb: null
+            });
         });
 
         ApiClient.getLiveTvRecommendedPrograms({
@@ -187,15 +193,17 @@
         });
     }
 
-    function renderItems(page, items, sectionClass, overlayButton, shape) {
+    function renderItems(page, items, sectionClass, overlayButton, cardOptions) {
 
         var supportsImageAnalysis = appHost.supports('imageanalysis');
 
-        var html = cardBuilder.getCardsHtml({
+        cardOptions = cardOptions || {};
+
+        var html = cardBuilder.getCardsHtml(Object.assign({
             items: items,
-            preferThumb: !shape,
+            preferThumb: true,
             inheritThumb: false,
-            shape: shape || (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
+            shape: (enableScrollX() ? 'overflowBackdrop' : 'backdrop'),
             showParentTitleOrTitle: true,
             showTitle: false,
             centerText: !supportsImageAnalysis,
@@ -210,7 +218,8 @@
             showChannelName: true,
             vibrant: true,
             cardLayout: supportsImageAnalysis
-        });
+
+        }, cardOptions));
 
         var elem = page.querySelector('.' + sectionClass);
 

@@ -416,7 +416,8 @@ define(['browser'], function (browser) {
                 VideoCodec: 'h264',
                 Context: 'Streaming',
                 Protocol: 'hls',
-                MaxAudioChannels: physicalAudioChannels.toString()
+                MaxAudioChannels: physicalAudioChannels.toString(),
+                EnableSplittingOnNonKeyFrames: browser.safari ? true : false
             });
         }
 
