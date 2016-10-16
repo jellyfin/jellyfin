@@ -1614,8 +1614,8 @@ var AppInfo = {};
 
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
-        if (Dashboard.isRunningInCordova() && browser.safari) {
-            paths.actionsheet = "cordova/actionsheet";
+        if (Dashboard.isRunningInCordova()) {
+            define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
         } else {
             define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }

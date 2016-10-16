@@ -610,6 +610,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (video.Protocol != MediaProtocol.File)
             {
+                // If it's mpeg based, assume true
+                if ((videoStream.Codec ?? string.Empty).IndexOf("mpeg", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return true;
+                }
                 return false;
             }
 

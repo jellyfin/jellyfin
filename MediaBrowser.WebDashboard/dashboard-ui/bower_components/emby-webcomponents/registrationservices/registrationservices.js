@@ -598,6 +598,11 @@
 
     function showPremiereInfo() {
 
+        if (appHost.supports('externalpremium')) {
+            showExternalPremiereInfo();
+            return Promise.resolve();
+        }
+
         return iapManager.getSubscriptionOptions().then(function (subscriptionOptions) {
 
             var dialogOptions = {

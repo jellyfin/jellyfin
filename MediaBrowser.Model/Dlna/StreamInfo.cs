@@ -37,6 +37,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool CopyTimestamps { get; set; }
         public bool EnableSubtitlesInManifest { get; set; }
+        public bool EnableSplittingOnNonKeyFrames { get; set; }
         public string[] AudioCodecs { get; set; }
 
         public int? AudioStreamIndex { get; set; }
@@ -264,6 +265,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString().ToLower()));
 
             list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
+            list.Add(new NameValuePair("EnableSplittingOnNonKeyFrames", item.EnableSplittingOnNonKeyFrames.ToString().ToLower()));
 
             return list;
         }

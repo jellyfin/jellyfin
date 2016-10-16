@@ -36,16 +36,6 @@
     font-size: 20px;
 }
 
-.dockedtabs-dlg {
-    font-size: inherit !important;
-    background-color: #222 !important;
-    color: #eee;
-}
-
-.dockedtabs-dlg-menuitem:hover {
-    background-color: #333 !important;
-}
-
 @media all and (max-width: 800px) {
     .dockedtab-midsize {
         display: none !important;

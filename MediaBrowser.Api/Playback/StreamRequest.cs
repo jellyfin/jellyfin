@@ -194,6 +194,7 @@ namespace MediaBrowser.Api.Playback
         public bool CopyTimestamps { get; set; }
 
         public bool EnableSubtitlesInManifest { get; set; }
+        public bool EnableSplittingOnNonKeyFrames { get; set; }
 
         public VideoStreamRequest()
         {

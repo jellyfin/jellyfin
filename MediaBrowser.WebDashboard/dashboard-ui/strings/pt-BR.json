@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Sair",
     "LabelApiDocumentation": "Documenta\u00e7\u00e3o da Api",
     "LabelBrowseLibrary": "Explorar Biblioteca",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Falha na tarefa agendada",
     "NotificationOptionInstallationFailed": "Falha na instala\u00e7\u00e3o",
     "NotificationOptionNewLibraryContent": "Novo conte\u00fado adicionado",
-    "NotificationOptionNewLibraryContentMultiple": "Novo conte\u00fado adicionado (m\u00faltiplo)",
     "NotificationOptionCameraImageUploaded": "Imagem da c\u00e2mera carregada",
     "NotificationOptionUserLockedOut": "Usu\u00e1rio bloqueado",
     "HeaderSendNotificationHelp": "As notifica\u00e7\u00f5es s\u00e3o entregues na caixa de entrada do Emby. Op\u00e7\u00f5es adicionais podem ser instaladas na guia Servi\u00e7os.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "Velocidade do obturador",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Se voc\u00ea gosta de {0}, veja isto...",
+    "HeaderMoreLikeThis": "Mais Disso",
     "HeaderMovies": "Filmes",
     "HeaderAlbums": "\u00c1lbuns",
     "HeaderGames": "Jogos",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "Se esta pasta estiver compartilhada em sua rede, prover o caminho de rede do compartilhamento permitir\u00e1 que apps Emby em outros dispositivos acessem m\u00eddias diretamente.",
     "ButtonPlayExternalPlayer": "Reproduzir com reprodutor externo",
     "WillRecord": "Ir\u00e1 gravar",
-    "NotScheduledToRecord": "N\u00e3o agendado para gravar"
+    "NotScheduledToRecord": "N\u00e3o agendado para gravar",
+    "SynologyUpdateInstructions": "Por favor logue-se no DSM e siga para a Central de Pacotes para atualizar."
 }

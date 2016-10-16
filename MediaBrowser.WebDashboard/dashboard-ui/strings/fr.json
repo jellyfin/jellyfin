@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Quitter",
     "LabelApiDocumentation": "Documentation de l'API",
     "LabelBrowseLibrary": "Parcourir la biblioth\u00e8que",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "\u00c9chec de t\u00e2che planifi\u00e9e",
     "NotificationOptionInstallationFailed": "\u00c9chec d'installation",
     "NotificationOptionNewLibraryContent": "Nouveau contenu ajout\u00e9",
-    "NotificationOptionNewLibraryContentMultiple": "Nouveau contenu ajout\u00e9 (multiple)",
     "NotificationOptionCameraImageUploaded": "L'image de l'appareil photo a \u00e9t\u00e9 upload\u00e9e",
     "NotificationOptionUserLockedOut": "Utilisateur verrouill\u00e9",
     "HeaderSendNotificationHelp": "Les notifications sont pr\u00e9sent\u00e9es dans votre bo\u00eete de messagerie . Des options suppl\u00e9mentaires peuvent \u00eatre install\u00e9es depuis l'onglet Services.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "Vitesse d'opturation",
     "MediaInfoSoftware": "Logiciel",
-    "HeaderIfYouLikeCheckTheseOut": "Si vous aimez {0}, essayez ceci..",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Films",
     "HeaderAlbums": "Albums",
     "HeaderGames": "Jeux",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "Lire avec lecteur externe",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }
