@@ -353,19 +353,16 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            if (isFullRefresh || currentUpdateType > ItemUpdateType.None)
+            var folder = item as Folder;
+            if (folder != null && folder.SupportsDateLastMediaAdded)
             {
-                var folder = item as Folder;
-                if (folder != null && folder.SupportsDateLastMediaAdded)
-                {
-                    var items = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).ToList();
-                    var date = items.Count == 0 ? (DateTime?)null : items.Max();
+                var items = folder.GetRecursiveChildren(i => !i.IsFolder).Select(i => i.DateCreated).ToList();
+                var date = items.Count == 0 ? (DateTime?)null : items.Max();
 
-                    if ((!folder.DateLastMediaAdded.HasValue && date.HasValue) || folder.DateLastMediaAdded != date)
-                    {
-                        folder.DateLastMediaAdded = date;
-                        updateType = ItemUpdateType.MetadataEdit;
-                    }
+                if ((!folder.DateLastMediaAdded.HasValue && date.HasValue) || folder.DateLastMediaAdded != date)
+                {
+                    folder.DateLastMediaAdded = date;
+                    updateType = ItemUpdateType.MetadataImport;
                 }
             }
 

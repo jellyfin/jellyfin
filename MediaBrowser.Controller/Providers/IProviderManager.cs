@@ -69,28 +69,8 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Saves the image.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="mimeType">Type of the MIME.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="internalCacheKey">The internal cache key.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Saves the image.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="source">The source.</param>
-        /// <param name="mimeType">Type of the MIME.</param>
-        /// <param name="type">The type.</param>
-        /// <param name="imageIndex">Index of the image.</param>
-        /// <param name="internalCacheKey">The internal cache key.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken);
+        Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
         
         /// <summary>
         /// Adds the metadata providers.

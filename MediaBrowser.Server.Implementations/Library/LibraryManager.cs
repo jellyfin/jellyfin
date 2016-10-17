@@ -2838,7 +2838,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool ValidateNetworkPath(string path)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT || !path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
                 return Directory.Exists(path);
             }

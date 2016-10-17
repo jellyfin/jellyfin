@@ -72,7 +72,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 dto.ProgramInfo = _dtoService.GetBaseItemDto(program, new DtoOptions());
 
-                dto.ProgramInfo.TimerId = dto.Id;
+                if (info.Status != RecordingStatus.Cancelled && info.Status != RecordingStatus.Error)
+                {
+                    dto.ProgramInfo.TimerId = dto.Id;
+                    dto.ProgramInfo.Status = info.Status.ToString();
+                }
 
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
             }

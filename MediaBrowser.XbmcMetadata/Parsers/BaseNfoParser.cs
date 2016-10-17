@@ -294,14 +294,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var text = reader.ReadElementContentAsString();
 
-                        var hasCriticRating = item as IHasCriticRating;
-
-                        if (hasCriticRating != null && !string.IsNullOrEmpty(text))
+                        if (!string.IsNullOrEmpty(text))
                         {
                             float value;
                             if (float.TryParse(text, NumberStyles.Any, _usCulture, out value))
                             {
-                                hasCriticRating.CriticRating = value;
+                                item.CriticRating = value;
                             }
                         }
 
@@ -388,12 +386,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var hasShortOverview = item as IHasShortOverview;
-
-                            if (hasShortOverview != null)
-                            {
-                                hasShortOverview.ShortOverview = val;
-                            }
+                            item.ShortOverview = val;
                         }
                         break;
                     }
@@ -418,12 +411,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            var hasCriticRating = item as IHasCriticRating;
-
-                            if (hasCriticRating != null)
-                            {
-                                hasCriticRating.CriticRatingSummary = val;
-                            }
+                            item.CriticRatingSummary = val;
                         }
 
                         break;
