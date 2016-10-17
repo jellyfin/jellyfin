@@ -45,6 +45,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private void AddAffectedPath(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             if (!_affectedPaths.Contains(path, StringComparer.Ordinal))
             {
                 _affectedPaths.Add(path);
@@ -53,6 +58,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         public void AddPath(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             lock (_timerLock)
             {
                 AddAffectedPath(path);
