@@ -1854,23 +1854,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                         ParentIndexNumber = program.SeasonNumber.Value,
                         IndexNumber = program.EpisodeNumber.Value,
                         AncestorIds = seriesIds,
-                        ExcludeLocationTypes = new[] { LocationType.Virtual }
-                    });
-
-                    if (result.TotalRecordCount > 0)
-                    {
-                        return true;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(program.EpisodeTitle))
-                {
-                    var result = _libraryManager.GetItemsResult(new InternalItemsQuery
-                    {
-                        IncludeItemTypes = new[] { typeof(Episode).Name },
-                        Name = program.EpisodeTitle,
-                        AncestorIds = seriesIds,
-                        ExcludeLocationTypes = new[] { LocationType.Virtual }
+                        IsVirtualItem = false
                     });
 
                     if (result.TotalRecordCount > 0)

@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Manager
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
         }
 
-        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
+        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -109,9 +109,9 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
-            if (!string.IsNullOrEmpty(internalCacheKey))
+            if (saveLocallyWithMedia.HasValue && !saveLocallyWithMedia.Value)
             {
-                saveLocally = false;
+                saveLocally = saveLocallyWithMedia.Value;
             }
 
             if (!imageIndex.HasValue && item.AllowsMultipleImages(type))

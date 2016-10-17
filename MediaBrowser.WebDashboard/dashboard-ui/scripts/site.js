@@ -1119,7 +1119,7 @@ var AppInfo = {};
         var headroom = new Headroom([], {
             // or scroll tolerance per direction
             tolerance: {
-                down: 20,
+                down: 0,
                 up: 0
             },
             classes: {

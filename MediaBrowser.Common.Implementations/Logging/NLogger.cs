@@ -127,7 +127,9 @@ namespace MediaBrowser.Common.Implementations.Logging
             {
                 for (var i = 0; i < paramList.Length; i++)
                 {
-                    message = message.Replace("{" + i + "}", paramList[i].ToString());
+                    var obj = paramList[i];
+
+                    message = message.Replace("{" + i + "}", (obj == null ? "null" : obj.ToString()));
                 }
             }
 

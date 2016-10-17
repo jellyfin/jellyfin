@@ -236,15 +236,9 @@ namespace MediaBrowser.Providers.Manager
 
         private static void MergeShortOverview(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
         {
-            var sourceHasShortOverview = source as IHasShortOverview;
-            var targetHasShortOverview = target as IHasShortOverview;
-
-            if (sourceHasShortOverview != null && targetHasShortOverview != null)
+            if (replaceData || string.IsNullOrEmpty(target.ShortOverview))
             {
-                if (replaceData || string.IsNullOrEmpty(targetHasShortOverview.ShortOverview))
-                {
-                    targetHasShortOverview.ShortOverview = sourceHasShortOverview.ShortOverview;
-                }
+                target.ShortOverview = source.ShortOverview;
             }
         }
 
@@ -311,20 +305,14 @@ namespace MediaBrowser.Providers.Manager
 
         private static void MergeCriticRating(BaseItem source, BaseItem target, List<MetadataFields> lockedFields, bool replaceData)
         {
-            var sourceCast = source as IHasCriticRating;
-            var targetCast = target as IHasCriticRating;
-
-            if (sourceCast != null && targetCast != null)
+            if (replaceData || !target.CriticRating.HasValue)
             {
-                if (replaceData || !targetCast.CriticRating.HasValue)
-                {
-                    targetCast.CriticRating = sourceCast.CriticRating;
-                }
+                target.CriticRating = source.CriticRating;
+            }
 
-                if (replaceData || string.IsNullOrEmpty(targetCast.CriticRatingSummary))
-                {
-                    targetCast.CriticRatingSummary = sourceCast.CriticRatingSummary;
-                }
+            if (replaceData || string.IsNullOrEmpty(target.CriticRatingSummary))
+            {
+                target.CriticRatingSummary = source.CriticRatingSummary;
             }
         }
 

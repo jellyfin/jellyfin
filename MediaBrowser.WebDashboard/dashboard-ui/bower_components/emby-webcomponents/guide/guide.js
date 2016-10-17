@@ -378,7 +378,7 @@
             return '<i class="md-icon programIcon timerIcon">&#xE061;</i>';
         }
 
-        function getChannelProgramsHtml(context, date, channel, programs, options) {
+        function getChannelProgramsHtml(context, date, channel, programs, options, index) {
 
             var html = '';
 
@@ -482,7 +482,7 @@
                     timerAttributes += ' data-seriestimerid="' + program.SeriesTimerId + '"';
                 }
 
-                html += '<button data-action="' + clickAction + '"' + timerAttributes + ' data-isfolder="' + program.IsFolder + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+                html += '<button data-action="' + clickAction + '"' + timerAttributes + ' data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
                 if (displayInnerContent) {
                     var guideProgramNameClass = "guideProgramName";
@@ -506,7 +506,8 @@
                     html += '</div>';
 
                     if (program.IsHD && options.showHdIcon) {
-                        html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
+                        //html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
+                        html += '<div class="programIcon programTextIcon">HD</div>';
                     }
 
                     html += getTimerIndicator(program);
@@ -543,7 +544,7 @@
 
             for (var i = 0, length = channels.length; i < length; i++) {
 
-                html.push(getChannelProgramsHtml(context, date, channels[i], programs, options));
+                html.push(getChannelProgramsHtml(context, date, channels[i], programs, options, i));
             }
 
             var programGrid = context.querySelector('.programGrid');
