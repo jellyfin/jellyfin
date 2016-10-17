@@ -8,3 +8,62 @@
     /* Can't use will-change because it causes the alpha picker to move when the page scrolls*/
     /*will-change: transform;*/
 }
+
+@keyframes view-fadeout {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+@keyframes view-fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes view-slideleft {
+    from {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes view-slideleft-r {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes view-slideright {
+    from {
+        transform: translate3d(-100%, 0, 0);
+    }
+
+    to {
+        transform: none;
+    }
+}
+
+@keyframes view-slideright-r {
+    from {
+        transform: none;
+    }
+
+    to {
+        transform: translate3d(100%, 0, 0);
+    }
+}

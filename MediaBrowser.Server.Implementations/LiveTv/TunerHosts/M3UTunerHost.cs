@@ -114,6 +114,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 {
                     protocol = MediaProtocol.Rtsp;
                 }
+                else if (path.StartsWith("udp", StringComparison.OrdinalIgnoreCase))
+                {
+                    protocol = MediaProtocol.Udp;
+                }
 
                 var mediaSource = new MediaSourceInfo
                 {

@@ -154,6 +154,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             };
 
+            _logger.Info("Running {0} {1}", path, arguments);
+
             using (process)
             {
                 process.Start();

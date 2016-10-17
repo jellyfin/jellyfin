@@ -140,7 +140,7 @@
         html += '<div class="dialogContentInner dialog-content-centered">';
         html += '<form style="margin:auto;">';
 
-        html += '<div class="fldSelectPlaylist">';
+        html += '<div class="fldSelectPlaylist selectContainer">';
         html += '<select is="emby-select" id="selectPlaylistToAddTo" label="' + globalize.translate('sharedcomponents#LabelPlaylist') + '" autofocus></select>';
         html += '</div>';
 

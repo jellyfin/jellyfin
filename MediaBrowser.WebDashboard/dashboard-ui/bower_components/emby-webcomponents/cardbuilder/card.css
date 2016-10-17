@@ -92,14 +92,7 @@ button {
 }
 
 .cardBox-mobile {
-    margin: 1px;
-}
-
-@media all and (min-width: 600px) {
-
-    .cardBox-mobile {
-        margin: 2px;
-    }
+    margin: 2px;
 }
 
 .card:focus {
@@ -156,14 +149,6 @@ button {
     height: 100%;
 }
 
-@media all and (min-width: 600px) {
-
-    .cardImageContainer {
-        /* Should be 0 with visualCardBox, but not really noticeable */
-        border-radius: 1px;
-    }
-}
-
 .chapterCardImageContainer {
     background-color: #000;
     border-radius: 0;
@@ -213,15 +198,12 @@ button {
     /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
     min-height: 70%;
     min-width: 70%;
-    align-self: flex-end;
-    position: static;
+    margin: auto;
 }
 
 .coveredImage-img {
     max-height: none;
     max-width: none;
-    height: 100%;
-    width: 100%;
 }
 
 .coveredImage {
@@ -411,17 +393,17 @@ button {
 }
 
 .overflowPortraitCard-scalable {
-    width: 40%;
+    width: 42%;
     max-width: 200px;
 }
 
 .overflowBackdropCard-scalable {
-    width: 70%;
+    width: 72%;
     max-width: 400px;
 }
 
 .overflowSquareCard-scalable {
-    width: 40%;
+    width: 42%;
     max-width: 200px;
 }
 

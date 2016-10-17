@@ -113,7 +113,11 @@ namespace MediaBrowser.Controller.LiveTv
 
         public override bool CanDelete()
         {
-            return Status == RecordingStatus.Completed;
+            if (string.Equals(ServiceName, "Emby", StringComparison.OrdinalIgnoreCase))
+            {
+                return Status == RecordingStatus.Completed;
+            }
+            return true;
         }
 
         public override bool IsAuthorizedToDelete(User user)

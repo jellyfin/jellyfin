@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Izlaz",
     "LabelApiDocumentation": "Api dokumentacija",
     "LabelBrowseLibrary": "Pregledaj biblioteku",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Zakazan zadatak nije izvr\u0161en",
     "NotificationOptionInstallationFailed": "Instalacija nije izvr\u0161ena",
     "NotificationOptionNewLibraryContent": "Novi sadr\u017eaj dodan",
-    "NotificationOptionNewLibraryContentMultiple": "Novi sadr\u017eaj dodan (vi\u0161estruki)",
     "NotificationOptionCameraImageUploaded": "Slike kamere preuzete",
     "NotificationOptionUserLockedOut": "Korisnik zaklju\u010dan",
     "HeaderSendNotificationHelp": "Obavijesti se dostavljaju u va\u0161 Emby inbox. Dodatne opcije mogu biti instalirane na kartici Servisa.",
@@ -1432,7 +1429,7 @@
     "ButtonScheduledTasks": "Zakazani zadaci",
     "MessageItemsAdded": "Stavke su dodane",
     "HeaderSelectCertificatePath": "Odaberi put certifikata:",
-    "ConfirmMessageScheduledTaskButton": "Ova operacija se obi\u010dno automatski pokre\u0107e kao zakazan zadatak i ne zahtijeva ru\u010dnu intervenciju. Za pode\u0161avanje rasporeda zadataka, pogledajte:",
+    "ConfirmMessageScheduledTaskButton": "Ova operacija se obi\u010dno automatski pokre\u0107e kao zakazan zadatak i ne zahtijeva ru\u010dnu intervenciju. Za pode\u0161avanje rasporeda zadataka kliknite na raspored zadatak.",
     "HeaderSupporterBenefit": "Aktivna pretplata Emby Premijere omogu\u0107uje dodatne pogodnosti kao \u0161to su pristup za sinkronizaciju, premium dodataka, internet sadr\u017eaja kanala, i jo\u0161 mnogo toga. {0} Saznajte vi\u0161e {1}.",
     "HeaderWelcomeToProjectServerDashboard": "Dobrodo\u0161li u kontrlonu plo\u010du Emby Server-a",
     "HeaderWelcomeToProjectWebClient": "Dobrodo\u0161li u Emby",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Du\u017eina",
     "MediaInfoShutterSpeed": "Brzina okida\u010da",
     "MediaInfoSoftware": "Softver",
-    "HeaderIfYouLikeCheckTheseOut": "Ako vam se svi\u0111a {0}, provjerite ove...",
+    "HeaderMoreLikeThis": "Vi\u0161e ovakvih",
     "HeaderMovies": "Filmovi",
     "HeaderAlbums": "Albums",
     "HeaderGames": "Igre",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "Ako se ova mapa dijeli na mre\u017ei, opskrba zajedni\u010dke mre\u017ene mre\u017ee mo\u017ee dopustiti Emby aplikacijama na drugim ure\u0111ajima izravni pristup multimedijskim datotekama.",
     "ButtonPlayExternalPlayer": "Reproduciraj sa vanjskim pokreta\u010dem",
     "WillRecord": "Snimit \u0107e se",
-    "NotScheduledToRecord": "Nije predvi\u0111en za snimanje"
+    "NotScheduledToRecord": "Nije predvi\u0111en za snimanje",
+    "SynologyUpdateInstructions": "Molimo, prijavite se u DSM i oti\u0111ite na centar paketa za a\u017euriranje."
 }

@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'shell', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, shell) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'registrationServices', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, registrationServices) {
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -148,11 +148,7 @@
     }
 
     function onSupporterButtonClick() {
-        if (appHost.supports('externalpremium')) {
-            shell.openUrl('https://emby.media/premiere');
-        } else {
-
-        }
+        registrationServices.showPremiereInfo();
     }
 
     function onManageRecordingClick(e) {
@@ -290,11 +286,6 @@
 
                 var supporterButtons = context.querySelectorAll('.btnSupporter');
                 for (var i = 0, length = supporterButtons.length; i < length; i++) {
-                    if (appHost.supports('externalpremium')) {
-                        supporterButtons[i].classList.remove('hide');
-                    } else {
-                        supporterButtons[i].classList.add('hide');
-                    }
                     supporterButtons[i].addEventListener('click', onSupporterButtonClick);
                 }
 

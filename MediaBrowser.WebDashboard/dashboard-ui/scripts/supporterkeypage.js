@@ -1,4 +1,4 @@
-﻿define(['fetchHelper', 'jQuery', 'registrationservices'], function (fetchHelper, $, registrationServices) {
+﻿define(['fetchHelper', 'jQuery', 'registrationServices'], function (fetchHelper, $, registrationServices) {
 
     function load(page) {
         Dashboard.showLoadingMsg();

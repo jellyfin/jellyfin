@@ -97,9 +97,7 @@
         var dialogOptions = {
             removeOnClose: true,
             enableHistory: options.enableHistory,
-            scrollY: false,
-            entryAnimation: options.entryAnimation,
-            exitAnimation: options.exitAnimation
+            scrollY: false
         };
 
         var backButton = false;
@@ -113,8 +111,10 @@
         } else {
 
             dialogOptions.modal = false;
+            dialogOptions.entryAnimation = options.entryAnimation;
+            dialogOptions.exitAnimation = options.exitAnimation;
             dialogOptions.entryAnimationDuration = options.entryAnimationDuration || 140;
-            dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 180;
+            dialogOptions.exitAnimationDuration = options.exitAnimationDuration || 160;
             dialogOptions.autoFocus = false;
         }
 
@@ -301,13 +301,22 @@
 
             dialogHelper.open(dlg);
 
-            var pos = options.positionTo && dialogOptions.size !== 'fullscreen' ? getPosition(options, dlg) : null;
+            // Make sure the above open has completed so that we can query offsetWidth and offsetHeight
+            // This was needed in safari, but in chrome this is causing the dialog to change position while animating
+            var setPositions = function () {
+                var pos = options.positionTo && dialogOptions.size !== 'fullscreen' ? getPosition(options, dlg) : null;
 
-            if (pos) {
-                dlg.style.position = 'fixed';
-                dlg.style.margin = 0;
-                dlg.style.left = pos.left + 'px';
-                dlg.style.top = pos.top + 'px';
+                if (pos) {
+                    dlg.style.position = 'fixed';
+                    dlg.style.margin = 0;
+                    dlg.style.left = pos.left + 'px';
+                    dlg.style.top = pos.top + 'px';
+                }
+            };
+            if (browser.safari) {
+                setTimeout(setPositions, 0);
+            } else {
+                setPositions();
             }
         });
     }

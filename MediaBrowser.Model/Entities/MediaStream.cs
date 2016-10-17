@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
@@ -47,7 +48,7 @@ namespace MediaBrowser.Model.Entities
             {
                 if (!string.IsNullOrEmpty(Title))
                 {
-                    return Title;
+                    return AddLanguageIfNeeded(Title);
                 }
 
                 if (Type == MediaStreamType.Audio)
@@ -113,6 +114,16 @@ namespace MediaBrowser.Model.Entities
 
                 return null;
             }
+        }
+
+        private string AddLanguageIfNeeded(string title)
+        {
+            if (!string.IsNullOrEmpty(Language) && title.IndexOf(Language, StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                title = StringHelper.FirstToUpper(Language) + " " + title;
+            }
+
+            return title;
         }
 
         public string NalLengthSize { get; set; }

@@ -741,7 +741,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 PostPaddingSeconds = Math.Max(config.PostPaddingSeconds, 0),
                 PrePaddingSeconds = Math.Max(config.PrePaddingSeconds, 0),
-                RecordAnyChannel = true,
+                RecordAnyChannel = false,
                 RecordAnyTime = true,
                 RecordNewOnly = true,
 
@@ -764,7 +764,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 defaults.RecordNewOnly = !program.IsRepeat;
             }
 
-            defaults.SkipEpisodesInLibrary = true;
+            defaults.SkipEpisodesInLibrary = defaults.RecordNewOnly;
             defaults.KeepUntil = KeepUntil.UntilDeleted;
 
             return Task.FromResult(defaults);

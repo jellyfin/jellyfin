@@ -1,4 +1,4 @@
-﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'require', 'dom', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser, require, dom) {
+﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'require', 'dom', 'embyRouter', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser, require, dom, embyRouter) {
 
     // Make sure this is pulled in after button and tab css
     require(['css!./dockedtabs']);
@@ -13,7 +13,7 @@
         })[0];
 
         if (view) {
-            Emby.Page.showItem(view);
+            embyRouter.showItem(view);
         }
     }
 
@@ -22,13 +22,13 @@
         switch (id) {
 
             case 'settings':
-                Emby.Page.showSettings();
+                embyRouter.showSettings();
                 break;
             case 'signout':
                 Dashboard.logout();
                 break;
             case 'selectserver':
-                Emby.Page.showSelectServer();
+                embyRouter.showSelectServer();
                 break;
             case 'reports':
                 Dashboard.navigate('reports.html');
@@ -157,7 +157,7 @@
         switch (index) {
 
             case 0:
-                Emby.Page.goHome();
+                embyRouter.goHome();
                 break;
             case 1:
                 showLibrariesMenu(this);
@@ -165,10 +165,10 @@
                 e.stopPropagation();
                 break;
             case 2:
-                Emby.Page.showLiveTV();
+                embyRouter.showLiveTV();
                 break;
             case 3:
-                Emby.Page.showFavorites();
+                embyRouter.showFavorites();
                 break;
             case 4:
                 Dashboard.navigate('mysync.html?mode=offline');
@@ -217,7 +217,7 @@
         var html = '';
 
         var liveTVButtonClass = appHost.supports('sync') ? ' dockedtab-midsize' : '';
-        
+
         html += '    <div is="emby-tabs" class="dockedtabs-tabs" data-selectionbar="false">\
             <button is="emby-button" class="dockedtabs-tab-button emby-tab-button emby-tab-button-active" data-index="0">\
                 <div class="dockedtabs-tab-button-foreground emby-button-foreground"><i class="dockedtabs-tab-button-icon md-icon">home</i><div>' + globalize.translate('TabHome') + '</div></div>\

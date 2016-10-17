@@ -9,7 +9,6 @@
     }
 
     function enableScrollX() {
-
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
@@ -167,8 +166,6 @@
             if (!AppInfo.enableAppLayouts) {
                 infos.push(getUpgradeMobileLayoutsInfo);
             }
-
-            appSettings.set(cacheKey, new Date().getTime());
 
             return infos[getRandomInt(0, infos.length - 1)]();
         });

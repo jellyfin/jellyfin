@@ -262,9 +262,12 @@
     function showMoreMenu(context, button, user) {
 
         require(['itemContextMenu'], function (itemContextMenu) {
+
+            var item = currentItem;
+
             itemContextMenu.show({
 
-                item: currentItem,
+                item: item,
                 positionTo: button,
                 edit: false,
                 editImages: true,
@@ -277,13 +280,26 @@
             }).then(function (result) {
 
                 if (result.deleted) {
-                    Emby.Page.goHome();
+                    afterDeleted(context, item);
 
                 } else if (result.updated) {
-                    reload(context, currentItem.Id, currentItem.ServerId);
+                    reload(context, item.Id, item.ServerId);
                 }
             });
         });
+    }
+
+    function afterDeleted(context, item) {
+
+        var parentId = item.ParentId || item.SeasonId || item.SeriesId;
+
+        if (parentId) {
+            reload(context, parentId, item.ServerId);
+        } else {
+            require(['embyRouter'], function (embyRouter) {
+                embyRouter.goHome();
+            });
+        }
     }
 
     function onWebSocketMessageReceived(e, data) {

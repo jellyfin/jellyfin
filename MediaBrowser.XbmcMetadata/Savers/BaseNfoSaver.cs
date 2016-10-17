@@ -449,10 +449,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("plot", overview);
             }
 
-            var hasShortOverview = item as IHasShortOverview;
-            if (hasShortOverview != null)
+            if (item is Video)
             {
-                var outline = (hasShortOverview.ShortOverview ?? string.Empty)
+                var outline = (item.ShortOverview ?? string.Empty)
                     .StripHtml()
                     .Replace("&quot;", "'");
 
@@ -658,19 +657,14 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var hasCriticRating = item as IHasCriticRating;
-
-            if (hasCriticRating != null)
+            if (item.CriticRating.HasValue)
             {
-                if (hasCriticRating.CriticRating.HasValue)
-                {
-                    writer.WriteElementString("criticrating", hasCriticRating.CriticRating.Value.ToString(UsCulture));
-                }
+                writer.WriteElementString("criticrating", item.CriticRating.Value.ToString(UsCulture));
+            }
 
-                if (!string.IsNullOrEmpty(hasCriticRating.CriticRatingSummary))
-                {
-                    writer.WriteElementString("criticratingsummary", hasCriticRating.CriticRatingSummary);
-                }
+            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
+            {
+                writer.WriteElementString("criticratingsummary", item.CriticRatingSummary);
             }
 
             var hasDisplayOrder = item as IHasDisplayOrder;

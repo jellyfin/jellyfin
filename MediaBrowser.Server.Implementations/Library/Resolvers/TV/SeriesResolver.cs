@@ -85,6 +85,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 {
                     if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
                     {
+                        if (args.Parent.IsRoot)
+                        {
+                            // For now, return null, but if we want to allow this in the future then add some additional checks to guard against a misplaced tvshow.nfo
+                            return null;
+                        }
+
                         return new Series
                         {
                             Path = args.Path,

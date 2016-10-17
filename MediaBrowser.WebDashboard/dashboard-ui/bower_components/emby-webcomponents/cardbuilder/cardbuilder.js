@@ -149,7 +149,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (screenWidth >= 540) {
                         return 100 / 30;
                     }
-                    return 100 / 40;
+                    return 100 / 42;
                 case 'overflowSquare':
                     if (screenWidth >= 1000) {
                         return 100 / 22;
@@ -157,7 +157,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (screenWidth >= 540) {
                         return 100 / 30;
                     }
-                    return 100 / 40;
+                    return 100 / 42;
                 case 'overflowBackdrop':
                     if (screenWidth >= 1000) {
                         return 100 / 40;
@@ -168,7 +168,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (screenWidth >= 540) {
                         return 100 / 64;
                     }
-                    return 100 / 70;
+                    return 100 / 72;
                 default:
                     return 4;
             }
@@ -752,6 +752,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return html;
         }
 
+        function isUsingLiveTvNaming(item) {
+            return item.Type === 'Program' || item.Type === 'Timer' || item.Type === 'Recording';
+        }
+
         var uniqueFooterIndex = 0;
         function getCardFooterText(item, apiClient, options, showTitle, forceName, overlayText, imgUrl, footerClass, progressHtml, isOuterFooter, cardFooterId, vibrantSwatch) {
 
@@ -787,7 +791,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     }
                     else {
 
-                        if (item.Type === 'Program') {
+                        if (isUsingLiveTvNaming(item)) {
 
                             lines.push(item.Name);
 
@@ -826,7 +830,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         item.AlbumArtists[0].IsFolder = true;
                         lines.push(getTextActionButton(item.AlbumArtists[0]));
                     } else {
-                        lines.push(item.Type === 'Program' ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
+                        lines.push(isUsingLiveTvNaming(item) ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
                     }
                 }
 
@@ -1343,7 +1347,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             }
 
             if (!imgUrl) {
-                var defaultName = item.Type === 'Program' || item.Type === 'Timer' || item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
+                var defaultName = isUsingLiveTvNaming(item) ? item.Name : itemHelper.getDisplayName(item);
                 cardImageContainerOpen += '<div class="cardText cardDefaultText">' + defaultName + '</div>';
             }
 
@@ -1457,9 +1461,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 var value = listItemsMoreButton.getAttribute('data-indexvalue');
                 var parentid = listItemsMoreButton.getAttribute('data-parentid');
 
-                Emby.Page.showGenre({
-                    ParentId: parentid,
-                    Id: value
+                require(['embyRouter'], function (embyRouter) {
+                    embyRouter.showGenre({
+                        ParentId: parentid,
+                        Id: value
+                    });
                 });
             }
         }

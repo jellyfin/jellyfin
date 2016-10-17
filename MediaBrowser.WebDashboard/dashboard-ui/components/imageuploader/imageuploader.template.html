@@ -11,9 +11,8 @@
         </div>
         <div id="fldUpload" style="display: none;">
             <br />
-            <div>
-                <label for="selectImageType">${LabelImageType}</label>
-                <select id="selectImageType" name="selectImageType" style="color:#fff;">
+            <div class="selectContainer">
+                <select is="emby-select" id="selectImageType" name="selectImageType" label="${LabelImageType}">
                     <option value="Primary">${OptionPrimary}</option>
                     <option value="Art">${OptionArt}</option>
                     <option value="Backdrop">${OptionBackdrop}</option>

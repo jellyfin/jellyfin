@@ -312,7 +312,7 @@
 
         return new Promise(function (resolve, reject) {
 
-            require(["registrationservices", 'dialogHelper', 'formDialogStyle'], function (registrationServices, dialogHelper) {
+            require(["registrationServices", 'dialogHelper', 'formDialogStyle'], function (registrationServices, dialogHelper) {
                 registrationServices.validateFeature('sync').then(function () {
 
                     showSyncMenuInternal(dialogHelper, options).then(resolve, reject);

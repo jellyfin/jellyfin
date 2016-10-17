@@ -572,13 +572,13 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
             backgroundContainer = document.querySelector('.backgroundContainer');
         }
 
-        if (level == 'full' || level == Emby.TransparencyLevel.Full) {
+        if (level == 'full' || level == 2) {
             backdrop.clear(true);
             document.documentElement.classList.add('transparentDocument');
             backgroundContainer.classList.add('backgroundContainer-transparent');
             backdropContainer.classList.add('hide');
         }
-        else if (level == 'backdrop' || level == Emby.TransparencyLevel.Backdrop) {
+        else if (level == 'backdrop' || level == 1) {
             backdrop.externalBackdrop(true);
             document.documentElement.classList.add('transparentDocument');
             backgroundContainer.classList.add('backgroundContainer-transparent');

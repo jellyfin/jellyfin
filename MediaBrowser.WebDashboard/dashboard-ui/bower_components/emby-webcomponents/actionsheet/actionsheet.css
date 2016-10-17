@@ -9,11 +9,14 @@
 }
 
 .actionsheet-not-fullscreen {
-    background-color: #2a2a2a;
+    background-color: #121314;
+    max-width: 90%;
+    max-height: 90%;
+    color: #eee;
 }
 
 .actionSheetMenuItem:hover {
-    background-color: #333;
+    background-color: #222;
 }
 
 .actionsheet-fullscreen {
@@ -35,6 +38,7 @@
     flex-grow: 1;
     align-items: center;
     text-align: center;
+    overflow: hidden;
 }
 
 .actionSheetMenuItem {
@@ -63,7 +67,7 @@
 }
 
 .actionSheetItemText-extraspacing {
-    padding: .8em 0;
+    padding: .9em 0;
 }
 
 .emby-button-noflex .actionSheetItemText {
@@ -100,7 +104,7 @@
 }
 
 .actionsheet-extraSpacing {
-    font-size: 108%;
+    font-size: 112%;
 }
 
 .btnCloseActionSheet {

@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Esci",
     "LabelApiDocumentation": "Documentazione Api",
     "LabelBrowseLibrary": "Esplora la libreria",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Operazione pianificata fallita",
     "NotificationOptionInstallationFailed": "Installazione fallita",
     "NotificationOptionNewLibraryContent": "Nuovo contenuto aggiunto",
-    "NotificationOptionNewLibraryContentMultiple": "Nuovi contenuti aggiunti (multipli)",
     "NotificationOptionCameraImageUploaded": "Immagine fotocamera caricata",
     "NotificationOptionUserLockedOut": "Utente bloccato",
     "HeaderSendNotificationHelp": "Le notifiche vengono consegnati alla tua casella di posta ricamato. Ulteriori opzioni possono essere installati dalla scheda Servizi.",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitudine",
     "MediaInfoShutterSpeed": "velocit\u00e0 otturatore",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "Se ti piace {0}, guarda questi ...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Film",
     "HeaderAlbums": "Album",
     "HeaderGames": "Giochi",
@@ -2097,7 +2094,7 @@
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
     "LabelffmpegVersion": "FFmpeg version:",
-    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "LabelffmpegPathHelp": "The path to your downloaded ffmpeg application file, or folder containing ffmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "Play con un lettore esterno",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }

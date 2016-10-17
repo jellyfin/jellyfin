@@ -1,6 +1,4 @@
 {
-    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-    "HeaderMoreLikeThis": "More Like This",
     "LabelExit": "Tutup",
     "LabelApiDocumentation": "Api Documentation",
     "LabelBrowseLibrary": "Imbas Pengumpulan",
@@ -620,7 +618,6 @@
     "NotificationOptionTaskFailed": "Scheduled task failure",
     "NotificationOptionInstallationFailed": "Installation failure",
     "NotificationOptionNewLibraryContent": "New content added",
-    "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "NotificationOptionCameraImageUploaded": "Camera image uploaded",
     "NotificationOptionUserLockedOut": "User locked out",
     "HeaderSendNotificationHelp": "Notifications are delivered to your Emby inbox. Additional options can be installed from the Services tab.",
@@ -1560,7 +1557,7 @@
     "LabelPlayMethodDirectPlay": "Direct Playing",
     "LabelAudioCodec": "Audio: {0}",
     "LabelVideoCodec": "Video: {0}",
-    "LabelLocalAccessUrl": "Local access: {0}",
+    "LabelLocalAccessUrl": "In-Home access: {0}",
     "LabelRemoteAccessUrl": "Remote access: {0}",
     "LabelRunningOnPort": "Running on http port {0}.",
     "LabelRunningOnPorts": "Running on http port {0}, and https port {1}.",
@@ -1777,7 +1774,7 @@
     "HeaderUnaired": "Unaired",
     "HeaderMissing": "Missing",
     "ButtonWebsite": "Website",
-    "ValueSeriesYearToPresent": "{0}-Present",
+    "ValueSeriesYearToPresent": "{0} - Present",
     "ValueAwards": "Awards: {0}",
     "ValueBudget": "Budget: {0}",
     "ValueRevenue": "Revenue: {0}",
@@ -1803,7 +1800,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "Shutter speed",
     "MediaInfoSoftware": "Software",
-    "HeaderIfYouLikeCheckTheseOut": "If you like {0}, check these out...",
+    "HeaderMoreLikeThis": "More Like This",
     "HeaderMovies": "Movies",
     "HeaderAlbums": "Albums",
     "HeaderGames": "Games",
@@ -2097,7 +2094,7 @@
     "MapChannels": "Map Channels",
     "LabelffmpegPath": "FFmpeg path:",
     "LabelffmpegVersion": "FFmpeg version:",
-    "LabelffmpegPathHelp": "The path to your downloaded FFmpeg application, or folder containing FFmpeg.",
+    "LabelffmpegPathHelp": "The path to your downloaded ffmpeg application file, or folder containing ffmpeg.",
     "SetupFFmpeg": "Setup FFmpeg",
     "SetupFFmpegHelp": "Emby may require a library or application to convert certain media types. There are many different applications available, however, Emby has been tested to work with ffmpeg. Emby is in no way affiliated with ffmpeg, its ownership, code or distribution.",
     "EnterFFmpegLocation": "Enter FFmpeg path",
@@ -2144,5 +2141,6 @@
     "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
     "ButtonPlayExternalPlayer": "Play with external player",
     "WillRecord": "Will record",
-    "NotScheduledToRecord": "Not scheduled to record"
+    "NotScheduledToRecord": "Not scheduled to record",
+    "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
 }

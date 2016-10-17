@@ -216,7 +216,7 @@
             return connectUser;
         };
 
-        var minServerVersion = '3.0.5986';
+        var minServerVersion = '3.0.5994';
         self.minServerVersion = function (val) {
 
             if (val) {
@@ -1087,7 +1087,8 @@
                         Servers: [server]
                     });
 
-                } if (result.Id !== server.Id) {
+                }
+                else if (result.Id !== server.Id) {
 
                     // http request succeeded, but it's a different server than what was expected
                     testNextConnectionMode(tests, index + 1, server, options, resolve);
@@ -1249,49 +1250,40 @@
 
         self.loginToConnect = function (username, password) {
 
-            return new Promise(function (resolve, reject) {
+            if (!username) {
+                return Promise.reject();
+                return;
+            }
+            if (!password) {
+                return Promise.reject();
+                return;
+            }
 
-                if (!username) {
-                    reject();
-                    return;
+            return ajax({
+                type: "POST",
+                url: "https://connect.emby.media/service/user/authenticate",
+                data: {
+                    nameOrEmail: username,
+                    rawpw: password
+                },
+                dataType: "json",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                headers: {
+                    "X-Application": appName + "/" + appVersion
                 }
-                if (!password) {
-                    reject();
-                    return;
-                }
 
-                require(['cryptojs-md5'], function () {
+            }).then(function (result) {
 
-                    var md5 = getConnectPasswordHash(password);
+                var credentials = credentialProvider.credentials();
 
-                    ajax({
-                        type: "POST",
-                        url: "https://connect.emby.media/service/user/authenticate",
-                        data: {
-                            nameOrEmail: username,
-                            password: md5
-                        },
-                        dataType: "json",
-                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                        headers: {
-                            "X-Application": appName + "/" + appVersion
-                        }
+                credentials.ConnectAccessToken = result.AccessToken;
+                credentials.ConnectUserId = result.User.Id;
 
-                    }).then(function (result) {
+                credentialProvider.credentials(credentials);
 
-                        var credentials = credentialProvider.credentials();
+                onConnectUserSignIn(result.User);
 
-                        credentials.ConnectAccessToken = result.AccessToken;
-                        credentials.ConnectUserId = result.User.Id;
-
-                        credentialProvider.credentials(credentials);
-
-                        onConnectUserSignIn(result.User);
-
-                        resolve(result);
-
-                    }, reject);
-                });
+                return result;
             });
         };
 
@@ -1302,103 +1294,60 @@
             var password = options.password;
             var passwordConfirm = options.passwordConfirm;
 
-            return new Promise(function (resolve, reject) {
+            if (!email) {
+                return Promise.reject({ errorCode: 'invalidinput' });
+            }
+            if (!username) {
+                return Promise.reject({ errorCode: 'invalidinput' });
+            }
+            if (!password) {
+                return Promise.reject({ errorCode: 'invalidinput' });
+            }
+            if (!passwordConfirm) {
+                return Promise.reject({ errorCode: 'passwordmatch' });
+            }
+            if (password !== passwordConfirm) {
+                return Promise.reject({ errorCode: 'passwordmatch' });
+            }
 
-                if (!email) {
-                    reject({ errorCode: 'invalidinput' });
-                    return;
+            var data = {
+                email: email,
+                userName: username,
+                rawpw: password
+            };
+
+            if (options.grecaptcha) {
+                data.grecaptcha = options.grecaptcha;
+            }
+
+            return ajax({
+                type: "POST",
+                url: "https://connect.emby.media/service/register",
+                data: data,
+                dataType: "json",
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                headers: {
+                    "X-Application": appName + "/" + appVersion,
+                    "X-CONNECT-TOKEN": "CONNECT-REGISTER"
                 }
-                if (!username) {
-                    reject({ errorCode: 'invalidinput' });
-                    return;
-                }
-                if (!password) {
-                    reject({ errorCode: 'invalidinput' });
-                    return;
-                }
-                if (!passwordConfirm) {
-                    reject({ errorCode: 'passwordmatch' });
-                    return;
-                }
-                if (password !== passwordConfirm) {
-                    reject({ errorCode: 'passwordmatch' });
-                    return;
+
+            }).catch(function (response) {
+
+                try {
+                    return response.json();
+                } catch (err) {
+                    throw err;
                 }
 
-                require(['cryptojs-md5'], function () {
+            }).then(function (result) {
 
-                    var md5 = getConnectPasswordHash(password);
-
-                    var data = {
-                        email: email,
-                        userName: username,
-                        password: md5
-                    };
-
-                    if (options.grecaptcha) {
-                        data.grecaptcha = options.grecaptcha;
-                    }
-
-                    ajax({
-                        type: "POST",
-                        url: "https://connect.emby.media/service/register",
-                        data: data,
-                        dataType: "json",
-                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                        headers: {
-                            "X-Application": appName + "/" + appVersion,
-                            "X-CONNECT-TOKEN": "CONNECT-REGISTER"
-                        }
-
-                    }).then(resolve, function (response) {
-
-                        try {
-                            return response.json();
-
-                        } catch (err) {
-                            reject();
-                        }
-
-                    }).then(function (result) {
-
-                        if (result && result.Status) {
-                            reject({ errorCode: result.Status });
-                        } else {
-                            reject();
-                        }
-
-                    }, reject);
-                });
+                if (result && result.Status) {
+                    return Promise.reject({ errorCode: result.Status });
+                } else {
+                    Promise.reject();
+                }
             });
         };
-
-        function replaceAllWithSplit(str, find, replace) {
-
-            return str.split(find).join(replace);
-        }
-
-        function cleanConnectPassword(password) {
-
-            password = password || '';
-
-            password = replaceAllWithSplit(password, "&", "&amp;");
-            password = replaceAllWithSplit(password, "/", "&#092;");
-            password = replaceAllWithSplit(password, "!", "&#33;");
-            password = replaceAllWithSplit(password, "$", "&#036;");
-            password = replaceAllWithSplit(password, "\"", "&quot;");
-            password = replaceAllWithSplit(password, "<", "&lt;");
-            password = replaceAllWithSplit(password, ">", "&gt;");
-            password = replaceAllWithSplit(password, "'", "&#39;");
-
-            return password;
-        }
-
-        function getConnectPasswordHash(password) {
-
-            password = cleanConnectPassword(password);
-
-            return CryptoJS.MD5(password).toString();
-        }
 
         self.getApiClient = function (item) {
 

@@ -8,7 +8,7 @@
 }
 
 .background-theme-b .backgroundContainer, .dialog.background-theme-b {
-    background-color: #161616;
+    background-color: #121314;
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
@@ -89,7 +89,7 @@
 }
 
     .homePageSection + .homePageSection {
-        margin-top: 25px;
+        margin-top: 30px;
     }
 
 .sectionHeaderButton {
@@ -124,17 +124,35 @@
     }
 }
 
-@media all and (min-width: 600px) {
-
-    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 98%;
-    }
+.ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
+    width: 98%;
 }
 
 @media all and (min-width: 1200px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 96%;
+    }
+}
+
+.homePageSection h1 {
+    padding-left: 2vw;
+}
+
+.homePageSection .itemsContainer {
+    padding-left: 1vw;
+    padding-right: 1vw;
+}
+
+@media all and (min-width: 1200px) {
+
+    .homePageSection h1 {
+        padding-left: 2.2vw;
+    }
+
+    .homePageSection .itemsContainer {
+        padding-left: 2vw;
+        padding-right: 2vw;
     }
 }
 
