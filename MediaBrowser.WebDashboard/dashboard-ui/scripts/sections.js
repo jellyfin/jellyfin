@@ -167,8 +167,6 @@
                 infos.push(getUpgradeMobileLayoutsInfo);
             }
 
-            appSettings.set(cacheKey, new Date().getTime());
-
             return infos[getRandomInt(0, infos.length - 1)]();
         });
     }
