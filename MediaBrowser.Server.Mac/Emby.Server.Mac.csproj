@@ -1692,6 +1692,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\refreshdialog\refreshdialog.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\refreshdialog\refreshdialog.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\registrationservices\registrationservices.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\registrationservices\registrationservices.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\registrationservices\style.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\registrationservices\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\require\requirecss.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\require\requirecss.js</Link>
     </BundleResource>
@@ -2607,8 +2613,8 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\vibrant\website.coffee">
       <Link>Resources\dashboard-ui\bower_components\vibrant\website.coffee</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\vibrant\dist\Vibrant.js">
-      <Link>Resources\dashboard-ui\bower_components\vibrant\dist\Vibrant.js</Link>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\vibrant\dist\vibrant.js">
+      <Link>Resources\dashboard-ui\bower_components\vibrant\dist\vibrant.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\vibrant\dist\vibrant.min.js">
       <Link>Resources\dashboard-ui\bower_components\vibrant\dist\vibrant.min.js</Link>
@@ -2672,6 +2678,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\humanedate.js">
       <Link>Resources\dashboard-ui\components\humanedate.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\iap.js">
+      <Link>Resources\dashboard-ui\components\iap.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\remotecontrol.js">
       <Link>Resources\dashboard-ui\components\remotecontrol.js</Link>
@@ -3395,9 +3404,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\pluginspage.js">
       <Link>Resources\dashboard-ui\scripts\pluginspage.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\registrationservices.js">
-      <Link>Resources\dashboard-ui\scripts\registrationservices.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\remotecontrol.js">
       <Link>Resources\dashboard-ui\scripts\remotecontrol.js</Link>
