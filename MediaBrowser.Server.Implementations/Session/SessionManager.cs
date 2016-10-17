@@ -633,9 +633,12 @@ namespace MediaBrowser.Server.Implementations.Session
             data.PlayCount++;
             data.LastPlayedDate = DateTime.UtcNow;
 
-            if (!(item is Video) && item.SupportsPlayedStatus)
+            if (item.SupportsPlayedStatus)
             {
-                data.Played = true;
+                if (!(item is Video))
+                {
+                    data.Played = true;
+                }
             }
             else
             {
