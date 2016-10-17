@@ -34,7 +34,7 @@
         if (item.ChannelName || item.ChannelNumber) {
             context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#ChannelNameOnly', item.ChannelName || item.ChannelNumber);
         } else {
-            context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#AllChannels');
+            context.querySelector('.optionChannelOnly').innerHTML = globalize.translate('sharedcomponents#OneChannel');
         }
 
         context.querySelector('.optionAroundTime').innerHTML = globalize.translate('sharedcomponents#AroundTime', datetime.getDisplayTime(datetime.parseISO8601Date(item.StartDate)));
