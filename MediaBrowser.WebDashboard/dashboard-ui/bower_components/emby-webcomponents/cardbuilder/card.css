@@ -198,15 +198,12 @@ button {
     /* This is simply for lazy image purposes, to ensure the image is visible sooner when scrolling */
     min-height: 70%;
     min-width: 70%;
-    align-self: flex-end;
-    position: static;
+    margin: auto;
 }
 
 .coveredImage-img {
     max-height: none;
     max-width: none;
-    height: 100%;
-    width: 100%;
 }
 
 .coveredImage {

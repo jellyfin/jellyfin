@@ -1,4 +1,4 @@
-﻿define(['dialogHelper', 'jQuery', 'emby-button'], function (dialogHelper, $) {
+﻿define(['dialogHelper', 'jQuery', 'emby-button', 'emby-select'], function (dialogHelper, $) {
 
     var currentItemId;
     var currentFile;

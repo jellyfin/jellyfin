@@ -885,8 +885,13 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
+            var enableSplittingOnNonKeyFrames = state.VideoRequest.EnableSplittingOnNonKeyFrames && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+            enableSplittingOnNonKeyFrames = false;
 
-            if (state.VideoRequest.EnableSplittingOnNonKeyFrames)
+            // TODO: check libavformat version for 57 50.100 and use -hls_flags split_by_time
+            var hlsProtocolSupportsSplittingByTime = false;
+
+            if (enableSplittingOnNonKeyFrames && !hlsProtocolSupportsSplittingByTime)
             {
                 var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state);
 
@@ -905,9 +910,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     ).Trim();
             }
 
-            // TODO: check libavformat version for 57 50.100 and use -hls_flags split_by_time
-            var supportsSplitByTime = false;
-            var splitByTime = supportsSplitByTime && state.VideoRequest.EnableSplittingOnNonKeyFrames;
+            var splitByTime = hlsProtocolSupportsSplittingByTime && enableSplittingOnNonKeyFrames;
             var splitByTimeArg = splitByTime ? " -hls_flags split_by_time" : "";
 
             return string.Format("{0}{12} {1} -map_metadata -1 -threads {2} {3} {4}{5} {6} -max_delay 5000000 -avoid_negative_ts disabled -start_at_zero -hls_time {7}{8} -start_number {9} -hls_list_size {10} -y \"{11}\"",
