@@ -245,12 +245,8 @@ namespace MediaBrowser.Api
 
             item.OriginalTitle = string.IsNullOrWhiteSpace(request.OriginalTitle) ? null : request.OriginalTitle;
 
-            var hasCriticRating = item as IHasCriticRating;
-            if (hasCriticRating != null)
-            {
-                hasCriticRating.CriticRating = request.CriticRating;
-                hasCriticRating.CriticRatingSummary = request.CriticRatingSummary;
-            }
+            item.CriticRating = request.CriticRating;
+            item.CriticRatingSummary = request.CriticRatingSummary;
 
             item.DisplayMediaType = request.DisplayMediaType;
             item.CommunityRating = request.CommunityRating;
@@ -279,11 +275,7 @@ namespace MediaBrowser.Api
                 item.Tagline = request.Taglines.FirstOrDefault();
             }
 
-            var hasShortOverview = item as IHasShortOverview;
-            if (hasShortOverview != null)
-            {
-                hasShortOverview.ShortOverview = request.ShortOverview;
-            }
+            item.ShortOverview = request.ShortOverview;
 
             item.Keywords = request.Keywords;
 

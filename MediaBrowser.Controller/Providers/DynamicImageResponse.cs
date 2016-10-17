@@ -12,7 +12,6 @@ namespace MediaBrowser.Controller.Providers
         public Stream Stream { get; set; }
         public ImageFormat Format { get; set; }
         public bool HasImage { get; set; }
-        public string InternalCacheKey { get; set; }
 
         public void SetFormatFromMimeType(string mimeType)
         {

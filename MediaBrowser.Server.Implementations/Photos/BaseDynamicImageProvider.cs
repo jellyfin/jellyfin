@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return ItemUpdateType.None;
             }
 
-            await ProviderManager.SaveImage(item, outputPath, "image/png", imageType, null, Guid.NewGuid().ToString("N"), cancellationToken).ConfigureAwait(false);
+            await ProviderManager.SaveImage(item, outputPath, "image/png", imageType, null, false, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.ImageUpdate;
         }
