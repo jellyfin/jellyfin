@@ -140,12 +140,7 @@ namespace MediaBrowser.Providers.Manager
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, source, mimeType, type, imageIndex, cancellationToken);
         }
 
-        public Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
-        {
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, source, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
-        }
-
-        public Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
+        public Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(source))
             {
@@ -154,7 +149,7 @@ namespace MediaBrowser.Providers.Manager
 
             var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
 
-            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, fileStream, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
+            return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
 
         public async Task<IEnumerable<RemoteImageInfo>> GetAvailableRemoteImages(IHasImages item, RemoteImageQuery query, CancellationToken cancellationToken)

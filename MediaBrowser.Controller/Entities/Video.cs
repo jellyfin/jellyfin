@@ -24,7 +24,6 @@ namespace MediaBrowser.Controller.Entities
         IHasAspectRatio,
         ISupportsPlaceHolders,
         IHasMediaSources,
-        IHasShortOverview,
         IThemeMedia
     {
         [IgnoreDataMember]

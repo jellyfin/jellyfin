@@ -585,10 +585,9 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var desc = item.Overview;
 
-                var hasShortOverview = item as IHasShortOverview;
-                if (hasShortOverview != null && !string.IsNullOrEmpty(hasShortOverview.ShortOverview))
+                if (!string.IsNullOrEmpty(item.ShortOverview))
                 {
-                    desc = hasShortOverview.ShortOverview;
+                    desc = item.ShortOverview;
                 }
 
                 if (!string.IsNullOrWhiteSpace(desc))
