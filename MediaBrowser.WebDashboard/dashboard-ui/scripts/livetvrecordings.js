@@ -130,7 +130,9 @@
 
         promise.then(function (result) {
 
-            renderRecordings(context.querySelector('#latestRecordings'), result.Items);
+            renderRecordings(context.querySelector('#latestRecordings'), result.Items, {
+                shape: (enableScrollX() ? 'overflowBackdrop' : 'backdrop')
+            });
 
             Dashboard.hideLoadingMsg();
         });
