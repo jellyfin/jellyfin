@@ -66,10 +66,12 @@ namespace MediaBrowser.Server.Implementations.Intros
             var candidates = new List<ItemWithTrailer>();
 
             var trailerTypes = new List<TrailerType>();
+            var sourceTypes = new List<SourceType>();
 
             if (config.EnableIntrosFromMoviesInLibrary)
             {
                 trailerTypes.Add(TrailerType.LocalTrailer);
+                sourceTypes.Add(SourceType.Library);
             }
 
             if (IsSupporter)
@@ -77,18 +79,22 @@ namespace MediaBrowser.Server.Implementations.Intros
                 if (config.EnableIntrosFromUpcomingTrailers)
                 {
                     trailerTypes.Add(TrailerType.ComingSoonToTheaters);
+                    sourceTypes.Clear();
                 }
                 if (config.EnableIntrosFromUpcomingDvdMovies)
                 {
                     trailerTypes.Add(TrailerType.ComingSoonToDvd);
+                    sourceTypes.Clear();
                 }
                 if (config.EnableIntrosFromUpcomingStreamingMovies)
                 {
                     trailerTypes.Add(TrailerType.ComingSoonToStreaming);
+                    sourceTypes.Clear();
                 }
                 if (config.EnableIntrosFromSimilarMovies)
                 {
                     trailerTypes.Add(TrailerType.Archive);
+                    sourceTypes.Clear();
                 }
             }
 
@@ -102,7 +108,8 @@ namespace MediaBrowser.Server.Implementations.Intros
                     IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
                     MaxParentalRating = config.EnableIntrosParentalControl ? ratingLevel : null,
                     BlockUnratedItems = config.EnableIntrosParentalControl ? new[] { UnratedItem.Trailer } : new UnratedItem[] { },
-                    Limit = config.TrailerLimit
+                    Limit = config.TrailerLimit,
+                    SourceTypes = sourceTypes.ToArray()
                 });
 
                 candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer

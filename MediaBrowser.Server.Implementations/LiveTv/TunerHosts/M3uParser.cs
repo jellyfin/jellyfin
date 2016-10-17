@@ -114,8 +114,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             channel.ImageUrl = FindProperty("tvg-logo", extInf, null);
             channel.Number = FindProperty("channel-id", extInf, channel.Number);
             channel.Number = FindProperty("tvg-id", extInf, channel.Number);
-            channel.Name = FindProperty("tvg-name", extInf, channel.Name);
             channel.Name = FindProperty("tvg-id", extInf, channel.Name);
+            channel.Name = FindProperty("tvg-name", extInf, channel.Name);
             return channel;
 
         }
