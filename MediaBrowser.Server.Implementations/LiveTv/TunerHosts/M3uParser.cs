@@ -111,15 +111,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 channel.Number = "0";
             }
 
-            channel.ImageUrl = FindProperty("tvg-logo", extInf, null);
-            channel.Number = FindProperty("channel-id", extInf, channel.Number);
-            channel.Number = FindProperty("tvg-id", extInf, channel.Number);
-            channel.Name = FindProperty("tvg-id", extInf, channel.Name);
-            channel.Name = FindProperty("tvg-name", extInf, channel.Name);
+            channel.ImageUrl = FindProperty("tvg-logo", extInf);
+
+            var name = FindProperty("tvg-name", extInf);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                 name = FindProperty("tvg-id", extInf);
+            }
+
+            channel.Name = name;
+
+            var numberString = FindProperty("tvg-id", extInf);
+            if (string.IsNullOrWhiteSpace(numberString))
+            {
+                numberString = FindProperty("channel-id", extInf);
+            }
+
+            if (!string.IsNullOrWhiteSpace(numberString))
+            {
+                channel.Number = numberString;
+            }
+
             return channel;
 
         }
-        private string FindProperty(string property, string properties, string defaultResult = "")
+        private string FindProperty(string property, string properties)
         {
             var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
             var matches = reg.Matches(properties);
@@ -130,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                     return match.Groups[2].Value;
                 }
             }
-            return defaultResult;
+            return null;
         }
     }
 
