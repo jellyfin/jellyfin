@@ -8,6 +8,7 @@ using CommonIO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
@@ -25,12 +26,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
     {
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
+        private readonly IServerApplicationHost _appHost;
 
-        public SatIpHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient)
+        public SatIpHost(IServerConfigurationManager config, ILogger logger, IJsonSerializer jsonSerializer, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost)
             : base(config, logger, jsonSerializer, mediaEncoder)
         {
             _fileSystem = fileSystem;
             _httpClient = httpClient;
+            _appHost = appHost;
         }
 
         private const string ChannelIdPrefix = "sat_";
@@ -39,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
         {
             if (!string.IsNullOrWhiteSpace(tuner.M3UUrl))
             {
-                return await new M3uParser(Logger, _fileSystem, _httpClient).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
+                return await new M3uParser(Logger, _fileSystem, _httpClient, _appHost).Parse(tuner.M3UUrl, ChannelIdPrefix, tuner.Id, cancellationToken).ConfigureAwait(false);
             }
 
             var channels = await new ChannelScan(Logger).Scan(tuner, cancellationToken).ConfigureAwait(false);
