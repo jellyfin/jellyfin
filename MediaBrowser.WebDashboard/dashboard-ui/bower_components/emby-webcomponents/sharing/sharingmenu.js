@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'layoutManager', 'globalize', './social-share-kit-1.0.10/dist/js/social-share-kit.min', 'css!./social-share-kit-1.0.10/dist/css/social-share-kit.css', 'emby-button'], function (dialogHelper, layoutManager, globalize) {
+    'use strict';
 
     function showMenu(options) {
 
@@ -24,7 +25,7 @@
         html += '<a href="#" class="ssk ssk-tumblr" style="color:#fff;"></a>';
         html += '</div>';
 
-        dlg.style['padding'] = '.5em 1.5em 1.5em';
+        dlg.style.padding = '.5em 1.5em 1.5em';
 
         dlg.innerHTML = html;
 

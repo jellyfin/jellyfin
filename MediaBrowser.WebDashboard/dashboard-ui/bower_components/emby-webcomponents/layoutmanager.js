@@ -3,7 +3,7 @@ define(['browser', 'appSettings', 'events'], function (browser, appSettings, eve
 
     function setLayout(self, layout, selectedLayout) {
 
-        if (layout == selectedLayout) {
+        if (layout === selectedLayout) {
             self[layout] = true;
             document.documentElement.classList.add('layout-' + layout);
         } else {
@@ -12,7 +12,7 @@ define(['browser', 'appSettings', 'events'], function (browser, appSettings, eve
         }
     }
 
-    function layoutManager() {
+    function LayoutManager() {
 
         var self = this;
 
@@ -62,7 +62,7 @@ define(['browser', 'appSettings', 'events'], function (browser, appSettings, eve
                 self.autoLayout();
             }
         };
-    };
+    }
 
-    return new layoutManager();
+    return new LayoutManager();
 });

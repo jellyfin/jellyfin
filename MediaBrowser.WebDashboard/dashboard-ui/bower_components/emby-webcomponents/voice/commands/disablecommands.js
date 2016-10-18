@@ -1,4 +1,5 @@
 ﻿define(['inputManager'], function (inputManager) {
+    'use strict';
 
     function disableDisplayMirror() {
         return function () {
@@ -11,10 +12,9 @@
         switch (result.item.deviceid) {
             case 'displaymirroring':
                 return disableDisplayMirror();
-                break;
             default:
                 return;
         }
-    }
+    };
 
 });

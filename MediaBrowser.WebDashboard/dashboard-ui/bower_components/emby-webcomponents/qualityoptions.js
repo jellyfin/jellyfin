@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function getVideoQualityOptions(maxStreamingBitrate, videoWidth) {
 
@@ -60,12 +61,12 @@
 
                 var option = options[i];
 
-                if (selectedIndex == -1 && option.bitrate <= maxStreamingBitrate) {
+                if (selectedIndex === -1 && option.bitrate <= maxStreamingBitrate) {
                     selectedIndex = i;
                 }
             }
 
-            if (selectedIndex == -1) {
+            if (selectedIndex === -1) {
 
                 selectedIndex = options.length - 1;
             }
@@ -74,7 +75,7 @@
         }
 
         return options;
-    };
+    }
 
     return {
         getVideoQualityOptions: getVideoQualityOptions

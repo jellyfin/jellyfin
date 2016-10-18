@@ -1,17 +1,20 @@
 define(function () {
+    'use strict';
+
     var requireCss = {};
 
     requireCss.normalize = function (name, normalize) {
-        if (name.substr(name.length - 4, 4) == '.css')
+        if (name.substr(name.length - 4, 4) === '.css') {
             name = name.substr(0, name.length - 4);
+        }
 
         return normalize(name);
-    }
+    };
 
     var importedCss = [];
 
     function isLoaded(url) {
-        return importedCss.indexOf(url) != -1;
+        return importedCss.indexOf(url) !== -1;
     }
 
     function removeFromLoadHistory(url) {
@@ -19,7 +22,7 @@ define(function () {
         url = url.toLowerCase();
 
         importedCss = importedCss.filter(function (c) {
-            return url.indexOf(c.toLowerCase()) == -1;
+            return url.indexOf(c.toLowerCase()) === -1;
         });
     }
 
@@ -29,13 +32,13 @@ define(function () {
         var srch = '/emby-webcomponents/require/requirecss';
         var index = cssId.indexOf(srch);
 
-        if (index != -1) {
+        if (index !== -1) {
             cssId = 'css' + cssId.substring(index + srch.length);
         }
 
         var url = cssId + '.css';
 
-        if (url.indexOf('://') == -1) {
+        if (url.indexOf('://') === -1) {
             url = config.baseUrl + url;
         }
 
@@ -58,7 +61,7 @@ define(function () {
         } else {
             load();
         }
-    }
+    };
 
     window.requireCss = {
         removeStylesheet: function (stylesheet) {

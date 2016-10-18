@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'require', 'layoutManager', 'globalize', 'userSettings', 'connectionManager', 'loading', 'focusManager', 'dom', 'apphost', 'emby-select', 'listViewStyle', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'css!./subtitleeditor', 'emby-button'], function (dialogHelper, require, layoutManager, globalize, userSettings, connectionManager, loading, focusManager, dom, appHost) {
+    'use strict';
 
     var currentItem;
     var hasChanges;
@@ -104,7 +105,7 @@
 
         var subs = streams.filter(function (s) {
 
-            return s.Type == 'Subtitle';
+            return s.Type === 'Subtitle';
         });
 
         var html = '';
@@ -223,7 +224,7 @@
 
         context.querySelector('.noSearchResults').classList.add('hide');
 
-        var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+        var moreIcon = appHost.moreIcon === 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
 
         for (var i = 0, length = results.length; i < length; i++) {
 
@@ -231,7 +232,7 @@
 
             var provider = result.ProviderName;
 
-            if (provider != lastProvider) {
+            if (provider !== lastProvider) {
 
                 if (i > 0) {
                     html += '</div>';
@@ -336,7 +337,7 @@
             loading.hide();
         }
 
-        if (typeof itemId == 'string') {
+        if (typeof itemId === 'string') {
             apiClient.getItem(apiClient.getCurrentUserId(), itemId).then(onGetItem);
         }
         else {

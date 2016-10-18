@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'loading', 'apphost', 'iapManager', 'events', 'shell', 'globalize', 'dialogHelper', 'connectionManager', 'layoutManager', 'emby-button'], function (appSettings, loading, appHost, iapManager, events, shell, globalize, dialogHelper, connectionManager, layoutManager) {
+    'use strict';
 
     var currentDisplayingProductInfos = [];
     var currentDisplayingResolve = null;
@@ -157,7 +158,7 @@
         }, function () {
 
             var unlockableFeatureCacheKey = 'featurepurchased-' + feature;
-            if (appSettings.get(unlockableFeatureCacheKey) == '1') {
+            if (appSettings.get(unlockableFeatureCacheKey) === '1') {
                 return Promise.resolve();
             }
 
@@ -173,7 +174,7 @@
                     return Promise.resolve();
                 }
 
-                if (appSettings.get(unlockableCacheKey) == '1') {
+                if (appSettings.get(unlockableCacheKey) === '1') {
                     return Promise.resolve();
                 }
             }
@@ -318,7 +319,7 @@
             html += '</div>';
         }
 
-        if (dialogOptions.feature == 'playback') {
+        if (dialogOptions.feature === 'playback') {
             html += '<p>';
             html += '<button is="emby-button" type="button" class="raised button-cancel block btnCloseDialog"><span>' + globalize.translate('sharedcomponents#ButtonPlayOneMinute') + '</span></button>';
             html += '</p>';
@@ -356,7 +357,7 @@
                 dialogHelper.close(dlg);
             };
 
-            if (dialogOptions.feature == 'playback') {
+            if (dialogOptions.feature === 'playback') {
                 alertText({
                     text: globalize.translate('sharedcomponents#ThankYouForTryingEnjoyOneMinute'),
                     title: globalize.translate('sharedcomponents#HeaderTryPlayback')
@@ -475,7 +476,7 @@
 
         var featureId = this.getAttribute('data-featureid');
 
-        if (this.getAttribute('data-email') == 'true') {
+        if (this.getAttribute('data-email') === 'true') {
             getUserEmail().then(function (email) {
                 iapManager.beginPurchase(featureId, email);
             });
@@ -595,7 +596,7 @@
 
             if (resolve && currentDisplayingProductInfos.filter(function (p) {
 
-                return product.id == p.id;
+                return product.id === p.id;
 
             }).length) {
 

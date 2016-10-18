@@ -1,10 +1,11 @@
 ﻿define(['inputManager'], function (inputManager) {
+    'use strict';
 
-     return function (result) {
+    return function (result) {
         switch (result.item.deviceid) {
             default:
                 return;
         }
-    }
+    };
 
 });

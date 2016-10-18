@@ -1,4 +1,5 @@
 ﻿define(['apphost', 'globalize', 'connectionManager', 'layoutManager', 'shell', 'focusManager', 'scrollHelper', 'appSettings', 'paper-icon-button-light', 'formDialogStyle'], function (appHost, globalize, connectionManager, layoutManager, shell, focusManager, scrollHelper, appSettings) {
+    'use strict';
 
     var currentDialogOptions;
 
@@ -57,7 +58,7 @@
             dialogHelper.close(dlg);
             require(['toast'], function (toast) {
 
-                var msg = target == apiClient.deviceId() ? globalize.translate('sharedcomponents#DownloadScheduled') : globalize.translate('sharedcomponents#SyncJobCreated');
+                var msg = target === apiClient.deviceId() ? globalize.translate('sharedcomponents#DownloadScheduled') : globalize.translate('sharedcomponents#SyncJobCreated');
 
                 toast(msg);
             });
@@ -109,7 +110,7 @@
 
             require(['toast'], function (toast) {
 
-                var msg = targetId == apiClient.deviceId() ? globalize.translate('sharedcomponents#DownloadScheduled') : globalize.translate('sharedcomponents#SyncJobCreated');
+                var msg = targetId === apiClient.deviceId() ? globalize.translate('sharedcomponents#DownloadScheduled') : globalize.translate('sharedcomponents#SyncJobCreated');
 
                 toast(msg);
             });
@@ -189,7 +190,7 @@
 
         var targetContainerClass = options.isLocalSync ? ' hide' : '';
 
-        if (options.showName || dialogOptions.Options.indexOf('Name') != -1) {
+        if (options.showName || dialogOptions.Options.indexOf('Name') !== -1) {
 
             html += '<div class="inputContainer' + targetContainerClass + '">';
             html += '<input is="emby-input" type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" label="' + globalize.translate('sharedcomponents#LabelSyncJobName') + '"/>';
@@ -206,7 +207,7 @@
 
             html += targets.map(function (t) {
 
-                var isSelected = t.Id == appInfo.deviceId;
+                var isSelected = t.Id === appInfo.deviceId;
                 var selectedHtml = isSelected ? ' selected="selected"' : '';
                 return '<option' + selectedHtml + ' value="' + t.Id + '">' + t.Name + '</option>';
 
@@ -235,7 +236,7 @@
         html += '<input is="emby-input" type="number" step=".1" min=".1" id="txtBitrate" label="' + globalize.translate('sharedcomponents#LabelBitrateMbps') + '"/>';
         html += '</div>';
 
-        if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
+        if (dialogOptions.Options.indexOf('UnwatchedOnly') !== -1) {
             html += '<div class="checkboxContainer checkboxContainer-withDescription">';
             html += '<label>';
             html += '<input is="emby-checkbox" type="checkbox" id="chkUnwatchedOnly"/>';
@@ -245,7 +246,7 @@
             html += '</div>';
         }
 
-        if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
+        if (dialogOptions.Options.indexOf('SyncNewContent') !== -1) {
             html += '<div class="checkboxContainer checkboxContainer-withDescription">';
             html += '<label>';
             html += '<input is="emby-checkbox" type="checkbox" id="chkSyncNewContent"/>';
@@ -255,7 +256,7 @@
             html += '</div>';
         }
 
-        if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
+        if (dialogOptions.Options.indexOf('ItemLimit') !== -1) {
             html += '<div class="inputContainer">';
             html += '<input is="emby-input" type="number" step="1" min="1" id="txtItemLimit" label="' + globalize.translate('sharedcomponents#LabelItemLimit') + '"/>';
             html += '<div class="fieldDescription">' + globalize.translate('sharedcomponents#LabelItemLimitHelp') + '</div>';
@@ -330,16 +331,16 @@
 
         var firstItem = (options.items || [])[0] || {};
 
-        if (firstItem.Type == 'Audio') {
+        if (firstItem.Type === 'Audio') {
             return true;
         }
-        if (firstItem.Type == 'MusicAlbum') {
+        if (firstItem.Type === 'MusicAlbum') {
             return true;
         }
-        if (firstItem.Type == 'MusicArtist') {
+        if (firstItem.Type === 'MusicArtist') {
             return true;
         }
-        if (firstItem.Type == 'MusicGenre') {
+        if (firstItem.Type === 'MusicGenre') {
             return true;
         }
 
@@ -492,17 +493,17 @@
 
         var options = currentDialogOptions || {};
         var option = (options.ProfileOptions || []).filter(function (o) {
-            return o.Id == profileId;
+            return o.Id === profileId;
         })[0];
 
         var qualityOptions = options.QualityOptions || [];
 
         if (option) {
             form.querySelector('.profileDescription').innerHTML = option.Description || '';
-            setQualityFieldVisible(form, qualityOptions.length > 0 && option.EnableQualityOptions && options.Options.indexOf('Quality') != -1);
+            setQualityFieldVisible(form, qualityOptions.length > 0 && option.EnableQualityOptions && options.Options.indexOf('Quality') !== -1);
         } else {
             form.querySelector('.profileDescription').innerHTML = '';
-            setQualityFieldVisible(form, qualityOptions.length > 0 && options.Options.indexOf('Quality') != -1);
+            setQualityFieldVisible(form, qualityOptions.length > 0 && options.Options.indexOf('Quality') !== -1);
         }
     }
 
@@ -510,7 +511,7 @@
 
         var options = currentDialogOptions || {};
         var option = (options.QualityOptions || []).filter(function (o) {
-            return o.Id == qualityId;
+            return o.Id === qualityId;
         })[0];
 
         var qualityDescription = form.querySelector('.qualityDescription');
@@ -524,7 +525,7 @@
         var fldBitrate = form.querySelector('.fldBitrate');
         var txtBitrate = form.querySelector('#txtBitrate');
 
-        if (qualityId == 'custom') {
+        if (qualityId === 'custom') {
 
             if (fldBitrate) {
                 fldBitrate.classList.remove('hide');
@@ -549,7 +550,7 @@
         var fldProfile = form.querySelector('.fldProfile');
         var selectProfile = form.querySelector('#selectProfile');
 
-        if (options.ProfileOptions.length && options.Options.indexOf('Profile') != -1) {
+        if (options.ProfileOptions.length && options.Options.indexOf('Profile') !== -1) {
             if (fldProfile) {
                 fldProfile.classList.remove('hide');
             }

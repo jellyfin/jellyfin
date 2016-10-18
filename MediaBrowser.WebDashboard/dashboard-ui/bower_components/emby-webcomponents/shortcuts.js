@@ -1,4 +1,5 @@
 define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'globalize', 'loading', 'dom', 'recordingHelper'], function (playbackManager, inputManager, connectionManager, embyRouter, globalize, loading, dom, recordingHelper) {
+    'use strict';
 
     function playAllFromHere(card, serverId, queue) {
 
@@ -10,7 +11,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var foundCard = false;
         for (var i = 0, length = cards.length; i < length; i++) {
-            if (cards[i] == card) {
+            if (cards[i] === card) {
                 foundCard = true;
             }
             if (foundCard) {
@@ -58,7 +59,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
                 }).indexOf(startItemId);
 
-                if (index == -1) {
+                if (index === -1) {
                     index = 0;
                 }
 
@@ -82,7 +83,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function showItem(item, options) {
 
-        if (item.Type == 'Photo') {
+        if (item.Type === 'Photo') {
 
             showSlideshow(item.Id, item.ServerId);
             return;
@@ -108,10 +109,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var apiClient = connectionManager.getApiClient(serverId);
 
-        if (type == 'Timer') {
+        if (type === 'Timer') {
             return apiClient.getLiveTvTimer(id);
         }
-        if (type == 'SeriesTimer') {
+        if (type === 'SeriesTimer') {
             return apiClient.getLiveTvSeriesTimer(id);
         }
         return apiClient.getItem(apiClient.getCurrentUserId(), id);
@@ -142,12 +143,14 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
                 }, options || {})).then(function (result) {
 
-                    if (result.command == 'playallfromhere' || result.command == 'queueallfromhere') {
+                    var itemsContainer;
+
+                    if (result.command === 'playallfromhere' || result.command === 'queueallfromhere') {
                         executeAction(card, options.positionTo, result.command);
                     }
-                    else if (result.command == 'removefromplaylist' || result.command == 'removefromcollection') {
+                    else if (result.command === 'removefromplaylist' || result.command === 'removefromcollection') {
 
-                        var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
+                        itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
 
                         if (itemsContainer) {
                             itemsContainer.dispatchEvent(new CustomEvent('needsrefresh', {
@@ -157,9 +160,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
                             }));
                         }
                     }
-                    else if (result.command == 'canceltimer') {
+                    else if (result.command === 'canceltimer') {
 
-                        var itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
+                        itemsContainer = options.itemsContainer || dom.parentWithAttribute(card, 'is', 'emby-itemscontainer');
 
                         if (itemsContainer) {
                             itemsContainer.dispatchEvent(new CustomEvent('timercancelled', {
@@ -185,7 +188,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             SeriesId: card.getAttribute('data-seriesid'),
             ServerId: card.getAttribute('data-serverid'),
             MediaType: card.getAttribute('data-mediatype'),
-            IsFolder: card.getAttribute('data-isfolder') == 'true',
+            IsFolder: card.getAttribute('data-isfolder') === 'true',
             UserData: {
                 PlaybackPositionTicks: parseInt(card.getAttribute('data-positionticks') || '0')
             }
@@ -222,23 +225,23 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var serverId = item.ServerId;
         var type = item.Type;
 
-        if (action == 'link') {
+        if (action === 'link') {
 
             showItem(item, {
                 context: card.getAttribute('data-context')
             });
         }
 
-        else if (action == 'programdialog') {
+        else if (action === 'programdialog') {
 
             showProgramDialog(item);
         }
 
-        else if (action == 'instantmix') {
+        else if (action === 'instantmix') {
             playbackManager.instantMix(id, serverId);
         }
 
-        else if (action == 'play') {
+        else if (action === 'play') {
 
             var startPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
 
@@ -249,25 +252,25 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             });
         }
 
-        else if (action == 'playallfromhere') {
+        else if (action === 'playallfromhere') {
             playAllFromHere(card, serverId);
         }
 
-        else if (action == 'queueallfromhere') {
+        else if (action === 'queueallfromhere') {
             playAllFromHere(card, serverId, true);
         }
 
-        else if (action == 'setplaylistindex') {
+        else if (action === 'setplaylistindex') {
             playbackManager.currentPlaylistIndex(parseInt(card.getAttribute('data-index')));
         }
 
-        else if (action == 'record') {
+        else if (action === 'record') {
             onRecordCommand(serverId, id, type, card.getAttribute('data-timerid'), card.getAttribute('data-seriestimerid'));
         }
 
-        else if (action == 'menu') {
+        else if (action === 'menu') {
 
-            var options = target.getAttribute('data-playoptions') == 'false' ?
+            var options = target.getAttribute('data-playoptions') === 'false' ?
             {
                 shuffle: false,
                 instantMix: false,
@@ -283,17 +286,17 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             showContextMenu(card, options);
         }
 
-        else if (action == 'playmenu') {
+        else if (action === 'playmenu') {
             showPlayMenu(card, target);
         }
 
-        else if (action == 'edit') {
+        else if (action === 'edit') {
             getItem(target).then(function (item) {
                 editItem(item, serverId);
             });
         }
 
-        else if (action == 'playtrailer') {
+        else if (action === 'playtrailer') {
             getItem(target).then(playTrailer);
         }
     }
@@ -315,7 +318,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
             var serverId = apiClient.serverInfo().Id;
 
-            if (item.Type == 'Timer') {
+            if (item.Type === 'Timer') {
                 if (item.ProgramId) {
                     require(['recordingCreator'], function (recordingCreator) {
 
@@ -338,9 +341,9 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
     function onRecordCommand(serverId, id, type, timerId, seriesTimerId) {
 
-        if (type == 'Program' || timerId || seriesTimerId) {
+        if (type === 'Program' || timerId || seriesTimerId) {
 
-            var programId = type == 'Program' ? id : null;
+            var programId = type === 'Program' ? id : null;
             recordingHelper.toggle(serverId, programId, timerId, seriesTimerId);
         }
     }
@@ -373,7 +376,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
 
         var cmd = e.detail.command;
 
-        if (cmd == 'play' || cmd == 'record' || cmd == 'menu' || cmd == 'info') {
+        if (cmd === 'play' || cmd === 'record' || cmd === 'menu' || cmd === 'info') {
             var card = dom.parentWithClass(e.target, 'itemAction');
 
             if (card) {

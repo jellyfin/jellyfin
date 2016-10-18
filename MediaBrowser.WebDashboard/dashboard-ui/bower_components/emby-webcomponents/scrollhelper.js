@@ -1,4 +1,5 @@
 define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
+    'use strict';
 
     function getBoundingClientRect(elem) {
 

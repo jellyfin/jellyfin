@@ -1,4 +1,5 @@
 define(['dialogHelper', 'layoutManager', 'scrollHelper', 'globalize', 'dom', 'require', 'material-icons', 'emby-button', 'paper-icon-button-light', 'emby-input', 'formDialogStyle'], function (dialogHelper, layoutManager, scrollHelper, globalize, dom, require) {
+    'use strict';
 
     function setInputProperties(dlg, options) {
         var txtInput = dlg.querySelector('#txtInput');

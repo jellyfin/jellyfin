@@ -1,4 +1,5 @@
 ﻿define(['connectionManager', 'sharingMenu', 'loading'], function (connectionManager, sharingMenu, loading) {
+    'use strict';
 
     function onSharingCancel(options, apiClient) {
 

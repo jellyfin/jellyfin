@@ -1,4 +1,5 @@
 ﻿define(['inputManager', 'connectionManager', 'embyRouter'], function (inputManager, connectionManager, embyRouter) {
+    'use strict';
 
     function getMusicCommand(result) {
         return function () {
@@ -46,17 +47,17 @@
         return function () {
             var act = result.item.menuid;
             if (act) {
-                if (act.indexOf('livetv') != -1) {
+                if (act.indexOf('livetv') !== -1) {
                     inputManager.trigger('livetv');
-                } else if (act.indexOf('guide') != -1) {
+                } else if (act.indexOf('guide') !== -1) {
                     inputManager.trigger('guide');
-                } else if (act.indexOf('channels') != -1) {
+                } else if (act.indexOf('channels') !== -1) {
                     inputManager.trigger('livetv');
-                } else if (act.indexOf('recordings') != -1) {
+                } else if (act.indexOf('recordings') !== -1) {
                     inputManager.trigger('recordedtv');
-                } else if (act.indexOf('scheduled') != -1) {
+                } else if (act.indexOf('scheduled') !== -1) {
                     inputManager.trigger('recordedtv');
-                } else if (act.indexOf('series') != -1) {
+                } else if (act.indexOf('series') !== -1) {
                     inputManager.trigger('recordedtv');
                 } else {
                     inputManager.trigger('livetv');
@@ -83,18 +84,18 @@
         return function () {
             var act = result.item.menuid;
             if (act) {
-                if (act.indexOf('home') != -1) {
+                if (act.indexOf('home') !== -1) {
                     inputManager.trigger('home');
                 }
-                else if (act.indexOf('nextup') != -1) {
+                else if (act.indexOf('nextup') !== -1) {
                     inputManager.trigger('nextup');
                 }
-                else if (act.indexOf('favorites') != -1) {
+                else if (act.indexOf('favorites') !== -1) {
                     inputManager.trigger('favorites');
-                } else if (act.indexOf('upcoming') != -1) {
+                } else if (act.indexOf('upcoming') !== -1) {
                     inputManager.trigger('upcomingtv');
                 }
-                else if (act.indexOf('nowplaying') != -1) {
+                else if (act.indexOf('nowplaying') !== -1) {
                     inputManager.trigger('nowplaying');
                 }
                 else {
@@ -129,5 +130,5 @@
                 return;
         }
 
-    }
+    };
 });

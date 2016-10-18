@@ -1,17 +1,18 @@
 define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', 'css!./mediainfo.css', 'programStyles'], function (datetime, globalize, embyRouter, itemHelper) {
+    'use strict';
 
     function getTimerIndicator(item) {
 
         var status;
 
-        if (item.Type == 'SeriesTimer') {
+        if (item.Type === 'SeriesTimer') {
             return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
         }
         else if (item.TimerId || item.SeriesTimerId) {
 
             status = item.Status || 'Cancelled';
         }
-        else if (item.Type == 'Timer') {
+        else if (item.Type === 'Timer') {
 
             status = item.Status;
         }
@@ -21,7 +22,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
         if (item.SeriesTimerId) {
 
-            if (status != 'Cancelled') {
+            if (status !== 'Cancelled') {
                 return '<i class="md-icon mediaInfoItem mediaInfoIconItem mediaInfoTimerIcon">&#xE062;</i>';
             }
 
@@ -93,12 +94,13 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         var miscInfo = [];
         options = options || {};
         var text, date, minutes;
+        var count;
 
-        var showFolderRuntime = item.Type == "MusicAlbum" || item.MediaType == 'MusicArtist' || item.MediaType == 'Playlist' || item.MediaType == 'MusicGenre';
+        var showFolderRuntime = item.Type === "MusicAlbum" || item.MediaType === 'MusicArtist' || item.MediaType === 'Playlist' || item.MediaType === 'MusicGenre';
 
         if (showFolderRuntime) {
 
-            var count = item.SongCount || item.ChildCount;
+            count = item.SongCount || item.ChildCount;
 
             if (count) {
 
@@ -110,9 +112,9 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        else if (item.Type == "PhotoAlbum" || item.Type == "BoxSet") {
+        else if (item.Type === "PhotoAlbum" || item.Type === "BoxSet") {
 
-            var count = item.ChildCount;
+            count = item.ChildCount;
 
             if (count) {
 
@@ -120,7 +122,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.Type == "Episode" || item.MediaType == 'Photo') {
+        if (item.Type === "Episode" || item.MediaType === 'Photo') {
 
             if (item.PremiereDate) {
 
@@ -136,7 +138,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.StartDate && item.Type != 'Program') {
+        if (item.StartDate && item.Type !== 'Program') {
 
             try {
                 date = datetime.parseISO8601Date(item.StartDate);
@@ -144,7 +146,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
                 text = datetime.toLocaleDateString(date);
                 miscInfo.push(text);
 
-                if (item.Type != "Recording") {
+                if (item.Type !== "Recording") {
                     text = datetime.getDisplayTime(date);
                     miscInfo.push(text);
                 }
@@ -154,9 +156,9 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (options.year !== false && item.ProductionYear && item.Type == "Series") {
+        if (options.year !== false && item.ProductionYear && item.Type === "Series") {
 
-            if (item.Status == "Continuing") {
+            if (item.Status === "Continuing") {
                 miscInfo.push(globalize.translate('sharedcomponents#SeriesYearToPresent', item.ProductionYear));
 
             }
@@ -170,7 +172,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
                         var endYear = datetime.parseISO8601Date(item.EndDate).getFullYear();
 
-                        if (endYear != item.ProductionYear) {
+                        if (endYear !== item.ProductionYear) {
                             text += "-" + datetime.parseISO8601Date(item.EndDate).getFullYear();
                         }
 
@@ -184,7 +186,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.Type == 'Program') {
+        if (item.Type === 'Program') {
 
             if (item.IsLive) {
                 miscInfo.push({
@@ -228,7 +230,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         }
 
         if (options.year !== false) {
-            if (item.Type != "Series" && item.Type != "Episode" && item.Type != "Person" && item.MediaType != 'Photo' && item.Type != 'Program') {
+            if (item.Type !== "Series" && item.Type !== "Episode" && item.Type !== "Person" && item.MediaType !== 'Photo' && item.Type !== 'Program') {
 
                 if (item.ProductionYear) {
 
@@ -247,9 +249,9 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.RunTimeTicks && item.Type != "Series" && item.Type != 'Program' && !showFolderRuntime && options.runtime !== false) {
+        if (item.RunTimeTicks && item.Type !== "Series" && item.Type !== 'Program' && !showFolderRuntime && options.runtime !== false) {
 
-            if (item.Type == "Audio") {
+            if (item.Type === "Audio") {
 
                 miscInfo.push(datetime.getDisplayRunningTime(item.RunTimeTicks));
 
@@ -273,11 +275,11 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             miscInfo.push("3D");
         }
 
-        if (item.MediaType == 'Photo' && item.Width && item.Height) {
+        if (item.MediaType === 'Photo' && item.Width && item.Height) {
             miscInfo.push(item.Width + "x" + item.Height);
         }
 
-        if (options.container !== false && item.Type == 'Audio' && item.Container) {
+        if (options.container !== false && item.Type === 'Audio' && item.Container) {
             miscInfo.push(item.Container);
         }
 
@@ -313,7 +315,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
 
     function getEndsAt(item) {
 
-        if (item.MediaType == 'Video' && item.RunTimeTicks) {
+        if (item.MediaType === 'Video' && item.RunTimeTicks) {
 
             if (!item.StartDate) {
                 var endDate = new Date().getTime() + (item.RunTimeTicks / 10000);
@@ -444,7 +446,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         if (options.interactive == null) {
             options.interactive = false;
         }
-        if (item.Type == 'Program') {
+        if (item.Type === 'Program') {
             return getProgramInfoHtml(item, options);
         }
 

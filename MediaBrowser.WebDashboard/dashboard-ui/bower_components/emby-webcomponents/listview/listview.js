@@ -1,8 +1,9 @@
 define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutManager', 'globalize', 'datetime', 'userdataButtons', 'apphost', 'css!./listview'], function (itemHelper, mediaInfo, indicators, connectionManager, layoutManager, globalize, datetime, userdataButtons, appHost) {
+    'use strict';
 
     function getIndex(item, options) {
 
-        if (options.index == 'disc') {
+        if (options.index === 'disc') {
 
             return item.ParentIndexNumber == null ? '' : globalize.translate('sharedcomponents#ValueDiscNumber', item.ParentIndexNumber);
         }
@@ -10,9 +11,11 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         var sortBy = (options.sortBy || '').toLowerCase();
         var code, name;
 
-        if (sortBy.indexOf('sortname') == 0) {
+        if (sortBy.indexOf('sortname') === 0) {
 
-            if (item.Type == 'Episode') return '';
+            if (item.Type === 'Episode') {
+                return '';
+            }
 
             // SortName
             name = (item.SortName || item.Name || '?')[0].toUpperCase();
@@ -24,11 +27,11 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             return name.toUpperCase();
         }
-        if (sortBy.indexOf('officialrating') == 0) {
+        if (sortBy.indexOf('officialrating') === 0) {
 
             return item.OfficialRating || globalize.translate('sharedcomponents#Unrated');
         }
-        if (sortBy.indexOf('communityrating') == 0) {
+        if (sortBy.indexOf('communityrating') === 0) {
 
             if (item.CommunityRating == null) {
                 return globalize.translate('sharedcomponents#Unrated');
@@ -36,7 +39,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             return Math.floor(item.CommunityRating);
         }
-        if (sortBy.indexOf('criticrating') == 0) {
+        if (sortBy.indexOf('criticrating') === 0) {
 
             if (item.CriticRating == null) {
                 return globalize.translate('sharedcomponents#Unrated');
@@ -44,7 +47,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             return Math.floor(item.CriticRating);
         }
-        if (sortBy.indexOf('metascore') == 0) {
+        if (sortBy.indexOf('metascore') === 0) {
 
             if (item.Metascore == null) {
                 return globalize.translate('sharedcomponents#Unrated');
@@ -52,10 +55,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             return Math.floor(item.Metascore);
         }
-        if (sortBy.indexOf('albumartist') == 0) {
+        if (sortBy.indexOf('albumartist') === 0) {
 
             // SortName
-            if (!item.AlbumArtist) return '';
+            if (!item.AlbumArtist) {
+                return '';
+            }
 
             name = item.AlbumArtist[0].toUpperCase();
 
@@ -78,9 +83,9 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             type: "Primary"
         };
 
-        if (item.ImageTags && item.ImageTags['Primary']) {
+        if (item.ImageTags && item.ImageTags.Primary) {
 
-            options.tag = item.ImageTags['Primary'];
+            options.tag = item.ImageTags.Primary;
             return apiClient.getScaledImageUrl(item.Id, options);
         }
 
@@ -144,7 +149,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
         var groupTitle = '';
         var action = options.action || 'link';
 
-        var isLargeStyle = options.imageSize == 'large';
+        var isLargeStyle = options.imageSize === 'large';
         var enableOverview = options.enableOverview;
 
         var clickEntireItem = layoutManager.tv ? true : false;
@@ -163,13 +168,13 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
                 var itemGroupTitle = getIndex(item, options);
 
-                if (itemGroupTitle != groupTitle) {
+                if (itemGroupTitle !== groupTitle) {
 
                     if (html) {
                         html += '</div>';
                     }
 
-                    if (i == 0) {
+                    if (i === 0) {
                         html += '<h1 class="listGroupHeader listGroupHeader-first">';
                     }
                     else {
@@ -187,7 +192,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var cssClass = "listItem";
 
             if (options.highlight !== false) {
-                if (i % 2 == 1) {
+                if (i % 2 === 1) {
                     cssClass += ' listItem-odd';
                 }
             }
@@ -270,7 +275,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             var parentTitle = null;
 
             if (options.showParentTitle) {
-                if (item.Type == 'Episode') {
+                if (item.Type === 'Episode') {
                     parentTitle = item.SeriesName;
                 }
 
@@ -306,23 +311,23 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
             }
 
             if (options.artist !== false) {
-                if (item.ArtistItems && item.Type != 'MusicAlbum') {
+                if (item.ArtistItems && item.Type !== 'MusicAlbum') {
                     textlines.push(item.ArtistItems.map(function (a) {
                         return a.Name;
 
                     }).join(', '));
                 }
 
-                if (item.AlbumArtist && item.Type == 'MusicAlbum') {
+                if (item.AlbumArtist && item.Type === 'MusicAlbum') {
                     textlines.push(item.AlbumArtist);
                 }
             }
 
-            if (item.Type == 'Game') {
+            if (item.Type === 'Game') {
                 textlines.push(item.GameSystem);
             }
 
-            if (item.Type == 'TvChannel') {
+            if (item.Type === 'TvChannel') {
 
                 if (item.CurrentProgram) {
                     textlines.push(itemHelper.getDisplayName(item.CurrentProgram));
@@ -340,7 +345,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
             html += '<div class="' + cssClass + '">';
 
-            var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+            var moreIcon = appHost.moreIcon === 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
 
             html += getTextLinesHtml(textlines, isLargeStyle);
 
@@ -376,7 +381,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 }
             }
 
-            if (!options.recordButton && (item.Type == 'Timer' || item.Type == 'Program')) {
+            if (!options.recordButton && (item.Type === 'Timer' || item.Type === 'Program')) {
                 html += indicators.getTimerIndicator(item).replace('indicatorIcon', 'indicatorIcon listItemAside');
             }
 

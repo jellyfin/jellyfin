@@ -1,4 +1,5 @@
 define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-button', 'css!./voice.css', 'material-icons', 'css!./../formdialog'], function (dialogHelper, voicereceiver, voiceprocessor, globalize) {
+    'use strict';
 
     var lang = 'en-US';
 
@@ -33,7 +34,7 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
 
             var commands = [];
             commandGroups.map(function (group) {
-                if ((group.items && group.items.length > 0) && (groupid == group.groupid || groupid == '')) {
+                if ((group.items && group.items.length > 0) && (groupid !== group.groupid || groupid === '')) {
 
                     group.items.map(function (item) {
 
@@ -63,12 +64,15 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
 
                     idx = commandgroups.map(function (e) { return e.groupid; }).indexOf(groupid);
 
-                    if (idx > -1)
+                    if (idx > -1) {
                         return commandgroups[idx];
-                    else
+                    }
+                    else {
                         return null;
-                } else
+                    }
+                } else {
                     return null;
+                }
             });
     }
 
@@ -98,6 +102,10 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
 
         var isNewDialog = false;
         var dlg;
+
+        function onCancelClick() {
+            dialogHelper.close(dlg);
+        }
 
         if (!currentDialog) {
 
@@ -166,10 +174,6 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
                 currentDialog = null;
             });
 
-            function onCancelClick() {
-                dialogHelper.close(dlg);
-            }
-
             var closeButtons = dlg.querySelectorAll('.btnCancelVoiceInput');
             for (var i = 0, length = closeButtons.length; i < length; i++) {
                 closeButtons[i].addEventListener('click', onCancelClick);
@@ -214,8 +218,9 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
     /// <returns> . </returns>
     function showUnrecognizedCommandHelp(command) {
         //speak("I don't understend this command");
-        if (command)
+        if (command) {
             currentDialog.querySelector('.voiceInputText').innerText = command;
+        }
         currentDialog.querySelector('.unrecognizedCommand').classList.remove('hide');
         currentDialog.querySelector('.defaultVoiceHelp').classList.add('hide');
     }
@@ -225,10 +230,12 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
     /// <returns> . </returns>
     function showCommands(result) {
         //speak('Hello, what can I do for you?');
-        if (result)
+        if (result) {
             showVoiceHelp(result.groupid, result.name);
-        else
+        }
+        else {
             showVoiceHelp();
+        }
     }
 
     function resetDialog() {
@@ -257,7 +264,7 @@ define(['dialogHelper', 'voiceReceiver', 'voiceProcessor', 'globalize', 'emby-bu
             }, 1);
 
         }, function (result) {
-            if (result.error == 'group') {
+            if (result.error === 'group') {
                 showVoiceHelp(result.item.groupid, result.groupName);
                 return;
             }

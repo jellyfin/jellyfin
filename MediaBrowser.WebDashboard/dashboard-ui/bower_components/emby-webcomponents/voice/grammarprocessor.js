@@ -1,6 +1,7 @@
 // <date>09.10.2015</date>
 // <summary>grammarprocessor class</summary>
 define([], function () {
+    'use strict';
 
     /// <summary> The named register exponent. </summary>
     var NamedRegExp = function (pattern, string) {
@@ -24,14 +25,15 @@ define([], function () {
             for (var i = 0, len = regexp.length; i < len; i++) {
                 if (finalMatch[(i + 1)] !== false) {
                     var mth = finalMatch[(i + 1)];
-                    if (mth)
+                    if (mth) {
                         mth = mth.trim().toLowerCase();
+                    }
                     regexp[i].value = mth;
                 }
             }
-        }
-        else
+        } else {
             regexp = null;
+        }
         return regexp;
     };
 
@@ -91,8 +93,9 @@ define([], function () {
         var isvalid = false;
 
         commandgroups.map(function (group) {
-            if (isvalid)
+            if (isvalid) {
                 return;
+            }
 
             if (group.defaultValues && group.defaultValues.length > 0) {
                 group.defaultValues.map(function (item) {
@@ -105,14 +108,19 @@ define([], function () {
                 group.items.map(function (item) {
 
                     var regex = NamedRegExp(item.command, text);
-                    if (!regex && item.altcommand)
-                        regex = NamedRegExp(item.altcommand, text)
+                    if (!regex && item.altcommand) {
+                        regex = NamedRegExp(item.altcommand, text);
+                    }
 
                     if (regex && regex.length > 0) {
 
                         //Group data
-                        if (group.groupid) result.groupid = group.groupid;
-                        if (group.name) result.name = group.name;
+                        if (group.groupid) {
+                            result.groupid = group.groupid;
+                        }
+                        if (group.name) {
+                            result.name = group.name;
+                        }
                         if (group.defaultValues) {
                             result.defaultValues.sourceid = group.defaultValues.sourceid || result.defaultValues.sourceid;
                             result.defaultValues.deviceid = group.defaultValues.deviceid || result.defaultValues.deviceid;
@@ -128,7 +136,9 @@ define([], function () {
 
 
 
-                        if (group.name) result.name = group.name;
+                        if (group.name) {
+                            result.name = group.name;
+                        }
 
                         //Item data
                         var usegroupDefault = checkItemProperty(item.usedefaultvalues, result.item.usedefaultvalues);
@@ -181,15 +191,17 @@ define([], function () {
                                     break;
                             }
 
-                            if (result.text)
+                            if (result.text) {
                                 result.text = result.text.replace(regresult.value, '').trim();
+                            }
                         });
 
                         isvalid = true;
                     }
 
-                    if (isvalid)
+                    if (isvalid) {
                         return;
+                    }
                 });
             }
         });
@@ -205,10 +217,12 @@ define([], function () {
         var idx = -1;
         idx = actions.map(function (e) { return e.name; }).indexOf(name);
 
-        if (idx > -1)
+        if (idx > -1) {
             return actions[idx];
-        else
+        }
+        else {
             return null;
+        }
     }
 
     /// <summary> Check item property. </summary>
@@ -218,23 +232,27 @@ define([], function () {
     /// <param name="groupDefaultValue"> The group default value. </param>
     /// <returns> . </returns>
     function checkItemProperty(property, itemDefaultValue, useGroupDefaultValue, groupDefaultValue) {
-        if (property)
+        if (property) {
             return property;
+        }
 
-        if (useGroupDefaultValue && groupDefaultValue)
+        if (useGroupDefaultValue && groupDefaultValue) {
             return groupDefaultValue;
+        }
 
         return itemDefaultValue;
     }
 
     return function (commandgroups, text) {
 
+        var result;
+
         if (commandgroups) {
-            var result = processcommands(text, commandgroups);
+            result = processcommands(text, commandgroups);
             console.log(text);
             console.log(commandgroups);
         }
 
         return result;
-    }
+    };
 });

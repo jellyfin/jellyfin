@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'datetime', 'imageLoader', 'recordingFields', 'events', 'emby-checkbox', 'emby-button', 'emby-collapse', 'emby-input', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, datetime, imageLoader, recordingFields, events) {
+    'use strict';
 
     var currentDialog;
     var closeAction;
@@ -110,7 +111,7 @@
 
     function executeCloseAction(action, programId, serverId) {
 
-        if (action == 'play') {
+        if (action === 'play') {
 
             require(['playbackManager'], function (playbackManager) {
 
