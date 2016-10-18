@@ -151,7 +151,7 @@
 
         console.log('validateFeature: ' + feature);
 
-        return iapManager.isUnlockedByDefault(feature).then(function () {
+        return iapManager.isUnlockedByDefault(feature, options).then(function () {
 
             return showPeriodicMessageIfNeeded(feature);
 
