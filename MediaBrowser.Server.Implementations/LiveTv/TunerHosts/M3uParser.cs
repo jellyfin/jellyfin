@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Logging;
 
@@ -18,12 +19,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClient _httpClient;
+        private readonly IServerApplicationHost _appHost;
 
-        public M3uParser(ILogger logger, IFileSystem fileSystem, IHttpClient httpClient)
+        public M3uParser(ILogger logger, IFileSystem fileSystem, IHttpClient httpClient, IServerApplicationHost appHost)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _httpClient = httpClient;
+            _appHost = appHost;
         }
 
         public async Task<List<M3UChannel>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
@@ -41,7 +44,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         {
             if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return _httpClient.Get(url, cancellationToken);
+                return _httpClient.Get(new HttpRequestOptions
+                {
+                    Url = url,
+                    CancellationToken = cancellationToken,
+                    // Some data providers will require a user agent
+                    UserAgent = _appHost.FriendlyName + "/" + _appHost.ApplicationVersion
+                });
             }
             return Task.FromResult(_fileSystem.OpenRead(url));
         }
