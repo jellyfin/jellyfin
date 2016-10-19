@@ -356,6 +356,11 @@ namespace MediaBrowser.Providers.Manager
             var season = item as Season;
             var extension = MimeTypes.ToExtension(mimeType);
 
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                throw new ArgumentException(string.Format("Unable to determine image file extension from mime type {0}", mimeType));
+            }
+
             if (type == ImageType.Thumb && saveLocally)
             {
                 if (season != null && season.IndexNumber.HasValue)
