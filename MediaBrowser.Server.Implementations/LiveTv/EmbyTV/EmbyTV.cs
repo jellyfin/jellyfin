@@ -1021,7 +1021,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var stream = new MediaSourceInfo
                 {
-                    Path = _appHost.GetLocalApiUrl("localhost") + "/LiveTv/LiveRecordings/" + recordingId + "/stream",
+                    Path = _appHost.GetLocalApiUrl("127.0.0.1") + "/LiveTv/LiveRecordings/" + recordingId + "/stream",
                     Id = recordingId,
                     SupportsDirectPlay = false,
                     SupportsDirectStream = true,

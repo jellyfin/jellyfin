@@ -242,7 +242,7 @@ namespace MediaBrowser.Dlna.Main
 
                 var addressString = address.ToString();
 
-                var udn = (addressString).GetMD5().ToString("N");
+                var udn = CreateUuid(addressString);
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
@@ -287,6 +287,11 @@ namespace MediaBrowser.Dlna.Main
                     device.AddDevice(embeddedDevice);
                 }
             }
+        }
+
+        private string CreateUuid(string text)
+        {
+            return text.GetMD5().ToString("N");
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)
