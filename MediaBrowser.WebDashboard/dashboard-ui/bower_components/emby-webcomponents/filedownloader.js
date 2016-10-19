@@ -1,4 +1,5 @@
 ﻿define(['multi-download'], function (multiDownload) {
+    'use strict';
 
     return {
         download: function (items) {

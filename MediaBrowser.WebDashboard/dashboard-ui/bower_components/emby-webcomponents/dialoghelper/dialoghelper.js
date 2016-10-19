@@ -3,6 +3,24 @@
 
     var globalOnOpenCallback;
 
+    function enableAnimation() {
+
+        if (browser.animate) {
+            return true;
+        }
+
+        if (browser.edge) {
+            return true;
+        }
+
+        // An indication of an older browser
+        if (browser.noFlex) {
+            return false;
+        }
+
+        return true;
+    }
+
     function removeCenterFocus(dlg) {
 
         if (layoutManager.tv) {
@@ -136,10 +154,9 @@
         backdropParent.parentNode.insertBefore(backdrop, backdropParent);
         dlg.backdrop = backdrop;
 
-        // Doing this immediately causes the opacity to jump immediately without animating
-        setTimeout(function () {
-            backdrop.classList.add('dialogBackdropOpened');
-        }, 0);
+        // trigger reflow or the backdrop will not animate
+        void backdrop.offsetWidth;
+        backdrop.classList.add('dialogBackdropOpened');
 
         dom.addEventListener((dlg.dialogContainer || backdrop), 'click', function (e) {
             if (e.target === dlg.dialogContainer) {
@@ -226,27 +243,59 @@
             }
         };
 
-        setTimeout(onAnimationFinish, dlg.animationConfig.entry.timing.duration);
+        if (enableAnimation()) {
+
+            var onFinish = function () {
+                dom.removeEventListener(dlg, 'animationend', onFinish, {
+                    once: true
+                });
+                onAnimationFinish();
+            };
+            dom.addEventListener(dlg, 'animationend', onFinish, {
+                once: true
+            });
+            return;
+        }
+
+        onAnimationFinish();
     }
 
     function animateDialogClose(dlg, onAnimationFinish) {
 
-        switch (dlg.animationConfig.exit.name) {
+        if (enableAnimation()) {
 
-            case 'fadeout':
-                dlg.style.animation = 'fadeout ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
-                break;
-            case 'scaledown':
-                dlg.style.animation = 'scaledown ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
-                break;
-            case 'slidedown':
-                dlg.style.animation = 'slidedown ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
-                break;
-            default:
-                break;
+            var animated = true;
+            switch (dlg.animationConfig.exit.name) {
+
+                case 'fadeout':
+                    dlg.style.animation = 'fadeout ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
+                    break;
+                case 'scaledown':
+                    dlg.style.animation = 'scaledown ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
+                    break;
+                case 'slidedown':
+                    dlg.style.animation = 'slidedown ' + dlg.animationConfig.exit.timing.duration + 'ms ease-out normal both';
+                    break;
+                default:
+                    animated = false;
+                    break;
+            }
+            var onFinish = function () {
+                dom.removeEventListener(dlg, 'animationend', onFinish, {
+                    once: true
+                });
+                onAnimationFinish();
+            };
+            dom.addEventListener(dlg, 'animationend', onFinish, {
+                once: true
+            });
+
+            if (animated) {
+                return;
+            }
         }
 
-        setTimeout(onAnimationFinish, dlg.animationConfig.exit.timing.duration);
+        onAnimationFinish();
     }
 
     function shouldLockDocumentScroll(options) {
@@ -270,15 +319,26 @@
 
         var backdrop = dlg.backdrop;
 
-        if (backdrop) {
-            dlg.backdrop = null;
+        if (!backdrop) {
+            return;
+        }
+
+        dlg.backdrop = null;
+
+        var onAnimationFinish = function () {
+            backdrop.parentNode.removeChild(backdrop);
+        };
+
+        if (enableAnimation()) {
 
             backdrop.classList.remove('dialogBackdropOpened');
 
-            setTimeout(function () {
-                backdrop.parentNode.removeChild(backdrop);
-            }, 300);
+            // this is not firing animatonend
+            setTimeout(onAnimationFinish, 300);
+            return;
         }
+
+        onAnimationFinish();
     }
 
     function centerFocus(elem, horiz, on) {
@@ -375,19 +435,21 @@
             dlg.classList.add('dialog-' + options.size);
         }
 
-        switch (dlg.animationConfig.entry.name) {
+        if (enableAnimation()) {
+            switch (dlg.animationConfig.entry.name) {
 
-            case 'fadein':
-                dlg.style.animation = 'fadein ' + entryAnimationDuration + 'ms ease-out normal';
-                break;
-            case 'scaleup':
-                dlg.style.animation = 'scaleup ' + entryAnimationDuration + 'ms ease-out normal both';
-                break;
-            case 'slideup':
-                dlg.style.animation = 'slideup ' + entryAnimationDuration + 'ms ease-out normal';
-                break;
-            default:
-                break;
+                case 'fadein':
+                    dlg.style.animation = 'fadein ' + entryAnimationDuration + 'ms ease-out normal';
+                    break;
+                case 'scaleup':
+                    dlg.style.animation = 'scaleup ' + entryAnimationDuration + 'ms ease-out normal both';
+                    break;
+                case 'slideup':
+                    dlg.style.animation = 'slideup ' + entryAnimationDuration + 'ms ease-out normal';
+                    break;
+                default:
+                    break;
+            }
         }
 
         return dlg;

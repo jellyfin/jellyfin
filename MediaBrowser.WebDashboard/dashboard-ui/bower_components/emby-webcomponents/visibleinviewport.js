@@ -1,4 +1,5 @@
 ﻿define(['dom'], function (dom) {
+    'use strict';
 
     /**
    * Copyright 2012, Digital Fusion

@@ -1,4 +1,5 @@
 define(['playbackManager', 'focusManager', 'embyRouter', 'dom'], function (playbackManager, focusManager, embyRouter, dom) {
+    'use strict';
 
     var lastInputTime = new Date().getTime();
 

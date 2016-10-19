@@ -1,4 +1,5 @@
 define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'focusManager', 'apphost', 'loading', 'css!./style', 'material-icons', 'paper-icon-button-light'], function (dialogHelper, inputmanager, connectionManager, layoutManager, focusManager, appHost, loading) {
+    'use strict';
 
     function getImageUrl(item, options, apiClient) {
 
@@ -15,7 +16,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             return apiClient.getScaledImageUrl(item.Id, options);
         }
 
-        if (options.type == 'Primary') {
+        if (options.type === 'Primary') {
             if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
                 options.tag = item.AlbumPrimaryImageTag;
@@ -57,7 +58,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             return getBackdropImageUrl(item, imageOptions, apiClient);
         } else {
 
-            if (item.MediaType == 'Photo' && original) {
+            if (item.MediaType === 'Photo' && original) {
                 return apiClient.getUrl("Items/" + item.Id + "/Download", {
                     api_key: apiClient.accessToken()
                 });
@@ -351,7 +352,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
 
         function playPause() {
 
-            var paused = dlg.querySelector('.btnSlideshowPause i').innerHTML != "pause";
+            var paused = dlg.querySelector('.btnSlideshowPause i').innerHTML !== "pause";
             if (paused) {
                 play();
             } else {
@@ -387,6 +388,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         }
 
         var _osdOpen = false;
+
         function isOsdOpen() {
             return _osdOpen;
         }
@@ -413,10 +415,12 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         }
 
         var hideTimeout;
+
         function startHideTimer() {
             stopHideTimer();
             hideTimeout = setTimeout(hideOsd, 4000);
         }
+
         function stopHideTimer() {
             if (hideTimeout) {
                 clearTimeout(hideTimeout);
@@ -436,8 +440,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             requestAnimationFrame(function () {
 
                 var keyframes = [
-                  { transform: 'translate3d(0,' + elem.offsetHeight + 'px,0)', opacity: '.3', offset: 0 },
-                  { transform: 'translate3d(0,0,0)', opacity: '1', offset: 1 }];
+                    { transform: 'translate3d(0,' + elem.offsetHeight + 'px,0)', opacity: '.3', offset: 0 },
+                    { transform: 'translate3d(0,0,0)', opacity: '1', offset: 1 }
+                ];
                 var timing = { duration: 300, iterations: 1, easing: 'ease-out' };
                 elem.animate(keyframes, timing).onfinish = function () {
                     focusManager.focus(elem.querySelector('.btnSlideshowPause'));
@@ -454,8 +459,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
             requestAnimationFrame(function () {
 
                 var keyframes = [
-                  { transform: 'translate3d(0,0,0)', opacity: '1', offset: 0 },
-                  { transform: 'translate3d(0,' + elem.offsetHeight + 'px,0)', opacity: '.3', offset: 1 }];
+                    { transform: 'translate3d(0,0,0)', opacity: '1', offset: 0 },
+                    { transform: 'translate3d(0,' + elem.offsetHeight + 'px,0)', opacity: '.3', offset: 1 }
+                ];
                 var timing = { duration: 300, iterations: 1, easing: 'ease-out' };
                 elem.animate(keyframes, timing).onfinish = function () {
                     elem.classList.add('hide');
@@ -465,6 +471,7 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
         }
 
         var lastMouseMoveData;
+
         function onMouseMove(e) {
 
             var eventX = e.screenX || 0;
@@ -572,8 +579,9 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 if (newCardImageContainer.animate) {
 
                     var keyframes = [
-                            { opacity: '0', offset: 0 },
-                            { opacity: '1', offset: 1 }];
+                        { opacity: '0', offset: 0 },
+                        { opacity: '1', offset: 1 }
+                    ];
                     var timing = { duration: 1200, iterations: 1 };
                     newCardImageContainer.animate(keyframes, timing).onfinish = onAnimationFinished;
                 } else {
@@ -615,5 +623,5 @@ define(['dialogHelper', 'inputManager', 'connectionManager', 'layoutManager', 'f
                 dialogHelper.close(dialog);
             }
         };
-    }
+    };
 });

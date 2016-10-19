@@ -507,7 +507,11 @@
 
                     if (program.IsHD && options.showHdIcon) {
                         //html += '<i class="guideHdIcon md-icon programIcon">hd</i>';
-                        html += '<div class="programIcon programTextIcon">HD</div>';
+                        if (layoutManager.tv) {
+                            html += '<div class="programIcon programTextIcon programTextIcon-tv">HD</div>';
+                        } else {
+                            html += '<div class="programIcon programTextIcon">HD</div>';
+                        }
                     }
 
                     html += getTimerIndicator(program);

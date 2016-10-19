@@ -1,4 +1,5 @@
 ﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'registrationServices', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, registrationServices) {
+    'use strict';
 
     function getRegistration(apiClient, programId, feature) {
 
@@ -114,7 +115,7 @@
             parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#RecordSeries');
         }
 
-        if (program.TimerId && program.Status != 'Cancelled') {
+        if (program.TimerId && program.Status !== 'Cancelled') {
             parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
             parent.querySelector('.singleRecordingButton .recordingIcon').classList.add('recordingIcon-active');
             parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#DoNotRecord');
@@ -142,7 +143,7 @@
         });
     }
 
-    function recordingEditor(options) {
+    function RecordingEditor(options) {
         this.options = options;
         this.embed();
     }
@@ -155,7 +156,7 @@
 
         var options = this.options;
 
-        if (!this.TimerId || this.Status == 'Cancelled') {
+        if (!this.TimerId || this.Status === 'Cancelled') {
             return;
         }
 
@@ -206,7 +207,7 @@
         var button = dom.parentWithTag(e.target, 'BUTTON');
         var isChecked = !button.querySelector('i').classList.contains('recordingIcon-active');
 
-        var hasEnabledTimer = this.TimerId && this.Status != 'Cancelled';
+        var hasEnabledTimer = this.TimerId && this.Status !== 'Cancelled';
 
         if (isChecked) {
             if (!hasEnabledTimer) {
@@ -272,7 +273,7 @@
         }
     }
 
-    recordingEditor.prototype.embed = function () {
+    RecordingEditor.prototype.embed = function () {
 
         var self = this;
 
@@ -299,19 +300,19 @@
         });
     };
 
-    recordingEditor.prototype.hasChanged = function () {
+    RecordingEditor.prototype.hasChanged = function () {
 
         return this.changed;
     };
 
-    recordingEditor.prototype.refresh = function () {
+    RecordingEditor.prototype.refresh = function () {
 
         fetchData(this);
     };
 
-    recordingEditor.prototype.destroy = function () {
+    RecordingEditor.prototype.destroy = function () {
 
     };
 
-    return recordingEditor;
+    return RecordingEditor;
 });

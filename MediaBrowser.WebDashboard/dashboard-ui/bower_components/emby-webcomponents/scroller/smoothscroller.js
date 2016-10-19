@@ -1,4 +1,5 @@
 define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], function (browser, layoutManager, dom, focusManager) {
+    'use strict';
 
     /**
 * Return type of the value.
@@ -65,7 +66,7 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
     var scrollerFactory = function (frame, options) {
 
         // Extend options
-        var o = extend({}, {
+        var o = Object.assign({}, {
             slidee: null, // Selector, DOM element, or jQuery object with DOM element representing SLIDEE.
             horizontal: false, // Switch to horizontal mode.
 
@@ -483,7 +484,6 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
             if (type(item) === 'boolean') {
                 immediate = item;
                 item = undefined;
-                v
             }
 
             if (item === undefined) {
@@ -538,14 +538,6 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
         self.toCenter = function (item, immediate) {
             to('center', item, immediate);
         };
-
-        function extend() {
-            for (var i = 1; i < arguments.length; i++)
-                for (var key in arguments[i])
-                    if (arguments[i].hasOwnProperty(key))
-                        arguments[0][key] = arguments[i][key];
-            return arguments[0];
-        }
 
         /**
 		 * Initialize continuous movement.
@@ -642,7 +634,9 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
             dragging.path = sqrt(pow(dragging.pathX, 2) + pow(dragging.pathY, 2));
             dragging.delta = o.horizontal ? dragging.pathX : dragging.pathY;
 
-            if (!dragging.released && dragging.path < 1) return;
+            if (!dragging.released && dragging.path < 1) {
+                return;
+            }
 
             // We haven't decided whether this is a drag or not...
             if (!dragging.init) {
@@ -721,7 +715,7 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
 
             while (element) {
 
-                if (interactiveElements.indexOf(element.tagName) != -1) {
+                if (interactiveElements.indexOf(element.tagName) !== -1) {
                     return true;
                 }
 
@@ -832,9 +826,9 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
         }
 
         function onFrameClick(e) {
-            if (e.which == 1) {
+            if (e.which === 1) {
                 var focusableParent = focusManager.focusableParent(e.target);
-                if (focusableParent && focusableParent != document.activeElement) {
+                if (focusableParent && focusableParent !== document.activeElement) {
                     focusableParent.focus();
                 }
             }
@@ -851,7 +845,9 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
             }
 
             // Disallow multiple instances on the same element
-            if (frame.sly) throw new Error('There is already a Sly instance on this element');
+            if (frame.sly) {
+                throw new Error('There is already a Sly instance on this element');
+            }
 
             frame.sly = true;
 

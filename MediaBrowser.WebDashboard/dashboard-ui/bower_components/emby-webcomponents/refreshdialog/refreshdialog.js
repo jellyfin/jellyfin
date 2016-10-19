@@ -1,4 +1,5 @@
 ﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'embyRouter', 'globalize', 'emby-input', 'emby-checkbox', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, embyRouter, globalize) {
+    'use strict';
 
     function parentWithClass(elem, className) {
 
@@ -71,7 +72,7 @@
             var apiClient = connectionManager.getApiClient(options.serverId);
 
             var replaceAllImages = dlg.querySelector('.chkReplaceImages').checked;
-            var replaceAllMetadata = dlg.querySelector('#selectMetadataRefreshMode').value == 'all';
+            var replaceAllMetadata = dlg.querySelector('#selectMetadataRefreshMode').value === 'all';
 
             options.itemIds.forEach(function (itemId) {
                 apiClient.refreshItem(itemId, {

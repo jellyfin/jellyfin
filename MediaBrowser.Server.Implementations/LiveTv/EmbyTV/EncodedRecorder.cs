@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 var format = _liveTvOptions.RecordingEncodingFormat;
 
-                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase) || _liveTvOptions.EnableOriginalVideoWithEncodedRecordings)
                 {
                     return "mkv";
                 }
@@ -204,6 +204,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
         {
+            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
+            {
+                return false;
+            }
+
             var mediaStreams = mediaSource.MediaStreams ?? new List<MediaStream>();
             return !mediaStreams.Any(i => i.Type == MediaStreamType.Video && string.Equals(i.Codec, "h264", StringComparison.OrdinalIgnoreCase) && !i.IsInterlaced);
         }

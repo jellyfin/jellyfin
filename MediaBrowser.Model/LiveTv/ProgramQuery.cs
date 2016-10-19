@@ -42,6 +42,7 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The user identifier.</value>
         public string UserId { get; set; }
         public string SeriesTimerId { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// The earliest date for which a program starts to return

@@ -71,7 +71,7 @@ button {
 
 .cardBox {
     padding: 0 !important;
-    margin: 0;
+    margin: 2px;
     transition: none;
     border: 3px solid transparent;
     /* Needed in case cardBox is a button */
@@ -89,10 +89,6 @@ button {
 
 .card-focusscale:focus > .cardBox-focustransform {
     transform: scale(1.16, 1.16);
-}
-
-.cardBox-mobile {
-    margin: 2px;
 }
 
 .card:focus {
@@ -202,6 +198,11 @@ button {
 }
 
 .coveredImage-img {
+    width: 100%;
+    height: 100%;
+}
+
+.coveredImage-noscale-img {
     max-height: none;
     max-width: none;
 }

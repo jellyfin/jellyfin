@@ -1,4 +1,5 @@
 ﻿define(['shell', 'dialogHelper', 'loading', 'layoutManager', 'connectionManager', 'userSettings', 'embyRouter', 'globalize', 'emby-input', 'paper-icon-button-light', 'emby-select', 'material-icons', 'css!./../formdialog', 'emby-button'], function (shell, dialogHelper, loading, layoutManager, connectionManager, userSettings, embyRouter, globalize) {
+    'use strict';
 
     var currentServerId;
 

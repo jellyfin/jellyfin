@@ -1,4 +1,5 @@
 define(['css!./loading-legacy'], function () {
+    'use strict';
 
     var loadingElem;
 

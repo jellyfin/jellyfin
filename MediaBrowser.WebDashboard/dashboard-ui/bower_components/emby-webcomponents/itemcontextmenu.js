@@ -1,4 +1,5 @@
 define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading', 'appSettings'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading, appSettings) {
+    'use strict';
 
     var isMobileApp = window.Dashboard != null;
 
@@ -29,21 +30,21 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if ((item.Type == 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
+            if ((item.Type === 'Timer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#CancelRecording'),
                     id: 'canceltimer'
                 });
             }
 
-            if ((item.Type == 'Recording' && item.Status == 'InProgress') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
+            if ((item.Type === 'Recording' && item.Status === 'InProgress') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#CancelRecording'),
                     id: 'canceltimer'
                 });
             }
 
-            if ((item.Type == 'SeriesTimer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
+            if ((item.Type === 'SeriesTimer') && user.Policy.EnableLiveTvManagement && options.cancelTimer !== false) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#CancelSeries'),
                     id: 'cancelseriestimer'
@@ -52,7 +53,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (item.CanDelete) {
 
-                if (item.Type == 'Playlist' || item.Type == 'BoxSet') {
+                if (item.Type === 'Playlist' || item.Type === 'BoxSet') {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Delete'),
                         id: 'delete'
@@ -67,9 +68,9 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEdit(user, item)) {
 
-                if (options.edit !== false && item.Type != 'SeriesTimer') {
+                if (options.edit !== false && item.Type !== 'SeriesTimer') {
 
-                    var text = (item.Type == 'Timer' || item.Type == 'SeriesTimer') ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
+                    var text = (item.Type === 'Timer' || item.Type === 'SeriesTimer') ? globalize.translate('sharedcomponents#Edit') : globalize.translate('sharedcomponents#EditInfo');
 
                     commands.push({
                         name: text,
@@ -90,7 +91,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (itemHelper.canEdit(user, item)) {
 
-                if (item.MediaType == 'Video' && item.Type != 'TvChannel' && item.Type != 'Program' && item.LocationType != 'Virtual' && !(item.Type == 'Recording' && item.Status != 'Completed')) {
+                if (item.MediaType === 'Video' && item.Type !== 'TvChannel' && item.Type !== 'Program' && item.LocationType !== 'Virtual' && !(item.Type === 'Recording' && item.Status !== 'Completed')) {
                     if (options.editSubtitles !== false) {
                         commands.push({
                             name: globalize.translate('sharedcomponents#EditSubtitles'),
@@ -116,7 +117,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.CollectionType == "music") {
+            if (item.MediaType === "Audio" || item.Type === "MusicAlbum" || item.Type === "MusicArtist" || item.Type === "MusicGenre" || item.CollectionType === "music") {
                 if (options.instantMix !== false) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#InstantMix'),
@@ -149,7 +150,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                     }
                 }
 
-                if (options.playAllFromHere && item.Type != 'Program' && item.Type != 'TvChannel') {
+                if (options.playAllFromHere && item.Type !== 'Program' && item.Type !== 'TvChannel') {
                     commands.push({
                         name: globalize.translate('sharedcomponents#PlayAllFromHere'),
                         id: 'playallfromhere'
@@ -173,7 +174,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (item.Type == 'Program') {
+            if (item.Type === 'Program') {
 
                 commands.push({
                     name: Globalize.translate('sharedcomponents#Record'),
@@ -183,7 +184,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (user.Policy.IsAdministrator) {
 
-                if (item.Type != 'Timer' && item.Type != 'SeriesTimer' && item.Type != 'Program' && !(item.Type == 'Recording' && item.Status != 'Completed')) {
+                if (item.Type !== 'Timer' && item.Type !== 'SeriesTimer' && item.Type !== 'Program' && !(item.Type === 'Recording' && item.Status !== 'Completed')) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Refresh'),
                         id: 'refresh'
@@ -214,7 +215,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (item.IsFolder || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+            if (item.IsFolder || item.Type === "MusicArtist" || item.Type === "MusicGenre") {
                 if (options.shuffle !== false) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Shuffle'),
@@ -534,7 +535,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
             startPosition = item.UserData.PlaybackPositionTicks;
         }
 
-        if (item.Type == 'Program') {
+        if (item.Type === 'Program') {
             playbackManager[method]({
                 ids: [item.ChannelId],
                 startPositionTicks: startPosition
@@ -553,12 +554,12 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             var serverId = apiClient.serverInfo().Id;
 
-            if (item.Type == 'Timer') {
+            if (item.Type === 'Timer') {
                 require(['recordingEditor'], function (recordingEditor) {
 
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);
                 });
-            } else if (item.Type == 'SeriesTimer') {
+            } else if (item.Type === 'SeriesTimer') {
                 require(['seriesRecordingEditor'], function (recordingEditor) {
 
                     recordingEditor.show(item.Id, serverId).then(resolve, reject);

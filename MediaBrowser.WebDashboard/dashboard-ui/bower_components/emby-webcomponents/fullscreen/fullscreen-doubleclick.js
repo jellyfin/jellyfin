@@ -1,4 +1,5 @@
 define(['dom', 'fullscreenManager'], function (dom, fullscreenManager) {
+    'use strict';
 
     dom.addEventListener(window, 'dblclick', function () {
 

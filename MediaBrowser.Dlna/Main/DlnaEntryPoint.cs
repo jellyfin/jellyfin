@@ -19,6 +19,7 @@ using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using Rssdp;
+using Rssdp.Infrastructure;
 
 namespace MediaBrowser.Dlna.Main
 {
@@ -154,8 +155,14 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
+        private void LogMessage(string msg)
+        {
+            //_logger.Debug(msg);
+        }
+
         private void StartPublishing()
         {
+            SsdpDevicePublisherBase.LogFunction = LogMessage;
             _Publisher = new SsdpDevicePublisher();
         }
 
@@ -237,44 +244,62 @@ namespace MediaBrowser.Dlna.Main
 
                 var udn = (addressString).GetMD5().ToString("N");
 
-                var services = new List<string>
+                var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
+
+                _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
+
+                var descriptorUri = "/dlna/" + udn + "/description.xml";
+                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+
+                var device = new SsdpRootDevice
                 {
-                    "urn:schemas-upnp-org:device:MediaServer:1",
+                    CacheLifetime = TimeSpan.FromSeconds(cacheLength), //How long SSDP clients can cache this info.
+                    Location = uri, // Must point to the URL that serves your devices UPnP description document. 
+                    FriendlyName = "Emby Server",
+                    Manufacturer = "Emby",
+                    ModelName = "Emby Server",
+                    Uuid = udn
+                    // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
+                };
+
+                SetProperies(device, fullService);
+                _Publisher.AddDevice(device);
+
+                var embeddedDevices = new List<string>
+                {
                     "urn:schemas-upnp-org:service:ContentDirectory:1",
                     "urn:schemas-upnp-org:service:ConnectionManager:1",
                     "urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1"
                 };
 
-                foreach (var fullService in services)
+                foreach (var subDevice in embeddedDevices)
                 {
-                    _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
-
-                    var descriptorURI = "/dlna/" + udn + "/description.xml";
-                    var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorURI);
-
-                    var service = fullService.Replace("urn:", string.Empty).Replace(":1", string.Empty);
-
-                    var serviceParts = service.Split(':');
-
-                    var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
-
-                    var device = new SsdpRootDevice
+                    var embeddedDevice = new SsdpEmbeddedDevice
                     {
-                        CacheLifetime = TimeSpan.FromSeconds(cacheLength), //How long SSDP clients can cache this info.
-                        Location = uri, // Must point to the URL that serves your devices UPnP description document. 
-                        DeviceTypeNamespace = deviceTypeNamespace,
-                        DeviceClass = serviceParts[1],
-                        DeviceType = serviceParts[2],
-                        FriendlyName = "Emby Server",
-                        Manufacturer = "Emby",
-                        ModelName = "Emby Server",
+                        FriendlyName = device.FriendlyName,
+                        Manufacturer = device.Manufacturer,
+                        ModelName = device.ModelName,
                         Uuid = udn
                         // This must be a globally unique value that survives reboots etc. Get from storage or embedded hardware etc.                
                     };
 
-                    _Publisher.AddDevice(device);
+                    SetProperies(embeddedDevice, subDevice);
+                    device.AddDevice(embeddedDevice);
                 }
             }
+        }
+
+        private void SetProperies(SsdpDevice device, string fullDeviceType)
+        {
+            var service = fullDeviceType.Replace("urn:", string.Empty).Replace(":1", string.Empty);
+
+            var serviceParts = service.Split(':');
+
+            var deviceTypeNamespace = serviceParts[0].Replace('.', '-');
+
+            device.DeviceTypeNamespace = deviceTypeNamespace;
+            device.DeviceClass = serviceParts[1];
+            device.DeviceType = serviceParts[2];
         }
 
         private readonly object _syncLock = new object();

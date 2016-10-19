@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'loading', 'cardBuilder', 'connectionManager', 'require', 'globalize', 'scrollHelper', 'layoutManager', 'focusManager', 'emby-input', 'emby-checkbox', 'paper-icon-button-light', 'css!./../formdialog', 'material-icons', 'cardStyle'], function (dialogHelper, loading, cardBuilder, connectionManager, require, globalize, scrollHelper, layoutManager, focusManager) {
+    'use strict';
 
     var currentItem;
     var currentItemType;
@@ -20,13 +21,14 @@
 
         var i, length;
         var identifyField = page.querySelectorAll('.identifyField');
+        var value;
         for (i = 0, length = identifyField.length; i < length; i++) {
 
-            var value = identifyField[i].value;
+            value = identifyField[i].value;
 
             if (value) {
 
-                if (identifyField[i].type == 'number') {
+                if (identifyField[i].type === 'number') {
                     value = parseInt(value);
                 }
 
@@ -39,7 +41,7 @@
         var txtLookupId = page.querySelectorAll('.txtLookupId');
         for (i = 0, length = txtLookupId.length; i < length; i++) {
 
-            var value = txtLookupId[i].value;
+            value = txtLookupId[i].value;
 
             if (value) {
                 hasId = true;
@@ -177,11 +179,11 @@
         var cardBoxCssClass = 'cardBox visualCardBox';
         var padderClass;
 
-        if (currentItemType == "Episode") {
+        if (currentItemType === "Episode") {
             cssClass += " backdropCard backdropCard-scalable";
             padderClass = 'cardPadder-backdrop';
         }
-        else if (currentItemType == "MusicAlbum" || currentItemType == "MusicArtist") {
+        else if (currentItemType === "MusicAlbum" || currentItemType === "MusicArtist") {
             cssClass += " squareCard squareCard-scalable";
             padderClass = 'cardPadder-square';
         }
@@ -297,7 +299,7 @@
 
             page.querySelector('#txtLookupName').value = '';
 
-            if (item.Type == "Person" || item.Type == "BoxSet") {
+            if (item.Type === "Person" || item.Type === "BoxSet") {
 
                 page.querySelector('.fldLookupYear').classList.add('hide');
                 page.querySelector('#txtLookupYear').value = '';
@@ -455,7 +457,7 @@
 
         dlg.querySelector('#txtLookupName').value = itemName;
 
-        if (itemType == "Person" || itemType == "BoxSet") {
+        if (itemType === "Person" || itemType === "BoxSet") {
 
             dlg.querySelector('.fldLookupYear').classList.add('hide');
             dlg.querySelector('#txtLookupYear').value = '';

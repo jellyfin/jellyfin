@@ -1,4 +1,5 @@
 define([], function () {
+    'use strict';
 
     function replaceAll(str, find, replace) {
 
