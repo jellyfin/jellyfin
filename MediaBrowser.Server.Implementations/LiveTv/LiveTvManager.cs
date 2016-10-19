@@ -877,6 +877,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 SortOrder = query.SortOrder ?? SortOrder.Ascending,
                 EnableTotalRecordCount = query.EnableTotalRecordCount,
                 TopParentIds = new[] { topFolder.Id.ToString("N") },
+                Name = query.Name,
                 DtoOptions = options
             };
 
@@ -2304,7 +2305,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
 
-            info.RecordAnyChannel = true;
             info.RecordAnyTime = true;
             info.Days = new List<DayOfWeek>
             {

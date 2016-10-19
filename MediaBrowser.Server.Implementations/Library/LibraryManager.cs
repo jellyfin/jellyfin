@@ -2840,7 +2840,11 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                return Directory.Exists(path);
+                // We can't validate protocol-based paths, so just allow them
+                if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return Directory.Exists(path);
+                }
             }
 
             // Without native support for unc, we cannot validate this when running under mono
