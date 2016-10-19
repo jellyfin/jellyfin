@@ -2589,13 +2589,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/wizardservice.html',
-            dependencies: ['dashboardcss'],
-            autoFocus: false,
-            anonymous: true
-        });
-
-        defineRoute({
             path: '/wizardsettings.html',
             dependencies: ['dashboardcss'],
             autoFocus: false,

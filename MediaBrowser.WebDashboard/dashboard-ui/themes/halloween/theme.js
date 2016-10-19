@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'css!./style.css', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize) {
 
     var lastSound = 0;
     var iconCreated;
@@ -12,18 +12,16 @@
 
         if (!destroyed) {
 
-            if (appStorage.getItem(cancelKey) == cancelValue) {
+            if (appSettings.get(cancelKey) == cancelValue) {
 
                 destroyed = true;
                 return;
             }
 
-            require(['css!themes/halloween/style.css']);
-
-            if (!browserInfo.mobile) {
+            if (!browser.mobile) {
 
                 if (!page.classList.contains('itemDetailPage')) {
-                    Backdrops.setBackdropUrl(page, 'themes/halloween/bg.jpg');
+                    backdrop.setBackdrop('themes/halloween/bg.jpg');
                 }
 
                 if (lastSound == 0) {
@@ -45,37 +43,45 @@
 
         iconCreated = true;
 
-        var elem = document.createElement('paper-icon-button');
-        elem.icon = 'info';
-        elem.classList.add('halloweenInfoButton');
-        $(elem).on('click', onIconClick);
-
         var viewMenuSecondary = document.querySelector('.viewMenuSecondary');
 
         if (viewMenuSecondary) {
-            viewMenuSecondary.insertBefore(elem, viewMenuSecondary.childNodes[0]);
+
+            var html = '<button is="paper-icon-button-light" class="halloweenInfoButton"><i class="md-icon">info</i></button>';
+
+            viewMenuSecondary.insertAdjacentHTML('afterbegin', html);
+
+            viewMenuSecondary.querySelector('.halloweenInfoButton').addEventListener('click', onIconClick);
         }
     }
 
     function onIconClick() {
 
-        // todo: switch this to action sheet
+        require(['dialog'], function (dialog) {
+            dialog({
 
-        //require(['dialog'], function (dialog) {
-        //    dialog({
+                title: "Happy Halloween",
+                text: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
 
-        //        title: "Happy Halloween",
-        //        message: "Happy Halloween from the Emby Team. We hope your Halloween is spooktacular! Would you like to allow the Halloween theme to continue?",
-        //        callback: function (result) {
+                buttons: [
+                    {
+                        id: 'yes',
+                        name: globalize.translate('ButtonYes'),
+                        type: 'submit'
+                    },
+                    {
+                        id: 'no',
+                        name: globalize.translate('ButtonNo'),
+                        type: 'cancel'
+                    }
+                ]
 
-        //            if (result == 1) {
-        //                destroyTheme();
-        //            }
-        //        },
-
-        //        buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo')]
-        //    });
-        //});
+            }).then(function (result) {
+                if (result == 'no') {
+                    destroyTheme();
+                }
+            });
+        });
     }
 
     function destroyTheme() {
@@ -92,15 +98,15 @@
         }
 
         Dashboard.removeStylesheet('themes/halloween/style.css');
-        Backdrops.clear();
-        appStorage.setItem(cancelKey, cancelValue);
+        backdrop.clear();
+        appSettings.set(cancelKey, cancelValue);
     }
 
     pageClassOn('pageshow', "libraryPage", onPageShow);
 
-    if ($($.mobile.activePage)[0].classList.contains('libraryPage')) {
-        onPageShow.call($($.mobile.activePage)[0]);
-    }
+    //if ($($.mobile.activePage)[0].classList.contains('libraryPage')) {
+    //    onPageShow.call($($.mobile.activePage)[0]);
+    //}
 
     function playSound(path, volume) {
 
@@ -117,4 +123,4 @@
         });
     }
 
-})();
+});

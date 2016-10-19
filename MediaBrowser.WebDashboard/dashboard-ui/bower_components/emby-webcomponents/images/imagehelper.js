@@ -176,7 +176,8 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         url = url.split('?')[0];
 
-        var cacheKey = 'vibrant21';
+        var cacheKey = 'vibrant25';
+        //cacheKey = 'vibrant' + new Date().getTime();
         return cacheKey + url;
     }
 

@@ -2,32 +2,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
     function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, layoutManager, appHost, dom) {
         'use strict';
 
-        // Regular Expressions for parsing tags and attributes
-        var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
-          // Match everything outside of normal chars and " (quote character)
-          NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
-
-        /**
-         * Escapes all potentially dangerous characters, so that the
-         * resulting string can be safely inserted into attribute or
-         * element text.
-         * @param value
-         * @returns {string} escaped text
-         */
-        function htmlEncode(value) {
-            return value.
-              replace(/&/g, '&amp;').
-              replace(SURROGATE_PAIR_REGEXP, function (value) {
-                  var hi = value.charCodeAt(0);
-                  var low = value.charCodeAt(1);
-                  return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
-              }).
-              replace(NON_ALPHANUMERIC_REGEXP, function (value) {
-                  return '&#' + value.charCodeAt(0) + ';';
-              }).
-              replace(/</g, '&lt;').
-              replace(/>/g, '&gt;');
-        }
+        var devicePixelRatio = window.devicePixelRatio || 1;
 
         function getCardsHtml(items, options) {
 
@@ -1202,9 +1177,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             var separateCardBox = scalable;
             var cardBoxClass = options.cardLayout ? 'cardBox visualCardBox' : 'cardBox';
 
-            if (!layoutManager.tv) {
-                cardBoxClass += ' cardBox-mobile';
-            } else {
+            if (layoutManager.tv) {
                 cardBoxClass += ' cardBox-focustransform';
             }
 
@@ -1300,7 +1273,11 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     var imgClass = 'cardImage cardImage-img lazy';
                     if (coveredImage) {
-                        imgClass += ' coveredImage-img';
+                        if (devicePixelRatio === 1) {
+                            imgClass += ' coveredImage-noscale-img';
+                        } else {
+                            imgClass += ' coveredImage-img';
+                        }
                     }
                     cardImageContainerOpen += '<img crossOrigin="Anonymous" class="' + imgClass + '" data-vibrant="' + cardFooterId + '" data-swatch="db" data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
 

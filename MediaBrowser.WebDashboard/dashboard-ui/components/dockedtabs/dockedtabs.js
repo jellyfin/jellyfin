@@ -98,6 +98,11 @@
 
         var commands = [];
 
+        commands.push({
+            name: globalize.translate('ButtonRemoteControl'),
+            id: 'remotecontrol'
+        });
+
         // manage server, metadata manager, reports, sync to other devices
         if (currentUser.Policy.IsAdministrator) {
             commands.push({
@@ -117,11 +122,6 @@
                 id: 'reports'
             });
         }
-
-        commands.push({
-            name: globalize.translate('ButtonRemoteControl'),
-            id: 'remotecontrol'
-        });
 
         if (Dashboard.isConnectMode()) {
             commands.push({
