@@ -11,6 +11,7 @@ namespace MediaBrowser.Model.MediaInfo
         public long? StartTimeTicks { get; set; }
         public int? AudioStreamIndex { get; set; }
         public int? SubtitleStreamIndex { get; set; }
+        public int? MaxAudioChannels { get; set; }
         public string ItemId { get; set; }
         public DeviceProfile DeviceProfile { get; set; }
 
@@ -24,6 +25,7 @@ namespace MediaBrowser.Model.MediaInfo
             MaxStreamingBitrate = options.MaxBitrate;
             ItemId = options.ItemId;
             DeviceProfile = options.Profile;
+            MaxAudioChannels = options.MaxAudioChannels;
 
             VideoOptions videoOptions = options as VideoOptions;
             if (videoOptions != null)
