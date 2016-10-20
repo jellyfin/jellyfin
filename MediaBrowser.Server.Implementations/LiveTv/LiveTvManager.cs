@@ -1947,7 +1947,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
                 else
                 {
-                    timers = timers.Where(i => !(i.Item1.Status == RecordingStatus.New));
+                    timers = timers.Where(i => i.Item1.Status != RecordingStatus.New);
                 }
             }
 
