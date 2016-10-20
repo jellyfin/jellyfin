@@ -16,6 +16,8 @@ namespace MediaBrowser.Model.MediaInfo
 
         public int? SubtitleStreamIndex { get; set; }
 
+        public int? MaxAudioChannels { get; set; }
+
         public string MediaSourceId { get; set; }
 
         public string LiveStreamId { get; set; }
