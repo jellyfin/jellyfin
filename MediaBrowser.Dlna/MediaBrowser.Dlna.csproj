@@ -108,7 +108,6 @@
     <Compile Include="Profiles\SonyBravia2014Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\VlcProfile.cs" />
-    <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
     <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
     <Compile Include="PlayTo\PlaybackStoppedEventArgs.cs" />
@@ -130,7 +129,6 @@
     <Compile Include="Service\BaseService.cs" />
     <Compile Include="Service\ControlErrorHandler.cs" />
     <Compile Include="Service\ServiceXmlBuilder.cs" />
-    <Compile Include="Ssdp\Datagram.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
     <Compile Include="Ssdp\DeviceDiscovery.cs" />
     <Compile Include="PlayTo\SsdpHttpClient.cs" />
@@ -160,8 +158,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Headers.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
-    <Compile Include="Ssdp\SsdpMessageBuilder.cs" />
-    <Compile Include="Ssdp\SsdpHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

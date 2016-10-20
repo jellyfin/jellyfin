@@ -258,18 +258,14 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
             }
 
-            var hasCriticRating = item as IHasCriticRating;
-            if (hasCriticRating != null)
+            if (item.CriticRating.HasValue)
             {
-                if (hasCriticRating.CriticRating.HasValue)
-                {
-                    builder.Append("<CriticRating>" + SecurityElement.Escape(hasCriticRating.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
-                }
+                builder.Append("<CriticRating>" + SecurityElement.Escape(item.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
+            }
 
-                if (!string.IsNullOrEmpty(hasCriticRating.CriticRatingSummary))
-                {
-                    builder.Append("<CriticRatingSummary><![CDATA[" + hasCriticRating.CriticRatingSummary + "]]></CriticRatingSummary>");
-                }
+            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
+            {
+                builder.Append("<CriticRatingSummary><![CDATA[" + item.CriticRatingSummary + "]]></CriticRatingSummary>");
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -285,14 +281,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                     builder.Append("<OriginalTitle>" + SecurityElement.Escape(hasOriginalTitle.OriginalTitle) + "</OriginalTitle>");
                 }
             }
-            
-            var hasShortOverview = item as IHasShortOverview;
-            if (hasShortOverview != null)
+
+            if (!string.IsNullOrEmpty(item.ShortOverview))
             {
-                if (!string.IsNullOrEmpty(hasShortOverview.ShortOverview))
-                {
-                    builder.Append("<ShortOverview><![CDATA[" + hasShortOverview.ShortOverview + "]]></ShortOverview>");
-                }
+                builder.Append("<ShortOverview><![CDATA[" + item.ShortOverview + "]]></ShortOverview>");
             }
 
             if (!string.IsNullOrEmpty(item.CustomRating))

@@ -1668,16 +1668,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var val = query.MinCriticRating.Value;
 
-                var hasCriticRating = item as IHasCriticRating;
-
-                if (hasCriticRating != null)
-                {
-                    if (!(hasCriticRating.CriticRating.HasValue && hasCriticRating.CriticRating >= val))
-                    {
-                        return false;
-                    }
-                }
-                else
+                if (!(item.CriticRating.HasValue && item.CriticRating >= val))
                 {
                     return false;
                 }

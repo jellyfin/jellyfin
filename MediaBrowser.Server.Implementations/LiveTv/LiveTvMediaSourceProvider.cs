@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                if (stream.MediaStreams.Any(i => i.Index != -1))
+                if (!stream.SupportsProbing || stream.MediaStreams.Any(i => i.Index != -1))
                 {
                     await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
                 }

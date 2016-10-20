@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Api.Playback.Progressive;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Api.LiveTv
@@ -390,6 +391,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool? EnableUserData { get; set; }
 
         public string SeriesTimerId { get; set; }
+        public string LibrarySeriesId { get; set; }
 
         /// <summary>
         /// Fields to return within the items, in addition to basic information
@@ -989,6 +991,17 @@ namespace MediaBrowser.Api.LiveTv
             query.IsSports = request.IsSports;
             query.SeriesTimerId = request.SeriesTimerId;
             query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (!string.IsNullOrWhiteSpace(request.LibrarySeriesId))
+            {
+                query.IsSeries = true;
+
+                var series = _libraryManager.GetItemById(request.LibrarySeriesId) as Series;
+                if (series != null)
+                {
+                    query.Name = series.Name;
+                }
+            }
 
             var result = await _liveTvManager.GetPrograms(query, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);
 
