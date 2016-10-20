@@ -51,15 +51,21 @@
                     return;
                 }
 
-                setTimeout(function () {
-
+                var onAnimationComplete = function () {
+                    dom.removeEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                        once: true
+                    });
                     if (backdropImage === currentAnimatingElement) {
                         currentAnimatingElement = null;
                     }
                     if (existingBackdropImage && existingBackdropImage.parentNode) {
                         existingBackdropImage.parentNode.removeChild(existingBackdropImage);
                     }
-                }, 800);
+                };
+
+                dom.addEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                    once: true
+                });
 
                 internalBackdrop(true);
             };

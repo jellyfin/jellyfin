@@ -15,8 +15,8 @@
     color: #FF9100 !important;
 }
 
-paper-button[raised].more {
-    background: #FF9100;
+.button-submit, .button-accent {
+    background: #FF9100 !important;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
@@ -25,4 +25,17 @@ paper-button[raised].more {
 
 .channelTimeslotHeader {
     border-right-color: #FF9100 !important;
+}
+
+.emby-tab-button-active, .ui-body-b .emby-tab-button-active {
+    color: #FF9100 !important;
+    border-color: #FF9100 !important;
+}
+
+.darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
+    color: #FF9100 !important;
+}
+
+.visualCardBox-cardFooter {
+    color: #FF9100;
 }

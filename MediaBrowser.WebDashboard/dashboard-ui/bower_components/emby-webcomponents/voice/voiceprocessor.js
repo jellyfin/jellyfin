@@ -1,4 +1,5 @@
 ﻿define(['./voicecommands.js', './grammarprocessor.js', 'require'], function (voicecommands, grammarprocessor, require) {
+    'use strict';
 
     var commandgroups;
 

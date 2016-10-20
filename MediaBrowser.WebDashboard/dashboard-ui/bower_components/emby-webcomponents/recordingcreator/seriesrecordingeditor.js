@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'globalize', 'layoutManager', 'mediaInfo', 'apphost', 'connectionManager', 'require', 'loading', 'scrollHelper', 'imageLoader', 'datetime', 'scrollStyles', 'emby-button', 'emby-checkbox', 'emby-input', 'emby-select', 'paper-icon-button-light', 'css!./../formdialog', 'css!./recordingcreator', 'material-icons'], function (dialogHelper, globalize, layoutManager, mediaInfo, appHost, connectionManager, require, loading, scrollHelper, imageLoader, datetime) {
+    'use strict';
 
     var currentDialog;
     var recordingUpdated = false;
@@ -60,9 +61,9 @@
 
             item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-            item.RecordAnyChannel = form.querySelector('.selectChannels').value == 'all';
-            item.RecordAnyTime = form.querySelector('.selectAirTime').value == 'any';
-            item.RecordNewOnly = form.querySelector('.selectShowType').value == 'new';
+            item.RecordAnyChannel = form.querySelector('.selectChannels').value === 'all';
+            item.RecordAnyTime = form.querySelector('.selectAirTime').value === 'any';
+            item.RecordNewOnly = form.querySelector('.selectShowType').value === 'new';
             item.SkipEpisodesInLibrary = form.querySelector('.chkSkipEpisodesInLibrary').checked;
             item.KeepUpTo = form.querySelector('.selectKeepUpTo').value;
 
@@ -116,9 +117,9 @@
 
             var text;
 
-            if (i == 0) {
+            if (i === 0) {
                 text = globalize.translate('sharedcomponents#AsManyAsPossible');
-            } else if (i == 1) {
+            } else if (i === 1) {
                 text = globalize.translate('sharedcomponents#ValueOneEpisode');
             } else {
                 text = globalize.translate('sharedcomponents#ValueEpisodeCount', i);

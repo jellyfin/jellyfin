@@ -71,7 +71,7 @@ namespace MediaBrowser.ServerApplication
 
             if (_isRunningAsService)
             {
-                _canRestartService = CanRestartWindowsService();
+                //_canRestartService = CanRestartWindowsService();
             }
 
             var currentProcess = Process.GetCurrentProcess();

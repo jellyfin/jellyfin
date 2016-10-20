@@ -1,4 +1,5 @@
 ﻿define(['connectionManager', 'itemHelper', 'mediaInfo', 'userdataButtons', 'playbackManager', 'globalize', 'dom', 'apphost', 'css!./itemhovermenu', 'emby-button'], function (connectionManager, itemHelper, mediaInfo, userdataButtons, playbackManager, globalize, dom, appHost) {
+    'use strict';
 
     var preventHover = false;
     var showOverlayTimeout;
@@ -72,9 +73,9 @@
 
         var className = card.className.toLowerCase();
 
-        var isMiniItem = className.indexOf('mini') != -1;
-        var isSmallItem = isMiniItem || className.indexOf('small') != -1;
-        var isPortrait = className.indexOf('portrait') != -1;
+        var isMiniItem = className.indexOf('mini') !== -1;
+        var isSmallItem = isMiniItem || className.indexOf('small') !== -1;
+        var isPortrait = className.indexOf('portrait') !== -1;
 
         var parentName = isSmallItem || isMiniItem || isPortrait ? null : item.SeriesName;
         var name = item.EpisodeTitle ? item.Name : itemHelper.getDisplayName(item);
@@ -136,7 +137,7 @@
             buttonCount++;
         }
 
-        var moreIcon = appHost.moreIcon == 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+        var moreIcon = appHost.moreIcon === 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
         html += '<button is="emby-button" class="itemAction autoSize fab cardOverlayFab mini" data-action="menu" data-playoptions="false"><i class="md-icon cardOverlayFab-md-icon">' + moreIcon + '</i></button>';
         buttonCount++;
 
@@ -191,7 +192,7 @@
         var id = dataElement.getAttribute('data-id');
         var type = dataElement.getAttribute('data-type');
 
-        if (type == 'Timer' || type == 'SeriesTimer') {
+        if (type === 'Timer' || type === 'SeriesTimer') {
             return;
         }
 
@@ -265,7 +266,6 @@
     }
 
     ItemHoverMenu.prototype = {
-
         constructor: ItemHoverMenu,
 
         destroy: function () {
@@ -276,7 +276,7 @@
                 passive: true
             });
         }
-    }
+    };
 
     return ItemHoverMenu;
 });

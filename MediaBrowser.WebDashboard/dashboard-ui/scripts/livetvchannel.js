@@ -55,7 +55,8 @@
             SortBy: "StartDate",
             EnableTotalRecordCount: false,
             EnableImages: false,
-            ImageTypeLimit: 0
+            ImageTypeLimit: 0,
+            EnableUserData: false
 
         }).then(function (result) {
 
@@ -64,7 +65,7 @@
         });
     }
 
-    window.LiveTvChannelPage = {
+    return {
         renderPrograms: loadPrograms
     };
 

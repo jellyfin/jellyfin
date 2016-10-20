@@ -1252,11 +1252,9 @@
 
             if (!username) {
                 return Promise.reject();
-                return;
             }
             if (!password) {
                 return Promise.reject();
-                return;
             }
 
             return ajax({

@@ -16,6 +16,7 @@ namespace MediaBrowser.Model.LiveTv
         public string RecordingEncodingFormat { get; set; }
         public bool EnableRecordingSubfolders { get; set; }
         public bool EnableOriginalAudioWithEncodedRecordings { get; set; }
+        public bool EnableOriginalVideoWithEncodedRecordings { get; set; }
 
         public List<TunerHostInfo> TunerHosts { get; set; }
         public List<ListingsProviderInfo> ListingProviders { get; set; }

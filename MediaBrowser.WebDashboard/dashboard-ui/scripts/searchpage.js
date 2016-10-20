@@ -113,7 +113,6 @@
             var html = cardBuilder.getCardsHtml({
                 items: hints,
                 shape: "auto",
-                lazy: true,
                 overlayText: false,
                 showTitle: true,
                 centerImage: true,

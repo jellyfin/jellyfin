@@ -1,4 +1,5 @@
 define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focusManager', 'embyRouter'], function (connectionManager, playbackManager, events, inputManager, focusManager, embyRouter) {
+    'use strict';
 
     function notifyApp() {
 
@@ -149,10 +150,10 @@ define(['connectionManager', 'playbackManager', 'events', 'inputManager', 'focus
             notifyApp();
             var serverId = apiClient.serverInfo().Id;
 
-            if (msg.Data.PlayCommand == "PlayNext") {
+            if (msg.Data.PlayCommand === "PlayNext") {
                 playbackManager.queueNext({ ids: msg.Data.ItemIds, serverId: serverId });
             }
-            else if (msg.Data.PlayCommand == "PlayLast") {
+            else if (msg.Data.PlayCommand === "PlayLast") {
                 playbackManager.queue({ ids: msg.Data.ItemIds, serverId: serverId });
             }
             else {

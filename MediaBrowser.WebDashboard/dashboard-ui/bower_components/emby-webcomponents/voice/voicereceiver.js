@@ -1,4 +1,5 @@
 ﻿define(['events'], function (events) {
+    'use strict';
 
     var receiver = {
 
@@ -13,7 +14,7 @@
             var srch = 'jarvis';
             var index = text.toLowerCase().indexOf(srch);
 
-            if (index != -1) {
+            if (index !== -1) {
                 text = text.substring(index + srch.length);
             } else {
                 return null;
@@ -30,11 +31,13 @@
         return new Promise(function (resolve, reject) {
             cancelListener();
 
-            var recognition = new (window.SpeechRecognition ||
+            var recognitionObj = window.SpeechRecognition ||
                 window.webkitSpeechRecognition ||
                 window.mozSpeechRecognition ||
                 window.oSpeechRecognition ||
-                window.msSpeechRecognition)();
+                window.msSpeechRecognition;
+
+            var recognition = new recognitionObj();
 
             recognition.lang = options.lang;
             recognition.continuous = options.continuous || false;

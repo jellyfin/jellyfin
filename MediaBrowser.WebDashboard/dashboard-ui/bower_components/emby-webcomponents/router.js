@@ -1,4 +1,5 @@
 define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, dom, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
+    'use strict';
 
     var embyRouter = {
         showLocalLogin: function (apiClient, serverId, manualLogin) {
@@ -108,10 +109,10 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
         var url = route.contentPath || route.path;
 
-        if (url.indexOf('://') == -1) {
+        if (url.indexOf('://') === -1) {
 
             // Put a slash at the beginning but make sure to avoid a double slash
-            if (url.indexOf('/') != 0) {
+            if (url.indexOf('/') !== 0) {
 
                 url = '/' + url;
             }
@@ -162,7 +163,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
     var currentViewLoadRequest;
     function sendRouteToViewManager(ctx, next, route, controllerFactory) {
 
-        if (isDummyBackToHome && route.type == 'home') {
+        if (isDummyBackToHome && route.type === 'home') {
             isDummyBackToHome = false;
             return;
         }
@@ -198,7 +199,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
         if (!isBackNav) {
             // Don't force a new view for home due to the back menu
-            //if (route.type != 'home') {
+            //if (route.type !== 'home') {
             onNewViewNeeded();
             return;
             //}
@@ -269,7 +270,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
             firstConnectionResult = null;
 
-            if (firstResult.State != MediaBrowser.ConnectionState.SignedIn && !route.anonymous) {
+            if (firstResult.State !== MediaBrowser.ConnectionState.SignedIn && !route.anonymous) {
 
                 handleConnectionResult(firstResult, loading);
                 return;
@@ -334,7 +335,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
     function validateRole(apiClient, role) {
 
-        if (role == 'admin') {
+        if (role === 'admin') {
 
             return apiClient.getCurrentUser().then(function (user) {
                 if (user.Policy.IsAdministrator) {
@@ -395,13 +396,13 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var path = window.location.pathname || '';
 
         var index = path.lastIndexOf('/');
-        if (index != -1) {
+        if (index !== -1) {
             path = path.substring(index);
         } else {
             path = '/' + path;
         }
 
-        if (!path || path == '/') {
+        if (!path || path === '/') {
             path = '/index.html';
         }
 
@@ -411,7 +412,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
     var baseRoute = window.location.href.split('?')[0].replace(getRequestFile(), '');
     // support hashbang
     baseRoute = baseRoute.split('#')[0];
-    if (baseRoute.lastIndexOf('/') == baseRoute.length - 1) {
+    if (baseRoute.lastIndexOf('/') === baseRoute.length - 1) {
         baseRoute = baseRoute.substring(0, baseRoute.length - 1);
     }
     function baseUrl() {
@@ -431,7 +432,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var index = currentPath.indexOf('?');
         var search = '';
 
-        if (index != -1) {
+        if (index !== -1) {
             search = currentPath.substring(index);
         }
 
@@ -444,10 +445,11 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var regex = new RegExp(regexS, "i");
 
         var results = regex.exec(url || getWindowLocationSearch());
-        if (results == null)
+        if (results == null) {
             return "";
-        else
+        } else {
             return decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
     }
 
     function back() {
@@ -462,7 +464,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
             return false;
         }
 
-        if (curr.type == 'home') {
+        if (curr.type === 'home') {
             return false;
         }
         return page.canGoBack();
@@ -472,10 +474,10 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var baseRoute = baseUrl();
         path = path.replace(baseRoute, '');
 
-        if (currentRouteInfo && currentRouteInfo.path == path) {
+        if (currentRouteInfo && currentRouteInfo.path === path) {
 
             // can't use this with home right now due to the back menu
-            if (currentRouteInfo.route.type != 'home') {
+            if (currentRouteInfo.route.type !== 'home') {
                 loading.hide();
                 return Promise.resolve();
             }
@@ -511,7 +513,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var skin = skinManager.getCurrentSkin();
 
         var homeRoute = skin.getRoutes().filter(function (r) {
-            return r.type == 'home';
+            return r.type === 'home';
         })[0];
 
         return show(pluginManager.mapRoute(skin, homeRoute));
@@ -528,7 +530,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
             });
         } else {
 
-            if (arguments.length == 2) {
+            if (arguments.length === 2) {
                 options = arguments[1];
             }
             skinManager.getCurrentSkin().showItem(item, options);
@@ -543,7 +545,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
         var skin = skinManager.getCurrentSkin();
 
         var homeRoute = skin.getRoutes().filter(function (r) {
-            return r.type == 'video-osd';
+            return r.type === 'video-osd';
         })[0];
 
         return show(pluginManager.mapRoute(skin, homeRoute));
@@ -572,13 +574,13 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
             backgroundContainer = document.querySelector('.backgroundContainer');
         }
 
-        if (level == 'full' || level == 2) {
+        if (level === 'full' || level === 2) {
             backdrop.clear(true);
             document.documentElement.classList.add('transparentDocument');
             backgroundContainer.classList.add('backgroundContainer-transparent');
             backdropContainer.classList.add('hide');
         }
-        else if (level == 'backdrop' || level == 1) {
+        else if (level === 'backdrop' || level === 1) {
             backdrop.externalBackdrop(true);
             document.documentElement.classList.add('transparentDocument');
             backgroundContainer.classList.add('backgroundContainer-transparent');
@@ -600,7 +602,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
 
     function setBaseRoute() {
         var baseRoute = window.location.pathname.replace(getRequestFile(), '');
-        if (baseRoute.lastIndexOf('/') == baseRoute.length - 1) {
+        if (baseRoute.lastIndexOf('/') === baseRoute.length - 1) {
             baseRoute = baseRoute.substring(0, baseRoute.length - 1);
         }
 

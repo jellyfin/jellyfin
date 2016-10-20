@@ -1,4 +1,5 @@
 ﻿define(['itemShortcuts', 'connectionManager', 'layoutManager', 'browser', 'dom', 'loading', 'serverNotifications', 'events', 'registerElement'], function (itemShortcuts, connectionManager, layoutManager, browser, dom, loading, serverNotifications, events) {
+    'use strict';
 
     var ItemsContainerProtoType = Object.create(HTMLDivElement.prototype);
 

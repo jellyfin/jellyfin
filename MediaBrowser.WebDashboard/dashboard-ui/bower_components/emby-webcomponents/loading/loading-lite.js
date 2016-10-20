@@ -1,4 +1,5 @@
 define(['css!./loading-lite'], function () {
+    'use strict';
 
     var loadingElem;
 

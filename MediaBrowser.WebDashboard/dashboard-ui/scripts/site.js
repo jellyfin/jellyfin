@@ -1119,7 +1119,7 @@ var AppInfo = {};
         var headroom = new Headroom([], {
             // or scroll tolerance per direction
             tolerance: {
-                down: 20,
+                down: 0,
                 up: 0
             },
             classes: {
@@ -2583,13 +2583,6 @@ var AppInfo = {};
 
         defineRoute({
             path: '/wizardlivetvtuner.html',
-            dependencies: ['dashboardcss'],
-            autoFocus: false,
-            anonymous: true
-        });
-
-        defineRoute({
-            path: '/wizardservice.html',
             dependencies: ['dashboardcss'],
             autoFocus: false,
             anonymous: true

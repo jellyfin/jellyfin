@@ -1,4 +1,4 @@
-define(['browser', 'css!./viewcontainer-lite'], function (browser) {
+define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
     'use strict';
 
     var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
@@ -140,7 +140,16 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
             currentAnimations = animations;
 
-            setTimeout(resolve, duration);
+            var onAnimationComplete = function () {
+                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                    once: true
+                });
+                resolve();
+            };
+
+            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                once: true
+            });
         });
     }
 
@@ -161,7 +170,16 @@ define(['browser', 'css!./viewcontainer-lite'], function (browser) {
 
             currentAnimations = animations;
 
-            setTimeout(resolve, duration);
+            var onAnimationComplete = function () {
+                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                    once: true
+                });
+                resolve();
+            };
+
+            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                once: true
+            });
         });
     }
 

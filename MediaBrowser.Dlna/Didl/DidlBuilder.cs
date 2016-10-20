@@ -585,10 +585,9 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var desc = item.Overview;
 
-                var hasShortOverview = item as IHasShortOverview;
-                if (hasShortOverview != null && !string.IsNullOrEmpty(hasShortOverview.ShortOverview))
+                if (!string.IsNullOrEmpty(item.ShortOverview))
                 {
-                    desc = hasShortOverview.ShortOverview;
+                    desc = item.ShortOverview;
                 }
 
                 if (!string.IsNullOrWhiteSpace(desc))
@@ -697,9 +696,22 @@ namespace MediaBrowser.Dlna.Didl
 
         private void AddPeople(BaseItem item, XmlElement element)
         {
-            var types = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer, PersonType.Composer, "Creator" };
+            var types = new[]
+            {
+                PersonType.Director,
+                PersonType.Writer,
+                PersonType.Producer,
+                PersonType.Composer,
+                "Creator"
+            };
 
             var people = _libraryManager.GetPeople(item);
+
+            var index = 0;
+
+            // Seeing some LG models locking up due content with large lists of people
+            // The actual issue might just be due to processing a more metadata than it can handle
+            var limit = 10;
 
             foreach (var actor in people)
             {
@@ -707,6 +719,13 @@ namespace MediaBrowser.Dlna.Didl
                     ?? PersonType.Actor;
 
                 AddValue(element, "upnp", type.ToLower(), actor.Name, NS_UPNP);
+
+                index++;
+
+                if (index >= limit)
+                {
+                    break;
+                }
             }
         }
 

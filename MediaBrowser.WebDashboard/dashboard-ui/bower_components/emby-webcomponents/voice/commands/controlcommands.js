@@ -1,4 +1,5 @@
 ﻿define(['playbackManager'], function (playbackManager) {
+    'use strict';
 
     function setActiveDevice(name) {
         return function () {
@@ -12,5 +13,5 @@
             return setActiveDevice(result.properties.devicename);
         }
         return;
-    }
+    };
 });

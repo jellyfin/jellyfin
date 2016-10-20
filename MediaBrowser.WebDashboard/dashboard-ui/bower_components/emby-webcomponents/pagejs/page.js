@@ -1,5 +1,7 @@
 define([], function () {
 
+    'use strict';
+
     /**
      * Detect click event
      */
@@ -123,7 +125,9 @@ define([], function () {
      */
 
     page.base = function (path) {
-        if (0 === arguments.length) return base;
+        if (0 === arguments.length) {
+            return base;
+        }
         base = path;
     };
 
@@ -142,17 +146,31 @@ define([], function () {
 
     page.start = function (options) {
         options = options || {};
-        if (running) return;
+        if (running) {
+            return;
+        }
         running = true;
-        if (false === options.dispatch) dispatch = false;
-        if (false === options.decodeURLComponents) decodeURLComponents = false;
-        if (false !== options.popstate) window.addEventListener('popstate', onpopstate, false);
+        if (false === options.dispatch) {
+            dispatch = false;
+        }
+        if (false === options.decodeURLComponents) {
+            decodeURLComponents = false;
+        }
+        if (false !== options.popstate) {
+            window.addEventListener('popstate', onpopstate, false);
+        }
         if (false !== options.click) {
             document.addEventListener(clickEvent, onclick, false);
         }
-        if (options.enableHistory != null) enableHistory = options.enableHistory;
-        if (true === options.hashbang) hashbang = true;
-        if (!dispatch) return;
+        if (options.enableHistory != null) {
+            enableHistory = options.enableHistory;
+        }
+        if (true === options.hashbang) {
+            hashbang = true;
+        }
+        if (!dispatch) {
+            return;
+        }
         var url = (hashbang && ~location.hash.indexOf('#!')) ? location.hash.substr(2) + location.search : location.pathname + location.search + location.hash;
         page.replace(url, null, true, dispatch);
     };
@@ -164,7 +182,9 @@ define([], function () {
      */
 
     page.stop = function () {
-        if (!running) return;
+        if (!running) {
+            return;
+        }
         page.current = '';
         page.len = 0;
         running = false;
@@ -186,8 +206,12 @@ define([], function () {
         var ctx = new Context(path, state);
         ctx.isBack = isBack;
         page.current = ctx.path;
-        if (false !== dispatch) page.dispatch(ctx);
-        if (false !== ctx.handled && false !== push) ctx.pushState();
+        if (false !== dispatch) {
+            page.dispatch(ctx);
+        }
+        if (false !== ctx.handled && false !== push) {
+            ctx.pushState();
+        }
         return ctx;
     };
 
@@ -286,7 +310,9 @@ define([], function () {
         page.current = ctx.path;
         ctx.init = init;
         ctx.save(); // save before dispatching, which may redirect
-        if (false !== dispatch) page.dispatch(ctx);
+        if (false !== dispatch) {
+            page.dispatch(ctx);
+        }
         return ctx;
     };
 
@@ -306,7 +332,9 @@ define([], function () {
 
         function nextExit() {
             var fn = page.exits[j++];
-            if (!fn) return nextEnter();
+            if (!fn) {
+                return nextEnter();
+            }
             fn(prev, nextExit);
         }
 
@@ -317,7 +345,9 @@ define([], function () {
                 ctx.handled = false;
                 return;
             }
-            if (!fn) return unhandled(ctx);
+            if (!fn) {
+                return unhandled(ctx);
+            }
             fn(ctx, nextEnter);
         }
 
@@ -338,7 +368,9 @@ define([], function () {
      */
 
     function unhandled(ctx) {
-        if (ctx.handled) return;
+        if (ctx.handled) {
+            return;
+        }
         var current;
 
         if (hashbang) {
@@ -347,7 +379,9 @@ define([], function () {
             current = location.pathname + location.search;
         }
 
-        if (current === ctx.canonicalPath) return;
+        if (current === ctx.canonicalPath) {
+            return;
+        }
         page.stop();
         ctx.handled = false;
         location.href = ctx.canonicalPath;
@@ -392,12 +426,16 @@ define([], function () {
      */
 
     function Context(path, state) {
-        if ('/' === path[0] && 0 !== path.indexOf(base)) path = base + (hashbang ? '#!' : '') + path;
+        if ('/' === path[0] && 0 !== path.indexOf(base)) {
+            path = base + (hashbang ? '#!' : '') + path;
+        }
         var i = path.indexOf('?');
 
         this.canonicalPath = path;
         this.path = path.replace(base, '') || '/';
-        if (hashbang) this.path = this.path.replace('#!', '') || '/';
+        if (hashbang) {
+            this.path = this.path.replace('#!', '') || '/';
+        }
 
         this.title = document.title;
         this.state = state || {};
@@ -409,7 +447,9 @@ define([], function () {
         // fragment
         this.hash = '';
         if (!hashbang) {
-            if (!~this.path.indexOf('#')) return;
+            if (!~this.path.indexOf('#')) {
+                return;
+            }
             var parts = this.path.split('#');
             this.path = parts[0];
             this.hash = decodeURLEncodedURIComponent(parts[1]) || '';
@@ -507,7 +547,9 @@ define([], function () {
     Route.prototype.middleware = function (fn) {
         var self = this;
         return function (ctx, next) {
-            if (self.match(ctx.path, ctx.params)) return fn(ctx, next);
+            if (self.match(ctx.path, ctx.params)) {
+                return fn(ctx, next);
+            }
             next();
         };
     };
@@ -528,7 +570,9 @@ define([], function () {
           pathname = ~qsIndex ? path.slice(0, qsIndex) : path,
           m = this.regexp.exec(decodeURIComponent(pathname));
 
-        if (!m) return false;
+        if (!m) {
+            return false;
+        }
 
         for (var i = 1, len = m.length; i < len; ++i) {
             var key = keys[i - 1];
@@ -587,8 +631,12 @@ define([], function () {
             });
         }
         return function onpopstate(e) {
-            if (!loaded) return;
-            if (ignorePopState(e)) return;
+            if (!loaded) {
+                return;
+            }
+            if (ignorePopState(e)) {
+                return;
+            }
             if (e.state) {
                 var path = e.state.path;
                 page.replace(path, e.state, null, null, true);
@@ -603,43 +651,63 @@ define([], function () {
 
     function onclick(e) {
 
-        if (1 !== which(e)) return;
+        if (1 !== which(e)) {
+            return;
+        }
 
-        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-        if (e.defaultPrevented) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+        if (e.defaultPrevented) {
+            return;
+        }
 
 
 
         // ensure link
         var el = e.target;
-        while (el && 'A' !== el.nodeName) el = el.parentNode;
-        if (!el || 'A' !== el.nodeName) return;
+        while (el && 'A' !== el.nodeName) {
+            el = el.parentNode;
+        }
+        if (!el || 'A' !== el.nodeName) {
+            return;
+        }
 
 
 
         // Ignore if tag has
         // 1. "download" attribute
         // 2. rel="external" attribute
-        if (el.hasAttribute('download') || el.getAttribute('rel') === 'external') return;
+        if (el.hasAttribute('download') || el.getAttribute('rel') === 'external') {
+            return;
+        }
 
         // ensure non-hash for the same path
         var link = el.getAttribute('href');
-        if (link == '#') {
+        if (link === '#') {
             e.preventDefault();
             return;
         }
-        if (!hashbang && el.pathname === location.pathname && (el.hash || '#' === link)) return;
+        if (!hashbang && el.pathname === location.pathname && (el.hash || '#' === link)) {
+            return;
+        }
 
 
 
         // Check for mailto: in the href
-        if (link && link.indexOf('mailto:') > -1) return;
+        if (link && link.indexOf('mailto:') > -1) {
+            return;
+        }
 
         // check target
-        if (el.target) return;
+        if (el.target) {
+            return;
+        }
 
         // x-origin
-        if (!sameOrigin(el.href)) return;
+        if (!sameOrigin(el.href)) {
+            return;
+        }
 
 
 
@@ -653,9 +721,13 @@ define([], function () {
             path = path.substr(base.length);
         }
 
-        if (hashbang) path = path.replace('#!', '');
+        if (hashbang) {
+            path = path.replace('#!', '');
+        }
 
-        if (base && orig === path) return;
+        if (base && orig === path) {
+            return;
+        }
 
         e.preventDefault();
         page.show(orig);
@@ -676,7 +748,9 @@ define([], function () {
 
     function sameOrigin(href) {
         var origin = location.protocol + '//' + location.hostname;
-        if (location.port) origin += ':' + location.port;
+        if (location.port) {
+            origin += ':' + location.port;
+        }
         return (href && (0 === href.indexOf(origin)));
     }
 
@@ -688,17 +762,17 @@ define([], function () {
      * @type {RegExp}
      */
     var PATH_REGEXP = new RegExp([
-      // Match escaped characters that would otherwise appear in future matches.
-      // This allows the user to escape special characters that won't transform.
-      '(\\\\.)',
-      // Match Express-style parameters and un-named parameters with a prefix
-      // and optional suffixes. Matches appear as:
-      //
-      // "/:test(\\d+)?" => ["/", "test", "\d+", undefined, "?", undefined]
-      // "/route(\\d+)"  => [undefined, undefined, undefined, "\d+", undefined, undefined]
-      // "/*"            => ["/", undefined, undefined, undefined, undefined, "*"]
-      '([\\/.])?(?:(?:\\:(\\w+)(?:\\(((?:\\\\.|[^()])+)\\))?|\\(((?:\\\\.|[^()])+)\\))([+*?])?|(\\*))'
-    ].join('|'), 'g')
+        // Match escaped characters that would otherwise appear in future matches.
+        // This allows the user to escape special characters that won't transform.
+        '(\\\\.)',
+        // Match Express-style parameters and un-named parameters with a prefix
+        // and optional suffixes. Matches appear as:
+        //
+        // "/:test(\\d+)?" => ["/", "test", "\d+", undefined, "?", undefined]
+        // "/route(\\d+)"  => [undefined, undefined, undefined, "\d+", undefined, undefined]
+        // "/*"            => ["/", undefined, undefined, undefined, undefined, "*"]
+        '([\\/.])?(?:(?:\\:(\\w+)(?:\\(((?:\\\\.|[^()])+)\\))?|\\(((?:\\\\.|[^()])+)\\))([+*?])?|(\\*))'
+    ].join('|'), 'g');
 
     /**
      * Parse a string for the raw tokens.
@@ -707,42 +781,42 @@ define([], function () {
      * @return {Array}
      */
     function parse(str) {
-        var tokens = []
-        var key = 0
-        var index = 0
-        var path = ''
-        var res
+        var tokens = [];
+        var key = 0;
+        var index = 0;
+        var path = '';
+        var res;
 
         while ((res = PATH_REGEXP.exec(str)) != null) {
-            var m = res[0]
-            var escaped = res[1]
-            var offset = res.index
-            path += str.slice(index, offset)
-            index = offset + m.length
+            var m = res[0];
+            var escaped = res[1];
+            var offset = res.index;
+            path += str.slice(index, offset);
+            index = offset + m.length;
 
             // Ignore already escaped sequences.
             if (escaped) {
-                path += escaped[1]
-                continue
+                path += escaped[1];
+                continue;
             }
 
             // Push the current path onto the tokens.
             if (path) {
-                tokens.push(path)
-                path = ''
+                tokens.push(path);
+                path = '';
             }
 
-            var prefix = res[2]
-            var name = res[3]
-            var capture = res[4]
-            var group = res[5]
-            var suffix = res[6]
-            var asterisk = res[7]
+            var prefix = res[2];
+            var name = res[3];
+            var capture = res[4];
+            var group = res[5];
+            var suffix = res[6];
+            var asterisk = res[7];
 
-            var repeat = suffix === '+' || suffix === '*'
-            var optional = suffix === '?' || suffix === '*'
-            var delimiter = prefix || '/'
-            var pattern = capture || group || (asterisk ? '.*' : '[^' + delimiter + ']+?')
+            var repeat = suffix === '+' || suffix === '*';
+            var optional = suffix === '?' || suffix === '*';
+            var delimiter = prefix || '/';
+            var pattern = capture || group || (asterisk ? '.*' : '[^' + delimiter + ']+?');
 
             tokens.push({
                 name: name || key++,
@@ -751,24 +825,24 @@ define([], function () {
                 optional: optional,
                 repeat: repeat,
                 pattern: escapeGroup(pattern)
-            })
+            });
         }
 
         // Match any characters still remaining.
         if (index < str.length) {
-            path += str.substr(index)
+            path += str.substr(index);
         }
 
         // If the path exists, push it onto the end.
         if (path) {
-            tokens.push(path)
+            tokens.push(path);
         }
 
-        return tokens
+        return tokens;
     }
 
     var isarray = Array.isArray || function (arr) {
-        return Object.prototype.toString.call(arr) == '[object Array]';
+        return Object.prototype.toString.call(arr) === '[object Array]';
     };
 
     /**
@@ -778,7 +852,7 @@ define([], function () {
      * @return {String}
      */
     function escapeString(str) {
-        return str.replace(/([.+*?=^!:${}()[\]|\/])/g, '\\$1')
+        return str.replace(/([.+*?=^!:${}()[\]|\/])/g, '\\$1');
     }
 
     /**
@@ -788,7 +862,7 @@ define([], function () {
      * @return {String}
      */
     function escapeGroup(group) {
-        return group.replace(/([=!:$\/()])/g, '\\$1')
+        return group.replace(/([=!:$\/()])/g, '\\$1');
     }
 
     /**
@@ -799,8 +873,8 @@ define([], function () {
      * @return {RegExp}
      */
     function attachKeys(re, keys) {
-        re.keys = keys
-        return re
+        re.keys = keys;
+        return re;
     }
 
     /**
@@ -810,7 +884,7 @@ define([], function () {
      * @return {String}
      */
     function flags(options) {
-        return options.sensitive ? '' : 'i'
+        return options.sensitive ? '' : 'i';
     }
 
     /**
@@ -822,7 +896,7 @@ define([], function () {
      */
     function regexpToRegexp(path, keys) {
         // Use a negative lookahead to match only capturing groups.
-        var groups = path.source.match(/\((?!\?)/g)
+        var groups = path.source.match(/\((?!\?)/g);
 
         if (groups) {
             for (var i = 0; i < groups.length; i++) {
@@ -833,11 +907,11 @@ define([], function () {
                     optional: false,
                     repeat: false,
                     pattern: null
-                })
+                });
             }
         }
 
-        return attachKeys(path, keys)
+        return attachKeys(path, keys);
     }
 
     /**
@@ -849,15 +923,15 @@ define([], function () {
      * @return {RegExp}
      */
     function arrayToRegexp(path, keys, options) {
-        var parts = []
+        var parts = [];
 
         for (var i = 0; i < path.length; i++) {
-            parts.push(pathToRegexp(path[i], keys, options).source)
+            parts.push(pathToRegexp(path[i], keys, options).source);
         }
 
-        var regexp = new RegExp('(?:' + parts.join('|') + ')', flags(options))
+        var regexp = new RegExp('(?:' + parts.join('|') + ')', flags(options));
 
-        return attachKeys(regexp, keys)
+        return attachKeys(regexp, keys);
     }
 
     /**
@@ -869,17 +943,17 @@ define([], function () {
      * @return {RegExp}
      */
     function stringToRegexp(path, keys, options) {
-        var tokens = parse(path)
-        var re = tokensToRegExp(tokens, options)
+        var tokens = parse(path);
+        var re = tokensToRegExp(tokens, options);
 
         // Attach keys back to the regexp.
         for (var i = 0; i < tokens.length; i++) {
             if (typeof tokens[i] !== 'string') {
-                keys.push(tokens[i])
+                keys.push(tokens[i]);
             }
         }
 
-        return attachKeys(re, keys)
+        return attachKeys(re, keys);
     }
 
     /**
@@ -891,39 +965,39 @@ define([], function () {
      * @return {RegExp}
      */
     function tokensToRegExp(tokens, options) {
-        options = options || {}
+        options = options || {};
 
-        var strict = options.strict
-        var end = options.end !== false
-        var route = ''
-        var lastToken = tokens[tokens.length - 1]
-        var endsWithSlash = typeof lastToken === 'string' && /\/$/.test(lastToken)
+        var strict = options.strict;
+        var end = options.end !== false;
+        var route = '';
+        var lastToken = tokens[tokens.length - 1];
+        var endsWithSlash = typeof lastToken === 'string' && /\/$/.test(lastToken);
 
         // Iterate over the tokens and create our regexp string.
         for (var i = 0; i < tokens.length; i++) {
-            var token = tokens[i]
+            var token = tokens[i];
 
             if (typeof token === 'string') {
-                route += escapeString(token)
+                route += escapeString(token);
             } else {
-                var prefix = escapeString(token.prefix)
-                var capture = token.pattern
+                var prefix = escapeString(token.prefix);
+                var capture = token.pattern;
 
                 if (token.repeat) {
-                    capture += '(?:' + prefix + capture + ')*'
+                    capture += '(?:' + prefix + capture + ')*';
                 }
 
                 if (token.optional) {
                     if (prefix) {
-                        capture = '(?:' + prefix + '(' + capture + '))?'
+                        capture = '(?:' + prefix + '(' + capture + '))?';
                     } else {
-                        capture = '(' + capture + ')?'
+                        capture = '(' + capture + ')?';
                     }
                 } else {
-                    capture = prefix + '(' + capture + ')'
+                    capture = prefix + '(' + capture + ')';
                 }
 
-                route += capture
+                route += capture;
             }
         }
 
@@ -932,18 +1006,18 @@ define([], function () {
         // is valid at the end of a path match, not in the middle. This is important
         // in non-ending mode, where "/test/" shouldn't match "/test//route".
         if (!strict) {
-            route = (endsWithSlash ? route.slice(0, -2) : route) + '(?:\\/(?=$))?'
+            route = (endsWithSlash ? route.slice(0, -2) : route) + '(?:\\/(?=$))?';
         }
 
         if (end) {
-            route += '$'
+            route += '$';
         } else {
             // In non-ending mode, we need the capturing groups to match as much as
             // possible by using a positive lookahead to the end or next path segment.
-            route += strict && endsWithSlash ? '' : '(?=\\/|$)'
+            route += strict && endsWithSlash ? '' : '(?=\\/|$)';
         }
 
-        return new RegExp('^' + route, flags(options))
+        return new RegExp('^' + route, flags(options));
     }
 
     /**
@@ -959,24 +1033,24 @@ define([], function () {
      * @return {RegExp}
      */
     function pathToRegexp(path, keys, options) {
-        keys = keys || []
+        keys = keys || [];
 
         if (!isarray(keys)) {
-            options = keys
-            keys = []
+            options = keys;
+            keys = [];
         } else if (!options) {
-            options = {}
+            options = {};
         }
 
         if (path instanceof RegExp) {
-            return regexpToRegexp(path, keys, options)
+            return regexpToRegexp(path, keys, options);
         }
 
         if (isarray(path)) {
-            return arrayToRegexp(path, keys, options)
+            return arrayToRegexp(path, keys, options);
         }
 
-        return stringToRegexp(path, keys, options)
+        return stringToRegexp(path, keys, options);
     }
 
     return page;

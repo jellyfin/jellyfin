@@ -111,7 +111,6 @@
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
-    <Compile Include="Dlna\ISsdpHandler.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
     <Compile Include="Dlna\SsdpMessageEventArgs.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
@@ -132,10 +131,8 @@
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
     <Compile Include="Entities\GameSystem.cs" />
-    <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
-    <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
     <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
@@ -146,15 +143,12 @@
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
-    <Compile Include="Entities\IHasShortOverview.cs" />
     <Compile Include="Entities\IHasSpecialFeatures.cs" />
     <Compile Include="Entities\IHasStartDate.cs" />
     <Compile Include="Entities\IHasTrailers.cs" />
     <Compile Include="Entities\IHasUserData.cs" />
     <Compile Include="Entities\IHiddenFromDisplay.cs" />
     <Compile Include="Entities\IItemByName.cs" />
-    <Compile Include="Entities\ILibraryItem.cs" />
-    <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\IMetadataContainer.cs" />
     <Compile Include="Entities\InternalItemsQuery.cs" />
     <Compile Include="Entities\InternalPeopleQuery.cs" />

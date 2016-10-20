@@ -317,8 +317,9 @@
     padding: 0 .5em 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
     align-items: center;
+    /* Need block here or the ellipsis overflow is lost */
+    display: block;
 }
 
 .programIcon {
@@ -334,6 +335,20 @@
     .programIcon + .programIcon {
         margin-left: .25em;
     }
+
+.programTextIcon {
+    font-weight: bold;
+    color: rgb(30,30,30);
+    font-size: .9em;
+    background: #555;
+    padding: .18em .32em;
+    border-radius: .25em;
+    margin-right: .35em;
+}
+
+.programTextIcon-tv {
+    font-size: .7em;
+}
 
 .guideChannelNumber {
     padding-left: 1em;

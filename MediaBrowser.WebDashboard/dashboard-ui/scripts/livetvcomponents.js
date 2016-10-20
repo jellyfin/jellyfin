@@ -87,7 +87,7 @@
             html += cardBuilder.getCardsHtml({
                 items: group.items,
                 shape: getBackdropShape(),
-                showTitle: true,
+                showParentTitleOrTitle: true,
                 showAirTime: true,
                 showAirEndTime: true,
                 showChannelName: true,

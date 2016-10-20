@@ -1,4 +1,5 @@
 define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'], function (actionsheet, datetime, playbackManager, globalize, appSettings) {
+    'use strict';
 
     var isMobileApp = window.Dashboard != null;
 
@@ -14,10 +15,10 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
         var serverId = item.ServerId;
         var resumePositionTicks = item.UserData ? item.UserData.PlaybackPositionTicks : null;
 
-        var showExternalPlayer = isMobileApp && mediaType == 'Video' && !isFolder && appSettings.enableExternalPlayers();
-        var playableItemId = itemType == 'Program' ? channelId : itemId;
+        var showExternalPlayer = isMobileApp && mediaType === 'Video' && !isFolder && appSettings.enableExternalPlayers();
+        var playableItemId = itemType === 'Program' ? channelId : itemId;
 
-        if (!resumePositionTicks && mediaType != "Audio" && !isFolder && !showExternalPlayer) {
+        if (!resumePositionTicks && mediaType !== "Audio" && !isFolder && !showExternalPlayer) {
             playbackManager.play({
                 ids: [playableItemId],
                 serverId: serverId
@@ -58,14 +59,14 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
             });
         }
 
-        if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
+        if (itemType === "Audio" || itemType === "MusicAlbum" || itemType === "MusicArtist" || itemType === "MusicGenre") {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#InstantMix'),
                 id: 'instantmix'
             });
         }
 
-        if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
+        if (isFolder || itemType === "MusicArtist" || itemType === "MusicGenre") {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Shuffle'),
                 id: 'shuffle'

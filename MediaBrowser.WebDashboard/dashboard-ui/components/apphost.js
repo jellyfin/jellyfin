@@ -155,7 +155,6 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         return features;
     }();
 
-
     var appInfo;
     var version = window.dashboardVersion || '3.0';
 

@@ -1,4 +1,5 @@
 define([], function () {
+    'use strict';
 
     return {
         openUrl: function (url) {

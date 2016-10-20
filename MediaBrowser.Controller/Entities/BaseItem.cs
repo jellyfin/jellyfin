@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class BaseItem
     /// </summary>
-    public abstract class BaseItem : IHasProviderIds, ILibraryItem, IHasImages, IHasUserData, IHasMetadata, IHasLookupInfo<ItemLookupInfo>
+    public abstract class BaseItem : IHasProviderIds, IHasImages, IHasUserData, IHasMetadata, IHasLookupInfo<ItemLookupInfo>
     {
         protected BaseItem()
         {

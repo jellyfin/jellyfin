@@ -72,7 +72,7 @@ namespace MediaBrowser.Providers.Manager
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
         }
 
-        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
+        public async Task SaveImage(IHasImages item, Stream source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(mimeType))
             {
@@ -109,9 +109,9 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
             }
-            if (!string.IsNullOrEmpty(internalCacheKey))
+            if (saveLocallyWithMedia.HasValue && !saveLocallyWithMedia.Value)
             {
-                saveLocally = false;
+                saveLocally = saveLocallyWithMedia.Value;
             }
 
             if (!imageIndex.HasValue && item.AllowsMultipleImages(type))
@@ -355,6 +355,11 @@ namespace MediaBrowser.Providers.Manager
         {
             var season = item as Season;
             var extension = MimeTypes.ToExtension(mimeType);
+
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                throw new ArgumentException(string.Format("Unable to determine image file extension from mime type {0}", mimeType));
+            }
 
             if (type == ImageType.Thumb && saveLocally)
             {

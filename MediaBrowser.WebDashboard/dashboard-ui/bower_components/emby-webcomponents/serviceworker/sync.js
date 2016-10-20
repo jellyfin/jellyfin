@@ -1,4 +1,6 @@
 self.addEventListener('sync', function (event) {
-    if (event.tag == 'emby-sync') {
+    'use strict';
+
+    if (event.tag === 'emby-sync') {
     }
 });

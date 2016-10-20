@@ -317,11 +317,30 @@ namespace MediaBrowser.Api.Playback
                 }
                 if (string.Equals(hwType, "vaapi", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(encodingOptions.VaapiDevice))
                 {
-                    return GetAvailableEncoder("h264_vaapi", defaultEncoder);
+                    if (IsVaapiSupported(state))
+                    {
+                        return GetAvailableEncoder("h264_vaapi", defaultEncoder);
+                    }
                 }
             }
 
             return defaultEncoder;
+        }
+
+        private bool IsVaapiSupported(StreamState state)
+        {
+            var videoStream = state.VideoStream;
+
+            if (videoStream != null)
+            {
+                // vaapi will throw an error with this input
+                // [vaapi @ 0x7faed8000960] No VAAPI support for codec mpeg4 profile -99.
+                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase) && videoStream.Level == -99)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private string GetAvailableEncoder(string preferredEncoder, string defaultEncoder)

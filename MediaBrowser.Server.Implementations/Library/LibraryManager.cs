@@ -2838,9 +2838,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool ValidateNetworkPath(string path)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT || !path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                return Directory.Exists(path);
+                // We can't validate protocol-based paths, so just allow them
+                if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return Directory.Exists(path);
+                }
             }
 
             // Without native support for unc, we cannot validate this when running under mono

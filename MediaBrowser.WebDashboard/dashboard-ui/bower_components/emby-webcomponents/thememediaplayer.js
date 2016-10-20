@@ -1,4 +1,5 @@
 define(['playbackManager', 'userSettings'], function (playbackManager, userSettings) {
+    'use strict';
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -39,7 +40,7 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
 
     function enabled(mediaType) {
 
-        if (mediaType == 'Video') {
+        if (mediaType === 'Video') {
             return userSettings.enableThemeVideos();
         }
 
@@ -55,7 +56,7 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
 
                 var ownerId = themeMediaResult.ThemeVideosResult.Items.length ? themeMediaResult.ThemeVideosResult.OwnerId : themeMediaResult.ThemeSongsResult.OwnerId;
 
-                if (ownerId != currentOwnerId) {
+                if (ownerId !== currentOwnerId) {
 
                     var items = themeMediaResult.ThemeVideosResult.Items.length ? themeMediaResult.ThemeVideosResult.Items : themeMediaResult.ThemeSongsResult.Items;
 

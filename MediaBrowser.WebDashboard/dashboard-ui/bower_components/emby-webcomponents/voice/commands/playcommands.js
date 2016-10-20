@@ -1,4 +1,5 @@
 ﻿define(['connectionManager', 'playbackManager', 'globalize'], function (connectionManager, playbackManager, globalize) {
+    'use strict';
 
     /// <summary> Play items. </summary>
     /// <param name="items"> The items. </param>
@@ -54,7 +55,6 @@
 
         return function () {
             var query = {
-
                 Limit: result.item.limit || 100,
                 UserId: result.userId,
                 ExcludeLocationTypes: "Virtual"
@@ -98,5 +98,5 @@
                 playItems(queryResult.Items, result.item.shuffle);
             });
         };
-    }
+    };
 });
