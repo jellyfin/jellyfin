@@ -295,6 +295,11 @@ namespace MediaBrowser.Api
             item.OfficialRating = string.IsNullOrWhiteSpace(request.OfficialRating) ? null : request.OfficialRating;
             item.CustomRating = request.CustomRating;
 
+            if (request.ProductionLocations != null)
+            {
+                item.ProductionLocations = request.ProductionLocations.ToList();
+            }
+
             item.PreferredMetadataCountryCode = request.PreferredMetadataCountryCode;
             item.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
 
