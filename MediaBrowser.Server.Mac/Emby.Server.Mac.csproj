@@ -690,9 +690,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardlivetvtuner.html">
       <Link>Resources\dashboard-ui\wizardlivetvtuner.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardservice.html">
-      <Link>Resources\dashboard-ui\wizardservice.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizardsettings.html">
       <Link>Resources\dashboard-ui\wizardsettings.html</Link>
     </BundleResource>
@@ -3509,9 +3506,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardlivetvtuner.js">
       <Link>Resources\dashboard-ui\scripts\wizardlivetvtuner.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardservice.js">
-      <Link>Resources\dashboard-ui\scripts\wizardservice.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\wizardsettings.js">
       <Link>Resources\dashboard-ui\scripts\wizardsettings.js</Link>
