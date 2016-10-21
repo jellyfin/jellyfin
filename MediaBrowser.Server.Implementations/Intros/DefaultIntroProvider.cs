@@ -108,9 +108,12 @@ namespace MediaBrowser.Server.Implementations.Intros
                     IsPlayed = config.EnableIntrosForWatchedContent ? (bool?)null : false,
                     MaxParentalRating = config.EnableIntrosParentalControl ? ratingLevel : null,
                     BlockUnratedItems = config.EnableIntrosParentalControl ? new[] { UnratedItem.Trailer } : new UnratedItem[] { },
-                    Limit = config.TrailerLimit,
+
+                    // Account for duplicates by imdb id, since the database doesn't support this yet
+                    Limit = config.TrailerLimit * 2,
                     SourceTypes = sourceTypes.ToArray()
-                });
+
+                }).Where(i => string.IsNullOrWhiteSpace(i.GetProviderId(MetadataProviders.Imdb)) || !string.Equals(i.GetProviderId(MetadataProviders.Imdb), item.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).Take(config.TrailerLimit);
 
                 candidates.AddRange(trailerResult.Select(i => new ItemWithTrailer
                 {
