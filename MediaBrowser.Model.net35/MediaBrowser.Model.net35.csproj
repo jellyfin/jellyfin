@@ -1163,9 +1163,6 @@
   <ItemGroup>
     <None Include="MediaBrowser.Model.snk" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="FodyWeavers.xml" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
