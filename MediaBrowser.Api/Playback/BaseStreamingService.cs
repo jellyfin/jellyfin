@@ -352,6 +352,11 @@ namespace MediaBrowser.Api.Playback
             return defaultEncoder;
         }
 
+        protected virtual string GetDefaultH264Preset()
+        {
+            return "superfast";
+        }
+
         /// <summary>
         /// Gets the video bitrate to specify on the command line
         /// </summary>
@@ -375,7 +380,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else
                 {
-                    param += "-preset superfast";
+                    param += "-preset " + GetDefaultH264Preset();
                 }
 
                 if (encodingOptions.H264Crf >= 0 && encodingOptions.H264Crf <= 51)

@@ -150,6 +150,11 @@ namespace MediaBrowser.Api.Playback.Progressive
                     args += " -copyts -avoid_negative_ts disabled -start_at_zero";
                 }
 
+                if (!state.RunTimeTicks.HasValue)
+                {
+                    args += " -fflags +genpts -flags +global_header";
+                }
+
                 return args;
             }
 
@@ -189,6 +194,11 @@ namespace MediaBrowser.Api.Playback.Progressive
             if (hasGraphicalSubs)
             {
                 args += GetGraphicalSubtitleParam(state, videoCodec);
+            }
+
+            if (!state.RunTimeTicks.HasValue)
+            {
+                args += " -fflags +genpts -flags +global_header";
             }
 
             return args;
