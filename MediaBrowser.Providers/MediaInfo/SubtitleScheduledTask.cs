@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
-        private IJsonSerializer _json;
+        private readonly IJsonSerializer _json;
 
         public SubtitleScheduledTask(ILibraryManager libraryManager, IJsonSerializer json, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
         {
@@ -138,12 +138,18 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             try
             {
-                return _json.DeserializeFromFile<Dictionary<string, DateTime>>(path);
+                var result = _json.DeserializeFromFile<Dictionary<string, DateTime>>(path);
+
+                if (result != null)
+                {
+                    return result;
+                }
             }
             catch
             {
-                return new Dictionary<string, DateTime>();
             }
+
+            return new Dictionary<string, DateTime>();
         }
 
         private async Task<bool> DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
