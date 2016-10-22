@@ -488,6 +488,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             if (!string.IsNullOrWhiteSpace(details.originalAirDate) && (!info.IsSeries || info.IsRepeat))
             {
                 info.OriginalAirDate = DateTime.Parse(details.originalAirDate);
+                info.ProductionYear = info.OriginalAirDate.Value.Year;
             }
 
             if (details.genres != null)
