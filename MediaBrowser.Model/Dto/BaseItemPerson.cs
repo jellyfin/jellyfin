@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {

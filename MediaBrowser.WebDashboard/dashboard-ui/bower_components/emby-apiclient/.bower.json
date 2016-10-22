@@ -16,12 +16,12 @@
   },
   "devDependencies": {},
   "ignore": [],
-  "version": "1.1.91",
-  "_release": "1.1.91",
+  "version": "1.1.92",
+  "_release": "1.1.92",
   "_resolution": {
     "type": "version",
-    "tag": "1.1.91",
-    "commit": "f94b80f14bce6922acf1dbd749a60ad54e4abfd8"
+    "tag": "1.1.92",
+    "commit": "0a48f9a0b64a422c4466938b24aa983041a89f52"
   },
   "_source": "https://github.com/MediaBrowser/Emby.ApiClient.Javascript.git",
   "_target": "^1.1.51",

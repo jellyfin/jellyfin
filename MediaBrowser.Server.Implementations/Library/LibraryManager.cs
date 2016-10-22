@@ -40,7 +40,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Server.Implementations.Library.Resolvers;
-using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;

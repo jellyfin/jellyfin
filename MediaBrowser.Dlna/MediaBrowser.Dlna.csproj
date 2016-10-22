@@ -12,7 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -24,7 +24,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -33,7 +32,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -44,9 +42,6 @@
     <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -96,6 +91,16 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
+    <Compile Include="ProfileSerialization\CodecProfile.cs" />
+    <Compile Include="ProfileSerialization\ContainerProfile.cs" />
+    <Compile Include="ProfileSerialization\DeviceProfile.cs" />
+    <Compile Include="ProfileSerialization\DirectPlayProfile.cs" />
+    <Compile Include="ProfileSerialization\HttpHeaderInfo.cs" />
+    <Compile Include="ProfileSerialization\ProfileCondition.cs" />
+    <Compile Include="ProfileSerialization\ResponseProfile.cs" />
+    <Compile Include="ProfileSerialization\SubtitleProfile.cs" />
+    <Compile Include="ProfileSerialization\TranscodingProfile.cs" />
+    <Compile Include="ProfileSerialization\XmlAttribute.cs" />
     <Compile Include="Profiles\BubbleUpnpProfile.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
@@ -174,53 +179,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
-    <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
-    <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Samsung Smart TV.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2013.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
-    <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Default.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Images\logo120.jpg" />
     <EmbeddedResource Include="Images\logo120.png" />
     <EmbeddedResource Include="Images\logo48.jpg" />
     <EmbeddedResource Include="Images\logo48.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Images\logo240.jpg" />
     <EmbeddedResource Include="Images\logo240.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Dish Hopper-Joey.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\people48.jpg" />
@@ -231,30 +197,38 @@
     <EmbeddedResource Include="Images\people480.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Vlc.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Kodi.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Profiles\Json\BubbleUPnp.json" />
+    <EmbeddedResource Include="Profiles\Json\Default.json" />
+    <EmbeddedResource Include="Profiles\Json\Denon AVR.json" />
+    <EmbeddedResource Include="Profiles\Json\DirecTV HD-DVR.json" />
+    <EmbeddedResource Include="Profiles\Json\Dish Hopper-Joey.json" />
+    <EmbeddedResource Include="Profiles\Json\foobar2000.json" />
+    <EmbeddedResource Include="Profiles\Json\Kodi.json" />
+    <EmbeddedResource Include="Profiles\Json\LG Smart TV.json" />
+    <EmbeddedResource Include="Profiles\Json\Linksys DMA2100.json" />
+    <EmbeddedResource Include="Profiles\Json\MediaMonkey.json" />
+    <EmbeddedResource Include="Profiles\Json\Panasonic Viera.json" />
+    <EmbeddedResource Include="Profiles\Json\Popcorn Hour.json" />
+    <EmbeddedResource Include="Profiles\Json\Samsung Smart TV.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2013.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2014.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2015.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2016.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282010%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282011%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282012%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282013%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282014%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 3.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 4.json" />
+    <EmbeddedResource Include="Profiles\Json\Vlc.json" />
+    <EmbeddedResource Include="Profiles\Json\WDTV Live.json" />
+    <EmbeddedResource Include="Profiles\Json\Xbox 360.json" />
+    <EmbeddedResource Include="Profiles\Json\Xbox One.json" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2014.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2015.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2016.xml" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

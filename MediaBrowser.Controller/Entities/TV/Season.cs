@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
-using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;

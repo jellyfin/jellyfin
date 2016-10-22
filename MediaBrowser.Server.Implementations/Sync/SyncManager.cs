@@ -21,7 +21,6 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -602,7 +601,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (query.AddMetadata)
             {
-                result.Items.ForEach(FillMetadata);
+                foreach (var item in result.Items)
+                {
+                    FillMetadata(item);
+                }
             }
 
             return result;

@@ -4,12 +4,12 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {

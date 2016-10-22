@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using MediaBrowser.Common.Threading;
+using MediaBrowser.Controller.Threading;
 using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints

@@ -1,11 +1,10 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
-using System.Xml.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dlna
 {
-    [XmlRoot("Profile")]
     public class DeviceProfile
     {
         /// <summary>
@@ -14,10 +13,10 @@ namespace MediaBrowser.Model.Dlna
         /// <value>The name.</value>
         public string Name { get; set; }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public string Id { get; set; }
 
-        [XmlIgnore]
+        [IgnoreDataMember]
         public DeviceProfileType ProfileType { get; set; }
 
         /// <summary>

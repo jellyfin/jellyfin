@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using CommonIO;
-using MediaBrowser.Common.Threading;
+using MediaBrowser.Controller.Threading;
 
 namespace MediaBrowser.Server.Implementations.News
 {

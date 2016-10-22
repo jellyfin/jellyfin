@@ -3,7 +3,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.LiveTv
 {

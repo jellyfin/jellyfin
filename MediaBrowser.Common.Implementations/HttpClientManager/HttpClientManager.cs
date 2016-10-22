@@ -342,7 +342,6 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                             ResponseUrl = url,
                             Content = memoryStream,
                             StatusCode = HttpStatusCode.OK,
-                            Headers = new NameValueCollection(),
                             ContentLength = memoryStream.Length
                         };
                     }
@@ -487,7 +486,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, Stream content, long? contentLength, IDisposable disposable)
         {
-            return new HttpResponseInfo(disposable)
+            var responseInfo = new HttpResponseInfo(disposable)
             {
                 Content = content,
 
@@ -495,17 +494,22 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 ContentType = httpResponse.ContentType,
 
-                Headers = new NameValueCollection(httpResponse.Headers),
-
                 ContentLength = contentLength,
 
                 ResponseUrl = httpResponse.ResponseUri.ToString()
             };
+
+            if (httpResponse.Headers != null)
+            {
+                SetHeaders(httpResponse.Headers, responseInfo);
+            }
+
+            return responseInfo;
         }
 
         private HttpResponseInfo GetResponseInfo(HttpWebResponse httpResponse, string tempFile, long? contentLength)
         {
-            return new HttpResponseInfo
+            var responseInfo = new HttpResponseInfo
             {
                 TempFilePath = tempFile,
 
@@ -513,10 +517,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                 ContentType = httpResponse.ContentType,
 
-                Headers = httpResponse.Headers,
-
                 ContentLength = contentLength
             };
+
+            if (httpResponse.Headers != null)
+            {
+                SetHeaders(httpResponse.Headers, responseInfo);
+            }
+
+            return responseInfo;
+        }
+
+        private void SetHeaders(WebHeaderCollection headers, HttpResponseInfo responseInfo)
+        {
+            foreach (var key in headers.AllKeys)
+            {
+                responseInfo.Headers[key] = headers[key];
+            }
         }
 
         public Task<HttpResponseInfo> Post(HttpRequestOptions options)
