@@ -91,6 +91,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     args += " -bsf:v h264_mp4toannexb";
                 }
+                args += " -flags +global_header";
                 return args;
             }
 
@@ -113,7 +114,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 args += GetGraphicalSubtitleParam(state, codec);
             }
 
-            args += " -flags -global_header";
+            args += " -flags +global_header";
 
             return args;
         }

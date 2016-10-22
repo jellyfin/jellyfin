@@ -159,15 +159,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
-            var originalRuntime = mediaSource.RunTimeTicks;
-
             mediaSource.DefaultSubtitleStreamIndex = null;
 
             // Null this out so that it will be treated like a live stream
-            if (!originalRuntime.HasValue)
-            {
-                mediaSource.RunTimeTicks = null;
-            }
+            mediaSource.RunTimeTicks = null;
 
             var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
 

@@ -17,7 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
-using MoreLinq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -201,7 +201,7 @@ namespace MediaBrowser.Controller.Entities
                     return await GetMusicFolders(queryParent, user, query).ConfigureAwait(false);
 
                 case SpecialFolder.MusicGenres:
-                    return await GetMusicGenres(queryParent, user, query).ConfigureAwait(false);
+                    return GetMusicGenres(queryParent, user, query);
 
                 case SpecialFolder.MusicGenre:
                     return await GetMusicGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
@@ -290,32 +290,20 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(list, parent, query);
         }
 
-        private async Task<QueryResult<BaseItem>> GetMusicGenres(Folder parent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMusicGenres(Folder parent, User user, InternalItemsQuery query)
         {
-            var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
-                .Where(i => !i.IsFolder)
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetMusicGenre(i);
-                    }
-                    catch
-                    {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
-                        return null;
-                    }
+            var result = _libraryManager.GetMusicGenres(new InternalItemsQuery(user)
+            {
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            });
 
-                })
-                .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MusicGenre, i.SortName, parent));
-
-            var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return GetResult(genres, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = result.TotalRecordCount,
+                Items = result.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private async Task<QueryResult<BaseItem>> GetMusicGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
@@ -332,50 +320,51 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = parent.QueryRecursive(new InternalItemsQuery(user)
+            var artists = _libraryManager.GetAlbumArtists(new InternalItemsQuery(user)
             {
-                Recursive = true,
-                ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
-                EnableTotalRecordCount = false
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            });
 
-            }).Items.Cast<IHasAlbumArtist>();
-
-            var artists = _libraryManager.GetAlbumArtists(items);
-
-            return GetResult(artists, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = artists.TotalRecordCount,
+                Items = artists.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = parent.QueryRecursive(new InternalItemsQuery(user)
+            var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
             {
-                Recursive = true,
-                ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name, typeof(MusicVideo).Name },
-                EnableTotalRecordCount = false
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            });
 
-            }).Items.Cast<IHasArtist>();
-
-            var artists = _libraryManager.GetArtists(items);
-
-            return GetResult(artists, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = artists.TotalRecordCount,
+                Items = artists.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var items = parent.QueryRecursive(new InternalItemsQuery(user)
+            var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
             {
-                Recursive = true,
-                ParentId = parent.Id,
-                IncludeItemTypes = new[] { typeof(Audio.Audio).Name },
-                EnableTotalRecordCount = false
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit,
+                IsFavorite = true
+            });
 
-            }).Items.Cast<IHasAlbumArtist>();
-
-            var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user, i).IsFavorite);
-
-            return GetResult(artists, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = artists.TotalRecordCount,
+                Items = artists.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private QueryResult<BaseItem> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
@@ -577,35 +566,18 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> GetMovieGenres(Folder parent, User user, InternalItemsQuery query)
         {
-            var tasks = parent.QueryRecursive(new InternalItemsQuery(user)
+            var result = _libraryManager.GetGenres(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Movie).Name },
-                Recursive = true,
-                EnableTotalRecordCount = false
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            });
 
-            }).Items
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetGenre(i);
-                    }
-                    catch
-                    {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
-                        return null;
-                    }
-
-                })
-                .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
-
-            var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return GetResult(genres, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = result.TotalRecordCount,
+                Items = result.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private async Task<QueryResult<BaseItem>> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
@@ -720,35 +692,18 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> GetTvGenres(Folder parent, User user, InternalItemsQuery query)
         {
-            var tasks = parent.QueryRecursive(new InternalItemsQuery(user)
+            var result = _libraryManager.GetGenres(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { typeof(Series).Name },
-                Recursive = true,
-                EnableTotalRecordCount = false
+                AncestorIds = new[] { parent.Id.ToString("N") },
+                StartIndex = query.StartIndex,
+                Limit = query.Limit
+            });
 
-            }).Items
-                .SelectMany(i => i.Genres)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetGenre(i);
-                    }
-                    catch
-                    {
-                        // Full exception logged at lower levels
-                        _logger.Error("Error getting genre");
-                        return null;
-                    }
-
-                })
-                .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
-
-            var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return GetResult(genres, parent, query);
+            return new QueryResult<BaseItem>
+            {
+                TotalRecordCount = result.TotalRecordCount,
+                Items = result.Items.Select(i => i.Item1).ToArray()
+            };
         }
 
         private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)

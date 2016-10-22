@@ -5,11 +5,9 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
-        [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
         public ProfileCondition[] Conditions { get; set; }
 
-        [XmlAttribute("container")]
         public string Container { get; set; }
 
         public ContainerProfile()

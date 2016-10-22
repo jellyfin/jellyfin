@@ -8,12 +8,6 @@ namespace MediaBrowser.Common.Net
     public interface INetworkManager
     {
         /// <summary>
-        /// Gets the machine's local ip address
-        /// </summary>
-        /// <returns>IPAddress.</returns>
-		IEnumerable<IPAddress> GetLocalIpAddresses();
-
-        /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>
         /// <returns>System.Int32.</returns>
@@ -44,13 +38,6 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>PC's in the Domain</returns>
         IEnumerable<FileSystemEntryInfo> GetNetworkDevices();
-
-        /// <summary>
-        /// Parses the specified endpointstring.
-        /// </summary>
-        /// <param name="endpointstring">The endpointstring.</param>
-        /// <returns>IPEndPoint.</returns>
-        IPEndPoint Parse(string endpointstring);
 
         /// <summary>
         /// Determines whether [is in local network] [the specified endpoint].

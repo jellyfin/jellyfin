@@ -277,9 +277,27 @@ namespace MediaBrowser.Dlna
         {
             try
             {
-                return _fileSystem.GetFiles(path)
+                var allFiles = _fileSystem.GetFiles(path)
+                    .ToList();
+
+                var xmlFies = allFiles
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                    .Select(i => ParseProfileXmlFile(i.FullName, type))
+                    .ToList();
+
+                var jsonFiles = allFiles
+                    .Where(i => string.Equals(i.Extension, ".json", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var jsonFileNames = jsonFiles
+                    .Select(i => Path.GetFileNameWithoutExtension(i.Name))
+                    .ToList();
+
+                var parseFiles = jsonFiles.ToList();
+
+                parseFiles.AddRange(xmlFies.Where(i => !jsonFileNames.Contains(Path.GetFileNameWithoutExtension(i.Name), StringComparer.Ordinal)));
+
+                return parseFiles
+                    .Select(i => ParseProfileFile(i.FullName, type))
                     .Where(i => i != null)
                     .ToList();
             }
@@ -289,7 +307,7 @@ namespace MediaBrowser.Dlna
             }
         }
 
-        private DeviceProfile ParseProfileXmlFile(string path, DeviceProfileType type)
+        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
         {
             lock (_profiles)
             {
@@ -301,7 +319,19 @@ namespace MediaBrowser.Dlna
 
                 try
                 {
-                    var profile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
+                    DeviceProfile profile;
+
+                    if (string.Equals(Path.GetExtension(path), ".xml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var tempProfile = (MediaBrowser.Dlna.ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(MediaBrowser.Dlna.ProfileSerialization.DeviceProfile), path);
+
+                        var json = _jsonSerializer.SerializeToString(tempProfile);
+                        profile = (DeviceProfile)_jsonSerializer.DeserializeFromString<DeviceProfile>(json);
+                    }
+                    else
+                    {
+                        profile = (DeviceProfile)_jsonSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
+                    }
 
                     profile.Id = path.ToLower().GetMD5().ToString("N");
                     profile.ProfileType = type;
@@ -312,7 +342,7 @@ namespace MediaBrowser.Dlna
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error parsing profile xml: {0}", ex, path);
+                    _logger.ErrorException("Error parsing profile file: {0}", ex, path);
 
                     return null;
                 }
@@ -328,7 +358,7 @@ namespace MediaBrowser.Dlna
 
             var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
 
-            return ParseProfileXmlFile(info.Path, info.Info.Type);
+            return ParseProfileFile(info.Path, info.Info.Type);
         }
 
         private IEnumerable<InternalProfileInfo> GetProfileInfosInternal()
@@ -346,21 +376,6 @@ namespace MediaBrowser.Dlna
         public IEnumerable<DeviceProfileInfo> GetProfileInfos()
         {
             return GetProfileInfosInternal().Select(i => i.Info);
-        }
-
-        private IEnumerable<InternalProfileInfo> GetProfileInfos(string path, DeviceProfileType type)
-        {
-            try
-            {
-                return _fileSystem.GetFiles(path)
-                    .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
-                    .Select(i => GetInternalProfileInfo(i, type))
-                    .ToList();
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return new List<InternalProfileInfo>();
-            }
         }
 
         private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
@@ -381,7 +396,7 @@ namespace MediaBrowser.Dlna
         private void ExtractSystemProfiles()
         {
             var assembly = GetType().Assembly;
-            var namespaceName = GetType().Namespace + ".Profiles.Xml.";
+            var namespaceName = GetType().Namespace + ".Profiles.Json.";
 
             var systemProfilesPath = SystemProfilesPath;
 
@@ -439,7 +454,7 @@ namespace MediaBrowser.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".json";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
             SaveProfile(profile, path, DeviceProfileType.User);
@@ -460,7 +475,7 @@ namespace MediaBrowser.Dlna
 
             var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
 
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".json";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
             if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
@@ -478,7 +493,21 @@ namespace MediaBrowser.Dlna
             {
                 _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
             }
-            _xmlSerializer.SerializeToFile(profile, path);
+            SerializeToJson(profile, path);
+        }
+
+        internal void SerializeToJson(DeviceProfile profile, string path)
+        {
+            _jsonSerializer.SerializeToFile(profile, path);
+
+            try
+            {
+                File.Delete(Path.ChangeExtension(path, ".xml"));
+            }
+            catch
+            {
+
+            }
         }
 
         /// <summary>
@@ -532,14 +561,14 @@ namespace MediaBrowser.Dlna
     class DlnaProfileEntryPoint : IServerEntryPoint
     {
         private readonly IApplicationPaths _appPaths;
-        private readonly IXmlSerializer _xmlSerializer;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
 
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IXmlSerializer xmlSerializer, IFileSystem fileSystem)
+        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
         {
             _appPaths = appPaths;
-            _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
+            _jsonSerializer = jsonSerializer;
         }
 
         public void Run()
@@ -587,9 +616,9 @@ namespace MediaBrowser.Dlna
 
             foreach (var item in list)
             {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
+                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".json");
 
-                _xmlSerializer.SerializeToFile(item, path);
+                _jsonSerializer.SerializeToFile(item, path);
             }
         }
 

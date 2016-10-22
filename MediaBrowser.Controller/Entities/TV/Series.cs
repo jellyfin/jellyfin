@@ -9,8 +9,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -106,6 +106,12 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private string AddLibrariesToPresentationUniqueKey(string key)
         {
+            var lang = GetPreferredMetadataLanguage();
+            if (!string.IsNullOrWhiteSpace(lang))
+            {
+                key += "-" + lang;
+            }
+
             var folders = LibraryManager.GetCollectionFolders(this)
                 .Select(i => i.Id.ToString("N"))
                 .ToArray();
@@ -209,8 +215,8 @@ namespace MediaBrowser.Controller.Entities.TV
             var query = new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] {typeof (Season).Name},
-                SortBy = new[] {ItemSortBy.SortName}
+                IncludeItemTypes = new[] { typeof(Season).Name },
+                SortBy = new[] { ItemSortBy.SortName }
             };
 
             if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
@@ -267,8 +273,8 @@ namespace MediaBrowser.Controller.Entities.TV
             var query = new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] {typeof (Episode).Name, typeof (Season).Name},
-                SortBy = new[] {ItemSortBy.SortName}
+                IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name },
+                SortBy = new[] { ItemSortBy.SortName }
             };
             var config = user.Configuration;
             if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
