@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</ProjectGuid>
@@ -9,12 +10,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MediaBrowser.Model</RootNamespace>
     <AssemblyName>MediaBrowser.Model</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <ReleaseVersion>
-    </ReleaseVersion>
-    <NuGetPackageImportStamp>60e95275</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +24,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,21 +33,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release Mono\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
@@ -115,8 +103,15 @@
     <Compile Include="Devices\LocalFileInfo.cs" />
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />
+    <Compile Include="Dlna\CodecProfile.cs" />
+    <Compile Include="Dlna\ContainerProfile.cs" />
+    <Compile Include="Dlna\DeviceProfile.cs" />
+    <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\EncodingContext.cs" />
+    <Compile Include="Dlna\HttpHeaderInfo.cs" />
     <Compile Include="Dlna\ITranscoderSupport.cs" />
+    <Compile Include="Dlna\ProfileCondition.cs" />
+    <Compile Include="Dlna\ResponseProfile.cs" />
     <Compile Include="Dlna\StreamInfoSorter.cs" />
     <Compile Include="Dlna\PlaybackErrorCode.cs" />
     <Compile Include="Dlna\PlaybackException.cs" />
@@ -124,7 +119,10 @@
     <Compile Include="Dlna\ResolutionNormalizer.cs" />
     <Compile Include="Dlna\ResolutionOptions.cs" />
     <Compile Include="Dlna\SubtitleDeliveryMethod.cs" />
+    <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
+    <Compile Include="Dlna\TranscodingProfile.cs" />
+    <Compile Include="Dlna\XmlAttribute.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\IHasSyncInfo.cs" />
@@ -132,7 +130,9 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
+    <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
+    <Compile Include="Health\IHealthMonitor.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
@@ -154,7 +154,6 @@
     <Compile Include="Configuration\MetadataOptions.cs" />
     <Compile Include="Configuration\MetadataPluginSummary.cs" />
     <Compile Include="Configuration\MetadataPluginType.cs" />
-    <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="MediaInfo\MediaProtocol.cs" />
     <Compile Include="MediaInfo\SubtitleTrackEvent.cs" />
     <Compile Include="MediaInfo\SubtitleTrackInfo.cs" />
@@ -172,36 +171,27 @@
     <Compile Include="Providers\SubtitleOptions.cs" />
     <Compile Include="Configuration\UnratedItem.cs" />
     <Compile Include="Dlna\AudioOptions.cs" />
-    <Compile Include="Dlna\CodecProfile.cs" />
     <Compile Include="Dlna\CodecType.cs" />
     <Compile Include="Dlna\ConditionProcessor.cs" />
-    <Compile Include="Dlna\ContainerProfile.cs" />
     <Compile Include="Dlna\ContentFeatureBuilder.cs" />
     <Compile Include="Dlna\DeviceIdentification.cs" />
-    <Compile Include="Dlna\DeviceProfile.cs" />
     <Compile Include="Dlna\DeviceProfileInfo.cs" />
     <Compile Include="Dlna\DeviceProfileType.cs" />
-    <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\DlnaFlags.cs" />
     <Compile Include="Dlna\DlnaMaps.cs" />
     <Compile Include="Dlna\DlnaProfileType.cs" />
     <Compile Include="Dlna\HeaderMatchType.cs" />
-    <Compile Include="Dlna\HttpHeaderInfo.cs" />
     <Compile Include="Dlna\MediaFormatProfile.cs" />
     <Compile Include="Dlna\MediaFormatProfileResolver.cs" />
-    <Compile Include="Dlna\ProfileCondition.cs" />
     <Compile Include="Dlna\ProfileConditionType.cs" />
     <Compile Include="Dlna\ProfileConditionValue.cs" />
-    <Compile Include="Dlna\ResponseProfile.cs" />
     <Compile Include="Dlna\SearchCriteria.cs" />
     <Compile Include="Dlna\SearchType.cs" />
     <Compile Include="Dlna\SortCriteria.cs" />
     <Compile Include="Dlna\StreamBuilder.cs" />
     <Compile Include="Dlna\StreamInfo.cs" />
     <Compile Include="Dlna\TranscodeSeekInfo.cs" />
-    <Compile Include="Dlna\TranscodingProfile.cs" />
     <Compile Include="Dlna\VideoOptions.cs" />
-    <Compile Include="Dlna\XmlAttribute.cs" />
     <Compile Include="Drawing\ImageFormat.cs" />
     <Compile Include="Drawing\ImageSize.cs" />
     <Compile Include="Dto\BaseItemPerson.cs" />
@@ -226,7 +216,6 @@
     <Compile Include="Entities\SortOrder.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
     <Compile Include="Extensions\DoubleHelper.cs" />
-    <Compile Include="Extensions\IntHelper.cs" />
     <Compile Include="Extensions\ListHelper.cs" />
     <Compile Include="Extensions\StringHelper.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizationRequest.cs" />
@@ -316,6 +305,7 @@
     <Compile Include="Querying\UserQuery.cs" />
     <Compile Include="Registration\RegistrationInfo.cs" />
     <Compile Include="Search\SearchQuery.cs" />
+    <Compile Include="Serialization\IgnoreDataMemberAttribute.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
     <Compile Include="Session\ClientCapabilities.cs" />
     <Compile Include="Session\GeneralCommand.cs" />
@@ -434,20 +424,7 @@
     <Compile Include="Users\UserActionType.cs" />
     <Compile Include="Users\UserPolicy.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent />
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent />
-  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -16,7 +16,6 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Sync;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,6 +24,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {

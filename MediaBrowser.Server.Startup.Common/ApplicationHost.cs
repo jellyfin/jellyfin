@@ -102,6 +102,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Api.Playback;
+using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Controller.Entities.Audio;
@@ -1364,7 +1365,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         public async Task<List<IPAddress>> GetLocalIpAddresses()
         {
-            var addresses = NetworkManager.GetLocalIpAddresses().ToList();
+            // Need to do this until Common will compile with this method
+            var nativeNetworkManager = (BaseNetworkManager)NetworkManager;
+
+            var addresses = nativeNetworkManager.GetLocalIpAddresses().ToList();
             var list = new List<IPAddress>();
 
             foreach (var address in addresses)

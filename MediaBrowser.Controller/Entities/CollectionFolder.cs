@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Serialization;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
             PhysicalLocationsList = new List<string>();
         }
 
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         protected override bool SupportsShortcutChildren
         {
             get
@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override Guid DisplayPreferencesId
         {
             get
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override IEnumerable<string> PhysicalLocations
         {
             get
@@ -283,7 +283,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get { return GetActualChildren(); }
@@ -322,7 +322,7 @@ namespace MediaBrowser.Controller.Entities
             return result;
         }
 
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override bool SupportsPeople
         {
             get

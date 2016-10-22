@@ -7,11 +7,11 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Server.Implementations.Photos;
-using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {

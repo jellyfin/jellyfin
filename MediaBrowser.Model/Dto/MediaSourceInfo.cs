@@ -3,7 +3,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {

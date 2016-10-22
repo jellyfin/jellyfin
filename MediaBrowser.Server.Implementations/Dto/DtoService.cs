@@ -19,13 +19,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
-using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Server.Implementations.Dto
 {
