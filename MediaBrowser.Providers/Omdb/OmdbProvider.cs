@@ -124,7 +124,12 @@ namespace MediaBrowser.Providers.Omdb
 
             T item = itemResult.Item;
 
-            var seasonResult = await GetSeasonRootObject(imdbId, seasonNumber, cancellationToken);
+            var seasonResult = await GetSeasonRootObject(imdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
+
+            if (seasonResult == null)
+            {
+                return false;
+            }
 
             RootObject result = null;
 
@@ -141,7 +146,6 @@ namespace MediaBrowser.Providers.Omdb
             {
                 return false;
             }
-
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
