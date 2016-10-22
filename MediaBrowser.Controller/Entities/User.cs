@@ -42,7 +42,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override string Path
         {
             get
@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public Folder RootFolder
         {
             get
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserConfiguration _config;
         private readonly object _configSyncLock = new object();
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public UserConfiguration Configuration
         {
             get
@@ -152,7 +152,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserPolicy _policy;
         private readonly object _policySyncLock = new object();
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public UserPolicy Policy
         {
             get
@@ -232,7 +232,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration directory
         /// </summary>
         /// <value>The configuration directory path.</value>
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public string ConfigurationDirectoryPath
         {
             get
@@ -308,7 +308,7 @@ namespace MediaBrowser.Controller.Entities
             return Configuration.GroupedFolders.Select(i => new Guid(i)).Contains(id);
         }
 
-        [IgnoreDataMember]
+        [System.Runtime.Serialization.IgnoreDataMember]
         public override bool SupportsPeople
         {
             get

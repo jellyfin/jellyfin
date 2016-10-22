@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using MoreLinq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Common.Implementations.Networking
 {
@@ -308,7 +308,7 @@ namespace MediaBrowser.Common.Implementations.Networking
             string[] values = endpointstring.Split(new char[] { ':' });
             IPAddress ipaddy;
             int port = -1;
-
+          
             //check if we have an IPv6 or ports
             if (values.Length <= 2) // ipv4 or hostname
             {

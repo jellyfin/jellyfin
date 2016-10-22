@@ -19,7 +19,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
-using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -35,6 +34,7 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Server.Implementations.LiveTv.Listings;
 
 namespace MediaBrowser.Server.Implementations.LiveTv

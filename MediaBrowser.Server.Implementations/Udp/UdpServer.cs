@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Implementations.Networking;
 
 namespace MediaBrowser.Server.Implementations.Udp
 {
@@ -310,7 +311,10 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             try
             {
-                await _udpClient.SendAsync(bytes, bytes.Length, _networkManager.Parse(remoteEndPoint)).ConfigureAwait(false);
+                // Need to do this until Common will compile with this method
+                var nativeNetworkManager = (BaseNetworkManager) _networkManager;
+
+                await _udpClient.SendAsync(bytes, bytes.Length, nativeNetworkManager.Parse(remoteEndPoint)).ConfigureAwait(false);
 
                 _logger.Info("Udp message sent to {0}", remoteEndPoint);
             }

@@ -7,12 +7,12 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Server.Implementations.Photos;
-using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Playlists

@@ -6,17 +6,14 @@ namespace MediaBrowser.Model.Dlna
 {
     public class CodecProfile
     {
-        [XmlAttribute("type")]
         public CodecType Type { get; set; }
        
         public ProfileCondition[] Conditions { get; set; }
 
         public ProfileCondition[] ApplyConditions { get; set; }
 
-        [XmlAttribute("codec")]
         public string Codec { get; set; }
 
-        [XmlAttribute("container")]
         public string Container { get; set; }
 
         public CodecProfile()

@@ -3,7 +3,7 @@ using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Users;
 using System;
 using System.Diagnostics;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
