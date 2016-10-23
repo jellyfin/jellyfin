@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
 using System.Linq;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Class ScheduledTaskHelpers

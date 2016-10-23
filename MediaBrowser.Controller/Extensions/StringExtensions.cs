@@ -2,17 +2,14 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using MediaBrowser.Model.Cryptography;
 
 namespace MediaBrowser.Controller.Extensions
 {
     /// <summary>
     /// Class BaseExtensions
     /// </summary>
-    public static class BaseExtensions
+    public static class StringExtensions
     {
-        public static ICryptographyProvider CryptographyProvider { get; set; }
-
         public static string RemoveDiacritics(this string text)
         {
             return String.Concat(

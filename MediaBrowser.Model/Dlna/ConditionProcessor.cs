@@ -171,7 +171,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             bool expected;
-            if (BoolHelper.TryParseCultureInvariant(condition.Value, out expected))
+            if (bool.TryParse(condition.Value, out expected))
             {
                 switch (condition.Condition)
                 {
@@ -196,7 +196,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             float expected;
-            if (FloatHelper.TryParseCultureInvariant(condition.Value, out expected))
+            if (float.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
             {
                 switch (condition.Condition)
                 {
@@ -225,7 +225,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             double expected;
-            if (DoubleHelper.TryParseCultureInvariant(condition.Value, out expected))
+            if (double.TryParse(condition.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out expected))
             {
                 switch (condition.Condition)
                 {

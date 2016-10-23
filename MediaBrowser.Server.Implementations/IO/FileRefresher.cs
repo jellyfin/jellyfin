@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 
 namespace MediaBrowser.Server.Implementations.IO

@@ -1111,7 +1111,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoFramerate:
                         {
                             float num;
-                            if (FloatHelper.TryParseCultureInvariant(value, out num))
+                            if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxFramerate = num;
                             }

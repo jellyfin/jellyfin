@@ -43,6 +43,7 @@ using MediaBrowser.Server.Implementations.Library.Resolvers;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Library
 {

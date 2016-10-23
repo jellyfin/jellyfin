@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
+using MediaBrowser.Model.Events;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Interface IScheduledTaskWorker
@@ -60,7 +59,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the triggers that define when the task will run
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="System.ArgumentNullException">value</exception>
+        /// <exception cref="ArgumentNullException">value</exception>
         TaskTriggerInfo[] Triggers { get; set; }
 
         /// <summary>
