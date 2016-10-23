@@ -192,7 +192,7 @@ namespace MediaBrowser.ServerApplication
             {
                 _logger.Info("Found a duplicate process. Giving it time to exit.");
 
-                if (!duplicate.WaitForExit(20000))
+                if (!duplicate.WaitForExit(30000))
                 {
                     _logger.Info("The duplicate process did not exit.");
                     return true;
