@@ -5,10 +5,11 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    class RefreshChannelsScheduledTask : IScheduledTask
     {
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;
@@ -48,12 +49,21 @@ namespace MediaBrowser.Server.Implementations.Channels
                     .ConfigureAwait(false);
         }
 
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        /// <summary>
+        /// Creates the triggers that define when the task will run
+        /// </summary>
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[] 
-            { 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(24)}
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
+        }
+
+        public string Key
+        {
+            get { return "RefreshInternetChannels"; }
         }
 
         public bool IsHidden

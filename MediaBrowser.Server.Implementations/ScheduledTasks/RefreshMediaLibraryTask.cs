@@ -7,13 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class RefreshMediaLibraryTask
     /// </summary>
-    public class RefreshMediaLibraryTask : IScheduledTask, IHasKey
+    public class RefreshMediaLibraryTask : IScheduledTask
     {
         /// <summary>
         /// The _library manager
@@ -32,18 +33,16 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Gets the default triggers.
+        /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            var list = new ITaskTrigger[] { 
-
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(12)}
-
-            }.ToList();
-
-            return list;
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks}
+            };
         }
 
         /// <summary>

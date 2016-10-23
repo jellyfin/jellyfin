@@ -6,10 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
+    public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IConfigurationManager _config;
@@ -42,11 +43,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return manager.RefreshChannels(progress, cancellationToken);
         }
 
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        /// <summary>
+        /// Creates the triggers that define when the task will run
+        /// </summary>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[] 
-            { 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(12)}
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(12).Ticks}
             };
         }
 
@@ -61,6 +67,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         }
 
         public bool IsEnabled
+        {
+            get { return true; }
+        }
+
+        public bool IsLogged
         {
             get { return true; }
         }

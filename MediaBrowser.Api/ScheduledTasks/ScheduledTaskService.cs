@@ -198,17 +198,13 @@ namespace MediaBrowser.Api.ScheduledTasks
                 throw new ResourceNotFoundException("Task not found");
             }
 
-            var hasKey = task.ScheduledTask as IHasKey;
-            if (hasKey != null)
+            if (string.Equals(task.ScheduledTask.Key, "SystemUpdateTask", StringComparison.OrdinalIgnoreCase))
             {
-                if (string.Equals(hasKey.Key, "SystemUpdateTask", StringComparison.OrdinalIgnoreCase))
+                // This is a hack for now just to get the update application function to work when auto-update is disabled
+                if (!_config.Configuration.EnableAutoUpdate)
                 {
-                    // This is a hack for now just to get the update application function to work when auto-update is disabled
-                    if (!_config.Configuration.EnableAutoUpdate)
-                    {
-                        _config.Configuration.EnableAutoUpdate = true;
-                        _config.SaveConfiguration();
-                    }
+                    _config.Configuration.EnableAutoUpdate = true;
+                    _config.SaveConfiguration();
                 }
             }
 
@@ -252,7 +248,7 @@ namespace MediaBrowser.Api.ScheduledTasks
 
             var triggerInfos = request;
 
-            task.Triggers = triggerInfos.Select(ScheduledTaskHelpers.GetTrigger);
+            task.Triggers = triggerInfos.ToArray();
         }
     }
 }

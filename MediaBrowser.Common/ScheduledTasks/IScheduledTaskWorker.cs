@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Tasks;
 using System;
-using System.Collections.Generic;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -62,7 +61,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The triggers.</value>
         /// <exception cref="System.ArgumentNullException">value</exception>
-        IEnumerable<ITaskTrigger> Triggers { get; set; }
+        TaskTriggerInfo[] Triggers { get; set; }
 
         /// <summary>
         /// Gets the unique id.

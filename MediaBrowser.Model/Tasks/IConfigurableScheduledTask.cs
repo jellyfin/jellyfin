@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Common.ScheduledTasks
+﻿namespace MediaBrowser.Model.Tasks
 {
     public interface IConfigurableScheduledTask
     {
@@ -12,10 +12,7 @@
         /// </summary>
         /// <value><c>true</c> if this instance is enabled; otherwise, <c>false</c>.</value>
         bool IsEnabled { get; }
-    }
 
-    public interface IScheduledTaskActivityLog
-    {
-        bool IsActivityLogged { get; }
+        bool IsLogged { get; }
     }
 }

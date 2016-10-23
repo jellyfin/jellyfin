@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {

@@ -98,6 +98,7 @@
     <Compile Include="Connect\PinExchangeResult.cs" />
     <Compile Include="Connect\PinStatusResult.cs" />
     <Compile Include="Connect\UserLinkType.cs" />
+    <Compile Include="Cryptography\ICryptographyProvider.cs" />
     <Compile Include="Devices\DeviceOptions.cs" />
     <Compile Include="Devices\DeviceQuery.cs" />
     <Compile Include="Devices\LocalFileInfo.cs" />
@@ -133,6 +134,8 @@
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="Health\IHealthMonitor.cs" />
+    <Compile Include="IO\IMemoryStreamProvider.cs" />
+    <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
@@ -384,6 +387,9 @@
     <Compile Include="System\Architecture.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
+    <Compile Include="Tasks\IConfigurableScheduledTask.cs" />
+    <Compile Include="Tasks\IScheduledTask.cs" />
+    <Compile Include="Tasks\TaskExecutionOptions.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />

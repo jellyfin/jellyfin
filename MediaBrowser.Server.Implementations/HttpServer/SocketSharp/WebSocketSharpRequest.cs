@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Funq;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host;

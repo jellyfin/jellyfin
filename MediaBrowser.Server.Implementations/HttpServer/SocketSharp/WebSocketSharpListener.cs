@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {

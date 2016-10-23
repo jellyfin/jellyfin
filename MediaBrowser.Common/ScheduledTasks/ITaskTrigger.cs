@@ -18,8 +18,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
-        /// <param name="lastResult">The last result.</param>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup);
 
         /// <summary>
