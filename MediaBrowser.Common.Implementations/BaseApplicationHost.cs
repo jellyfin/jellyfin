@@ -26,11 +26,16 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Implementations.Cryptography;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Common.Implementations
 {
@@ -67,7 +72,7 @@ namespace MediaBrowser.Common.Implementations
         /// Gets or sets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        public IEnumerable<IPlugin> Plugins { get; protected set; }
+        public IPlugin[] Plugins { get; protected set; }
 
         /// <summary>
         /// Gets or sets the log manager.
@@ -174,6 +179,8 @@ namespace MediaBrowser.Common.Implementations
         /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
         public abstract bool IsRunningAsService { get; }
 
+        protected ICryptographyProvider CryptographyProvider = new CryptographyProvider();
+
         private DeviceId _deviceId;
         public string SystemId
         {
@@ -202,7 +209,10 @@ namespace MediaBrowser.Common.Implementations
             ILogManager logManager, 
             IFileSystem fileSystem)
         {
-			XmlSerializer = new XmlSerializer (fileSystem, logManager.GetLogger("XmlSerializer"));
+            // hack alert, until common can target .net core
+            BaseExtensions.CryptographyProvider = CryptographyProvider;
+
+            XmlSerializer = new XmlSerializer (fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -430,7 +440,36 @@ namespace MediaBrowser.Common.Implementations
             RegisterModules();
             
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
-            Plugins = GetExports<IPlugin>();
+            Plugins = GetExports<IPlugin>().Select(LoadPlugin).Where(i => i != null).ToArray();
+        }
+
+        private IPlugin LoadPlugin(IPlugin plugin)
+        {
+            try
+            {
+                var assemblyPlugin = plugin as IPluginAssembly;
+
+                if (assemblyPlugin != null)
+                {
+                    var assembly = plugin.GetType().Assembly;
+                    var assemblyName = assembly.GetName();
+
+                    var attribute = (GuidAttribute)assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
+                    var assemblyId = new Guid(attribute.Value);
+
+                    var assemblyFileName = assemblyName.Name + ".dll";
+                    var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
+
+                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading plugin {0}", ex, plugin.GetType().FullName);
+                return null;
+            }
+
+            return plugin;
         }
 
         /// <summary>
@@ -565,7 +604,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
 
                 throw;
             }
@@ -584,7 +623,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
                 // Don't blow up in release mode
                 return null;
             }
@@ -747,7 +786,7 @@ namespace MediaBrowser.Common.Implementations
         {
             var list = Plugins.ToList();
             list.Remove(plugin);
-            Plugins = list;
+            Plugins = list.ToArray();
         }
 
         /// <summary>

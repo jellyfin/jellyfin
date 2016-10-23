@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Model.Events;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Events;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     public interface ITaskManager : IDisposable
     {

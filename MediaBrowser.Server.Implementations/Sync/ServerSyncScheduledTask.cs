@@ -9,10 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    class ServerSyncScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
+    class ServerSyncScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ISyncManager _syncManager;
         private readonly ILogger _logger;
@@ -58,14 +59,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             get { return ((SyncManager)_syncManager).ServerSyncProviders; }
         }
         
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        /// <summary>
+        /// Creates the triggers that define when the task will run
+        /// </summary>
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[]
-                {
-                    new IntervalTrigger { Interval = TimeSpan.FromHours(3) }
-                };
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(3).Ticks}
+            };
         }
-
         public bool IsHidden
         {
             get { return !IsEnabled; }
@@ -74,6 +78,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         public bool IsEnabled
         {
             get { return ServerSyncProviders.Any(); }
+        }
+
+        public bool IsLogged
+        {
+            get { return true; }
         }
 
         public string Key

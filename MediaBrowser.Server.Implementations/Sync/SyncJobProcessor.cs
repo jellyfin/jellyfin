@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {

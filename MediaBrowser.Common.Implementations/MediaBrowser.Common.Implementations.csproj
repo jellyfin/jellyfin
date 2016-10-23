@@ -91,6 +91,7 @@
     <Compile Include="BaseApplicationPaths.cs" />
     <Compile Include="Configuration\BaseConfigurationManager.cs" />
     <Compile Include="Configuration\ConfigurationHelper.cs" />
+    <Compile Include="Cryptography\CryptographyProvider.cs" />
     <Compile Include="Devices\DeviceId.cs" />
     <Compile Include="HttpClientManager\HttpClientInfo.cs" />
     <Compile Include="HttpClientManager\HttpClientManager.cs" />
@@ -101,11 +102,16 @@
     <Compile Include="Logging\NlogManager.cs" />
     <Compile Include="Networking\BaseNetworkManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScheduledTasks\DailyTrigger.cs" />
+    <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
     <Compile Include="ScheduledTasks\ScheduledTaskWorker.cs" />
+    <Compile Include="ScheduledTasks\StartupTrigger.cs" />
+    <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
     <Compile Include="ScheduledTasks\TaskManager.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteCacheFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
+    <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\MbAdmin.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />

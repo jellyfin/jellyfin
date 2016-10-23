@@ -232,13 +232,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// The _triggers
         /// </summary>
-        private List<ITaskTrigger> _triggers;
+        private Tuple<TaskTriggerInfo,ITaskTrigger>[] _triggers;
         /// <summary>
         /// Gets the triggers that define when the task will run
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="System.ArgumentNullException">value</exception>
-        public IEnumerable<ITaskTrigger> Triggers
+        private Tuple<TaskTriggerInfo, ITaskTrigger>[] InternalTriggers
         {
             get
             {
@@ -257,11 +256,33 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                     DisposeTriggers();
                 }
 
-                _triggers = value.ToList();
+                _triggers = value.ToArray();
 
                 ReloadTriggerEvents(false);
+            }
+        }
 
-                SaveTriggers(_triggers);
+        /// <summary>
+        /// Gets the triggers that define when the task will run
+        /// </summary>
+        /// <value>The triggers.</value>
+        /// <exception cref="System.ArgumentNullException">value</exception>
+        public TaskTriggerInfo[] Triggers
+        {
+            get
+            {
+                return InternalTriggers.Select(i => i.Item1).ToArray();
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                SaveTriggers(value);
+
+                InternalTriggers = value.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
             }
         }
 
@@ -304,8 +325,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         private void ReloadTriggerEvents(bool isApplicationStartup)
         {
-            foreach (var trigger in Triggers)
+            foreach (var triggerInfo in InternalTriggers)
             {
+                var trigger = triggerInfo.Item2;
+
                 trigger.Stop();
 
                 trigger.Triggered -= trigger_Triggered;
@@ -507,23 +530,29 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Loads the triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        private List<ITaskTrigger> LoadTriggers()
+        private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
+        {
+            var settings = LoadTriggerSettings();
+
+            return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
+        }
+
+        private TaskTriggerInfo[] LoadTriggerSettings()
         {
             try
             {
                 return JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath())
-                .Select(ScheduledTaskHelpers.GetTrigger)
-                .ToList();
+                .ToArray();
             }
             catch (FileNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
-                return ScheduledTask.GetDefaultTriggers().ToList();
+                return ScheduledTask.GetDefaultTriggers().ToArray();
             }
             catch (DirectoryNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
-                return ScheduledTask.GetDefaultTriggers().ToList();
+                return ScheduledTask.GetDefaultTriggers().ToArray();
             }
         }
 
@@ -531,13 +560,13 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Saves the triggers.
         /// </summary>
         /// <param name="triggers">The triggers.</param>
-        private void SaveTriggers(IEnumerable<ITaskTrigger> triggers)
+        private void SaveTriggers(TaskTriggerInfo[] triggers)
         {
             var path = GetConfigurationFilePath();
 
 			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-            JsonSerializer.SerializeToFile(triggers.Select(ScheduledTaskHelpers.GetTriggerInfo), path);
+            JsonSerializer.SerializeToFile(triggers, path);
         }
 
         /// <summary>
@@ -561,11 +590,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 Id = Id
             };
 
-            var hasKey = ScheduledTask as IHasKey;
-            if (hasKey != null)
-            {
-                result.Key = hasKey.Key;
-            }
+            result.Key = ScheduledTask.Key;
 
             if (ex != null)
             {
@@ -656,12 +681,97 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         }
 
         /// <summary>
+        /// Converts a TaskTriggerInfo into a concrete BaseTaskTrigger
+        /// </summary>
+        /// <param name="info">The info.</param>
+        /// <returns>BaseTaskTrigger.</returns>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.ArgumentException">Invalid trigger type:  + info.Type</exception>
+        public static ITaskTrigger GetTrigger(TaskTriggerInfo info)
+        {
+            var options = new TaskExecutionOptions
+            {
+                MaxRuntimeMs = info.MaxRuntimeMs
+            };
+
+            if (info.Type.Equals(typeof(DailyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.TimeOfDayTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new DailyTrigger
+                {
+                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
+                    TaskOptions = options
+                };
+            }
+
+            if (info.Type.Equals(typeof(WeeklyTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.TimeOfDayTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                if (!info.DayOfWeek.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new WeeklyTrigger
+                {
+                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
+                    DayOfWeek = info.DayOfWeek.Value,
+                    TaskOptions = options
+                };
+            }
+
+            if (info.Type.Equals(typeof(IntervalTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.IntervalTicks.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new IntervalTrigger
+                {
+                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
+                    TaskOptions = options
+                };
+            }
+
+            if (info.Type.Equals(typeof(SystemEventTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!info.SystemEvent.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                return new SystemEventTrigger
+                {
+                    SystemEvent = info.SystemEvent.Value,
+                    TaskOptions = options
+                };
+            }
+
+            if (info.Type.Equals(typeof(StartupTrigger).Name, StringComparison.OrdinalIgnoreCase))
+            {
+                return new StartupTrigger();
+            }
+
+            throw new ArgumentException("Unrecognized trigger type: " + info.Type);
+        }
+
+        /// <summary>
         /// Disposes each trigger
         /// </summary>
         private void DisposeTriggers()
         {
-            foreach (var trigger in Triggers)
+            foreach (var triggerInfo in InternalTriggers)
             {
+                var trigger = triggerInfo.Item2;
                 trigger.Triggered -= trigger_Triggered;
                 trigger.Stop();
             }

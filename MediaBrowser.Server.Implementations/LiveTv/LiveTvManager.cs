@@ -35,6 +35,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.LiveTv.Listings;
 
 namespace MediaBrowser.Server.Implementations.LiveTv

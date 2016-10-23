@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using Microsoft.IO;
 
 namespace MediaBrowser.Common.Implementations.IO

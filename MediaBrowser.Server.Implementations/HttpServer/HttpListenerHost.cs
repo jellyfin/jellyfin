@@ -23,6 +23,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {

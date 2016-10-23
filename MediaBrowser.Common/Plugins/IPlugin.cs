@@ -39,12 +39,6 @@ namespace MediaBrowser.Common.Plugins
         Version Version { get; }
 
         /// <summary>
-        /// Gets the name the assembly file
-        /// </summary>
-        /// <value>The name of the assembly file.</value>
-        string AssemblyFileName { get; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is first run.
         /// </summary>
         /// <value><c>true</c> if this instance is first run; otherwise, <c>false</c>.</value>
@@ -55,12 +49,6 @@ namespace MediaBrowser.Common.Plugins
         /// </summary>
         /// <value>The configuration date last modified.</value>
         DateTime ConfigurationDateLastModified { get; }
-
-        /// <summary>
-        /// Gets the last date modified of the plugin
-        /// </summary>
-        /// <value>The assembly date last modified.</value>
-        DateTime AssemblyDateLastModified { get; }
 
         /// <summary>
         /// Gets the path to the assembly file

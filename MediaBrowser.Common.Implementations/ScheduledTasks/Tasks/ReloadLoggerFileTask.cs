@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 {
@@ -39,9 +40,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Gets the default triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            var trigger = new DailyTrigger { TimeOfDay = TimeSpan.FromHours(0) }; //12am
+            var trigger = new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerDaily, TimeOfDayTicks = TimeSpan.FromHours(0).Ticks }; //12am
 
             return new[] { trigger };
         }
@@ -74,6 +75,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             get { return "Start new log file"; }
         }
 
+        public string Key { get; }
+
         /// <summary>
         /// Gets the description.
         /// </summary>
@@ -98,6 +101,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         }
 
         public bool IsEnabled
+        {
+            get { return true; }
+        }
+
+        public bool IsLogged
         {
             get { return true; }
         }

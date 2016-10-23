@@ -3,8 +3,6 @@ using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -12,7 +10,7 @@ namespace MediaBrowser.Common.Plugins
     /// Provides a common base class for all plugins
     /// </summary>
     /// <typeparam name="TConfigurationType">The type of the T configuration type.</typeparam>
-    public abstract class BasePlugin<TConfigurationType> : IPlugin
+    public abstract class BasePlugin<TConfigurationType> : IPlugin, IPluginAssembly
         where TConfigurationType : BasePluginConfiguration
     {
         /// <summary>
@@ -57,69 +55,33 @@ namespace MediaBrowser.Common.Plugins
             get { return typeof(TConfigurationType); }
         }
 
-        /// <summary>
-        /// The _assembly name
-        /// </summary>
-        private AssemblyName _assemblyName;
-        /// <summary>
-        /// Gets the name of the assembly.
-        /// </summary>
-        /// <value>The name of the assembly.</value>
-        protected AssemblyName AssemblyName
+        public void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion, Guid assemblyId)
         {
-            get
-            {
-                return _assemblyName ?? (_assemblyName = GetType().Assembly.GetName());
-            }
-        }
+            AssemblyFilePath = assemblyFilePath;
+            AssemblyFileName = assemblyFileName;
+            Version = assemblyVersion;
+            Id = assemblyId;
 
-        /// <summary>
-        /// The _unique id
-        /// </summary>
-        private Guid? _uniqueId;
+            IsFirstRun = !File.Exists(ConfigurationFilePath);
+        }
 
         /// <summary>
         /// Gets the unique id.
         /// </summary>
         /// <value>The unique id.</value>
-        public Guid Id
-        {
-            get
-            {
-
-                if (!_uniqueId.HasValue)
-                {
-                    var attribute = (GuidAttribute)GetType().Assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
-                    _uniqueId = new Guid(attribute.Value);
-                }
-
-                return _uniqueId.Value;
-            }
-        }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// Gets the plugin version
         /// </summary>
         /// <value>The version.</value>
-        public Version Version
-        {
-            get
-            {
-                return AssemblyName.Version;
-            }
-        }
+        public Version Version { get; private set; }
 
         /// <summary>
         /// Gets the name the assembly file
         /// </summary>
         /// <value>The name of the assembly file.</value>
-        public string AssemblyFileName
-        {
-            get
-            {
-                return AssemblyName.Name + ".dll";
-            }
-        }
+        protected string AssemblyFileName { get; private set; }
 
         /// <summary>
         /// Gets the last date modified of the configuration
@@ -137,28 +99,10 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <summary>
-        /// Gets the last date modified of the plugin
-        /// </summary>
-        /// <value>The assembly date last modified.</value>
-        public DateTime AssemblyDateLastModified
-        {
-            get
-            {
-                return File.GetLastWriteTimeUtc(AssemblyFilePath);
-            }
-        }
-
-        /// <summary>
         /// Gets the path to the assembly file
         /// </summary>
         /// <value>The assembly file path.</value>
-        public string AssemblyFilePath
-        {
-            get
-            {
-                return Path.Combine(ApplicationPaths.PluginsPath, AssemblyFileName);
-            }
-        }
+        public string AssemblyFilePath { get; private set; }
 
         /// <summary>
         /// The _configuration sync lock
@@ -272,8 +216,6 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
-
-            IsFirstRun = !File.Exists(ConfigurationFilePath);
         }
 
         /// <summary>
@@ -348,5 +290,10 @@ namespace MediaBrowser.Common.Plugins
         {
             get { return Configuration; }
         }
+    }
+
+    public interface IPluginAssembly
+    {
+        void SetAttributes(string assemblyFilePath, string assemblyFileName, Version assemblyVersion, Guid assemblyId);
     }
 }

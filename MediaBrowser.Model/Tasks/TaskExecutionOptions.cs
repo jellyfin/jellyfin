@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// A class that encomposases all common task run properties.

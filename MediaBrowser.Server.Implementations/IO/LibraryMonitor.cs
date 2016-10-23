@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -174,6 +175,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private bool IsLibraryMonitorEnabaled(BaseItem item)
         {
+            if (item is BasePluginFolder)
+            {
+                return false;
+            }
+
             var options = LibraryManager.GetLibraryOptions(item);
 
             if (options != null)

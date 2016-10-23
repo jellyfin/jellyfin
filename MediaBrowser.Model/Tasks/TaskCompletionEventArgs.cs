@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     public class TaskCompletionEventArgs : EventArgs
     {
