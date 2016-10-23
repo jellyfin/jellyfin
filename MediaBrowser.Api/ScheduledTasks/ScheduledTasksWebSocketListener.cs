@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;

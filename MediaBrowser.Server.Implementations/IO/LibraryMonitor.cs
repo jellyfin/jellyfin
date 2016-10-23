@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.IO
 {

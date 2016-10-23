@@ -13,6 +13,7 @@ using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {

@@ -445,20 +445,28 @@ namespace MediaBrowser.Common.Implementations
 
         private IPlugin LoadPlugin(IPlugin plugin)
         {
-            var assemblyPlugin = plugin as IPluginAssembly;
-
-            if (assemblyPlugin != null)
+            try
             {
-                var assembly = plugin.GetType().Assembly;
-                var assemblyName = assembly.GetName();
+                var assemblyPlugin = plugin as IPluginAssembly;
 
-                var attribute = (GuidAttribute)assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
-                var assemblyId = new Guid(attribute.Value);
+                if (assemblyPlugin != null)
+                {
+                    var assembly = plugin.GetType().Assembly;
+                    var assemblyName = assembly.GetName();
 
-                var assemblyFileName = assemblyName.Name + ".dll";
-                var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
+                    var attribute = (GuidAttribute)assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
+                    var assemblyId = new Guid(attribute.Value);
 
-                assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+                    var assemblyFileName = assemblyName.Name + ".dll";
+                    var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
+
+                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading plugin {0}", ex, plugin.GetType().FullName);
+                return null;
             }
 
             return plugin;
@@ -596,7 +604,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
 
                 throw;
             }
@@ -615,7 +623,7 @@ namespace MediaBrowser.Common.Implementations
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("Error creating {0}", ex, type.Name);
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
                 // Don't blow up in release mode
                 return null;
             }

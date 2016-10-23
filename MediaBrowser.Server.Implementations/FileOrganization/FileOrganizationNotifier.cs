@@ -7,6 +7,7 @@ using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {

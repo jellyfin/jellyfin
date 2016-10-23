@@ -144,8 +144,6 @@
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />
     <Compile Include="Entities\TrailerType.cs" />
-    <Compile Include="Extensions\BoolHelper.cs" />
-    <Compile Include="Extensions\FloatHelper.cs" />
     <Compile Include="FileOrganization\AutoOrganizeOptions.cs" />
     <Compile Include="FileOrganization\TvFileOrganizationOptions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
@@ -218,7 +216,6 @@
     <Compile Include="Entities\ScrollDirection.cs" />
     <Compile Include="Entities\SortOrder.cs" />
     <Compile Include="Events\GenericEventArgs.cs" />
-    <Compile Include="Extensions\DoubleHelper.cs" />
     <Compile Include="Extensions\ListHelper.cs" />
     <Compile Include="Extensions\StringHelper.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizationRequest.cs" />
@@ -389,6 +386,11 @@
     <Compile Include="System\PublicSystemInfo.cs" />
     <Compile Include="Tasks\IConfigurableScheduledTask.cs" />
     <Compile Include="Tasks\IScheduledTask.cs" />
+    <Compile Include="Tasks\IScheduledTaskWorker.cs" />
+    <Compile Include="Tasks\ITaskManager.cs" />
+    <Compile Include="Tasks\ITaskTrigger.cs" />
+    <Compile Include="Tasks\ScheduledTaskHelpers.cs" />
+    <Compile Include="Tasks\TaskCompletionEventArgs.cs" />
     <Compile Include="Tasks\TaskExecutionOptions.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />

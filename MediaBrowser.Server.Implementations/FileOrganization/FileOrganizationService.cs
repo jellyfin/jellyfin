@@ -18,6 +18,7 @@ using CommonIO;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {

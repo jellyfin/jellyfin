@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Interface ITaskTrigger
