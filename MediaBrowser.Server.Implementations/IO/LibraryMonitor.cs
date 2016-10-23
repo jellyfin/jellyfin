@@ -175,6 +175,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private bool IsLibraryMonitorEnabaled(BaseItem item)
         {
+            if (item is BasePluginFolder)
+            {
+                return false;
+            }
+
             var options = LibraryManager.GetLibraryOptions(item);
 
             if (options != null)
