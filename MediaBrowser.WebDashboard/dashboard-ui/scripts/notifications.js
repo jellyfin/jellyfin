@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'listViewStyle'], function (libraryBrowser) {
+    'use strict';
 
     function notifications() {
 

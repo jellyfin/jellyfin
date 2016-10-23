@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom) {
+    'use strict';
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;

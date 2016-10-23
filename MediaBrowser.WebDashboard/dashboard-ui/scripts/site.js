@@ -1,4 +1,5 @@
 ﻿function getWindowLocationSearch(win) {
+    'use strict';
 
     var search = (win || window).location.search;
 
@@ -14,6 +15,8 @@
 }
 
 function getParameterByName(name, url) {
+    'use strict';
+
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + name + "=([^&#]*)";
     var regex = new RegExp(regexS, "i");
@@ -883,6 +886,7 @@ var Dashboard = {
 var AppInfo = {};
 
 (function () {
+    'use strict';
 
     function setAppInfo() {
 
@@ -1023,7 +1027,7 @@ var AppInfo = {};
                         var capabilities = Dashboard.capabilities();
                         capabilities.DeviceProfile = deviceProfile;
 
-                        connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
+                        var connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
 
                         defineConnectionManager(connectionManager);
                         bindConnectionManagerEvents(connectionManager, events, userSettings);
@@ -2802,6 +2806,7 @@ var AppInfo = {};
 })();
 
 function pageClassOn(eventName, className, fn) {
+    'use strict';
 
     document.addEventListener(eventName, function (e) {
 
@@ -2813,6 +2818,7 @@ function pageClassOn(eventName, className, fn) {
 }
 
 function pageIdOn(eventName, id, fn) {
+    'use strict';
 
     document.addEventListener(eventName, function (e) {
 
@@ -2824,6 +2830,7 @@ function pageIdOn(eventName, id, fn) {
 }
 
 pageClassOn('viewinit', "page", function () {
+    'use strict';
 
     var page = this;
 
@@ -2864,6 +2871,7 @@ pageClassOn('viewinit', "page", function () {
 });
 
 pageClassOn('viewshow', "page", function () {
+    'use strict';
 
     var page = this;
 

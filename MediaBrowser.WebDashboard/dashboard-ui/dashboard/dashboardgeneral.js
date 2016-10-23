@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked', 'emby-checkbox', 'emby-collapse', 'emby-textarea', 'emby-input', 'emby-select'], function ($) {
+    'use strict';
 
     var brandingConfigKey = "branding";
     var currentBrandingOptions;

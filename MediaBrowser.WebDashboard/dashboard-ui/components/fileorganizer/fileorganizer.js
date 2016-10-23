@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'emby-checkbox', 'emby-input', 'emby-button', 'emby-select', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper) {
+    'use strict';
 
     var extractedName;
     var extractedYear;

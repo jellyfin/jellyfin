@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'paper-icon-button-light'], function (appSettings) {
+    'use strict';
 
     function updatePageStyle(page) {
 

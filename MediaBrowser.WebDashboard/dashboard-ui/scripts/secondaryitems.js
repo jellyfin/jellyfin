@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder) {
+    'use strict';
 
     return function (view, params) {
 

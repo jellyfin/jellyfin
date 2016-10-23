@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'datetime', 'jQuery', 'actionsheet', 'emby-slider', 'emby-button'], function (appSettings, datetime, $, actionsheet) {
+    'use strict';
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 

@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'userSettingsBuilder'], function (appSettings, userSettingsBuilder) {
+    'use strict';
 
     function populateLanguages(select, languages) {
 

@@ -1,4 +1,5 @@
 ﻿define(['events', 'libraryBrowser', 'imageLoader', 'cardBuilder'], function (events, libraryBrowser, imageLoader, cardBuilder) {
+    'use strict';
 
     return function (view, params, tabContent) {
 

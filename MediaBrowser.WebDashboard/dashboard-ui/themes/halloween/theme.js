@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'css!./style.css', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize) {
+    'use strict';
 
     var lastSound = 0;
     var iconCreated;

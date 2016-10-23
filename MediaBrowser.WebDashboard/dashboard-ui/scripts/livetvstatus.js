@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'scripts/taskbutton', 'listViewStyle'], function ($, taskButton) {
+    'use strict';
 
     function resetTuner(page, id) {
 

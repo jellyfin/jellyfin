@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'cardBuilder', 'apphost', 'emby-itemscontainer', 'scrollStyles'], function (datetime, cardBuilder, appHost) {
+    'use strict';
 
     function getUpcomingPromise() {
 

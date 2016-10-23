@@ -1,4 +1,5 @@
 ﻿define(['apphost', 'globalize', 'shell'], function (appHost, globalize, shell) {
+    'use strict';
 
     function getProductInfo(feature) {
         return null;

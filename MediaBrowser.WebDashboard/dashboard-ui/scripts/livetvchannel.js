@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'listView'], function (datetime, listView) {
+    'use strict';
 
     function isSameDay(date1, date2) {
 

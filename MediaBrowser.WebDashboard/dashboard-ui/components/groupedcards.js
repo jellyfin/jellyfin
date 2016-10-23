@@ -1,4 +1,5 @@
 ﻿define(['dom'], function (dom) {
+    'use strict';
 
     function onGroupedCardClick(e, card) {
 

@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'dom', 'listViewStyle'], function ($, dom) {
+    'use strict';
 
     var currentType;
 

@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light', 'css!css/metadataeditor.css'], function (dialogHelper) {
+    'use strict';
 
     var currentItemId;
     var currentItemType;

@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'datetime', 'mediaInfo', 'browser', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo, browser) {
+    'use strict';
 
     function createVideoPlayer(self) {
 

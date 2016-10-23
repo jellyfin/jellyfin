@@ -1,4 +1,5 @@
 ﻿define(['cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder, appHost) {
+    'use strict';
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;

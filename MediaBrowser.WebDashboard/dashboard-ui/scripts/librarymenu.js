@@ -1,4 +1,5 @@
 ﻿define(['imageLoader', 'layoutManager', 'viewManager', 'libraryBrowser', 'apphost', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, libraryBrowser, appHost, embyRouter) {
+    'use strict';
 
     var enableBottomTabs = AppInfo.isNativeApp;
     var enableLibraryNavDrawer = !enableBottomTabs;

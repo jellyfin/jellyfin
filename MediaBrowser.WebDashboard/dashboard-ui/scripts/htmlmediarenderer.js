@@ -1,4 +1,5 @@
 ﻿define(['browser'], function (browser) {
+    'use strict';
 
     var supportsTextTracks;
     var hlsPlayer;

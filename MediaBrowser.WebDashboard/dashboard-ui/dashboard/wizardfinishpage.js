@@ -1,4 +1,5 @@
 ﻿define(['loading'], function (loading) {
+    'use strict';
 
     function onFinish() {
 

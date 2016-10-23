@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'humanedate', 'paper-icon-button-light', 'cardStyle'], function ($) {
+    'use strict';
 
     function deleteUser(page, id) {
 

@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+    'use strict';
 
     return function (view, params, tabContent) {
 

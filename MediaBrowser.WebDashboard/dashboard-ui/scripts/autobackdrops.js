@@ -1,4 +1,5 @@
 ﻿define(['backdrop', 'appStorage'], function (backdrop, appStorage) {
+    'use strict';
 
     function isEnabledByDefault() {
 

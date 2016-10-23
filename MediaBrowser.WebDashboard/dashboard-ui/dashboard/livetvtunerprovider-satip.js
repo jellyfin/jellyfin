@@ -1,4 +1,5 @@
 ﻿define(['emby-checkbox'], function () {
+    'use strict';
 
     function reload(page, providerId) {
 

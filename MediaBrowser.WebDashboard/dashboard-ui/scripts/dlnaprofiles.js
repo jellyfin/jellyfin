@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'listViewStyle'], function ($) {
+    'use strict';
 
     function loadProfiles(page) {
 

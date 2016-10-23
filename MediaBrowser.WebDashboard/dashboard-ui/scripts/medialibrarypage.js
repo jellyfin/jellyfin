@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'apphost', 'scripts/taskbutton', 'cardStyle'], function ($, appHost, taskButton) {
+    'use strict';
 
     function changeCollectionType(page, virtualFolder) {
 

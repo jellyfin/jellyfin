@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'emby-tabs', 'emby-button'], function (libraryBrowser) {
+    'use strict';
 
     var defaultFirstSection = 'smalllibrarytiles';
 

@@ -1,4 +1,5 @@
 ﻿define(['components/favoriteitems'], function (favoriteItems) {
+    'use strict';
 
     return function (view, params) {
 

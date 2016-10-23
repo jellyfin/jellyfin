@@ -1,4 +1,5 @@
 ﻿define(['userSettingsBuilder', 'appStorage'], function (userSettingsBuilder, appStorage) {
+    'use strict';
 
     return function (view, params) {
 

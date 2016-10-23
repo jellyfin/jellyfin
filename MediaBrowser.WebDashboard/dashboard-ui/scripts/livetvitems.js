@@ -1,4 +1,5 @@
 ﻿define(['cardBuilder', 'apphost', 'emby-itemscontainer'], function (cardBuilder, appHost) {
+    'use strict';
 
     return function (view, params) {
 

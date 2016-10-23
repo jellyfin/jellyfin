@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     // TODO: This needs to be deprecated, but it's used heavily
     $.fn.checked = function (value) {
