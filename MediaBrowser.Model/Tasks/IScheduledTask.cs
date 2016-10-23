@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Interface IScheduledTaskWorker
@@ -15,6 +15,8 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The name.</value>
         string Name { get; }
+
+        string Key { get; }
 
         /// <summary>
         /// Gets the description.
@@ -40,6 +42,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Gets the default triggers.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        IEnumerable<ITaskTrigger> GetDefaultTriggers();
+        IEnumerable<TaskTriggerInfo> GetDefaultTriggers();
     }
 }

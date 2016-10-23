@@ -142,7 +142,7 @@ namespace MediaBrowser.Common
         /// Gets the plugins.
         /// </summary>
         /// <value>The plugins.</value>
-        IEnumerable<IPlugin> Plugins { get; }
+        IPlugin[] Plugins { get; }
 
         /// <summary>
         /// Removes the plugin.

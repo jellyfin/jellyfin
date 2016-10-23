@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Common.IO
+namespace MediaBrowser.Model.IO
 {
     /// <summary>
     /// Class StreamDefaults

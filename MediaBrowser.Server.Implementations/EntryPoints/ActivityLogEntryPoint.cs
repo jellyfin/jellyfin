@@ -401,8 +401,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             var task = e.Argument;
 
-            var activityTask = task.ScheduledTask as IScheduledTaskActivityLog;
-            if (activityTask != null && !activityTask.IsActivityLogged)
+            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
+            if (activityTask != null && !activityTask.IsLogged)
             {
                 return;
             }
@@ -419,8 +419,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             var result = e.Result;
             var task = e.Task;
 
-            var activityTask = task.ScheduledTask as IScheduledTaskActivityLog;
-            if (activityTask != null && !activityTask.IsActivityLogged)
+            var activityTask = task.ScheduledTask as IConfigurableScheduledTask;
+            if (activityTask != null && !activityTask.IsLogged)
             {
                 return;
             }

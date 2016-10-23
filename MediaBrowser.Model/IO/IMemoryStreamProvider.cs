@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MediaBrowser.Common.IO
+namespace MediaBrowser.Model.IO
 {
     public interface IMemoryStreamProvider
     {

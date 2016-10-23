@@ -13,7 +13,6 @@
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.665" />
-			<dependency id="Interfaces.IO" version="1.0.0.5" />
         </dependencies>
     </metadata>
     <files>

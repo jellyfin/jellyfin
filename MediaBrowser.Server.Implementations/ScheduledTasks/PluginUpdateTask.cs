@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -37,16 +38,21 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[] { 
+            return new[] { 
             
                 // At startup
-                new StartupTrigger(),
+                new TaskTriggerInfo {Type = TaskTriggerInfo.TriggerStartup},
 
                 // Every so often
-                new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
+        }
+
+        public string Key
+        {
+            get { return "PluginUpdates"; }
         }
 
         /// <summary>

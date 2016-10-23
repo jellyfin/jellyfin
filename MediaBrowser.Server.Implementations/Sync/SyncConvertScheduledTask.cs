@@ -10,10 +10,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class SyncConvertScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
+    public class SyncConvertScheduledTask : IScheduledTask
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ISyncRepository _syncRepo;
@@ -66,22 +67,17 @@ namespace MediaBrowser.Server.Implementations.Sync
                 .Sync(progress, cancellationToken);
         }
 
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        /// <summary>
+        /// Creates the triggers that define when the task will run
+        /// </summary>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[]
-                {
-                    new IntervalTrigger { Interval = TimeSpan.FromHours(3) }
-                };
-        }
-
-        public bool IsHidden
-        {
-            get { return false; }
-        }
-
-        public bool IsEnabled
-        {
-            get { return true; }
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(3).Ticks}
+            };
         }
 
         public string Key

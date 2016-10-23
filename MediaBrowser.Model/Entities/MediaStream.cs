@@ -118,7 +118,7 @@ namespace MediaBrowser.Model.Entities
 
         private string AddLanguageIfNeeded(string title)
         {
-            if (!string.IsNullOrEmpty(Language) && title.IndexOf(Language, StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrEmpty(Language) && !string.Equals(Language, "und", StringComparison.OrdinalIgnoreCase) && title.IndexOf(Language, StringComparison.OrdinalIgnoreCase) == -1)
             {
                 title = StringHelper.FirstToUpper(Language) + " " + title;
             }

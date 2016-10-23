@@ -5,6 +5,7 @@ using System;
 using System.Data;
 using System.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
