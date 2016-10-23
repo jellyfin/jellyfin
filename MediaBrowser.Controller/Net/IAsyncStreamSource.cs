@@ -1,5 +1,4 @@
-﻿using ServiceStack.Web;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Net
