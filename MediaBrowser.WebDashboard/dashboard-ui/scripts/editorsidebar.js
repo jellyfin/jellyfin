@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'jQuery', 'material-icons'], function (datetime, $) {
+    'use strict';
 
     function getNode(item, folderState, selected) {
 

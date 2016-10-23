@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'libraryBrowser'], function ($, libraryBrowser) {
+    'use strict';
 
     var currentItem;
 

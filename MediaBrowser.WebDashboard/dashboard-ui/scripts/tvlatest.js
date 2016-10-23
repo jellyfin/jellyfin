@@ -1,4 +1,5 @@
 ﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder'], function (categorysyncbuttons, groupedcards, cardBuilder) {
+    'use strict';
 
     function getView() {
 

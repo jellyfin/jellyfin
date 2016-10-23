@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'cardStyle'], function ($) {
+    'use strict';
 
     function deletePlugin(page, uniqueid, name) {
 

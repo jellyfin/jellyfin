@@ -1,4 +1,5 @@
 ﻿define(['appStorage', 'events', 'browser'], function (appStorage, events, browser) {
+    'use strict';
 
     var currentDisplayInfo;
     var datetime;

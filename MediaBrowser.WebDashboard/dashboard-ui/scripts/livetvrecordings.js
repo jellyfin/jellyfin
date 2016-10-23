@@ -1,4 +1,5 @@
 ﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost) {
+    'use strict';
 
     function getRecordingGroupHtml(group) {
 

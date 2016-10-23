@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'connectionManager'], function (appSettings, connectionManager) {
+    'use strict';
 
     var syncPromise;
 

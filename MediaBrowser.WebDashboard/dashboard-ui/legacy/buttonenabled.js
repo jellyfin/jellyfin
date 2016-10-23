@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     $.fn.buttonEnabled = function (enabled) {
 

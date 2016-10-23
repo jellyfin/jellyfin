@@ -1,4 +1,5 @@
 ﻿define(['datetime'], function (datetime) {
+    'use strict';
 
     /*
      * Javascript Humane Dates

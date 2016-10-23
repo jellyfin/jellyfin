@@ -1,4 +1,4 @@
-using MediaBrowser.Model.Extensions;
+using System.Globalization;
 
 namespace MediaBrowser.Model.Drawing
 {
@@ -71,12 +71,12 @@ namespace MediaBrowser.Model.Drawing
                 {
                     double val;
 
-                    if (DoubleHelper.TryParseCultureInvariant(parts[0], out val))
+                    if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         _width = val;
                     }
 
-                    if (DoubleHelper.TryParseCultureInvariant(parts[1], out val))
+                    if (double.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out val))
                     {
                         _height = val;
                     }

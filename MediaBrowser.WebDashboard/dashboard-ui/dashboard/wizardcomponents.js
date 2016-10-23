@@ -1,4 +1,5 @@
 ﻿define([], function () {
+    'use strict';
 
     function goNext() {
         Dashboard.navigate('wizardagreement.html');

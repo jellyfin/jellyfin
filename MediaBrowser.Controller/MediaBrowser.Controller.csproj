@@ -165,6 +165,7 @@
     <Compile Include="Entities\TagExtensions.cs" />
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\DeleteOptions.cs" />

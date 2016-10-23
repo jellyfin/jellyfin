@@ -1,4 +1,5 @@
 ﻿(function () {
+    'use strict';
 
     var lastSound = 0;
     var iconCreated;

@@ -1,4 +1,5 @@
 define(['jQuery'], function ($) {
+    'use strict';
 
     // The base query options
     var query = {

@@ -1,4 +1,5 @@
 ﻿define(['globalize', 'emby-checkbox'], function (globalize) {
+    'use strict';
 
     function embed(parent, contentType, libraryOptions) {
 

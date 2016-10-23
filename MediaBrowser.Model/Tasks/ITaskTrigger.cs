@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
     /// Interface ITaskTrigger
@@ -18,8 +17,6 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
-        /// <param name="lastResult">The last result.</param>
-        /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup);
 
         /// <summary>

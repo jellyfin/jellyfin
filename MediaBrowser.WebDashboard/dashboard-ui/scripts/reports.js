@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'libraryBrowser', 'fnchecked'], function ($, libraryBrowser) {
+    'use strict';
 
     var defaultSortBy = "SortName";
     var topItems = 5;

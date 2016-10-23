@@ -1,4 +1,5 @@
 ﻿define(['appSettings'], function (appSettings) {
+    'use strict';
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;

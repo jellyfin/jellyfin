@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     // Array Remove - By John Resig (MIT Licensed)
     Array.prototype.remove = function (from, to) {

@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'listView'], function ($, listView) {
+    'use strict';
 
     var data = {};
     function getPageData() {

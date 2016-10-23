@@ -1,4 +1,5 @@
 ﻿define(['tvguide'], function (tvguide) {
+    'use strict';
 
     return function (view, params, tabContent) {
 

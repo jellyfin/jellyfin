@@ -1,4 +1,5 @@
 define(['appStorage', 'browser'], function (appStorage, browser) {
+    'use strict';
 
     function getDeviceProfile() {
 

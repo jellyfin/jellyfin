@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
 {
@@ -40,13 +41,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// Creates the triggers that define when the task will run
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            // Until we can vary these default triggers per server and MBT, we need something that makes sense for both
-            return new ITaskTrigger[] { 
+            return new[] { 
             
                 // Every so often
-                new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
             };
         }
 
@@ -95,7 +95,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         /// <param name="progress">The progress.</param>
         private void DeleteCacheFilesFromDirectory(CancellationToken cancellationToken, string directory, DateTime minDateModified, IProgress<double> progress)
         {
-			var filesToDelete = _fileSystem.GetFiles(directory, true)
+            var filesToDelete = _fileSystem.GetFiles(directory, true)
                 .Where(f => _fileSystem.GetLastWriteTimeUtc(f) < minDateModified)
                 .ToList();
 
@@ -168,6 +168,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             get { return "Cache file cleanup"; }
         }
 
+        public string Key
+        {
+            get { return "DeleteCacheFiles"; }
+        }
+
         /// <summary>
         /// Gets the description.
         /// </summary>
@@ -199,6 +204,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
         }
 
         public bool IsEnabled
+        {
+            get { return true; }
+        }
+
+        public bool IsLogged
         {
             get { return true; }
         }

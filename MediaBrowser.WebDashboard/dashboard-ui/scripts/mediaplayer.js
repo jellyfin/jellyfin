@@ -1,4 +1,5 @@
 define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appSettings, userSettings, appStorage, datetime) {
+    'use strict';
 
     function mediaPlayer() {
 

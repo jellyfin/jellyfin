@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {
@@ -33,16 +34,21 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Creates the triggers that define when the task will run
         /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             // Randomize the default start hour because this operation can really hammer internet metadata providers
             var startHour = new Random(_appHost.SystemId.GetHashCode()).Next(0, 8);
 
-            return new ITaskTrigger[]
-                {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(startHour) },
-                };
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerDaily, TimeOfDayTicks = TimeSpan.FromHours(startHour).Ticks}
+            };
+        }
+
+        public string Key
+        {
+            get { return "RefreshPeople"; }
         }
 
         /// <summary>

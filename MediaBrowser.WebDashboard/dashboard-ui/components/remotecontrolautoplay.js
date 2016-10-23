@@ -1,4 +1,5 @@
 ﻿define(['events'], function (events) {
+    'use strict';
 
     function transferPlayback(oldPlayer) {
 

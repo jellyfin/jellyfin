@@ -1,4 +1,5 @@
 ﻿define(['loading', 'apphost', 'globalize', 'syncJobList', 'events', 'scripts/taskbutton', 'localsync', 'emby-button', 'paper-icon-button-light'], function (loading, appHost, globalize, syncJobList, events, taskButton) {
+    'use strict';
 
     function getTabs() {
         return [

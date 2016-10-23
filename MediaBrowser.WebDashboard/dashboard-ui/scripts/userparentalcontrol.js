@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'datetime', 'listViewStyle', 'paper-icon-button-light'], function ($, datetime) {
+    'use strict';
 
     function populateRatings(allParentalRatings, page) {
 

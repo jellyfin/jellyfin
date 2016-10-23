@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer', 'emby-tabs', 'emby-button', 'scripts/channelslatest', 'scripts/sections'], function (libraryBrowser, cardBuilder) {
+    'use strict';
 
     // The base query options
     var query = {

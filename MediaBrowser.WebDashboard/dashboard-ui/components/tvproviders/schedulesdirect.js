@@ -1,4 +1,5 @@
 ﻿define(['jQuery','emby-checkbox', 'listViewStyle', 'emby-input', 'emby-select'], function ($) {
+    'use strict';
 
     return function (page, providerId, options) {
 

@@ -1,4 +1,5 @@
 ﻿define(['browser', 'css!./navdrawer', 'scrollStyles'], function (browser) {
+    'use strict';
 
     return function (options) {
 

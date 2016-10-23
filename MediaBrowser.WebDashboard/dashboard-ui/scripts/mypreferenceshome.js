@@ -1,4 +1,5 @@
 ﻿define(['listViewStyle'], function () {
+    'use strict';
 
     function renderViews(page, user, result) {
 

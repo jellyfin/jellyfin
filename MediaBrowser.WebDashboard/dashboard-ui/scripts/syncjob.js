@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'dom', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (datetime, dom) {
+    'use strict';
 
     function renderJob(page, job, dialogOptions) {
 

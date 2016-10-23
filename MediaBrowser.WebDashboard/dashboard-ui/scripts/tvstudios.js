@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
+    'use strict';
 
     // The base query options
     var data = {};

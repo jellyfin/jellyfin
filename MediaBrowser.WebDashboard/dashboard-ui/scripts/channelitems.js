@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'cardBuilder', 'emby-itemscontainer'], function ($, cardBuilder) {
+    'use strict';
 
     var data = {};
 

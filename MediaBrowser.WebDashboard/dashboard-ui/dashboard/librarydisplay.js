@@ -1,4 +1,5 @@
 ﻿define(['globalize', 'emby-checkbox', 'emby-button'], function (globalize) {
+    'use strict';
 
     function getTabs() {
         return [

@@ -10,10 +10,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.FileOrganization
 {
-    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask, IScheduledTaskActivityLog, IHasKey
+    public class OrganizerScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly ILibraryManager _libraryManager;
@@ -63,12 +64,17 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             }
         }
 
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        /// <summary>
+        /// Creates the triggers that define when the task will run
+        /// </summary>
+        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[]
-                {
-                    new IntervalTrigger{ Interval = TimeSpan.FromMinutes(5)}
-                };
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromMinutes(5).Ticks}
+            };
         }
 
         public bool IsHidden
@@ -81,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             get { return GetAutoOrganizeOptions().TvOptions.IsEnabled; }
         }
 
-        public bool IsActivityLogged
+        public bool IsLogged
         {
             get { return false; }
         }

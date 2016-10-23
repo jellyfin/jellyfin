@@ -1,4 +1,5 @@
 ﻿define(['listViewStyle'], function () {
+    'use strict';
 
     var query = {
 

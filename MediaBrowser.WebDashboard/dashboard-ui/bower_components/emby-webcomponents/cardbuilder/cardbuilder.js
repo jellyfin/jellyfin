@@ -974,7 +974,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         lines.push('as ' + item.Role);
                     }
                     else if (item.Type) {
-                        lines.push(globalize.translate('core#' + item.Type));
+                        lines.push(globalize.translate('sharedcomponents#' + item.Type));
                     } else {
                         lines.push('');
                     }
@@ -1041,10 +1041,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     minutes = minutes || 1;
 
-                    childText += globalize.translate('ValueMinutes', Math.round(minutes));
+                    childText += globalize.translate('sharedcomponents#ValueMinutes', Math.round(minutes));
 
                 } else {
-                    childText += globalize.translate('ValueMinutes', 0);
+                    childText += globalize.translate('sharedcomponents#ValueMinutes', 0);
                 }
 
                 counts.push(childText);

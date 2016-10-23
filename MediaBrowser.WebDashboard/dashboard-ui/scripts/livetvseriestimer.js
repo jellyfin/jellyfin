@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'dom', 'seriesRecordingEditor', 'listView', 'emby-itemscontainer'], function (datetime, dom, seriesRecordingEditor, listView) {
+    'use strict';
 
     return function (view, params) {
 

@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'dom', 'connectionManager', 'cardStyle', 'emby-checkbox'], function (appSettings, dom, connectionManager) {
+    'use strict';
 
     function authenticateUserByName(page, apiClient, username, password) {
 

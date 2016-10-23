@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using CommonIO;
 using Interfaces.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {

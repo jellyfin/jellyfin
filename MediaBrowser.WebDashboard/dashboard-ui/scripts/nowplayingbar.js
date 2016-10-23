@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser) {
+    'use strict';
 
     var currentPlayer;
 

@@ -1,4 +1,5 @@
 ﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
+    'use strict';
 
     return function (view, params, tabContent) {
 

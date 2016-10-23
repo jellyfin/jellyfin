@@ -1,4 +1,5 @@
 ﻿define(['itemHelper'], function (itemHelper) {
+    'use strict';
 
     function initSyncButtons(view) {
 

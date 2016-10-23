@@ -1,4 +1,5 @@
 ﻿define(['fetchHelper', 'jQuery', 'registrationServices'], function (fetchHelper, $, registrationServices) {
+    'use strict';
 
     function load(page) {
         Dashboard.showLoadingMsg();
