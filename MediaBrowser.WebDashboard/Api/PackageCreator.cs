@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -10,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Globalization;
 using WebMarkupMin.Core;
 
 namespace MediaBrowser.WebDashboard.Api

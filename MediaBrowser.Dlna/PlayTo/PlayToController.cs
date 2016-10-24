@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Model.Dlna;
@@ -20,6 +19,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Dlna.PlayTo
 {

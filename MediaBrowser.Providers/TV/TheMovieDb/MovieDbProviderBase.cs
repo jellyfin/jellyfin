@@ -1,7 +1,6 @@
 ﻿using CommonIO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Movies;
@@ -11,6 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.TV
 {

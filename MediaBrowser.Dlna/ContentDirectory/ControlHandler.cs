@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
@@ -24,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {

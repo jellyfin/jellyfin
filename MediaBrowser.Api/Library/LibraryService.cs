@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.TV;
@@ -25,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Api.Library
 {

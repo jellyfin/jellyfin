@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;

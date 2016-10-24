@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Server.Implementations.Sorting

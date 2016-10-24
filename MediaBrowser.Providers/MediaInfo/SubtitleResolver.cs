@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommonIO;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
