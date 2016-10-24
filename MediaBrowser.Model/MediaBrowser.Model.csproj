@@ -43,6 +43,8 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Activity\ActivityLogEntry.cs" />
+    <Compile Include="Activity\IActivityManager.cs" />
+    <Compile Include="Activity\IActivityRepository.cs" />
     <Compile Include="ApiClient\ApiHelpers.cs" />
     <Compile Include="ApiClient\ConnectionMode.cs" />
     <Compile Include="ApiClient\ConnectionResult.cs" />
@@ -162,6 +164,7 @@
     <Compile Include="Net\EndPointInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
     <Compile Include="Net\MimeTypes.cs" />
+    <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />
     <Compile Include="Notifications\NotificationOptions.cs" />
     <Compile Include="Notifications\NotificationType.cs" />
@@ -356,6 +359,7 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Social\ISharingManager.cs" />
     <Compile Include="Social\SocialShareInfo.cs" />
     <Compile Include="Sync\CompleteSyncJobInfo.cs" />
     <Compile Include="Sync\DeviceFileInfo.cs" />

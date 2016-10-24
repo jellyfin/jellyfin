@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.Social;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Social
+namespace MediaBrowser.Model.Social
 {
     public interface ISharingManager
     {

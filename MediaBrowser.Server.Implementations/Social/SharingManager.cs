@@ -3,7 +3,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Social;
 using MediaBrowser.Model.Social;
 using System;
 using System.Threading.Tasks;

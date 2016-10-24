@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Api.Movies;
 using MediaBrowser.Api.Music;
-using MediaBrowser.Controller.Activity;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;

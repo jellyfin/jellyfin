@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Social;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Social;
 using ServiceStack;

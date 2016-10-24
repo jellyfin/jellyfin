@@ -71,8 +71,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Activity\IActivityManager.cs" />
-    <Compile Include="Activity\IActivityRepository.cs" />
     <Compile Include="Channels\ChannelItemInfo.cs" />
     <Compile Include="Channels\ChannelItemResult.cs" />
     <Compile Include="Channels\ChannelItemType.cs" />
@@ -240,7 +238,6 @@
     <Compile Include="Net\StaticResultOptions.cs" />
     <Compile Include="Net\WebSocketConnectEventArgs.cs" />
     <Compile Include="Net\WebSocketMessageInfo.cs" />
-    <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\INotificationManager.cs" />
     <Compile Include="Notifications\INotificationService.cs" />
     <Compile Include="Notifications\INotificationsRepository.cs" />
@@ -307,7 +304,6 @@
     <Compile Include="Security\IAuthenticationRepository.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Session\AuthenticationRequest.cs" />
-    <Compile Include="Social\ISharingManager.cs" />
     <Compile Include="Sorting\SortHelper.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />

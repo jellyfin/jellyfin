@@ -9,7 +9,6 @@ using MediaBrowser.Controller.Localization;
 using System;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Controller.Activity;
 
 namespace MediaBrowser.Api.Reports
 {
