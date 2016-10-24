@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Globalization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Controller.Localization
+namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
     /// Interface ILocalizationManager

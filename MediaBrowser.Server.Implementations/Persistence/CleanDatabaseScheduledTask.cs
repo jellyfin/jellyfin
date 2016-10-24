@@ -16,8 +16,8 @@ using CommonIO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using ServiceStack;

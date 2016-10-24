@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using MediaBrowser.Controller.Collections;
-using MediaBrowser.Controller.Localization;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Movies

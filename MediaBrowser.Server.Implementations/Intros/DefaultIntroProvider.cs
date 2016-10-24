@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
@@ -14,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommonIO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Server.Implementations.Intros
 {

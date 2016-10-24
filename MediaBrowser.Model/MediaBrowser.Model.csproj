@@ -138,6 +138,7 @@
     <Compile Include="Health\IHealthMonitor.cs" />
     <Compile Include="IO\IMemoryStreamProvider.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
+    <Compile Include="Globalization\ILocalizationManager.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
