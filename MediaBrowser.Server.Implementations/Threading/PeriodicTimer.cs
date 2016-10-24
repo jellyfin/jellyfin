@@ -2,7 +2,7 @@
 using System.Threading;
 using Microsoft.Win32;
 
-namespace MediaBrowser.Controller.Threading
+namespace MediaBrowser.Server.Implementations.Threading
 {
     public class PeriodicTimer : IDisposable
     {

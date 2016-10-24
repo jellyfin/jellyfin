@@ -385,7 +385,6 @@
     <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Sync\SyncedFileInfo.cs" />
     <Compile Include="Sync\SyncedItemProgress.cs" />
-    <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\ITVSeriesManager.cs" />
   </ItemGroup>
   <ItemGroup>

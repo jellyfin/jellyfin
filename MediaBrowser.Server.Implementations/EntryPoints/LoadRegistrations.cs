@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Threading;
+using MediaBrowser.Server.Implementations.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {

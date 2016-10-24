@@ -12,7 +12,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using CommonIO;
-using MediaBrowser.Controller.Threading;
+using MediaBrowser.Server.Implementations.Threading;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
