@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Model.Activity;
-using MediaBrowser.Model.Querying;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Controller.Activity
+namespace MediaBrowser.Model.Activity
 {
     public interface IActivityRepository
     {

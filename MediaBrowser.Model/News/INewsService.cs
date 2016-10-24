@@ -1,7 +1,6 @@
-﻿using MediaBrowser.Model.News;
-using MediaBrowser.Model.Querying;
+﻿using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Controller.News
+namespace MediaBrowser.Model.News
 {
     /// <summary>
     /// Interface INewsFeed

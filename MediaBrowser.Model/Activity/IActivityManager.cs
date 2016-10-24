@@ -1,10 +1,9 @@
-﻿using MediaBrowser.Model.Activity;
+﻿using System;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Querying;
-using System;
-using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.Activity
+namespace MediaBrowser.Model.Activity
 {
     public interface IActivityManager
     {
