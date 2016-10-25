@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
@@ -228,7 +226,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 html = html.Substring(0, index+7);
                             }
                         }
-                        var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
+                        var mainFile = _fileSystem.ReadAllText(GetDashboardResourcePath("index.html"));
 
                         html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
