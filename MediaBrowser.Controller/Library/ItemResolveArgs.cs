@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -104,7 +106,7 @@ namespace MediaBrowser.Controller.Library
         {
             get
             {
-                return (FileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+                return FileInfo.IsHidden;
             }
         }
 

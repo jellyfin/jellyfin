@@ -46,10 +46,6 @@
       <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\BDInfo.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
     <Reference Include="DvdLib, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\DvdLib.dll</HintPath>
       <Private>True</Private>

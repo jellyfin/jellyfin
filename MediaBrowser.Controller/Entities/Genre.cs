@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+﻿using MediaBrowser.Model.Serialization;
 using MediaBrowser.Controller.Entities.Audio;
 using System;
 using System.Collections.Generic;

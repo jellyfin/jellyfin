@@ -10,7 +10,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +18,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -67,7 +69,6 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     [Route("/Videos/{Id}/hls1/{PlaylistId}/{SegmentId}.ts", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegment : VideoStreamRequest
     {
         public string PlaylistId { get; set; }
@@ -81,7 +82,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
     [Route("/Audio/{Id}/hls1/{PlaylistId}/{SegmentId}.aac", "GET")]
     [Route("/Audio/{Id}/hls1/{PlaylistId}/{SegmentId}.ts", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsAudioSegment : StreamRequest
     {
         public string PlaylistId { get; set; }
@@ -466,7 +466,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = segmentPath,
-                FileShare = FileShare.ReadWrite,
+                FileShare = FileShareMode.ReadWrite,
                 OnComplete = () =>
                 {
                     if (transcodingJob != null)

@@ -5,15 +5,16 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
 using System;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
     [Route("/Videos/{Id}/live.m3u8", "GET")]
-    [Api(Description = "Gets a video stream using HTTP live streaming.")]
     public class GetLiveHlsStream : VideoStreamRequest
     {
     }

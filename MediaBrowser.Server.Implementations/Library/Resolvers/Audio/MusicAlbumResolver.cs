@@ -9,8 +9,10 @@ using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
@@ -112,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 
             foreach (var fileSystemInfo in list)
             {
-                if ((fileSystemInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                if (fileSystemInfo.IsDirectory)
                 {
                     if (allowSubfolders)
                     {

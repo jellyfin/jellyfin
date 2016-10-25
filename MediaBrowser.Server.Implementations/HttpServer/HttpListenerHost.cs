@@ -6,10 +6,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
@@ -24,6 +22,8 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
+using ServiceStack.Api.Swagger;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -100,7 +100,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             container.Adapter = _containerAdapter;
 
-            Plugins.RemoveAll(x => x is NativeTypesFeature);
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization"));
 
@@ -171,7 +170,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private void StartListener()
         {
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
+            HostContext.Config.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = GetListener();
 
@@ -181,6 +180,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _listener.RequestHandler = RequestHandler;
 
             _listener.Start(UrlPrefixes);
+        }
+
+        public static string GetHandlerPathIfAny(string listenerUrl)
+        {
+            if (listenerUrl == null) return null;
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+            if (pos == -1) return null;
+            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
+            var endPos = startHostUrl.IndexOf('/');
+            if (endPos == -1) return null;
+            var endHostUrl = startHostUrl.Substring(endPos + 1);
+            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         private IHttpListener GetListener()
@@ -569,28 +580,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             base.Init();
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        public override Model.Services.RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             var routes = base.GetRouteAttributes(requestType).ToList();
             var clone = routes.ToList();
 
             foreach (var route in clone)
             {
-                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,

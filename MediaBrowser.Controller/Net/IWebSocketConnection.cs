@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Model.Net;
 using System;
-using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        NameValueCollection QueryString { get; set; }
+        QueryParamCollection QueryString { get; set; }
 
         /// <summary>
         /// Gets or sets the receive action.

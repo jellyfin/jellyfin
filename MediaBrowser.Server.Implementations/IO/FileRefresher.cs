@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Events;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
@@ -237,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     || data.IsDirectory
 
                     // Opening a writable stream will fail with readonly files
-                    || data.Attributes.HasFlag(FileAttributes.ReadOnly))
+                    || data.IsReadOnly)
                 {
                     return false;
                 }
@@ -256,12 +258,12 @@ namespace MediaBrowser.Server.Implementations.IO
             // But if the server only has readonly access, this is going to cause this entire algorithm to fail
             // So we'll take a best guess about our access level
             var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
-                ? FileAccess.ReadWrite
-                : FileAccess.Read;
+                ? FileAccessMode.ReadWrite
+                : FileAccessMode.Read;
 
             try
             {
-                using (_fileSystem.GetFileStream(path, FileMode.Open, requestedFileAccess, FileShare.ReadWrite))
+                using (_fileSystem.GetFileStream(path, FileOpenMode.Open, requestedFileAccess, FileShareMode.ReadWrite))
                 {
                     //file is not locked
                     return false;

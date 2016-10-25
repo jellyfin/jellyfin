@@ -7,17 +7,17 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
-using WebMarkupMin.Core;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -454,7 +454,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, mode, culture, appVersion, false).ConfigureAwait(false))
             {
-                using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+                using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                 {
                     stream.CopyTo(fs);
                 }

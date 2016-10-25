@@ -35,14 +35,8 @@
             this.cmdBrowse = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.cmdLibraryExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.cmdApiDocs = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdStandardDocs = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdSwagger = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdGtihub = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdLogWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdCommunity = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdExit = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
@@ -52,7 +46,7 @@
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            this.notifyIcon1.Text = "Media Browser";
+            this.notifyIcon1.Text = "Emby";
             this.notifyIcon1.Visible = true;
             // 
             // contextMenuStrip1
@@ -61,11 +55,8 @@
             this.cmdBrowse,
             this.cmdConfigure,
             this.toolStripSeparator2,
-            this.cmdLibraryExplorer,
             this.cmdRestart,
             this.toolStripSeparator1,
-            this.cmdApiDocs,
-            this.cmdLogWindow,
             this.cmdCommunity,
             this.cmdExit});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
@@ -90,12 +81,6 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
             // 
-            // cmdLibraryExplorer
-            // 
-            this.cmdLibraryExplorer.Name = "cmdLibraryExplorer";
-            this.cmdLibraryExplorer.Size = new System.Drawing.Size(208, 22);
-            this.cmdLibraryExplorer.Text = "Open Library Explorer";
-            // 
             // cmdRestart
             // 
             this.cmdRestart.Name = "cmdRestart";
@@ -106,41 +91,6 @@
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(205, 6);
-            // 
-            // cmdApiDocs
-            // 
-            this.cmdApiDocs.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.cmdStandardDocs,
-            this.cmdSwagger,
-            this.cmdGtihub});
-            this.cmdApiDocs.Name = "cmdApiDocs";
-            this.cmdApiDocs.Size = new System.Drawing.Size(208, 22);
-            this.cmdApiDocs.Text = "View Api Documentation";
-            // 
-            // cmdStandardDocs
-            // 
-            this.cmdStandardDocs.Name = "cmdStandardDocs";
-            this.cmdStandardDocs.Size = new System.Drawing.Size(136, 22);
-            this.cmdStandardDocs.Text = "Standard";
-            // 
-            // cmdSwagger
-            // 
-            this.cmdSwagger.Name = "cmdSwagger";
-            this.cmdSwagger.Size = new System.Drawing.Size(136, 22);
-            this.cmdSwagger.Text = "Swagger";
-            // 
-            // cmdGtihub
-            // 
-            this.cmdGtihub.Name = "cmdGtihub";
-            this.cmdGtihub.Size = new System.Drawing.Size(136, 22);
-            this.cmdGtihub.Text = "Github Wiki";
-            // 
-            // cmdLogWindow
-            // 
-            this.cmdLogWindow.CheckOnClick = true;
-            this.cmdLogWindow.Name = "cmdLogWindow";
-            this.cmdLogWindow.Size = new System.Drawing.Size(208, 22);
-            this.cmdLogWindow.Text = "Show Log Window";
             // 
             // cmdCommunity
             // 
@@ -179,14 +129,8 @@
         private System.Windows.Forms.ToolStripMenuItem cmdBrowse;
         private System.Windows.Forms.ToolStripMenuItem cmdConfigure;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem cmdLibraryExplorer;
         private System.Windows.Forms.ToolStripMenuItem cmdRestart;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem cmdLogWindow;
         private System.Windows.Forms.ToolStripMenuItem cmdCommunity;
-        private System.Windows.Forms.ToolStripMenuItem cmdApiDocs;
-        private System.Windows.Forms.ToolStripMenuItem cmdStandardDocs;
-        private System.Windows.Forms.ToolStripMenuItem cmdSwagger;
-        private System.Windows.Forms.ToolStripMenuItem cmdGtihub;
     }
 }

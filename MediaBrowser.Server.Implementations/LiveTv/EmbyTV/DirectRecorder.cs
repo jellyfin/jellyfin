@@ -2,9 +2,10 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 
@@ -41,7 +42,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.Info("Opened recording stream from tuner provider");
 
-                using (var output = _fileSystem.GetFileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
+                using (var output = _fileSystem.GetFileStream(targetFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                 {
                     onStarted();
 

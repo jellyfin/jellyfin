@@ -3,15 +3,17 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Net;
 using System.Collections.Generic;
-using ServiceStack.Web;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
-    public class ProgressiveFileCopier : IAsyncStreamSource, IHasOptions
+    public class ProgressiveFileCopier : IAsyncStreamWriter, IHasHeaders
     {
         private readonly IFileSystem _fileSystem;
         private readonly TranscodingJob _job;
@@ -27,7 +29,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         public long StartPosition { get; set; }
         public bool AllowEndOfFile = true;
 
-        private IDirectStreamProvider _directStreamProvider;
+        private readonly IDirectStreamProvider _directStreamProvider;
 
         public ProgressiveFileCopier(IFileSystem fileSystem, string path, Dictionary<string, string> outputHeaders, TranscodingJob job, ILogger logger, CancellationToken cancellationToken)
         {
@@ -48,7 +50,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             _cancellationToken = cancellationToken;
         }
 
-        public IDictionary<string, string> Options
+        public IDictionary<string, string> Headers
         {
             get
             {
@@ -58,10 +60,10 @@ namespace MediaBrowser.Api.Playback.Progressive
 
         private Stream GetInputStream()
         {
-            return _fileSystem.GetFileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            return _fileSystem.GetFileStream(_path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
         }
 
-        public async Task WriteToAsync(Stream outputStream)
+        public async Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
             try
             {

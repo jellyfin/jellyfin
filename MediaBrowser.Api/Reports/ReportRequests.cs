@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Api.UserLibrary;
-using ServiceStack;
 using System.Collections.Generic;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Reports
 {

@@ -50,5 +50,7 @@ namespace MediaBrowser.Model.Globalization
         /// </summary>
         /// <returns>IEnumerable{LocalizatonOption}.</returns>
         IEnumerable<LocalizatonOption> GetLocalizationOptions();
+
+        string RemoveDiacritics(string text);
     }
 }

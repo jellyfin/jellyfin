@@ -8,8 +8,10 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Drawing.ImageMagick
 {

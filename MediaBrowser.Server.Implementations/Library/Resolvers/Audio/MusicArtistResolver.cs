@@ -6,8 +6,10 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
 {
@@ -85,7 +87,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Audio
             var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService, args.GetLibraryOptions())) ? new MusicArtist() : null;
+            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService, args.GetLibraryOptions())) ? new MusicArtist() : null;
         }
 
     }

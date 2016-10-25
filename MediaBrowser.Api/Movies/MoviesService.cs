@@ -8,7 +8,6 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Movies
 {

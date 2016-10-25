@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.News;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

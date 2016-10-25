@@ -1140,7 +1140,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 var idParts = part.Split('=');
 
-                item.SetProviderId(idParts[0], idParts[1]);
+                if (idParts.Length == 2)
+                {
+                    item.SetProviderId(idParts[0], idParts[1]);
+                }
             }
         }
 

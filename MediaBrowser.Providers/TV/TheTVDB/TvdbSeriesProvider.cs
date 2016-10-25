@@ -20,8 +20,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -1353,7 +1354,7 @@ namespace MediaBrowser.Providers.TV
         {
             string validXml;
 
-            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
             {
                 using (var reader = new StreamReader(fileStream))
                 {
@@ -1363,7 +1364,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            using (var fileStream = _fileSystem.GetFileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
             {
                 using (var writer = new StreamWriter(fileStream))
                 {

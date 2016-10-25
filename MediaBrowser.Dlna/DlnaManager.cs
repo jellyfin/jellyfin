@@ -16,7 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Dlna
 {
@@ -416,7 +418,7 @@ namespace MediaBrowser.Dlna
                     {
                         _fileSystem.CreateDirectory(systemProfilesPath);
 
-                        using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {
                             stream.CopyTo(fileStream);
                         }

@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
 {

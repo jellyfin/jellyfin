@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using Funq;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Services;
 using ServiceStack;
 using ServiceStack.Host;
 using ServiceStack.Web;
 using SocketHttpListener.Net;
+using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
+using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
+using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
+using IResponse = MediaBrowser.Model.Services.IResponse;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -27,8 +33,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             _memoryStreamProvider = memoryStreamProvider;
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
-
-            this.RequestPreferences = new RequestPreferences(this);
         }
 
         public HttpListenerRequest HttpRequest
@@ -52,8 +56,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         }
 
         public RequestAttributes RequestAttributes { get; set; }
-
-        public IRequestPreferences RequestPreferences { get; private set; }
 
         public T TryResolve<T>()
         {
@@ -324,22 +326,34 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get { return request.UserAgent; }
         }
 
-        private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers
+        private QueryParamCollection headers;
+        public QueryParamCollection Headers
         {
-            get { return headers ?? (headers = new NameValueCollectionWrapper(request.Headers)); }
+            get { return headers ?? (headers = ToQueryParams(request.Headers)); }
         }
 
-        private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString
+        private QueryParamCollection queryString;
+        public QueryParamCollection QueryString
         {
-            get { return queryString ?? (queryString = new NameValueCollectionWrapper(MyHttpUtility.ParseQueryString(request.Url.Query))); }
+            get { return queryString ?? (queryString = MyHttpUtility.ParseQueryString(request.Url.Query)); }
         }
 
-        private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData
+        private QueryParamCollection formData;
+        public QueryParamCollection FormData
         {
-            get { return formData ?? (formData = new NameValueCollectionWrapper(this.Form)); }
+            get { return formData ?? (formData = this.Form); }
+        }
+
+        private QueryParamCollection ToQueryParams(NameValueCollection collection)
+        {
+            var result = new QueryParamCollection();
+
+            foreach (var key in collection.AllKeys)
+            {
+                result[key] = collection[key];
+            }
+
+            return result;
         }
 
         public bool IsLocal

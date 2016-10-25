@@ -57,7 +57,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
                 {
                     var filename = child.Name;
 
-                    if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    if (child.IsDirectory)
                     {
                         if (IsDvdDirectory(filename))
                         {

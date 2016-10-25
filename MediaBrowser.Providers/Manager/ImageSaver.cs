@@ -16,7 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Manager
@@ -266,7 +267,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken)
                             .ConfigureAwait(false);

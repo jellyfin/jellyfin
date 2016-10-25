@@ -18,8 +18,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
@@ -218,7 +220,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            using (var filestream = FileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using (var filestream = FileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 stream.CopyTo(filestream);
             }

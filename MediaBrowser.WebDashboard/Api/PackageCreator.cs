@@ -7,10 +7,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Globalization;
-using WebMarkupMin.Core;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -147,27 +148,6 @@ namespace MediaBrowser.WebDashboard.Api
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                     content = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var result = new KristensenCssMinifier().Minify(content, false, Encoding.UTF8);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying css: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                content = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying css", ex);
-                        }
-                    }
                 }
 
                 var bytes = Encoding.UTF8.GetBytes(content);
@@ -187,27 +167,6 @@ namespace MediaBrowser.WebDashboard.Api
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                     content = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var result = new CrockfordJsMinifier().Minify(content, false, Encoding.UTF8);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                content = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying javascript", ex);
-                        }
-                    }
                 }
 
                 var bytes = Encoding.UTF8.GetBytes(content);
@@ -279,33 +238,6 @@ namespace MediaBrowser.WebDashboard.Api
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
                         html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"");
-                    }
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var minifier = new HtmlMinifier(new HtmlMinificationSettings
-                            {
-                                AttributeQuotesRemovalMode = HtmlAttributeQuotesRemovalMode.KeepQuotes,
-                                RemoveOptionalEndTags = false,
-                                RemoveTagsWithoutContent = false
-                            });
-                            var result = minifier.Minify(html, false);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying html: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                html = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying html", ex);
-                        }
                     }
                 }
 
@@ -470,7 +402,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 var path = GetDashboardResourcePath(file);
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true))
                 {
                     using (var streamReader = new StreamReader(fs))
                     {
@@ -482,27 +414,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             var css = builder.ToString();
-
-            if (enableMinification)
-            {
-                try
-                {
-                    var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        _logger.Error("Error minifying css: " + result.Errors[0].Message);
-                    }
-                    else
-                    {
-                        css = result.MinifiedContent;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error minifying css", ex);
-                }
-            }
 
             var bytes = Encoding.UTF8.GetBytes(css);
             memoryStream.Write(bytes, 0, bytes.Length);
@@ -518,7 +429,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private Stream GetRawResourceStream(string path)
         {
-            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
         }
 
     }

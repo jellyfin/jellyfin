@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    public class RangeRequestWriter : IStreamWriter, IAsyncStreamWriter, IHttpResult
+    public class RangeRequestWriter : IAsyncStreamWriter, IHttpResult
     {
         /// <summary>
         /// Gets or sets the source stream.
@@ -47,18 +48,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Additional HTTP Headers
         /// </summary>
         /// <value>The headers.</value>
-        public Dictionary<string, string> Headers
+        public IDictionary<string, string> Headers
         {
             get { return _options; }
-        }
-
-        /// <summary>
-        /// Gets the options.
-        /// </summary>
-        /// <value>The options.</value>
-        public IDictionary<string, string> Options
-        {
-            get { return Headers; }
         }
 
         /// <summary>
@@ -81,8 +73,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             this._logger = logger;
 
             ContentType = contentType;
-            Options["Content-Type"] = contentType;
-            Options["Accept-Ranges"] = "bytes";
+            Headers["Content-Type"] = contentType;
+            Headers["Accept-Ranges"] = "bytes";
             StatusCode = HttpStatusCode.PartialContent;
 
             Cookies = new List<Cookie>();
@@ -112,8 +104,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             RangeLength = 1 + RangeEnd - RangeStart;
 
             // Content-Length is the length of what we're serving, not the original content
-            Options["Content-Length"] = RangeLength.ToString(UsCulture);
-            Options["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
+            Headers["Content-Length"] = RangeLength.ToString(UsCulture);
+            Headers["Content-Range"] = string.Format("bytes {0}-{1}/{2}", RangeStart, RangeEnd, TotalContentLength);
 
             if (RangeStart > 0)
             {
@@ -164,62 +156,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Writes to.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        public void WriteTo(Stream responseStream)
-        {
-            try
-            {
-                // Headers only
-                if (IsHeadRequest)
-                {
-                    return;
-                }
-
-                using (var source = SourceStream)
-                {
-                    // If the requested range is "0-", we can optimize by just doing a stream copy
-                    if (RangeEnd >= TotalContentLength - 1)
-                    {
-                        source.CopyTo(responseStream, BufferSize);
-                    }
-                    else
-                    {
-                        CopyToInternal(source, responseStream, RangeLength);
-                    }
-                }
-            }
-            finally
-            {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
-            }
-        }
-
-        private void CopyToInternal(Stream source, Stream destination, long copyLength)
-        {
-            var array = new byte[BufferSize];
-            int count;
-            while ((count = source.Read(array, 0, array.Length)) != 0)
-            {
-                var bytesToCopy = Math.Min(count, copyLength);
-
-                destination.Write(array, 0, Convert.ToInt32(bytesToCopy));
-
-                copyLength -= bytesToCopy;
-
-                if (copyLength <= 0)
-                {
-                    break;
-                }
-            }
-        }
-
-        public async Task WriteToAsync(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
             {

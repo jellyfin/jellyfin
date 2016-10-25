@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Text;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -46,21 +47,21 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             var vary = "Accept-Encoding";
 
-            var hasOptions = dto as IHasOptions;
+            var hasHeaders = dto as IHasHeaders;
             var sharpResponse = res as WebSocketSharpResponse;
 
-            if (hasOptions != null)
+            if (hasHeaders != null)
             {
-                if (!hasOptions.Options.ContainsKey("Server"))
+                if (!hasHeaders.Headers.ContainsKey("Server"))
                 {
-                    hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1, UPnP/1.0 DLNADOC/1.50";
-                    //hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
+                    hasHeaders.Headers["Server"] = "Mono-HTTPAPI/1.1, UPnP/1.0 DLNADOC/1.50";
+                    //hasHeaders.Headers["Server"] = "Mono-HTTPAPI/1.1";
                 }
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
                 string contentLength;
 
-                if (hasOptions.Options.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
+                if (hasHeaders.Headers.TryGetValue("Content-Length", out contentLength) && !string.IsNullOrEmpty(contentLength))
                 {
                     var length = long.Parse(contentLength, UsCulture);
 
@@ -85,13 +86,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
 
-                string hasOptionsVary;
-                if (hasOptions.Options.TryGetValue("Vary", out hasOptionsVary))
+                string hasHeadersVary;
+                if (hasHeaders.Headers.TryGetValue("Vary", out hasHeadersVary))
                 {
-                    vary = hasOptionsVary;
+                    vary = hasHeadersVary;
                 }
 
-                hasOptions.Options["Vary"] = vary;
+                hasHeaders.Headers["Vary"] = vary;
             }
 
             //res.KeepAlive = false;
