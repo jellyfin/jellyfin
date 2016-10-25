@@ -11,10 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Services;
@@ -243,9 +240,7 @@ namespace MediaBrowser.WebDashboard.Api
                 cacheDuration = TimeSpan.FromDays(365);
             }
 
-            var assembly = GetType().Assembly.GetName();
-
-            var cacheKey = (assembly.Version + (localizationCulture ?? string.Empty) + path).GetMD5();
+            var cacheKey = (_appHost.ApplicationVersion.ToString() + (localizationCulture ?? string.Empty) + path).GetMD5();
 
             return await ResultFactory.GetStaticResult(Request, cacheKey, null, cacheDuration, contentType, () => GetResourceStream(path, localizationCulture)).ConfigureAwait(false);
         }
@@ -442,9 +437,9 @@ namespace MediaBrowser.WebDashboard.Api
 
         private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)
         {
-            foreach (var file in Directory.GetFiles(source, "*", SearchOption.TopDirectoryOnly))
+            foreach (var file in _fileSystem.GetFiles(source))
             {
-                var filename = Path.GetFileName(file);
+                var filename = file.Name;
 
                 await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
             }
@@ -466,14 +461,12 @@ namespace MediaBrowser.WebDashboard.Api
             _fileSystem.CreateDirectory(destination);
 
             //Now Create all of the directories
-            foreach (string dirPath in Directory.GetDirectories(source, "*",
-                SearchOption.AllDirectories))
-                _fileSystem.CreateDirectory(dirPath.Replace(source, destination));
+            foreach (var dirPath in _fileSystem.GetDirectories(source, true))
+                _fileSystem.CreateDirectory(dirPath.FullName.Replace(source, destination));
 
             //Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(source, "*.*",
-                SearchOption.AllDirectories))
-                _fileSystem.CopyFile(newPath, newPath.Replace(source, destination), true);
+            foreach (var newPath in _fileSystem.GetFiles(source, true))
+                _fileSystem.CopyFile(newPath.FullName, newPath.FullName.Replace(source, destination), true);
         }
     }
 
