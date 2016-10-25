@@ -503,7 +503,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderContinueWatching') + '</h1>';
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {

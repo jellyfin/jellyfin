@@ -1,4 +1,5 @@
 {
+    "HeaderContinueWatching": "Continue Watching",
     "LabelExit": "Kil\u00e9p\u00e9s",
     "LabelApiDocumentation": "Api dokument\u00e1ci\u00f3",
     "LabelBrowseLibrary": "M\u00e9diat\u00e1r tall\u00f3z\u00e1sa",
@@ -1774,7 +1775,7 @@
     "HeaderUnaired": "Unaired",
     "HeaderMissing": "Missing",
     "ButtonWebsite": "Website",
-    "ValueSeriesYearToPresent": "{0}-Napjainkig",
+    "ValueSeriesYearToPresent": "{0} - Napjainkig",
     "ValueAwards": "D\u00edjak: {0}",
     "ValueBudget": "Budget: {0}",
     "ValueRevenue": "Revenue: {0}",
@@ -1800,7 +1801,7 @@
     "MediaInfoLongitude": "Longitude",
     "MediaInfoShutterSpeed": "Shutter speed",
     "MediaInfoSoftware": "Software",
-    "HeaderMoreLikeThis": "More Like This",
+    "HeaderMoreLikeThis": "M\u00e9g t\u00f6bb hasonl\u00f3",
     "HeaderMovies": "Filmek",
     "HeaderAlbums": "Albumok",
     "HeaderGames": "Games",
