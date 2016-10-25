@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -53,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Library
         public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent)
         {
             var filename = fileInfo.Name;
-            var isHidden = (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+            var isHidden = fileInfo.IsHidden;
             var path = fileInfo.FullName;
 
             // Handle mac .DS_Store

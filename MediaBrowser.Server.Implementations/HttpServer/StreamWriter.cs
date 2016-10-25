@@ -1,19 +1,19 @@
 ﻿using MediaBrowser.Model.Logging;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class StreamWriter
     /// </summary>
-    public class StreamWriter : IStreamWriter, IAsyncStreamWriter, IHasOptions
+    public class StreamWriter : IAsyncStreamWriter, IHasHeaders
     {
         private ILogger Logger { get; set; }
 
@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Options
+        public IDictionary<string, string> Headers
         {
             get { return _options; }
         }
@@ -58,11 +58,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             SourceStream = source;
             Logger = logger;
 
-            Options["Content-Type"] = contentType;
+            Headers["Content-Type"] = contentType;
 
             if (source.CanSeek)
             {
-                Options["Content-Length"] = source.Length.ToString(UsCulture);
+                Headers["Content-Length"] = source.Length.ToString(UsCulture);
             }
         }
 
@@ -83,54 +83,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _bytes = source;
             Logger = logger;
 
-            Options["Content-Type"] = contentType;
+            Headers["Content-Type"] = contentType;
 
-            Options["Content-Length"] = source.Length.ToString(UsCulture);
+            Headers["Content-Length"] = source.Length.ToString(UsCulture);
         }
 
         private const int BufferSize = 81920;
 
-        /// <summary>
-        /// Writes to.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        public void WriteTo(Stream responseStream)
-        {
-            try
-            {
-                if (_bytes != null)
-                {
-                    responseStream.Write(_bytes, 0, _bytes.Length);
-                }
-                else
-                {
-                    using (var src = SourceStream)
-                    {
-                        src.CopyTo(responseStream, BufferSize);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error streaming data", ex);
-
-                if (OnError != null)
-                {
-                    OnError();
-                }
-
-                throw;
-            }
-            finally
-            {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
-            }
-        }
-
-        public async Task WriteToAsync(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
             {

@@ -2,7 +2,9 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Resolvers
 {

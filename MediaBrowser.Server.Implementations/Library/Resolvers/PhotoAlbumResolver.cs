@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
         private bool HasPhotos(ItemResolveArgs args)
         {
-            return args.FileSystemChildren.Any(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && PhotoResolver.IsImageFile(i.FullName, _imageProcessor));
+            return args.FileSystemChildren.Any(i => (!i.IsDirectory) && PhotoResolver.IsImageFile(i.FullName, _imageProcessor));
         }
 
         public override ResolverPriority Priority

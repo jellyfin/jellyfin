@@ -8,15 +8,16 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {
@@ -204,7 +205,6 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "POST")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
-    [Api(Description = "Posts an item image")]
     [Authenticated(Roles = "admin")]
     public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
@@ -642,7 +642,7 @@ namespace MediaBrowser.Api.Images
 
                 // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
                 // I'd rather do this than add a delay after saving the file
-                FileShare = FileShare.ReadWrite
+                FileShare = FileShareMode.ReadWrite
 
             }).ConfigureAwait(false);
         }

@@ -1,13 +1,14 @@
-﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Net;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 
-namespace MediaBrowser.Controller.Net
+namespace MediaBrowser.Api
 {
     /// <summary>
     /// Starts sending data over a web socket periodically when a message is received, and then stops when a corresponding stop message is received

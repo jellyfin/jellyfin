@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
 {
@@ -158,7 +159,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = new NameValueCollection(e.QueryString ?? new NameValueCollection())
+                QueryString = e.QueryString ?? new QueryParamCollection()
             };
 
             _webSocketConnections.Add(connection);

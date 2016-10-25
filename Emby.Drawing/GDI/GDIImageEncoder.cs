@@ -7,7 +7,9 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using ImageFormat = MediaBrowser.Model.Drawing.ImageFormat;
 
 namespace Emby.Drawing.GDI
@@ -81,7 +83,7 @@ namespace Emby.Drawing.GDI
                 {
                     _fileSystem.CreateDirectory(Path.GetDirectoryName(outputPath));
 
-                    using (var outputStream = _fileSystem.GetFileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
+                    using (var outputStream = _fileSystem.GetFileStream(outputPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
                     {
                         croppedImage.Save(System.Drawing.Imaging.ImageFormat.Png, outputStream, 100);
                     }
@@ -136,7 +138,7 @@ namespace Emby.Drawing.GDI
                         _fileSystem.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
                         // Save to the cache location
-                        using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, false))
+                        using (var cacheFileStream = _fileSystem.GetFileStream(cacheFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, false))
                         {
                             // Save to the memory stream
                             thumbnail.Save(outputFormat, cacheFileStream, quality);

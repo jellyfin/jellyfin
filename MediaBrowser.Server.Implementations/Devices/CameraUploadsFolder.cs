@@ -6,7 +6,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
 
 namespace MediaBrowser.Server.Implementations.Devices

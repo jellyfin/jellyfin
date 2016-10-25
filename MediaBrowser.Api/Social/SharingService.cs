@@ -5,10 +5,10 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Social;
-using ServiceStack;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Social
 {

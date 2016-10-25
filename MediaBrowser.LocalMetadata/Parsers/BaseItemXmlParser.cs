@@ -1,7 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -9,8 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Controller.Providers
+namespace MediaBrowser.LocalMetadata.Parsers
 {
     /// <summary>
     /// Provides a base class for parsing metadata xml
@@ -488,7 +489,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "Director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -500,7 +501,7 @@ namespace MediaBrowser.Controller.Providers
                     }
                 case "Writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -525,7 +526,7 @@ namespace MediaBrowser.Controller.Providers
                         else
                         {
                             // Old-style piped string
-                            foreach (var p in SplitNames(actors).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
+                            foreach (var p in SplitNames(actors).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.Actor }))
                             {
                                 if (string.IsNullOrWhiteSpace(p.Name))
                                 {
@@ -539,7 +540,7 @@ namespace MediaBrowser.Controller.Providers
 
                 case "GuestStars":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Entities.PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
+                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new Controller.Entities.PersonInfo { Name = v.Trim(), Type = PersonType.GuestStar }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {

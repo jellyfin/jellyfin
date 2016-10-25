@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {

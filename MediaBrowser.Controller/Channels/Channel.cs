@@ -3,7 +3,7 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 

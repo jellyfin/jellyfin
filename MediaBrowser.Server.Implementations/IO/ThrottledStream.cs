@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Controller.IO
+namespace MediaBrowser.Server.Implementations.IO
 {
     /// <summary>
     /// Class for streaming data with throttling support.

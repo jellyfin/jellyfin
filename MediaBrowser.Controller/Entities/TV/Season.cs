@@ -4,9 +4,9 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
 {

@@ -7,10 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {

@@ -2,9 +2,9 @@
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

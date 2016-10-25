@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Tasks;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {

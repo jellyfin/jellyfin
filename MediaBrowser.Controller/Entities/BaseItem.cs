@@ -18,17 +18,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -1878,14 +1880,14 @@ namespace MediaBrowser.Controller.Entities
             if (info.IsLocalFile)
             {
                 // Delete the source file
-                var currentFile = new FileInfo(info.Path);
+                var currentFile = FileSystem.GetFileInfo(info.Path);
 
                 // Deletion will fail if the file is hidden so remove the attribute first
                 if (currentFile.Exists)
                 {
-                    if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    if (currentFile.IsHidden)
                     {
-                        currentFile.Attributes &= ~FileAttributes.Hidden;
+                        FileSystem.SetHidden(currentFile.FullName, false);
                     }
 
                     FileSystem.DeleteFile(currentFile.FullName);

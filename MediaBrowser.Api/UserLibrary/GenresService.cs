@@ -5,10 +5,10 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {

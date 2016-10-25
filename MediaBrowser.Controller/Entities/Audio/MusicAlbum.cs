@@ -5,7 +5,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;

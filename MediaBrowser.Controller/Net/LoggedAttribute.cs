@@ -2,8 +2,8 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Web;
 using System;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -22,7 +22,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            var serviceRequest = new ServiceStackServiceRequest(request);
+            var serviceRequest = new ServiceRequest(request);
             
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(serviceRequest);

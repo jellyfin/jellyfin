@@ -19,8 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
@@ -148,7 +149,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException("source");
             }
 
-            var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }

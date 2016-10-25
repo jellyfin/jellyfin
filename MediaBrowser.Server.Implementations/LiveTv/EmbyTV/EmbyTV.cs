@@ -26,12 +26,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.FileOrganization;
 using Microsoft.Win32;
@@ -1578,7 +1580,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1613,7 +1615,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = _fileSystem.GetFileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using (var stream = _fileSystem.GetFileStream(nfoPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 var settings = new XmlWriterSettings
                 {

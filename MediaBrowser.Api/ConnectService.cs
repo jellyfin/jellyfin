@@ -3,11 +3,11 @@ using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Connect;
-using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

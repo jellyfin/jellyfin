@@ -1,4 +1,4 @@
-﻿using CommonIO;
+﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -14,6 +14,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -223,7 +225,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072))
+            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {
@@ -242,7 +244,7 @@ namespace MediaBrowser.Providers.Omdb
 
             string resultString;
 
-            using (Stream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072))
+            using (Stream stream = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
                 {

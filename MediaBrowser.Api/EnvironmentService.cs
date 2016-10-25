@@ -2,13 +2,15 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
@@ -263,7 +265,7 @@ namespace MediaBrowser.Api
             // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
             var entries = _fileSystem.GetFileSystemEntries(request.Path).Where(i =>
             {
-                if (!request.IncludeHidden && i.Attributes.HasFlag(FileAttributes.Hidden))
+                if (!request.IncludeHidden && i.IsHidden)
                 {
                     return false;
                 }

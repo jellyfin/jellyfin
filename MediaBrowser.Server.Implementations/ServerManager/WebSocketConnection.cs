@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 using UniversalDetector;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
@@ -74,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public NameValueCollection QueryString { get; set; }
+        public QueryParamCollection QueryString { get; set; }
         private readonly IMemoryStreamProvider _memoryStreamProvider;
 
         /// <summary>

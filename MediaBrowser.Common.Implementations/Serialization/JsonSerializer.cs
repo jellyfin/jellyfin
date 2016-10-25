@@ -1,7 +1,8 @@
 ﻿using MediaBrowser.Model.Serialization;
 using System;
 using System.IO;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Implementations.Serialization
@@ -60,7 +61,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
                 throw new ArgumentNullException("file");
             }
 
-			using (Stream stream = _fileSystem.GetFileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+			using (Stream stream = _fileSystem.GetFileStream(file, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
             {
                 SerializeToStream(obj, stream);
             }

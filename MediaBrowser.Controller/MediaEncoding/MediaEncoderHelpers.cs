@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {

@@ -136,7 +136,10 @@
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="Health\IHealthMonitor.cs" />
+    <Compile Include="IO\FileSystemMetadata.cs" />
+    <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\IMemoryStreamProvider.cs" />
+    <Compile Include="IO\IShortcutHandler.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Globalization\ILocalizationManager.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
@@ -163,6 +166,15 @@
     <Compile Include="MediaInfo\SubtitleTrackInfo.cs" />
     <Compile Include="Net\EndPointInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
+    <Compile Include="Services\ApiMemberAttribute.cs" />
+    <Compile Include="Services\IAsyncStreamWriter.cs" />
+    <Compile Include="Services\IHasHeaders.cs" />
+    <Compile Include="Services\IHasRequestFilter.cs" />
+    <Compile Include="Services\IHttpRequest.cs" />
+    <Compile Include="Services\IHttpResponse.cs" />
+    <Compile Include="Services\IRequest.cs" />
+    <Compile Include="Services\IRequiresRequestStream.cs" />
+    <Compile Include="Services\IService.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />
@@ -310,6 +322,9 @@
     <Compile Include="Registration\RegistrationInfo.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Serialization\IgnoreDataMemberAttribute.cs" />
+    <Compile Include="Services\IStreamWriter.cs" />
+    <Compile Include="Services\QueryParamCollection.cs" />
+    <Compile Include="Services\RouteAttribute.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
     <Compile Include="Session\ClientCapabilities.cs" />
     <Compile Include="Session\GeneralCommand.cs" />

@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
@@ -1244,7 +1244,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var packetBuffer = new byte['Å'];
 
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 fs.Read(packetBuffer, 0, packetBuffer.Length);
             }

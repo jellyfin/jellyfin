@@ -1,8 +1,10 @@
-﻿using CommonIO;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Providers

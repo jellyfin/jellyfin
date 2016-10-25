@@ -1,7 +1,7 @@
-﻿using ServiceStack.Web;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -35,7 +35,7 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            var serviceRequest = new ServiceStackServiceRequest(request);
+            var serviceRequest = new ServiceRequest(request);
 
             AuthService.Authenticate(serviceRequest, this);
         }

@@ -8,14 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -1217,7 +1219,7 @@ namespace MediaBrowser.Controller.Entities
             if (SupportsShortcutChildren)
             {
                 newShortcutLinks = fileSystemChildren
-                    .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && FileSystem.IsShortcut(i.FullName))
+                    .Where(i => !i.IsDirectory && FileSystem.IsShortcut(i.FullName))
                     .Select(i =>
                     {
                         try

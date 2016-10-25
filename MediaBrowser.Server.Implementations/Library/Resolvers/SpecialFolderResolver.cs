@@ -5,7 +5,9 @@ using MediaBrowser.Controller.Resolvers;
 using System;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
@@ -67,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
                     try
                     {
-                        return (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory &&
+                        return !i.IsDirectory &&
                                string.Equals(".collection", i.Extension, StringComparison.OrdinalIgnoreCase);
                     }
                     catch (IOException)

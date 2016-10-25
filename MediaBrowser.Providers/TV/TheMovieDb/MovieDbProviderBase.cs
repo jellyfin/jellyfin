@@ -1,4 +1,4 @@
-﻿using CommonIO;
+﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
@@ -10,6 +10,8 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.TV

@@ -96,14 +96,17 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.News;
@@ -622,6 +625,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(ServerConfigurationManager);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LogManager.GetLogger("LocalizationManager"));
+            StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
@@ -1395,7 +1399,7 @@ namespace MediaBrowser.Server.Startup.Common
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
-            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 10)
+            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 15)
             {
                 _lastAddressCacheClear = DateTime.UtcNow;
                 _validAddressResults.Clear();

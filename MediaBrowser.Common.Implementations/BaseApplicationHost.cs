@@ -30,7 +30,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.Cryptography;
 using MediaBrowser.Common.IO;

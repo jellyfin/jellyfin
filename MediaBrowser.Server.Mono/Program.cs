@@ -13,7 +13,8 @@ using System.Net.Security;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.Implementations.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Mono

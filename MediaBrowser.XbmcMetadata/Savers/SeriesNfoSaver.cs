@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {

@@ -3,12 +3,14 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {

@@ -8,13 +8,13 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

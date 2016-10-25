@@ -4,14 +4,15 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
-using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

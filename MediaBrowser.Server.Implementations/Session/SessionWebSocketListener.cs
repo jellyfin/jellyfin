@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.Session
 {
@@ -104,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Session
             //}
         }
 
-        private Task<SessionInfo> GetSession(NameValueCollection queryString, string remoteEndpoint)
+        private Task<SessionInfo> GetSession(QueryParamCollection queryString, string remoteEndpoint)
         {
             if (queryString == null)
             {

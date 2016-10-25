@@ -4,7 +4,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.ScheduledTasks
 {

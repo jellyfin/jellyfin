@@ -5,7 +5,9 @@ using MediaBrowser.Model.Drawing;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Drawing.ImageMagick
 {
