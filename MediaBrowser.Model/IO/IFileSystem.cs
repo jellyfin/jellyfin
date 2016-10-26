@@ -297,6 +297,10 @@ namespace MediaBrowser.Model.IO
         IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false);
 
         void SetHidden(string path, bool isHidden);
+
+        char DirectorySeparatorChar { get; }
+
+        string GetFullPath(string path);
     }
 
     public enum FileOpenMode

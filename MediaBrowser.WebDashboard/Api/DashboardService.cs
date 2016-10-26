@@ -334,11 +334,17 @@ namespace MediaBrowser.WebDashboard.Api
             // Try to trim the output size a bit
             var bowerPath = Path.Combine(path, "bower_components");
 
-            GetDeployIgnoreExtensions().ForEach(i => DeleteFilesByExtension(bowerPath, i));
+            foreach (var ext in GetDeployIgnoreExtensions())
+            {
+                DeleteFilesByExtension(bowerPath, ext);
+            }
 
             DeleteFilesByExtension(bowerPath, ".json", "strings\\");
 
-            GetDeployIgnoreFilenames().ForEach(i => DeleteFilesByName(bowerPath, i.Item1, i.Item2));
+            foreach (var ignore in GetDeployIgnoreFilenames())
+            {
+                DeleteFilesByName(bowerPath, ignore.Item1, ignore.Item2);
+            }
 
             DeleteFoldersByName(bowerPath, "demo");
             DeleteFoldersByName(bowerPath, "test");
