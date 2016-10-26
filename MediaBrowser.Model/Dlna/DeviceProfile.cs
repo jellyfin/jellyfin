@@ -13,7 +13,6 @@ namespace MediaBrowser.Model.Dlna
         /// <value>The name.</value>
         public string Name { get; set; }
 
-        [IgnoreDataMember]
         public string Id { get; set; }
 
         [IgnoreDataMember]
