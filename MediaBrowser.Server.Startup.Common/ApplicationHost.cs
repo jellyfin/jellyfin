@@ -113,6 +113,8 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Social;
+using MediaBrowser.Model.Xml;
+using MediaBrowser.Server.Implementations.Xml;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -630,6 +632,8 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(LocalizationManager);
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+
+            RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
 
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);

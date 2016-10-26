@@ -15,6 +15,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -25,7 +27,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// The logger
         /// </summary>
         protected ILogger Logger { get; private set; }
+        protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
+        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IConfigurationManager _config;
@@ -34,13 +38,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">The configuration.</param>
-        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
         {
             Logger = logger;
             _config = config;
             ProviderManager = providerManager;
+            FileSystem = fileSystem;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         /// <summary>
@@ -63,15 +67,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 throw new ArgumentNullException();
             }
 
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
+            var settings = XmlReaderSettingsFactory.Create(false);
 
-            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
+
+            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var idInfos = ProviderManager.GetExternalIdInfos(item.Item);
 
@@ -108,85 +110,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             if (!SupportsUrlAfterClosingXmlTag)
             {
-                using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
+                using (var fileStream = FileSystem.OpenRead(metadataFile))
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader, settings))
-                    {
-                        item.ResetPeople();
-
-                        reader.MoveToContent();
-
-                        // Loop through each element
-                        while (reader.Read())
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                FetchDataFromXmlNode(reader, item);
-                            }
-                        }
-                    }
-                }
-                return;
-            }
-
-            using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
-            {
-                item.ResetPeople();
-
-                // Need to handle a url after the xml data
-                // http://kodi.wiki/view/NFO_files/movies
-
-                var xml = streamReader.ReadToEnd();
-
-                // Find last closing Tag
-                // Need to do this in two steps to account for random > characters after the closing xml
-                var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
-
-                // If closing tag exists, move to end of Tag
-                if (index != -1)
-                {
-                    index = xml.IndexOf('>', index);
-                }
-
-                if (index != -1)
-                {
-                    var endingXml = xml.Substring(index);
-
-                    ParseProviderLinks(item.Item, endingXml);
-
-                    // If the file is just an imdb url, don't go any further
-                    if (index == 0)
-                    {
-                        return;
-                    }
-
-                    xml = xml.Substring(0, index + 1);
-                }
-                else
-                {
-                    // If the file is just an Imdb url, handle that
-
-                    ParseProviderLinks(item.Item, xml);
-
-                    return;
-                }
-
-                using (var ms = new MemoryStream())
-                {
-                    var bytes = Encoding.UTF8.GetBytes(xml);
-
-                    ms.Write(bytes, 0, bytes.Length);
-                    ms.Position = 0;
-
-                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                    try
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                     {
                         // Use XmlReader for best performance
-                        using (var reader = XmlReader.Create(ms, settings))
+                        using (var reader = XmlReader.Create(streamReader, settings))
                         {
+                            item.ResetPeople();
+
                             reader.MoveToContent();
 
                             // Loop through each element
@@ -201,9 +133,85 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             }
                         }
                     }
-                    catch (XmlException)
-                    {
+                }
+                return;
+            }
 
+            using (var fileStream = FileSystem.OpenRead(metadataFile))
+            {
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    item.ResetPeople();
+
+                    // Need to handle a url after the xml data
+                    // http://kodi.wiki/view/NFO_files/movies
+
+                    var xml = streamReader.ReadToEnd();
+
+                    // Find last closing Tag
+                    // Need to do this in two steps to account for random > characters after the closing xml
+                    var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+
+                    // If closing tag exists, move to end of Tag
+                    if (index != -1)
+                    {
+                        index = xml.IndexOf('>', index);
+                    }
+
+                    if (index != -1)
+                    {
+                        var endingXml = xml.Substring(index);
+
+                        ParseProviderLinks(item.Item, endingXml);
+
+                        // If the file is just an imdb url, don't go any further
+                        if (index == 0)
+                        {
+                            return;
+                        }
+
+                        xml = xml.Substring(0, index + 1);
+                    }
+                    else
+                    {
+                        // If the file is just an Imdb url, handle that
+
+                        ParseProviderLinks(item.Item, xml);
+
+                        return;
+                    }
+
+                    using (var ms = new MemoryStream())
+                    {
+                        var bytes = Encoding.UTF8.GetBytes(xml);
+
+                        ms.Write(bytes, 0, bytes.Length);
+                        ms.Position = 0;
+
+                        // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                        try
+                        {
+                            // Use XmlReader for best performance
+                            using (var reader = XmlReader.Create(ms, settings))
+                            {
+                                reader.MoveToContent();
+
+                                // Loop through each element
+                                while (reader.Read())
+                                {
+                                    cancellationToken.ThrowIfCancellationRequested();
+
+                                    if (reader.NodeType == XmlNodeType.Element)
+                                    {
+                                        FetchDataFromXmlNode(reader, item);
+                                    }
+                                }
+                            }
+                        }
+                        catch (XmlException)
+                        {
+
+                        }
                     }
                 }
             }

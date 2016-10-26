@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 result.HasMetadata = false;
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 result.HasMetadata = false;
             }

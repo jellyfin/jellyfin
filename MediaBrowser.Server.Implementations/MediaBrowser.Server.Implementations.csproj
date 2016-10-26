@@ -363,6 +363,7 @@
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
+    <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">

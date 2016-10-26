@@ -6,15 +6,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
-        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager) : base(logger, config, providerManager)
-        {
-        }
-
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
@@ -107,6 +105,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
+        }
+
+        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
+        {
         }
     }
 }

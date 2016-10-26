@@ -9,6 +9,7 @@ using System.Threading;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -17,20 +18,22 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
+        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
-        public EpisodeNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        public EpisodeNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
             _providerManager = providerManager;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
             var images = new List<LocalImageInfo>();
 
-            new EpisodeNfoParser(_logger, _config, _providerManager).Fetch(result, images, path, cancellationToken);
+            new EpisodeNfoParser(_logger, _config, _providerManager, FileSystem, XmlReaderSettingsFactory).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
         }
