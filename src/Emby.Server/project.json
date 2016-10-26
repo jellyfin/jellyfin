@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "buildOptions": {
     "emitEntryPoint": true
@@ -13,7 +13,24 @@
 
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": "dnxcore50"
+      "imports": "dnxcore50",
+      "dependencies": {
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "MediaBrowser.Model": {
+          "target": "project"
+        },
+        "MediaBrowser.WebDashboard": {
+          "target": "project"
+        },
+        "MediaBrowser.XbmcMetadata": {
+          "target": "project"
+        }
+      }
     }
   }
 }
