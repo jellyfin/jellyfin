@@ -15,6 +15,12 @@
     "netcoreapp1.0": {
       "imports": "dnxcore50",
       "dependencies": {
+        "BDInfo": {
+          "target": "project"
+        },
+        "DvdLib": {
+          "target": "project"
+        },
         "MediaBrowser.Common": {
           "target": "project"
         },

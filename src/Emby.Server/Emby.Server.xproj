@@ -16,6 +16,8 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\BDInfo\BDInfo.csproj" />
+    <ProjectReference Include="..\..\DvdLib\DvdLib.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
