@@ -17,9 +17,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         public IEnumerable<string> UrlPrefixes { get; private set; }
 
-        private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
+        private readonly List<IService> _restServices = new List<IService>();
 
         private IHttpListener _listener;
 
@@ -49,13 +49,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly INetworkManager _networkManager;
         private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public HttpListenerHost(IApplicationHost applicationHost,
+        private readonly IServerApplicationHost _appHost;
+
+        public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
             string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamProvider memoryStreamProvider, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
+            _appHost = applicationHost;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
             _memoryStreamProvider = memoryStreamProvider;
@@ -115,6 +118,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             //        httpRes.EndRequest(); //add a 'using ServiceStack;'
             //    }
             //});
+
+            var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
+            foreach (var filter in requestFilters)
+            {
+                HostContext.GlobalRequestFilters.Add(filter.Filter);
+            }
 
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
@@ -569,7 +578,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Adds the rest handlers.
         /// </summary>
         /// <param name="services">The services.</param>
-        public void Init(IEnumerable<IRestfulService> services)
+        public void Init(IEnumerable<IService> services)
         {
             _restServices.AddRange(services);
 

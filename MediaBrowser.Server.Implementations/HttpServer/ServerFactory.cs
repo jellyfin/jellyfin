@@ -1,6 +1,5 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
@@ -18,17 +17,17 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Creates the server.
         /// </summary>
         /// <returns>IHttpServer.</returns>
-        public static IHttpServer CreateServer(IApplicationHost applicationHost,
+        public static IHttpServer CreateServer(IServerApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config, 
-            INetworkManager _networkmanager,
+            INetworkManager networkmanager,
             IMemoryStreamProvider streamProvider,
             string serverName, 
             string defaultRedirectpath)
         {
             LogManager.LogFactory = new ServerLogFactory(logManager);
 
-            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, _networkmanager, streamProvider);
+            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, networkmanager, streamProvider);
         }
     }
 }

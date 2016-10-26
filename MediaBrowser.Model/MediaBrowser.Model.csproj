@@ -167,6 +167,9 @@
     <Compile Include="Net\EndPointInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
     <Compile Include="Net\IpAddressInfo.cs" />
+    <Compile Include="Plugins\IHasWebPages.cs" />
+    <Compile Include="Plugins\PluginPageInfo.cs" />
+    <Compile Include="Reflection\IAssemblyInfo.cs" />
     <Compile Include="Services\ApiMemberAttribute.cs" />
     <Compile Include="Services\IAsyncStreamWriter.cs" />
     <Compile Include="Services\IHasHeaders.cs" />
@@ -174,6 +177,7 @@
     <Compile Include="Services\IHttpRequest.cs" />
     <Compile Include="Services\IHttpResponse.cs" />
     <Compile Include="Services\IRequest.cs" />
+    <Compile Include="Services\IRequestFilter.cs" />
     <Compile Include="Services\IRequiresRequestStream.cs" />
     <Compile Include="Services\IService.cs" />
     <Compile Include="Net\MimeTypes.cs" />

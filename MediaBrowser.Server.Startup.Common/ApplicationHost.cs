@@ -111,9 +111,12 @@ using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
+using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Xml;
 
 namespace MediaBrowser.Server.Startup.Common
@@ -634,6 +637,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
+            RegisterSingleInstance<IAssemblyInfo>(new AssemblyInfo());
 
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
@@ -985,7 +989,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             base.FindParts();
 
-            HttpServer.Init(GetExports<IRestfulService>(false));
+            HttpServer.Init(GetExports<IService>(false));
 
             ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
