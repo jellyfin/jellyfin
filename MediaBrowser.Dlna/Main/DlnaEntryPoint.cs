@@ -249,7 +249,7 @@ namespace MediaBrowser.Dlna.Main
                 _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetLocalApiUrl(addressString, address.IsIpv6) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
