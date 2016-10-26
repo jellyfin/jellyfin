@@ -37,14 +37,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BDInfo, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\BDInfo.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="DvdLib, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\DvdLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -91,6 +83,10 @@
     <Compile Include="Subtitles\VttWriter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\BdInfo\BDInfo\BDInfo.csproj">
+      <Project>{88ae38df-19d7-406f-a6a9-09527719a21e}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
       <Name>MediaBrowser.Common</Name>
@@ -107,9 +103,6 @@
       <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
       <Name>OpenSubtitlesHandler</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Probing\whitelist.txt" />

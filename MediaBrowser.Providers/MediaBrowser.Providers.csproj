@@ -42,14 +42,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BDInfo, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\BDInfo.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="DvdLib, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.BdInfo.1.0.1\lib\portable-net46+win10\DvdLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -139,6 +131,7 @@
     <Compile Include="TV\FanArt\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArt\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbProviderBase.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbEpisodeImageProvider.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbSeasonProvider.cs" />
@@ -154,7 +147,6 @@
     <Compile Include="TV\SeasonMetadataService.cs" />
     <Compile Include="TV\TheTVDB\TvdbEpisodeProvider.cs" />
     <Compile Include="TV\TheTVDB\TvdbSeriesProvider.cs" />
-    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TheTVDB\TvdbPrescanTask.cs" />
     <Compile Include="TV\TvExternalIds.cs" />
     <Compile Include="Users\UserMetadataService.cs" />
@@ -162,6 +154,10 @@
     <Compile Include="Years\YearMetadataService.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DvdLib\DvdLib.csproj">
+      <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
+      <Name>DvdLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
       <Name>MediaBrowser.Common</Name>
@@ -174,9 +170,6 @@
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

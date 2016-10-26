@@ -607,7 +607,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private void FetchFromDvdLib(Video item, IIsoMount mount)
         {
             var path = mount == null ? item.Path : mount.MountedPath;
-            var dvd = new Dvd(path);
+            var dvd = new Dvd(path, _fileSystem);
 
             var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
 
