@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -46,7 +47,7 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Inits this instance.
         /// </summary>
-        void Init(IEnumerable<IRestfulService> services);
+        void Init(IEnumerable<IService> services);
 
         /// <summary>
         /// If set, all requests will respond with this message

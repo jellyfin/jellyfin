@@ -12,8 +12,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.WebDashboard.Api
@@ -76,7 +79,7 @@ namespace MediaBrowser.WebDashboard.Api
     /// <summary>
     /// Class DashboardService
     /// </summary>
-    public class DashboardService : IRestfulService, IHasResultFactory
+    public class DashboardService : IService, IHasResultFactory
     {
         /// <summary>
         /// Gets or sets the logger.
@@ -109,6 +112,7 @@ namespace MediaBrowser.WebDashboard.Api
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IAssemblyInfo _assemblyInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardService" /> class.
@@ -116,13 +120,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="appHost">The app host.</param>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer)
+        public DashboardService(IServerApplicationHost appHost, IServerConfigurationManager serverConfigurationManager, IFileSystem fileSystem, ILocalizationManager localization, IJsonSerializer jsonSerializer, IAssemblyInfo assemblyInfo)
         {
             _appHost = appHost;
             _serverConfigurationManager = serverConfigurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
             _jsonSerializer = jsonSerializer;
+            _assemblyInfo = assemblyInfo;
         }
 
         /// <summary>
@@ -132,9 +137,32 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.Object.</returns>
         public Task<object> Get(GetDashboardConfigurationPage request)
         {
-            var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
+            IPlugin plugin = null;
+            Stream stream = null;
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
+            var page = ServerEntryPoint.Instance.PluginConfigurationPages.FirstOrDefault(p => string.Equals(p.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+            if (page != null)
+            {
+                plugin = page.Plugin;
+                stream = page.GetHtmlStream();
+            }
+
+            if (plugin == null)
+            {
+                var altPage = GetPluginPages().FirstOrDefault(p => string.Equals(p.Item1.Name, request.Name, StringComparison.OrdinalIgnoreCase));
+                if (altPage != null)
+                {
+                    plugin = altPage.Item2;
+                    stream = _assemblyInfo.GetManifestResourceStream(plugin.GetType(), altPage.Item1.EmbeddedResourcePath);
+                }
+            }
+
+            if (plugin != null && stream != null)
+            {
+                return ResultFactory.GetStaticResult(Request, plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml("dummy.html", stream, null, _appHost.ApplicationVersion.ToString(), null, false));
+            }
+
+            throw new ResourceNotFoundException();
         }
 
         /// <summary>
@@ -162,7 +190,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (request.PageType.HasValue)
             {
-                pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value);
+                pages = pages.Where(p => p.ConfigurationPageType == request.PageType.Value).ToList();
             }
 
             // Don't allow a failing plugin to fail them all
@@ -182,7 +210,31 @@ namespace MediaBrowser.WebDashboard.Api
                 .Where(i => i != null)
                 .ToList();
 
+            configPages.AddRange(_appHost.Plugins.SelectMany(GetConfigPages));
+
             return ResultFactory.GetOptimizedResult(Request, configPages);
+        }
+
+        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages()
+        {
+            return _appHost.Plugins.SelectMany(GetPluginPages);
+        }
+
+        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(IPlugin plugin)
+        {
+            var hasConfig = plugin as IHasWebPages;
+
+            if (hasConfig == null)
+            {
+                return new List<Tuple<PluginPageInfo, IPlugin>>();
+            }
+
+            return hasConfig.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin));
+        }
+
+        private IEnumerable<ConfigurationPageInfo> GetConfigPages(IPlugin plugin)
+        {
+            return GetPluginPages(plugin).Select(i => new ConfigurationPageInfo(plugin, i.Item1));
         }
 
         public object Get(GetRobotsTxt request)

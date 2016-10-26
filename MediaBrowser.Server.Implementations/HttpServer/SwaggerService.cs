@@ -5,7 +5,7 @@ using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
-    public class SwaggerService : IHasResultFactory, IRestfulService
+    public class SwaggerService : IHasResultFactory, IService
     {
         private readonly IServerApplicationPaths _appPaths;
 

@@ -17,7 +17,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    public class BaseApiService : IHasResultFactory, IRestfulService, IHasSession
+    public class BaseApiService : IHasResultFactory, IService, IHasSession
     {
         /// <summary>
         /// Gets or sets the logger.
