@@ -96,6 +96,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Photos;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Implementations.Networking;
@@ -1231,6 +1232,9 @@ namespace MediaBrowser.Server.Startup.Common
 
             // Include composable parts in the Providers assembly 
             list.Add(typeof(ProviderUtils).Assembly);
+
+            // Include composable parts in the Photos assembly 
+            list.Add(typeof(PhotoProvider).Assembly);
 
             // Common implementations
             list.Add(typeof(TaskManager).Assembly);

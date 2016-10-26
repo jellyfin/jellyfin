@@ -1,4 +1,11 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
@@ -11,15 +18,8 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using OpenSubtitlesHandler;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace MediaBrowser.Providers.Subtitles
+namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public class OpenSubtitleDownloader : ISubtitleProvider, IDisposable
     {

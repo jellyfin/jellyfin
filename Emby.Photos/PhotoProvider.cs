@@ -1,18 +1,18 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using TagLib;
 using TagLib.IFD;
 using TagLib.IFD.Entries;
 using TagLib.IFD.Tags;
 
-namespace MediaBrowser.Providers.Photos
+namespace Emby.Photos
 {
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
     {
@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.Photos
                     }
                     else
                     {
-                        Model.Drawing.ImageOrientation orientation;
+                        MediaBrowser.Model.Drawing.ImageOrientation orientation;
                         if (Enum.TryParse(image.ImageTag.Orientation.ToString(), true, out orientation))
                         {
                             item.Orientation = orientation;
