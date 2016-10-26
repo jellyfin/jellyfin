@@ -49,6 +49,19 @@ namespace MediaBrowser.Common.Implementations.IO
             }
         }
 
+        public char DirectorySeparatorChar
+        {
+            get
+            {
+                return Path.DirectorySeparatorChar;
+            }
+        }
+
+        public string GetFullPath(string path)
+        {
+            return Path.GetFullPath(path);
+        }
+
         /// <summary>
         /// Determines whether the specified filename is shortcut.
         /// </summary>

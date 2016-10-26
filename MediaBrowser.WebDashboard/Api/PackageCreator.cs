@@ -59,20 +59,6 @@ namespace MediaBrowser.WebDashboard.Api
                         resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }
                 }
-                else if (IsFormat(path, "js"))
-                {
-                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
-                    }
-                }
-                else if (IsFormat(path, "css"))
-                {
-                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
-                    }
-                }
             }
 
             return resourceStream;
@@ -115,11 +101,11 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var rootPath = DashboardUIPath;
 
-            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
 
             try
             {
-                fullPath = Path.GetFullPath(fullPath);
+                fullPath = _fileSystem.GetFullPath(fullPath);
             }
             catch (Exception ex)
             {
@@ -133,44 +119,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             return fullPath;
-        }
-
-        public async Task<Stream> ModifyCss(Stream sourceStream, bool enableMinification)
-        {
-            using (sourceStream)
-            {
-                string content;
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
-                }
-
-                var bytes = Encoding.UTF8.GetBytes(content);
-
-                return new MemoryStream(bytes);
-            }
-        }
-
-        public async Task<Stream> ModifyJs(Stream sourceStream, bool enableMinification)
-        {
-            using (sourceStream)
-            {
-                string content;
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
-                }
-
-                var bytes = Encoding.UTF8.GetBytes(content);
-
-                return new MemoryStream(bytes);
-            }
         }
 
         public bool IsCoreHtml(string path)
@@ -209,7 +157,9 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                    html = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    var originalBytes = memoryStream.ToArray();
+
+                    html = Encoding.UTF8.GetString(originalBytes, 0, originalBytes.Length);
 
                     if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
                     {
