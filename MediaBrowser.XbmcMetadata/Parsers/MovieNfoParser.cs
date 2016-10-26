@@ -5,16 +5,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
-        {
-        }
-
         protected override bool SupportsUrlAfterClosingXmlTag
         {
             get
@@ -102,6 +99,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
+        }
+
+        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
+        {
         }
     }
 }

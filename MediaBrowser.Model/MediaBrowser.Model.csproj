@@ -452,6 +452,7 @@
     <Compile Include="Users\UserAction.cs" />
     <Compile Include="Users\UserActionType.cs" />
     <Compile Include="Users\UserPolicy.cs" />
+    <Compile Include="Xml\IXmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
