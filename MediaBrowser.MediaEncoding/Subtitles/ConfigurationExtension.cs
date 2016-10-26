@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Providers;
-using System.Collections.Generic;
 
-namespace MediaBrowser.Providers.Subtitles
+namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public static class ConfigurationExtension
     {

@@ -55,10 +55,6 @@
     <Reference Include="System.Net" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
-    <Reference Include="taglib-sharp, Version=2.1.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\taglib\taglib-sharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -131,16 +127,12 @@
     <Compile Include="People\PersonMetadataService.cs" />
     <Compile Include="People\MovieDbPersonProvider.cs" />
     <Compile Include="Photos\PhotoAlbumMetadataService.cs" />
-    <Compile Include="Photos\PhotoHelper.cs" />
     <Compile Include="Photos\PhotoMetadataService.cs" />
-    <Compile Include="Photos\PhotoProvider.cs" />
     <Compile Include="Playlists\PlaylistMetadataService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Manager\ProviderUtils.cs" />
     <Compile Include="Studios\StudiosImageProvider.cs" />
     <Compile Include="Studios\StudioMetadataService.cs" />
-    <Compile Include="Subtitles\ConfigurationExtension.cs" />
-    <Compile Include="Subtitles\OpenSubtitleDownloader.cs" />
     <Compile Include="Subtitles\SubtitleManager.cs" />
     <Compile Include="TV\DummySeasonProvider.cs" />
     <Compile Include="TV\EpisodeMetadataService.cs" />
@@ -181,10 +173,6 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
-      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
-      <Name>OpenSubtitlesHandler</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
