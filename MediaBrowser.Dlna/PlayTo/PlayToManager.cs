@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Events;
@@ -124,7 +125,16 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    var serverAddress = await GetServerAddress(info.LocalEndPoint == null ? null : info.LocalEndPoint.Address).ConfigureAwait(false);
+                    string serverAddress;
+                    if (info.LocalIpAddress == null)
+                    {
+                        serverAddress = await GetServerAddress(null, false).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        serverAddress = await GetServerAddress(info.LocalIpAddress.Address, info.LocalIpAddress.IsIpv6).ConfigureAwait(false);
+                    }
+
                     string accessToken = null;
 
                     sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
@@ -176,14 +186,14 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private Task<string> GetServerAddress(IPAddress localIp)
+        private Task<string> GetServerAddress(string ipAddress, bool isIpv6)
         {
-            if (localIp == null)
+            if (string.IsNullOrWhiteSpace(ipAddress))
             {
                 return _appHost.GetLocalApiUrl();
             }
 
-            return Task.FromResult(_appHost.GetLocalApiUrl(localIp));
+            return Task.FromResult(_appHost.GetLocalApiUrl(ipAddress, isIpv6));
         }
 
         public void Dispose()

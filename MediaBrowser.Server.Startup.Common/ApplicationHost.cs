@@ -109,6 +109,7 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Social;
@@ -1333,7 +1334,7 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 // Return the first matched address, if found, or the first known local address
-                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                var address = (await GetLocalIpAddressesInternal().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
 
                 if (address != null)
                 {
@@ -1352,12 +1353,17 @@ namespace MediaBrowser.Server.Startup.Common
 
         public string GetLocalApiUrl(IPAddress ipAddress)
         {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            return GetLocalApiUrl(ipAddress.ToString(), ipAddress.AddressFamily == AddressFamily.InterNetworkV6);
+        }
+
+        public string GetLocalApiUrl(string ipAddress, bool isIpv6)
+        {
+            if (isIpv6)
             {
                 return GetLocalApiUrl("[" + ipAddress + "]");
             }
 
-            return GetLocalApiUrl(ipAddress.ToString());
+            return GetLocalApiUrl(ipAddress);
         }
 
         public string GetLocalApiUrl(string host)
@@ -1367,7 +1373,19 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public async Task<List<IPAddress>> GetLocalIpAddresses()
+        public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
+        {
+            var list = await GetLocalIpAddressesInternal().ConfigureAwait(false);
+
+            return list.Select(i => new IpAddressInfo
+            {
+                Address = i.ToString(),
+                IsIpv6 = i.AddressFamily == AddressFamily.InterNetworkV6
+
+            }).ToList();
+        }
+
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
         {
             // Need to do this until Common will compile with this method
             var nativeNetworkManager = (BaseNetworkManager)NetworkManager;

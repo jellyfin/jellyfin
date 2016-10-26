@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Controller
 {
@@ -66,7 +67,7 @@ namespace MediaBrowser.Controller
         /// Gets the local ip address.
         /// </summary>
         /// <value>The local ip address.</value>
-        Task<List<IPAddress>> GetLocalIpAddresses();
+        Task<List<IpAddressInfo>> GetLocalIpAddresses();
 
         /// <summary>
         /// Gets the local API URL.
@@ -84,9 +85,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
-        /// <param name="ipAddress">The ip address.</param>
-        /// <returns>System.String.</returns>
-        string GetLocalApiUrl(IPAddress ipAddress);
+        string GetLocalApiUrl(string ipAddress, bool isIpv6);
 
         void LaunchUrl(string url);
 
