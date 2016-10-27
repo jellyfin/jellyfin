@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Music
                 {
 
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
 
                 }
