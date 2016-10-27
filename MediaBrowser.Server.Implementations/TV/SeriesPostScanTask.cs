@@ -14,6 +14,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Server.Implementations.TV
@@ -33,14 +34,16 @@ namespace MediaBrowser.Server.Implementations.TV
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
         private readonly IFileSystem _fileSystem;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, ILocalizationManager localization, IFileSystem fileSystem)
+        public SeriesPostScanTask(ILibraryManager libraryManager, ILogger logger, IServerConfigurationManager config, ILocalizationManager localization, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
         {
             _libraryManager = libraryManager;
             _logger = logger;
             _config = config;
             _localization = localization;
             _fileSystem = fileSystem;
+            _xmlSettings = xmlSettings;
         }
 
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
@@ -60,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.TV
 
             var seriesGroups = FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-            return new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem).Run(seriesGroups, true, cancellationToken);
+            return new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem, _xmlSettings).Run(seriesGroups, true, cancellationToken);
         }
 
         internal static IEnumerable<IGrouping<string, Series>> FindSeriesGroups(List<Series> seriesList)
@@ -128,8 +131,9 @@ namespace MediaBrowser.Server.Implementations.TV
         private readonly object _libraryChangedSyncLock = new object();
         private const int LibraryUpdateDuration = 180000;
         private readonly ITaskManager _taskManager;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public CleanMissingEpisodesEntryPoint(ILibraryManager libraryManager, IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, IFileSystem fileSystem, ITaskManager taskManager)
+        public CleanMissingEpisodesEntryPoint(ILibraryManager libraryManager, IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, IFileSystem fileSystem, ITaskManager taskManager, IXmlReaderSettingsFactory xmlSettings)
         {
             _libraryManager = libraryManager;
             _config = config;
@@ -137,6 +141,7 @@ namespace MediaBrowser.Server.Implementations.TV
             _localization = localization;
             _fileSystem = fileSystem;
             _taskManager = taskManager;
+            _xmlSettings = xmlSettings;
         }
 
         private Timer LibraryUpdateTimer { get; set; }
@@ -190,7 +195,7 @@ namespace MediaBrowser.Server.Implementations.TV
 
                 var seriesGroups = SeriesPostScanTask.FindSeriesGroups(seriesList).Where(g => !string.IsNullOrEmpty(g.Key)).ToList();
 
-                await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem)
+                await new MissingEpisodeProvider(_logger, _config, _libraryManager, _localization, _fileSystem, _xmlSettings)
                     .Run(seriesGroups, false, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)

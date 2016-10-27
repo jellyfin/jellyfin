@@ -26,10 +26,11 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
-                var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
-                            .ConfigureAwait(false);
-
-                return GetResultsFromResponse(doc);
+                using (var reader = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
+                            .ConfigureAwait(false))
+                {
+                    return GetResultsFromResponse(reader);
+                }
             }
             else
             {
@@ -38,13 +39,14 @@ namespace MediaBrowser.Providers.Music
 
                 var url = String.Format("/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
-                var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
-
-                var results = GetResultsFromResponse(doc).ToList();
-
-                if (results.Count > 0)
+                using (var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {
-                    return results;
+                    var results = GetResultsFromResponse(doc).ToList();
+
+                    if (results.Count > 0)
+                    {
+                        return results;
+                    }
                 }
 
                 if (HasDiacritics(searchInfo.Name))
@@ -52,73 +54,121 @@ namespace MediaBrowser.Providers.Music
                     // Try again using the search with accent characters url
                     url = String.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
-
-                    return GetResultsFromResponse(doc);
+                    using (var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                    {
+                        return GetResultsFromResponse(doc);
+                    }
                 }
             }
 
             return new List<RemoteSearchResult>();
         }
 
-        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                switch (reader.Name)
+                {
+                    case "artist-list":
+                        {
+                            using (var subReader = reader.ReadSubtree())
+                            {
+                                return ParseArtistList(subReader);
+                            }
+                        }
+                    default:
+                        {
+                            reader.Skip();
+                            break;
+                        }
+                }
+            }
+
+            return new List<RemoteSearchResult>();
+        }
+
+        private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
         {
             var list = new List<RemoteSearchResult>();
 
-            var docElem = doc.DocumentElement;
+            reader.MoveToContent();
 
-            if (docElem == null)
+            // Loop through each element
+            while (reader.Read())
             {
-                return list;
-            }
-
-            var artistList = docElem.FirstChild;
-            if (artistList == null)
-            {
-                return list;
-            }
-
-            var nodes = artistList.ChildNodes;
-
-            if (nodes != null)
-            {
-                foreach (var node in nodes.Cast<XmlNode>())
+                switch (reader.Name)
                 {
-                    if (node.Attributes != null)
-                    {
-                        string name = null;
-                        string overview = null;
-                        string mbzId = node.Attributes["id"].Value;
-
-                        foreach (var child in node.ChildNodes.Cast<XmlNode>())
+                    case "artist":
                         {
-                            if (string.Equals(child.Name, "name", StringComparison.OrdinalIgnoreCase))
-                            {
-                                name = child.InnerText;
-                            }
-                            if (string.Equals(child.Name, "annotation", StringComparison.OrdinalIgnoreCase))
-                            {
-                                overview = child.InnerText;
-                            }
-                        }
+                            var mbzId = reader.GetAttribute("id");
 
-                        if (!string.IsNullOrWhiteSpace(mbzId) && !string.IsNullOrWhiteSpace(name))
+                            using (var subReader = reader.ReadSubtree())
+                            {
+                                var artist = ParseArtist(subReader, mbzId);
+                                list.Add(artist);
+                            }
+                            break;
+                        }
+                    default:
                         {
-                            var result = new RemoteSearchResult
-                            {
-                                Name = name,
-                                Overview = overview
-                            };
-
-                            result.SetProviderId(MetadataProviders.MusicBrainzArtist, mbzId);
-
-                            list.Add(result);
+                            reader.Skip();
+                            break;
                         }
-                    }
                 }
             }
 
             return list;
+        }
+
+        private RemoteSearchResult ParseArtist(XmlReader reader, string artistId)
+        {
+            var result = new RemoteSearchResult();
+
+            reader.MoveToContent();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                switch (reader.Name)
+                {
+                    case "name":
+                        {
+                            result.Name = reader.ReadElementContentAsString();
+                            break;
+                        }
+                    //case "sort-name":
+                    //    {
+                    //        break;
+                    //    }
+                    //case "tag-list":
+                    //    {
+                    //        break;
+                    //    }
+                    case "annotation":
+                        {
+                            result.Overview = reader.ReadElementContentAsString();
+                            break;
+                        }
+                    default:
+                        {
+                            reader.Skip();
+                            break;
+                        }
+                }
+            }
+
+            result.SetProviderId(MetadataProviders.MusicBrainzArtist, artistId);
+
+            if (string.IsNullOrWhiteSpace(artistId) || string.IsNullOrWhiteSpace(result.Name))
+            {
+                return null;
+            }
+
+            return result;
         }
 
         public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)

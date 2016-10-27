@@ -21,6 +21,7 @@
     <ProjectReference Include="..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
+    <ProjectReference Include="..\..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
   </ItemGroup>

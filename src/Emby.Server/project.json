@@ -30,6 +30,9 @@
         "MediaBrowser.Model": {
           "target": "project"
         },
+        "MediaBrowser.Providers": {
+          "target": "project"
+        },
         "MediaBrowser.WebDashboard": {
           "target": "project"
         },
