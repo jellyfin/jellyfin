@@ -27,6 +27,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
 {
@@ -34,18 +35,20 @@ namespace Mono.Nat.Upnp
     {
         private string servicesDescriptionUrl;
         private EndPoint hostAddress;
+        private readonly ILogger _logger;
 
-        public GetServicesMessage(string description, EndPoint hostAddress)
+        public GetServicesMessage(string description, EndPoint hostAddress, ILogger logger)
             :base(null)
         {
             if (string.IsNullOrEmpty(description))
-                Trace.WriteLine("Description is null");
+                _logger.Warn("Description is null");
 
             if (hostAddress == null)
-                Trace.WriteLine("hostaddress is null");
+                _logger.Warn("hostaddress is null");
 
             this.servicesDescriptionUrl = description;
             this.hostAddress = hostAddress;
+            _logger = logger;
         }
 
 

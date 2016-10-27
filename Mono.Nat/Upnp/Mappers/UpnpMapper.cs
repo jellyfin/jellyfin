@@ -32,6 +32,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp.Mappers
 {
@@ -42,7 +43,8 @@ namespace Mono.Nat.Upnp.Mappers
 
         public UdpClient Client { get; set; }
 
-        public UpnpMapper()
+        public UpnpMapper(ILogger logger)
+            : base(logger)
         {
             //Bind to local port 1900 for ssdp responses
             Client = new UdpClient(1900);
@@ -88,11 +90,7 @@ namespace Mono.Nat.Upnp.Mappers
             }
             catch (Exception ex)
             {
-                Trace.WriteLine("Unhandled exception when trying to decode a device's response Send me the following data: ");
-                Trace.WriteLine("ErrorMessage:");
-                Trace.WriteLine(ex.Message);
-                Trace.WriteLine("Data string:");
-                Trace.WriteLine(Encoding.UTF8.GetString(response));
+                Logger.ErrorException("Error mapping port. Data string: {0}", ex, Encoding.UTF8.GetString(response));
             }
         }
 

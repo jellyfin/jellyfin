@@ -33,11 +33,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
 {
     internal class Upnp
     {
+        protected readonly ILogger Logger;
+
+        public Upnp(ILogger logger)
+        {
+            Logger = logger;
+        }
+
         public UpnpNatDevice Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
         {
             // Convert it to a string for easy parsing
@@ -77,7 +85,7 @@ namespace Mono.Nat.Upnp
                 throw new NotSupportedException("Received non-supported device type");
 
             // We have an internet gateway device now
-            return new UpnpNatDevice(localAddress, dataString, urn);
+            return new UpnpNatDevice(localAddress, dataString, urn, Logger);
         }
     }
 }

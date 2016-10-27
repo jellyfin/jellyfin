@@ -66,14 +66,12 @@ namespace Mono.Nat
         {
             EnabledProtocols = new List<NatProtocol>
             {
-                NatProtocol.Upnp,
                 NatProtocol.Pmp
             };
 
             searching = new ManualResetEvent(false);
 
             controllers = new List<ISearcher>();
-            controllers.Add(UpnpSearcher.Instance);
             controllers.Add(PmpSearcher.Instance);
 
             controllers.ForEach(searcher =>
@@ -111,10 +109,6 @@ namespace Mono.Nat
                 {
                     var enabledProtocols = EnabledProtocols.ToList();
 
-                    if (enabledProtocols.Contains(UpnpSearcher.Instance.Protocol))
-                    {
-                        Receive(UpnpSearcher.Instance, UpnpSearcher.sockets);
-                    }
                     if (enabledProtocols.Contains(PmpSearcher.Instance.Protocol))
                     {
                         Receive(PmpSearcher.Instance, PmpSearcher.sockets);
@@ -149,20 +143,6 @@ namespace Mono.Nat
 				}
             }
         }
-
-        static void Receive(IMapper mapper, List<UdpClient> clients)
-        {
-            IPEndPoint received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
-            foreach (UdpClient client in clients)
-            {
-                if (client.Available > 0)
-                {
-                    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
-                    byte[] data = client.Receive(ref received);
-                    mapper.Handle(localAddress, data);
-                }
-            }
-        }
 		
 		public static void StartDiscovery ()
 		{
@@ -184,7 +164,7 @@ namespace Mono.Nat
                     mapper = new PmpMapper();
                     break;
                 case MapperType.Upnp:
-                    mapper = new UpnpMapper();
+                    mapper = new UpnpMapper(Logger);
                     mapper.DeviceFound += (sender, args) =>
                     {
                         if (DeviceFound != null)
@@ -199,23 +179,6 @@ namespace Mono.Nat
             searching.Reset();
             
         }
-
-        //So then why is it here? -Nick
-		[Obsolete ("This method serves no purpose and shouldn't be used")]
-		public static IPAddress[] GetLocalAddresses (bool includeIPv6)
-		{
-			List<IPAddress> addresses = new List<IPAddress> ();
-
-			IPHostEntry hostInfo = Dns.GetHostEntry (Dns.GetHostName ());
-			foreach (IPAddress address in hostInfo.AddressList) {
-				if (address.AddressFamily == AddressFamily.InterNetwork ||
-					(includeIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6)) {
-					addresses.Add (address);
-				}
-			}
-			
-			return addresses.ToArray ();
-		}
 		
 		//checks if an IP address is a private address space as defined by RFC 1918
 		public static bool IsPrivateAddressSpace (IPAddress address)
@@ -239,7 +202,7 @@ namespace Mono.Nat
 	        switch (protocol)
 	        {
                 case NatProtocol.Upnp:
-	                UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
+	                //UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
 	                break;
                 case NatProtocol.Pmp:
 	                PmpSearcher.Instance.Handle(localAddress, response, endpoint);
@@ -254,7 +217,7 @@ namespace Mono.Nat
             switch (protocol)
             {
                 case NatProtocol.Upnp:
-                    UpnpSearcher.Instance.Handle(localAddress, deviceInfo, endpoint);
+                    new UpnpSearcher(Logger).Handle(localAddress, deviceInfo, endpoint);
                     break;
                 default:
                     throw new ArgumentException("Unexpected protocol: " + protocol);
