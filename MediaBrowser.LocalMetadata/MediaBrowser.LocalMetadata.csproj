@@ -68,6 +68,7 @@
     <Compile Include="Providers\PlaylistXmlProvider.cs" />
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />
+    <Compile Include="Savers\BaseXmlSaver.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\GameSystemXmlSaver.cs" />
