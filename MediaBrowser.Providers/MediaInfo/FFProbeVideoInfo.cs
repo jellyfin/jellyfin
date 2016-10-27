@@ -134,23 +134,6 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            //var idString = item.Id.ToString("N");
-            //var cachePath = Path.Combine(_appPaths.CachePath,
-            //    "ffprobe-video",
-            //    idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
-
-            try
-            {
-                //return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
-
             var protocol = item.LocationType == LocationType.Remote
                 ? MediaProtocol.Http
                 : MediaProtocol.File;
@@ -655,7 +638,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>System.Nullable{IsoType}.</returns>
         private IsoType? DetermineIsoType(IIsoMount isoMount)
         {
-            var fileSystemEntries = Directory.EnumerateFileSystemEntries(isoMount.MountedPath).Select(Path.GetFileName).ToList();
+            var fileSystemEntries = _fileSystem.GetFileSystemEntryPaths(isoMount.MountedPath).Select(Path.GetFileName).ToList();
 
             if (fileSystemEntries.Contains("video_ts", StringComparer.OrdinalIgnoreCase) ||
                 fileSystemEntries.Contains("VIDEO_TS.IFO", StringComparer.OrdinalIgnoreCase))

@@ -99,18 +99,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is hidden.
-        /// </summary>
-        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden
-        {
-            get
-            {
-                return FileInfo.IsHidden;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is vf.
         /// </summary>
         /// <value><c>true</c> if this instance is vf; otherwise, <c>false</c>.</value>

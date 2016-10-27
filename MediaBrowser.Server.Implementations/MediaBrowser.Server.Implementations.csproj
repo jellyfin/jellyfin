@@ -278,6 +278,7 @@
     <Compile Include="Sync\SyncJobOptions.cs" />
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
@@ -382,6 +383,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
+      <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
     <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
       <Project>{d7453b88-2266-4805-b39b-2b5a2a33e1ba}</Project>

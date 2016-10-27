@@ -118,6 +118,11 @@ namespace MediaBrowser.Server.Implementations.Localization
               ).Normalize(NormalizationForm.FormC);
         }
 
+        public string NormalizeFormKD(string text)
+        {
+            return text.Normalize(NormalizationForm.FormKD);
+        }
+
         /// <summary>
         /// Gets the cultures.
         /// </summary>
