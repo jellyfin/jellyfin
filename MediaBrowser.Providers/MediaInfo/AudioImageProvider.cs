@@ -87,11 +87,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                         var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
 
-                        File.Copy(tempFile, path, true);
+                        _fileSystem.CopyFile(tempFile, path, true);
 
                         try
                         {
-                            File.Delete(tempFile);
+                            _fileSystem.DeleteFile(tempFile);
                         }
                         catch
                         {

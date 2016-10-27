@@ -372,14 +372,14 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 // Delete the source file
-                var currentFile = new FileInfo(image.Path);
+                var currentFile = _fileSystem.GetFileInfo(image.Path);
 
                 // Deletion will fail if the file is hidden so remove the attribute first
                 if (currentFile.Exists)
                 {
-                    if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    if (currentFile.IsHidden)
                     {
-                        currentFile.Attributes &= ~FileAttributes.Hidden;
+                        _fileSystem.SetHidden(currentFile.FullName, false);
                     }
 
                     _fileSystem.DeleteFile(currentFile.FullName);
@@ -613,7 +613,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         try
                         {
-                            if (item.GetImages(imageType).Any(i => new FileInfo(i.Path).Length == response.ContentLength.Value))
+                            if (item.GetImages(imageType).Any(i => _fileSystem.GetFileInfo(i.Path).Length == response.ContentLength.Value))
                             {
                                 response.Content.Dispose();
                                 continue;

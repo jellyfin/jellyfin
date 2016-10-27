@@ -82,7 +82,7 @@ namespace MediaBrowser.Providers.People
                 };
 
                 result.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
-                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id);
 
                 return new[] { result };
             }
