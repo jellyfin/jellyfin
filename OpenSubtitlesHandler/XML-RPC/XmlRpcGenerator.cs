@@ -55,40 +55,41 @@ namespace XmlRpcHandler
 
             using (var ms = new MemoryStream())
             {
-                XmlWriter XMLwrt = XmlWriter.Create(ms, sett);
-                // Let's write the methods
-                foreach (XmlRpcMethodCall method in methods)
+                using (XmlWriter XMLwrt = XmlWriter.Create(ms, sett))
                 {
-                    XMLwrt.WriteStartElement("methodCall");//methodCall
-                    XMLwrt.WriteStartElement("methodName");//methodName
-                    XMLwrt.WriteString(method.Name);
-                    XMLwrt.WriteEndElement();//methodName
-                    XMLwrt.WriteStartElement("params");//params
-                                                       // Write values
-                    foreach (IXmlRpcValue p in method.Parameters)
+                    // Let's write the methods
+                    foreach (XmlRpcMethodCall method in methods)
                     {
-                        XMLwrt.WriteStartElement("param");//param
-                        if (p is XmlRpcValueBasic)
+                        XMLwrt.WriteStartElement("methodCall");//methodCall
+                        XMLwrt.WriteStartElement("methodName");//methodName
+                        XMLwrt.WriteString(method.Name);
+                        XMLwrt.WriteEndElement();//methodName
+                        XMLwrt.WriteStartElement("params");//params
+                                                           // Write values
+                        foreach (IXmlRpcValue p in method.Parameters)
                         {
-                            WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                            XMLwrt.WriteStartElement("param");//param
+                            if (p is XmlRpcValueBasic)
+                            {
+                                WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                            }
+                            else if (p is XmlRpcValueStruct)
+                            {
+                                WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
+                            }
+                            else if (p is XmlRpcValueArray)
+                            {
+                                WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
+                            }
+                            XMLwrt.WriteEndElement();//param
                         }
-                        else if (p is XmlRpcValueStruct)
-                        {
-                            WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
-                        }
-                        else if (p is XmlRpcValueArray)
-                        {
-                            WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
-                        }
-                        XMLwrt.WriteEndElement();//param
-                    }
 
-                    XMLwrt.WriteEndElement();//params
-                    XMLwrt.WriteEndElement();//methodCall
+                        XMLwrt.WriteEndElement();//params
+                        XMLwrt.WriteEndElement();//methodCall
+                    }
+                    XMLwrt.Flush();
+                    return ms.ToArray();
                 }
-                XMLwrt.Flush();
-                XMLwrt.Close();
-                return ms.ToArray();
             }
         }
         /// <summary>
@@ -107,22 +108,22 @@ namespace XmlRpcHandler
             {
                 str = new MemoryStream(Encoding.UTF8.GetBytes(xmlResponse));
             }
-            XmlReader XMLread = XmlReader.Create(str, sett);
-
-            XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
-            // Read parameters
-            while (XMLread.Read())
+            using (XmlReader XMLread = XmlReader.Create(str, sett))
             {
-                if (XMLread.Name == "param" && XMLread.IsStartElement())
+                XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
+                // Read parameters
+                while (XMLread.Read())
                 {
-                    IXmlRpcValue val = ReadValue(XMLread);
-                    if (val != null)
-                        call.Parameters.Add(val);
+                    if (XMLread.Name == "param" && XMLread.IsStartElement())
+                    {
+                        IXmlRpcValue val = ReadValue(XMLread);
+                        if (val != null)
+                            call.Parameters.Add(val);
+                    }
                 }
+                methods.Add(call);
+                return methods.ToArray();
             }
-            methods.Add(call);
-            XMLread.Close();
-            return methods.ToArray();
         }
 
         private static void WriteBasicValue(XmlWriter XMLwrt, XmlRpcValueBasic val)
