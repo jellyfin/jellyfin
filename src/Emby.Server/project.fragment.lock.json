@@ -88,6 +88,23 @@
         }
       }
     },
+    "MediaBrowser.Providers/1.0.0": {
+      "type": "project",
+      "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
+      "compile": {
+        "bin/Debug/MediaBrowser.Providers.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/MediaBrowser.Providers.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/MediaBrowser.Providers.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
     "MediaBrowser.WebDashboard/1.0.0": {
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",

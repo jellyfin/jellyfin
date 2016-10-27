@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -26,15 +27,17 @@ namespace MediaBrowser.Providers.Music
         private readonly IApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _json;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
         public static string MusicBrainzBaseUrl = "https://www.musicbrainz.org";
 
-        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json)
+        public MusicBrainzAlbumProvider(IHttpClient httpClient, IApplicationHost appHost, ILogger logger, IJsonSerializer json, IXmlReaderSettingsFactory xmlSettings)
         {
             _httpClient = httpClient;
             _appHost = appHost;
             _logger = logger;
             _json = json;
+            _xmlSettings = xmlSettings;
             Current = this;
         }
 
@@ -71,17 +74,18 @@ namespace MediaBrowser.Providers.Music
 
             if (!string.IsNullOrWhiteSpace(url))
             {
-                var doc = await GetMusicBrainzResponse(url, isNameSearch, cancellationToken).ConfigureAwait(false);
-
-                return GetResultsFromResponse(doc);
+                using (var reader = await GetMusicBrainzResponse(url, isNameSearch, cancellationToken).ConfigureAwait(false))
+                {
+                    return GetResultsFromResponse(reader);
+                }
             }
 
             return new List<RemoteSearchResult>();
         }
 
-        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlDocument doc)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlReader reader)
         {
-            return ReleaseResult.Parse(doc).Select(i =>
+            return ReleaseResult.Parse(reader).Select(i =>
             {
                 var result = new RemoteSearchResult
                 {
@@ -191,9 +195,10 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 artistId);
 
-            var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
-
-            return ReleaseResult.Parse(doc, 1).FirstOrDefault();
+            using (var reader = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            {
+                return ReleaseResult.Parse(reader, 1).FirstOrDefault();
+            }
         }
 
         private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
@@ -202,9 +207,10 @@ namespace MediaBrowser.Providers.Music
                 WebUtility.UrlEncode(albumName),
                 WebUtility.UrlEncode(artistName));
 
-            var doc = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false);
-
-            return ReleaseResult.Parse(doc, 1).FirstOrDefault();
+            using (var reader = await GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+            {
+                return ReleaseResult.Parse(reader, 1).FirstOrDefault();
+            }
         }
 
         private class ReleaseResult
@@ -215,108 +221,114 @@ namespace MediaBrowser.Providers.Music
             public string Overview;
             public int? Year;
 
-            public static List<ReleaseResult> Parse(XmlDocument doc, int? limit = null)
+            public static List<ReleaseResult> Parse(XmlReader reader, int? limit = null)
             {
-                var docElem = doc.DocumentElement;
-                var list = new List<ReleaseResult>();
+                reader.MoveToContent();
 
-                if (docElem == null)
+                // Loop through each element
+                while (reader.Read())
                 {
-                    return list;
-                }
-
-                var releaseList = docElem.FirstChild;
-                if (releaseList == null)
-                {
-                    return list;
-                }
-
-                var nodes = releaseList.ChildNodes;
-
-                if (nodes != null)
-                {
-                    foreach (var node in nodes.Cast<XmlNode>())
+                    switch (reader.Name)
                     {
-                        if (string.Equals(node.Name, "release", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var releaseId = node.Attributes["id"].Value;
-                            var releaseGroupId = GetReleaseGroupIdFromReleaseNode(node);
-
-                            list.Add(new ReleaseResult
+                        case "release-list":
                             {
-                                ReleaseId = releaseId,
-                                ReleaseGroupId = releaseGroupId,
-                                Title = GetValueFromReleaseNode(node, "title"),
-                                Overview = GetValueFromReleaseNode(node, "annotation"),
-                                Year = GetYearFromReleaseNode(node, "date")
-                            });
-
-                            if (limit.HasValue && list.Count >= limit.Value)
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    return ParseReleaseList(subReader);
+                                }
+                            }
+                        default:
                             {
+                                reader.Skip();
                                 break;
                             }
-                        }
+                    }
+                }
+
+                return new List<ReleaseResult>();
+            }
+
+            private static List<ReleaseResult> ParseReleaseList(XmlReader reader)
+            {
+                var list = new List<ReleaseResult>();
+
+                reader.MoveToContent();
+
+                // Loop through each element
+                while (reader.Read())
+                {
+                    switch (reader.Name)
+                    {
+                        case "release":
+                            {
+                                var releaseId = reader.GetAttribute("id");
+
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    var artist = ParseRelease(subReader, releaseId);
+                                    list.Add(artist);
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
                 }
 
                 return list;
             }
 
-            private static int? GetYearFromReleaseNode(XmlNode node, string name)
+            private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
             {
-                var subNodes = node.ChildNodes;
-                if (subNodes != null)
+                var result = new ReleaseResult
                 {
-                    foreach (var subNode in subNodes.Cast<XmlNode>())
+                    ReleaseId = releaseId
+                };
+
+                reader.MoveToContent();
+
+                // Loop through each element
+                while (reader.Read())
+                {
+                    switch (reader.Name)
                     {
-                        if (string.Equals(subNode.Name, name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            DateTime date;
-                            if (DateTime.TryParse(subNode.InnerText, out date))
+                        case "title":
                             {
-                                return date.Year;
+                                result.Title = reader.ReadElementContentAsString();
+                                break;
                             }
-
-                            return null;
-                        }
+                        case "date":
+                            {
+                                var val = reader.ReadElementContentAsString();
+                                DateTime date;
+                                if (DateTime.TryParse(val, out date))
+                                {
+                                    result.Year = date.Year;
+                                }
+                                break;
+                            }
+                        case "annotation":
+                            {
+                                result.Overview = reader.ReadElementContentAsString();
+                                break;
+                            }
+                        case "release-group":
+                            {
+                                result.ReleaseGroupId = reader.GetAttribute("id");
+                                break;
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
                 }
 
-                return null;
-            }
-
-            private static string GetValueFromReleaseNode(XmlNode node, string name)
-            {
-                var subNodes = node.ChildNodes;
-                if (subNodes != null)
-                {
-                    foreach (var subNode in subNodes.Cast<XmlNode>())
-                    {
-                        if (string.Equals(subNode.Name, name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return subNode.InnerText;
-                        }
-                    }
-                }
-
-                return null;
-            }
-
-            private static string GetReleaseGroupIdFromReleaseNode(XmlNode node)
-            {
-                var subNodes = node.ChildNodes;
-                if (subNodes != null)
-                {
-                    foreach (var subNode in subNodes.Cast<XmlNode>())
-                    {
-                        if (string.Equals(subNode.Name, "release-group", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return subNode.Attributes["id"].Value;
-                        }
-                    }
-                }
-
-                return null;
+                return result;
             }
         }
 
@@ -330,33 +342,54 @@ namespace MediaBrowser.Providers.Music
         {
             var url = string.Format("/ws/2/release-group/?query=reid:{0}", releaseEntryId);
 
-            var doc = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false);
-
-            var docElem = doc.DocumentElement;
-
-            if (docElem == null)
+            using (var reader = await GetMusicBrainzResponse(url, false, cancellationToken).ConfigureAwait(false))
             {
-                return null;
-            }
+                reader.MoveToContent();
 
-            var releaseList = docElem.FirstChild;
-            if (releaseList == null)
-            {
-                return null;
-            }
-
-            var nodes = releaseList.ChildNodes;
-
-            if (nodes != null)
-            {
-                foreach (var node in nodes.Cast<XmlNode>())
+                // Loop through each element
+                while (reader.Read())
                 {
-                    if (string.Equals(node.Name, "release-group", StringComparison.OrdinalIgnoreCase))
+                    switch (reader.Name)
                     {
-                        return node.Attributes["id"].Value;
+                        case "release-group-list":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    return GetFirstReleaseGroupId(subReader);
+                                }
+                            }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
                 }
+                return null;
             }
+        }
+
+        private string GetFirstReleaseGroupId(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            // Loop through each element
+            while (reader.Read())
+            {
+                switch (reader.Name)
+                {
+                    case "release-group":
+                        {
+                            return reader.GetAttribute("id");
+                        }
+                    default:
+                        {
+                            reader.Skip();
+                            break;
+                        }
+                }
+            }
+
             return null;
         }
 
@@ -432,7 +465,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="isSearch">if set to <c>true</c> [is search].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{XmlDocument}.</returns>
-        internal async Task<XmlDocument> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
+        internal async Task<XmlReader> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
             var urlInfo = await GetMbzUrl().ConfigureAwait(false);
 
@@ -443,8 +476,6 @@ namespace MediaBrowser.Providers.Music
             }
 
             url = urlInfo.url.TrimEnd('/') + url;
-
-            var doc = new XmlDocument();
 
             var options = new HttpRequestOptions
             {
@@ -458,11 +489,15 @@ namespace MediaBrowser.Providers.Music
             {
                 using (var oReader = new StreamReader(xml, Encoding.UTF8))
                 {
-                    doc.Load(oReader);
+                    var settings = _xmlSettings.Create(false);
+
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+
+                    return XmlReader.Create(oReader, settings);
                 }
             }
-
-            return doc;
         }
 
         public int Order

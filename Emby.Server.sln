@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BDInfo", "BDInfo\BDInfo.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common.Implementations", "MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj", "{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,12 @@ Global
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +120,6 @@ Global
 		{713F42B5-878E-499D-A878-E4C652B1D5E8} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{88AE38DF-19D7-406F-A6A9-09527719A21E} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
+		{442B5058-DCAF-4263-BB6A-F21E31120A1B} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 	EndGlobalSection
 EndGlobal
