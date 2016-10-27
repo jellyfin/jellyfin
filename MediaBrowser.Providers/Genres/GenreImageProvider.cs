@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers.Genres
 
         private RemoteImageInfo GetImage(IHasImages item, string filename, ImageType type, string remoteFilename)
         {
-            var list = ImageUtils.GetAvailableImages(filename);
+            var list = ImageUtils.GetAvailableImages(filename, _fileSystem);
 
             var match = ImageUtils.FindMatch(item, list);
 
