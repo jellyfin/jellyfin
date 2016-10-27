@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -159,21 +160,7 @@ namespace MediaBrowser.Providers.Music
         /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
         private bool HasDiacritics(string text)
         {
-            return !String.Equals(text, RemoveDiacritics(text), StringComparison.Ordinal);
-        }
-
-        /// <summary>
-        /// Removes the diacritics.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns>System.String.</returns>
-        private string RemoveDiacritics(string text)
-        {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
+            return !String.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
         }
 
         /// <summary>

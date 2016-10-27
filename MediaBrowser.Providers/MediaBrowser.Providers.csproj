@@ -131,7 +131,6 @@
     <Compile Include="TV\FanArt\FanArtSeasonProvider.cs" />
     <Compile Include="TV\FanArt\FanartSeriesProvider.cs" />
     <Compile Include="TV\MissingEpisodeProvider.cs" />
-    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbProviderBase.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbEpisodeImageProvider.cs" />
     <Compile Include="TV\TheMovieDb\MovieDbSeasonProvider.cs" />

@@ -52,5 +52,7 @@ namespace MediaBrowser.Model.Globalization
         IEnumerable<LocalizatonOption> GetLocalizationOptions();
 
         string RemoveDiacritics(string text);
+
+        string NormalizeFormKD(string text);
     }
 }

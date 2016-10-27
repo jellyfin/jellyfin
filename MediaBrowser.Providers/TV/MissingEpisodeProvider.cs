@@ -20,7 +20,7 @@ using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.TV
 {
-    class MissingEpisodeProvider
+    public class MissingEpisodeProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     break;
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                     //_logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
                 }
@@ -80,7 +80,8 @@ namespace MediaBrowser.Providers.TV
 
             var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-            var episodeFiles = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
+            var episodeFiles = _fileSystem.GetFilePaths(seriesDataPath)
+                .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFileNameWithoutExtension)
                 .Where(i => i.StartsWith("episode-", StringComparison.OrdinalIgnoreCase))
                 .ToList();
