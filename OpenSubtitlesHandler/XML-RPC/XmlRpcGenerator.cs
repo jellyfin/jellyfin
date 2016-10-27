@@ -232,33 +232,42 @@ namespace XmlRpcHandler
             XMLwrt.WriteEndElement();//value
         }
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        private static IXmlRpcValue ReadValue(XmlReader xmlReader)
+
+        private static string ReadString(XmlReader reader)
         {
-            while (xmlReader.Read())
+            if (reader.NodeType == XmlNodeType.Element)
+            {
+                return reader.ReadElementContentAsString();
+            }
+            return reader.ReadContentAsString();
+        }
+        
+        private static IXmlRpcValue ReadValue(XmlReader xmlReader, bool skipRead = false)
+        {
+            while (skipRead || xmlReader.Read())
             {
                 if (xmlReader.Name == "value" && xmlReader.IsStartElement())
                 {
                     xmlReader.Read();
                     if (xmlReader.Name == "string" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(xmlReader.ReadString(), XmlRpcBasicValueType.String);
+                        return new XmlRpcValueBasic(ReadString(xmlReader), XmlRpcBasicValueType.String);
                     }
                     else if (xmlReader.Name == "int" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(int.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Int);
+                        return new XmlRpcValueBasic(int.Parse(ReadString(xmlReader), UsCulture), XmlRpcBasicValueType.Int);
                     }
                     else if (xmlReader.Name == "boolean" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(xmlReader.ReadString() == "1", XmlRpcBasicValueType.Boolean);
+                        return new XmlRpcValueBasic(ReadString(xmlReader) == "1", XmlRpcBasicValueType.Boolean);
                     }
                     else if (xmlReader.Name == "double" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(double.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Double);
+                        return new XmlRpcValueBasic(double.Parse(ReadString(xmlReader), UsCulture), XmlRpcBasicValueType.Double);
                     }
                     else if (xmlReader.Name == "dateTime.iso8601" && xmlReader.IsStartElement())
                     {
-                        string date = xmlReader.ReadString();
+                        string date = ReadString(xmlReader);
                         int year = int.Parse(date.Substring(0, 4), UsCulture);
                         int month = int.Parse(date.Substring(4, 2), UsCulture);
                         int day = int.Parse(date.Substring(6, 2), UsCulture);
@@ -270,7 +279,7 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "base64" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(BitConverter.ToInt64(Convert.FromBase64String(xmlReader.ReadString()), 0)
+                        return new XmlRpcValueBasic(BitConverter.ToInt64(Convert.FromBase64String(ReadString(xmlReader)), 0)
                             , XmlRpcBasicValueType.Double);
                     }
                     else if (xmlReader.Name == "struct" && xmlReader.IsStartElement())
@@ -283,9 +292,9 @@ namespace XmlRpcHandler
                             {
                                 XmlRpcStructMember member = new XmlRpcStructMember("", null);
                                 xmlReader.Read();// read name
-                                member.Name = xmlReader.ReadString();
+                                member.Name = ReadString(xmlReader);
 
-                                IXmlRpcValue val = ReadValue(xmlReader);
+                                IXmlRpcValue val = ReadValue(xmlReader, true);
                                 if (val != null)
                                 {
                                     member.Data = val;
@@ -320,6 +329,11 @@ namespace XmlRpcHandler
                     }
                 }
                 else break;
+
+                if (skipRead)
+                {
+                    return null;
+                }
             }
             return null;
         }

@@ -137,6 +137,10 @@
       <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

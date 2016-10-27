@@ -38,6 +38,9 @@
         },
         "MediaBrowser.XbmcMetadata": {
           "target": "project"
+        },
+        "OpenSubtitlesHandler": {
+          "target": "project"
         }
       }
     }
