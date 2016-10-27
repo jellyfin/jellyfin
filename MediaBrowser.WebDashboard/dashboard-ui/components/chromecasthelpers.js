@@ -214,6 +214,7 @@
 
             parse: function (text) {
                 var links = [];
+                var match;
 
                 while (match = linkRegExp.exec(text)) {
                     // console.log(matches);

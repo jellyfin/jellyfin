@@ -460,22 +460,24 @@
             });
         };
 
-        function doWithPlaybackValidation(player, fn) {
+        function validatePlayback(player) {
 
             if (!player.isLocalPlayer) {
-                fn();
-                return;
+                return Promise.resolve();
             }
 
-            requirejs(["registrationServices"], function (registrationServices) {
+            return new Promise(function (resolve, reject) {
 
-                self.playbackTimeLimitMs = null;
+                requirejs(["registrationServices"], function (registrationServices) {
 
-                registrationServices.validateFeature('playback').then(fn, function () {
+                    self.playbackTimeLimitMs = null;
 
-                    self.playbackTimeLimitMs = lockedTimeLimitMs;
-                    startAutoStopTimer();
-                    fn();
+                    registrationServices.validateFeature('playback').then(resolve, function () {
+
+                        self.playbackTimeLimitMs = lockedTimeLimitMs;
+                        startAutoStopTimer();
+                        resolve();
+                    });
                 });
             });
         }
@@ -525,16 +527,16 @@
 
             if (options.enableRemotePlayers === false) {
                 if (!currentPlayer.isLocalPlayer) {
-                    return;
+                    return Promise.reject();
                 }
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            return validatePlayback(currentPlayer).then(function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };
                 }
 
-                currentPlayer.play(options);
+                return currentPlayer.play(options);
             });
         };
 
@@ -545,7 +547,7 @@
                 id = id.Id;
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            validatePlayback(currentPlayer).then(function () {
                 currentPlayer.shuffle(id);
             });
         };
@@ -557,7 +559,7 @@
                 id = id.Id;
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            validatePlayback(currentPlayer).then(function () {
                 currentPlayer.instantMix(id);
             });
         };

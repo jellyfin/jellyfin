@@ -310,8 +310,10 @@
 
     function setBackdrop(url) {
 
-        if (typeof url !== 'string') {
-            url = getImageUrls([url])[0];
+        if (url) {
+            if (typeof url !== 'string') {
+                url = getImageUrls([url])[0];
+            }
         }
 
         if (url) {
