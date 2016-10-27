@@ -307,8 +307,7 @@ namespace MediaBrowser.Providers.Music
                         {
                             case "release":
                                 {
-                                    //var releaseId = reader.GetAttribute("id");
-                                    string releaseId = null;
+                                    var releaseId = reader.GetAttribute("id");
 
                                     using (var subReader = reader.ReadSubtree())
                                     {
@@ -375,31 +374,16 @@ namespace MediaBrowser.Providers.Music
                             case "release-group":
                                 {
                                     result.ReleaseGroupId = reader.GetAttribute("id");
-                                    //explicitly consume these to avoid grabbing data from child nodes
-                                    //reader.Skip();
                                     using (var subtree = reader.ReadSubtree())
                                     {
                                     }
                                     break;
                                 }
-                            //explicitly consume these to avoid grabbing data from child nodes
-                            //case "text-representation":
-                            //case "artist-credit":
-                            //case "medium-list":
-                            //case "tag-list":
-                            //case "label-info-list":
-                            //case "release-event-list":
-                            //    {
-                            //        using (var subtree = reader.ReadSubtree())
-                            //        {
-                            //        }
-                            //        break;
-                            //    }
                             default:
-                            {
-                                reader.Skip();
-                                break;
-                            }
+                                {
+                                    reader.Skip();
+                                    break;
+                                }
                         }
                     }
                     else
