@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Common.Impleme
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,12 @@ Global
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,5 +129,6 @@ Global
 		{88AE38DF-19D7-406F-A6A9-09527719A21E} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
+		{4A4402D4-E910-443B-B8FC-2C18286A2CA0} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 	EndGlobalSection
 EndGlobal

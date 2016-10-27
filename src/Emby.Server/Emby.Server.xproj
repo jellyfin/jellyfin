@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
+    <ProjectReference Include="..\..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

@@ -20,10 +20,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Cryptography;
 
 namespace OpenSubtitlesHandler
 {
@@ -32,33 +32,17 @@ namespace OpenSubtitlesHandler
     /// </summary>
     public sealed class Utilities
     {
+        public static ICryptographyProvider CryptographyProvider { get; set; }
         private const string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
 
         /// <summary>
         /// Compute movie hash
         /// </summary>
-        /// <param name="fileName">The complete media file path</param>
         /// <returns>The hash as Hexadecimal string</returns>
-        public static string ComputeHash(string fileName)
+        public static string ComputeHash(Stream stream)
         {
-			byte[] hash = MovieHasher.ComputeMovieHash(File.OpenRead(fileName));
+			byte[] hash = MovieHasher.ComputeMovieHash(stream);
             return MovieHasher.ToHexadecimal(hash);
-        }
-        /// <summary>
-        /// Compute md5 for a file
-        /// </summary>
-        /// <param name="filename">The complete file path</param>
-        /// <returns>MD5 of the file</returns>
-        public static string ComputeMd5(string filename)
-        {
-            var md5 = MD5.Create();
-            var sb = new StringBuilder();
-            Stream str = new FileStream(filename, FileMode.Open, FileAccess.Read);
-
-            foreach (var b in md5.ComputeHash(str))
-                sb.Append(b.ToString("x2").ToLower());
-            str.Close();
-            return sb.ToString();
         }
         /// <summary>
         /// Decompress data using GZip
@@ -67,15 +51,14 @@ namespace OpenSubtitlesHandler
         /// <returns>Bytes array of decompressed data</returns>
         public static byte[] Decompress(Stream dataToDecompress)
         {
-            MemoryStream target = new MemoryStream();
-
-            using (System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress,
-                System.IO.Compression.CompressionMode.Decompress))
+            using (MemoryStream target = new MemoryStream())
             {
-                decompressionStream.CopyTo(target);
+                using (System.IO.Compression.GZipStream decompressionStream = new System.IO.Compression.GZipStream(dataToDecompress, System.IO.Compression.CompressionMode.Decompress))
+                {
+                    decompressionStream.CopyTo(target);
+                }
+                return target.ToArray();
             }
-            return target.GetBuffer();
-
         }
 
         /// <summary>
@@ -127,17 +110,19 @@ namespace OpenSubtitlesHandler
         /// <returns>The string of the stream after decode using given encoding</returns>
         public static string GetStreamString(Stream responseStream, Encoding encoding)
         {
-            // Handle response, should be XML text.
-            List<byte> data = new List<byte>();
-            while (true)
+            using (responseStream)
             {
-                int r = responseStream.ReadByte();
-                if (r < 0)
-                    break;
-                data.Add((byte)r);
+                // Handle response, should be XML text.
+                List<byte> data = new List<byte>();
+                while (true)
+                {
+                    int r = responseStream.ReadByte();
+                    if (r < 0)
+                        break;
+                    data.Add((byte)r);
+                }
+                return encoding.GetString(data.ToArray());
             }
-            responseStream.Close();
-            return encoding.GetString(data.ToArray());
         }
         /// <summary>
         /// Handle server response stream and decode it as ASCII encoding string.

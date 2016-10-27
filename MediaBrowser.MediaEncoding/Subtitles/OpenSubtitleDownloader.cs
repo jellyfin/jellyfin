@@ -218,16 +218,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             });
         }
 
-		private string NormalizeLanguage(string language)
-		{
-			// Problem with Greek subtitle download #1349
-			if (string.Equals (language, "gre", StringComparison.OrdinalIgnoreCase)) {
-			
-				return "ell";
-			}
+        private string NormalizeLanguage(string language)
+        {
+            // Problem with Greek subtitle download #1349
+            if (string.Equals(language, "gre", StringComparison.OrdinalIgnoreCase))
+            {
 
-			return language;
-		}
+                return "ell";
+            }
+
+            return language;
+        }
 
         public async Task<IEnumerable<RemoteSubtitleInfo>> Search(SubtitleSearchRequest request, CancellationToken cancellationToken)
         {
@@ -265,14 +266,19 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             await Login(cancellationToken).ConfigureAwait(false);
 
-			var subLanguageId = NormalizeLanguage(request.Language);
-            var hash = Utilities.ComputeHash(request.MediaPath);
+            var subLanguageId = NormalizeLanguage(request.Language);
+            string hash;
+
+            using (var fileStream = File.OpenRead(request.MediaPath))
+            {
+                hash = Utilities.ComputeHash(fileStream);
+            }
             var fileInfo = new FileInfo(request.MediaPath);
             var movieByteSize = fileInfo.Length;
             var searchImdbId = request.ContentType == VideoContentType.Movie ? imdbId.ToString(_usCulture) : "";
             var subtitleSearchParameters = request.ContentType == VideoContentType.Episode
                 ? new List<SubtitleSearchParameters> {
-                                                         new SubtitleSearchParameters(subLanguageId, 
+                                                         new SubtitleSearchParameters(subLanguageId,
                                                              query: request.SeriesName,
                                                              season: request.ParentIndexNumber.Value.ToString(_usCulture),
                                                              episode: request.IndexNumber.Value.ToString(_usCulture))
@@ -282,9 +288,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                                                          new SubtitleSearchParameters(subLanguageId, query: request.Name, imdbid: searchImdbId)
                                                      };
             var parms = new List<SubtitleSearchParameters> {
-                                                               new SubtitleSearchParameters( subLanguageId, 
-                                                                   movieHash: hash, 
-                                                                   movieByteSize: movieByteSize, 
+                                                               new SubtitleSearchParameters( subLanguageId,
+                                                                   movieHash: hash,
+                                                                   movieByteSize: movieByteSize,
                                                                    imdbid: searchImdbId ),
                                                            };
             parms.AddRange(subtitleSearchParameters);

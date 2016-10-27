@@ -7033,6 +7033,23 @@
           "copyToOutput": true
         }
       }
+    },
+    "OpenSubtitlesHandler/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6",
+      "compile": {
+        "bin/Debug/OpenSubtitlesHandler.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/OpenSubtitlesHandler.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/OpenSubtitlesHandler.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
     }
   }
 }

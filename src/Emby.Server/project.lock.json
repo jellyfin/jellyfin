@@ -2205,6 +2205,16 @@
           "MediaBrowser.Model": "1.0.0",
           "NETStandard.Library": "1.6.0"
         }
+      },
+      "OpenSubtitlesHandler/1.0.0": {
+        "type": "project",
+        "framework": ".NETPlatform,Version=v5.0",
+        "dependencies": {
+          "MediaBrowser.Common": "1.0.0",
+          "MediaBrowser.Model": "1.0.0",
+          "Microsoft.NETCore": "5.0.0",
+          "Microsoft.NETCore.Portable.Compatibility": "1.0.0"
+        }
       }
     }
   },
@@ -6978,6 +6988,11 @@
       "type": "project",
       "path": "../../MediaBrowser.XbmcMetadata/project.json",
       "msbuildProject": "../../MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj"
+    },
+    "OpenSubtitlesHandler/1.0.0": {
+      "type": "project",
+      "path": "../../OpenSubtitlesHandler/project.json",
+      "msbuildProject": "../../OpenSubtitlesHandler/OpenSubtitlesHandler.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -6992,7 +7007,8 @@
       "MediaBrowser.Model",
       "MediaBrowser.Providers",
       "MediaBrowser.WebDashboard",
-      "MediaBrowser.XbmcMetadata"
+      "MediaBrowser.XbmcMetadata",
+      "OpenSubtitlesHandler"
     ]
   },
   "tools": {},

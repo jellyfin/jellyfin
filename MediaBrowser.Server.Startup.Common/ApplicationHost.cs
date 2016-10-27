@@ -119,6 +119,7 @@ using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Xml;
+using OpenSubtitlesHandler;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -974,6 +975,7 @@ namespace MediaBrowser.Server.Startup.Common
             CollectionFolder.XmlSerializer = XmlSerializer;
             BaseStreamingService.AppHost = this;
             BaseStreamingService.HttpClient = HttpClient;
+            Utilities.CryptographyProvider = CryptographyProvider;
         }
 
         /// <summary>
