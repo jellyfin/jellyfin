@@ -6,6 +6,7 @@ using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -13,11 +14,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
+
+        public MusicBrainzArtistProvider(IXmlReaderSettingsFactory xmlSettings)
+        {
+            _xmlSettings = xmlSettings;
+        }
+
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
             var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
@@ -26,10 +35,10 @@ namespace MediaBrowser.Providers.Music
             {
                 var url = string.Format("/ws/2/artist/?query=arid:{0}", musicBrainzId);
 
-                using (var reader = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
+                using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, false, cancellationToken)
                             .ConfigureAwait(false))
                 {
-                    return GetResultsFromResponse(reader);
+                    return GetResultsFromResponse(stream);
                 }
             }
             else
@@ -39,9 +48,9 @@ namespace MediaBrowser.Providers.Music
 
                 var url = String.Format("/ws/2/artist/?query=artist:\"{0}\"", UrlEncode(nameToSearch));
 
-                using (var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                 {
-                    var results = GetResultsFromResponse(doc).ToList();
+                    var results = GetResultsFromResponse(stream).ToList();
 
                     if (results.Count > 0)
                     {
@@ -54,9 +63,9 @@ namespace MediaBrowser.Providers.Music
                     // Try again using the search with accent characters url
                     url = String.Format("/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
 
-                    using (var doc = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
+                    using (var stream = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, true, cancellationToken).ConfigureAwait(false))
                     {
-                        return GetResultsFromResponse(doc);
+                        return GetResultsFromResponse(stream);
                     }
                 }
             }
@@ -64,31 +73,46 @@ namespace MediaBrowser.Providers.Music
             return new List<RemoteSearchResult>();
         }
 
-        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(XmlReader reader)
+        private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
-            reader.MoveToContent();
-
-            // Loop through each element
-            while (reader.Read())
+            using (var oReader = new StreamReader(stream, Encoding.UTF8))
             {
-                switch (reader.Name)
+                var settings = _xmlSettings.Create(false);
+
+                settings.CheckCharacters = false;
+                settings.IgnoreProcessingInstructions = true;
+                settings.IgnoreComments = true;
+
+                using (var reader = XmlReader.Create(oReader, settings))
                 {
-                    case "artist-list":
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            using (var subReader = reader.ReadSubtree())
+                            switch (reader.Name)
                             {
-                                return ParseArtistList(subReader);
+                                case "artist-list":
+                                    {
+                                        using (var subReader = reader.ReadSubtree())
+                                        {
+                                            return ParseArtistList(subReader);
+                                        }
+                                    }
+                                default:
+                                    {
+                                        reader.Skip();
+                                        break;
+                                    }
                             }
                         }
-                    default:
-                        {
-                            reader.Skip();
-                            break;
-                        }
+                    }
+
+                    return new List<RemoteSearchResult>();
                 }
             }
-
-            return new List<RemoteSearchResult>();
         }
 
         private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
@@ -100,24 +124,30 @@ namespace MediaBrowser.Providers.Music
             // Loop through each element
             while (reader.Read())
             {
-                switch (reader.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "artist":
-                        {
-                            var mbzId = reader.GetAttribute("id");
-
-                            using (var subReader = reader.ReadSubtree())
+                    switch (reader.Name)
+                    {
+                        case "artist":
                             {
-                                var artist = ParseArtist(subReader, mbzId);
-                                list.Add(artist);
+                                var mbzId = reader.GetAttribute("id");
+
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    var artist = ParseArtist(subReader, mbzId);
+                                    if (artist != null)
+                                    {
+                                        list.Add(artist);
+                                    }
+                                }
+                                break;
                             }
-                            break;
-                        }
-                    default:
-                        {
-                            reader.Skip();
-                            break;
-                        }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
+                    }
                 }
             }
 
@@ -129,35 +159,38 @@ namespace MediaBrowser.Providers.Music
             var result = new RemoteSearchResult();
 
             reader.MoveToContent();
+            reader.Read();
+
+            // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
-                switch (reader.Name)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    case "name":
-                        {
-                            result.Name = reader.ReadElementContentAsString();
-                            break;
-                        }
-                    //case "sort-name":
-                    //    {
-                    //        break;
-                    //    }
-                    //case "tag-list":
-                    //    {
-                    //        break;
-                    //    }
-                    case "annotation":
-                        {
-                            result.Overview = reader.ReadElementContentAsString();
-                            break;
-                        }
-                    default:
-                        {
-                            reader.Skip();
-                            break;
-                        }
+                    switch (reader.Name)
+                    {
+                        case "name":
+                            {
+                                result.Name = reader.ReadElementContentAsString();
+                                break;
+                            }
+                        case "annotation":
+                            {
+                                result.Overview = reader.ReadElementContentAsString();
+                                break;
+                            }
+                        default:
+                            {
+                                // there is sort-name if ever needed
+                                reader.Skip();
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
