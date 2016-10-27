@@ -33,6 +33,7 @@ using System.Xml;
 using System.Text;
 using System.Diagnostics;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
 {
@@ -43,8 +44,9 @@ namespace Mono.Nat.Upnp
 		private string serviceDescriptionUrl;
 		private string controlUrl;
 		private string serviceType;
+        private readonly ILogger _logger;
 
-		public override IPAddress LocalAddress
+        public override IPAddress LocalAddress
 		{
 			get { return localAddress; }
 		}
@@ -54,7 +56,7 @@ namespace Mono.Nat.Upnp
 		/// </summary>
 		private NatDeviceCallback callback;
 
-        internal UpnpNatDevice(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint hostEndPoint, string serviceType)
+        internal UpnpNatDevice(IPAddress localAddress, UpnpDeviceInfo deviceInfo, IPEndPoint hostEndPoint, string serviceType, ILogger logger)
         {
             this.LastSeen = DateTime.Now;
             this.localAddress = localAddress;
@@ -62,6 +64,7 @@ namespace Mono.Nat.Upnp
             // Split the string at the "location" section so i can extract the ipaddress and service description url
             string locationDetails = deviceInfo.Location.ToString();
             this.serviceType = serviceType;
+            _logger = logger;
 
             // Make sure we have no excess whitespace
             locationDetails = locationDetails.Trim();
@@ -88,16 +91,17 @@ namespace Mono.Nat.Upnp
             }
         }
 
-        internal UpnpNatDevice (IPAddress localAddress, string deviceDetails, string serviceType)
+        internal UpnpNatDevice (IPAddress localAddress, string deviceDetails, string serviceType, ILogger logger)
 		{
-			this.LastSeen = DateTime.Now;
+            _logger = logger;
+            this.LastSeen = DateTime.Now;
 			this.localAddress = localAddress;
 
 			// Split the string at the "location" section so i can extract the ipaddress and service description url
 			string locationDetails = deviceDetails.Substring(deviceDetails.IndexOf("Location", StringComparison.InvariantCultureIgnoreCase) + 9).Split('\r')[0];
             this.serviceType = serviceType;
 
-			// Make sure we have no excess whitespace
+            // Make sure we have no excess whitespace
 			locationDetails = locationDetails.Trim();
 
 			// FIXME: Is this reliable enough. What if we get a hostname as opposed to a proper http address
@@ -131,8 +135,7 @@ namespace Mono.Nat.Upnp
 			}
 			else
 			{
-				Trace.WriteLine("Couldn't decode address. Please send following string to the developer: ");
-				Trace.WriteLine(deviceDetails);
+                logger.Warn("Couldn't decode address: " + deviceDetails);
 			}
 		}
 
@@ -527,7 +530,7 @@ namespace Mono.Nat.Upnp
 
 			// Create a HTTPWebRequest to download the list of services the device offers
 			byte[] body;
-			WebRequest request = new GetServicesMessage(this.serviceDescriptionUrl, this.hostEndPoint).Encode(out body);
+			WebRequest request = new GetServicesMessage(this.serviceDescriptionUrl, this.hostEndPoint, _logger).Encode(out body);
 			if (body.Length > 0)
 				NatUtility.Log("Error: Services Message contained a body");
 			request.BeginGetResponse(this.ServicesReceived, request);
