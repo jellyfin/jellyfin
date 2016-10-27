@@ -35,12 +35,12 @@ namespace MediaBrowser.Providers.TV
         private readonly IZipClient _zipClient;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
         private readonly IServerConfigurationManager _config;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IMemoryStreamProvider _memoryStreamProvider;
-        private readonly IXmlReaderSettingsFactory _xmlSettings;
         private readonly ILocalizationManager _localizationManager;
 
         public TvdbSeriesProvider(IZipClient zipClient, IHttpClient httpClient, IFileSystem fileSystem, IServerConfigurationManager config, ILogger logger, ILibraryManager libraryManager, IMemoryStreamProvider memoryStreamProvider, IXmlReaderSettingsFactory xmlSettings, ILocalizationManager localizationManager)
@@ -512,9 +512,11 @@ namespace MediaBrowser.Providers.TV
         private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
             var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), NormalizeLanguage(language));
-            var doc = new XmlDocument();
+            var searchResults = new List<RemoteSearchResult>();
 
-            using (var results = await _httpClient.Get(new HttpRequestOptions
+            var comparableName = GetComparableName(name);
+
+            using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
                 ResourcePool = TvDbResourcePool,
@@ -522,89 +524,47 @@ namespace MediaBrowser.Providers.TV
 
             }).ConfigureAwait(false))
             {
-                doc.Load(results);
-            }
+                var settings = _xmlSettings.Create(false);
 
-            var searchResults = new List<RemoteSearchResult>();
+                settings.CheckCharacters = false;
+                settings.IgnoreProcessingInstructions = true;
+                settings.IgnoreComments = true;
 
-            if (doc.HasChildNodes)
-            {
-                var nodes = doc.SelectNodes("//Series");
-                var comparableName = GetComparableName(name);
-                if (nodes != null)
+                using (var streamReader = new StreamReader(stream, Encoding.UTF8))
                 {
-                    foreach (XmlNode node in nodes)
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
                     {
-                        var searchResult = new RemoteSearchResult
-                        {
-                            SearchProviderName = Name
-                        };
+                        reader.MoveToContent();
 
-                        var titles = new List<string>();
-
-                        var nameNode = node.SelectSingleNode("./SeriesName");
-                        if (nameNode != null)
+                        // Loop through each element
+                        while (reader.Read())
                         {
-                            titles.Add(GetComparableName(nameNode.InnerText));
-                        }
+                            cancellationToken.ThrowIfCancellationRequested();
 
-                        var aliasNode = node.SelectSingleNode("./AliasNames");
-                        if (aliasNode != null)
-                        {
-                            var alias = aliasNode.InnerText.Split('|').Select(GetComparableName);
-                            titles.AddRange(alias);
-                        }
-
-                        var imdbIdNode = node.SelectSingleNode("./IMDB_ID");
-                        if (imdbIdNode != null)
-                        {
-                            var val = imdbIdNode.InnerText;
-                            if (!string.IsNullOrWhiteSpace(val))
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                searchResult.SetProviderId(MetadataProviders.Imdb, val);
-                            }
-                        }
-
-                        var bannerNode = node.SelectSingleNode("./banner");
-                        if (bannerNode != null)
-                        {
-                            var val = bannerNode.InnerText;
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                searchResult.ImageUrl = TVUtils.BannerUrl + val;
-                            }
-                        }
-
-                        var airDateNode = node.SelectSingleNode("./FirstAired");
-                        if (airDateNode != null)
-                        {
-                            var val = airDateNode.InnerText;
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                DateTime date;
-                                if (DateTime.TryParse(val, out date))
+                                switch (reader.Name)
                                 {
-                                    searchResult.ProductionYear = date.Year;
+                                    case "Series":
+                                        {
+                                            using (var subtree = reader.ReadSubtree())
+                                            {
+                                                var searchResult = GetSeriesSearchResultFromSubTree(subtree, comparableName);
+                                                if (searchResult != null)
+                                                {
+                                                    searchResult.SearchProviderName = Name;
+                                                    searchResults.Add(searchResult);
+                                                }
+                                            }
+                                            break;
+                                        }
+
+                                    default:
+                                        reader.Skip();
+                                        break;
                                 }
                             }
-                        }
-
-                        foreach (var title in titles)
-                        {
-                            if (string.Equals(title, comparableName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                var id = node.SelectSingleNode("./seriesid") ??
-                                    node.SelectSingleNode("./id");
-
-                                if (id != null)
-                                {
-                                    searchResult.Name = title;
-                                    searchResult.SetProviderId(MetadataProviders.Tvdb, id.InnerText);
-                                    searchResults.Add(searchResult);
-                                }
-                                break;
-                            }
-                            _logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
                         }
                     }
                 }
@@ -616,6 +576,118 @@ namespace MediaBrowser.Providers.TV
             }
 
             return searchResults;
+        }
+
+        private RemoteSearchResult GetSeriesSearchResultFromSubTree(XmlReader reader, string comparableName)
+        {
+            var searchResult = new RemoteSearchResult
+            {
+                SearchProviderName = Name
+            };
+
+            var titles = new List<string>();
+            string seriesId = null;
+
+            reader.MoveToContent();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "SeriesName":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    titles.Add(GetComparableName(val));
+                                }
+                                break;
+                            }
+
+                        case "AliasNames":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                var alias = (val ?? string.Empty).Split(new [] { '|' }, StringSplitOptions.RemoveEmptyEntries).Select(GetComparableName);
+                                titles.AddRange(alias);
+                                break;
+                            }
+
+                        case "IMDB_ID":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    searchResult.SetProviderId(MetadataProviders.Imdb, val);
+                                }
+                                break;
+                            }
+
+                        case "banner":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    searchResult.ImageUrl = TVUtils.BannerUrl + val;
+                                }
+                                break;
+                            }
+
+                        case "FirstAired":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    DateTime date;
+                                    if (DateTime.TryParse(val, out date))
+                                    {
+                                        searchResult.ProductionYear = date.Year;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case "id":
+                        case "seriesid":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    seriesId = val;
+                                }
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            foreach (var title in titles)
+            {
+                if (string.Equals(title, comparableName, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!string.IsNullOrWhiteSpace(seriesId))
+                    {
+                        searchResult.Name = title;
+                        searchResult.SetProviderId(MetadataProviders.Tvdb, seriesId);
+                        return searchResult;
+                    }
+                    break;
+                }
+                _logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
+            }
+
+            return null;
         }
 
         /// <summary>

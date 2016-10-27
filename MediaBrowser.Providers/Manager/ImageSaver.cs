@@ -174,14 +174,14 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var currentFile = new FileInfo(currentPath);
+                    var currentFile = _fileSystem.GetFileInfo(currentPath);
 
                     // This will fail if the file is hidden
                     if (currentFile.Exists)
                     {
-                        if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                        if (currentFile.IsHidden)
                         {
-                            currentFile.Attributes &= ~FileAttributes.Hidden;
+                            _fileSystem.SetHidden(currentFile.FullName, false);
                         }
 
                         _fileSystem.DeleteFile(currentFile.FullName);
@@ -256,14 +256,14 @@ namespace MediaBrowser.Providers.Manager
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
-                var file = new FileInfo(path);
+                var file = _fileSystem.GetFileInfo(path);
 
                 // This will fail if the file is hidden
                 if (file.Exists)
                 {
-                    if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    if (file.IsHidden)
                     {
-                        file.Attributes &= ~FileAttributes.Hidden;
+                        _fileSystem.SetHidden(file.FullName, false);
                     }
                 }
 
@@ -275,10 +275,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (_config.Configuration.SaveMetadataHidden)
                 {
-                    file.Refresh();
-
-                    // Add back the attribute
-                    file.Attributes |= FileAttributes.Hidden;
+                    _fileSystem.SetHidden(file.FullName, true);
                 }
             }
             finally
