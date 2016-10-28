@@ -37,9 +37,6 @@ using System.Net.NetworkInformation;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
-using Mono.Nat.Pmp.Mappers;
-using Mono.Nat.Upnp;
-using Mono.Nat.Upnp.Mappers;
 
 namespace Mono.Nat
 {
