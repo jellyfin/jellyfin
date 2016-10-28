@@ -160,5 +160,17 @@ namespace MediaBrowser.Model.Services
                 //}
             }
         }
+
+        private string GetQueryStringValue(NameValuePair pair)
+        {
+            return pair.Name + "=" + pair.Value;
+        }
+
+        public override String ToString()
+        {
+            var vals = this.Select(GetQueryStringValue).ToArray();
+
+            return string.Join("&", vals);
+        }
     }
 }

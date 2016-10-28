@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Implementations.Archiving;
 using MediaBrowser.Common.Implementations.Devices;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.ScheduledTasks;
@@ -158,12 +157,6 @@ namespace MediaBrowser.Common.Implementations
 
         protected IFileSystem FileSystemManager { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the zip client.
-        /// </summary>
-        /// <value>The zip client.</value>
-        protected IZipClient ZipClient { get; private set; }
-
         protected IIsoManager IsoManager { get; private set; }
 
         /// <summary>
@@ -243,14 +236,7 @@ namespace MediaBrowser.Common.Implementations
 
             JsonSerializer = CreateJsonSerializer();
 
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                MemoryStreamProvider = new RecyclableMemoryStreamProvider();
-            }
-            else
-            {
-                MemoryStreamProvider = new MemoryStreamProvider();
-            }
+            MemoryStreamProvider = CreateMemoryStreamProvider();
 
             OnLoggerLoaded(true);
             LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
@@ -282,6 +268,8 @@ namespace MediaBrowser.Common.Implementations
 
             progress.Report(100);
         }
+
+        protected abstract IMemoryStreamProvider CreateMemoryStreamProvider();
 
         protected virtual void OnLoggerLoaded(bool isFirstLoad)
         {
@@ -530,9 +518,6 @@ namespace MediaBrowser.Common.Implementations
 
             InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
             RegisterSingleInstance(InstallationManager);
-
-            ZipClient = new ZipClient(FileSystemManager);
-            RegisterSingleInstance(ZipClient);
 
             IsoManager = new IsoManager();
             RegisterSingleInstance(IsoManager);
