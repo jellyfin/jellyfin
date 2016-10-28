@@ -893,12 +893,9 @@ namespace MediaBrowser.Api.Playback
                 resultChannels = Math.Min(request.MaxAudioChannels.Value, channelLimit);
             }
 
-            if (resultChannels.HasValue && !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (request.TranscodingMaxAudioChannels.HasValue && !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                if (request.TranscodingMaxAudioChannels.HasValue)
-                {
-                    resultChannels = Math.Min(request.TranscodingMaxAudioChannels.Value, resultChannels.Value);
-                }
+                resultChannels = Math.Min(request.TranscodingMaxAudioChannels.Value, resultChannels ?? inputChannels ?? request.TranscodingMaxAudioChannels.Value);
             }
 
             return resultChannels ?? request.AudioChannels;
