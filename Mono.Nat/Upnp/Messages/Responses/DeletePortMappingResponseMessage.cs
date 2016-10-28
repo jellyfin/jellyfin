@@ -27,6 +27,8 @@
 
 
 using System;
+using MediaBrowser.Common.Net;
+
 namespace Mono.Nat.Upnp
 {
     internal class DeletePortMapResponseMessage : MessageBase
@@ -34,6 +36,11 @@ namespace Mono.Nat.Upnp
         public DeletePortMapResponseMessage()
             :base(null)
         {
+        }
+
+        public override HttpRequestOptions Encode()
+        {
+            throw new NotSupportedException();
         }
 
         public override System.Net.WebRequest Encode(out byte[] body)

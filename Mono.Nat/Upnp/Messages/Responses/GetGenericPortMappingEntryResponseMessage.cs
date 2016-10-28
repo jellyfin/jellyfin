@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -98,6 +99,11 @@ namespace Mono.Nat.Upnp
             enabled = data["NewEnabled"].InnerText == "1" ? true : false;
             portMappingDescription = data["NewPortMappingDescription"].InnerText;
             leaseDuration = Convert.ToInt32(data["NewLeaseDuration"].InnerText);
+        }
+
+        public override HttpRequestOptions Encode()
+        {
+            throw new NotImplementedException();
         }
 
         public override System.Net.WebRequest Encode(out byte[] body)

@@ -32,19 +32,20 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp.Mappers
 {
     internal class UpnpMapper : Upnp, IMapper
     {
-
         public event EventHandler<DeviceEventArgs> DeviceFound;
 
         public UdpClient Client { get; set; }
 
-        public UpnpMapper(ILogger logger)
-            : base(logger)
+        public UpnpMapper(ILogger logger, IHttpClient httpClient)
+            : base(logger,  httpClient)
         {
             //Bind to local port 1900 for ssdp responses
             Client = new UdpClient(1900);
@@ -60,7 +61,7 @@ namespace Mono.Nat.Upnp.Mappers
             new Thread(Receive).Start(); 
         }
 
-        public void Receive()
+        public async void Receive()
         {
             while (true)
             {
@@ -69,28 +70,36 @@ namespace Mono.Nat.Upnp.Mappers
                 {
                     IPAddress localAddress = ((IPEndPoint)Client.Client.LocalEndPoint).Address;
                     byte[] data = Client.Receive(ref received);
-                    Handle(localAddress, data, received);
+
+                    await Handle(localAddress, data, received);
                 }
             }
         }
 
         public void Handle(IPAddress localAddres, byte[] response)
         {
-            Handle(localAddres, response, null);
         }
 
-        public void Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
+        public override async Task<UpnpNatDevice> Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
         {
             // No matter what, this method should never throw an exception. If something goes wrong
             // we should still be in a position to handle the next reply correctly.
             try
             {
-                UpnpNatDevice d = base.Handle(localAddress, response, endpoint);               
-                d.GetServicesList(DeviceSetupComplete);
+                var d = await base.Handle(localAddress, response, endpoint).ConfigureAwait(false);               
+                var result = await d.GetServicesList().ConfigureAwait(false);
+
+                if (result)
+                {
+                    DeviceSetupComplete(d);
+                }
+
+                return d;
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error mapping port. Data string: {0}", ex, Encoding.UTF8.GetString(response));
+                return null;
             }
         }
 

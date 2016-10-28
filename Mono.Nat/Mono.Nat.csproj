@@ -54,7 +54,6 @@
     <Compile Include="NatUtility.cs" />
     <Compile Include="Pmp\AsyncResults\PortMapAsyncResult.cs" />
     <Compile Include="Pmp\Mappers\PmpMapper.cs" />
-    <Compile Include="Pmp\Pmp.cs" />
     <Compile Include="Pmp\PmpConstants.cs" />
     <Compile Include="Pmp\PmpNatDevice.cs" />
     <Compile Include="Pmp\Searchers\PmpSearcher.cs" />
@@ -80,6 +79,10 @@
     <Compile Include="Upnp\UpnpNatDevice.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>

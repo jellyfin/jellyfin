@@ -27,6 +27,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
@@ -38,7 +39,7 @@ namespace Mono.Nat.Upnp
         private readonly ILogger _logger;
 
         public GetServicesMessage(string description, EndPoint hostAddress, ILogger logger)
-            :base(null)
+            : base(null)
         {
             if (string.IsNullOrEmpty(description))
                 _logger.Warn("Description is null");
@@ -51,6 +52,13 @@ namespace Mono.Nat.Upnp
             _logger = logger;
         }
 
+        public override string Method
+        {
+            get
+            {
+                return "GET";
+            }
+        }
 
         public override WebRequest Encode(out byte[] body)
         {
@@ -59,6 +67,17 @@ namespace Mono.Nat.Upnp
             req.Method = "GET";
 
             body = new byte[0];
+            return req;
+        }
+
+
+        public override HttpRequestOptions Encode()
+        {
+            var req = new HttpRequestOptions();
+
+            req.Url = "http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl;
+            req.RequestHeaders.Add("ACCEPT-LANGUAGE", "en");
+
             return req;
         }
     }

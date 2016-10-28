@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -39,6 +40,17 @@ namespace Mono.Nat.Upnp
             :base(device)
         {
             this.index = index;
+        }
+
+        public override HttpRequestOptions Encode()
+        {
+            StringBuilder sb = new StringBuilder(128);
+            XmlWriter writer = CreateWriter(sb);
+
+            WriteFullElement(writer, "NewPortMappingIndex", index.ToString());
+
+            writer.Flush();
+            return CreateRequest("GetGenericPortMappingEntry", sb.ToString());
         }
 
         public override System.Net.WebRequest Encode(out byte[] body)

@@ -34,9 +34,11 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.NetworkInformation;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
 using Mono.Nat.Pmp.Mappers;
+using Mono.Nat.Upnp;
 using Mono.Nat.Upnp.Mappers;
 
 namespace Mono.Nat
@@ -55,8 +57,9 @@ namespace Mono.Nat
         public static List<NatProtocol> EnabledProtocols { get; set; }
 
 	    public static ILogger Logger { get; set; }
+        public static IHttpClient HttpClient { get; set; }
 
-	    public static bool Verbose
+        public static bool Verbose
 		{
 			get { return verbose; }
 			set { verbose = value; }
@@ -153,32 +156,6 @@ namespace Mono.Nat
 		{
             searching.Reset();
 		}
-
-        //This is for when you know the Gateway IP and want to skip the costly search...
-        public static void DirectMap(IPAddress gatewayAddress, MapperType type)
-        {
-            IMapper mapper;
-            switch (type)
-            {
-                case MapperType.Pmp:
-                    mapper = new PmpMapper();
-                    break;
-                case MapperType.Upnp:
-                    mapper = new UpnpMapper(Logger);
-                    mapper.DeviceFound += (sender, args) =>
-                    {
-                        if (DeviceFound != null)
-                            DeviceFound(sender, args);
-                    };
-                    mapper.Map(gatewayAddress);                    
-                    break;
-                default:
-                    throw new InvalidOperationException("Unsuported type given");
-
-            }
-            searching.Reset();
-            
-        }
 		
 		//checks if an IP address is a private address space as defined by RFC 1918
 		public static bool IsPrivateAddressSpace (IPAddress address)
@@ -217,10 +194,20 @@ namespace Mono.Nat
             switch (protocol)
             {
                 case NatProtocol.Upnp:
-                    new UpnpSearcher(Logger).Handle(localAddress, deviceInfo, endpoint);
+                    var searcher = new UpnpSearcher(Logger, HttpClient);
+                    searcher.DeviceFound += Searcher_DeviceFound;
+                    searcher.Handle(localAddress, deviceInfo, endpoint);
                     break;
                 default:
                     throw new ArgumentException("Unexpected protocol: " + protocol);
+            }
+        }
+
+        private static void Searcher_DeviceFound(object sender, DeviceEventArgs e)
+        {
+            if (DeviceFound != null)
+            {
+                DeviceFound(sender, e);
             }
         }
     }

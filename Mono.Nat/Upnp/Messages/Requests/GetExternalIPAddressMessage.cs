@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net;
 using System.IO;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -42,6 +43,10 @@ namespace Mono.Nat.Upnp
         }
         #endregion
 
+        public override HttpRequestOptions Encode()
+        {
+            return CreateRequest("GetExternalIPAddress", string.Empty);
+        }
 
         public override WebRequest Encode(out byte[] body)
         {
