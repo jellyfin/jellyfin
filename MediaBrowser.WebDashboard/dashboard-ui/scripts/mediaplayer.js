@@ -163,6 +163,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                     options.enableHls = true;
                 }
 
+                options.enableMkvProgressive = false;
                 options.disableVideoAudioCodecs = disableVideoAudioCodecs;
             }
 
