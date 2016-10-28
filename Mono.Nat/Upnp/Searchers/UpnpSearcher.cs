@@ -36,6 +36,7 @@ using Mono.Nat.Upnp;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
 
@@ -48,10 +49,12 @@ namespace Mono.Nat
 
         private DateTime nextSearch;
         private readonly ILogger _logger;
+        private readonly IHttpClient _httpClient;
 
-        public UpnpSearcher(ILogger logger)
+        public UpnpSearcher(ILogger logger, IHttpClient httpClient)
         {
             _logger = logger;
+            _httpClient = httpClient;
         }
 
         public void Search()
@@ -76,7 +79,7 @@ namespace Mono.Nat
 				 prefix. */
 
                 // We have an internet gateway device now
-                UpnpNatDevice d = new UpnpNatDevice(localAddress, deviceInfo, endpoint, string.Empty, _logger);
+                UpnpNatDevice d = new UpnpNatDevice(localAddress, deviceInfo, endpoint, string.Empty, _logger, _httpClient);
 
                 NatUtility.Log("Fetching service list: {0}", d.HostEndPoint);
                 OnDeviceFound(new DeviceEventArgs(d));

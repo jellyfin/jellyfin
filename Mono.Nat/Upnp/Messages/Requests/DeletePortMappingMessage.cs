@@ -28,6 +28,7 @@ using System.Net;
 using System.IO;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -41,7 +42,20 @@ namespace Mono.Nat.Upnp
 			this.mapping = mapping;
 		}
 
-		public override WebRequest Encode(out byte[] body)
+	    public override HttpRequestOptions Encode()
+	    {
+            StringBuilder builder = new StringBuilder(256);
+            XmlWriter writer = CreateWriter(builder);
+
+            WriteFullElement(writer, "NewRemoteHost", string.Empty);
+            WriteFullElement(writer, "NewExternalPort", mapping.PublicPort.ToString(MessageBase.Culture));
+            WriteFullElement(writer, "NewProtocol", mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP");
+
+            writer.Flush();
+            return CreateRequest("DeletePortMapping", builder.ToString());
+        }
+
+        public override WebRequest Encode(out byte[] body)
 		{
 			StringBuilder builder = new StringBuilder(256);
 			XmlWriter writer = CreateWriter(builder);

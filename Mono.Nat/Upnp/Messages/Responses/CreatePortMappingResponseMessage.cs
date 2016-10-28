@@ -27,6 +27,8 @@
 
 
 using System;
+using MediaBrowser.Common.Net;
+
 namespace Mono.Nat.Upnp
 {
     internal class CreatePortMappingResponseMessage : MessageBase
@@ -37,6 +39,11 @@ namespace Mono.Nat.Upnp
         {
         }
         #endregion
+
+        public override HttpRequestOptions Encode()
+        {
+            throw new NotImplementedException();
+        }
 
         public override System.Net.WebRequest Encode(out byte[] body)
         {

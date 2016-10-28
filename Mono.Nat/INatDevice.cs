@@ -30,12 +30,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
 	public interface INatDevice
 	{
-		void CreatePortMap (Mapping mapping);
+		Task CreatePortMap (Mapping mapping);
 		void DeletePortMap (Mapping mapping);
 		
 		IPAddress LocalAddress { get; }

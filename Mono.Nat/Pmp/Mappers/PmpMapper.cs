@@ -34,26 +34,12 @@ using Mono.Nat.Pmp;
 
 namespace Mono.Nat.Pmp.Mappers
 {
-    internal class PmpMapper : Pmp, IMapper
+    internal class PmpMapper : IMapper
     {
         public event EventHandler<DeviceEventArgs> DeviceFound;
 
-        static PmpMapper()
-        {
-            CreateSocketsAndAddGateways();
-        }
-
         public void Map(IPAddress gatewayAddress)
         {
-            sockets.ForEach(x => Map(x, gatewayAddress));
-        }
-
-        void Map(UdpClient client, IPAddress gatewayAddress)
-        {
-            // The nat-pmp search message. Must be sent to GatewayIP:53531
-            byte[] buffer = new byte[] { PmpConstants.Version, PmpConstants.OperationCode };
-
-            client.Send(buffer, buffer.Length, new IPEndPoint(gatewayAddress, PmpConstants.ServerPort));
         }
 
         public void Handle(IPAddress localAddres, byte[] response)

@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -43,6 +44,11 @@ namespace Mono.Nat.Upnp
             :base(null)
         {
             this.externalIPAddress = IPAddress.Parse(ip);
+        }
+
+        public override HttpRequestOptions Encode()
+        {
+            throw new NotImplementedException();
         }
 
         public override WebRequest Encode(out byte[] body)

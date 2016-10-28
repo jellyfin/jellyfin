@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Net;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -55,6 +56,19 @@ namespace Mono.Nat.Upnp
 			writer.Flush();
 
 			return CreateRequest("GetSpecificPortMappingEntry", sb.ToString(), out body);
-		}
-	}
+        }
+
+        public override HttpRequestOptions Encode()
+        {
+            StringBuilder sb = new StringBuilder(64);
+            XmlWriter writer = CreateWriter(sb);
+
+            WriteFullElement(writer, "NewRemoteHost", string.Empty);
+            WriteFullElement(writer, "NewExternalPort", externalPort.ToString());
+            WriteFullElement(writer, "NewProtocol", protocol == Protocol.Tcp ? "TCP" : "UDP");
+            writer.Flush();
+
+            return CreateRequest("GetSpecificPortMappingEntry", sb.ToString());
+        }
+    }
 }

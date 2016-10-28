@@ -30,6 +30,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Mono.Nat.Pmp
 {
@@ -55,6 +56,12 @@ namespace Mono.Nat.Pmp
 		{
 			return publicAddress;
 		}
+
+	    public override Task CreatePortMap(Mapping mapping)
+	    {
+            CreatePortMap(mapping, true);
+	        return Task.FromResult(true);
+	    }
 
         public override IAsyncResult BeginCreatePortMap(Mapping mapping, AsyncCallback callback, object asyncState)
 		{

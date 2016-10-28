@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Server.Implementations.Threading;
 
@@ -17,18 +18,20 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
     {
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
+        private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 
         private PeriodicTimer _timer;
         private bool _isStarted;
 
-        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery)
+        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient)
         {
             _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
             _deviceDiscovery = deviceDiscovery;
+            _httpClient = httpClient;
         }
 
         private string _lastConfigIdentifier;
@@ -63,6 +66,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         public void Run()
         {
             NatUtility.Logger = _logger;
+            NatUtility.HttpClient = _httpClient;
 
             if (_config.Configuration.EnableUPnP)
             {
@@ -136,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _usnsHandled.Add(identifier);
             }
 
-            _logger.Debug("Calling Nat.Handle on " + identifier);
+            _logger.Debug("Found NAT device: " + identifier);
 
             IPAddress address;
             if (IPAddress.TryParse(info.Location.Host, out address))
@@ -150,16 +154,23 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 {
                     var localAddressString = await _appHost.GetLocalApiUrl().ConfigureAwait(false);
 
-                    if (!IPAddress.TryParse(localAddressString, out localAddress))
+                    Uri uri;
+                    if (Uri.TryCreate(localAddressString, UriKind.Absolute, out uri))
                     {
-                        return;
+                        localAddressString = uri.Host;
+
+                        if (!IPAddress.TryParse(localAddressString, out localAddress))
+                        {
+                            return;
+                        }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     return;
                 }
 
+                _logger.Debug("Calling Nat.Handle on " + identifier);
                 NatUtility.Handle(localAddress, info, endpoint, NatProtocol.Upnp);
             }
         }
@@ -229,13 +240,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
         }
 
-        private void CreatePortMap(INatDevice device, int privatePort, int publicPort)
+        private async void CreatePortMap(INatDevice device, int privatePort, int publicPort)
         {
             _logger.Debug("Creating port map on port {0}", privatePort);
-            device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
+
+            try
             {
-                Description = _appHost.Name
-            });
+                await device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
+                {
+                    Description = _appHost.Name
+                }).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating port map", ex);
+            }
         }
 
         // As I said before, this method will be never invoked. You can remove it.

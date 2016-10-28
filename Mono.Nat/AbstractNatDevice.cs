@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
@@ -50,11 +51,7 @@ namespace Mono.Nat
 			set { lastSeen = value; }
 		}
 
-		public virtual void CreatePortMap (Mapping mapping)
-		{
-			IAsyncResult result = BeginCreatePortMap (mapping, null, null);
-		    EndCreatePortMap(result);
-		}
+	    public abstract Task CreatePortMap(Mapping mapping);
 
 		public virtual void DeletePortMap (Mapping mapping)
 		{

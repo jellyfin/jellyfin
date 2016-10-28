@@ -29,6 +29,7 @@ using System.IO;
 using System.Globalization;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -51,6 +52,25 @@ namespace Mono.Nat.Upnp
         }
         #endregion
 
+        public override HttpRequestOptions Encode()
+        {
+            CultureInfo culture = CultureInfo.InvariantCulture;
+
+            StringBuilder builder = new StringBuilder(256);
+            XmlWriter writer = CreateWriter(builder);
+
+            WriteFullElement(writer, "NewRemoteHost", string.Empty);
+            WriteFullElement(writer, "NewExternalPort", this.mapping.PublicPort.ToString(culture));
+            WriteFullElement(writer, "NewProtocol", this.mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP");
+            WriteFullElement(writer, "NewInternalPort", this.mapping.PrivatePort.ToString(culture));
+            WriteFullElement(writer, "NewInternalClient", this.localIpAddress.ToString());
+            WriteFullElement(writer, "NewEnabled", "1");
+            WriteFullElement(writer, "NewPortMappingDescription", string.IsNullOrEmpty(mapping.Description) ? "Mono.Nat" : mapping.Description);
+            WriteFullElement(writer, "NewLeaseDuration", mapping.Lifetime.ToString());
+
+            writer.Flush();
+            return CreateRequest("AddPortMapping", builder.ToString());
+        }
 
         public override WebRequest Encode(out byte[] body)
         {
