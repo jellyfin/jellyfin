@@ -254,48 +254,18 @@
 
     function loadRecentlyAdded(elem, user) {
 
-        var options = {
+        var moviesFrag = document.createElement('div');
+        var episodesFrag = document.createElement('div');
 
-            Limit: 20,
-            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Thumb"
-        };
+        elem.classList.remove('homePageSection');
+        moviesFrag.classList.add('homePageSection');
+        episodesFrag.classList.add('homePageSection');
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+        elem.appendChild(moviesFrag);
+        elem.appendChild(episodesFrag);
 
-            var html = '';
-
-            var cardLayout = false;
-
-            if (items.length) {
-                html += '<div>';
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-
-                html += '</div>';
-
-                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
-
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    preferThumb: true,
-                    shape: 'backdrop',
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    lazy: true,
-                    cardLayout: cardLayout,
-                    showTitle: cardLayout,
-                    showYear: cardLayout,
-                    showDetailsMenu: true,
-                    context: 'home'
-                });
-                html += '</div>';
-            }
-
-            elem.innerHTML = html;
-            elem.addEventListener('click', groupedcards.onItemsContainerClick);
-            ImageLoader.lazyChildren(elem);
-        });
+        loadLatestMovies(moviesFrag, user);
+        loadLatestEpisodes(episodesFrag, user);
     }
 
     function loadLatestMovies(elem, user) {
@@ -536,7 +506,7 @@
 
         var query = {
 
-            Limit: 20,
+            Limit: enableScrollX() ? 20 : 10,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
             UserId: userId,
             ImageTypeLimit: 1,
@@ -721,9 +691,7 @@
         loadNextUp: loadNextUp,
         loadLatestChannelItems: loadLatestChannelItems,
         loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
-        loadlibraryButtons: loadlibraryButtons,
-        loadLatestMovies: loadLatestMovies,
-        loadLatestEpisodes: loadLatestEpisodes
+        loadlibraryButtons: loadlibraryButtons
     };
 
     return window.Sections;

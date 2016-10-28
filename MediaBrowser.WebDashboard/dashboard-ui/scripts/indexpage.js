@@ -5,26 +5,6 @@
 
     function getDefaultSection(index) {
 
-        if (AppInfo.isNativeApp) {
-
-            switch (index) {
-
-                case 0:
-                    return defaultFirstSection;
-                case 1:
-                    return 'resume';
-                case 2:
-                    return 'nextup';
-                case 3:
-                    return 'latestmovies';
-                case 4:
-                    return 'latestepisodes';
-                case 5:
-                    return 'latesttvrecordings';
-                default:
-                    return '';
-            }
-        }
         switch (index) {
 
             case 0:
@@ -32,13 +12,14 @@
             case 1:
                 return 'resume';
             case 2:
-                return 'latestmedia';
+                return 'nextup';
             case 3:
+                return 'latestmedia';
+            case 4:
                 return 'latesttvrecordings';
             default:
                 return '';
         }
-
     }
 
     function loadSection(page, user, displayPreferences, index) {
@@ -57,12 +38,6 @@
 
         if (section == 'latestmedia') {
             return Sections.loadRecentlyAdded(elem, user);
-        }
-        else if (section == 'latestmovies') {
-            return Sections.loadLatestMovies(elem, user);
-        }
-        else if (section == 'latestepisodes') {
-            return Sections.loadLatestEpisodes(elem, user);
         }
         else if (section == 'librarytiles') {
             return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
@@ -105,7 +80,7 @@
     function loadSections(page, user, displayPreferences) {
 
         var i, length;
-        var sectionCount = 6;
+        var sectionCount = 5;
 
         var elem = page.querySelector('.sections');
 
