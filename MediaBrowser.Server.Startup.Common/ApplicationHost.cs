@@ -1273,6 +1273,7 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 return Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                    .Where(EnablePlugin)
                     .Select(LoadAssembly)
                     .Where(a => a != null)
                     .ToList();
@@ -1281,6 +1282,19 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 return new List<Assembly>();
             }
+        }
+
+        private bool EnablePlugin(string path)
+        {
+            var filename = Path.GetFileName(path);
+
+            var exclude = new[]
+            {
+                "mbplus.dll",
+                "mbintros.dll"
+            };
+
+            return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
