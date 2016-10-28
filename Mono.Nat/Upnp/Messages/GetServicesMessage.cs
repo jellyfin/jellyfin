@@ -60,17 +60,6 @@ namespace Mono.Nat.Upnp
             }
         }
 
-        public override WebRequest Encode(out byte[] body)
-        {
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl);
-            req.Headers.Add("ACCEPT-LANGUAGE", "en");
-            req.Method = "GET";
-
-            body = new byte[0];
-            return req;
-        }
-
-
         public override HttpRequestOptions Encode()
         {
             var req = new HttpRequestOptions();
