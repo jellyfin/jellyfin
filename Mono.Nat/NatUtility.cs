@@ -34,6 +34,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
@@ -46,8 +47,6 @@ namespace Mono.Nat
 		public static event EventHandler<DeviceEventArgs> DeviceFound;
 		public static event EventHandler<DeviceEventArgs> DeviceLost;
         
-        public static event EventHandler<UnhandledExceptionEventArgs> UnhandledException;
-
 		private static List<ISearcher> controllers;
 		private static bool verbose;
 
@@ -87,9 +86,8 @@ namespace Mono.Nat
                             DeviceLost(sender, args);
                     };
                 });
-            Thread t = new Thread(SearchAndListen);
-            t.IsBackground = true;
-            t.Start();
+
+            Task.Factory.StartNew(SearchAndListen, TaskCreationOptions.LongRunning);
         }
 
 		internal static void Log(string format, params object[] args)
@@ -99,7 +97,7 @@ namespace Mono.Nat
 		        logger.Debug(format, args);
 		}
 
-        private static void SearchAndListen()
+        private static async Task SearchAndListen()
         {
             while (true)
             {
@@ -115,18 +113,19 @@ namespace Mono.Nat
                     }
 
                     foreach (ISearcher s in controllers)
+                    {
                         if (s.NextSearch < DateTime.Now && enabledProtocols.Contains(s.Protocol))
                         {
                             Log("Searching for: {0}", s.GetType().Name);
-							s.Search();
+                            s.Search();
                         }
+                    }
                 }
                 catch (Exception e)
                 {
-                    if (UnhandledException != null)
-                        UnhandledException(typeof(NatUtility), new UnhandledExceptionEventArgs(e, false));
+                    
                 }
-				Thread.Sleep(10);
+                await Task.Delay(100).ConfigureAwait(false);
             }
 		}
 

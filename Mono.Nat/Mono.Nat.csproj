@@ -56,20 +56,11 @@
     <Compile Include="Pmp\PmpNatDevice.cs" />
     <Compile Include="Pmp\Searchers\PmpSearcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Upnp\AsyncResults\GetAllMappingsAsyncResult.cs" />
-    <Compile Include="Upnp\AsyncResults\PortMapAsyncResult.cs" />
     <Compile Include="Upnp\Messages\DiscoverDeviceMessage.cs" />
     <Compile Include="Upnp\Messages\ErrorMessage.cs" />
     <Compile Include="Upnp\Messages\GetServicesMessage.cs" />
     <Compile Include="Upnp\Messages\Requests\CreatePortMappingMessage.cs" />
-    <Compile Include="Upnp\Messages\Requests\DeletePortMappingMessage.cs" />
-    <Compile Include="Upnp\Messages\Requests\GetExternalIPAddressMessage.cs" />
-    <Compile Include="Upnp\Messages\Requests\GetGenericPortMappingEntry.cs" />
-    <Compile Include="Upnp\Messages\Requests\GetSpecificPortMappingEntryMessage.cs" />
     <Compile Include="Upnp\Messages\Responses\CreatePortMappingResponseMessage.cs" />
-    <Compile Include="Upnp\Messages\Responses\DeletePortMappingResponseMessage.cs" />
-    <Compile Include="Upnp\Messages\Responses\GetExternalIPAddressResponseMessage.cs" />
-    <Compile Include="Upnp\Messages\Responses\GetGenericPortMappingEntryResponseMessage.cs" />
     <Compile Include="Upnp\Messages\UpnpMessage.cs" />
     <Compile Include="Upnp\Searchers\UpnpSearcher.cs" />
     <Compile Include="Upnp\Upnp.cs" />
@@ -88,6 +79,9 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Upnp\AsyncResults\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

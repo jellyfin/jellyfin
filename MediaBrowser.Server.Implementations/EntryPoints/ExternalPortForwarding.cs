@@ -91,9 +91,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             NatUtility.DeviceLost += NatUtility_DeviceLost;
 
 
-            // it is hard to say what one should do when an unhandled exception is raised
-            // because there isn't anything one can do about it. Probably save a log or ignored it.
-            NatUtility.UnhandledException += NatUtility_UnhandledException;
             NatUtility.StartDiscovery();
 
             _timer = new PeriodicTimer(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
@@ -181,21 +178,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             lock (_usnsHandled)
             {
                 _usnsHandled.Clear();
-            }
-        }
-
-        void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var ex = e.ExceptionObject as Exception;
-
-            if (ex == null)
-            {
-                //_logger.Error("Unidentified error reported by Mono.Nat");
-            }
-            else
-            {
-                // Seeing some blank exceptions coming through here
-                //_logger.ErrorException("Error reported by Mono.Nat: ", ex);
             }
         }
 
@@ -287,7 +269,6 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 NatUtility.StopDiscovery();
                 NatUtility.DeviceFound -= NatUtility_DeviceFound;
                 NatUtility.DeviceLost -= NatUtility_DeviceLost;
-                NatUtility.UnhandledException -= NatUtility_UnhandledException;
             }
             // Statements in try-block will no fail because StopDiscovery is a one-line 
             // method that was no chances to fail.

@@ -44,10 +44,5 @@ namespace Mono.Nat.Upnp
         {
             throw new NotImplementedException();
         }
-
-        public override System.Net.WebRequest Encode(out byte[] body)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
