@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Serialization;
@@ -11,7 +10,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using CommonIO;
+using System.Text;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Localization
@@ -81,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                         var target = Path.Combine(localizationPath, filename);
                         _logger.Info("Extracting ratings to {0}", target);
 
-                        using (var fs = _fileSystem.GetFileStream(target, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                         {
                             stream.CopyTo(fs);
                         }
@@ -105,6 +107,20 @@ namespace MediaBrowser.Server.Implementations.Localization
             {
                 return Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
             }
+        }
+
+        public string RemoveDiacritics(string text)
+        {
+            return String.Concat(
+                text.Normalize(NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                              UnicodeCategory.NonSpacingMark)
+              ).Normalize(NormalizationForm.FormC);
+        }
+
+        public string NormalizeFormKD(string text)
+        {
+            return text.Normalize(NormalizationForm.FormKD);
         }
 
         /// <summary>

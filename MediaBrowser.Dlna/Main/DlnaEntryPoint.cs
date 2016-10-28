@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.PlayTo;
@@ -18,6 +17,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Globalization;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -249,7 +249,7 @@ namespace MediaBrowser.Dlna.Main
                 _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new Uri(_appHost.GetLocalApiUrl(addressString, address.IsIpv6) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {

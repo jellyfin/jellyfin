@@ -6,18 +6,18 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    public class BaseApiService : IHasResultFactory, IRestfulService, IHasSession
+    public class BaseApiService : IHasResultFactory, IService, IHasSession
     {
         /// <summary>
         /// Gets or sets the logger.

@@ -11,7 +11,6 @@ using MediaBrowser.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Activity;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
@@ -25,10 +24,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.News;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
@@ -37,7 +34,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.Social;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
@@ -100,15 +96,30 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using Emby.Photos;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback;
 using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.News;
+using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Social;
+using MediaBrowser.Model.Xml;
+using MediaBrowser.Server.Implementations.Reflection;
+using MediaBrowser.Server.Implementations.Xml;
+using OpenSubtitlesHandler;
 
 namespace MediaBrowser.Server.Startup.Common
 {
@@ -622,9 +633,13 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(ServerConfigurationManager);
 
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LogManager.GetLogger("LocalizationManager"));
+            StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+
+            RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
+            RegisterSingleInstance<IAssemblyInfo>(new AssemblyInfo());
 
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
@@ -960,6 +975,7 @@ namespace MediaBrowser.Server.Startup.Common
             CollectionFolder.XmlSerializer = XmlSerializer;
             BaseStreamingService.AppHost = this;
             BaseStreamingService.HttpClient = HttpClient;
+            Utilities.CryptographyProvider = CryptographyProvider;
         }
 
         /// <summary>
@@ -976,7 +992,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             base.FindParts();
 
-            HttpServer.Init(GetExports<IRestfulService>(false));
+            HttpServer.Init(GetExports<IService>(false));
 
             ServerManager.AddWebSocketListeners(GetExports<IWebSocketListener>(false));
 
@@ -1219,6 +1235,9 @@ namespace MediaBrowser.Server.Startup.Common
             // Include composable parts in the Providers assembly 
             list.Add(typeof(ProviderUtils).Assembly);
 
+            // Include composable parts in the Photos assembly 
+            list.Add(typeof(PhotoProvider).Assembly);
+
             // Common implementations
             list.Add(typeof(TaskManager).Assembly);
 
@@ -1254,6 +1273,7 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 return Directory.EnumerateFiles(ApplicationPaths.PluginsPath, "*.dll", SearchOption.TopDirectoryOnly)
+                    .Where(EnablePlugin)
                     .Select(LoadAssembly)
                     .Where(a => a != null)
                     .ToList();
@@ -1262,6 +1282,19 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 return new List<Assembly>();
             }
+        }
+
+        private bool EnablePlugin(string path)
+        {
+            var filename = Path.GetFileName(path);
+
+            var exclude = new[]
+            {
+                "mbplus.dll",
+                "mbintros.dll"
+            };
+
+            return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1329,7 +1362,7 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 // Return the first matched address, if found, or the first known local address
-                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                var address = (await GetLocalIpAddressesInternal().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
 
                 if (address != null)
                 {
@@ -1348,12 +1381,17 @@ namespace MediaBrowser.Server.Startup.Common
 
         public string GetLocalApiUrl(IPAddress ipAddress)
         {
-            if (ipAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            return GetLocalApiUrl(ipAddress.ToString(), ipAddress.AddressFamily == AddressFamily.InterNetworkV6);
+        }
+
+        public string GetLocalApiUrl(string ipAddress, bool isIpv6)
+        {
+            if (isIpv6)
             {
                 return GetLocalApiUrl("[" + ipAddress + "]");
             }
 
-            return GetLocalApiUrl(ipAddress.ToString());
+            return GetLocalApiUrl(ipAddress);
         }
 
         public string GetLocalApiUrl(string host)
@@ -1363,7 +1401,19 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpPort.ToString(CultureInfo.InvariantCulture));
         }
 
-        public async Task<List<IPAddress>> GetLocalIpAddresses()
+        public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
+        {
+            var list = await GetLocalIpAddressesInternal().ConfigureAwait(false);
+
+            return list.Select(i => new IpAddressInfo
+            {
+                Address = i.ToString(),
+                IsIpv6 = i.AddressFamily == AddressFamily.InterNetworkV6
+
+            }).ToList();
+        }
+
+        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
         {
             // Need to do this until Common will compile with this method
             var nativeNetworkManager = (BaseNetworkManager)NetworkManager;
@@ -1395,7 +1445,7 @@ namespace MediaBrowser.Server.Startup.Common
             var apiUrl = GetLocalApiUrl(address);
             apiUrl += "/system/ping";
 
-            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 10)
+            if ((DateTime.UtcNow - _lastAddressCacheClear).TotalMinutes >= 15)
             {
                 _lastAddressCacheClear = DateTime.UtcNow;
                 _validAddressResults.Clear();

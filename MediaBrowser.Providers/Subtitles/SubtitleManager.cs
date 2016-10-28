@@ -16,7 +16,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -131,7 +133,7 @@ namespace MediaBrowser.Providers.Subtitles
                     {
                         //var isText = MediaStream.IsTextFormat(response.Format);
 
-                        using (var fs = _fileSystem.GetFileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                        using (var fs = _fileSystem.GetFileStream(savePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                         {
                             await stream.CopyToAsync(fs).ConfigureAwait(false);
                         }

@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.News;
 using MediaBrowser.Model.News;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;

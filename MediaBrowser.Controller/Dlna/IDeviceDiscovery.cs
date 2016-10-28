@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Controller.Dlna
 {
@@ -15,6 +15,7 @@ namespace MediaBrowser.Controller.Dlna
     {
         public Uri Location { get; set; }
         public Dictionary<string, string> Headers { get; set; }
-        public IPEndPoint LocalEndPoint { get; set; }
+        public IpAddressInfo LocalIpAddress { get; set; }
+        public int LocalPort { get; set; }
     }
 }

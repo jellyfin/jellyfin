@@ -16,7 +16,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -33,13 +36,15 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config, IHttpClient httpClient, ILogger logger)
+        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config, IHttpClient httpClient, ILogger logger, IXmlReaderSettingsFactory xmlSettings)
         {
             _fileSystem = fileSystem;
             _config = config;
             _httpClient = httpClient;
             _logger = logger;
+            _xmlSettings = xmlSettings;
             Current = this;
         }
 
@@ -47,11 +52,11 @@ namespace MediaBrowser.Providers.TV
         {
             var list = new List<RemoteSearchResult>();
 
-			// The search query must either provide an episode number or date
-			if (!searchInfo.IndexNumber.HasValue && !searchInfo.PremiereDate.HasValue) 
-			{
-				return list;
-			}
+            // The search query must either provide an episode number or date
+            if (!searchInfo.IndexNumber.HasValue && !searchInfo.PremiereDate.HasValue)
+            {
+                return list;
+            }
 
             if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds))
             {
@@ -59,12 +64,13 @@ namespace MediaBrowser.Providers.TV
 
                 var searchNumbers = new EpisodeNumbers();
 
-				if (searchInfo.IndexNumber.HasValue) {
-					searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
-				}
-                
+                if (searchInfo.IndexNumber.HasValue)
+                {
+                    searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
+                }
+
                 searchNumbers.SeasonNumber = searchInfo.ParentIndexNumber;
-                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber; 
+                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber;
 
                 try
                 {
@@ -91,7 +97,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
@@ -110,19 +116,20 @@ namespace MediaBrowser.Providers.TV
             var result = new MetadataResult<Episode>();
             result.QueriedById = true;
 
-            if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) && 
-				(searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
+            if (TvdbSeriesProvider.IsValidSeries(searchInfo.SeriesProviderIds) &&
+                (searchInfo.IndexNumber.HasValue || searchInfo.PremiereDate.HasValue))
             {
                 await TvdbSeriesProvider.Current.EnsureSeriesInfo(searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, searchInfo.SeriesProviderIds);
 
                 var searchNumbers = new EpisodeNumbers();
-				if (searchInfo.IndexNumber.HasValue) {
-					searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
-				}
+                if (searchInfo.IndexNumber.HasValue)
+                {
+                    searchNumbers.EpisodeNumber = searchInfo.IndexNumber.Value;
+                }
                 searchNumbers.SeasonNumber = searchInfo.ParentIndexNumber;
-                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber; 
+                searchNumbers.EpisodeNumberEnd = searchInfo.IndexNumberEnd ?? searchNumbers.EpisodeNumber;
 
                 try
                 {
@@ -132,7 +139,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
@@ -153,20 +160,20 @@ namespace MediaBrowser.Providers.TV
         /// <returns>List{FileInfo}.</returns>
 		internal List<XmlReader> GetEpisodeXmlNodes(string seriesDataPath, EpisodeInfo searchInfo)
         {
-			var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath (searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage);
-			            
-			try 
-			{
-				return GetXmlNodes(seriesXmlPath, searchInfo);
-			}
-			catch (DirectoryNotFoundException) 
-			{
-				return new List<XmlReader> ();
-			}
-			catch (FileNotFoundException) 
-			{
-				return new List<XmlReader> ();
-			}
+            var seriesXmlPath = TvdbSeriesProvider.Current.GetSeriesXmlPath(searchInfo.SeriesProviderIds, searchInfo.MetadataLanguage);
+
+            try
+            {
+                return GetXmlNodes(seriesXmlPath, searchInfo);
+            }
+            catch (FileNotFoundException)
+            {
+                return new List<XmlReader>();
+            }
+            catch (IOException)
+            {
+                return new List<XmlReader>();
+            }
         }
 
         private class EpisodeNumbers
@@ -186,59 +193,62 @@ namespace MediaBrowser.Providers.TV
         /// <returns>Task{System.Boolean}.</returns>
         private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, EpisodeNumbers searchNumbers, string seriesDataPath, CancellationToken cancellationToken)
         {
-			var result = new MetadataResult<Episode>()
-			{
-				Item = new Episode
-				{
-					IndexNumber = id.IndexNumber,
-					ParentIndexNumber = id.ParentIndexNumber,
-					IndexNumberEnd = id.IndexNumberEnd
-				}
-			};
+            var result = new MetadataResult<Episode>()
+            {
+                Item = new Episode
+                {
+                    IndexNumber = id.IndexNumber,
+                    ParentIndexNumber = id.ParentIndexNumber,
+                    IndexNumberEnd = id.IndexNumberEnd
+                }
+            };
 
-			var xmlNodes = GetEpisodeXmlNodes (seriesDataPath, id);
+            var xmlNodes = GetEpisodeXmlNodes(seriesDataPath, id);
 
-			if (xmlNodes.Count > 0) {
-				FetchMainEpisodeInfo(result, xmlNodes[0], cancellationToken);
+            if (xmlNodes.Count > 0)
+            {
+                FetchMainEpisodeInfo(result, xmlNodes[0], cancellationToken);
 
-				result.HasMetadata = true;
-			}
+                result.HasMetadata = true;
+            }
 
-			foreach (var node in xmlNodes.Skip(1)) {
-				FetchAdditionalPartInfo(result, node, cancellationToken);
-			}
+            foreach (var node in xmlNodes.Skip(1))
+            {
+                FetchAdditionalPartInfo(result, node, cancellationToken);
+            }
 
             return result;
         }
 
-		private List<XmlReader> GetXmlNodes(string xmlFile, EpisodeInfo searchInfo)
-		{
-			var list = new List<XmlReader> ();
+        private List<XmlReader> GetXmlNodes(string xmlFile, EpisodeInfo searchInfo)
+        {
+            var list = new List<XmlReader>();
 
-			if (searchInfo.IndexNumber.HasValue) 
-			{
-				var files = GetEpisodeXmlFiles (searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, Path.GetDirectoryName (xmlFile));
+            if (searchInfo.IndexNumber.HasValue)
+            {
+                var files = GetEpisodeXmlFiles(searchInfo.ParentIndexNumber, searchInfo.IndexNumber, searchInfo.IndexNumberEnd, Path.GetDirectoryName(xmlFile));
 
-				list = files.Select (GetXmlReader).ToList ();
-			}
+                list = files.Select(GetXmlReader).ToList();
+            }
 
-			if (list.Count == 0 && searchInfo.PremiereDate.HasValue) {
-				list = GetXmlNodesByPremiereDate (xmlFile, searchInfo.PremiereDate.Value);
-			}
+            if (list.Count == 0 && searchInfo.PremiereDate.HasValue)
+            {
+                list = GetXmlNodesByPremiereDate(xmlFile, searchInfo.PremiereDate.Value);
+            }
 
-			return list;
-		}
+            return list;
+        }
 
-		private List<FileSystemMetadata> GetEpisodeXmlFiles(int? seasonNumber, int? episodeNumber, int? endingEpisodeNumber, string seriesDataPath)
-		{
-			var files = new List<FileSystemMetadata>();
+        private List<FileSystemMetadata> GetEpisodeXmlFiles(int? seasonNumber, int? episodeNumber, int? endingEpisodeNumber, string seriesDataPath)
+        {
+            var files = new List<FileSystemMetadata>();
 
-			if (episodeNumber == null)
-			{
-				return files;
-			}
+            if (episodeNumber == null)
+            {
+                return files;
+            }
 
-			var usingAbsoluteData = false;
+            var usingAbsoluteData = false;
 
             if (seasonNumber.HasValue)
             {
@@ -261,230 +271,283 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-			var end = endingEpisodeNumber ?? episodeNumber;
-			episodeNumber++;
+            var end = endingEpisodeNumber ?? episodeNumber;
+            episodeNumber++;
 
-			while (episodeNumber <= end)
-			{
+            while (episodeNumber <= end)
+            {
                 string file;
 
-				if (usingAbsoluteData)
-				{
-					file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
-				}
-				else
-				{
-					file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
-				}
+                if (usingAbsoluteData)
+                {
+                    file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
+                }
+                else
+                {
+                    file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
+                }
 
-				var fileInfo = _fileSystem.GetFileInfo(file);
-				if (fileInfo.Exists)
-				{
-					files.Add(fileInfo);
-				}
-				else
-				{
-					break;
-				}
+                var fileInfo = _fileSystem.GetFileInfo(file);
+                if (fileInfo.Exists)
+                {
+                    files.Add(fileInfo);
+                }
+                else
+                {
+                    break;
+                }
 
-				episodeNumber++;
-			}
+                episodeNumber++;
+            }
 
-			return files;
-		}
+            return files;
+        }
 
-		private XmlReader GetXmlReader(FileSystemMetadata xmlFile)
-		{
-			return GetXmlReader (_fileSystem.ReadAllText(xmlFile.FullName, Encoding.UTF8));
-		}
+        private XmlReader GetXmlReader(FileSystemMetadata xmlFile)
+        {
+            return GetXmlReader(_fileSystem.ReadAllText(xmlFile.FullName, Encoding.UTF8));
+        }
 
-		private XmlReader GetXmlReader(String xml)
-		{
-			var streamReader = new StringReader (xml);
+        private XmlReader GetXmlReader(String xml)
+        {
+            var streamReader = new StringReader(xml);
 
-			return XmlReader.Create (streamReader, new XmlReaderSettings {
-				CheckCharacters = false,
-				IgnoreProcessingInstructions = true,
-				IgnoreComments = true,
-				ValidationType = ValidationType.None
-			});
-		}
+            var settings = _xmlSettings.Create(false);
 
-		private List<XmlReader> GetXmlNodesByPremiereDate(string xmlFile, DateTime premiereDate)
-		{
-			var list = new List<XmlReader> ();
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
 
-			using (var streamReader = new StreamReader (xmlFile, Encoding.UTF8)) {
-				// Use XmlReader for best performance
-				using (var reader = XmlReader.Create (streamReader, new XmlReaderSettings {
-					CheckCharacters = false,
-					IgnoreProcessingInstructions = true,
-					IgnoreComments = true,
-					ValidationType = ValidationType.None
-				})) 
-				{
-					reader.MoveToContent();
+            return XmlReader.Create(streamReader, settings);
+        }
 
-					// Loop through each element
-					while (reader.Read())
-					{
-						if (reader.NodeType == XmlNodeType.Element)
-						{
-							switch (reader.Name)
-							{
-								case "Episode":
-								{
-									var outerXml = reader.ReadOuterXml();
+        private List<XmlReader> GetXmlNodesByPremiereDate(string xmlFile, DateTime premiereDate)
+        {
+            var list = new List<XmlReader>();
 
-									var airDate = GetEpisodeAirDate (outerXml);
+            using (var fileStream = _fileSystem.GetFileStream(xmlFile, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            {
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+                {
+                    // Use XmlReader for best performance
 
-									if (airDate.HasValue && premiereDate.Date == airDate.Value.Date) 
-									{
-										list.Add (GetXmlReader(outerXml));
-										return list;
-									}
+                    var settings = _xmlSettings.Create(false);
 
-									break;
-								}
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
 
-								default:
-									reader.Skip();
-									break;
-							}
-						}
-					}
-				}
-			}
+                    using (var reader = XmlReader.Create(streamReader, settings))
+                    {
+                        reader.MoveToContent();
 
-			return list;
-		}
+                        // Loop through each element
+                        while (reader.Read())
+                        {
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                switch (reader.Name)
+                                {
+                                    case "Episode":
+                                        {
+                                            var outerXml = reader.ReadOuterXml();
 
-		private DateTime? GetEpisodeAirDate(string xml)
-		{
-			using (var streamReader = new StringReader (xml)) 
-			{
-				// Use XmlReader for best performance
-				using (var reader = XmlReader.Create (streamReader, new XmlReaderSettings {
-					CheckCharacters = false,
-					IgnoreProcessingInstructions = true,
-					IgnoreComments = true,
-					ValidationType = ValidationType.None
-				})) 
-				{
-					reader.MoveToContent ();
+                                            var airDate = GetEpisodeAirDate(outerXml);
 
-					// Loop through each element
-					while (reader.Read ()) {
+                                            if (airDate.HasValue && premiereDate.Date == airDate.Value.Date)
+                                            {
+                                                list.Add(GetXmlReader(outerXml));
+                                                return list;
+                                            }
 
-						if (reader.NodeType == XmlNodeType.Element) {
-							switch (reader.Name) {
+                                            break;
+                                        }
 
-								case "FirstAired":
-								{
-									var val = reader.ReadElementContentAsString ();
+                                    default:
+                                        reader.Skip();
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
-									if (!string.IsNullOrWhiteSpace (val)) {
-										DateTime date;
-										if (DateTime.TryParse (val, out date)) {
-											date = date.ToUniversalTime ();
+            return list;
+        }
 
-											return date;
-										}
-									}
+        private DateTime? GetEpisodeAirDate(string xml)
+        {
+            using (var streamReader = new StringReader(xml))
+            {
+                var settings = _xmlSettings.Create(false);
 
-									break;
-								}
+                settings.CheckCharacters = false;
+                settings.IgnoreProcessingInstructions = true;
+                settings.IgnoreComments = true;
 
-								default:
-									reader.Skip ();
-									break;
-							}
-						}
-					}
-				}
-			}
-			return null;
-		}
+                // Use XmlReader for best performance
+                using (var reader = XmlReader.Create(streamReader, settings))
+                {
+                    reader.MoveToContent();
+
+                    // Loop through each element
+                    while (reader.Read())
+                    {
+
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            switch (reader.Name)
+                            {
+
+                                case "FirstAired":
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            DateTime date;
+                                            if (DateTime.TryParse(val, out date))
+                                            {
+                                                date = date.ToUniversalTime();
+
+                                                return date;
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
+                                default:
+                                    reader.Skip();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-		private void FetchMainEpisodeInfo(MetadataResult<Episode> result, XmlReader reader, CancellationToken cancellationToken)
+        private void FetchMainEpisodeInfo(MetadataResult<Episode> result, XmlReader reader, CancellationToken cancellationToken)
         {
             var item = result.Item;
 
-			// Use XmlReader for best performance
-			using (reader)
-			{
-				reader.MoveToContent();
+            // Use XmlReader for best performance
+            using (reader)
+            {
+                reader.MoveToContent();
 
-				result.ResetPeople();
+                result.ResetPeople();
 
-				// Loop through each element
-				while (reader.Read())
-				{
-					cancellationToken.ThrowIfCancellationRequested();
+                // Loop through each element
+                while (reader.Read())
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-					if (reader.NodeType == XmlNodeType.Element)
-					{
-						switch (reader.Name)
-						{
-						case "id":
-							{
-								var val = reader.ReadElementContentAsString();
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									item.SetProviderId(MetadataProviders.Tvdb, val);
-								}
-								break;
-							}
-
-						case "IMDB_ID":
-							{
-								var val = reader.ReadElementContentAsString();
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									item.SetProviderId(MetadataProviders.Imdb, val);
-								}
-								break;
-							}
-
-						case "DVD_episodenumber":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									float num;
-
-									if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
-									{
-										item.DvdEpisodeNumber = num;
-									}
-								}
-
-								break;
-							}
-
-                        case "DVD_season":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "id":
                                 {
-                                    float num;
-
-                                    if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                    var val = reader.ReadElementContentAsString();
+                                    if (!string.IsNullOrWhiteSpace(val))
                                     {
-                                        item.DvdSeasonNumber = Convert.ToInt32(num);
+                                        item.SetProviderId(MetadataProviders.Tvdb, val);
                                     }
+                                    break;
                                 }
 
-                                break;
-                            }
+                            case "IMDB_ID":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        item.SetProviderId(MetadataProviders.Imdb, val);
+                                    }
+                                    break;
+                                }
 
-                        case "EpisodeNumber":
-                            {
-                                if (!item.IndexNumber.HasValue)
+                            case "DVD_episodenumber":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        float num;
+
+                                        if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                        {
+                                            item.DvdEpisodeNumber = num;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "DVD_season":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        float num;
+
+                                        if (float.TryParse(val, NumberStyles.Any, _usCulture, out num))
+                                        {
+                                            item.DvdSeasonNumber = Convert.ToInt32(num);
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "EpisodeNumber":
+                                {
+                                    if (!item.IndexNumber.HasValue)
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.IndexNumber = rval;
+                                            }
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "SeasonNumber":
+                                {
+                                    if (!item.ParentIndexNumber.HasValue)
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            int rval;
+
+                                            // int.TryParse is local aware, so it can be probamatic, force us culture
+                                            if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                            {
+                                                item.ParentIndexNumber = rval;
+                                            }
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "absolute_number":
                                 {
                                     var val = reader.ReadElementContentAsString();
 
@@ -495,17 +558,14 @@ namespace MediaBrowser.Providers.TV
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
                                         if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                         {
-                                            item.IndexNumber = rval;
+                                            item.AbsoluteEpisodeNumber = rval;
                                         }
                                     }
+
+                                    break;
                                 }
 
-                                break;
-                            }
-
-                        case "SeasonNumber":
-                            {
-                                if (!item.ParentIndexNumber.HasValue)
+                            case "airsbefore_episode":
                                 {
                                     var val = reader.ReadElementContentAsString();
 
@@ -516,225 +576,188 @@ namespace MediaBrowser.Providers.TV
                                         // int.TryParse is local aware, so it can be probamatic, force us culture
                                         if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
                                         {
-                                            item.ParentIndexNumber = rval;
+                                            item.AirsBeforeEpisodeNumber = rval;
                                         }
                                     }
+
+                                    break;
                                 }
 
+                            case "airsafter_season":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
+
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            item.AirsAfterSeasonNumber = rval;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "airsbefore_season":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
+
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            item.AirsBeforeSeasonNumber = rval;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "EpisodeName":
+                                {
+                                    if (!item.LockedFields.Contains(MetadataFields.Name))
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            item.Name = val;
+                                        }
+                                    }
+                                    break;
+                                }
+
+                            case "Overview":
+                                {
+                                    if (!item.LockedFields.Contains(MetadataFields.Overview))
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            item.Overview = val;
+                                        }
+                                    }
+                                    break;
+                                }
+                            case "Rating":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        float rval;
+
+                                        // float.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (float.TryParse(val, NumberStyles.AllowDecimalPoint, _usCulture, out rval))
+                                        {
+                                            item.CommunityRating = rval;
+                                        }
+                                    }
+                                    break;
+                                }
+                            case "RatingCount":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
+
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            item.VoteCount = rval;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "FirstAired":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        DateTime date;
+                                        if (DateTime.TryParse(val, out date))
+                                        {
+                                            date = date.ToUniversalTime();
+
+                                            item.PremiereDate = date;
+                                            item.ProductionYear = date.Year;
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+                            case "Director":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddPeople(result, val, PersonType.Director);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            case "GuestStars":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddGuestStars(result, val);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            case "Writer":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddPeople(result, val, PersonType.Writer);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            case "Language":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        result.ResultLanguage = val;
+                                    }
+
+                                    break;
+                                }
+
+                            default:
+                                reader.Skip();
                                 break;
-                            }
-
-                        case "absolute_number":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
-
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										item.AbsoluteEpisodeNumber = rval;
-									}
-								}
-
-								break;
-							}
-
-						case "airsbefore_episode":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
-
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										item.AirsBeforeEpisodeNumber = rval;
-									}
-								}
-
-								break;
-							}
-
-						case "airsafter_season":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
-
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										item.AirsAfterSeasonNumber = rval;
-									}
-								}
-
-								break;
-							}
-
-						case "airsbefore_season":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
-
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										item.AirsBeforeSeasonNumber = rval;
-									}
-								}
-
-								break;
-							}
-
-						case "EpisodeName":
-							{
-								if (!item.LockedFields.Contains(MetadataFields.Name))
-								{
-									var val = reader.ReadElementContentAsString();
-									if (!string.IsNullOrWhiteSpace(val))
-									{
-										item.Name = val;
-									}
-								}
-								break;
-							}
-
-						case "Overview":
-							{
-								if (!item.LockedFields.Contains(MetadataFields.Overview))
-								{
-									var val = reader.ReadElementContentAsString();
-									if (!string.IsNullOrWhiteSpace(val))
-									{
-										item.Overview = val;
-									}
-								}
-								break;
-							}
-						case "Rating":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									float rval;
-
-									// float.TryParse is local aware, so it can be probamatic, force us culture
-									if (float.TryParse(val, NumberStyles.AllowDecimalPoint, _usCulture, out rval))
-									{
-										item.CommunityRating = rval;
-									}
-								}
-								break;
-							}
-						case "RatingCount":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
-
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										item.VoteCount = rval;
-									}
-								}
-
-								break;
-							}
-
-						case "FirstAired":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									DateTime date;
-									if (DateTime.TryParse(val, out date))
-									{
-										date = date.ToUniversalTime();
-
-										item.PremiereDate = date;
-										item.ProductionYear = date.Year;
-									}
-								}
-
-								break;
-							}
-
-						case "Director":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddPeople(result, val, PersonType.Director);
-									}
-								}
-
-								break;
-							}
-						case "GuestStars":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddGuestStars(result, val);
-									}
-								}
-
-								break;
-							}
-						case "Writer":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddPeople(result, val, PersonType.Writer);
-									}
-								}
-
-								break;
-							}
-						case "Language":
-							{
-								var val = reader.ReadElementContentAsString();
-
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-                                    result.ResultLanguage = val;
-								}
-
-								break;
-							}
-
-						default:
-							reader.Skip();
-							break;
-						}
-					}
-				}
-			}
+                        }
+                    }
+                }
+            }
         }
 
         private void AddPeople<T>(MetadataResult<T> result, string val, string personType)
@@ -778,99 +801,99 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-		private void FetchAdditionalPartInfo(MetadataResult<Episode> result, XmlReader reader, CancellationToken cancellationToken)
+        private void FetchAdditionalPartInfo(MetadataResult<Episode> result, XmlReader reader, CancellationToken cancellationToken)
         {
             var item = result.Item;
 
-			// Use XmlReader for best performance
-			using (reader)
-			{
-				reader.MoveToContent();
+            // Use XmlReader for best performance
+            using (reader)
+            {
+                reader.MoveToContent();
 
-				// Loop through each element
-				while (reader.Read())
-				{
-					cancellationToken.ThrowIfCancellationRequested();
+                // Loop through each element
+                while (reader.Read())
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-					if (reader.NodeType == XmlNodeType.Element)
-					{
-						switch (reader.Name)
-						{
-						case "EpisodeName":
-							{
-								if (!item.LockedFields.Contains(MetadataFields.Name))
-								{
-									var val = reader.ReadElementContentAsString();
-									if (!string.IsNullOrWhiteSpace(val))
-									{
-										item.Name += ", " + val;
-									}
-								}
-								break;
-							}
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "EpisodeName":
+                                {
+                                    if (!item.LockedFields.Contains(MetadataFields.Name))
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            item.Name += ", " + val;
+                                        }
+                                    }
+                                    break;
+                                }
 
-						case "Overview":
-							{
-								if (!item.LockedFields.Contains(MetadataFields.Overview))
-								{
-									var val = reader.ReadElementContentAsString();
-									if (!string.IsNullOrWhiteSpace(val))
-									{
-										item.Overview += Environment.NewLine + Environment.NewLine + val;
-									}
-								}
-								break;
-							}
-						case "Director":
-							{
-								var val = reader.ReadElementContentAsString();
+                            case "Overview":
+                                {
+                                    if (!item.LockedFields.Contains(MetadataFields.Overview))
+                                    {
+                                        var val = reader.ReadElementContentAsString();
+                                        if (!string.IsNullOrWhiteSpace(val))
+                                        {
+                                            item.Overview += Environment.NewLine + Environment.NewLine + val;
+                                        }
+                                    }
+                                    break;
+                                }
+                            case "Director":
+                                {
+                                    var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddPeople(result, val, PersonType.Director);
-									}
-								}
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddPeople(result, val, PersonType.Director);
+                                        }
+                                    }
 
-								break;
-							}
-						case "GuestStars":
-							{
-								var val = reader.ReadElementContentAsString();
+                                    break;
+                                }
+                            case "GuestStars":
+                                {
+                                    var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddGuestStars(result, val);
-									}
-								}
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddGuestStars(result, val);
+                                        }
+                                    }
 
-								break;
-							}
-						case "Writer":
-							{
-								var val = reader.ReadElementContentAsString();
+                                    break;
+                                }
+                            case "Writer":
+                                {
+                                    var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									if (!item.LockedFields.Contains(MetadataFields.Cast))
-									{
-										AddPeople(result, val, PersonType.Writer);
-									}
-								}
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        if (!item.LockedFields.Contains(MetadataFields.Cast))
+                                        {
+                                            AddPeople(result, val, PersonType.Writer);
+                                        }
+                                    }
 
-								break;
-							}
+                                    break;
+                                }
 
-						default:
-							reader.Skip();
-							break;
-						}
-					}
-				}
-			}
+                            default:
+                                reader.Skip();
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

@@ -5,10 +5,9 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
-using ServiceStack;
-using ServiceStack.Web;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Devices
 {

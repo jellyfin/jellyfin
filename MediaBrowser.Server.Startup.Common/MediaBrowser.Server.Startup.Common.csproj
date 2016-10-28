@@ -32,10 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
@@ -89,6 +85,10 @@
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
       <Name>Emby.Drawing</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
+      <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
+      <Name>Emby.Photos</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
       <Name>MediaBrowser.Api</Name>
@@ -137,8 +137,13 @@
       <Project>{23499896-b135-4527-8574-c26e926ea99e}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

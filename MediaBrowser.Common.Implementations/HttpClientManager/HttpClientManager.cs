@@ -17,7 +17,7 @@ using System.Net.Cache;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Common.Implementations.HttpClientManager
@@ -331,7 +331,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             {
                 if (_fileSystem.GetLastWriteTimeUtc(responseCachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    using (var stream = _fileSystem.GetFileStream(responseCachePath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+                    using (var stream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
                     {
                         var memoryStream = _memoryStreamProvider.CreateNew();
 
@@ -370,7 +370,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 await responseStream.CopyToAsync(memoryStream).ConfigureAwait(false);
                 memoryStream.Position = 0;
 
-                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileMode.Create, FileAccess.Write, FileShare.None, true))
+                using (var fileStream = _fileSystem.GetFileStream(responseCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.None, true))
                 {
                     await memoryStream.CopyToAsync(fileStream).ConfigureAwait(false);
 
@@ -639,7 +639,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                         // We're not able to track progress
                         using (var stream = httpResponse.GetResponseStream())
                         {
-                            using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                            using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                             {
                                 await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                             }
@@ -649,7 +649,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                     {
                         using (var stream = ProgressStream.CreateReadProgressStream(httpResponse.GetResponseStream(), options.Progress.Report, contentLength.Value))
                         {
-                            using (var fs = _fileSystem.GetFileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                            using (var fs = _fileSystem.GetFileStream(tempFile, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                             {
                                 await stream.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, options.CancellationToken).ConfigureAwait(false);
                             }

@@ -13,7 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 {
@@ -116,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             // Loop through each child file/folder and see if we find a video
             foreach (var child in fileSystemEntries)
             {
-                if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                if (child.IsDirectory)
                 {
                     leftOver.Add(child);
                 }
@@ -368,7 +370,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 var filename = child.Name;
 
-                if ((child.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                if (child.IsDirectory)
                 {
                     if (IsDvdDirectory(filename))
                     {
@@ -449,7 +451,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                     .ToList();
 
                 var subfolders = subFileEntries
-                    .Where(e => (e.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                 .Where(e => e.IsDirectory)
                     .Select(d => d.Name)
                     .ToList();
 
@@ -465,7 +467,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 }
 
                 var subFiles = subFileEntries
-                 .Where(e => (e.Attributes & FileAttributes.Directory) != FileAttributes.Directory)
+                 .Where(e => !e.IsDirectory)
                  .Select(d => d.Name);
 
                 if (subFiles.Any(IsDvdFile))

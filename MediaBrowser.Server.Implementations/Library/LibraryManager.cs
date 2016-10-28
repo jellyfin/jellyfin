@@ -32,7 +32,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
@@ -43,6 +43,7 @@ using MediaBrowser.Server.Implementations.Library.Resolvers;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 using VideoResolver = MediaBrowser.Naming.Video.VideoResolver;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Library
@@ -2464,7 +2465,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
                 Id = i.FullName,
-                IsFolder = (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory
+                IsFolder = i.IsDirectory
 
             }).ToList());
 
@@ -2513,7 +2514,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
                 Id = i.FullName,
-                IsFolder = (i.Attributes & FileAttributes.Directory) == FileAttributes.Directory
+                IsFolder = i.IsDirectory
 
             }).ToList());
 

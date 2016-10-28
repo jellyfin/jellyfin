@@ -19,8 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
@@ -148,7 +149,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException("source");
             }
 
-            var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            var fileStream = _fileSystem.GetFileStream(source, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger, _memoryStreamProvider).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -862,8 +863,8 @@ namespace MediaBrowser.Providers.Manager
         private readonly ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
             new ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>>();
 
-        private readonly object _refreshTimerLock = new object();
-        private Timer _refreshTimer;
+        private readonly object _refreshQueueLock = new object();
+        private bool _isProcessingRefreshQueue;
 
         public void QueueRefresh(Guid id, MetadataRefreshOptions options)
         {
@@ -873,38 +874,18 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options));
-            StartRefreshTimer();
-        }
 
-        private void StartRefreshTimer()
-        {
-            if (_disposed)
+            lock (_refreshQueueLock)
             {
-                return;
-            }
-
-            lock (_refreshTimerLock)
-            {
-                if (_refreshTimer == null)
+                if (!_isProcessingRefreshQueue)
                 {
-                    _refreshTimer = new Timer(RefreshTimerCallback, null, 100, Timeout.Infinite);
+                    _isProcessingRefreshQueue = true;
+                    Task.Run(() => StartProcessingRefreshQueue());
                 }
             }
         }
 
-        private void StopRefreshTimer()
-        {
-            lock (_refreshTimerLock)
-            {
-                if (_refreshTimer != null)
-                {
-                    _refreshTimer.Dispose();
-                    _refreshTimer = null;
-                }
-            }
-        }
-
-        private async void RefreshTimerCallback(object state)
+        private async Task StartProcessingRefreshQueue()
         {
             Tuple<Guid, MetadataRefreshOptions> refreshItem;
             var libraryManager = _libraryManagerFactory();
@@ -938,7 +919,10 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            StopRefreshTimer();
+            lock (_refreshQueueLock)
+            {
+                _isProcessingRefreshQueue = false;
+            }
         }
 
         private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -1017,7 +1001,6 @@ namespace MediaBrowser.Providers.Manager
         public void Dispose()
         {
             _disposed = true;
-            StopRefreshTimer();
         }
     }
 }

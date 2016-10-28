@@ -16,8 +16,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {
@@ -167,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Devices
 
             try
             {
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
                 {
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
                 }

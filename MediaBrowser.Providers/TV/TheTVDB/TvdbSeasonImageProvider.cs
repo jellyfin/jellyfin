@@ -16,7 +16,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -27,12 +30,14 @@ namespace MediaBrowser.Providers.TV
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public TvdbSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public TvdbSeasonImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _xmlSettings = xmlSettings;
         }
 
         public string Name
@@ -78,13 +83,13 @@ namespace MediaBrowser.Providers.TV
 
                     try
                     {
-                        return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, cancellationToken);
+                        return GetImages(path, item.GetPreferredMetadataLanguage(), seasonNumber, _xmlSettings, _fileSystem, cancellationToken);
                     }
                     catch (FileNotFoundException)
                     {
                         // No tvdb data yet. Don't blow up
                     }
-                    catch (DirectoryNotFoundException)
+                    catch (IOException)
                     {
                         // No tvdb data yet. Don't blow up
                     }
@@ -103,45 +108,46 @@ namespace MediaBrowser.Providers.TV
             return seasonNumber;
         }
 
-        internal static IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, CancellationToken cancellationToken)
+        internal static IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, int seasonNumber, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
+            var settings = xmlReaderSettingsFactory.Create(false);
+
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
 
             var list = new List<RemoteImageInfo>();
 
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
+            using (var fileStream = fileSystem.GetFileStream(xmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        reader.MoveToContent();
 
-                        if (reader.NodeType == XmlNodeType.Element)
+                        // Loop through each element
+                        while (reader.Read())
                         {
-                            switch (reader.Name)
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                case "Banner":
-                                    {
-                                        using (var subtree = reader.ReadSubtree())
+                                switch (reader.Name)
+                                {
+                                    case "Banner":
                                         {
-                                            AddImage(subtree, list, seasonNumber);
+                                            using (var subtree = reader.ReadSubtree())
+                                            {
+                                                AddImage(subtree, list, seasonNumber);
+                                            }
+                                            break;
                                         }
+                                    default:
+                                        reader.Skip();
                                         break;
-                                    }
-                                default:
-                                    reader.Skip();
-                                    break;
+                                }
                             }
                         }
                     }

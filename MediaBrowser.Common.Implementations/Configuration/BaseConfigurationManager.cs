@@ -9,8 +9,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {

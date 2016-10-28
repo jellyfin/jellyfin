@@ -3,8 +3,10 @@ using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Entities
 {

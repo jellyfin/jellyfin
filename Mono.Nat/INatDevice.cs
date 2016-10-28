@@ -30,32 +30,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
 	public interface INatDevice
 	{
-		void CreatePortMap (Mapping mapping);
-		void DeletePortMap (Mapping mapping);
+		Task CreatePortMap (Mapping mapping);
 		
 		IPAddress LocalAddress { get; }
-		Mapping[] GetAllMappings ();
-		IPAddress GetExternalIP ();
-		Mapping GetSpecificMapping (Protocol protocol, int port);
-
-		IAsyncResult BeginCreatePortMap (Mapping mapping, AsyncCallback callback, object asyncState);
-		IAsyncResult BeginDeletePortMap (Mapping mapping, AsyncCallback callback, object asyncState);
-
-		IAsyncResult BeginGetAllMappings (AsyncCallback callback, object asyncState);
-		IAsyncResult BeginGetExternalIP (AsyncCallback callback, object asyncState);
-		IAsyncResult BeginGetSpecificMapping (Protocol protocol, int externalPort, AsyncCallback callback, object asyncState);
-
-		void EndCreatePortMap (IAsyncResult result);
-		void EndDeletePortMap (IAsyncResult result);
-
-		Mapping[] EndGetAllMappings (IAsyncResult result);
-		IPAddress EndGetExternalIP (IAsyncResult result);
-		Mapping EndGetSpecificMapping (IAsyncResult result);
 
 		DateTime LastSeen { get; set; }
 	}

@@ -2,7 +2,9 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Drawing;
 using System.Globalization;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace Emby.Drawing.ImageMagick
 {

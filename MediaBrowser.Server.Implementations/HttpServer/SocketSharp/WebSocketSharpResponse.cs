@@ -5,20 +5,21 @@ using System.Net;
 using MediaBrowser.Model.Logging;
 using ServiceStack;
 using ServiceStack.Host;
-using ServiceStack.Web;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
+using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
+using IRequest = MediaBrowser.Model.Services.IRequest;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpResponse : IHttpResponse
     {
         private readonly ILogger _logger;
-        private readonly HttpListenerResponse response;
+        private readonly HttpListenerResponse _response;
 
         public WebSocketSharpResponse(ILogger logger, HttpListenerResponse response, IRequest request)
         {
             _logger = logger;
-            this.response = response;
+            this._response = response;
             Items = new Dictionary<string, object>();
             Request = request;
         }
@@ -28,28 +29,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public Dictionary<string, object> Items { get; private set; }
         public object OriginalResponse
         {
-            get { return response; }
+            get { return _response; }
         }
 
         public int StatusCode
         {
-            get { return this.response.StatusCode; }
-            set { this.response.StatusCode = value; }
+            get { return this._response.StatusCode; }
+            set { this._response.StatusCode = value; }
         }
 
         public string StatusDescription
         {
-            get { return this.response.StatusDescription; }
-            set { this.response.StatusDescription = value; }
+            get { return this._response.StatusDescription; }
+            set { this._response.StatusDescription = value; }
         }
 
         public string ContentType
         {
-            get { return response.ContentType; }
-            set { response.ContentType = value; }
+            get { return _response.ContentType; }
+            set { _response.ContentType = value; }
         }
 
-        public ICookies Cookies { get; set; }
+        //public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
         {
@@ -59,22 +60,22 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 return;
             }
 
-            response.AddHeader(name, value);
+            _response.AddHeader(name, value);
         }
 
         public string GetHeader(string name)
         {
-            return response.Headers[name];
+            return _response.Headers[name];
         }
 
         public void Redirect(string url)
         {
-            response.Redirect(url);
+            _response.Redirect(url);
         }
 
         public Stream OutputStream
         {
-            get { return response.OutputStream; }
+            get { return _response.OutputStream; }
         }
 
         public object Dto { get; set; }
@@ -82,9 +83,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Write(string text)
         {
             var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-            response.ContentLength64 = bOutput.Length;
+            _response.ContentLength64 = bOutput.Length;
 
-            var outputStream = response.OutputStream;
+            var outputStream = _response.OutputStream;
             outputStream.Write(bOutput, 0, bOutput.Length);
             Close();
         }
@@ -97,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
                 try
                 {
-                    this.response.CloseOutputStream(_logger);
+                    this._response.CloseOutputStream(_logger);
                 }
                 catch (Exception ex)
                 {
@@ -113,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public void Flush()
         {
-            response.OutputStream.Flush();
+            _response.OutputStream.Flush();
         }
 
         public bool IsClosed
@@ -127,19 +128,19 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             //you can happily set the Content-Length header in Asp.Net
             //but HttpListener will complain if you do - you have to set ContentLength64 on the response.
             //workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
-            response.ContentLength64 = contentLength;
+            _response.ContentLength64 = contentLength;
         }
 
         public void SetCookie(Cookie cookie)
         {
             var cookieStr = cookie.AsHeaderValue();
-            response.Headers.Add(HttpHeaders.SetCookie, cookieStr);
+            _response.Headers.Add(HttpHeaders.SetCookie, cookieStr);
         }
 
         public bool SendChunked
         {
-            get { return response.SendChunked; }
-            set { response.SendChunked = value; }
+            get { return _response.SendChunked; }
+            set { _response.SendChunked = value; }
         }
 
         public bool KeepAlive { get; set; }

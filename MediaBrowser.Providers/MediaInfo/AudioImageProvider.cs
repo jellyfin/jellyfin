@@ -12,7 +12,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -85,11 +87,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                         var tempFile = await _mediaEncoder.ExtractAudioImage(item.Path, imageStreamIndex, cancellationToken).ConfigureAwait(false);
 
-                        File.Copy(tempFile, path, true);
+                        _fileSystem.CopyFile(tempFile, path, true);
 
                         try
                         {
-                            File.Delete(tempFile);
+                            _fileSystem.DeleteFile(tempFile);
                         }
                         catch
                         {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+﻿using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Controller.Extensions
 {
@@ -10,13 +7,11 @@ namespace MediaBrowser.Controller.Extensions
     /// </summary>
     public static class StringExtensions
     {
+        public static ILocalizationManager LocalizationManager { get; set; }
+
         public static string RemoveDiacritics(this string text)
         {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
+            return LocalizationManager.RemoveDiacritics(text);
         }
     }
 }

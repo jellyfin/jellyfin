@@ -6,7 +6,6 @@ using SharpCompress.Common;
 using SharpCompress.Reader;
 using SharpCompress.Reader.Zip;
 using System.IO;
-using CommonIO;
 
 namespace MediaBrowser.Common.Implementations.Archiving
 {
@@ -15,7 +14,7 @@ namespace MediaBrowser.Common.Implementations.Archiving
     /// </summary>
     public class ZipClient : IZipClient
     {
-		private IFileSystem _fileSystem;
+		private readonly IFileSystem _fileSystem;
 
 		public ZipClient(IFileSystem fileSystem) 
 		{

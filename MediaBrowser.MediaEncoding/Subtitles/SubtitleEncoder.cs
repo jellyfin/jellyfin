@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -463,7 +463,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
             _fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read,
                 true);
 
             try
@@ -616,7 +616,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
             _fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read,
+            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read,
                 true);
 
             try
@@ -907,7 +907,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             // *** Detect byte order mark if any - otherwise assume default
             var buffer = new byte[5];
 
-            using (var file = _fileSystem.GetFileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var file = _fileSystem.GetFileStream(srcFile, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite))
             {
                 file.Read(buffer, 0, 5);
             }
@@ -933,7 +933,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
             if (protocol == MediaProtocol.File)
             {
-                return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                return _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite);
             }
 
             throw new ArgumentOutOfRangeException("protocol");

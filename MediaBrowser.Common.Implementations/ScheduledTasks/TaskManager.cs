@@ -10,7 +10,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using Microsoft.Win32;
 
 namespace MediaBrowser.Common.Implementations.ScheduledTasks

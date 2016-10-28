@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Server.Implementations.Notifications
 {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using CommonIO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.ServerApplication.Native
 {

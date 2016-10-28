@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
@@ -21,6 +20,7 @@ using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Dlna.Didl
 {

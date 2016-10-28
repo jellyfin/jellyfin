@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -8,9 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
 using MediaBrowser.Controller.Net;
-using WebMarkupMin.Core;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -60,20 +59,6 @@ namespace MediaBrowser.WebDashboard.Api
                         resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }
                 }
-                else if (IsFormat(path, "js"))
-                {
-                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
-                    }
-                }
-                else if (IsFormat(path, "css"))
-                {
-                    if (path.IndexOf(".min.", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
-                    }
-                }
             }
 
             return resourceStream;
@@ -116,11 +101,11 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var rootPath = DashboardUIPath;
 
-            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', _fileSystem.DirectorySeparatorChar));
 
             try
             {
-                fullPath = Path.GetFullPath(fullPath);
+                fullPath = _fileSystem.GetFullPath(fullPath);
             }
             catch (Exception ex)
             {
@@ -134,86 +119,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             return fullPath;
-        }
-
-        public async Task<Stream> ModifyCss(Stream sourceStream, bool enableMinification)
-        {
-            using (sourceStream)
-            {
-                string content;
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var result = new KristensenCssMinifier().Minify(content, false, Encoding.UTF8);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying css: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                content = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying css", ex);
-                        }
-                    }
-                }
-
-                var bytes = Encoding.UTF8.GetBytes(content);
-
-                return new MemoryStream(bytes);
-            }
-        }
-
-        public async Task<Stream> ModifyJs(Stream sourceStream, bool enableMinification)
-        {
-            using (sourceStream)
-            {
-                string content;
-
-                using (var memoryStream = new MemoryStream())
-                {
-                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
-
-                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var result = new CrockfordJsMinifier().Minify(content, false, Encoding.UTF8);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                content = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying javascript", ex);
-                        }
-                    }
-                }
-
-                var bytes = Encoding.UTF8.GetBytes(content);
-
-                return new MemoryStream(bytes);
-            }
         }
 
         public bool IsCoreHtml(string path)
@@ -252,7 +157,9 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-                    html = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    var originalBytes = memoryStream.ToArray();
+
+                    html = Encoding.UTF8.GetString(originalBytes, 0, originalBytes.Length);
 
                     if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
                     {
@@ -269,7 +176,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 html = html.Substring(0, index+7);
                             }
                         }
-                        var mainFile = File.ReadAllText(GetDashboardResourcePath("index.html"));
+                        var mainFile = _fileSystem.ReadAllText(GetDashboardResourcePath("index.html"));
 
                         html = ReplaceFirst(mainFile, "<div class=\"mainAnimatedPages skinBody\"></div>", "<div class=\"mainAnimatedPages skinBody hide\">" + html + "</div>");
                     }
@@ -279,33 +186,6 @@ namespace MediaBrowser.WebDashboard.Api
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
                         html = html.Replace("<html", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\"");
-                    }
-
-                    if (enableMinification)
-                    {
-                        try
-                        {
-                            var minifier = new HtmlMinifier(new HtmlMinificationSettings
-                            {
-                                AttributeQuotesRemovalMode = HtmlAttributeQuotesRemovalMode.KeepQuotes,
-                                RemoveOptionalEndTags = false,
-                                RemoveTagsWithoutContent = false
-                            });
-                            var result = minifier.Minify(html, false);
-
-                            if (result.Errors.Count > 0)
-                            {
-                                _logger.Error("Error minifying html: " + result.Errors[0].Message);
-                            }
-                            else
-                            {
-                                html = result.MinifiedContent;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error minifying html", ex);
-                        }
                     }
                 }
 
@@ -470,7 +350,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 var path = GetDashboardResourcePath(file);
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true))
                 {
                     using (var streamReader = new StreamReader(fs))
                     {
@@ -482,27 +362,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
 
             var css = builder.ToString();
-
-            if (enableMinification)
-            {
-                try
-                {
-                    var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
-
-                    if (result.Errors.Count > 0)
-                    {
-                        _logger.Error("Error minifying css: " + result.Errors[0].Message);
-                    }
-                    else
-                    {
-                        css = result.MinifiedContent;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error minifying css", ex);
-                }
-            }
 
             var bytes = Encoding.UTF8.GetBytes(css);
             memoryStream.Write(bytes, 0, bytes.Length);
@@ -518,7 +377,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private Stream GetRawResourceStream(string path)
         {
-            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
         }
 
     }

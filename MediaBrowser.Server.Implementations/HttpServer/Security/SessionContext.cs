@@ -3,8 +3,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using ServiceStack.Web;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
@@ -47,7 +47,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         public Task<SessionInfo> GetSession(object requestContext)
         {
-            var req = new ServiceStackServiceRequest((IRequest)requestContext);
+            var req = new ServiceRequest((IRequest)requestContext);
             return GetSession(req);
         }
 
@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         public Task<User> GetUser(object requestContext)
         {
-            var req = new ServiceStackServiceRequest((IRequest)requestContext);
+            var req = new ServiceRequest((IRequest)requestContext);
             return GetUser(req);
         }
     }

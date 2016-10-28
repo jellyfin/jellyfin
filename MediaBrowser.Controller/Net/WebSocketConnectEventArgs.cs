@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -17,7 +18,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public NameValueCollection QueryString { get; set; }
+        public QueryParamCollection QueryString { get; set; }
         /// <summary>
         /// Gets or sets the web socket.
         /// </summary>
@@ -46,7 +47,7 @@ namespace MediaBrowser.Controller.Net
         /// Gets or sets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public NameValueCollection QueryString { get; set; }
+        public QueryParamCollection QueryString { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether [allow connection].
         /// </summary>
@@ -55,7 +56,7 @@ namespace MediaBrowser.Controller.Net
 
         public WebSocketConnectingEventArgs()
         {
-            QueryString = new NameValueCollection();
+            QueryString = new QueryParamCollection();
             AllowConnection = true;
         }
     }

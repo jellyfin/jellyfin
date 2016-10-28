@@ -7,12 +7,14 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -56,7 +58,6 @@ namespace MediaBrowser.Api.Playback.Progressive
     [Route("/Videos/{Id}/stream.mov", "HEAD")]
     [Route("/Videos/{Id}/stream.iso", "HEAD")]
     [Route("/Videos/{Id}/stream", "HEAD")]
-    [Api(Description = "Gets a video stream")]
     public class GetVideoStream : VideoStreamRequest
     {
 

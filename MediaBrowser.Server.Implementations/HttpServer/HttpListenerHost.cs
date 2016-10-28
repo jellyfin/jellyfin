@@ -6,10 +6,8 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Host.HttpListener;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 using System;
@@ -19,11 +17,13 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
+using ServiceStack.Api.Swagger;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         public IEnumerable<string> UrlPrefixes { get; private set; }
 
-        private readonly List<IRestfulService> _restServices = new List<IRestfulService>();
+        private readonly List<IService> _restServices = new List<IService>();
 
         private IHttpListener _listener;
 
@@ -49,13 +49,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly INetworkManager _networkManager;
         private readonly IMemoryStreamProvider _memoryStreamProvider;
 
-        public HttpListenerHost(IApplicationHost applicationHost,
+        private readonly IServerApplicationHost _appHost;
+
+        public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
             string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamProvider memoryStreamProvider, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
+            _appHost = applicationHost;
             DefaultRedirectPath = defaultRedirectPath;
             _networkManager = networkManager;
             _memoryStreamProvider = memoryStreamProvider;
@@ -100,7 +103,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             container.Adapter = _containerAdapter;
 
-            Plugins.RemoveAll(x => x is NativeTypesFeature);
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new CorsFeature(allowedHeaders: "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization"));
 
@@ -116,6 +118,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             //        httpRes.EndRequest(); //add a 'using ServiceStack;'
             //    }
             //});
+
+            var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
+            foreach (var filter in requestFilters)
+            {
+                HostContext.GlobalRequestFilters.Add(filter.Filter);
+            }
 
             HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
@@ -171,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private void StartListener()
         {
-            HostContext.Config.HandlerFactoryPath = ListenerRequest.GetHandlerPathIfAny(UrlPrefixes.First());
+            HostContext.Config.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = GetListener();
 
@@ -181,6 +189,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _listener.RequestHandler = RequestHandler;
 
             _listener.Start(UrlPrefixes);
+        }
+
+        public static string GetHandlerPathIfAny(string listenerUrl)
+        {
+            if (listenerUrl == null) return null;
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+            if (pos == -1) return null;
+            var startHostUrl = listenerUrl.Substring(pos + "://".Length);
+            var endPos = startHostUrl.IndexOf('/');
+            if (endPos == -1) return null;
+            var endHostUrl = startHostUrl.Substring(endPos + 1);
+            return string.IsNullOrEmpty(endHostUrl) ? null : endHostUrl.TrimEnd('/');
         }
 
         private IHttpListener GetListener()
@@ -558,7 +578,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// Adds the rest handlers.
         /// </summary>
         /// <param name="services">The services.</param>
-        public void Init(IEnumerable<IRestfulService> services)
+        public void Init(IEnumerable<IService> services)
         {
             _restServices.AddRange(services);
 
@@ -569,28 +589,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             base.Init();
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+        public override Model.Services.RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             var routes = base.GetRouteAttributes(requestType).ToList();
             var clone = routes.ToList();
 
             foreach (var route in clone)
             {
-                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new Model.Services.RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,

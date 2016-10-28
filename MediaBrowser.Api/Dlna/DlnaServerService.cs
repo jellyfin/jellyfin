@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Controller.Dlna;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,6 +8,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Dlna
 {
@@ -127,28 +126,28 @@ namespace MediaBrowser.Api.Dlna
         {
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(GetRequestHeaders(), request.UuId, serverAddress);
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers.ToDictionary(), request.UuId, serverAddress);
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetContentDirectory request)
         {
-            var xml = _contentDirectory.GetServiceXml(GetRequestHeaders());
+            var xml = _contentDirectory.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetMediaReceiverRegistrar request)
         {
-            var xml = _mediaReceiverRegistrar.GetServiceXml(GetRequestHeaders());
+            var xml = _mediaReceiverRegistrar.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetConnnectionManager request)
         {
-            var xml = _connectionManager.GetServiceXml(GetRequestHeaders());
+            var xml = _connectionManager.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
@@ -182,24 +181,12 @@ namespace MediaBrowser.Api.Dlna
             {
                 return service.ProcessControlRequest(new ControlRequest
                 {
-                    Headers = GetRequestHeaders(),
+                    Headers = Request.Headers.ToDictionary(),
                     InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
                     TargetServerUuId = id,
                     RequestedUrl = Request.AbsoluteUri
                 });
             }
-        }
-
-        private IDictionary<string, string> GetRequestHeaders()
-        {
-            var headers = new Dictionary<string, string>();
-
-            foreach (var key in Request.Headers.AllKeys)
-            {
-                headers[key] = Request.Headers[key];
-            }
-
-            return headers;
         }
 
         public object Get(GetIcon request)

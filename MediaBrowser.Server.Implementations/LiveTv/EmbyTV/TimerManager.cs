@@ -8,7 +8,9 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV

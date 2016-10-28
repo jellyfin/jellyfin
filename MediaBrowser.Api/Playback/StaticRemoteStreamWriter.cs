@@ -1,14 +1,14 @@
 ﻿using MediaBrowser.Common.Net;
-using ServiceStack.Web;
 using System.Collections.Generic;
 using System.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
 {
     /// <summary>
     /// Class StaticRemoteStreamWriter
     /// </summary>
-    public class StaticRemoteStreamWriter : IStreamWriter, IHasOptions
+    public class StaticRemoteStreamWriter : IStreamWriter, IHasHeaders
     {
         /// <summary>
         /// The _input stream
@@ -29,7 +29,7 @@ namespace MediaBrowser.Api.Playback
         /// Gets the options.
         /// </summary>
         /// <value>The options.</value>
-        public IDictionary<string, string> Options
+        public IDictionary<string, string> Headers
         {
             get { return _options; }
         }

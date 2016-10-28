@@ -17,8 +17,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using Interfaces.IO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Server.Implementations.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -346,7 +348,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return await supportsDirectCopy.SendFile(inputPath, pathParts, target, progress, cancellationToken).ConfigureAwait(false);
             }
 
-            using (var fileStream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(inputPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read, true))
             {
                 Stream stream = fileStream;
 

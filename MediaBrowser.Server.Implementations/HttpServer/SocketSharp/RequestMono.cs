@@ -5,8 +5,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using MediaBrowser.Model.Services;
 using ServiceStack;
-using ServiceStack.Web;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -83,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
-        public NameValueCollection Form
+        public QueryParamCollection Form
         {
             get
             {
@@ -155,14 +155,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             throw new HttpRequestValidationException(msg);
         }
 
-        static void ValidateNameValueCollection(string name, NameValueCollection coll)
+        static void ValidateNameValueCollection(string name, QueryParamCollection coll)
         {
             if (coll == null)
                 return;
 
-            foreach (string key in coll.Keys)
+            foreach (var pair in coll)
             {
-                string val = coll[key];
+                var key = pair.Name;
+                var val = pair.Value;
                 if (val != null && val.Length > 0 && IsInvalidString(val))
                     ThrowValidationException(name, key, val);
             }
@@ -348,7 +349,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 }
             }
         }
-        class WebROCollection : NameValueCollection
+        class WebROCollection : QueryParamCollection
         {
             bool got_id;
             int id;
@@ -369,28 +370,29 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
             public void Protect()
             {
-                IsReadOnly = true;
+                //IsReadOnly = true;
             }
 
             public void Unprotect()
             {
-                IsReadOnly = false;
+                //IsReadOnly = false;
             }
 
             public override string ToString()
             {
                 StringBuilder result = new StringBuilder();
-                foreach (string key in AllKeys)
+                foreach (var pair in this)
                 {
                     if (result.Length > 0)
                         result.Append('&');
 
+                    var key = pair.Name;
                     if (key != null && key.Length > 0)
                     {
                         result.Append(key);
                         result.Append('=');
                     }
-                    result.Append(Get(key));
+                    result.Append(pair.Value);
                 }
 
                 return result.ToString();

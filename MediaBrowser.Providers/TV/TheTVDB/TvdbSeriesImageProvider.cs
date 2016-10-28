@@ -16,7 +16,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -26,12 +29,14 @@ namespace MediaBrowser.Providers.TV
         private readonly IHttpClient _httpClient;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
+        private readonly IXmlReaderSettingsFactory _xmlReaderSettingsFactory;
 
-        public TvdbSeriesImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public TvdbSeriesImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
         {
             _config = config;
             _httpClient = httpClient;
             _fileSystem = fileSystem;
+            _xmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         public string Name
@@ -73,7 +78,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     var seriesOffset = TvdbSeriesProvider.GetSeriesOffset(item.ProviderIds);
                     if (seriesOffset != null && seriesOffset.Value != 0)
-                        return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, cancellationToken);
+                        return TvdbSeasonImageProvider.GetImages(path, language, seriesOffset.Value + 1, _xmlReaderSettingsFactory, _fileSystem, cancellationToken);
                     
                     return GetImages(path, language, cancellationToken);
                 }
@@ -81,7 +86,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     // No tvdb data yet. Don't blow up
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                     // No tvdb data yet. Don't blow up
                 }
@@ -92,43 +97,44 @@ namespace MediaBrowser.Providers.TV
 
         private IEnumerable<RemoteImageInfo> GetImages(string xmlPath, string preferredLanguage, CancellationToken cancellationToken)
         {
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
+            var settings = _xmlReaderSettingsFactory.Create(false);
+
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
 
             var list = new List<RemoteImageInfo>();
 
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
+            using (var fileStream = _fileSystem.GetFileStream(xmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        reader.MoveToContent();
 
-                        if (reader.NodeType == XmlNodeType.Element)
+                        // Loop through each element
+                        while (reader.Read())
                         {
-                            switch (reader.Name)
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                case "Banner":
-                                    {
-                                        using (var subtree = reader.ReadSubtree())
+                                switch (reader.Name)
+                                {
+                                    case "Banner":
                                         {
-                                            AddImage(subtree, list);
+                                            using (var subtree = reader.ReadSubtree())
+                                            {
+                                                AddImage(subtree, list);
+                                            }
+                                            break;
                                         }
+                                    default:
+                                        reader.Skip();
                                         break;
-                                    }
-                                default:
-                                    reader.Skip();
-                                    break;
+                                }
                             }
                         }
                     }
