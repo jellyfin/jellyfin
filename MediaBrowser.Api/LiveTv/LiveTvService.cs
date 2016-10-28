@@ -8,7 +8,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,10 +15,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback.Progressive;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Services;
 using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Api.LiveTv
@@ -719,11 +721,10 @@ namespace MediaBrowser.Api.LiveTv
 
             outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType(path);
 
-            var streamSource = new ProgressiveFileCopier(_fileSystem, path, outputHeaders, null, Logger, CancellationToken.None)
+            return new ProgressiveFileCopier(_fileSystem, path, outputHeaders, null, Logger, CancellationToken.None)
             {
                 AllowEndOfFile = false
             };
-            return ResultFactory.GetAsyncStreamWriter(streamSource);
         }
 
         public async Task<object> Get(GetLiveStreamFile request)
@@ -733,11 +734,10 @@ namespace MediaBrowser.Api.LiveTv
 
             outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file." + request.Container);
 
-            var streamSource = new ProgressiveFileCopier(directStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
+            return new ProgressiveFileCopier(directStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
             {
                 AllowEndOfFile = false
             };
-            return ResultFactory.GetAsyncStreamWriter(streamSource);
         }
 
         public object Get(GetDefaultListingProvider request)

@@ -71,6 +71,13 @@
 
         dom.addEventListener(this, 'input', function (e) {
             this.dragging = true;
+
+            updateBubble(this, this.value, sliderBubble);
+
+            if (hasHideClass) {
+                sliderBubble.classList.remove('hide');
+                hasHideClass = false;
+            }
         }, {
             passive: true
         });
@@ -78,6 +85,10 @@
         dom.addEventListener(this, 'change', function () {
             this.dragging = false;
             updateValues(this, backgroundLower, backgroundUpper);
+
+            sliderBubble.classList.add('hide');
+            hasHideClass = true;
+
         }, {
             passive: true
         });
@@ -86,16 +97,19 @@
         if (!browser.firefox) {
             dom.addEventListener(this, 'mousemove', function (e) {
 
-                var rect = this.getBoundingClientRect();
-                var clientX = e.clientX;
-                var bubbleValue = (clientX - rect.left) / rect.width;
-                bubbleValue *= 100;
-                updateBubble(this, Math.round(bubbleValue), sliderBubble);
+                if (!this.dragging) {
+                    var rect = this.getBoundingClientRect();
+                    var clientX = e.clientX;
+                    var bubbleValue = (clientX - rect.left) / rect.width;
+                    bubbleValue *= 100;
+                    updateBubble(this, Math.round(bubbleValue), sliderBubble);
 
-                if (hasHideClass) {
-                    sliderBubble.classList.remove('hide');
-                    hasHideClass = false;
+                    if (hasHideClass) {
+                        sliderBubble.classList.remove('hide');
+                        hasHideClass = false;
+                    }
                 }
+
             }, {
                 passive: true
             });

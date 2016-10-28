@@ -19,8 +19,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using CommonIO.Windows;
 using ImageMagickSharp;
+using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Server.Implementations.Logging;
 

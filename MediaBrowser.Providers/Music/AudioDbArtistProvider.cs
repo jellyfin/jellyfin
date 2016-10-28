@@ -12,7 +12,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -156,7 +158,7 @@ namespace MediaBrowser.Providers.Music
             {
 				_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
-                using (var xmlFileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }

@@ -2,8 +2,6 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,7 +9,13 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
+using ServiceStack;
+using ServiceStack.Web;
+using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -59,10 +63,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="content">The content.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>IHasOptions.</returns>
-        private IHasOptions GetHttpResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
+        /// <returns>IHasHeaders.</returns>
+        private IHasHeaders GetHttpResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
-            IHasOptions result;
+            IHasHeaders result;
 
             var stream = content as Stream;
 
@@ -140,11 +144,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             // Apply headers
-            var hasOptions = optimizedResult as IHasOptions;
+            var hasHeaders = optimizedResult as IHasHeaders;
 
-            if (hasOptions != null)
+            if (hasHeaders != null)
             {
-                AddResponseHeaders(hasOptions, responseHeaders);
+                AddResponseHeaders(hasHeaders, responseHeaders);
             }
 
             return optimizedResult;
@@ -237,15 +241,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             result = factoryFn();
 
             // Apply caching headers
-            var hasOptions = result as IHasOptions;
+            var hasHeaders = result as IHasHeaders;
 
-            if (hasOptions != null)
+            if (hasHeaders != null)
             {
-                AddResponseHeaders(hasOptions, responseHeaders);
-                return hasOptions;
+                AddResponseHeaders(hasHeaders, responseHeaders);
+                return hasHeaders;
             }
 
-            IHasOptions httpResult;
+            IHasHeaders httpResult;
 
             var stream = result as Stream;
 
@@ -298,7 +302,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public Task<object> GetStaticFileResult(IRequest requestContext,
             string path,
-            FileShare fileShare = FileShare.Read)
+            FileShareMode fileShare = FileShareMode.Read)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -323,7 +327,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("path");
             }
 
-            if (fileShare != FileShare.Read && fileShare != FileShare.ReadWrite)
+            if (fileShare != FileShareMode.Read && fileShare != FileShareMode.ReadWrite)
             {
                 throw new ArgumentException("FileShare must be either Read or ReadWrite");
             }
@@ -352,9 +356,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="path">The path.</param>
         /// <param name="fileShare">The file share.</param>
         /// <returns>Stream.</returns>
-        private Stream GetFileStream(string path, FileShare fileShare)
+        private Stream GetFileStream(string path, FileShareMode fileShare)
         {
-            return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare);
+            return _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, fileShare);
         }
 
         public Task<object> GetStaticResult(IRequest requestContext,
@@ -404,10 +408,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             var compress = ShouldCompressResponse(requestContext, contentType);
-            var hasOptions = await GetStaticResult(requestContext, options, compress).ConfigureAwait(false);
-            AddResponseHeaders(hasOptions, options.ResponseHeaders);
+            var hasHeaders = await GetStaticResult(requestContext, options, compress).ConfigureAwait(false);
+            AddResponseHeaders(hasHeaders, options.ResponseHeaders);
 
-            return hasOptions;
+            return hasHeaders;
         }
 
         /// <summary>
@@ -461,7 +465,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        private async Task<IHasOptions> GetStaticResult(IRequest requestContext, StaticResultOptions options, bool compress)
+        private async Task<IHasHeaders> GetStaticResult(IRequest requestContext, StaticResultOptions options, bool compress)
         {
             var isHeadRequest = options.IsHeadRequest;
             var factoryFn = options.ContentFactory;
@@ -673,19 +677,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <summary>
         /// Adds the response headers.
         /// </summary>
-        /// <param name="hasOptions">The has options.</param>
+        /// <param name="hasHeaders">The has options.</param>
         /// <param name="responseHeaders">The response headers.</param>
-        private void AddResponseHeaders(IHasOptions hasOptions, IEnumerable<KeyValuePair<string, string>> responseHeaders)
+        private void AddResponseHeaders(IHasHeaders hasHeaders, IEnumerable<KeyValuePair<string, string>> responseHeaders)
         {
             foreach (var item in responseHeaders)
             {
-                hasOptions.Options[item.Key] = item.Value;
+                hasHeaders.Headers[item.Key] = item.Value;
             }
-        }
-
-        public object GetAsyncStreamWriter(IAsyncStreamSource streamSource)
-        {
-            return new AsyncStreamWriter(streamSource);
         }
     }
 }

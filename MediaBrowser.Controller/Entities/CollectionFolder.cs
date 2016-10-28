@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
@@ -29,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
             PhysicalLocationsList = new List<string>();
         }
 
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         protected override bool SupportsShortcutChildren
         {
             get
@@ -38,7 +38,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
@@ -77,7 +77,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 return new LibraryOptions();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return new LibraryOptions();
             }
@@ -129,7 +129,7 @@ namespace MediaBrowser.Controller.Entities
         /// Allow different display preferences for each collection folder
         /// </summary>
         /// <value>The display prefs id.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override Guid DisplayPreferencesId
         {
             get
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override IEnumerable<string> PhysicalLocations
         {
             get
@@ -283,7 +283,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The actual children.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         protected override IEnumerable<BaseItem> ActualChildren
         {
             get { return GetActualChildren(); }
@@ -322,7 +322,7 @@ namespace MediaBrowser.Controller.Entities
             return result;
         }
 
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override bool SupportsPeople
         {
             get

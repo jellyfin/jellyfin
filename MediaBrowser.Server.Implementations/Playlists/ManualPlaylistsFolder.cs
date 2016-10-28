@@ -4,9 +4,11 @@ using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {

@@ -5,9 +5,9 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

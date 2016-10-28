@@ -4,7 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -74,7 +76,7 @@ namespace MediaBrowser.Controller.Providers
                         entries[item.FullName] = item;
                     }
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                 }
 

@@ -1441,11 +1441,11 @@ var AppInfo = {};
                     if (options.fullscreen === false) {
                         // theme backdrops - not supported
                         if (!options.items || options.items[0].MediaType == 'Video') {
-                            return;
+                            return Promise.reject();
                         }
                     }
 
-                    MediaController.play(options);
+                    return MediaController.play(options);
                 },
                 queue: function (options) {
 

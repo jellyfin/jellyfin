@@ -32,19 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
-    <Reference Include="Patterns.Logging">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +47,7 @@
     <Compile Include="Images\ImagesByNameImageProvider.cs" />
     <Compile Include="Images\InternalMetadataFolderImageProvider.cs" />
     <Compile Include="Images\LocalImageProvider.cs" />
+    <Compile Include="Parsers\BaseItemXmlParser.cs" />
     <Compile Include="Parsers\BoxSetXmlParser.cs" />
     <Compile Include="Parsers\EpisodeXmlParser.cs" />
     <Compile Include="Parsers\GameSystemXmlParser.cs" />
@@ -77,6 +68,7 @@
     <Compile Include="Providers\PlaylistXmlProvider.cs" />
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />
+    <Compile Include="Savers\BaseXmlSaver.cs" />
     <Compile Include="Savers\BoxSetXmlSaver.cs" />
     <Compile Include="Savers\FolderXmlSaver.cs" />
     <Compile Include="Savers\GameSystemXmlSaver.cs" />
@@ -98,9 +90,6 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

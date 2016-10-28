@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.1"
+    }
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "BDInfo": {
+          "target": "project"
+        },
+        "DvdLib": {
+          "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "MediaBrowser.Model": {
+          "target": "project"
+        },
+        "MediaBrowser.Providers": {
+          "target": "project"
+        },
+        "MediaBrowser.WebDashboard": {
+          "target": "project"
+        },
+        "MediaBrowser.XbmcMetadata": {
+          "target": "project"
+        },
+        "OpenSubtitlesHandler": {
+          "target": "project"
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.ImagesByName
 {
@@ -68,23 +70,26 @@ namespace MediaBrowser.Providers.ImagesByName
                 .Replace("/", string.Empty);
         }
 
-        public static IEnumerable<string> GetAvailableImages(string file)
+        public static IEnumerable<string> GetAvailableImages(string file, IFileSystem fileSystem)
         {
-            using (var reader = new StreamReader(file))
+            using (var fileStream = fileSystem.GetFileStream(file, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
-                var lines = new List<string>();
-
-                while (!reader.EndOfStream)
+                using (var reader = new StreamReader(fileStream))
                 {
-                    var text = reader.ReadLine();
+                    var lines = new List<string>();
 
-                    if (!string.IsNullOrWhiteSpace(text))
+                    while (!reader.EndOfStream)
                     {
-                        lines.Add(text);
-                    }
-                }
+                        var text = reader.ReadLine();
 
-                return lines;
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            lines.Add(text);
+                        }
+                    }
+
+                    return lines;
+                }
             }
         }
     }

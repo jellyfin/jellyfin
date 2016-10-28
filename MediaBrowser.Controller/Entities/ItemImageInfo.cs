@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {

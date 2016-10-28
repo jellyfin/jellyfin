@@ -1,13 +1,15 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -136,7 +138,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return files.Where(i =>
             {
-                if (!i.Attributes.HasFlag(FileAttributes.Directory) &&
+                if (!i.IsDirectory &&
                     SubtitleExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 {
                     var fileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(i);

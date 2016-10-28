@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.Security
 {
@@ -21,7 +21,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
 
         public AuthorizationInfo GetAuthorizationInfo(object requestContext)
         {
-            var req = new ServiceStackServiceRequest((IRequest)requestContext);
+            var req = new ServiceRequest((IRequest)requestContext);
             return GetAuthorizationInfo(req);
         }
 

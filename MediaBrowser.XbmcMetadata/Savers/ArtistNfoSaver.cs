@@ -9,16 +9,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class ArtistNfoSaver : BaseNfoSaver
     {
-        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
-        }
-
         protected override string GetLocalSavePath(IHasMetadata item)
         {
             return Path.Combine(item.Path, "artist.nfo");
@@ -89,6 +88,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
             };
 
             return list;
+        }
+
+        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+        {
         }
     }
 }

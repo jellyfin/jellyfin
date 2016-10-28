@@ -104,5 +104,7 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
+
+        void SetStartupInfo(bool isFirstRun, Func<string, DateTime> dateModifiedFn, Action<string> directoryCreateFn);
     }
 }

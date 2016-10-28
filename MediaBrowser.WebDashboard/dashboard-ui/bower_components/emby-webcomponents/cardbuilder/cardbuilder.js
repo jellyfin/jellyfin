@@ -964,8 +964,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (item.RecordAnyChannel) {
                         lines.push(globalize.translate('sharedcomponents#AllChannels'));
                     }
-                    else if (item.ChannelId) {
-                        lines.push(item.ChannelName || '');
+                    else {
+                        lines.push(item.ChannelName || globalize.translate('sharedcomponents#OneChannel'));
                     }
                 }
 

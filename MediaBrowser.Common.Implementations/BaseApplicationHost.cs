@@ -30,7 +30,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations.Cryptography;
 using MediaBrowser.Common.IO;
@@ -205,14 +204,14 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
         /// </summary>
-        protected BaseApplicationHost(TApplicationPathsType applicationPaths, 
-            ILogManager logManager, 
+        protected BaseApplicationHost(TApplicationPathsType applicationPaths,
+            ILogManager logManager,
             IFileSystem fileSystem)
         {
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
 
-            XmlSerializer = new XmlSerializer (fileSystem, logManager.GetLogger("XmlSerializer"));
+            XmlSerializer = new XmlSerializer(fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -396,13 +395,13 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public virtual Task RunStartupTasks()
         {
-			Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
+            Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
 
-			ConfigureAutorun ();
+            ConfigureAutorun();
 
-			ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
+            ConfigurationManager.ConfigurationUpdated += OnConfigurationUpdated;
 
-			return Task.FromResult (true);
+            return Task.FromResult(true);
         }
 
         /// <summary>
@@ -438,7 +437,7 @@ namespace MediaBrowser.Common.Implementations
         protected virtual void FindParts()
         {
             RegisterModules();
-            
+
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>().Select(LoadPlugin).Where(i => i != null).ToArray();
         }
@@ -462,6 +461,10 @@ namespace MediaBrowser.Common.Implementations
 
                     assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
                 }
+
+                var isFirstRun = !File.Exists(plugin.ConfigurationFilePath);
+
+                plugin.SetStartupInfo(isFirstRun, File.GetLastWriteTimeUtc, s => Directory.CreateDirectory(s));
             }
             catch (Exception ex)
             {
@@ -498,43 +501,43 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         protected virtual Task RegisterResources(IProgress<double> progress)
         {
-			RegisterSingleInstance(ConfigurationManager);
-			RegisterSingleInstance<IApplicationHost>(this);
+            RegisterSingleInstance(ConfigurationManager);
+            RegisterSingleInstance<IApplicationHost>(this);
 
-			RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
+            RegisterSingleInstance<IApplicationPaths>(ApplicationPaths);
 
-			TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LogManager.GetLogger("TaskManager"), FileSystemManager);
+            TaskManager = new TaskManager(ApplicationPaths, JsonSerializer, LogManager.GetLogger("TaskManager"), FileSystemManager);
 
-			RegisterSingleInstance(JsonSerializer);
-			RegisterSingleInstance(XmlSerializer);
+            RegisterSingleInstance(JsonSerializer);
+            RegisterSingleInstance(XmlSerializer);
             RegisterSingleInstance(MemoryStreamProvider);
 
-			RegisterSingleInstance(LogManager);
-			RegisterSingleInstance(Logger);
+            RegisterSingleInstance(LogManager);
+            RegisterSingleInstance(Logger);
 
-			RegisterSingleInstance(TaskManager);
+            RegisterSingleInstance(TaskManager);
 
-			RegisterSingleInstance(FileSystemManager);
+            RegisterSingleInstance(FileSystemManager);
 
             HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamProvider);
-			RegisterSingleInstance(HttpClient);
+            RegisterSingleInstance(HttpClient);
 
-			NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
-			RegisterSingleInstance(NetworkManager);
+            NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
+            RegisterSingleInstance(NetworkManager);
 
-			SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager);
-			RegisterSingleInstance(SecurityManager);
+            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager);
+            RegisterSingleInstance(SecurityManager);
 
             InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
-			RegisterSingleInstance(InstallationManager);
+            RegisterSingleInstance(InstallationManager);
 
-			ZipClient = new ZipClient(FileSystemManager);
-			RegisterSingleInstance(ZipClient);
+            ZipClient = new ZipClient(FileSystemManager);
+            RegisterSingleInstance(ZipClient);
 
-			IsoManager = new IsoManager();
-			RegisterSingleInstance(IsoManager);
+            IsoManager = new IsoManager();
+            RegisterSingleInstance(IsoManager);
 
-			return Task.FromResult (true);
+            return Task.FromResult(true);
         }
 
         private void RegisterModules()
@@ -583,7 +586,7 @@ namespace MediaBrowser.Common.Implementations
                         Logger.Error("LoaderException: " + loaderException.Message);
                     }
                 }
-                
+
                 // If it fails we can still get a list of the Types it was able to resolve
                 return ex.Types.Where(t => t != null);
             }

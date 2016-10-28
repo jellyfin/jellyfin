@@ -10,16 +10,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
     public class MovieNfoSaver : BaseNfoSaver
     {
-        public MovieNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
-        {
-        }
-
         protected override string GetLocalSavePath(IHasMetadata item)
         {
             return GetMovieSavePaths(new ItemInfo(item), FileSystem).FirstOrDefault();
@@ -125,6 +124,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
             };
 
             return list;
+        }
+
+        public MovieNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+        {
         }
     }
 }

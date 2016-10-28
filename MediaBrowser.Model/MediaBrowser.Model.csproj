@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</ProjectGuid>
@@ -13,9 +13,8 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +42,8 @@
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Activity\ActivityLogEntry.cs" />
+    <Compile Include="Activity\IActivityManager.cs" />
+    <Compile Include="Activity\IActivityRepository.cs" />
     <Compile Include="ApiClient\ApiHelpers.cs" />
     <Compile Include="ApiClient\ConnectionMode.cs" />
     <Compile Include="ApiClient\ConnectionResult.cs" />
@@ -135,8 +136,12 @@
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="Health\IHealthMonitor.cs" />
+    <Compile Include="IO\FileSystemMetadata.cs" />
+    <Compile Include="IO\IFileSystem.cs" />
     <Compile Include="IO\IMemoryStreamProvider.cs" />
+    <Compile Include="IO\IShortcutHandler.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
+    <Compile Include="Globalization\ILocalizationManager.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
@@ -161,7 +166,22 @@
     <Compile Include="MediaInfo\SubtitleTrackInfo.cs" />
     <Compile Include="Net\EndPointInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
+    <Compile Include="Net\IpAddressInfo.cs" />
+    <Compile Include="Plugins\IHasWebPages.cs" />
+    <Compile Include="Plugins\PluginPageInfo.cs" />
+    <Compile Include="Reflection\IAssemblyInfo.cs" />
+    <Compile Include="Services\ApiMemberAttribute.cs" />
+    <Compile Include="Services\IAsyncStreamWriter.cs" />
+    <Compile Include="Services\IHasHeaders.cs" />
+    <Compile Include="Services\IHasRequestFilter.cs" />
+    <Compile Include="Services\IHttpRequest.cs" />
+    <Compile Include="Services\IHttpResponse.cs" />
+    <Compile Include="Services\IRequest.cs" />
+    <Compile Include="Services\IRequestFilter.cs" />
+    <Compile Include="Services\IRequiresRequestStream.cs" />
+    <Compile Include="Services\IService.cs" />
     <Compile Include="Net\MimeTypes.cs" />
+    <Compile Include="News\INewsService.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />
     <Compile Include="Notifications\NotificationOptions.cs" />
     <Compile Include="Notifications\NotificationType.cs" />
@@ -307,6 +327,9 @@
     <Compile Include="Registration\RegistrationInfo.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Serialization\IgnoreDataMemberAttribute.cs" />
+    <Compile Include="Services\IStreamWriter.cs" />
+    <Compile Include="Services\QueryParamCollection.cs" />
+    <Compile Include="Services\RouteAttribute.cs" />
     <Compile Include="Session\BrowseRequest.cs" />
     <Compile Include="Session\ClientCapabilities.cs" />
     <Compile Include="Session\GeneralCommand.cs" />
@@ -356,6 +379,7 @@
     <Compile Include="Session\TranscodingInfo.cs" />
     <Compile Include="Session\UserDataChangeInfo.cs" />
     <Compile Include="Devices\ContentUploadHistory.cs" />
+    <Compile Include="Social\ISharingManager.cs" />
     <Compile Include="Social\SocialShareInfo.cs" />
     <Compile Include="Sync\CompleteSyncJobInfo.cs" />
     <Compile Include="Sync\DeviceFileInfo.cs" />
@@ -432,6 +456,7 @@
     <Compile Include="Users\UserAction.cs" />
     <Compile Include="Users\UserActionType.cs" />
     <Compile Include="Users\UserPolicy.cs" />
+    <Compile Include="Xml\IXmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

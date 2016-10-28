@@ -8,14 +8,16 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {
@@ -285,7 +287,7 @@ namespace MediaBrowser.Api.Images
 			_fileSystem.CreateDirectory(Path.GetDirectoryName(fullCachePath));
             using (var stream = result.Content)
             {
-                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var filestream = _fileSystem.GetFileStream(fullCachePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await stream.CopyToAsync(filestream).ConfigureAwait(false);
                 }

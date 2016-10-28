@@ -39,13 +39,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
-    <Reference Include="Patterns.Logging">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-    </Reference>
     <Reference Include="Rssdp.NetFx40">
       <HintPath>..\ThirdParty\rssdp\Rssdp.NetFx40.dll</HintPath>
     </Reference>
@@ -56,9 +49,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -197,7 +188,6 @@
     <EmbeddedResource Include="Images\people480.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <EmbeddedResource Include="Profiles\Json\BubbleUPnp.json" />
     <EmbeddedResource Include="Profiles\Json\Default.json" />
     <EmbeddedResource Include="Profiles\Json\Denon AVR.json" />

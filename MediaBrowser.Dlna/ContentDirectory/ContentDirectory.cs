@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
@@ -13,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Dlna.ContentDirectory
 {

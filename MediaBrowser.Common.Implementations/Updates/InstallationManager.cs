@@ -18,7 +18,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Common.Implementations.Updates
 {

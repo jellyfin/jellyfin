@@ -7,10 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -112,7 +113,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            _logFileStream = _fileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
+            _logFileStream = _fileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);

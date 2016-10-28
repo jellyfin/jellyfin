@@ -13,7 +13,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -145,7 +147,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private string GetLivePlaylistText(string path, int segmentLength)
         {
-            using (var stream = FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var stream = FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -187,7 +189,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 try
                 {
-                    // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                    // Need to use FileShareMode.ReadWrite because we're reading the file at the same time it's being written
                     using (var fileStream = GetPlaylistFileStream(playlist))
                     {
                         using (var reader = new StreamReader(fileStream))
@@ -227,11 +229,11 @@ namespace MediaBrowser.Api.Playback.Hls
 
             try
             {
-                return FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+                return FileSystem.GetFileStream(tmpPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
             }
             catch (IOException)
             {
-                return FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+                return FileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.ReadWrite, true);
             }
         }
 

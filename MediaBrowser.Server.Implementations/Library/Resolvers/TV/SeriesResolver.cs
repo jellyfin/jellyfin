@@ -11,8 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
@@ -128,8 +130,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
         {
             foreach (var child in fileSystemChildren)
             {
-                var attributes = child.Attributes;
-
                 //if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                 //{
                 //    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
                 //    continue;
                 //}
 
-                if ((attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                if (child.IsDirectory)
                 {
                     if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
                     {

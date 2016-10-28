@@ -19,7 +19,7 @@
             remoteOptions.startPositionTicks = options.startPositionTicks;
         }
 
-        ApiClient.sendPlayCommand(sessionId, remoteOptions);
+        return ApiClient.sendPlayCommand(sessionId, remoteOptions);
     }
 
     function sendPlayStateCommand(command, options) {
@@ -57,7 +57,7 @@
 
         self.play = function (options) {
 
-            sendPlayCommand(options, 'PlayNow');
+            return sendPlayCommand(options, 'PlayNow');
         };
 
         self.shuffle = function (id) {

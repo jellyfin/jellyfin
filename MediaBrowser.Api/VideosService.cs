@@ -5,13 +5,15 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

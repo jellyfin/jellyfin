@@ -88,10 +88,16 @@ namespace MediaBrowser.Providers.MediaInfo
             }).OfType<Video>()
                 .ToList();
 
+            if (videos.Count == 0)
+            {
+                return;
+            }
+
             var failHistoryPath = Path.Combine(_config.ApplicationPaths.CachePath, "subtitlehistory.json");
             var history = GetHistory(failHistoryPath);
 
             var numComplete = 0;
+            var hasChanges = false;
 
             foreach (var video in videos)
             {
@@ -123,6 +129,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     history[video.Id.ToString("N")] = DateTime.UtcNow;
                 }
 
+                hasChanges = true;
+
                 // Update progress
                 numComplete++;
                 double percent = numComplete;
@@ -131,7 +139,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 progress.Report(100 * percent);
             }
 
-            _json.SerializeToFile(history, failHistoryPath);
+            if (hasChanges)
+            {
+                _json.SerializeToFile(history, failHistoryPath);
+            }
         }
 
         private Dictionary<string,DateTime> GetHistory(string path)

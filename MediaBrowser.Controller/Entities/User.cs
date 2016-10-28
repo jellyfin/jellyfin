@@ -6,7 +6,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,7 +41,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override string Path
         {
             get
@@ -81,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
         /// If the item is a folder, it returns the folder itself
         /// </summary>
         /// <value>The containing folder path.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override string ContainingFolderPath
         {
             get
@@ -94,7 +93,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override bool IsOwnedItem
         {
             get
@@ -107,7 +106,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the root folder.
         /// </summary>
         /// <value>The root folder.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public Folder RootFolder
         {
             get
@@ -129,7 +128,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserConfiguration _config;
         private readonly object _configSyncLock = new object();
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public UserConfiguration Configuration
         {
             get
@@ -152,7 +151,7 @@ namespace MediaBrowser.Controller.Entities
 
         private volatile UserPolicy _policy;
         private readonly object _policySyncLock = new object();
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public UserPolicy Policy
         {
             get
@@ -232,7 +231,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets the path to the user's configuration directory
         /// </summary>
         /// <value>The configuration directory path.</value>
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public string ConfigurationDirectoryPath
         {
             get
@@ -308,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
             return Configuration.GroupedFolders.Select(i => new Guid(i)).Contains(id);
         }
 
-        [System.Runtime.Serialization.IgnoreDataMember]
+        [IgnoreDataMember]
         public override bool SupportsPeople
         {
             get

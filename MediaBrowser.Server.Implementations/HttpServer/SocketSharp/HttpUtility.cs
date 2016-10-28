@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -857,28 +858,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             return output.ToString();
         }
 
-        public static NameValueCollection ParseQueryString(string query)
+        public static QueryParamCollection ParseQueryString(string query)
         {
             return ParseQueryString(query, Encoding.UTF8);
         }
 
-        public static NameValueCollection ParseQueryString(string query, Encoding encoding)
+        public static QueryParamCollection ParseQueryString(string query, Encoding encoding)
         {
             if (query == null)
                 throw new ArgumentNullException("query");
             if (encoding == null)
                 throw new ArgumentNullException("encoding");
             if (query.Length == 0 || (query.Length == 1 && query[0] == '?'))
-                return new NameValueCollection();
+                return new QueryParamCollection();
             if (query[0] == '?')
                 query = query.Substring(1);
 
-            NameValueCollection result = new HttpQSCollection();
+            QueryParamCollection result = new QueryParamCollection();
             ParseQueryString(query, encoding, result);
             return result;
         }
 
-        internal static void ParseQueryString(string query, Encoding encoding, NameValueCollection result)
+        internal static void ParseQueryString(string query, Encoding encoding, QueryParamCollection result)
         {
             if (query.Length == 0)
                 return;

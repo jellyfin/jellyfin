@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Globalization;
 using System.Linq;
-using MediaBrowser.Controller.Localization;
 using System;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Activity;
-using MediaBrowser.Controller.Activity;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Api.Reports
 {

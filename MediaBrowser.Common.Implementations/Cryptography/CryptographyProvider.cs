@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using MediaBrowser.Model.Cryptography;
@@ -9,9 +10,20 @@ namespace MediaBrowser.Common.Implementations.Cryptography
     {
         public Guid GetMD5(string str)
         {
+            return new Guid(GetMD5Bytes(str));
+        }
+        public byte[] GetMD5Bytes(string str)
+        {
             using (var provider = MD5.Create())
             {
-                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
+                return provider.ComputeHash(Encoding.Unicode.GetBytes(str));
+            }
+        }
+        public byte[] GetMD5Bytes(Stream str)
+        {
+            using (var provider = MD5.Create())
+            {
+                return provider.ComputeHash(str);
             }
         }
     }

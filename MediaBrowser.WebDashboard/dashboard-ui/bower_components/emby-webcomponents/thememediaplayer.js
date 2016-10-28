@@ -14,17 +14,17 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
                 return;
             }
 
-            currentThemeIds = items.map(function (i) {
-                return i.Id;
-            });
-
-            currentOwnerId = ownerId;
-
             if (enabled(items[0].MediaType)) {
+                currentThemeIds = items.map(function (i) {
+                    return i.Id;
+                });
+
                 playbackManager.play({
                     items: items,
                     fullscreen: false,
                     enableRemotePlayers: false
+                }).then(function () {
+                    currentOwnerId = ownerId;
                 });
             }
 

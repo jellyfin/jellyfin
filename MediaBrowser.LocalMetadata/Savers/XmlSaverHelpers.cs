@@ -14,7 +14,9 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {

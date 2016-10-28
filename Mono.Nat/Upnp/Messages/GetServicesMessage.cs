@@ -27,6 +27,8 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
 {
@@ -34,28 +36,37 @@ namespace Mono.Nat.Upnp
     {
         private string servicesDescriptionUrl;
         private EndPoint hostAddress;
+        private readonly ILogger _logger;
 
-        public GetServicesMessage(string description, EndPoint hostAddress)
-            :base(null)
+        public GetServicesMessage(string description, EndPoint hostAddress, ILogger logger)
+            : base(null)
         {
             if (string.IsNullOrEmpty(description))
-                Trace.WriteLine("Description is null");
+                _logger.Warn("Description is null");
 
             if (hostAddress == null)
-                Trace.WriteLine("hostaddress is null");
+                _logger.Warn("hostaddress is null");
 
             this.servicesDescriptionUrl = description;
             this.hostAddress = hostAddress;
+            _logger = logger;
         }
 
-
-        public override WebRequest Encode(out byte[] body)
+        public override string Method
         {
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl);
-            req.Headers.Add("ACCEPT-LANGUAGE", "en");
-            req.Method = "GET";
+            get
+            {
+                return "GET";
+            }
+        }
 
-            body = new byte[0];
+        public override HttpRequestOptions Encode()
+        {
+            var req = new HttpRequestOptions();
+
+            req.Url = "http://" + this.hostAddress.ToString() + this.servicesDescriptionUrl;
+            req.RequestHeaders.Add("ACCEPT-LANGUAGE", "en");
+
             return req;
         }
     }

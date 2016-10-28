@@ -3,7 +3,9 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
 using MediaBrowser.Model.Logging;
 using System.Threading;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {

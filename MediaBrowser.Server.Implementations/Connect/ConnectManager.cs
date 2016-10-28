@@ -23,8 +23,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {

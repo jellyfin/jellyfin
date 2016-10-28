@@ -4,11 +4,11 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {

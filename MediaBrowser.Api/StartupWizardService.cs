@@ -7,11 +7,11 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
-using ServiceStack;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

@@ -6,11 +6,11 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Sync
 {

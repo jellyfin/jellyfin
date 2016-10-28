@@ -1112,7 +1112,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string SerializeProviderIds(BaseItem item)
         {
-            var ids = item.ProviderIds.ToList();
+            // Ideally we shouldn't need this IsNullOrWhiteSpace check but we're seeing some cases of bad data slip through
+            var ids = item.ProviderIds
+                .Where(i => !string.IsNullOrWhiteSpace(i.Value))
+                .ToList();
 
             if (ids.Count == 0)
             {
@@ -1140,7 +1143,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 var idParts = part.Split('=');
 
-                item.SetProviderId(idParts[0], idParts[1]);
+                if (idParts.Length == 2)
+                {
+                    item.SetProviderId(idParts[0], idParts[1]);
+                }
             }
         }
 
@@ -4886,6 +4892,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             foreach (var pair in newValues)
             {
+                if (string.IsNullOrWhiteSpace(pair.Key))
+                {
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(pair.Value))
+                {
+                    continue;
+                }
+
                 _saveProviderIdsCommand.GetParameter(0).Value = itemId;
                 _saveProviderIdsCommand.GetParameter(1).Value = pair.Key;
                 _saveProviderIdsCommand.GetParameter(2).Value = pair.Value;

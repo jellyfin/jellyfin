@@ -2,8 +2,6 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Logging;
-using ServiceStack;
-using ServiceStack.Web;
 using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
@@ -11,6 +9,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
+using ServiceStack;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -102,12 +102,19 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
                 var url = ctx.Request.RawUrl;
-                var queryString = new NameValueCollection(ctx.Request.QueryString ?? new NameValueCollection());
+                var queryString = ctx.Request.QueryString ?? new NameValueCollection();
+
+                var queryParamCollection = new QueryParamCollection();
+
+                foreach (var key in queryString.AllKeys)
+                {
+                    queryParamCollection[key] = queryString[key];
+                }
 
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
                     Url = url,
-                    QueryString = queryString,
+                    QueryString = queryParamCollection,
                     Endpoint = endpoint
                 };
 
@@ -127,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         WebSocketConnected(new WebSocketConnectEventArgs
                         {
                             Url = url,
-                            QueryString = queryString,
+                            QueryString = queryParamCollection,
                             WebSocket = new SharpWebSocket(webSocketContext.WebSocket, _logger),
                             Endpoint = endpoint
                         });

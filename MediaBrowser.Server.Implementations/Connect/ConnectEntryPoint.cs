@@ -11,8 +11,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
-using MediaBrowser.Controller.Threading;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Server.Implementations.Threading;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {

@@ -42,12 +42,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
     <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.57\lib\portable-net46+win10\Emby.XmlTv.dll</HintPath>
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.58\lib\portable-net46+win10\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
@@ -86,9 +82,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Client">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Client.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Common">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Common.dll</HintPath>
@@ -151,7 +144,6 @@
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
-    <Compile Include="HttpServer\AsyncStreamWriter.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
@@ -162,7 +154,6 @@
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
     <Compile Include="HttpServer\Security\AuthService.cs" />
-    <Compile Include="HttpServer\Security\SessionAuthProvider.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
@@ -179,6 +170,7 @@
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
+    <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\LocalTrailerPostScanTask.cs" />
@@ -278,12 +270,15 @@
     <Compile Include="Persistence\DataExtensions.cs" />
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
+    <Compile Include="Reflection\AssemblyInfo.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
+    <Compile Include="Threading\PeriodicTimer.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
@@ -370,6 +365,7 @@
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
+    <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
@@ -387,6 +383,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
+      <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
     <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
       <Project>{d7453b88-2266-4805-b39b-2b5a2a33e1ba}</Project>
