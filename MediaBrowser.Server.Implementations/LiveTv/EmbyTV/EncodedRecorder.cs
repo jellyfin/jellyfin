@@ -205,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private bool EncodeVideo(MediaSourceInfo mediaSource)
         {
-            if (_liveTvOptions.EnableOriginalAudioWithEncodedRecordings)
+            if (_liveTvOptions.EnableOriginalVideoWithEncodedRecordings)
             {
                 return false;
             }
