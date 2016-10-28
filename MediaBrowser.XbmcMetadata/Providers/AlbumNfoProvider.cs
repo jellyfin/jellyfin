@@ -19,12 +19,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IProviderManager _providerManager;
         protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
 
-        public AlbumNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        public AlbumNfoProvider(IFileSystem fileSystem, ILogger logger, IConfigurationManager config, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
             _providerManager = providerManager;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         protected override void Fetch(MetadataResult<MusicAlbum> result, string path, CancellationToken cancellationToken)

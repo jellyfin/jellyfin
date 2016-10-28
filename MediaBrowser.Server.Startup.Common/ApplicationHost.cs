@@ -117,6 +117,7 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Xml;
+using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
@@ -221,6 +222,12 @@ namespace MediaBrowser.Server.Startup.Common
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets the zip client.
+        /// </summary>
+        /// <value>The zip client.</value>
+        protected IZipClient ZipClient { get; private set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _releaseAssetFilename;
@@ -378,6 +385,16 @@ namespace MediaBrowser.Server.Startup.Common
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
+        }
+
+        protected override IMemoryStreamProvider CreateMemoryStreamProvider()
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                return new RecyclableMemoryStreamProvider();
+            }
+
+            return new MemoryStreamProvider();
         }
 
         protected override IJsonSerializer CreateJsonSerializer()
@@ -624,6 +641,9 @@ namespace MediaBrowser.Server.Startup.Common
         protected override async Task RegisterResources(IProgress<double> progress)
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
+
+            ZipClient = new ZipClient(FileSystemManager);
+            RegisterSingleInstance(ZipClient);
 
             RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer));
 

@@ -87,9 +87,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteAncestorsCommand;
         private IDbCommand _saveAncestorCommand;
 
-        private IDbCommand _deleteUserDataKeysCommand;
-        private IDbCommand _saveUserDataKeysCommand;
-
         private IDbCommand _deleteItemValuesCommand;
         private IDbCommand _saveItemValuesCommand;
 
@@ -169,8 +166,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
-                                "create table if not exists UserDataKeys (ItemId GUID, UserDataKey TEXT Priority INT, PRIMARY KEY (ItemId, UserDataKey))",
-
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
 
                                 "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
@@ -191,6 +186,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 createMediaStreamsTableCommand,
 
                                 "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
+
+                                //"drop table if exists UserDataKeys"
 
                                };
 
@@ -289,7 +286,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "ThemeSongIds", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "ThemeVideoIds", "Text");
 
-            _connection.AddColumn(Logger, "UserDataKeys", "Priority", "INT");
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
             _connection.AddColumn(Logger, ChaptersTableName, "ImageDateModified", "DATETIME");
@@ -316,6 +312,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "drop index if exists idx_ItemValues3",
                 "drop index if exists idx_ItemValues4",
                 "drop index if exists idx_ItemValues5",
+                "drop index if exists idx_UserDataKeys3",
+                "drop table if exists UserDataKeys",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -347,10 +345,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 // items by name
                 "create index if not exists idx_ItemValues6 on ItemValues(ItemId,Type,CleanValue)",
-                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)",
-
-                // covering index
-                "create index if not exists idx_UserDataKeys3 on UserDataKeys(ItemId,Priority,UserDataKey)"
+                "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)"
                 };
 
             _connection.RunQueries(postQueries, Logger);
@@ -652,17 +647,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _updateInheritedTagsCommand.CommandText = "Update TypedBaseItems set InheritedTags=@InheritedTags where Guid=@Guid";
             _updateInheritedTagsCommand.Parameters.Add(_updateInheritedTagsCommand, "@Guid");
             _updateInheritedTagsCommand.Parameters.Add(_updateInheritedTagsCommand, "@InheritedTags");
-
-            // user data
-            _deleteUserDataKeysCommand = _connection.CreateCommand();
-            _deleteUserDataKeysCommand.CommandText = "delete from UserDataKeys where ItemId=@Id";
-            _deleteUserDataKeysCommand.Parameters.Add(_deleteUserDataKeysCommand, "@Id");
-
-            _saveUserDataKeysCommand = _connection.CreateCommand();
-            _saveUserDataKeysCommand.CommandText = "insert into UserDataKeys (ItemId, UserDataKey, Priority) values (@ItemId, @UserDataKey, @Priority)";
-            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@ItemId");
-            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@UserDataKey");
-            _saveUserDataKeysCommand.Parameters.Add(_saveUserDataKeysCommand, "@Priority");
 
             // item values
             _deleteItemValuesCommand = _connection.CreateCommand();
@@ -1071,7 +1055,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), transaction);
                     }
 
-                    UpdateUserDataKeys(item.Id, item.GetUserDataKeys().Distinct(StringComparer.OrdinalIgnoreCase).ToList(), transaction);
                     UpdateImages(item.Id, item.ImageInfos, transaction);
                     UpdateProviderIds(item.Id, item.ProviderIds, transaction);
                     UpdateItemValues(item.Id, GetItemValuesToSave(item), transaction);
@@ -2343,12 +2326,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return string.Empty;
             }
 
-            if (_config.Configuration.SchemaVersion >= 96)
-            {
-                return " left join UserDataDb.UserData on UserDataKey=UserDataDb.UserData.Key And (UserId=@UserId)";
-            }
-
-            return " left join UserDataDb.UserData on (select UserDataKey from UserDataKeys where ItemId=Guid order by Priority LIMIT 1)=UserDataDb.UserData.Key And (UserId=@UserId)";
+            return " left join UserDataDb.UserData on UserDataKey=UserDataDb.UserData.Key And (UserId=@UserId)";
         }
 
         private string GetGroupBy(InternalItemsQuery query)
@@ -4176,11 +4154,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteAncestorsCommand.Transaction = transaction;
                 _deleteAncestorsCommand.ExecuteNonQuery();
 
-                // Delete user data keys
-                _deleteUserDataKeysCommand.GetParameter(0).Value = id;
-                _deleteUserDataKeysCommand.Transaction = transaction;
-                _deleteUserDataKeysCommand.ExecuteNonQuery();
-
                 // Delete item values
                 _deleteItemValuesCommand.GetParameter(0).Value = id;
                 _deleteItemValuesCommand.Transaction = transaction;
@@ -4946,39 +4919,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveItemValuesCommand.Transaction = transaction;
 
                 _saveItemValuesCommand.ExecuteNonQuery();
-            }
-        }
-
-        private void UpdateUserDataKeys(Guid itemId, List<string> keys, IDbTransaction transaction)
-        {
-            if (itemId == Guid.Empty)
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (keys == null)
-            {
-                throw new ArgumentNullException("keys");
-            }
-
-            CheckDisposed();
-
-            // First delete 
-            _deleteUserDataKeysCommand.GetParameter(0).Value = itemId;
-            _deleteUserDataKeysCommand.Transaction = transaction;
-
-            _deleteUserDataKeysCommand.ExecuteNonQuery();
-            var index = 0;
-
-            foreach (var key in keys)
-            {
-                _saveUserDataKeysCommand.GetParameter(0).Value = itemId;
-                _saveUserDataKeysCommand.GetParameter(1).Value = key;
-                _saveUserDataKeysCommand.GetParameter(2).Value = index;
-                index++;
-                _saveUserDataKeysCommand.Transaction = transaction;
-
-                _saveUserDataKeysCommand.ExecuteNonQuery();
             }
         }
 

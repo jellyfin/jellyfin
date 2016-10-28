@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Model.IO;
+﻿using System.IO;
+using MediaBrowser.Model.IO;
 using SharpCompress.Archive.Rar;
 using SharpCompress.Archive.SevenZip;
 using SharpCompress.Archive.Tar;
 using SharpCompress.Common;
 using SharpCompress.Reader;
 using SharpCompress.Reader.Zip;
-using System.IO;
 
-namespace MediaBrowser.Common.Implementations.Archiving
+namespace MediaBrowser.Server.Implementations.Archiving
 {
     /// <summary>
     /// Class DotNetZipClient

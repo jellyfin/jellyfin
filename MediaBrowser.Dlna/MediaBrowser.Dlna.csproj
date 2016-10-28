@@ -39,8 +39,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Rssdp.NetFx40">
-      <HintPath>..\ThirdParty\rssdp\Rssdp.NetFx40.dll</HintPath>
+    <Reference Include="Rssdp.Native">
+      <HintPath>..\ThirdParty\rssdp\Rssdp.Native.dll</HintPath>
     </Reference>
     <Reference Include="Rssdp.Portable">
       <HintPath>..\ThirdParty\rssdp\Rssdp.Portable.dll</HintPath>
