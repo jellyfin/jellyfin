@@ -26,7 +26,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
 
-        public bool ValidateVersion(string encoderAppPath)
+        public bool ValidateVersion(string encoderAppPath, bool logOutput)
         {
             string output = string.Empty;
             try
@@ -35,6 +35,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch
             {
+            }
+
+            if (logOutput)
+            {
+                _logger.Info("ffmpeg info: {0}", output ?? string.Empty);
             }
 
             if (string.IsNullOrWhiteSpace(output))

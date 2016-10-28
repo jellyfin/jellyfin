@@ -241,7 +241,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             path = newPaths.Item1;
 
-            if (!ValidateVersion(path))
+            if (!ValidateVersion(path, true))
             {
                 throw new ResourceNotFoundException("ffmpeg version 3.0 or greater is required.");
             }
@@ -253,9 +253,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Init();
         }
 
-        private bool ValidateVersion(string path)
+        private bool ValidateVersion(string path, bool logOutput)
         {
-            return new EncoderValidator(_logger).ValidateVersion(path);
+            return new EncoderValidator(_logger).ValidateVersion(path, logOutput);
         }
 
         private void ConfigureEncoderPaths()
@@ -307,7 +307,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string encoderPath = null;
             string probePath = null;
 
-            if (_hasExternalEncoder && ValidateVersion(_originalFFMpegPath))
+            if (_hasExternalEncoder && ValidateVersion(_originalFFMpegPath, true))
             {
                 encoderPath = _originalFFMpegPath;
                 probePath = _originalFFProbePath;
@@ -315,7 +315,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (string.IsNullOrWhiteSpace(encoderPath))
             {
-                if (ValidateVersion("ffmpeg") && ValidateVersion("ffprobe"))
+                if (ValidateVersion("ffmpeg", true) && ValidateVersion("ffprobe", false))
                 {
                     encoderPath = "ffmpeg";
                     probePath = "ffprobe";
