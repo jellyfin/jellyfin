@@ -41,7 +41,7 @@
     contain: style;
 }
 
-.pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
+.libraryPage > .ui-content {
     padding-top: 10px;
 }
 
