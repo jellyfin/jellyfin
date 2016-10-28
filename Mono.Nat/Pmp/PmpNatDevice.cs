@@ -52,92 +52,11 @@ namespace Mono.Nat.Pmp
 			get { return localAddress; }
 		}
 
-		public override IPAddress GetExternalIP ()
-		{
-			return publicAddress;
-		}
-
 	    public override Task CreatePortMap(Mapping mapping)
 	    {
             CreatePortMap(mapping, true);
 	        return Task.FromResult(true);
 	    }
-
-        public override IAsyncResult BeginCreatePortMap(Mapping mapping, AsyncCallback callback, object asyncState)
-		{
-			PortMapAsyncResult pmar = new PortMapAsyncResult (mapping.Protocol, mapping.PublicPort, PmpConstants.DefaultLeaseTime, callback, asyncState);
-			ThreadPool.QueueUserWorkItem (delegate 
-            {
-				try 
-                {
-					CreatePortMap(pmar.Mapping, true);
-					pmar.Complete();
-				} 
-                catch (Exception e) 
-                {
-					pmar.Complete(e);
-				}
-			});
-			return pmar;
-		}
-
-		public override IAsyncResult BeginDeletePortMap (Mapping mapping, AsyncCallback callback, object asyncState)
-		{
-			PortMapAsyncResult pmar =  new PortMapAsyncResult (mapping, callback, asyncState);
-			ThreadPool.QueueUserWorkItem (delegate {
-				try {
-					CreatePortMap(pmar.Mapping, false);
-					pmar.Complete();
-				} catch (Exception e) {
-					pmar.Complete(e);
-				}
-			});
-			return pmar;
-		}
-
-		public override void EndCreatePortMap (IAsyncResult result)
-		{
-			PortMapAsyncResult pmar = result as PortMapAsyncResult;
-			pmar.AsyncWaitHandle.WaitOne ();
-		}
-
-		public override void EndDeletePortMap (IAsyncResult result)
-		{
-			PortMapAsyncResult pmar = result as PortMapAsyncResult;
-			pmar.AsyncWaitHandle.WaitOne ();
-		}
-		
-		public override IAsyncResult BeginGetAllMappings (AsyncCallback callback, object asyncState)
-		{
-			//NAT-PMP does not specify a way to get all port mappings
-			throw new NotSupportedException ();
-		}
-
-		public override IAsyncResult BeginGetExternalIP (AsyncCallback callback, object asyncState)
-		{
-            StartOp(ref externalIpResult, callback, asyncState);
-            AsyncResult result = externalIpResult;
-            result.Complete();
-            return result;
-		}
-
-		public override IAsyncResult BeginGetSpecificMapping (Protocol protocol, int port, AsyncCallback callback, object asyncState)
-		{
-			//NAT-PMP does not specify a way to get a specific port map
-			throw new NotSupportedException ();
-		}
-		
-		public override Mapping[] EndGetAllMappings (IAsyncResult result)
-		{
-			//NAT-PMP does not specify a way to get all port mappings
-			throw new NotSupportedException ();
-		}
-
-		public override IPAddress EndGetExternalIP (IAsyncResult result)
-		{
-            EndOp(result, ref externalIpResult);
-			return publicAddress;
-		}
 
         private void StartOp(ref AsyncResult result, AsyncCallback callback, object asyncState)
         {
@@ -165,12 +84,6 @@ namespace Mono.Nat.Pmp
             pendingOp = false;
             actual = null;
         }
-
-		public override Mapping EndGetSpecificMapping (IAsyncResult result)
-		{
-			//NAT-PMP does not specify a way to get a specific port map
-			throw new NotSupportedException ();
-		}
 		
 		public override bool Equals(object obj)
 		{
