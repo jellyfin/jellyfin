@@ -23,97 +23,116 @@ using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public abstract class BaseNfoSaver : IMetadataFileSaver
+    public abstract class BaseXmlSaver : IMetadataFileSaver
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private static readonly Dictionary<string, string> CommonTags = new[] {
 
-                    "plot",
-                    "customrating",
-                    "lockdata",
-                    "type",
-                    "dateadded",
-                    "title",
-                    "rating",
-                    "year",
-                    "sorttitle",
-                    "mpaa",
-                    "mpaadescription",
-                    "aspectratio",
-                    "website",
-                    "collectionnumber",
-                    "tmdbid",
-                    "rottentomatoesid",
-                    "language",
-                    "tvcomid",
-                    "budget",
-                    "revenue",
-                    "tagline",
-                    "studio",
-                    "genre",
-                    "tag",
-                    "runtime",
-                    "actor",
-                    "criticratingsummary",
-                    "criticrating",
-                    "fileinfo",
-                    "director",
-                    "writer",
-                    "trailer",
-                    "premiered",
-                    "releasedate",
-                    "outline",
-                    "id",
-                    "votes",
-                    "credits",
-                    "originaltitle",
-                    "watched",
-                    "playcount",
-                    "lastplayed",
-                    "art",
-                    "resume",
-                    "biography",
-                    "formed",
-                    "review",
-                    "style",
-                    "imdbid",
-                    "imdb_id",
-                    "plotkeyword",
-                    "country",
-                    "audiodbalbumid",
-                    "audiodbartistid",
-                    "awardsummary",
-                    "enddate",
-                    "lockedfields",
-                    "metascore",
-                    "zap2itid",
-                    "tvrageid",
-                    "gamesdbid",
+                    "Added",
+                    "AspectRatio",
+                    "AudioDbAlbumId",
+                    "AudioDbArtistId",
+                    "AwardSummary",
+                    "BirthDate",
+                    "Budget",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "certification",
 
-                    "musicbrainzartistid",
-                    "musicbrainzalbumartistid",
-                    "musicbrainzalbumid",
-                    "musicbrainzreleasegroupid",
-                    "tvdbid",
-                    "collectionitem",
+                    "Chapters",
+                    "ContentRating",
+                    "Countries",
+                    "CustomRating",
+                    "CriticRating",
+                    "CriticRatingSummary",
+                    "DeathDate",
+                    "DisplayOrder",
+                    "EndDate",
+                    "Genres",
+                    "Genre",
+                    "GamesDbId",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "IMDB_ID",
 
-                    "isuserfavorite",
-                    "userrating",
+                    "IMDB",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "IMDbId",
 
-                    "countrycode"
+                    "Language",
+                    "LocalTitle",
+                    "OriginalTitle",
+                    "LockData",
+                    "LockedFields",
+                    "Format3D",
+                    "Metascore",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "MPAARating",
+
+                    "MPAADescription",
+
+                    "MusicBrainzArtistId",
+                    "MusicBrainzAlbumArtistId",
+                    "MusicBrainzAlbumId",
+                    "MusicBrainzReleaseGroupId",
+
+                    // Deprecated. No longer saving in this field.
+                    "MusicbrainzId",
+
+                    "Overview",
+                    "ShortOverview",
+                    "Persons",
+                    "PlotKeywords",
+                    "PremiereDate",
+                    "ProductionYear",
+                    "Rating",
+                    "Revenue",
+                    "RottenTomatoesId",
+                    "RunningTime",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "Runtime",
+
+                    "SortTitle",
+                    "Studios",
+                    "Tags",
+                    
+                    // Deprecated. No longer saving in this field.
+                    "TagLine",
+
+                    "Taglines",
+                    "TMDbCollectionId",
+                    "TMDbId",
+
+                    // Deprecated. No longer saving in this field.
+                    "Trailer",
+
+                    "Trailers",
+                    "TVcomId",
+                    "TvDbId",
+                    "Type",
+                    "TVRageId",
+                    "VoteCount",
+                    "Website",
+                    "Zap2ItId",
+                    "CollectionItems",
+                    "PlaylistItems",
+                    "Shares"
 
         }.ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-        protected BaseNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
         {
+            FileSystem = fileSystem;
+            ConfigurationManager = configurationManager;
+            LibraryManager = libraryManager;
+            UserManager = userManager;
+            UserDataManager = userDataManager;
             Logger = logger;
             XmlReaderSettingsFactory = xmlReaderSettingsFactory;
-            UserDataManager = userDataManager;
-            UserManager = userManager;
-            LibraryManager = libraryManager;
-            ConfigurationManager = configurationManager;
-            FileSystem = fileSystem;
         }
 
         protected IFileSystem FileSystem { get; private set; }
@@ -136,15 +155,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             get
             {
-                return SaverName;
-            }
-        }
-
-        public static string SaverName
-        {
-            get
-            {
-                return "Emby Xml";
+                return XmlProviderUtils.Name;
             }
         }
 
