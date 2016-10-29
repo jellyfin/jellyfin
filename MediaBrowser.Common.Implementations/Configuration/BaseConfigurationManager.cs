@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 
 namespace MediaBrowser.Common.Implementations.Configuration
 {

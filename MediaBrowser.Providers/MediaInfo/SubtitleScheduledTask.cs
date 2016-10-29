@@ -93,43 +93,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            var failHistoryPath = Path.Combine(_config.ApplicationPaths.CachePath, "subtitlehistory.json");
-            var history = GetHistory(failHistoryPath);
-
             var numComplete = 0;
-            var hasChanges = false;
 
             foreach (var video in videos)
             {
-                DateTime lastAttempt;
-                if (history.TryGetValue(video.Id.ToString("N"), out lastAttempt))
-                {
-                    if ((DateTime.UtcNow - lastAttempt).TotalDays <= 7)
-                    {
-                        continue;
-                    }
-                }
-
                 try
                 {
-                    var shouldRetry = await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
-
-                    if (shouldRetry)
-                    {
-                        history[video.Id.ToString("N")] = DateTime.UtcNow;
-                    }
-                    else
-                    {
-                        history.Remove(video.Id.ToString("N"));
-                    }
+                    await DownloadSubtitles(video, options, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error downloading subtitles for {0}", ex, video.Path);
-                    history[video.Id.ToString("N")] = DateTime.UtcNow;
                 }
-
-                hasChanges = true;
 
                 // Update progress
                 numComplete++;
@@ -138,29 +113,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 progress.Report(100 * percent);
             }
-
-            if (hasChanges)
-            {
-                _json.SerializeToFile(history, failHistoryPath);
-            }
-        }
-
-        private Dictionary<string,DateTime> GetHistory(string path)
-        {
-            try
-            {
-                var result = _json.DeserializeFromFile<Dictionary<string, DateTime>>(path);
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            catch
-            {
-            }
-
-            return new Dictionary<string, DateTime>();
         }
 
         private async Task<bool> DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)

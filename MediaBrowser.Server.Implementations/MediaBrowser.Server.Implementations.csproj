@@ -61,6 +61,10 @@
       <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.3.10\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
@@ -272,6 +276,8 @@
     <Compile Include="LiveTv\TunerHosts\SatIp\TransmissionMode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
+    <Compile Include="Logging\NLogger.cs" />
+    <Compile Include="Logging\NlogManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Notifications\IConfigurableNotificationService.cs" />
@@ -281,6 +287,7 @@
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Reflection\AssemblyInfo.cs" />
+    <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
