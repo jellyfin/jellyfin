@@ -1,7 +1,7 @@
 ﻿using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace Emby.Dlna.Profiles
 {
     [XmlRoot("Profile")]
     public class LinksysDMA2100Profile : DefaultProfile

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace MediaBrowser.Dlna.Server
+namespace Emby.Dlna.Server
 {
     public sealed class UpnpDevice
     {

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Dlna;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class PlaylistItem
     {

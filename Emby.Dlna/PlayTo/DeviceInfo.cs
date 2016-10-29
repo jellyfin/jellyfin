@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Dlna.Common;
+﻿using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class DeviceInfo
     {

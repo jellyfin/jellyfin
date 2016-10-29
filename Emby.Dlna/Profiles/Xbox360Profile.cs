@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Dlna;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace Emby.Dlna.Profiles
 {
     /// <summary>
     /// Good info on xbox 360 requirements: https://code.google.com/p/jems/wiki/XBox360Notes

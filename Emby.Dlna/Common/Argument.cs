@@ -1,5 +1,5 @@
 ﻿
-namespace MediaBrowser.Dlna.Common
+namespace Emby.Dlna.Common
 {  
     public class Argument
     {

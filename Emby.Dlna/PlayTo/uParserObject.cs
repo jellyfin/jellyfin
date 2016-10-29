@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class uParserObject
     {

@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Dlna.Common;
+﻿using Emby.Dlna.Common;
 using System.Collections.Generic;
 using System.Security;
 using System.Text;
-using MediaBrowser.Dlna.Server;
+using Emby.Dlna.Server;
 
-namespace MediaBrowser.Dlna.Service
+namespace Emby.Dlna.Service
 {
     public class ServiceXmlBuilder
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MediaBrowser.Dlna.Server
+namespace Emby.Dlna.Server
 {
     public class Headers : IDictionary<string, string>
     {

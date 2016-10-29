@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Dlna.PlayTo
+﻿namespace Emby.Dlna.PlayTo
 {
     public enum TRANSPORTSTATE
     {

@@ -1,9 +1,9 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Dlna.Eventing;
+using Emby.Dlna.Eventing;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Dlna.Service
+namespace Emby.Dlna.Service
 {
     public class BaseService : IEventManager
     {

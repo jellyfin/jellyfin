@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna
+namespace Emby.Dlna
 {
     public static class ConfigurationExtension
     {

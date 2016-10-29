@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Dlna.Common;
-using MediaBrowser.Dlna.Ssdp;
+using Emby.Dlna.Common;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -13,9 +13,9 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using MediaBrowser.Dlna.Server;
+using Emby.Dlna.Server;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {

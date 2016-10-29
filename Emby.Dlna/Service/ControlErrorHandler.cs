@@ -2,7 +2,7 @@
 using System;
 using System.Xml;
 
-namespace MediaBrowser.Dlna.Service
+namespace Emby.Dlna.Service
 {
     public class ControlErrorHandler
     {

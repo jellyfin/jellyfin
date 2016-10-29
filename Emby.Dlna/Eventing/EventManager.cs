@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Dlna.Eventing
+namespace Emby.Dlna.Eventing
 {
     public class EventManager : IEventManager
     {

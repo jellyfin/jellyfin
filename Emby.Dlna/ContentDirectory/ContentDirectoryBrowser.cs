@@ -10,9 +10,9 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Dlna.Server;
+using Emby.Dlna.Server;
 
-namespace MediaBrowser.Dlna.ContentDirectory
+namespace Emby.Dlna.ContentDirectory
 {
     public class ContentDirectoryBrowser
     {

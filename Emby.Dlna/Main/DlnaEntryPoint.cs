@@ -8,8 +8,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.PlayTo;
-using MediaBrowser.Dlna.Ssdp;
+using Emby.Dlna.PlayTo;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ using MediaBrowser.Model.Globalization;
 using Rssdp;
 using Rssdp.Infrastructure;
 
-namespace MediaBrowser.Dlna.Main
+namespace Emby.Dlna.Main
 {
     public class DlnaEntryPoint : IServerEntryPoint
     {

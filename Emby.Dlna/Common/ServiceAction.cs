@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.Common
+namespace Emby.Dlna.Common
 {
     public class ServiceAction
     {

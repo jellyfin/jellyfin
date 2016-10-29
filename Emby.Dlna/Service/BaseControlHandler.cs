@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Dlna.Server;
+using Emby.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-namespace MediaBrowser.Dlna.Service
+namespace Emby.Dlna.Service
 {
     public abstract class BaseControlHandler
     {

@@ -15,7 +15,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using Rssdp;
 
-namespace MediaBrowser.Dlna.Ssdp
+namespace Emby.Dlna.Ssdp
 {
     public class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {

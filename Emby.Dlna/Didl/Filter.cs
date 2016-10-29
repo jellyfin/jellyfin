@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     public class Filter
     {

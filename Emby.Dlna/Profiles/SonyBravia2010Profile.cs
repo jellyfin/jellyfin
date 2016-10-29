@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Dlna;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace Emby.Dlna.Profiles
 {
     [XmlRoot("Profile")]
     public class SonyBravia2010Profile : DefaultProfile

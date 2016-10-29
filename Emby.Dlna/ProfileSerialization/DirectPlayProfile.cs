@@ -2,7 +2,7 @@
 using System.Xml.Serialization;
 using MediaBrowser.Model.Dlna;
 
-namespace MediaBrowser.Dlna.ProfileSerialization
+namespace Emby.Dlna.ProfileSerialization
 {
     public class DirectPlayProfile
     {

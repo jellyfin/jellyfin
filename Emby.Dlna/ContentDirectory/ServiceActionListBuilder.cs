@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Dlna.Common;
+﻿using Emby.Dlna.Common;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.ContentDirectory
+namespace Emby.Dlna.ContentDirectory
 {
     public class ServiceActionListBuilder
     {

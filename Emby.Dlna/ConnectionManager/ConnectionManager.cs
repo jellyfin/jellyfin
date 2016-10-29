@@ -1,11 +1,11 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Dlna.Service;
+using Emby.Dlna.Service;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.ConnectionManager
+namespace Emby.Dlna.ConnectionManager
 {
     public class ConnectionManager : BaseService, IConnectionManager
     {

@@ -1,11 +1,11 @@
 ﻿using System;
-using MediaBrowser.Dlna.Common;
+using Emby.Dlna.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using MediaBrowser.Dlna.Ssdp;
+using Emby.Dlna.Ssdp;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class TransportCommands
     {
