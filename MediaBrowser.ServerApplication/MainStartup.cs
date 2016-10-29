@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Implementations.Logging;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.Server.Startup.Common.Browser;
@@ -20,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emby.Common.Implementations.IO;
+using Emby.Common.Implementations.Logging;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 

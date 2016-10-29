@@ -6,7 +6,6 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations;
 using Emby.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;

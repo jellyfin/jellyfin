@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;

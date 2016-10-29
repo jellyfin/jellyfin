@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Mono.Native;
@@ -14,6 +13,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.IO;
+using Emby.Common.Implementations.Logging;
 
 namespace MediaBrowser.Server.Mono
 {
