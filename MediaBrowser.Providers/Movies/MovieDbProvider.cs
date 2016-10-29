@@ -657,8 +657,7 @@ namespace MediaBrowser.Providers.Movies
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = MovieDbResourcePool
+                Url = url
             });
         }
     }

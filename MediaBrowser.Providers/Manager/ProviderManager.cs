@@ -560,8 +560,6 @@ namespace MediaBrowser.Providers.Manager
                 new MetadataOptions();
         }
 
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -585,6 +583,7 @@ namespace MediaBrowser.Providers.Manager
             return SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
         }
 
+        private readonly SemaphoreSlim _saveLock = new SemaphoreSlim(1,1);
         /// <summary>
         /// Saves the metadata.
         /// </summary>
@@ -614,9 +613,7 @@ namespace MediaBrowser.Providers.Manager
                         continue;
                     }
 
-                    var semaphore = _fileLocks.GetOrAdd(path, key => new SemaphoreSlim(1, 1));
-
-                    await semaphore.WaitAsync().ConfigureAwait(false);
+                    await _saveLock.WaitAsync().ConfigureAwait(false);
 
                     try
                     {
@@ -629,8 +626,8 @@ namespace MediaBrowser.Providers.Manager
                     }
                     finally
                     {
+                        _saveLock.Release();
                         _libraryMonitor.ReportFileSystemChangeComplete(path, false);
-                        semaphore.Release();
                     }
                 }
                 else
