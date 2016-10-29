@@ -14,6 +14,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Extensions;
 using System.Xml.Linq;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp

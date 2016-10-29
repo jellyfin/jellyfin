@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
