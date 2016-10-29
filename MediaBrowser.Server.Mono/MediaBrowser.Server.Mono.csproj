@@ -140,10 +140,6 @@
       <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
-      <Project>{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}</Project>
-      <Name>MediaBrowser.Dlna</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
