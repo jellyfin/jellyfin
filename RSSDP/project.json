@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    
+  },
+
+  "frameworks": {
+    "net46": {
+      "frameworkAssemblies": {
+        "System.Collections": "4.0.0.0",
+        "System.Net": "4.0.0.0",
+        "System.Net.Http": "4.0.0.0",
+        "System.Runtime": "4.0.0.0",
+        "System.Threading": "4.0.0.0",
+        "System.Threading.Tasks": "4.0.0.0",
+        "System.Xml": "4.0.0.0"
+      },
+      "dependencies": {
+        
+      }
+    },
+    "netstandard1.6": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+		"System.Collections": "4.0.11",
+		"System.Diagnostics.Debug": "4.0.11",
+		"System.Diagnostics.Tools": "4.0.1",
+		"System.IO": "4.1.0",
+		"System.Linq": "4.1.0",
+		"System.Net.Http": "4.1.0",
+		"System.Net.Primitives": "4.0.11",
+		"System.Net.Sockets": "4.1.0",
+		"System.Resources.ResourceManager": "4.0.1",
+		"System.Runtime": "4.1.0",
+		"System.Runtime.Extensions": "4.1.0",
+		"System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
+		"System.Text.Encoding": "4.0.11",
+		"System.Text.Encoding.Extensions": "4.0.11",
+		"System.Threading": "4.0.11",
+		"System.Threading.Tasks": "4.0.11",
+		"System.Threading.Timer": "4.0.1",
+		"System.Xml.ReaderWriter": "4.0.11"
+      }
+    }
+  }
+}

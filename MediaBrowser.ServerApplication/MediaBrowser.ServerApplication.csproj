@@ -1073,10 +1073,6 @@
       <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
-      <Project>{734098eb-6dc1-4dd0-a1ca-3140dcd2737c}</Project>
-      <Name>MediaBrowser.Dlna</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
       <Project>{7ef9f3e0-697d-42f3-a08f-19deb5f84392}</Project>
       <Name>MediaBrowser.LocalMetadata</Name>
