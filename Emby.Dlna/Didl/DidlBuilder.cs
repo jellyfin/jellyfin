@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
-using MediaBrowser.Dlna.ContentDirectory;
+using Emby.Dlna.ContentDirectory;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
@@ -22,7 +22,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Dlna.Didl
+namespace Emby.Dlna.Didl
 {
     public class DidlBuilder
     {

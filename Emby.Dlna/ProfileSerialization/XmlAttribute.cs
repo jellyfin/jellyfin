@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.ProfileSerialization
+namespace Emby.Dlna.ProfileSerialization
 {
     public class XmlAttribute
     {

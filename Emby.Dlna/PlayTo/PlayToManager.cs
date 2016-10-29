@@ -18,7 +18,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     class PlayToManager : IDisposable
     {

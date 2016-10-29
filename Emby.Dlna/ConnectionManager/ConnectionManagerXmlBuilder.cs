@@ -1,8 +1,8 @@
-﻿using MediaBrowser.Dlna.Common;
-using MediaBrowser.Dlna.Service;
+﻿using Emby.Dlna.Common;
+using Emby.Dlna.Service;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.ConnectionManager
+namespace Emby.Dlna.ConnectionManager
 {
     public class ConnectionManagerXmlBuilder
     {

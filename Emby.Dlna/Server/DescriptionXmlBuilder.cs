@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Dlna.Common;
+﻿using Emby.Dlna.Common;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Security;
 using System.Text;
 
-namespace MediaBrowser.Dlna.Server
+namespace Emby.Dlna.Server
 {
     public class DescriptionXmlBuilder
     {

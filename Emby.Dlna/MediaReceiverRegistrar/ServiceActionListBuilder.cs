@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Dlna.Common;
+﻿using Emby.Dlna.Common;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.MediaReceiverRegistrar
+namespace Emby.Dlna.MediaReceiverRegistrar
 {
     public class ServiceActionListBuilder
     {

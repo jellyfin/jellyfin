@@ -6,7 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class PlaylistItemFactory
     {

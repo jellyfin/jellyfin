@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Xml.Linq;
-using MediaBrowser.Dlna.Ssdp;
+using Emby.Dlna.Ssdp;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class UpnpContainer : uBaseObject
     {

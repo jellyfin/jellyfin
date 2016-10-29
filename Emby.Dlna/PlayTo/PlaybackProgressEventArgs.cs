@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class PlaybackProgressEventArgs : EventArgs
     {

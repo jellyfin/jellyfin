@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Dlna.Didl;
+using Emby.Dlna.Didl;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -21,7 +21,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class PlayToController : ISessionController, IDisposable
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Dlna.Eventing
+namespace Emby.Dlna.Eventing
 {
     public class EventSubscription
     {

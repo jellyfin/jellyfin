@@ -6,9 +6,9 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Dlna.Didl;
-using MediaBrowser.Dlna.Server;
-using MediaBrowser.Dlna.Service;
+using Emby.Dlna.Didl;
+using Emby.Dlna.Server;
+using Emby.Dlna.Service;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
@@ -25,7 +25,7 @@ using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Dlna.ContentDirectory
+namespace Emby.Dlna.ContentDirectory
 {
     public class ControlHandler : BaseControlHandler
     {

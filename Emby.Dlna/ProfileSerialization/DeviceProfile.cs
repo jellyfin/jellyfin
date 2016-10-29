@@ -3,7 +3,7 @@ using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.ProfileSerialization
+namespace Emby.Dlna.ProfileSerialization
 {
     [XmlRoot("Profile")]
     public class DeviceProfile
@@ -232,7 +232,7 @@ namespace MediaBrowser.Dlna.ProfileSerialization
 
         private MediaBrowser.Model.Dlna.ProfileCondition GetModelProfileCondition(ProfileCondition c)
         {
-            return new Model.Dlna.ProfileCondition
+            return new MediaBrowser.Model.Dlna.ProfileCondition
             {
                 Condition = c.Condition,
                 IsRequired = c.IsRequired,

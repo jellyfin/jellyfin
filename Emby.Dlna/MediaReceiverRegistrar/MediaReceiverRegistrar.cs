@@ -1,12 +1,12 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Dlna.Service;
+using Emby.Dlna.Service;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Dlna.MediaReceiverRegistrar
+namespace Emby.Dlna.MediaReceiverRegistrar
 {
     public class MediaReceiverRegistrar : BaseService, IMediaReceiverRegistrar, IDisposable
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace MediaBrowser.Dlna.Profiles
+namespace Emby.Dlna.Profiles
 {
     [XmlRoot("Profile")]
     public class DefaultProfile : DeviceProfile

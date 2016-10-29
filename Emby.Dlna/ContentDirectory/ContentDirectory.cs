@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Dlna.Service;
+using Emby.Dlna.Service;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
@@ -14,7 +14,7 @@ using System.Linq;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Dlna.ContentDirectory
+namespace Emby.Dlna.ContentDirectory
 {
     public class ContentDirectory : BaseService, IContentDirectory, IDisposable
     {

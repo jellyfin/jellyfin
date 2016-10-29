@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Dlna.Common;
+using Emby.Dlna.Common;
 using System;
 using System.Globalization;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class SsdpHttpClient
     {

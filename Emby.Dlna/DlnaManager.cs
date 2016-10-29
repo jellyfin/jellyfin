@@ -4,8 +4,8 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Dlna.Profiles;
-using MediaBrowser.Dlna.Server;
+using Emby.Dlna.Profiles;
+using Emby.Dlna.Server;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
@@ -23,7 +23,7 @@ using MediaBrowser.Model.IO;
 using System.Reflection;
 #endif
 
-namespace MediaBrowser.Dlna
+namespace Emby.Dlna
 {
     public class DlnaManager : IDlnaManager
     {
@@ -328,7 +328,7 @@ namespace MediaBrowser.Dlna
 
                     if (string.Equals(Path.GetExtension(path), ".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        var tempProfile = (MediaBrowser.Dlna.ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(MediaBrowser.Dlna.ProfileSerialization.DeviceProfile), path);
+                        var tempProfile = (Emby.Dlna.ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(Emby.Dlna.ProfileSerialization.DeviceProfile), path);
 
                         var json = _jsonSerializer.SerializeToString(tempProfile);
                         profile = (DeviceProfile)_jsonSerializer.DeserializeFromString<DeviceProfile>(json);

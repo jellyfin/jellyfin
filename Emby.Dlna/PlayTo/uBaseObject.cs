@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Dlna.PlayTo
+namespace Emby.Dlna.PlayTo
 {
     public class uBaseObject 
     {
@@ -38,17 +38,17 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 var classType = UpnpClass ?? string.Empty;
 
-                if (classType.IndexOf(Model.Entities.MediaType.Audio, StringComparison.Ordinal) != -1)
+                if (classType.IndexOf(MediaBrowser.Model.Entities.MediaType.Audio, StringComparison.Ordinal) != -1)
                 {
-                    return Model.Entities.MediaType.Audio;
+                    return MediaBrowser.Model.Entities.MediaType.Audio;
                 }
-                if (classType.IndexOf(Model.Entities.MediaType.Video, StringComparison.Ordinal) != -1)
+                if (classType.IndexOf(MediaBrowser.Model.Entities.MediaType.Video, StringComparison.Ordinal) != -1)
                 {
-                    return Model.Entities.MediaType.Video;
+                    return MediaBrowser.Model.Entities.MediaType.Video;
                 }
                 if (classType.IndexOf("image", StringComparison.Ordinal) != -1)
                 {
-                    return Model.Entities.MediaType.Photo;
+                    return MediaBrowser.Model.Entities.MediaType.Photo;
                 }
 
                 return null;

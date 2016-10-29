@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace MediaBrowser.Dlna.Ssdp
+namespace Emby.Dlna.Ssdp
 {
     public static class Extensions
     {
