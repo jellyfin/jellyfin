@@ -1,26 +1,29 @@
-﻿using System.IO;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Controller;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Common.Implementations.Security
+namespace MediaBrowser.Server.Implementations.Security
 {
     /// <summary>
     /// Class PluginSecurityManager
     /// </summary>
     public class PluginSecurityManager : ISecurityManager
     {
-        private const string MBValidateUrl = MbAdmin.HttpsUrl + "service/registration/validate";
+        private const string MBValidateUrl = "https://mb3admin.com/admin/service/registration/validate";
         private const string AppstoreRegUrl = /*MbAdmin.HttpsUrl*/ "https://mb3admin.com/admin/service/appstore/register";
 
         /// <summary>
@@ -57,9 +60,10 @@ namespace MediaBrowser.Common.Implementations.Security
 
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
         private IEnumerable<IRequiresRegistration> _registeredEntities;
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
@@ -73,8 +77,8 @@ namespace MediaBrowser.Common.Implementations.Security
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
-        public PluginSecurityManager(IApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
-            IApplicationPaths appPaths, ILogManager logManager)
+        public PluginSecurityManager(IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
+            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem)
         {
             if (httpClient == null)
             {
@@ -85,6 +89,7 @@ namespace MediaBrowser.Common.Implementations.Security
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
             _logger = logManager.GetLogger("SecurityManager");
         }
 
@@ -226,7 +231,7 @@ namespace MediaBrowser.Common.Implementations.Security
 
             try
             {
-                File.WriteAllText(Path.Combine(_appPaths.ProgramDataPath, "apptrans-error.txt"), info);
+                _fileSystem.WriteAllText(Path.Combine(_appPaths.ProgramDataPath, "apptrans-error.txt"), info);
             }
             catch (IOException)
             {

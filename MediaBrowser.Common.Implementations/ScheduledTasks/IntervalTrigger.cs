@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Tasks;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.ScheduledTasks
+namespace MediaBrowser.Common.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Represents a task trigger that runs repeatedly on an interval

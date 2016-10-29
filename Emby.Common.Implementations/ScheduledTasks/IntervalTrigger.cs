@@ -1,27 +1,28 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.Implementations.ScheduledTasks
+namespace Emby.Common.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task trigger that fires on a weekly basis
+    /// Represents a task trigger that runs repeatedly on an interval
     /// </summary>
-    public class WeeklyTrigger : ITaskTrigger
+    public class IntervalTrigger : ITaskTrigger
     {
         /// <summary>
-        /// Get the time of day to trigger the task to run
+        /// Gets or sets the interval.
         /// </summary>
-        /// <value>The time of day.</value>
-        public TimeSpan TimeOfDay { get; set; }
+        /// <value>The interval.</value>
+        public TimeSpan Interval { get; set; }
 
         /// <summary>
-        /// Gets or sets the day of week.
+        /// Gets or sets the timer.
         /// </summary>
-        /// <value>The day of week.</value>
-        public DayOfWeek DayOfWeek { get; set; }
+        /// <value>The timer.</value>
+        private Timer Timer { get; set; }
 
         /// <summary>
         /// Gets the execution properties of this task.
@@ -31,11 +32,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </value>
         public TaskExecutionOptions TaskOptions { get; set; }
 
-        /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
+        private DateTime _lastStartDate;
 
         /// <summary>
         /// Stars waiting for the trigger action
@@ -46,36 +43,32 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             DisposeTimer();
 
-            var triggerDate = GetNextTriggerDateTime();
+            DateTime triggerDate;
 
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.Now, TimeSpan.FromMilliseconds(-1));
-        }
-
-        /// <summary>
-        /// Gets the next trigger date time.
-        /// </summary>
-        /// <returns>DateTime.</returns>
-        private DateTime GetNextTriggerDateTime()
-        {
-            var now = DateTime.Now;
-
-            // If it's on the same day
-            if (now.DayOfWeek == DayOfWeek)
+            if (lastResult == null)
             {
-                // It's either later today, or a week from now
-                return now.TimeOfDay < TimeOfDay ? now.Date.Add(TimeOfDay) : now.Date.AddDays(7).Add(TimeOfDay);
+                // Task has never been completed before
+                triggerDate = DateTime.UtcNow.AddHours(1);
+            }
+            else
+            {
+                triggerDate = new[] { lastResult.EndTimeUtc, _lastStartDate }.Max().Add(Interval);
             }
 
-            var triggerDate = now.Date;
-
-            // Walk the date forward until we get to the trigger day
-            while (triggerDate.DayOfWeek != DayOfWeek)
+            if (DateTime.UtcNow > triggerDate)
             {
-                triggerDate = triggerDate.AddDays(1);
+                triggerDate = DateTime.UtcNow.AddMinutes(1);
             }
 
-            // Return the trigger date plus the time offset
-            return triggerDate.Add(TimeOfDay);
+            var dueTime = triggerDate - DateTime.UtcNow;
+            var maxDueTime = TimeSpan.FromDays(7);
+
+            if (dueTime > maxDueTime)
+            {
+                dueTime = maxDueTime;
+            }
+
+            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
@@ -107,8 +100,11 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         private void OnTriggered()
         {
+            DisposeTimer();
+
             if (Triggered != null)
             {
+                _lastStartDate = DateTime.UtcNow;
                 Triggered(this, new GenericEventArgs<TaskExecutionOptions>(TaskOptions));
             }
         }

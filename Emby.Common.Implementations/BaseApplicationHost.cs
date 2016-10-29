@@ -1,14 +1,13 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Implementations.Devices;
-using MediaBrowser.Common.Implementations.IO;
-using MediaBrowser.Common.Implementations.ScheduledTasks;
-using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.Implementations.Updates;
+using Emby.Common.Implementations.Devices;
+using Emby.Common.Implementations.IO;
+using Emby.Common.Implementations.ScheduledTasks;
+using Emby.Common.Implementations.Serialization;
+using Emby.Common.Implementations.Updates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Events;
@@ -27,13 +26,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations.Cryptography;
+using Emby.Common.Implementations.Cryptography;
+using MediaBrowser.Common;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.Implementations
+namespace Emby.Common.Implementations
 {
     /// <summary>
     /// Class BaseApplicationHost

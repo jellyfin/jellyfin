@@ -287,6 +287,9 @@
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Reflection\AssemblyInfo.cs" />
+    <Compile Include="Security\MBLicenseFile.cs" />
+    <Compile Include="Security\PluginSecurityManager.cs" />
+    <Compile Include="Security\RegRecord.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
@@ -296,6 +299,7 @@
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
+    <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Common.Implementations.Security
+namespace MediaBrowser.Server.Implementations.Security
 {
     class RegRecord
     {

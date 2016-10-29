@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using MediaBrowser.Common.Configuration;
 
-namespace MediaBrowser.Common.Implementations.Security
+namespace MediaBrowser.Server.Implementations.Security
 {
     internal class MBLicenseFile
     {

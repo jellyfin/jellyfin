@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Common.Implementations.Configuration
+namespace Emby.Common.Implementations.Configuration
 {
     /// <summary>
     /// Class ConfigurationHelper

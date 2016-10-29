@@ -351,8 +351,8 @@ namespace MediaBrowser.ServerApplication
                 task = InstallVcredist2013IfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
-                SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-                SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+                Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+                Microsoft.Win32.SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
                 HideSplashScreen();
 

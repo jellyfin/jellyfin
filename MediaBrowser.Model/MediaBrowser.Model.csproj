@@ -408,6 +408,7 @@
     <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\Architecture.cs" />
+    <Compile Include="System\ISystemEvents.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
     <Compile Include="Tasks\IConfigurableScheduledTask.cs" />

@@ -1,16 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Implementations.Security;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Plugins;
-using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.Security;
-using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Updates;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -18,10 +6,21 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Progress;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Updates;
 
-namespace MediaBrowser.Common.Implementations.Updates
+namespace MediaBrowser.Server.Implementations.Updates
 {
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)
@@ -164,7 +163,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
             if (withRegistration)
             {
-                using (var json = await _httpClient.Post(MbAdmin.HttpsUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+                using (var json = await _httpClient.Post("https://www.mb3admin.com/admin/service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -237,7 +236,7 @@ namespace MediaBrowser.Common.Implementations.Updates
 
                 var tempFile = await _httpClient.GetTempFile(new HttpRequestOptions
                 {
-                    Url = MbAdmin.HttpUrl + "service/MB3Packages.json",
+                    Url = "https://www.mb3admin.com/admin/service/MB3Packages.json",
                     CancellationToken = cancellationToken,
                     Progress = new Progress<Double>()
 
@@ -619,7 +618,7 @@ namespace MediaBrowser.Common.Implementations.Updates
                 //If it is an archive - write out a version file so we know what it is
                 if (isArchive)
                 {
-                    File.WriteAllText(target + ".ver", package.versionStr);
+                    _fileSystem.WriteAllText(target + ".ver", package.versionStr);
                 }
             }
             catch (IOException e)
