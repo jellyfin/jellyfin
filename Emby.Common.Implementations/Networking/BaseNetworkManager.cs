@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
 
 namespace Emby.Common.Implementations.Networking
@@ -56,7 +57,7 @@ namespace Emby.Common.Implementations.Networking
 
             if (list.Count == 0)
             {
-				list.AddRange(GetLocalIpAddressesFallback());
+				list.AddRange(GetLocalIpAddressesFallback().Result);
             }
 
 			return list.Where(FilterIpAddress).DistinctBy(i => i.ToString());
@@ -170,7 +171,7 @@ namespace Emby.Common.Implementations.Networking
                         var host = uri.DnsSafeHost;
                         Logger.Debug("Resolving host {0}", host);
 
-                        address = GetIpAddresses(host).FirstOrDefault();
+                        address = GetIpAddresses(host).Result.FirstOrDefault();
 
                         if (address != null)
                         {
@@ -193,9 +194,9 @@ namespace Emby.Common.Implementations.Networking
             return false;
         }
 
-        public IEnumerable<IPAddress> GetIpAddresses(string hostName)
+        private Task<IPAddress[]> GetIpAddresses(string hostName)
         {
-            return Dns.GetHostAddresses(hostName);
+            return Dns.GetHostAddressesAsync(hostName);
         }
 
 		private List<IPAddress> GetIPsDefault()
@@ -236,9 +237,9 @@ namespace Emby.Common.Implementations.Networking
 				.ToList();
 		}
 
-		private IEnumerable<IPAddress> GetLocalIpAddressesFallback()
+		private async Task<IEnumerable<IPAddress>> GetLocalIpAddressesFallback()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
+            var host = await Dns.GetHostEntryAsync(Dns.GetHostName()).ConfigureAwait(false);
 
             // Reverse them because the last one is usually the correct one
             // It's not fool-proof so ultimately the consumer will have to examine them and decide
@@ -279,7 +280,7 @@ namespace Emby.Common.Implementations.Networking
         /// <returns>IPEndPoint.</returns>
         public IPEndPoint Parse(string endpointstring)
         {
-            return Parse(endpointstring, -1);
+            return Parse(endpointstring, -1).Result;
         }
 
         /// <summary>
@@ -290,7 +291,7 @@ namespace Emby.Common.Implementations.Networking
         /// <returns>IPEndPoint.</returns>
         /// <exception cref="System.ArgumentException">Endpoint descriptor may not be empty.</exception>
         /// <exception cref="System.FormatException"></exception>
-        private static IPEndPoint Parse(string endpointstring, int defaultport)
+        private static async Task<IPEndPoint> Parse(string endpointstring, int defaultport)
         {
             if (String.IsNullOrEmpty(endpointstring)
                 || endpointstring.Trim().Length == 0)
@@ -316,7 +317,7 @@ namespace Emby.Common.Implementations.Networking
 
                 //try to use the address as IPv4, otherwise get hostname
                 if (!IPAddress.TryParse(values[0], out ipaddy))
-                    ipaddy = GetIPfromHost(values[0]);
+                    ipaddy = await GetIPfromHost(values[0]).ConfigureAwait(false);
             }
             else if (values.Length > 2) //ipv6
             {
@@ -372,9 +373,9 @@ namespace Emby.Common.Implementations.Networking
         /// <param name="p">The p.</param>
         /// <returns>IPAddress.</returns>
         /// <exception cref="System.ArgumentException"></exception>
-        private static IPAddress GetIPfromHost(string p)
+        private static async Task<IPAddress> GetIPfromHost(string p)
         {
-            var hosts = Dns.GetHostAddresses(p);
+            var hosts = await Dns.GetHostAddressesAsync(p).ConfigureAwait(false);
 
             if (hosts == null || hosts.Length == 0)
                 throw new ArgumentException(String.Format("Host not found: {0}", p));
