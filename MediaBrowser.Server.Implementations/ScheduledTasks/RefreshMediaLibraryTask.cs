@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Configuration;
+﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Server.Implementations.Library;
 using System;

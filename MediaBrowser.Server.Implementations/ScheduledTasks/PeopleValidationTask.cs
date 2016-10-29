@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using System;
 using System.Collections.Generic;
 using System.Threading;

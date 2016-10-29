@@ -1,7 +1,6 @@
 ﻿using Interfaces.IO;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
