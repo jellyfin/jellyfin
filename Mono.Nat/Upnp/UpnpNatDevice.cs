@@ -34,8 +34,8 @@ using System.Text;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Dlna;
 
 namespace Mono.Nat.Upnp
 {
