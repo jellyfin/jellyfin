@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Common.Implementations.Networking;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
+using Emby.Common.Implementations.Networking;
 
 namespace MediaBrowser.Server.Mono.Networking
 {

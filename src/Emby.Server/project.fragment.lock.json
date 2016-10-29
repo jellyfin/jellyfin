@@ -59,8 +59,6 @@
         "bin/Debug/MediaBrowser.Controller.dll": {}
       },
       "runtime": {
-        "../packages/Interfaces.IO.1.0.0.5/lib/portable-net45+sl4+wp71+win8+wpa81/Interfaces.IO.dll": {},
-        "../packages/Patterns.Logging.1.0.0.2/lib/portable-net45+sl4+wp71+win8+wpa81/Patterns.Logging.dll": {},
         "bin/Debug/MediaBrowser.Controller.dll": {}
       },
       "contentFiles": {

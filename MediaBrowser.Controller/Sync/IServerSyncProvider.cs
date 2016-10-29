@@ -45,6 +45,7 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         Task<QueryResult<FileSystemMetadata>> GetFiles(string id, SyncTarget target, CancellationToken cancellationToken);
         Task<QueryResult<FileSystemMetadata>> GetFiles(string[] pathParts, SyncTarget target, CancellationToken cancellationToken);
+        Task<QueryResult<FileSystemMetadata>> GetFiles(SyncTarget target, CancellationToken cancellationToken);
     }
 
     public interface ISupportsDirectCopy

@@ -7,7 +7,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.ScheduledTasks;
+using Emby.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -96,13 +96,12 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Common.Implementations;
+using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.Updates;
 using Emby.Photos;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback;
-using MediaBrowser.Common.Implementations.Networking;
-using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
@@ -111,6 +110,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
@@ -250,11 +250,6 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly string _releaseAssetFilename;
 
         internal INativeApp NativeApp { get; set; }
-
-        /// <summary>
-        /// The container
-        /// </summary>
-        protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -1750,68 +1745,9 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
-        /// <summary>
-        /// Creates an instance of type and resolves all constructor dependancies
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        public override object CreateInstance(Type type)
-        {
-            try
-            {
-                return Container.GetInstance(type);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error creating {0}", ex, type.FullName);
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Creates the instance safe.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        protected override object CreateInstanceSafe(Type type)
-        {
-            try
-            {
-                return Container.GetInstance(type);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error creating {0}", ex, type.FullName);
-                // Don't blow up in release mode
-                return null;
-            }
-        }
-
         void IDependencyContainer.RegisterSingleInstance<T>(T obj, bool manageLifetime)
         {
             RegisterSingleInstance(obj, manageLifetime);
-        }
-
-        /// <summary>
-        /// Registers the specified obj.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj">The obj.</param>
-        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        protected override void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
-        {
-            Container.RegisterSingleton(obj);
-
-            if (manageLifetime)
-            {
-                var disposable = obj as IDisposable;
-
-                if (disposable != null)
-                {
-                    DisposableParts.Add(disposable);
-                }
-            }
         }
 
         void IDependencyContainer.RegisterSingleInstance<T>(Func<T> func)
@@ -1819,45 +1755,9 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(func);
         }
 
-        /// <summary>
-        /// Registers the single instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="func">The func.</param>
-        protected override void RegisterSingleInstance<T>(Func<T> func)
-        {
-            Container.RegisterSingleton(func);
-        }
-
         void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)
         {
             Container.Register(typeInterface, typeImplementation);
-        }
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public override T Resolve<T>()
-        {
-            return (T)Container.GetRegistration(typeof(T), true).GetInstance();
-        }
-
-        /// <summary>
-        /// Resolves this instance.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public override T TryResolve<T>()
-        {
-            var result = Container.GetRegistration(typeof(T), false);
-
-            if (result == null)
-            {
-                return default(T);
-            }
-            return (T)result.GetInstance();
         }
 
     }
