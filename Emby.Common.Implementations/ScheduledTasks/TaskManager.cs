@@ -249,7 +249,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
             var myTasks = ScheduledTasks.ToList();
 
             var list = tasks.ToList();
-            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem)));
+            myTasks.AddRange(list.Select(t => new ScheduledTaskWorker(t, ApplicationPaths, this, JsonSerializer, Logger, _fileSystem, _systemEvents)));
 
             ScheduledTasks = myTasks.ToArray();
 

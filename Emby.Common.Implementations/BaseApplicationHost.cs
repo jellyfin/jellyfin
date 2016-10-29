@@ -32,6 +32,9 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+#if NETSTANDARD1_6
+using System.Runtime.Loader;
+#endif
 
 namespace Emby.Common.Implementations
 {
@@ -173,10 +176,24 @@ namespace Emby.Common.Implementations
 
         public virtual string OperatingSystemDisplayName
         {
-            get { return Environment.OSVersion.VersionString; }
+            get
+            {
+#if NET46
+                return Environment.OSVersion.VersionString;
+#endif
+#if NETSTANDARD1_6
+                return System.Runtime.InteropServices.RuntimeInformation.OSDescription;
+#endif
+                return "Operating System";
+            }
         }
 
         public IMemoryStreamProvider MemoryStreamProvider { get; set; }
+
+        /// <summary>
+        /// The container
+        /// </summary>
+        protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
@@ -284,11 +301,10 @@ namespace Emby.Common.Implementations
 
             builder.AppendLine(string.Format("Command line: {0}", string.Join(" ", Environment.GetCommandLineArgs())));
 
+#if NET46
             builder.AppendLine(string.Format("Operating system: {0}", Environment.OSVersion));
-            builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
             builder.AppendLine(string.Format("64-Bit OS: {0}", Environment.Is64BitOperatingSystem));
             builder.AppendLine(string.Format("64-Bit Process: {0}", Environment.Is64BitProcess));
-            builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
 
             Type type = Type.GetType("Mono.Runtime");
             if (type != null)
@@ -299,7 +315,10 @@ namespace Emby.Common.Implementations
                     builder.AppendLine("Mono: " + displayName.Invoke(null, null));
                 }
             }
+#endif    
 
+            builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
+            builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
             builder.AppendLine(string.Format("Application Path: {0}", appPaths.ApplicationPath));
 
             return builder;
@@ -312,7 +331,9 @@ namespace Emby.Common.Implementations
             try
             {
                 // Increase the max http request limit
+#if NET46
                 ServicePointManager.DefaultConnectionLimit = Math.Max(96, ServicePointManager.DefaultConnectionLimit);
+#endif    
             }
             catch (Exception ex)
             {
@@ -410,6 +431,7 @@ namespace Emby.Common.Implementations
 
                 if (assemblyPlugin != null)
                 {
+#if NET46
                     var assembly = plugin.GetType().Assembly;
                     var assemblyName = assembly.GetName();
 
@@ -420,10 +442,24 @@ namespace Emby.Common.Implementations
                     var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
 
                     assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+#elif NETSTANDARD1_6
+                    var typeInfo = plugin.GetType().GetTypeInfo();
+                    var assembly = typeInfo.Assembly;
+                    var assemblyName = assembly.GetName();
+
+                    var attribute = (GuidAttribute)assembly.GetCustomAttribute(typeof(GuidAttribute));
+                    var assemblyId = new Guid(attribute.Value);
+
+                    var assemblyFileName = assemblyName.Name + ".dll";
+                    var assemblyFilePath = Path.Combine(ApplicationPaths.PluginsPath, assemblyFileName);
+
+                    assemblyPlugin.SetAttributes(assemblyFilePath, assemblyFileName, assemblyName.Version, assemblyId);
+#else
+return null;
+#endif
                 }
 
                 var isFirstRun = !File.Exists(plugin.ConfigurationFilePath);
-
                 plugin.SetStartupInfo(isFirstRun, File.GetLastWriteTimeUtc, s => Directory.CreateDirectory(s));
             }
             catch (Exception ex)
@@ -451,7 +487,17 @@ namespace Emby.Common.Implementations
 
             AllConcreteTypes = assemblies
                 .SelectMany(GetTypes)
-                .Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType)
+                .Where(t =>
+                {
+#if NET46
+                    return t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType;
+#endif    
+#if NETSTANDARD1_6
+                    var typeInfo = t.GetTypeInfo();
+                    return typeInfo.IsClass && !typeInfo.IsAbstract && !typeInfo.IsInterface && !typeInfo.IsGenericType;
+#endif
+                    return false;
+                })
                 .ToArray();
         }
 
@@ -532,14 +578,38 @@ namespace Emby.Common.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        public abstract object CreateInstance(Type type);
+        public object CreateInstance(Type type)
+        {
+            try
+            {
+                return Container.GetInstance(type);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
+
+                throw;
+            }
+        }
 
         /// <summary>
         /// Creates the instance safe.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        protected abstract object CreateInstanceSafe(Type type);
+        protected object CreateInstanceSafe(Type type)
+        {
+            try
+            {
+                return Container.GetInstance(type);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
+                // Don't blow up in release mode
+                return null;
+            }
+        }
 
         /// <summary>
         /// Registers the specified obj.
@@ -547,30 +617,58 @@ namespace Emby.Common.Implementations
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        protected abstract void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
-            where T : class;
+        protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
+            where T : class
+        {
+            Container.RegisterSingleton(obj);
+
+            if (manageLifetime)
+            {
+                var disposable = obj as IDisposable;
+
+                if (disposable != null)
+                {
+                    DisposableParts.Add(disposable);
+                }
+            }
+        }
 
         /// <summary>
         /// Registers the single instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func">The func.</param>
-        protected abstract void RegisterSingleInstance<T>(Func<T> func)
-            where T : class;
+        protected void RegisterSingleInstance<T>(Func<T> func)
+            where T : class
+        {
+            Container.RegisterSingleton(func);
+        }
 
         /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public abstract T Resolve<T>();
+        public T Resolve<T>()
+        {
+            return (T)Container.GetRegistration(typeof(T), true).GetInstance();
+        }
 
         /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public abstract T TryResolve<T>();
+        public T TryResolve<T>()
+        {
+            var result = Container.GetRegistration(typeof(T), false);
+
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result.GetInstance();
+        }
 
         /// <summary>
         /// Loads the assembly.
@@ -581,7 +679,13 @@ namespace Emby.Common.Implementations
         {
             try
             {
+#if NET46
                 return Assembly.Load(File.ReadAllBytes(file));
+#elif NETSTANDARD1_6
+                
+                return AssemblyLoadContext.Default.LoadFromStream(new MemoryStream(File.ReadAllBytes(file)));
+#endif
+                return null;
             }
             catch (Exception ex)
             {
@@ -600,7 +704,14 @@ namespace Emby.Common.Implementations
         {
             var currentType = typeof(T);
 
-            return AllConcreteTypes.AsParallel().Where(currentType.IsAssignableFrom);
+#if NET46
+            return AllConcreteTypes.Where(currentType.IsAssignableFrom);
+#elif NETSTANDARD1_6
+            var currentTypeInfo = currentType.GetTypeInfo();
+
+            return AllConcreteTypes.Where(currentTypeInfo.IsAssignableFrom);
+#endif
+            return new List<Type>();
         }
 
         /// <summary>
