@@ -290,7 +290,8 @@ namespace MediaBrowser.Model.Entities
             return StringHelper.IndexOfIgnoreCase(codec, "pgs") == -1 &&
                    StringHelper.IndexOfIgnoreCase(codec, "dvd") == -1 &&
                    StringHelper.IndexOfIgnoreCase(codec, "dvbsub") == -1 &&
-                   !StringHelper.EqualsIgnoreCase(codec, "sub");
+                   !StringHelper.EqualsIgnoreCase(codec, "sub") &&
+                   !StringHelper.EqualsIgnoreCase(codec, "dvb_subtitle");
         }
 
         public bool SupportsSubtitleConversionTo(string codec)
