@@ -17,8 +17,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using ServiceStack;
-using SimpleInjector;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -41,7 +39,7 @@ namespace MediaBrowser.Common.Implementations
     /// Class BaseApplicationHost
     /// </summary>
     /// <typeparam name="TApplicationPathsType">The type of the T application paths type.</typeparam>
-    public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost, IDependencyContainer
+    public abstract class BaseApplicationHost<TApplicationPathsType> : IApplicationHost
         where TApplicationPathsType : class, IApplicationPaths
     {
         /// <summary>
@@ -83,11 +81,6 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <value>The application paths.</value>
         protected TApplicationPathsType ApplicationPaths { get; private set; }
-
-        /// <summary>
-        /// The container
-        /// </summary>
-        protected readonly Container Container = new Container();
 
         /// <summary>
         /// The json serializer
@@ -223,15 +216,6 @@ namespace MediaBrowser.Common.Implementations
         /// <returns>Task.</returns>
         public virtual async Task Init(IProgress<double> progress)
         {
-            try
-            {
-                // https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Web.config#L4
-                Licensing.RegisterLicense("1001-e1JlZjoxMDAxLE5hbWU6VGVzdCBCdXNpbmVzcyxUeXBlOkJ1c2luZXNzLEhhc2g6UHVNTVRPclhvT2ZIbjQ5MG5LZE1mUTd5RUMzQnBucTFEbTE3TDczVEF4QUNMT1FhNXJMOWkzVjFGL2ZkVTE3Q2pDNENqTkQyUktRWmhvUVBhYTBiekJGUUZ3ZE5aZHFDYm9hL3lydGlwUHI5K1JsaTBYbzNsUC85cjVJNHE5QVhldDN6QkE4aTlvdldrdTgyTk1relY2eis2dFFqTThYN2lmc0JveHgycFdjPSxFeHBpcnk6MjAxMy0wMS0wMX0=");
-            }
-            catch
-            {
-                // Failing under mono
-            }
             progress.Report(1);
 
             JsonSerializer = CreateJsonSerializer();
@@ -328,10 +312,7 @@ namespace MediaBrowser.Common.Implementations
             return builder;
         }
 
-        protected virtual IJsonSerializer CreateJsonSerializer()
-        {
-            return new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
-        }
+        protected abstract IJsonSerializer CreateJsonSerializer();
 
         private void SetHttpLimit()
         {
@@ -424,8 +405,6 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         protected virtual void FindParts()
         {
-            RegisterModules();
-
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             Plugins = GetExports<IPlugin>().Select(LoadPlugin).Where(i => i != null).ToArray();
         }
@@ -525,25 +504,6 @@ namespace MediaBrowser.Common.Implementations
             return Task.FromResult(true);
         }
 
-        private void RegisterModules()
-        {
-            var moduleTypes = GetExportTypes<IDependencyModule>();
-
-            foreach (var type in moduleTypes)
-            {
-                try
-                {
-                    var instance = Activator.CreateInstance(type) as IDependencyModule;
-                    if (instance != null)
-                        instance.BindDependencies(this);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error setting up dependency bindings for " + type.Name, ex);
-                }
-            }
-        }
-
         /// <summary>
         /// Gets a list of types within an assembly
         /// This will handle situations that would normally throw an exception - such as a type within the assembly that depends on some other non-existant reference
@@ -584,43 +544,14 @@ namespace MediaBrowser.Common.Implementations
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        public object CreateInstance(Type type)
-        {
-            try
-            {
-                return Container.GetInstance(type);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error creating {0}", ex, type.FullName);
-
-                throw;
-            }
-        }
+        public abstract object CreateInstance(Type type);
 
         /// <summary>
         /// Creates the instance safe.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>System.Object.</returns>
-        protected object CreateInstanceSafe(Type type)
-        {
-            try
-            {
-                return Container.GetInstance(type);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error creating {0}", ex, type.FullName);
-                // Don't blow up in release mode
-                return null;
-            }
-        }
-
-        void IDependencyContainer.RegisterSingleInstance<T>(T obj, bool manageLifetime)
-        {
-            RegisterSingleInstance(obj, manageLifetime);
-        }
+        protected abstract object CreateInstanceSafe(Type type);
 
         /// <summary>
         /// Registers the specified obj.
@@ -628,68 +559,30 @@ namespace MediaBrowser.Common.Implementations
         /// <typeparam name="T"></typeparam>
         /// <param name="obj">The obj.</param>
         /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
-        protected void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
-            where T : class
-        {
-            Container.RegisterSingleton(obj);
-
-            if (manageLifetime)
-            {
-                var disposable = obj as IDisposable;
-
-                if (disposable != null)
-                {
-                    DisposableParts.Add(disposable);
-                }
-            }
-        }
-
-        void IDependencyContainer.RegisterSingleInstance<T>(Func<T> func)
-        {
-            RegisterSingleInstance(func);
-        }
+        protected abstract void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
+            where T : class;
 
         /// <summary>
         /// Registers the single instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="func">The func.</param>
-        protected void RegisterSingleInstance<T>(Func<T> func)
-            where T : class
-        {
-            Container.RegisterSingleton(func);
-        }
-
-        void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)
-        {
-            Container.Register(typeInterface, typeImplementation);
-        }
+        protected abstract void RegisterSingleInstance<T>(Func<T> func)
+            where T : class;
 
         /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public T Resolve<T>()
-        {
-            return (T)Container.GetRegistration(typeof(T), true).GetInstance();
-        }
+        public abstract T Resolve<T>();
 
         /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        public T TryResolve<T>()
-        {
-            var result = Container.GetRegistration(typeof(T), false);
-
-            if (result == null)
-            {
-                return default(T);
-            }
-            return (T)result.GetInstance();
-        }
+        public abstract T TryResolve<T>();
 
         /// <summary>
         /// Loads the assembly.

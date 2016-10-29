@@ -103,10 +103,10 @@ using MediaBrowser.Common.Implementations.Networking;
 using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
@@ -119,15 +119,18 @@ using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
+using MediaBrowser.Server.Implementations.Serialization;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
+using ServiceStack;
+using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 
 namespace MediaBrowser.Server.Startup.Common
 {
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
+    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost, IDependencyContainer
     {
         /// <summary>
         /// Gets the server configuration manager.
@@ -233,6 +236,11 @@ namespace MediaBrowser.Server.Startup.Common
         private readonly string _releaseAssetFilename;
 
         internal INativeApp NativeApp { get; set; }
+
+        /// <summary>
+        /// The container
+        /// </summary>
+        protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -399,7 +407,17 @@ namespace MediaBrowser.Server.Startup.Common
 
         protected override IJsonSerializer CreateJsonSerializer()
         {
-            var result = base.CreateJsonSerializer();
+            try
+            {
+                // https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Web.config#L4
+                Licensing.RegisterLicense("1001-e1JlZjoxMDAxLE5hbWU6VGVzdCBCdXNpbmVzcyxUeXBlOkJ1c2luZXNzLEhhc2g6UHVNTVRPclhvT2ZIbjQ5MG5LZE1mUTd5RUMzQnBucTFEbTE3TDczVEF4QUNMT1FhNXJMOWkzVjFGL2ZkVTE3Q2pDNENqTkQyUktRWmhvUVBhYTBiekJGUUZ3ZE5aZHFDYm9hL3lydGlwUHI5K1JsaTBYbzNsUC85cjVJNHE5QVhldDN6QkE4aTlvdldrdTgyTk1relY2eis2dFFqTThYN2lmc0JveHgycFdjPSxFeHBpcnk6MjAxMy0wMS0wMX0=");
+            }
+            catch
+            {
+                // Failing under mono
+            }
+
+            var result = new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
 
             ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ShortOverview" };
             ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "Taglines" };
@@ -1009,6 +1027,8 @@ namespace MediaBrowser.Server.Startup.Common
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
                 ConfigurationManager.SaveConfiguration();
             }
+
+            RegisterModules();
 
             base.FindParts();
 
@@ -1686,5 +1706,135 @@ namespace MediaBrowser.Server.Startup.Common
         {
             NativeApp.EnableLoopback(appName);
         }
+
+        private void RegisterModules()
+        {
+            var moduleTypes = GetExportTypes<IDependencyModule>();
+
+            foreach (var type in moduleTypes)
+            {
+                try
+                {
+                    var instance = Activator.CreateInstance(type) as IDependencyModule;
+                    if (instance != null)
+                        instance.BindDependencies(this);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error setting up dependency bindings for " + type.Name, ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates an instance of type and resolves all constructor dependancies
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        public override object CreateInstance(Type type)
+        {
+            try
+            {
+                return Container.GetInstance(type);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates the instance safe.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>System.Object.</returns>
+        protected override object CreateInstanceSafe(Type type)
+        {
+            try
+            {
+                return Container.GetInstance(type);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error creating {0}", ex, type.FullName);
+                // Don't blow up in release mode
+                return null;
+            }
+        }
+
+        void IDependencyContainer.RegisterSingleInstance<T>(T obj, bool manageLifetime)
+        {
+            RegisterSingleInstance(obj, manageLifetime);
+        }
+
+        /// <summary>
+        /// Registers the specified obj.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj">The obj.</param>
+        /// <param name="manageLifetime">if set to <c>true</c> [manage lifetime].</param>
+        protected override void RegisterSingleInstance<T>(T obj, bool manageLifetime = true)
+        {
+            Container.RegisterSingleton(obj);
+
+            if (manageLifetime)
+            {
+                var disposable = obj as IDisposable;
+
+                if (disposable != null)
+                {
+                    DisposableParts.Add(disposable);
+                }
+            }
+        }
+
+        void IDependencyContainer.RegisterSingleInstance<T>(Func<T> func)
+        {
+            RegisterSingleInstance(func);
+        }
+
+        /// <summary>
+        /// Registers the single instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="func">The func.</param>
+        protected override void RegisterSingleInstance<T>(Func<T> func)
+        {
+            Container.RegisterSingleton(func);
+        }
+
+        void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)
+        {
+            Container.Register(typeInterface, typeImplementation);
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public override T Resolve<T>()
+        {
+            return (T)Container.GetRegistration(typeof(T), true).GetInstance();
+        }
+
+        /// <summary>
+        /// Resolves this instance.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public override T TryResolve<T>()
+        {
+            var result = Container.GetRegistration(typeof(T), false);
+
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result.GetInstance();
+        }
+
     }
 }

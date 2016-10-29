@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace MediaBrowser.Common.Implementations.Logging
+namespace MediaBrowser.Model.Logging
 {
     /// <summary>
     /// Class LogHelper

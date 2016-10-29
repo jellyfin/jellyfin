@@ -142,6 +142,7 @@
     <Compile Include="IO\IShortcutHandler.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Globalization\ILocalizationManager.cs" />
+    <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />

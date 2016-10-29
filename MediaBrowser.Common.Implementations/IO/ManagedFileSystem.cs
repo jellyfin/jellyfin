@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
-using Patterns.Logging;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Common.Implementations.IO
 {

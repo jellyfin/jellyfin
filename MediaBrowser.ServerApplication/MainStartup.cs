@@ -308,9 +308,9 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new WindowsFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")));
+            var fileSystem = new WindowsFileSystem(logManager.GetLogger("FileSystem"));
+            fileSystem.AddShortcutHandler(new LnkShortcutHandler());
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
-            //fileSystem.AddShortcutHandler(new LnkShortcutHandler(fileSystem));
 
             var nativeApp = new WindowsApp(fileSystem, _logger)
             {

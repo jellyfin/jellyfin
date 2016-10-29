@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.IO;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Common.Implementations.Serialization
+namespace MediaBrowser.Server.Implementations.Serialization
 {
     /// <summary>
     /// Provides a wrapper around third party json serialization.
