@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Implementations.Networking;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -9,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Emby.Common.Implementations.Networking;
 
 namespace MediaBrowser.ServerApplication.Networking
 {

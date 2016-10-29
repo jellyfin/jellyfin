@@ -83,7 +83,7 @@
     <Compile Include="Subtitles\VttWriter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BdInfo\BDInfo\BDInfo.csproj">
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
       <Project>{88ae38df-19d7-406f-a6a9-09527719a21e}</Project>
       <Name>BDInfo</Name>
     </ProjectReference>

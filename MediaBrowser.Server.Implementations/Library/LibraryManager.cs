@@ -2461,12 +2461,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
-            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
-            {
-                Id = i.FullName,
-                IsFolder = i.IsDirectory
-
-            }).ToList());
+            var videos = videoListResolver.Resolve(fileSystemChildren);
 
             var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
 
@@ -2510,12 +2505,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
-            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
-            {
-                Id = i.FullName,
-                IsFolder = i.IsDirectory
-
-            }).ToList());
+            var videos = videoListResolver.Resolve(fileSystemChildren);
 
             var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files.First().Path, StringComparison.OrdinalIgnoreCase));
 

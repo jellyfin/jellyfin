@@ -1,6 +1,7 @@
 ﻿{
   "supports": {
     "net46.app": {},
+    "uwp.10.0.app": {},
     "dnxcore50.app": {}
   },
   "dependencies": {
@@ -9,7 +10,7 @@
   },
   "frameworks": {
     "dotnet": {
-      "imports": "portable-net452"
+      "imports": "portable-net452+win81"
     }
   }
 }

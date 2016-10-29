@@ -78,8 +78,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             CancellationToken cancellationToken)
         {
             var localItems = await dataProvider.GetLocalItems(target, serverId).ConfigureAwait(false);
-            var remoteFiles = await provider.GetFiles(new FileQuery(), target, cancellationToken).ConfigureAwait(false);
-            var remoteIds = remoteFiles.Items.Select(i => i.Id).ToList();
+            var remoteFiles = await provider.GetFiles(target, cancellationToken).ConfigureAwait(false);
+            var remoteIds = remoteFiles.Items.Select(i => i.FullName).ToList();
 
             var jobItemIds = new List<string>();
 
