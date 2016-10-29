@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;

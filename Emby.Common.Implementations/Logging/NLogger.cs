@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace MediaBrowser.Common.Implementations.Logging
+namespace Emby.Common.Implementations.Logging
 {
     /// <summary>
     /// Class NLogger

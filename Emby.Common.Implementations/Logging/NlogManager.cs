@@ -1,13 +1,13 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System;
+using System.IO;
+using System.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using System;
-using System.IO;
-using System.Linq;
+using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Common.Implementations.Logging
+namespace Emby.Common.Implementations.Logging
 {
     /// <summary>
     /// Class NlogManager
@@ -170,7 +170,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>ILogger.</returns>
-        public Model.Logging.ILogger GetLogger(string name)
+        public MediaBrowser.Model.Logging.ILogger GetLogger(string name)
         {
             return new NLogger(name, this);
         }
@@ -206,7 +206,7 @@ namespace MediaBrowser.Common.Implementations.Logging
         /// <param name="level">The level.</param>
         public void ReloadLogger(LogSeverity level)
         {
-            LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Round(DateTime.Now.Ticks / 10000000) + ".txt");
+            LogFilePath = Path.Combine(LogDirectory, LogFilePrefix + "-" + decimal.Floor(DateTime.Now.Ticks / 10000000) + ".txt");
 
 			Directory.CreateDirectory(Path.GetDirectoryName(LogFilePath));
 

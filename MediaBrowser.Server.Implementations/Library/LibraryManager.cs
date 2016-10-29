@@ -1,5 +1,4 @@
-﻿using Interfaces.IO;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
