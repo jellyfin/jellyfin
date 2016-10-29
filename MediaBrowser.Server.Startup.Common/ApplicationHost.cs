@@ -104,6 +104,8 @@ using MediaBrowser.Common.Implementations.Serialization;
 using MediaBrowser.Common.Implementations.Updates;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -120,6 +122,7 @@ using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Serialization;
+using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
 using ServiceStack;
@@ -225,6 +228,17 @@ namespace MediaBrowser.Server.Startup.Common
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets the installation manager.
+        /// </summary>
+        /// <value>The installation manager.</value>
+        protected IInstallationManager InstallationManager { get; private set; }
+        /// <summary>
+        /// Gets the security manager.
+        /// </summary>
+        /// <value>The security manager.</value>
+        protected ISecurityManager SecurityManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the zip client.
@@ -403,6 +417,11 @@ namespace MediaBrowser.Server.Startup.Common
             }
 
             return new MemoryStreamProvider();
+        }
+
+        protected override ISystemEvents CreateSystemEvents()
+        {
+            return new SystemEvents(LogManager.GetLogger("SystemEvents"));
         }
 
         protected override IJsonSerializer CreateJsonSerializer()
@@ -636,7 +655,6 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
@@ -659,6 +677,12 @@ namespace MediaBrowser.Server.Startup.Common
         protected override async Task RegisterResources(IProgress<double> progress)
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
+
+            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager);
+            RegisterSingleInstance(SecurityManager);
+
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
+            RegisterSingleInstance(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
             RegisterSingleInstance(ZipClient);

@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.Implementations.ScheduledTasks
+namespace Emby.Common.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task trigger that fires on a weekly basis
+    /// Represents a task trigger that fires everyday
     /// </summary>
-    public class WeeklyTrigger : ITaskTrigger
+    public class DailyTrigger : ITaskTrigger
     {
         /// <summary>
         /// Get the time of day to trigger the task to run
@@ -18,10 +19,10 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public TimeSpan TimeOfDay { get; set; }
 
         /// <summary>
-        /// Gets or sets the day of week.
+        /// Gets or sets the timer.
         /// </summary>
-        /// <value>The day of week.</value>
-        public DayOfWeek DayOfWeek { get; set; }
+        /// <value>The timer.</value>
+        private Timer Timer { get; set; }
 
         /// <summary>
         /// Gets the execution properties of this task.
@@ -32,12 +33,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public TaskExecutionOptions TaskOptions { get; set; }
 
         /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
-
-        /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="lastResult">The last result.</param>
@@ -46,36 +41,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             DisposeTimer();
 
-            var triggerDate = GetNextTriggerDateTime();
-
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.Now, TimeSpan.FromMilliseconds(-1));
-        }
-
-        /// <summary>
-        /// Gets the next trigger date time.
-        /// </summary>
-        /// <returns>DateTime.</returns>
-        private DateTime GetNextTriggerDateTime()
-        {
             var now = DateTime.Now;
 
-            // If it's on the same day
-            if (now.DayOfWeek == DayOfWeek)
-            {
-                // It's either later today, or a week from now
-                return now.TimeOfDay < TimeOfDay ? now.Date.Add(TimeOfDay) : now.Date.AddDays(7).Add(TimeOfDay);
-            }
+            var triggerDate = now.TimeOfDay > TimeOfDay ? now.Date.AddDays(1) : now.Date;
+            triggerDate = triggerDate.Add(TimeOfDay);
 
-            var triggerDate = now.Date;
+            var dueTime = triggerDate - now;
 
-            // Walk the date forward until we get to the trigger day
-            while (triggerDate.DayOfWeek != DayOfWeek)
-            {
-                triggerDate = triggerDate.AddDays(1);
-            }
+            logger.Info("Daily trigger for {0} set to fire at {1}, which is {2} minutes from now.", taskName, triggerDate.ToString(), dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
 
-            // Return the trigger date plus the time offset
-            return triggerDate.Add(TimeOfDay);
+            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>

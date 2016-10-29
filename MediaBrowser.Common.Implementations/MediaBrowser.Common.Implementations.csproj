@@ -79,14 +79,8 @@
     <Compile Include="ScheduledTasks\Tasks\DeleteLogFileTask.cs" />
     <Compile Include="ScheduledTasks\Tasks\ReloadLoggerFileTask.cs" />
     <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
-    <Compile Include="Security\MbAdmin.cs" />
-    <Compile Include="Security\MBLicenseFile.cs" />
-    <Compile Include="Security\PluginSecurityManager.cs" />
-    <Compile Include="Security\RegRecord.cs" />
-    <Compile Include="Security\SuppporterInfoResponse.cs" />
     <Compile Include="Serialization\XmlSerializer.cs" />
     <Compile Include="Updates\GithubUpdater.cs" />
-    <Compile Include="Updates\InstallationManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

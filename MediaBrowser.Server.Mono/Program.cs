@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Mono
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
         {
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+            Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });

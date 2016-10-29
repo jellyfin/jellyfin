@@ -6,7 +6,7 @@ using System.Text;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Common.Implementations.IO
+namespace Emby.Common.Implementations.IO
 {
     /// <summary>
     /// Class ManagedFileSystem

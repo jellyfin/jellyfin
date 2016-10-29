@@ -1,28 +1,22 @@
 ﻿using System;
-using System.Globalization;
-using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.Implementations.ScheduledTasks
+namespace Emby.Common.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Represents a task trigger that fires everyday
+    /// Class SystemEventTrigger
     /// </summary>
-    public class DailyTrigger : ITaskTrigger
+    public class SystemEventTrigger : ITaskTrigger
     {
         /// <summary>
-        /// Get the time of day to trigger the task to run
+        /// Gets or sets the system event.
         /// </summary>
-        /// <value>The time of day.</value>
-        public TimeSpan TimeOfDay { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
+        /// <value>The system event.</value>
+        public SystemEvent SystemEvent { get; set; }
 
         /// <summary>
         /// Gets the execution properties of this task.
@@ -32,6 +26,13 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </value>
         public TaskExecutionOptions TaskOptions { get; set; }
 
+        private readonly ISystemEvents _systemEvents;
+
+        public SystemEventTrigger(ISystemEvents systemEvents)
+        {
+            _systemEvents = systemEvents;
+        }
+
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
@@ -39,18 +40,23 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
         public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
-            DisposeTimer();
+            switch (SystemEvent)
+            {
+                case SystemEvent.WakeFromSleep:
+                    _systemEvents.Resume += _systemEvents_Resume;
+                    break;
+            }
+        }
 
-            var now = DateTime.Now;
+        private async void _systemEvents_Resume(object sender, EventArgs e)
+        {
+            if (SystemEvent == SystemEvent.WakeFromSleep)
+            {
+                // This value is a bit arbitrary, but add a delay to help ensure network connections have been restored before running the task
+                await Task.Delay(10000).ConfigureAwait(false);
 
-            var triggerDate = now.TimeOfDay > TimeOfDay ? now.Date.AddDays(1) : now.Date;
-            triggerDate = triggerDate.Add(TimeOfDay);
-
-            var dueTime = triggerDate - now;
-
-            logger.Info("Daily trigger for {0} set to fire at {1}, which is {2} minutes from now.", taskName, triggerDate.ToString(), dueTime.TotalMinutes.ToString(CultureInfo.InvariantCulture));
-
-            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
+                OnTriggered();
+            }
         }
 
         /// <summary>
@@ -58,18 +64,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// </summary>
         public void Stop()
         {
-            DisposeTimer();
-        }
-
-        /// <summary>
-        /// Disposes the timer.
-        /// </summary>
-        private void DisposeTimer()
-        {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            _systemEvents.Resume -= _systemEvents_Resume;
         }
 
         /// <summary>

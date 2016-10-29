@@ -1,18 +1,19 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Events;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Model.Serialization;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
+using Emby.Common.Implementations;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Common.Implementations.Configuration
+namespace Emby.Common.Implementations.Configuration
 {
     /// <summary>
     /// Class BaseConfigurationManager

@@ -4,7 +4,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Common.Implementations.ScheduledTasks
+namespace Emby.Common.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class StartupTaskTrigger
