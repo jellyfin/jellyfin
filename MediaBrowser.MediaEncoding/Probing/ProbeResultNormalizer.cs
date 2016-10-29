@@ -399,7 +399,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private string NormalizeSubtitleCodec(string codec)
         {
-            if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "dvbsub";
+            }
+            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 codec = "PGSSUB";
             }
