@@ -136,20 +136,17 @@ namespace MediaBrowser.Api
         {
             var result = new DefaultDirectoryBrowserInfo();
 
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            try
             {
-                try
+                var qnap = "/share/CACHEDEV1_DATA";
+                if (Directory.Exists(qnap))
                 {
-                    var qnap = "/share/CACHEDEV1_DATA";
-                    if (Directory.Exists(qnap))
-                    {
-                        result.Path = qnap;
-                    }
+                    result.Path = qnap;
                 }
-                catch
-                {
+            }
+            catch
+            {
 
-                }
             }
 
             return ToOptimizedResult(result);
