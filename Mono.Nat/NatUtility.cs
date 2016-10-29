@@ -36,7 +36,7 @@ using System.IO;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat
@@ -109,7 +109,7 @@ namespace Mono.Nat
 
                     if (enabledProtocols.Contains(PmpSearcher.Instance.Protocol))
                     {
-                        Receive(PmpSearcher.Instance, PmpSearcher.sockets);
+                        await Receive(PmpSearcher.Instance, PmpSearcher.sockets).ConfigureAwait(false);
                     }
 
                     foreach (ISearcher s in controllers)
@@ -129,15 +129,16 @@ namespace Mono.Nat
             }
 		}
 
-		static void Receive (ISearcher searcher, List<UdpClient> clients)
+		static async Task Receive (ISearcher searcher, List<UdpClient> clients)
 		{
-			IPEndPoint received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
 			foreach (UdpClient client in clients)
 			{
 				if (client.Available > 0)
 				{
 				    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
-					byte[] data = client.Receive(ref received);
+				    var result = await client.ReceiveAsync().ConfigureAwait(false);
+				    var data = result.Buffer;
+				    var received = result.RemoteEndPoint;
 					searcher.Handle(localAddress, data, received);
 				}
             }

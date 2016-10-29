@@ -37,8 +37,8 @@ using System.Diagnostics;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Dlna;
 
 namespace Mono.Nat
 {

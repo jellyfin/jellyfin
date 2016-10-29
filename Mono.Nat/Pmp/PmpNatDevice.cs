@@ -172,7 +172,10 @@ namespace Mono.Nat.Pmp
                                          "Out of resources (NAT box cannot create any more mappings at this time)",
                                          "Unsupported opcode"
                                      };
-                    throw new MappingException(resultCode, errors[resultCode]);
+
+                    var errorMsg = errors[resultCode];
+                    NatUtility.Log("Error in CreatePortMapListen: " + errorMsg);
+                    return;
                 }
 
                 if (lifetime == 0) return; //mapping was deleted
