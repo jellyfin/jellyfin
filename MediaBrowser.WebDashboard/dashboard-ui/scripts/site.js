@@ -706,6 +706,14 @@ var Dashboard = {
                         Method: 'External'
                     });
                     profile.SubtitleProfiles.push({
+                        Format: 'ssa',
+                        Method: 'External'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ass',
+                        Method: 'External'
+                    });
+                    profile.SubtitleProfiles.push({
                         Format: 'srt',
                         Method: 'Embed'
                     });
@@ -716,9 +724,21 @@ var Dashboard = {
                     profile.SubtitleProfiles.push({
                         Format: 'ass',
                         Method: 'Embed'
-                    });
+                    }); 
                     profile.SubtitleProfiles.push({
                         Format: 'ssa',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvb_teletext',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvb_subtitle',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvbsub',
                         Method: 'Embed'
                     });
                     profile.SubtitleProfiles.push({
@@ -758,18 +778,6 @@ var Dashboard = {
                                 Condition: 'NotEqual',
                                 Property: 'CodecTag',
                                 Value: 'xvid'
-                            }
-                        ]
-                    });
-
-                    profile.CodecProfiles.push({
-                        Type: 'VideoAudio',
-                        Codec: 'aac,mp3',
-                        Conditions: [
-                            {
-                                Condition: 'LessThanEqual',
-                                Property: 'AudioChannels',
-                                Value: '6'
                             }
                         ]
                     });
