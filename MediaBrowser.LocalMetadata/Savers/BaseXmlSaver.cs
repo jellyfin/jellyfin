@@ -329,20 +329,20 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("Type", item.DisplayMediaType);
             }
 
-            //if (item.CriticRating.HasValue)
-            //{
-            //    builder.Append("<CriticRating>" + SecurityElement.Escape(item.CriticRating.Value.ToString(UsCulture)) + "</CriticRating>");
-            //}
+            if (item.CriticRating.HasValue)
+            {
+                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(UsCulture));
+            }
 
-            //if (!string.IsNullOrEmpty(item.CriticRatingSummary))
-            //{
-            //    builder.Append("<CriticRatingSummary><![CDATA[" + item.CriticRatingSummary + "]]></CriticRatingSummary>");
-            //}
+            if (!string.IsNullOrEmpty(item.CriticRatingSummary))
+            {
+                writer.WriteElementString("CriticRatingSummary", item.CriticRatingSummary);
+            }
 
-            //if (!string.IsNullOrEmpty(item.Overview))
-            //{
-            //    builder.Append("<Overview><![CDATA[" + item.Overview + "]]></Overview>");
-            //}
+            if (!string.IsNullOrEmpty(item.Overview))
+            {
+                writer.WriteElementString("Overview", item.Overview);
+            }
 
             //var hasOriginalTitle = item as IHasOriginalTitle;
             //if (hasOriginalTitle != null)
