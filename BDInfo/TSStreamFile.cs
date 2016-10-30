@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MediaBrowser.Model.IO;
 
 namespace BDInfo
 {
@@ -152,7 +153,7 @@ namespace BDInfo
 
     public class TSStreamFile
     {
-        public FileInfo FileInfo = null;
+        public FileSystemMetadata FileInfo = null;
         public string Name = null;
         public long Size = 0;
         public double Length = 0;
@@ -170,9 +171,12 @@ namespace BDInfo
 
         private List<TSPlaylistFile> Playlists = null;
 
-        public TSStreamFile(FileInfo fileInfo)
+        private readonly IFileSystem _fileSystem;
+
+        public TSStreamFile(FileSystemMetadata fileInfo, IFileSystem fileSystem)
         {
             FileInfo = fileInfo;
+            _fileSystem = fileSystem;
             Name = fileInfo.Name.ToUpper();
         }
 
@@ -451,7 +455,7 @@ namespace BDInfo
 
             Playlists = playlists;
             int dataSize = 16384;
-            FileStream fileStream = null;
+            Stream fileStream = null;
             try
             {                
                 string fileName;
@@ -464,12 +468,12 @@ namespace BDInfo
                 {
                     fileName = FileInfo.FullName;
                 }
-                fileStream = new FileStream(
+                fileStream = _fileSystem.GetFileStream(
                     fileName,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    dataSize, false);
+                    FileOpenMode.Open,
+                    FileAccessMode.Read,
+                    FileShareMode.Read,
+                    false);
 
                 Size = 0;
                 Length = 0;

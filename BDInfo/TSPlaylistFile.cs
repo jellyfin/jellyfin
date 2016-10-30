@@ -22,12 +22,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.TextEncoding;
 
 namespace BDInfo
 {
     public class TSPlaylistFile
     {
-        private FileInfo FileInfo = null;
+        private readonly IFileSystem _fileSystem;
+        private readonly IEncoding _textEncoding;
+        private FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsInitialized = false;
         public string Name = null;
@@ -63,20 +67,24 @@ namespace BDInfo
 
         public TSPlaylistFile(
             BDROM bdrom,
-            FileInfo fileInfo)
+            FileSystemMetadata fileInfo, IFileSystem fileSystem, IEncoding textEncoding)
         {
             BDROM = bdrom;
             FileInfo = fileInfo;
+            _fileSystem = fileSystem;
+            _textEncoding = textEncoding;
             Name = fileInfo.Name.ToUpper();
         }
 
         public TSPlaylistFile(
             BDROM bdrom,
             string name,
-            List<TSStreamClip> clips)
+            List<TSStreamClip> clips, IFileSystem fileSystem, IEncoding textEncoding)
         {
             BDROM = bdrom;
             Name = name;
+            _fileSystem = fileSystem;
+            _textEncoding = textEncoding;
             IsCustom = true;
             foreach (TSStreamClip clip in clips)
             {
@@ -221,7 +229,7 @@ namespace BDInfo
             Dictionary<string, TSStreamFile> streamFiles,
             Dictionary<string, TSStreamClipFile> streamClipFiles)
         {
-            FileStream fileStream = null;
+            Stream fileStream = null;
             BinaryReader fileReader = null;
 
             try
@@ -229,7 +237,7 @@ namespace BDInfo
                 Streams.Clear();
                 StreamClips.Clear();
 
-                fileStream = File.OpenRead(FileInfo.FullName);
+                fileStream = _fileSystem.OpenRead(FileInfo.FullName);
                 fileReader = new BinaryReader(fileStream);
 
                 byte[] data = new byte[fileStream.Length];
@@ -1239,7 +1247,7 @@ namespace BDInfo
             ref int pos)
         {
             string val =
-                ASCIIEncoding.ASCII.GetString(data, pos, count);
+                _textEncoding.GetASCIIString(data, pos, count);
 
             pos += count;
 
