@@ -32,9 +32,9 @@
                 } else if ((new Date().getTime() - lastSound) > 30000) {
                     playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/howl.wav');
                 }
-            }
 
-            addIcon();
+                addIcon();
+            }
         }
     }
 
@@ -106,10 +106,6 @@
     }
 
     pageClassOn('pageshow', "libraryPage", onPageShow);
-
-    //if ($($.mobile.activePage)[0].classList.contains('libraryPage')) {
-    //    onPageShow.call($($.mobile.activePage)[0]);
-    //}
 
     function playSound(path, volume) {
 
