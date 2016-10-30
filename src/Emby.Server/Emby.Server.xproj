@@ -20,6 +20,7 @@
     <ProjectReference Include="..\..\DvdLib\DvdLib.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
+    <ProjectReference Include="..\..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Providers\MediaBrowser.Providers.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.WebDashboard\MediaBrowser.WebDashboard.csproj" />

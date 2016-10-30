@@ -294,6 +294,7 @@
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
+    <Compile Include="TextEncoding\TextEncoding.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="Updates\InstallationManager.cs" />

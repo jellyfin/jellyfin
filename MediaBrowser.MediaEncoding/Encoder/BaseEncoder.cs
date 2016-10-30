@@ -217,7 +217,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 try
                 {
-                    job.TaskCompletionSource.TrySetException(new ApplicationException("Encoding failed"));
+                    job.TaskCompletionSource.TrySetException(new Exception("Encoding failed"));
                 }
                 catch
                 {

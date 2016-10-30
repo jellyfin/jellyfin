@@ -6,10 +6,13 @@
 
   "dependencies": {
     "Emby.Common.Implementations": "1.0.0-*",
+    "Emby.Dlna": "1.0.0-*",
     "Microsoft.NETCore.App": {
       "type": "platform",
       "version": "1.0.1"
-    }
+    },
+    "Mono.Nat": "1.0.0-*",
+    "RSSDP": "1.0.0-*"
   },
 
   "frameworks": {
@@ -26,6 +29,9 @@
           "target": "project"
         },
         "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "MediaBrowser.LocalMetadata": {
           "target": "project"
         },
         "MediaBrowser.Model": {
