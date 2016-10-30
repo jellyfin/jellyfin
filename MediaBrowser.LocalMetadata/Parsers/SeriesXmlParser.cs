@@ -4,7 +4,9 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -13,15 +15,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     /// </summary>
     public class SeriesXmlParser : BaseItemXmlParser<Series>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public SeriesXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
@@ -115,6 +108,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, result);
                     break;
             }
+        }
+
+        public SeriesXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

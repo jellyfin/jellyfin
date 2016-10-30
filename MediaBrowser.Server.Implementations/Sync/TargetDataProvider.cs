@@ -6,14 +6,9 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
-using Interfaces.IO;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
@@ -68,15 +63,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             _logger.Debug("Getting {0} from {1}", string.Join(MediaSync.PathSeparatorString, GetRemotePath().ToArray()), _provider.Name);
 
-            var fileResult = await _provider.GetFiles(new FileQuery
-            {
-                FullPath = GetRemotePath().ToArray()
-
-            }, _target, cancellationToken).ConfigureAwait(false);
+            var fileResult = await _provider.GetFiles(GetRemotePath().ToArray(), _target, cancellationToken).ConfigureAwait(false);
 
             if (fileResult.Items.Length > 0)
             {
-                using (var stream = await _provider.GetFile(fileResult.Items[0].Id, _target, new Progress<double>(), cancellationToken))
+                using (var stream = await _provider.GetFile(fileResult.Items[0].FullName, _target, new Progress<double>(), cancellationToken))
                 {
                     return _json.DeserializeFromStream<List<LocalItem>>(stream);
                 }

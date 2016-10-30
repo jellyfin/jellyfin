@@ -40,7 +40,7 @@ namespace MediaBrowser.LocalMetadata
             {
                 result.HasMetadata = false;
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 result.HasMetadata = false;
             }

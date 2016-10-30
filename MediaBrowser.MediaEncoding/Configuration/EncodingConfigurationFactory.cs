@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Configuration
                 // Validate
                 if (!_fileSystem.DirectoryExists(newPath))
                 {
-                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                    throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
             }
         }

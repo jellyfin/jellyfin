@@ -69,7 +69,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 return new LocalImageProvider(_fileSystem).GetImages(item, path, directoryService);
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return new List<LocalImageInfo>();
             }

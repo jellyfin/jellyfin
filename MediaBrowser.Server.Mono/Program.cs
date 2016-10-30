@@ -1,4 +1,3 @@
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Mono.Native;
@@ -13,9 +12,8 @@ using System.Net.Security;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Implementations.IO;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Server.Implementations.Logging;
+using Emby.Common.Implementations.IO;
+using Emby.Common.Implementations.Logging;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -72,12 +70,12 @@ namespace MediaBrowser.Server.Mono
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
         {
-            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+            Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, false);
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), false, false);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             var nativeApp = new NativeApp(options, logManager.GetLogger("App"));

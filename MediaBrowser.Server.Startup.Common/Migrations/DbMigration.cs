@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.Persistence;

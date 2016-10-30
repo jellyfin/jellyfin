@@ -4,6 +4,8 @@ using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.TextEncoding;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
@@ -12,6 +14,15 @@ namespace MediaBrowser.MediaEncoding.BdInfo
     /// </summary>
     public class BdInfoExaminer : IBlurayExaminer
     {
+        private readonly IFileSystem _fileSystem;
+        private readonly IEncoding _textEncoding;
+
+        public BdInfoExaminer(IFileSystem fileSystem, IEncoding textEncoding)
+        {
+            _fileSystem = fileSystem;
+            _textEncoding = textEncoding;
+        }
+
         /// <summary>
         /// Gets the disc info.
         /// </summary>
@@ -19,7 +30,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
         /// <returns>BlurayDiscInfo.</returns>
         public BlurayDiscInfo GetDiscInfo(string path)
         {
-            var bdrom = new BDROM(path);
+            var bdrom = new BDROM(path, _fileSystem, _textEncoding);
 
             bdrom.Scan();
 

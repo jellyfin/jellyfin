@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Server.Implementations.Threading;
 

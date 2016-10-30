@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Implementations.Networking;
+using Emby.Common.Implementations.Networking;
 
 namespace MediaBrowser.Server.Implementations.Udp
 {

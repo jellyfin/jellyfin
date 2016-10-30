@@ -9,6 +9,7 @@ using System.Threading;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Providers
 {
@@ -16,12 +17,14 @@ namespace MediaBrowser.LocalMetadata.Providers
     {
         private readonly ILogger _logger;
         private readonly IProviderManager _providerManager;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public EpisodeXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager)
+        public EpisodeXmlProvider(IFileSystem fileSystem, ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlSettings)
             : base(fileSystem)
         {
             _logger = logger;
             _providerManager = providerManager;
+            _xmlSettings = xmlSettings;
         }
 
         protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
@@ -29,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             var images = new List<LocalImageInfo>();
             var chapters = new List<ChapterInfo>();
 
-            new EpisodeXmlParser(_logger, FileSystem, _providerManager).Fetch(result, images, path, cancellationToken);
+            new EpisodeXmlParser(_logger, FileSystem, _providerManager, _xmlSettings).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
         }

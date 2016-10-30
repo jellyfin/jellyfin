@@ -6,8 +6,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Implementations;
-using MediaBrowser.Common.Implementations.ScheduledTasks;
+using Emby.Common.Implementations.ScheduledTasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -38,12 +37,6 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Dlna;
-using MediaBrowser.Dlna.ConnectionManager;
-using MediaBrowser.Dlna.ContentDirectory;
-using MediaBrowser.Dlna.Main;
-using MediaBrowser.Dlna.MediaReceiverRegistrar;
-using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -96,19 +89,27 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Common.Implementations;
+using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.Updates;
 using Emby.Photos;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Api.Playback;
-using MediaBrowser.Common.Implementations.Networking;
-using MediaBrowser.Common.Implementations.Serialization;
-using MediaBrowser.Common.Implementations.Updates;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Plugins;
+using MediaBrowser.Common.Security;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.IO;
+using Emby.Dlna;
+using Emby.Dlna.ConnectionManager;
+using Emby.Dlna.ContentDirectory;
+using Emby.Dlna.Main;
+using Emby.Dlna.MediaReceiverRegistrar;
+using Emby.Dlna.Ssdp;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.News;
@@ -116,18 +117,24 @@ using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
+using MediaBrowser.Model.TextEncoding;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
+using MediaBrowser.Server.Implementations.Serialization;
+using MediaBrowser.Server.Implementations.TextEncoding;
+using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
+using ServiceStack;
+using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 
 namespace MediaBrowser.Server.Startup.Common
 {
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost
+    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost, IDependencyContainer
     {
         /// <summary>
         /// Gets the server configuration manager.
@@ -222,6 +229,17 @@ namespace MediaBrowser.Server.Startup.Common
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }
         private IPlaylistManager PlaylistManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets the installation manager.
+        /// </summary>
+        /// <value>The installation manager.</value>
+        protected IInstallationManager InstallationManager { get; private set; }
+        /// <summary>
+        /// Gets the security manager.
+        /// </summary>
+        /// <value>The security manager.</value>
+        protected ISecurityManager SecurityManager { get; private set; }
 
         /// <summary>
         /// Gets or sets the zip client.
@@ -397,9 +415,24 @@ namespace MediaBrowser.Server.Startup.Common
             return new MemoryStreamProvider();
         }
 
+        protected override ISystemEvents CreateSystemEvents()
+        {
+            return new SystemEvents(LogManager.GetLogger("SystemEvents"));
+        }
+
         protected override IJsonSerializer CreateJsonSerializer()
         {
-            var result = base.CreateJsonSerializer();
+            try
+            {
+                // https://github.com/ServiceStack/ServiceStack/blob/master/tests/ServiceStack.WebHost.IntegrationTests/Web.config#L4
+                Licensing.RegisterLicense("1001-e1JlZjoxMDAxLE5hbWU6VGVzdCBCdXNpbmVzcyxUeXBlOkJ1c2luZXNzLEhhc2g6UHVNTVRPclhvT2ZIbjQ5MG5LZE1mUTd5RUMzQnBucTFEbTE3TDczVEF4QUNMT1FhNXJMOWkzVjFGL2ZkVTE3Q2pDNENqTkQyUktRWmhvUVBhYTBiekJGUUZ3ZE5aZHFDYm9hL3lydGlwUHI5K1JsaTBYbzNsUC85cjVJNHE5QVhldDN6QkE4aTlvdldrdTgyTk1relY2eis2dFFqTThYN2lmc0JveHgycFdjPSxFeHBpcnk6MjAxMy0wMS0wMX0=");
+            }
+            catch
+            {
+                // Failing under mono
+            }
+
+            var result = new JsonSerializer(FileSystemManager, LogManager.GetLogger("JsonSerializer"));
 
             ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "ShortOverview" };
             ServiceStack.Text.JsConfig<Movie>.ExcludePropertyNames = new[] { "Taglines" };
@@ -618,7 +651,6 @@ namespace MediaBrowser.Server.Startup.Common
         {
             var migrations = new List<IVersionMigration>
             {
-                new MovieDbEpisodeProviderMigration(ServerConfigurationManager),
                 new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
@@ -642,6 +674,12 @@ namespace MediaBrowser.Server.Startup.Common
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
 
+            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager);
+            RegisterSingleInstance(SecurityManager);
+
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
+            RegisterSingleInstance(InstallationManager);
+
             ZipClient = new ZipClient(FileSystemManager);
             RegisterSingleInstance(ZipClient);
 
@@ -656,7 +694,10 @@ namespace MediaBrowser.Server.Startup.Common
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+            IEncoding textEncoding = new TextEncoding();
+            RegisterSingleInstance(textEncoding);
+            Utilities.EncodingHelper = textEncoding;
+            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
             RegisterSingleInstance<IAssemblyInfo>(new AssemblyInfo());
@@ -1009,6 +1050,8 @@ namespace MediaBrowser.Server.Startup.Common
                 ServerConfigurationManager.Configuration.IsPortAuthorized = true;
                 ConfigurationManager.SaveConfiguration();
             }
+
+            RegisterModules();
 
             base.FindParts();
 
@@ -1686,5 +1729,40 @@ namespace MediaBrowser.Server.Startup.Common
         {
             NativeApp.EnableLoopback(appName);
         }
+
+        private void RegisterModules()
+        {
+            var moduleTypes = GetExportTypes<IDependencyModule>();
+
+            foreach (var type in moduleTypes)
+            {
+                try
+                {
+                    var instance = Activator.CreateInstance(type) as IDependencyModule;
+                    if (instance != null)
+                        instance.BindDependencies(this);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error setting up dependency bindings for " + type.Name, ex);
+                }
+            }
+        }
+
+        void IDependencyContainer.RegisterSingleInstance<T>(T obj, bool manageLifetime)
+        {
+            RegisterSingleInstance(obj, manageLifetime);
+        }
+
+        void IDependencyContainer.RegisterSingleInstance<T>(Func<T> func)
+        {
+            RegisterSingleInstance(func);
+        }
+
+        void IDependencyContainer.Register(Type typeInterface, Type typeImplementation)
+        {
+            Container.Register(typeInterface, typeImplementation);
+        }
+
     }
 }

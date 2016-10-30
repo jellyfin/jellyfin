@@ -22,12 +22,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.TextEncoding;
 
 namespace BDInfo
 {
     public class TSStreamClipFile
     {
-        public FileInfo FileInfo = null;
+        private readonly IFileSystem _fileSystem;
+        private readonly IEncoding _textEncoding;
+        public FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsValid = false;
         public string Name = null;
@@ -36,15 +40,17 @@ namespace BDInfo
             new Dictionary<ushort,TSStream>();
 
         public TSStreamClipFile(
-            FileInfo fileInfo)
+            FileSystemMetadata fileInfo, IFileSystem fileSystem, IEncoding textEncoding)
         {
             FileInfo = fileInfo;
+            _fileSystem = fileSystem;
+            _textEncoding = textEncoding;
             Name = fileInfo.Name.ToUpper();
         }
 
         public void Scan()
         {
-            FileStream fileStream = null;
+            Stream fileStream = null;
             BinaryReader fileReader = null;
 
             try
@@ -55,7 +61,7 @@ namespace BDInfo
 #endif
                 Streams.Clear();
 
-                fileStream = File.OpenRead(FileInfo.FullName);
+                fileStream = _fileSystem.OpenRead(FileInfo.FullName);
                 fileReader = new BinaryReader(fileStream);
 
                 byte[] data = new byte[fileStream.Length];
@@ -64,7 +70,7 @@ namespace BDInfo
                 byte[] fileType = new byte[8];
                 Array.Copy(data, 0, fileType, 0, fileType.Length);
                 
-                FileType = ASCIIEncoding.ASCII.GetString(fileType);
+                FileType = _textEncoding.GetASCIIString(fileType, 0, fileType.Length);
                 if (FileType != "HDMV0100" &&
                     FileType != "HDMV0200")
                 {
@@ -161,7 +167,7 @@ namespace BDInfo
                             Array.Copy(clipData, streamOffset + 3,
                                 languageBytes, 0, languageBytes.Length);
                             string languageCode =
-                                ASCIIEncoding.ASCII.GetString(languageBytes);
+                                _textEncoding.GetASCIIString(languageBytes, 0, languageBytes.Length);
 
                             TSChannelLayout channelLayout = (TSChannelLayout)
                                 (clipData[streamOffset + 2] >> 4);
@@ -192,9 +198,9 @@ namespace BDInfo
                             Array.Copy(clipData, streamOffset + 2,
                                 languageBytes, 0, languageBytes.Length);
                             string languageCode =
-                                ASCIIEncoding.ASCII.GetString(languageBytes);
+                                _textEncoding.GetASCIIString(languageBytes, 0, languageBytes.Length);
 
-                            stream = new TSGraphicsStream();
+                                stream = new TSGraphicsStream();
                             stream.LanguageCode = languageCode;
 #if DEBUG
                             Debug.WriteLine(string.Format(
@@ -212,7 +218,7 @@ namespace BDInfo
                             Array.Copy(clipData, streamOffset + 3,
                                 languageBytes, 0, languageBytes.Length);
                             string languageCode =
-                                ASCIIEncoding.ASCII.GetString(languageBytes);
+                                _textEncoding.GetASCIIString(languageBytes, 0, languageBytes.Length);
 #if DEBUG
                             Debug.WriteLine(string.Format(
                                 "\t{0} {1} {2}",
@@ -220,7 +226,7 @@ namespace BDInfo
                                 streamType,
                                 languageCode));
 #endif
-                            stream = new TSTextStream();
+                                stream = new TSTextStream();
                             stream.LanguageCode = languageCode;
                         }
                         break;

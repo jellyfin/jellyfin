@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.FileOrganization;
+﻿using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Events;

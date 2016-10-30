@@ -48,14 +48,6 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Interfaces.IO">
-      <HintPath>..\packages\Interfaces.IO.1.0.0.5\lib\portable-net45+sl4+wp71+win8+wpa81\Interfaces.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="Patterns.Logging">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -91,7 +83,6 @@
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />
     <Compile Include="Dlna\IConnectionManager.cs" />
     <Compile Include="Dlna\IContentDirectory.cs" />
-    <Compile Include="Dlna\IDeviceDiscovery.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />

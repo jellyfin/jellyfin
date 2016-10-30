@@ -112,6 +112,7 @@
     <Compile Include="Dlna\DirectPlayProfile.cs" />
     <Compile Include="Dlna\EncodingContext.cs" />
     <Compile Include="Dlna\HttpHeaderInfo.cs" />
+    <Compile Include="Dlna\IDeviceDiscovery.cs" />
     <Compile Include="Dlna\ITranscoderSupport.cs" />
     <Compile Include="Dlna\ProfileCondition.cs" />
     <Compile Include="Dlna\ResponseProfile.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Dlna\TranscodingProfile.cs" />
+    <Compile Include="Dlna\UpnpDeviceInfo.cs" />
     <Compile Include="Dlna\XmlAttribute.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
+    <Compile Include="TextEncoding\IEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />
     <Compile Include="Health\IHealthMonitor.cs" />
@@ -142,6 +145,7 @@
     <Compile Include="IO\IShortcutHandler.cs" />
     <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Globalization\ILocalizationManager.cs" />
+    <Compile Include="Logging\LogHelper.cs" />
     <Compile Include="MediaInfo\LiveStreamRequest.cs" />
     <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
@@ -407,6 +411,7 @@
     <Compile Include="Sync\SyncQualityOption.cs" />
     <Compile Include="Sync\SyncTarget.cs" />
     <Compile Include="System\Architecture.cs" />
+    <Compile Include="System\ISystemEvents.cs" />
     <Compile Include="System\LogFile.cs" />
     <Compile Include="System\PublicSystemInfo.cs" />
     <Compile Include="Tasks\IConfigurableScheduledTask.cs" />

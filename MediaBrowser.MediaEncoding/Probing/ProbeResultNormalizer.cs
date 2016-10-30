@@ -400,7 +400,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private string NormalizeSubtitleCodec(string codec)
         {
-            if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
+            if (string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase))
+            {
+                codec = "dvbsub";
+            }
+            else if ((codec ?? string.Empty).IndexOf("PGS", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 codec = "PGSSUB";
             }
@@ -969,27 +973,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (_splitWhiteList == null)
             {
-                var file = GetType().Namespace + ".whitelist.txt";
-
-                using (var stream = GetType().Assembly.GetManifestResourceStream(file))
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var list = new List<string>();
-
-                        while (!reader.EndOfStream)
+                _splitWhiteList = new List<string>
                         {
-                            var val = reader.ReadLine();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                list.Add(val);
-                            }
-                        }
-
-                        _splitWhiteList = list;
-                    }
-                }
+                            "AC/DV"
+                        };
             }
 
             return _splitWhiteList;

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;

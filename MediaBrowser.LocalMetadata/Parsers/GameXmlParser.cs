@@ -5,7 +5,9 @@ using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -15,11 +17,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class GameXmlParser : BaseItemXmlParser<Game>
     {
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public GameXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
 
         private readonly Task _cachedTask = Task.FromResult(true);
         public Task FetchAsync(MetadataResult<Game> item, string metadataFile, CancellationToken cancellationToken)
@@ -82,6 +79,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, result);
                     break;
             }
+        }
+
+        public GameXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

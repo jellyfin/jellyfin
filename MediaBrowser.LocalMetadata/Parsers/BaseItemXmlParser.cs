@@ -9,7 +9,9 @@ using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -28,14 +30,19 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private Dictionary<string, string> _validProviderIds;
 
+        protected IXmlReaderSettingsFactory XmlReaderSettingsFactory { get; private set; }
+        protected IFileSystem FileSystem { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager)
+        public BaseItemXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem)
         {
             Logger = logger;
             ProviderManager = providerManager;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
+            FileSystem = fileSystem;
         }
 
         /// <summary>
@@ -57,15 +64,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 throw new ArgumentNullException();
             }
 
-            var settings = new XmlReaderSettings
-            {
-                CheckCharacters = false,
-                IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                ValidationType = ValidationType.None
-            };
+            var settings = XmlReaderSettingsFactory.Create(false);
 
-            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            settings.CheckCharacters = false;
+            settings.IgnoreProcessingInstructions = true;
+            settings.IgnoreComments = true;
+
+            _validProviderIds = _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var idInfos = ProviderManager.GetExternalIdInfos(item.Item);
 
@@ -97,21 +102,24 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
             item.ResetPeople();
 
-            using (var streamReader = new StreamReader(metadataFile, encoding))
+            using (Stream fileStream = FileSystem.OpenRead(metadataFile))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, settings))
+                using (var streamReader = new StreamReader(fileStream, encoding))
                 {
-                    reader.MoveToContent();
-
-                    // Loop through each element
-                    while (reader.Read())
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        reader.MoveToContent();
 
-                        if (reader.NodeType == XmlNodeType.Element)
+                        // Loop through each element
+                        while (reader.Read())
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            if (reader.NodeType == XmlNodeType.Element)
+                            {
+                                FetchDataFromXmlNode(reader, item);
+                            }
                         }
                     }
                 }
@@ -521,7 +529,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             // This is one of the mis-named "Actors" full nodes created by MB2
                             // Create a reader and pass it to the persons node processor
-                            FetchDataFromPersonsNode(new XmlTextReader(new StringReader("<Persons>" + actors + "</Persons>")), itemResult);
+                            FetchDataFromPersonsNode(XmlReader.Create(new StringReader("<Persons>" + actors + "</Persons>")), itemResult);
                         }
                         else
                         {
