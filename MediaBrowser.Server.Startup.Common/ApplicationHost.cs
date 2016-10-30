@@ -117,10 +117,12 @@ using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
+using MediaBrowser.Model.TextEncoding;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Serialization;
+using MediaBrowser.Server.Implementations.TextEncoding;
 using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
@@ -692,7 +694,10 @@ namespace MediaBrowser.Server.Startup.Common
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer());
+            IEncoding textEncoding = new TextEncoding();
+            RegisterSingleInstance(textEncoding);
+            Utilities.EncodingHelper = textEncoding;
+            RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
             RegisterSingleInstance<IAssemblyInfo>(new AssemblyInfo());
