@@ -104,8 +104,9 @@
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="UniversalDetector">
-      <HintPath>..\ThirdParty\UniversalDetector\UniversalDetector.dll</HintPath>
+    <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
+      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
