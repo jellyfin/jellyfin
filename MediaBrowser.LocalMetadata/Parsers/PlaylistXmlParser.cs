@@ -6,16 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class PlaylistXmlParser : BaseItemXmlParser<Playlist>
     {
-        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> result)
         {
             var item = result.Item;
@@ -138,6 +135,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.Shares = list;
+        }
+
+        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

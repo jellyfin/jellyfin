@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Implementations;
+﻿using Emby.Common.Implementations;
 using MediaBrowser.Controller;
 using System.IO;
 

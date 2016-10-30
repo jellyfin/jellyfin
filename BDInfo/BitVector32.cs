@@ -9,7 +9,6 @@ namespace BDInfo
     using System.Diagnostics;
     using System.Text;
     using System;
-    using Microsoft.Win32;
 
     /// <devdoc>
     ///    <para>Provides a simple light bit vector with easy integer or Boolean access to
@@ -69,11 +68,6 @@ namespace BDInfo
             }
             set
             {
-#if DEBUG
-                if ((value & section.Mask) != value) {
-                    Debug.Fail("Value out of bounds on BitVector32 Section Set!");
-                }
-#endif
                 value <<= section.Offset;
                 int offsetMask = (0xFFFF & (int)section.Mask) << section.Offset;
                 data = (data & ~(uint)offsetMask) | ((uint)value & (uint)offsetMask);

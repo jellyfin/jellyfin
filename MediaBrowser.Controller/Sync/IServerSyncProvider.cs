@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
-using Interfaces.IO;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Sync
 {
@@ -43,11 +43,9 @@ namespace MediaBrowser.Controller.Sync
         /// <summary>
         /// Gets the files.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;QueryResult&lt;FileMetadata&gt;&gt;.</returns>
-        Task<QueryResult<FileMetadata>> GetFiles(FileQuery query, SyncTarget target, CancellationToken cancellationToken);
+        Task<QueryResult<FileSystemMetadata>> GetFiles(string id, SyncTarget target, CancellationToken cancellationToken);
+        Task<QueryResult<FileSystemMetadata>> GetFiles(string[] pathParts, SyncTarget target, CancellationToken cancellationToken);
+        Task<QueryResult<FileSystemMetadata>> GetFiles(SyncTarget target, CancellationToken cancellationToken);
     }
 
     public interface ISupportsDirectCopy

@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    
+  },
+
+  "frameworks": {
+    "net46": {
+      "frameworkAssemblies": {
+        "System.Collections": "4.0.0.0",
+        "System.IO": "4.0.0.0",
+        "System.Xml": "4.0.0.0",
+        "System.Xml.Linq": "4.0.0.0",
+        "System.Xml.Serialization": "4.0.0.0"
+      },
+      "dependencies": {
+        "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Model": {
+          "target": "project"
+        },
+        "RSSDP": {
+          "target": "project"
+        }
+      }
+    },
+    "netstandard1.6": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Model": {
+          "target": "project"
+        },
+        "System.Xml.XmlSerializer": "4.0.11",
+        "System.Xml.XDocument": "4.0.11",
+        "System.Xml.XmlDocument": "4.0.1",
+		"System.Reflection": "4.1.0",
+		"System.Reflection.Primitives": "4.0.1",
+		"System.Runtime.Loader": "4.0.0",
+        "RSSDP": {
+          "target": "project"
+        }
+      }
+    }
+  }
+}

@@ -37,6 +37,7 @@ using Mono.Nat.Pmp;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Mono.Nat
 {
@@ -142,13 +143,13 @@ namespace Mono.Nat
             timeout = 250;
         }
 
-        public void Search()
+        public async void Search()
 		{
 			foreach (UdpClient s in sockets)
 			{
 				try
 				{
-					Search(s);
+					await Search(s).ConfigureAwait(false);
 				}
 				catch
 				{
@@ -157,7 +158,7 @@ namespace Mono.Nat
 			}
 		}
 
-		void Search (UdpClient client)
+		async Task Search (UdpClient client)
         {
             // Sort out the time for the next search first. The spec says the 
             // timeout should double after each attempt. Once it reaches 64 seconds
@@ -175,8 +176,10 @@ namespace Mono.Nat
 
             // The nat-pmp search message. Must be sent to GatewayIP:53531
             byte[] buffer = new byte[] { PmpConstants.Version, PmpConstants.OperationCode };
-            foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
-                client.Send(buffer, buffer.Length, gatewayEndpoint);
+		    foreach (IPEndPoint gatewayEndpoint in gatewayLists[client])
+		    {
+		        await client.SendAsync(buffer, buffer.Length, gatewayEndpoint).ConfigureAwait(false);
+		    }
         }
 
         bool IsSearchAddress(IPAddress address)

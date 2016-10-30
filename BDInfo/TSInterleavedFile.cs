@@ -18,6 +18,7 @@
 //=============================================================================
 
 using System.IO;
+using MediaBrowser.Model.IO;
 
 // TODO: Do more interesting things here...
 
@@ -25,10 +26,10 @@ namespace BDInfo
 {
     public class TSInterleavedFile
     {
-        public FileInfo FileInfo = null;
+        public FileSystemMetadata FileInfo = null;
         public string Name = null;
 
-        public TSInterleavedFile(FileInfo fileInfo)
+        public TSInterleavedFile(FileSystemMetadata fileInfo)
         {
             FileInfo = fileInfo;
             Name = fileInfo.Name.ToUpper();

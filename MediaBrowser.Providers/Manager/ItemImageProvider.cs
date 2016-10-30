@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.MediaInfo;
@@ -554,9 +556,7 @@ namespace MediaBrowser.Providers.Manager
             switch (type)
             {
                 case ImageType.Primary:
-                    return false;
-                case ImageType.Thumb:
-                    return false;
+                    return !(item is Movie || item is Series || item is Season || item is Game);
                 default:
                     return true;
             }

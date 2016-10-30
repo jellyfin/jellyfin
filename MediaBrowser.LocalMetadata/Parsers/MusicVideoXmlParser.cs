@@ -3,20 +3,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class MusicVideoXmlParser : BaseVideoXmlParser<MusicVideo>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        public MusicVideoXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         /// <summary>
         /// Fetches the data from XML node.
         /// </summary>
@@ -49,6 +42,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, result);
                     break;
             }
+        }
+
+        public MusicVideoXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

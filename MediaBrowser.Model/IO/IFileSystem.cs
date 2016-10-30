@@ -249,6 +249,10 @@ namespace MediaBrowser.Model.IO
         /// <returns>System.String.</returns>
         string ReadAllText(string path);
 
+        byte[] ReadAllBytes(string path);
+
+        void WriteAllBytes(string path, byte[] bytes);
+
         /// <summary>
         /// Writes all text.
         /// </summary>

@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.TextEncoding;
 
 namespace OpenSubtitlesHandler
 {
@@ -33,6 +34,9 @@ namespace OpenSubtitlesHandler
     public sealed class Utilities
     {
         public static ICryptographyProvider CryptographyProvider { get; set; }
+        public static IHttpClient HttpClient { get; set; }
+        public static IEncoding EncodingHelper { get; set; }
+
         private const string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
 
         /// <summary>
@@ -105,10 +109,8 @@ namespace OpenSubtitlesHandler
         /// <summary>
         /// Handle server response stream and decode it as given encoding string.
         /// </summary>
-        /// <param name="responseStream">The response stream. Expects a stream that doesn't support seek.</param>
-        /// <param name="encoding">The encoding that should be used to decode buffer</param>
         /// <returns>The string of the stream after decode using given encoding</returns>
-        public static string GetStreamString(Stream responseStream, Encoding encoding)
+        public static string GetStreamString(Stream responseStream)
         {
             using (responseStream)
             {
@@ -121,20 +123,15 @@ namespace OpenSubtitlesHandler
                         break;
                     data.Add((byte)r);
                 }
-                return encoding.GetString(data.ToArray());
+                var bytes = data.ToArray();
+                return EncodingHelper.GetASCIIString(bytes, 0, bytes.Length);
             }
         }
-        /// <summary>
-        /// Handle server response stream and decode it as ASCII encoding string.
-        /// </summary>
-        /// <param name="responseStream">The response stream. Expects a stream that doesn't support seek.</param>
-        /// <returns>The string of the stream after decode using ASCII encoding</returns>
-        public static string GetStreamString(Stream responseStream)
-        {
-            return GetStreamString(responseStream, Encoding.ASCII);
-        }
 
-        public static IHttpClient HttpClient { get; set; }
+        public static byte[] GetASCIIBytes(string text)
+        {
+            return EncodingHelper.GetASCIIBytes(text);
+        }
 
         /// <summary>
         /// Send a request to the server

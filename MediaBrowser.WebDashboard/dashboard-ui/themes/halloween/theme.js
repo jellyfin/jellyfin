@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'css!./style.css', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize) {
+﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'require', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize, require) {
     'use strict';
 
     var lastSound = 0;
@@ -20,6 +20,8 @@
             }
 
             if (!browser.mobile) {
+
+                require(['css!./style.css']);
 
                 if (!page.classList.contains('itemDetailPage')) {
                     backdrop.setBackdrop('themes/halloween/bg.jpg');
@@ -98,9 +100,9 @@
             currentSound.stop();
         }
 
-        Dashboard.removeStylesheet('themes/halloween/style.css');
         backdrop.clear();
         appSettings.set(cancelKey, cancelValue);
+        window.location.reload(true);
     }
 
     pageClassOn('pageshow', "libraryPage", onPageShow);

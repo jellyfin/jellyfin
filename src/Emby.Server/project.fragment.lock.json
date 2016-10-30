@@ -3,7 +3,7 @@
   "exports": {
     "BDInfo/1.0.0": {
       "type": "project",
-      "framework": ".NETFramework,Version=v4.6",
+      "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
         "bin/Debug/BDInfo.dll": {}
       },
@@ -59,12 +59,27 @@
         "bin/Debug/MediaBrowser.Controller.dll": {}
       },
       "runtime": {
-        "../packages/Interfaces.IO.1.0.0.5/lib/portable-net45+sl4+wp71+win8+wpa81/Interfaces.IO.dll": {},
-        "../packages/Patterns.Logging.1.0.0.2/lib/portable-net45+sl4+wp71+win8+wpa81/Patterns.Logging.dll": {},
         "bin/Debug/MediaBrowser.Controller.dll": {}
       },
       "contentFiles": {
         "bin/Debug/MediaBrowser.Controller.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "MediaBrowser.LocalMetadata/1.0.0": {
+      "type": "project",
+      "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
+      "compile": {
+        "bin/Debug/MediaBrowser.LocalMetadata.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/MediaBrowser.LocalMetadata.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/MediaBrowser.LocalMetadata.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true
@@ -7036,7 +7051,7 @@
     },
     "OpenSubtitlesHandler/1.0.0": {
       "type": "project",
-      "framework": ".NETFramework,Version=v4.6",
+      "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
         "bin/Debug/OpenSubtitlesHandler.dll": {}
       },
