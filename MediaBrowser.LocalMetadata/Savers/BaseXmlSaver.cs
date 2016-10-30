@@ -310,24 +310,24 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("ContentRating", item.OfficialRating);
             }
 
-            //if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
-            //{
-            //    builder.Append("<MPAADescription>" + SecurityElement.Escape(item.OfficialRatingDescription) + "</MPAADescription>");
-            //}
+            if (!string.IsNullOrEmpty(item.OfficialRatingDescription))
+            {
+                writer.WriteElementString("MPAADescription", item.OfficialRatingDescription);
+            }
 
-            //builder.Append("<Added>" + SecurityElement.Escape(item.DateCreated.ToLocalTime().ToString("G")) + "</Added>");
+            writer.WriteElementString("Added", item.DateCreated.ToLocalTime().ToString("G"));
 
-            //builder.Append("<LockData>" + item.IsLocked.ToString().ToLower() + "</LockData>");
+            writer.WriteElementString("LockData", item.IsLocked.ToString().ToLower());
 
-            //if (item.LockedFields.Count > 0)
-            //{
-            //    builder.Append("<LockedFields>" + string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()) + "</LockedFields>");
-            //}
+            if (item.LockedFields.Count > 0)
+            {
+                writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray()));
+            }
 
-            //if (!string.IsNullOrEmpty(item.DisplayMediaType))
-            //{
-            //    builder.Append("<Type>" + SecurityElement.Escape(item.DisplayMediaType) + "</Type>");
-            //}
+            if (!string.IsNullOrEmpty(item.DisplayMediaType))
+            {
+                writer.WriteElementString("Type", item.DisplayMediaType);
+            }
 
             //if (item.CriticRating.HasValue)
             //{
