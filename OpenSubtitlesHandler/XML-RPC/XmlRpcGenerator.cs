@@ -22,6 +22,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using OpenSubtitlesHandler;
+
 namespace XmlRpcHandler
 {
     /// <summary>
@@ -103,26 +105,33 @@ namespace XmlRpcHandler
             XmlReaderSettings sett = new XmlReaderSettings();
             sett.DtdProcessing = DtdProcessing.Ignore;
             sett.IgnoreWhitespace = true;
-            MemoryStream str = new MemoryStream(Encoding.ASCII.GetBytes(xmlResponse));
+            MemoryStream str;
             if (xmlResponse.Contains(@"encoding=""utf-8"""))
             {
                 str = new MemoryStream(Encoding.UTF8.GetBytes(xmlResponse));
             }
-            using (XmlReader XMLread = XmlReader.Create(str, sett))
+            else
             {
-                XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
-                // Read parameters
-                while (XMLread.Read())
+                str = new MemoryStream(Utilities.GetASCIIBytes(xmlResponse));
+            }
+            using (str)
+            {
+                using (XmlReader XMLread = XmlReader.Create(str, sett))
                 {
-                    if (XMLread.Name == "param" && XMLread.IsStartElement())
+                    XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
+                    // Read parameters
+                    while (XMLread.Read())
                     {
-                        IXmlRpcValue val = ReadValue(XMLread);
-                        if (val != null)
-                            call.Parameters.Add(val);
+                        if (XMLread.Name == "param" && XMLread.IsStartElement())
+                        {
+                            IXmlRpcValue val = ReadValue(XMLread);
+                            if (val != null)
+                                call.Parameters.Add(val);
+                        }
                     }
+                    methods.Add(call);
+                    return methods.ToArray();
                 }
-                methods.Add(call);
-                return methods.ToArray();
             }
         }
 
