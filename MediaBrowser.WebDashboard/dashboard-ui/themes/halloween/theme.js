@@ -1,4 +1,5 @@
-﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'css!./style.css', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize) {
+﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'require', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize, require) {
+    'use strict';
 
     var lastSound = 0;
     var iconCreated;
@@ -20,6 +21,8 @@
 
             if (!browser.mobile) {
 
+                require(['css!./style.css']);
+
                 if (!page.classList.contains('itemDetailPage')) {
                     backdrop.setBackdrop('themes/halloween/bg.jpg');
                 }
@@ -29,9 +32,9 @@
                 } else if ((new Date().getTime() - lastSound) > 30000) {
                     playSound('http://github.com/MediaBrowser/Emby.Resources/raw/master/themes/halloween/howl.wav');
                 }
-            }
 
-            addIcon();
+                addIcon();
+            }
         }
     }
 
@@ -97,16 +100,12 @@
             currentSound.stop();
         }
 
-        Dashboard.removeStylesheet('themes/halloween/style.css');
         backdrop.clear();
         appSettings.set(cancelKey, cancelValue);
+        window.location.reload(true);
     }
 
     pageClassOn('pageshow', "libraryPage", onPageShow);
-
-    //if ($($.mobile.activePage)[0].classList.contains('libraryPage')) {
-    //    onPageShow.call($($.mobile.activePage)[0]);
-    //}
 
     function playSound(path, volume) {
 
