@@ -4,16 +4,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
     {
-        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
             switch (reader.Name)
@@ -67,6 +64,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.Item.LinkedChildren = list;
+        }
+
+        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

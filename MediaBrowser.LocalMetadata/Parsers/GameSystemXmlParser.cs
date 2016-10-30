@@ -5,16 +5,13 @@ using MediaBrowser.Model.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class GameSystemXmlParser : BaseItemXmlParser<GameSystem>
     {
-        public GameSystemXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         private readonly Task _cachedTask = Task.FromResult(true);
         public Task FetchAsync(MetadataResult<GameSystem> item, string metadataFile, CancellationToken cancellationToken)
         {
@@ -61,6 +58,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, result);
                     break;
             }
+        }
+
+        public GameSystemXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }
