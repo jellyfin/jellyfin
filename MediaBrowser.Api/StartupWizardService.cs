@@ -119,6 +119,7 @@ namespace MediaBrowser.Api
             config.EnableSimpleArtistDetection = true;
             config.SkipDeserializationForBasicTypes = true;
             config.SkipDeserializationForPrograms = true;
+            config.SkipDeserializationForAudio = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

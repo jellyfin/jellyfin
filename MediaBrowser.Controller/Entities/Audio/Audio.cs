@@ -26,9 +26,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     {
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
-        public int? TotalBitrate { get; set; }
-        public ExtraType? ExtraType { get; set; }
-
         /// <summary>
         /// Gets or sets the artist.
         /// </summary>
@@ -36,15 +33,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         public List<string> Artists { get; set; }
 
         public List<string> AlbumArtists { get; set; }
-
-        [IgnoreDataMember]
-        public override bool IsThemeMedia
-        {
-            get
-            {
-                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeSong;
-            }
-        }
 
         [IgnoreDataMember]
         public override bool EnableRefreshOnDateModifiedChange
