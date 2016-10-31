@@ -5,33 +5,47 @@
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
-        "bin/Release/MediaBrowser.Common.dll": {}
+        "bin/Debug/MediaBrowser.Common.dll": {}
       },
       "runtime": {
-        "bin/Release/MediaBrowser.Common.dll": {}
+        "bin/Debug/MediaBrowser.Common.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/MediaBrowser.Common.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
       }
     },
     "MediaBrowser.Controller/1.0.0": {
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
-        "bin/Release/MediaBrowser.Controller.dll": {}
+        "bin/Debug/MediaBrowser.Controller.dll": {}
       },
       "runtime": {
-        "bin/Release/MediaBrowser.Controller.dll": {}
+        "bin/Debug/MediaBrowser.Controller.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/MediaBrowser.Controller.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
       }
     },
     "MediaBrowser.Model/1.0.0": {
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
-        "bin/Release/MediaBrowser.Model.dll": {}
+        "bin/Debug/MediaBrowser.Model.dll": {}
       },
       "runtime": {
-        "bin/Release/MediaBrowser.Model.dll": {}
+        "bin/Debug/MediaBrowser.Model.dll": {}
       },
       "contentFiles": {
-        "bin/Release/MediaBrowser.Model.pdb": {
+        "bin/Debug/MediaBrowser.Model.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true

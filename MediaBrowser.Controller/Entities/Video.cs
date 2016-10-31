@@ -36,15 +36,6 @@ namespace MediaBrowser.Controller.Entities
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
         [IgnoreDataMember]
-        public override bool IsThemeMedia
-        {
-            get
-            {
-                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeVideo;
-            }
-        }
-
-        [IgnoreDataMember]
         public override bool SupportsPlayedStatus
         {
             get
@@ -86,9 +77,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get { return true; }
         }
-
-        public int? TotalBitrate { get; set; }
-        public ExtraType? ExtraType { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp.

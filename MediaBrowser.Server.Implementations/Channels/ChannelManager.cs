@@ -252,6 +252,42 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
+        private List<ChannelMediaInfo> GetSavedMediaSources(BaseItem item)
+        {
+            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasources.json");
+
+            try
+            {
+                return _jsonSerializer.DeserializeFromFile<List<ChannelMediaInfo>>(path) ?? new List<ChannelMediaInfo>();
+            }
+            catch
+            {
+                return new List<ChannelMediaInfo>();
+            }
+        }
+
+        private void SaveMediaSources(BaseItem item, List<ChannelMediaInfo> mediaSources)
+        {
+            var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasources.json");
+
+            if (mediaSources == null || mediaSources.Count == 0)
+            {
+                try
+                {
+                    _fileSystem.DeleteFile(path);
+                }
+                catch
+                {
+                    
+                }
+                return;
+            }
+
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+
+            _jsonSerializer.SerializeToFile(mediaSources, path);
+        }
+
         public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool includeCachedVersions, CancellationToken cancellationToken)
         {
             IEnumerable<ChannelMediaInfo> results = new List<ChannelMediaInfo>();
@@ -263,7 +299,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             var audio = item as Audio;
             if (audio != null)
             {
-                results = audio.ChannelMediaSources ?? new List<ChannelMediaInfo>();
+                results = audio.ChannelMediaSources ?? GetSavedMediaSources(audio);
             }
 
             var sources = SortMediaInfoResults(results)
@@ -1385,7 +1421,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             if (channelAudioItem != null)
             {
                 channelAudioItem.ExtraType = info.ExtraType;
-                channelAudioItem.ChannelMediaSources = info.MediaSources;
 
                 var mediaSource = info.MediaSources.FirstOrDefault();
                 item.Path = mediaSource == null ? null : mediaSource.Path;
@@ -1425,6 +1460,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 await item.UpdateToRepository(ItemUpdateType.None, cancellationToken).ConfigureAwait(false);
             }
+
+            SaveMediaSources(item, info.MediaSources);
 
             return item;
         }

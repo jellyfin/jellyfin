@@ -51,7 +51,6 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="writer">The writer.</param>
         private void SerializeToWriter(object obj, XmlWriter writer)
         {
-            //writer.Formatting = Formatting.Indented;
             var netSerializer = GetSerializer(obj.GetType());
             netSerializer.Serialize(writer, obj);
         }
@@ -78,10 +77,18 @@ namespace Emby.Common.Implementations.Serialization
         /// <param name="stream">The stream.</param>
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var writer =  XmlWriter.Create(stream))
+#if NET46
+            using (var writer = new XmlTextWriter(stream, null))            
+            {
+                writer.Formatting = System.Xml.Formatting.Indented;
+                SerializeToWriter(obj, writer);
+            }
+#else
+            using (var writer = XmlWriter.Create(stream))
             {
                 SerializeToWriter(obj, writer);
             }
+#endif
         }
 
         /// <summary>
