@@ -21,6 +21,8 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Net;
+using TagLib;
+using File = System.IO.File;
 
 namespace Emby.Drawing
 {
@@ -578,7 +580,7 @@ namespace Emby.Drawing
         {
             try
             {
-                using (var file = TagLib.File.Create(path))
+                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
                 {
                     var image = file as TagLib.Image.File;
 

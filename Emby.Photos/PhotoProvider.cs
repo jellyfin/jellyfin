@@ -35,7 +35,7 @@ namespace Emby.Photos
 
             try
             {
-                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(item.Path), _fileSystem.OpenRead(item.Path))))
+                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(item.Path), _fileSystem.OpenRead(item.Path), null)))
                 {
                     var image = file as TagLib.Image.File;
 
