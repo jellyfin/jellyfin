@@ -129,8 +129,7 @@ namespace MediaBrowser.Providers.Music
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = AudioDbArtistProvider.Current.AudioDbResourcePool
+                Url = url
             });
         }
 

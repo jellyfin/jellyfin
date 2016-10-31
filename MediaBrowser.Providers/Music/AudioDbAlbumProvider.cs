@@ -164,7 +164,6 @@ namespace MediaBrowser.Providers.Music
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = AudioDbArtistProvider.Current.AudioDbResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))

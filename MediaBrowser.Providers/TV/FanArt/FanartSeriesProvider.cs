@@ -320,7 +320,8 @@ namespace MediaBrowser.Providers.TV
                 {
                     Url = url,
                     ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    BufferContent = true
 
                 }).ConfigureAwait(false))
                 {

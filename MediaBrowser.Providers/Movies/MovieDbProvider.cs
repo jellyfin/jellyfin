@@ -434,6 +434,7 @@ namespace MediaBrowser.Providers.Movies
             options.ResourcePool = MovieDbResourcePool;
             _lastRequestTicks = DateTime.UtcNow.Ticks;
 
+            options.BufferContent = true;
             options.UserAgent = "Emby/" + _appHost.ApplicationVersion;
 
             return await _httpClient.Get(options).ConfigureAwait(false);
