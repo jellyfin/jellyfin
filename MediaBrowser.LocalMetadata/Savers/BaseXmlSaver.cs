@@ -541,29 +541,29 @@ namespace MediaBrowser.LocalMetadata.Savers
             //    builder.Append("</Studios>");
             //}
 
-            //if (item.Tags.Count > 0)
-            //{
-            //    builder.Append("<Tags>");
+            if (item.Tags.Count > 0)
+            {
+                writer.WriteStartElement("Tags");
 
-            //    foreach (var tag in item.Tags)
-            //    {
-            //        builder.Append("<Tag>" + SecurityElement.Escape(tag) + "</Tag>");
-            //    }
+                foreach (var tag in item.Tags)
+                {
+                    writer.WriteElementString("Tag", tag);
+                }
 
-            //    builder.Append("</Tags>");
-            //}
+                writer.WriteEndElement();
+            }
 
-            //if (item.Keywords.Count > 0)
-            //{
-            //    builder.Append("<PlotKeywords>");
+            if (item.Keywords.Count > 0)
+            {
+                writer.WriteStartElement("PlotKeywords");
 
-            //    foreach (var tag in item.Keywords)
-            //    {
-            //        builder.Append("<PlotKeyword>" + SecurityElement.Escape(tag) + "</PlotKeyword>");
-            //    }
+                foreach (var tag in item.Keywords)
+                {
+                    writer.WriteElementString("PlotKeyword", tag);
+                }
 
-            //    builder.Append("</PlotKeywords>");
-            //}
+                writer.WriteEndElement();
+            }
 
             //var people = libraryManager.GetPeople(item);
 
