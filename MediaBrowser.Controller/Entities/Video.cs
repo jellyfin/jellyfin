@@ -25,8 +25,7 @@ namespace MediaBrowser.Controller.Entities
     public class Video : BaseItem,
         IHasAspectRatio,
         ISupportsPlaceHolders,
-        IHasMediaSources,
-        IThemeMedia
+        IHasMediaSources
     {
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
@@ -37,7 +36,7 @@ namespace MediaBrowser.Controller.Entities
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
         [IgnoreDataMember]
-        public bool IsThemeMedia
+        public override bool IsThemeMedia
         {
             get
             {
@@ -112,12 +111,6 @@ namespace MediaBrowser.Controller.Entities
         public bool IsPlaceHolder { get; set; }
         public bool IsShortcut { get; set; }
         public string ShortcutPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video bit rate.
-        /// </summary>
-        /// <value>The video bit rate.</value>
-        public int? VideoBitRate { get; set; }
 
         /// <summary>
         /// Gets or sets the default index of the video stream.

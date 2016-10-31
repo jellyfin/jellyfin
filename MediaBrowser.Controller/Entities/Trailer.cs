@@ -10,7 +10,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Class Trailer
     /// </summary>
-    public class Trailer : Video, IHasBudget, IHasMetascore, IHasOriginalTitle, IHasLookupInfo<TrailerInfo>
+    public class Trailer : Video, IHasBudget, IHasMetascore, IHasLookupInfo<TrailerInfo>
     {
         public Trailer()
         {

@@ -132,6 +132,8 @@ namespace MediaBrowser.Model.Entities
         /// <value>The album.</value>
         public string Album { get; set; }
 
+        public bool IsThemeMedia { get; set; }
+
         /// <summary>
         /// Gets or sets the artists.
         /// </summary>
