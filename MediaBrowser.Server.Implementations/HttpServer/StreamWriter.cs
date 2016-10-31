@@ -88,8 +88,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             Headers["Content-Length"] = source.Length.ToString(UsCulture);
         }
 
-        private const int BufferSize = 81920;
-
         public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             try
@@ -102,7 +100,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {
                     using (var src = SourceStream)
                     {
-                        await src.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
+                        await src.CopyToAsync(responseStream).ConfigureAwait(false);
                     }
                 }
             }

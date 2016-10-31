@@ -215,9 +215,9 @@ namespace MediaBrowser.Api.Subtitles
                 return await ResultFactory.GetStaticFileResult(Request, subtitleStream.Path).ConfigureAwait(false);
             }
 
-            using (var stream = await GetSubtitles(request).ConfigureAwait(false))
+            if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
             {
-                if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
+                using (var stream = await GetSubtitles(request).ConfigureAwait(false))
                 {
                     using (var reader = new StreamReader(stream))
                     {
@@ -228,8 +228,9 @@ namespace MediaBrowser.Api.Subtitles
                         return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));
                     }
                 }
-                return ResultFactory.GetResult(stream, MimeTypes.GetMimeType("file." + request.Format));
             }
+
+            return ResultFactory.GetResult(await GetSubtitles(request).ConfigureAwait(false), MimeTypes.GetMimeType("file." + request.Format));
         }
 
         private Task<Stream> GetSubtitles(GetSubtitle request)
