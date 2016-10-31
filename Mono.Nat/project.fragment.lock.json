@@ -5,30 +5,23 @@
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
-        "bin/Debug/MediaBrowser.Common.dll": {}
+        "bin/Release/MediaBrowser.Common.dll": {}
       },
       "runtime": {
-        "bin/Debug/MediaBrowser.Common.dll": {}
-      },
-      "contentFiles": {
-        "bin/Debug/MediaBrowser.Common.pdb": {
-          "buildAction": "None",
-          "codeLanguage": "any",
-          "copyToOutput": true
-        }
+        "bin/Release/MediaBrowser.Common.dll": {}
       }
     },
     "MediaBrowser.Model/1.0.0": {
       "type": "project",
       "framework": ".NETPortable,Version=v4.5,Profile=Profile7",
       "compile": {
-        "bin/Debug/MediaBrowser.Model.dll": {}
+        "bin/Release/MediaBrowser.Model.dll": {}
       },
       "runtime": {
-        "bin/Debug/MediaBrowser.Model.dll": {}
+        "bin/Release/MediaBrowser.Model.dll": {}
       },
       "contentFiles": {
-        "bin/Debug/MediaBrowser.Model.pdb": {
+        "bin/Release/MediaBrowser.Model.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true
