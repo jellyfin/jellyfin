@@ -1611,7 +1611,8 @@ namespace MediaBrowser.Server.Implementations.Session
                 IndexNumber = item.IndexNumber,
                 ParentIndexNumber = item.ParentIndexNumber,
                 PremiereDate = item.PremiereDate,
-                ProductionYear = item.ProductionYear
+                ProductionYear = item.ProductionYear,
+                IsThemeMedia = item.IsThemeMedia
             };
 
             info.PrimaryImageTag = GetImageCacheTag(item, ImageType.Primary);

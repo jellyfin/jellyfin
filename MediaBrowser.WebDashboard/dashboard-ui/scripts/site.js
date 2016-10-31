@@ -1648,7 +1648,7 @@ var AppInfo = {};
             define("imageFetcher", [embyWebComponentsBowerPath + "/images/basicimagefetcher"], returnFirstDependency);
         }
 
-        var preferNativeAlerts = (browser.mobile && !browser.animate) || browser.tv || browser.xboxOne || browser.ps4;
+        var preferNativeAlerts = browser.tv || browser.xboxOne || browser.ps4;
         // use native alerts if preferred and supported (not supported in opera tv)
         if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);

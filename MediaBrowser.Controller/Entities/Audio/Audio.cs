@@ -22,8 +22,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasArtist,
         IHasMusicGenres,
         IHasLookupInfo<SongInfo>,
-        IHasMediaSources,
-        IThemeMedia
+        IHasMediaSources
     {
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
@@ -39,7 +38,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public List<string> AlbumArtists { get; set; }
 
         [IgnoreDataMember]
-        public bool IsThemeMedia
+        public override bool IsThemeMedia
         {
             get
             {

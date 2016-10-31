@@ -17,7 +17,7 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer, IHasOriginalTitle
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IMetadataContainer
     {
         public int? AnimeSeriesIndex { get; set; }
 

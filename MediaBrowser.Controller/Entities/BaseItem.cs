@@ -203,6 +203,16 @@ namespace MediaBrowser.Controller.Entities
             get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
         }
 
+        [IgnoreDataMember]
+        public virtual bool IsThemeMedia
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public string OriginalTitle { get; set; }
 
         /// <summary>
