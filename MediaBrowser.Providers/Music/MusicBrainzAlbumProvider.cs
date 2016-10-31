@@ -7,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -266,7 +267,7 @@ namespace MediaBrowser.Providers.Music
                 reader.MoveToContent();
 
                 // Loop through each element
-                while (reader.Read())
+                while (!reader.EOF)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -287,6 +288,10 @@ namespace MediaBrowser.Providers.Music
                                 }
                         }
                     }
+                    else
+                    {
+                        reader.Read();
+                    }
                 }
 
                 return list;
@@ -299,7 +304,7 @@ namespace MediaBrowser.Providers.Music
                 reader.MoveToContent();
 
                 // Loop through each element
-                while (reader.Read())
+                while (!reader.EOF)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -325,6 +330,10 @@ namespace MediaBrowser.Providers.Music
                                     break;
                                 }
                         }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                 }
 
@@ -421,7 +430,7 @@ namespace MediaBrowser.Providers.Music
                         reader.MoveToContent();
 
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -441,6 +450,10 @@ namespace MediaBrowser.Providers.Music
                                         }
                                 }
                             }
+                            else
+                            {
+                                reader.Read();
+                            }
                         }
                         return null;
                     }
@@ -453,7 +466,7 @@ namespace MediaBrowser.Providers.Music
             reader.MoveToContent();
 
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -469,6 +482,10 @@ namespace MediaBrowser.Providers.Music
                                 break;
                             }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -517,7 +534,9 @@ namespace MediaBrowser.Providers.Music
 
                 using (var stream = await _httpClient.Get(options).ConfigureAwait(false))
                 {
-                    list = _json.DeserializeFromStream<List<MbzUrl>>(stream);
+                    var results = _json.DeserializeFromStream<List<MbzUrl>>(stream);
+
+                    list = results;
                 }
                 _lastMbzUrlQueryTicks = DateTime.UtcNow.Ticks;
             }
@@ -550,11 +569,13 @@ namespace MediaBrowser.Providers.Music
         internal async Task<Stream> GetMusicBrainzResponse(string url, bool isSearch, CancellationToken cancellationToken)
         {
             var urlInfo = await GetMbzUrl().ConfigureAwait(false);
+            var throttleMs = urlInfo.throttleMs;
 
-            if (urlInfo.throttleMs > 0)
+            if (throttleMs > 0)
             {
                 // MusicBrainz is extremely adamant about limiting to one request per second
-                await Task.Delay(urlInfo.throttleMs, cancellationToken).ConfigureAwait(false);
+                _logger.Debug("Throttling MusicBrainz by {0}ms", throttleMs.ToString(CultureInfo.InvariantCulture));
+                await Task.Delay(throttleMs, cancellationToken).ConfigureAwait(false);
             }
 
             url = urlInfo.url.TrimEnd('/') + url;
@@ -564,7 +585,8 @@ namespace MediaBrowser.Providers.Music
                 Url = url,
                 CancellationToken = cancellationToken,
                 UserAgent = _appHost.Name + "/" + _appHost.ApplicationVersion,
-                ResourcePool = _musicBrainzResourcePool
+                ResourcePool = _musicBrainzResourcePool,
+                BufferContent = throttleMs > 0
             };
 
             return await _httpClient.Get(options).ConfigureAwait(false);
