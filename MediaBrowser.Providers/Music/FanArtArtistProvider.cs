@@ -256,7 +256,8 @@ namespace MediaBrowser.Providers.Music
                 {
                     Url = url,
                     ResourcePool = FanArtResourcePool,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    BufferContent = true
 
                 }).ConfigureAwait(false))
                 {

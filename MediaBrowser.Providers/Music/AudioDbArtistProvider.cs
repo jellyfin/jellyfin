@@ -152,7 +152,8 @@ namespace MediaBrowser.Providers.Music
             {
                 Url = url,
                 ResourcePool = AudioDbResourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = true
 
             }).ConfigureAwait(false))
             {
