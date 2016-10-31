@@ -256,9 +256,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             }
 
             var item = e.MediaInfo;
-            var themeMedia = item as IThemeMedia;
 
-            if (themeMedia != null && themeMedia.IsThemeMedia)
+            if ( item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;

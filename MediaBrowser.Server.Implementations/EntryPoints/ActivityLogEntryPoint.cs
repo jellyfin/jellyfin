@@ -123,8 +123,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
-            var themeMedia = item as IThemeMedia;
-            if (themeMedia != null && themeMedia.IsThemeMedia)
+            if (item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
@@ -156,8 +155,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 return;
             }
 
-            var themeMedia = item as IThemeMedia;
-            if (themeMedia != null && themeMedia.IsThemeMedia)
+            if (item.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;

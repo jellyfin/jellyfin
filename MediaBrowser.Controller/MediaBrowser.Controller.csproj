@@ -113,7 +113,6 @@
     <Compile Include="Entities\KeywordExtensions.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
     <Compile Include="Entities\IHasMetascore.cs" />
-    <Compile Include="Entities\IHasOriginalTitle.cs" />
     <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
@@ -129,7 +128,6 @@
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
-    <Compile Include="Entities\IThemeMedia.cs" />
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using TagLib;
 using TagLib.IFD;
@@ -17,10 +19,12 @@ namespace Emby.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public PhotoProvider(ILogger logger)
+        public PhotoProvider(ILogger logger, IFileSystem fileSystem)
         {
             _logger = logger;
+            _fileSystem = fileSystem;
         }
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -31,7 +35,7 @@ namespace Emby.Photos
 
             try
             {
-                using (var file = TagLib.File.Create(item.Path))
+                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(item.Path), _fileSystem.OpenRead(item.Path), null)))
                 {
                     var image = file as TagLib.Image.File;
 

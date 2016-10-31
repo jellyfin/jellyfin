@@ -285,6 +285,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(Logger, "TypedBaseItems", "ProductionLocations", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "ThemeSongIds", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "ThemeVideoIds", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "TotalBitrate", "INT");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ExtraType", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "Artists", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "AlbumArtists", "Text");
 
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
@@ -435,7 +439,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "Images",
             "ProductionLocations",
             "ThemeSongIds",
-            "ThemeVideoIds"
+            "ThemeVideoIds",
+            "TotalBitrate",
+            "ExtraType",
+            "Artists",
+            "AlbumArtists"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -566,7 +574,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Images",
                 "ProductionLocations",
                 "ThemeSongIds",
-                "ThemeVideoIds"
+                "ThemeVideoIds",
+                "TotalBitrate",
+                "ExtraType",
+                "Artists",
+                "AlbumArtists"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -1046,6 +1058,35 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
+                    _saveItemCommand.GetParameter(index++).Value = item.TotalBitrate;
+                    _saveItemCommand.GetParameter(index++).Value = item.ExtraType;
+
+                    var hasArtists = item as IHasArtist;
+                    if (hasArtists != null)
+                    {
+                        if (hasArtists.Artists.Count > 0)
+                        {
+                            _saveItemCommand.GetParameter(index++).Value = string.Join("|", hasArtists.Artists.ToArray());
+                        }
+                        else
+                        {
+                            _saveItemCommand.GetParameter(index++).Value = null;
+                        }
+                    }
+
+                    var hasAlbumArtists = item as IHasAlbumArtist;
+                    if (hasAlbumArtists != null)
+                    {
+                        if (hasAlbumArtists.AlbumArtists.Count > 0)
+                        {
+                            _saveItemCommand.GetParameter(index++).Value = string.Join("|", hasAlbumArtists.AlbumArtists.ToArray());
+                        }
+                        else
+                        {
+                            _saveItemCommand.GetParameter(index++).Value = null;
+                        }
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1301,6 +1342,25 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (_config.Configuration.SkipDeserializationForPrograms)
             {
                 if (type == typeof(LiveTvProgram))
+                {
+                    return false;
+                }
+            }
+            if (_config.Configuration.SkipDeserializationForAudio)
+            {
+                if (type == typeof(Audio))
+                {
+                    return false;
+                }
+                if (type == typeof(LiveTvAudioRecording))
+                {
+                    return false;
+                }
+                if (type == typeof(AudioPodcast))
+                {
+                    return false;
+                }
+                if (type == typeof(MusicAlbum))
                 {
                     return false;
                 }
@@ -1883,6 +1943,32 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
                 index++;
             }
+
+            if (!reader.IsDBNull(index))
+            {
+                item.TotalBitrate = reader.GetInt32(index);
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.ExtraType = (ExtraType)Enum.Parse(typeof(ExtraType), reader.GetString(index), true);
+            }
+            index++;
+
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null && !reader.IsDBNull(index))
+            {
+                hasArtists.Artists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+            index++;
+
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null && !reader.IsDBNull(index))
+            {
+                hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+            index++;
 
             if (string.IsNullOrWhiteSpace(item.Tagline))
             {

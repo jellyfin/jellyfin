@@ -278,13 +278,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasOriginalTitle = item as IHasOriginalTitle;
-                        if (hasOriginalTitle != null)
+                        if (!string.IsNullOrEmpty(val))
                         {
-                            if (!string.IsNullOrEmpty(hasOriginalTitle.OriginalTitle))
-                            {
-                                hasOriginalTitle.OriginalTitle = val;
-                            }
+                            item.OriginalTitle = val;
                         }
                         break;
                     }

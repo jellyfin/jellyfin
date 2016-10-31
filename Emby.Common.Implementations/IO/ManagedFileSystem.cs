@@ -408,13 +408,13 @@ namespace Emby.Common.Implementations.IO
             {
                 if (isHidden)
                 {
-                    FileAttributes attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
-                    File.SetAttributes(path, attributes);
+                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
                 }
                 else
                 {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
+                    FileAttributes attributes = File.GetAttributes(path);
+                    attributes = RemoveAttribute(attributes, FileAttributes.Hidden);
+                    File.SetAttributes(path, attributes);
                 }
             }
         }
