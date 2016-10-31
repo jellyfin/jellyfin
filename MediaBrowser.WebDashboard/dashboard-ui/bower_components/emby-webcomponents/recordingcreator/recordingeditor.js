@@ -3,9 +3,9 @@
 
     var currentDialog;
     var recordingDeleted = false;
-    var recordingUpdated = false;
     var currentItemId;
     var currentServerId;
+    var currentResolve;
 
     function deleteTimer(apiClient, timerId) {
 
@@ -44,10 +44,7 @@
         apiClient.getLiveTvTimer(currentItemId).then(function (item) {
             item.PrePaddingSeconds = form.querySelector('#txtPrePaddingMinutes').value * 60;
             item.PostPaddingSeconds = form.querySelector('#txtPostPaddingMinutes').value * 60;
-            apiClient.updateLiveTvTimer(item).then(function () {
-                recordingUpdated = true;
-                closeDialog(false);
-            });
+            apiClient.updateLiveTvTimer(item).then(currentResolve);
         });
 
         e.preventDefault();
@@ -95,6 +92,7 @@
             currentServerId = serverId;
             loading.show();
             options = options || {};
+            currentResolve = resolve;
 
             require(['text!./recordingeditor.template.html'], function (template) {
 
@@ -124,21 +122,26 @@
 
                 dlg.innerHTML = html;
 
-                if (!options.enableCancel) {
-                    dlg.querySelector('.btnCancelRecording').classList.add('hide');
+                if (options.enableCancel === false) {
+                    dlg.querySelector('.formDialogFooter').classList.add('hide');
                 }
 
                 currentDialog = dlg;
 
+                dlg.addEventListener('closing', function () {
+
+                    if (!recordingDeleted) {
+                        dlg.querySelector('.btnSubmit').click();
+                    }
+                });
+
                 dlg.addEventListener('close', function () {
 
-                    if (recordingDeleted || recordingUpdated) {
+                    if (recordingDeleted) {
                         resolve({
-                            updated: recordingUpdated,
-                            deleted: recordingDeleted
+                            updated: true,
+                            deleted: true
                         });
-                    } else {
-                        reject();
                     }
                 });
 
