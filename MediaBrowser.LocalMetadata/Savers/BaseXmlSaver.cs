@@ -391,39 +391,39 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            //var hasTrailers = item as IHasTrailers;
-            //if (hasTrailers != null)
+            var hasTrailers = item as IHasTrailers;
+            if (hasTrailers != null)
+            {
+                if (hasTrailers.RemoteTrailers.Count > 0)
+                {
+                    writer.WriteStartElement("Trailers");
+
+                    foreach (var trailer in hasTrailers.RemoteTrailers)
+                    {
+                        writer.WriteElementString("Trailer", trailer.Url);
+                    }
+
+                    writer.WriteEndElement();
+                }
+            }
+
+            //if (hasProductionLocations.ProductionLocations.Count > 0)
             //{
-            //    if (hasTrailers.RemoteTrailers.Count > 0)
+            //    builder.Append("<Countries>");
+
+            //    foreach (var name in hasProductionLocations.ProductionLocations)
             //    {
-            //        builder.Append("<Trailers>");
-
-            //        foreach (var trailer in hasTrailers.RemoteTrailers)
-            //        {
-            //            builder.Append("<Trailer>" + SecurityElement.Escape(trailer.Url) + "</Trailer>");
-            //        }
-
-            //        builder.Append("</Trailers>");
+            //        builder.Append("<Country>" + SecurityElement.Escape(name) + "</Country>");
             //    }
+
+            //    builder.Append("</Countries>");
             //}
 
-            ////if (hasProductionLocations.ProductionLocations.Count > 0)
-            ////{
-            ////    builder.Append("<Countries>");
-
-            ////    foreach (var name in hasProductionLocations.ProductionLocations)
-            ////    {
-            ////        builder.Append("<Country>" + SecurityElement.Escape(name) + "</Country>");
-            ////    }
-
-            ////    builder.Append("</Countries>");
-            ////}
-
-            //var hasDisplayOrder = item as IHasDisplayOrder;
-            //if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
-            //{
-            //    builder.Append("<DisplayOrder>" + SecurityElement.Escape(hasDisplayOrder.DisplayOrder) + "</DisplayOrder>");
-            //}
+            var hasDisplayOrder = item as IHasDisplayOrder;
+            if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
+            {
+                writer.WriteElementString("DisplayOrder", hasDisplayOrder.DisplayOrder);
+            }
 
             //var hasMetascore = item as IHasMetascore;
             //if (hasMetascore != null && hasMetascore.Metascore.HasValue)
@@ -437,19 +437,19 @@ namespace MediaBrowser.LocalMetadata.Savers
             //    builder.Append("<AwardSummary>" + SecurityElement.Escape(hasAwards.AwardSummary) + "</AwardSummary>");
             //}
 
-            //var hasBudget = item as IHasBudget;
-            //if (hasBudget != null)
-            //{
-            //    if (hasBudget.Budget.HasValue)
-            //    {
-            //        builder.Append("<Budget>" + SecurityElement.Escape(hasBudget.Budget.Value.ToString(UsCulture)) + "</Budget>");
-            //    }
+            var hasBudget = item as IHasBudget;
+            if (hasBudget != null)
+            {
+                if (hasBudget.Budget.HasValue)
+                {
+                    writer.WriteElementString("Budget", hasBudget.Budget.Value.ToString(UsCulture));
+                }
 
-            //    if (hasBudget.Revenue.HasValue)
-            //    {
-            //        builder.Append("<Revenue>" + SecurityElement.Escape(hasBudget.Revenue.Value.ToString(UsCulture)) + "</Revenue>");
-            //    }
-            //}
+                if (hasBudget.Revenue.HasValue)
+                {
+                    writer.WriteElementString("Revenue", hasBudget.Revenue.Value.ToString(UsCulture));
+                }
+            }
 
             //if (item.CommunityRating.HasValue)
             //{
@@ -460,15 +460,15 @@ namespace MediaBrowser.LocalMetadata.Savers
             //    builder.Append("<VoteCount>" + SecurityElement.Escape(item.VoteCount.Value.ToString(UsCulture)) + "</VoteCount>");
             //}
 
-            //if (item.ProductionYear.HasValue && !(item is Person))
-            //{
-            //    builder.Append("<ProductionYear>" + SecurityElement.Escape(item.ProductionYear.Value.ToString(UsCulture)) + "</ProductionYear>");
-            //}
+            if (item.ProductionYear.HasValue && !(item is Person))
+            {
+                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(UsCulture));
+            }
 
-            //if (!string.IsNullOrEmpty(item.HomePageUrl))
-            //{
-            //    builder.Append("<Website>" + SecurityElement.Escape(item.HomePageUrl) + "</Website>");
-            //}
+            if (!string.IsNullOrEmpty(item.HomePageUrl))
+            {
+                writer.WriteElementString("Website", item.HomePageUrl);
+            }
 
             //var hasAspectRatio = item as IHasAspectRatio;
             //if (hasAspectRatio != null)
@@ -589,42 +589,42 @@ namespace MediaBrowser.LocalMetadata.Savers
             //    builder.Append("</Persons>");
             //}
 
-            //var boxset = item as BoxSet;
-            //if (boxset != null)
-            //{
-            //    AddLinkedChildren(boxset, builder, "CollectionItems", "CollectionItem");
-            //}
+            var boxset = item as BoxSet;
+            if (boxset != null)
+            {
+                AddLinkedChildren(boxset, writer, "CollectionItems", "CollectionItem");
+            }
 
-            //var playlist = item as Playlist;
-            //if (playlist != null)
-            //{
-            //    AddLinkedChildren(playlist, builder, "PlaylistItems", "PlaylistItem");
-            //}
+            var playlist = item as Playlist;
+            if (playlist != null)
+            {
+                AddLinkedChildren(playlist, writer, "PlaylistItems", "PlaylistItem");
+            }
 
-            //var hasShares = item as IHasShares;
-            //if (hasShares != null)
-            //{
-            //    AddShares(hasShares, builder);
-            //}
+            var hasShares = item as IHasShares;
+            if (hasShares != null)
+            {
+                AddShares(hasShares, writer);
+            }
 
             AddMediaInfo(item, writer);
         }
 
-        public static void AddShares(IHasShares item, StringBuilder builder)
+        public static void AddShares(IHasShares item, XmlWriter writer)
         {
-            //builder.Append("<Shares>");
+            writer.WriteStartElement("Shares");
 
-            //foreach (var share in item.Shares)
-            //{
-            //    builder.Append("<Share>");
+            foreach (var share in item.Shares)
+            {
+                writer.WriteStartElement("Share");
 
-            //    builder.Append("<UserId>" + SecurityElement.Escape(share.UserId) + "</UserId>");
-            //    builder.Append("<CanEdit>" + SecurityElement.Escape(share.CanEdit.ToString().ToLower()) + "</CanEdit>");
+                writer.WriteElementString("UserId", share.UserId);
+                writer.WriteElementString("CanEdit", share.CanEdit.ToString().ToLower());
 
-            //    builder.Append("</Share>");
-            //}
+                writer.WriteEndElement();
+            }
 
-            //builder.Append("</Shares>");
+            writer.WriteEndElement();
         }
 
         /// <summary>
@@ -662,30 +662,30 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
         }
 
-        public static void AddLinkedChildren(Folder item, StringBuilder builder, string pluralNodeName, string singularNodeName)
+        public static void AddLinkedChildren(Folder item, XmlWriter writer, string pluralNodeName, string singularNodeName)
         {
-            //var items = item.LinkedChildren
-            //    .Where(i => i.Type == LinkedChildType.Manual)
-            //    .ToList();
+            var items = item.LinkedChildren
+                .Where(i => i.Type == LinkedChildType.Manual)
+                .ToList();
 
-            //if (items.Count == 0)
-            //{
-            //    return;
-            //}
+            if (items.Count == 0)
+            {
+                return;
+            }
 
-            //builder.Append("<" + pluralNodeName + ">");
-            //foreach (var link in items)
-            //{
-            //    builder.Append("<" + singularNodeName + ">");
+            writer.WriteStartElement(pluralNodeName);
 
-            //    if (!string.IsNullOrWhiteSpace(link.Path))
-            //    {
-            //        builder.Append("<Path>" + SecurityElement.Escape((link.Path)) + "</Path>");
-            //    }
+            foreach (var link in items)
+            {
+                if (!string.IsNullOrWhiteSpace(link.Path))
+                {
+                    writer.WriteStartElement(singularNodeName);
+                    writer.WriteElementString("Path", link.Path);
+                    writer.WriteEndElement();
+                }
+            }
 
-            //    builder.Append("</" + singularNodeName + ">");
-            //}
-            //builder.Append("</" + pluralNodeName + ">");
+            writer.WriteEndElement();
         }
 
         private static bool IsPersonType(PersonInfo person, string type)
