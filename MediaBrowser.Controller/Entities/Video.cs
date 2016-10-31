@@ -25,8 +25,7 @@ namespace MediaBrowser.Controller.Entities
     public class Video : BaseItem,
         IHasAspectRatio,
         ISupportsPlaceHolders,
-        IHasMediaSources,
-        IThemeMedia
+        IHasMediaSources
     {
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
@@ -35,15 +34,6 @@ namespace MediaBrowser.Controller.Entities
         public List<string> LocalAlternateVersions { get; set; }
         public List<LinkedChild> LinkedAlternateVersions { get; set; }
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
-
-        [IgnoreDataMember]
-        public bool IsThemeMedia
-        {
-            get
-            {
-                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeVideo;
-            }
-        }
 
         [IgnoreDataMember]
         public override bool SupportsPlayedStatus
@@ -88,9 +78,6 @@ namespace MediaBrowser.Controller.Entities
             get { return true; }
         }
 
-        public int? TotalBitrate { get; set; }
-        public ExtraType? ExtraType { get; set; }
-
         /// <summary>
         /// Gets or sets the timestamp.
         /// </summary>
@@ -112,12 +99,6 @@ namespace MediaBrowser.Controller.Entities
         public bool IsPlaceHolder { get; set; }
         public bool IsShortcut { get; set; }
         public string ShortcutPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video bit rate.
-        /// </summary>
-        /// <value>The video bit rate.</value>
-        public int? VideoBitRate { get; set; }
 
         /// <summary>
         /// Gets or sets the default index of the video stream.

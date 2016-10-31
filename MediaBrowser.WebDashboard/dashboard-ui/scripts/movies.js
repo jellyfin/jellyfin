@@ -293,10 +293,6 @@
                         {
                             name: Globalize.translate('OptionRuntime'),
                             id: 'Runtime,SortName'
-                        },
-                        {
-                            name: Globalize.translate('OptionVideoBitrate'),
-                            id: 'VideoBitRate,SortName'
                         }],
                     callback: function () {
                         getQuery(tabContent).StartIndex = 0;

@@ -21,6 +21,8 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Net;
+using TagLib;
+using File = System.IO.File;
 
 namespace Emby.Drawing
 {
@@ -578,7 +580,7 @@ namespace Emby.Drawing
         {
             try
             {
-                using (var file = TagLib.File.Create(path))
+                using (var file = TagLib.File.Create(new StreamFileAbstraction(Path.GetFileName(path), _fileSystem.OpenRead(path), null)))
                 {
                     var image = file as TagLib.Image.File;
 
@@ -780,40 +782,38 @@ namespace Emby.Drawing
             // All enhanced images are saved as png to allow transparency
             var enhancedImagePath = GetCachePath(EnhancedImageCachePath, cacheGuid + ".png");
 
-            var semaphore = GetLock(enhancedImagePath);
-
-            await semaphore.WaitAsync().ConfigureAwait(false);
-
             // Check again in case of contention
             if (_fileSystem.FileExists(enhancedImagePath))
             {
-                semaphore.Release();
                 return enhancedImagePath;
             }
 
-            var imageProcessingLockTaken = false;
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+
+            var tmpPath = Path.Combine(_appPaths.TempDirectory, Path.ChangeExtension(Guid.NewGuid().ToString(), Path.GetExtension(enhancedImagePath)));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
+
+            await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                _fileSystem.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+                await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, tmpPath, item, imageType, imageIndex).ConfigureAwait(false);
 
-                await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
-
-                imageProcessingLockTaken = true;
-
-                await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
+                try
+                {
+                    File.Copy(tmpPath, enhancedImagePath, true);
+                }
+                catch
+                {
+                    
+                }
             }
             finally
             {
-                if (imageProcessingLockTaken)
-                {
-                    _imageProcessingSemaphore.Release();
-                }
-
-                semaphore.Release();
+                _imageProcessingSemaphore.Release();
             }
 
-            return enhancedImagePath;
+            return tmpPath;
         }
 
         /// <summary>
@@ -836,21 +836,6 @@ namespace Emby.Drawing
                 // Feed the output into the next enhancer as input
                 inputPath = outputPath;
             }
-        }
-
-        /// <summary>
-        /// The _semaphoreLocks
-        /// </summary>
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphoreLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
-
-        /// <summary>
-        /// Gets the lock.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.Object.</returns>
-        private SemaphoreSlim GetLock(string filename)
-        {
-            return _semaphoreLocks.GetOrAdd(filename, key => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>

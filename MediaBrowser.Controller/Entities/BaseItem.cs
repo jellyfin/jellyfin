@@ -203,6 +203,19 @@ namespace MediaBrowser.Controller.Entities
             get { return PremiereDate.HasValue && PremiereDate.Value.ToLocalTime().Date >= DateTime.Now.Date; }
         }
 
+        public int? TotalBitrate { get; set; }
+        public ExtraType? ExtraType { get; set; }
+
+        [IgnoreDataMember]
+        public bool IsThemeMedia
+        {
+            get
+            {
+                return ExtraType.HasValue && (ExtraType.Value == Model.Entities.ExtraType.ThemeSong || ExtraType.Value == Model.Entities.ExtraType.ThemeVideo);
+            }
+        }
+
+        [IgnoreDataMember]
         public string OriginalTitle { get; set; }
 
         /// <summary>
@@ -1035,7 +1048,7 @@ namespace MediaBrowser.Controller.Entities
                         audio = dbItem;
                     }
 
-                    audio.ExtraType = ExtraType.ThemeSong;
+                    audio.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeSong;
 
                     return audio;
 
@@ -1065,7 +1078,7 @@ namespace MediaBrowser.Controller.Entities
                         item = dbItem;
                     }
 
-                    item.ExtraType = ExtraType.ThemeVideo;
+                    item.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeVideo;
 
                     return item;
 
@@ -1215,7 +1228,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.ExtraType = ExtraType.ThemeVideo;
+                    i.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeVideo;
                     subOptions.ForceSave = true;
                 }
 
@@ -1245,7 +1258,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (!i.IsThemeMedia)
                 {
-                    i.ExtraType = ExtraType.ThemeSong;
+                    i.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeSong;
                     subOptions.ForceSave = true;
                 }
 

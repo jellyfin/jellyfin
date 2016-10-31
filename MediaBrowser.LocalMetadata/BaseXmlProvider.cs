@@ -96,7 +96,5 @@ namespace MediaBrowser.LocalMetadata
                 return "Emby Xml";
             }
         }
-        
-        internal static readonly SemaphoreSlim XmlParsingResourcePool = new SemaphoreSlim(4, 4);
     }
 }

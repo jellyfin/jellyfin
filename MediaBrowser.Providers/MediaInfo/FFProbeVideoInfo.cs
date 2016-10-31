@@ -203,7 +203,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-            video.VideoBitRate = videoStream == null ? null : videoStream.BitRate;
             video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);

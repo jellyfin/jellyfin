@@ -223,10 +223,6 @@
                     {
                         name: Globalize.translate('OptionRuntime'),
                         id: 'Runtime,SeriesSortName,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionVideoBitrate'),
-                        id: 'VideoBitRate,SeriesSortName,SortName'
                     }],
                     callback: function () {
                         reloadItems(tabContent);

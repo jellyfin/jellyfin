@@ -44,8 +44,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="taglib-sharp">
-      <HintPath>..\ThirdParty\taglib\taglib-sharp.dll</HintPath>
+    <Reference Include="TagLib.Portable">
+      <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

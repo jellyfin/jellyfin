@@ -347,8 +347,9 @@
     "ButtonPlayOneMinute": "Reproduzir Um Minuto",
     "PlaceFavoriteChannelsAtBeginning": "Colocar canais favoritos no in\u00edcio",
     "HeaderUnlockFeature": "Desbloquear Funcionalidade",
-    "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
-    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
-    "HeaderPlayMyMedia": "Play my Media",
-    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere"
+    "MessageDidYouKnowCinemaMode": "Voc\u00ea sabia que com Emby Premiere, voc\u00ea pode melhorar sua experi\u00eancia com funcionalidades como o Modo Cinema?",
+    "MessageDidYouKnowCinemaMode2": "Modo Cinema lhe d\u00e1 uma verdadeira experi\u00eancia de cinema com trailers e introdu\u00e7\u00f5es customizadas antes da apresenta\u00e7\u00e3o principal.",
+    "HeaderPlayMyMedia": "Reproduzir minha M\u00eddia",
+    "HeaderDiscoverEmbyPremiere": "Descobrir o Emby Premiere",
+    "OneChannel": "Um canal"
 }
