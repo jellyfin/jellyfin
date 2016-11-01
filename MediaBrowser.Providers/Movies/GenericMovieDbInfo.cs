@@ -26,16 +26,16 @@ namespace MediaBrowser.Providers.Movies
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILibraryManager _libraryManager;
-		private readonly IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-		public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer, ILibraryManager libraryManager, IFileSystem fileSystem)
+        public GenericMovieDbInfo(ILogger logger, IJsonSerializer jsonSerializer, ILibraryManager libraryManager, IFileSystem fileSystem)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _libraryManager = libraryManager;
-			_fileSystem = fileSystem;
+            _fileSystem = fileSystem;
         }
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
@@ -271,6 +271,8 @@ namespace MediaBrowser.Providers.Movies
             //and the rest from crew
             if (movieData.casts != null && movieData.casts.crew != null)
             {
+                var keepTypes = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer };
+
                 foreach (var person in movieData.casts.crew)
                 {
                     // Normalize this
@@ -278,6 +280,12 @@ namespace MediaBrowser.Providers.Movies
                     if (string.Equals(type, "writing", StringComparison.OrdinalIgnoreCase))
                     {
                         type = PersonType.Writer;
+                    }
+
+                    if (!keepTypes.Contains(type ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                        !keepTypes.Contains(person.job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
                     }
 
                     var personInfo = new PersonInfo

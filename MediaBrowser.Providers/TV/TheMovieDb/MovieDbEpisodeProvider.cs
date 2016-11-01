@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.IO;
+﻿using System;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -166,9 +167,24 @@ namespace MediaBrowser.Providers.TV
                     //and the rest from crew
                     if (credits.crew != null)
                     {
+                        var keepTypes = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer };
+
                         foreach (var person in credits.crew)
                         {
-                            result.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                            // Normalize this
+                            var type = person.department;
+                            if (string.Equals(type, "writing", StringComparison.OrdinalIgnoreCase))
+                            {
+                                type = PersonType.Writer;
+                            }
+
+                            if (!keepTypes.Contains(type ?? string.Empty, StringComparer.OrdinalIgnoreCase) &&
+                                !keepTypes.Contains(person.job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            result.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = type });
                         }
                     }
                 }
