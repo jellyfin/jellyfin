@@ -121,6 +121,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             get
             {
+                if (_hasExternalEncoder)
+                {
+                    return "External";
+                }
+
                 if (string.IsNullOrWhiteSpace(FFMpegPath))
                 {
                     return null;
@@ -185,6 +190,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             ConfigureEncoderPaths();
 
+            if (_hasExternalEncoder)
+            {
+                LogPaths();
+                return;
+            }
+
             // If the path was passed in, save it into config now.
             var encodingOptions = GetEncodingOptions();
             var appPath = encodingOptions.EncoderAppPath;
@@ -194,7 +205,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (!string.IsNullOrWhiteSpace(valueToSave))
             {
                 // if using system variable, don't save this.
-                if (IsSystemInstalledPath(valueToSave))
+                if (IsSystemInstalledPath(valueToSave) || _hasExternalEncoder)
                 {
                     valueToSave = null;
                 }
@@ -209,6 +220,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public async Task UpdateEncoderPath(string path, string pathType)
         {
+            if (_hasExternalEncoder)
+            {
+                return;
+            }
+
             Tuple<string, string> newPaths;
 
             if (string.Equals(pathType, "system", StringComparison.OrdinalIgnoreCase))
@@ -265,6 +281,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void ConfigureEncoderPaths()
         {
+            if (_hasExternalEncoder)
+            {
+                return;
+            }
+
             var appPath = GetEncodingOptions().EncoderAppPath;
 
             if (string.IsNullOrWhiteSpace(appPath))
