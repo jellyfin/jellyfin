@@ -547,7 +547,7 @@ namespace MediaBrowser.Server.Startup.Common
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            IEncoding textEncoding = new TextEncoding();
+            IEncoding textEncoding = new TextEncoding(FileSystemManager);
             RegisterSingleInstance(textEncoding);
             Utilities.EncodingHelper = textEncoding;
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
@@ -697,7 +697,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager));
 
-            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider);
+            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider, ProcessFactory, textEncoding);
             RegisterSingleInstance(SubtitleEncoder);
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
@@ -789,7 +789,10 @@ namespace MediaBrowser.Server.Startup.Common
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 HttpClient,
-                ZipClient, MemoryStreamProvider);
+                ZipClient, MemoryStreamProvider,
+                ProcessFactory,
+                Environment.Is64BitOperatingSystem ? (Environment.ProcessorCount > 2 ? 14000 : 20000) : 40000,
+                Environment.OSVersion.Platform == PlatformID.Win32NT);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);

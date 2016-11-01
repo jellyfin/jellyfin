@@ -44,6 +44,8 @@
           "target": "project"
         },
         "System.IO.FileSystem.DriveInfo": "4.0.0",
+		"System.Diagnostics.Process": "4.1.0",
+		"System.Threading.Timer": "4.0.1",
 		"System.Net.Requests": "4.0.11",
 		"System.Xml.XmlSerializer": "4.0.11",
 		"System.Net.Http": "4.1.0",
