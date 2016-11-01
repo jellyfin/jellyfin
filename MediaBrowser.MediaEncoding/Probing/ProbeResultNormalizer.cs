@@ -781,24 +781,24 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            if (!string.IsNullOrWhiteSpace(conductor))
-            {
-                foreach (var person in Split(conductor, false))
-                {
-                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
-                }
-            }
+            //var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            //if (!string.IsNullOrWhiteSpace(conductor))
+            //{
+            //    foreach (var person in Split(conductor, false))
+            //    {
+            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+            //    }
+            //}
 
-            var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            //var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            //if (!string.IsNullOrWhiteSpace(lyricist))
+            //{
+            //    foreach (var person in Split(lyricist, false))
+            //    {
+            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+            //    }
+            //}
 
-            if (!string.IsNullOrWhiteSpace(lyricist))
-            {
-                foreach (var person in Split(lyricist, false))
-                {
-                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
-                }
-            }
             // Check for writer some music is tagged that way as alternative to composer/lyricist
             var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
 
