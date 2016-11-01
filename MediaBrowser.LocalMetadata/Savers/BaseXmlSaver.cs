@@ -407,17 +407,17 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            //if (hasProductionLocations.ProductionLocations.Count > 0)
-            //{
-            //    builder.Append("<Countries>");
+            if (item.ProductionLocations.Count > 0)
+            {
+                writer.WriteStartElement("Countries");
 
-            //    foreach (var name in hasProductionLocations.ProductionLocations)
-            //    {
-            //        builder.Append("<Country>" + SecurityElement.Escape(name) + "</Country>");
-            //    }
+                foreach (var name in item.ProductionLocations)
+                {
+                    writer.WriteElementString("Country", name);
+                }
 
-            //    builder.Append("</Countries>");
-            //}
+                writer.WriteEndElement();
+            }
 
             var hasDisplayOrder = item as IHasDisplayOrder;
             if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
@@ -425,17 +425,17 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("DisplayOrder", hasDisplayOrder.DisplayOrder);
             }
 
-            //var hasMetascore = item as IHasMetascore;
-            //if (hasMetascore != null && hasMetascore.Metascore.HasValue)
-            //{
-            //    builder.Append("<Metascore>" + SecurityElement.Escape(hasMetascore.Metascore.Value.ToString(UsCulture)) + "</Metascore>");
-            //}
+            var hasMetascore = item as IHasMetascore;
+            if (hasMetascore != null && hasMetascore.Metascore.HasValue)
+            {
+                writer.WriteElementString("Metascore", hasMetascore.Metascore.Value.ToString(UsCulture));
+            }
 
-            //var hasAwards = item as IHasAwards;
-            //if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
-            //{
-            //    builder.Append("<AwardSummary>" + SecurityElement.Escape(hasAwards.AwardSummary) + "</AwardSummary>");
-            //}
+            var hasAwards = item as IHasAwards;
+            if (hasAwards != null && !string.IsNullOrEmpty(hasAwards.AwardSummary))
+            {
+                writer.WriteElementString("AwardSummary", hasAwards.AwardSummary);
+            }
 
             var hasBudget = item as IHasBudget;
             if (hasBudget != null)
@@ -451,14 +451,14 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            //if (item.CommunityRating.HasValue)
-            //{
-            //    builder.Append("<Rating>" + SecurityElement.Escape(item.CommunityRating.Value.ToString(UsCulture)) + "</Rating>");
-            //}
-            //if (item.VoteCount.HasValue)
-            //{
-            //    builder.Append("<VoteCount>" + SecurityElement.Escape(item.VoteCount.Value.ToString(UsCulture)) + "</VoteCount>");
-            //}
+            if (item.CommunityRating.HasValue)
+            {
+                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(UsCulture));
+            }
+            if (item.VoteCount.HasValue)
+            {
+                writer.WriteElementString("VoteCount", item.VoteCount.Value.ToString(UsCulture));
+            }
 
             if (item.ProductionYear.HasValue && !(item is Person))
             {
@@ -470,76 +470,76 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("Website", item.HomePageUrl);
             }
 
-            //var hasAspectRatio = item as IHasAspectRatio;
-            //if (hasAspectRatio != null)
-            //{
-            //    if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
-            //    {
-            //        builder.Append("<AspectRatio>" + SecurityElement.Escape(hasAspectRatio.AspectRatio) + "</AspectRatio>");
-            //    }
-            //}
+            var hasAspectRatio = item as IHasAspectRatio;
+            if (hasAspectRatio != null)
+            {
+                if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
+                {
+                    writer.WriteElementString("AspectRatio", hasAspectRatio.AspectRatio);
+                }
+            }
 
-            //if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
-            //{
-            //    builder.Append("<Language>" + SecurityElement.Escape(item.PreferredMetadataLanguage) + "</Language>");
-            //}
-            //if (!string.IsNullOrEmpty(item.PreferredMetadataCountryCode))
-            //{
-            //    builder.Append("<CountryCode>" + SecurityElement.Escape(item.PreferredMetadataCountryCode) + "</CountryCode>");
-            //}
+            if (!string.IsNullOrEmpty(item.PreferredMetadataLanguage))
+            {
+                writer.WriteElementString("Language", item.PreferredMetadataLanguage);
+            }
+            if (!string.IsNullOrEmpty(item.PreferredMetadataCountryCode))
+            {
+                writer.WriteElementString("CountryCode", item.PreferredMetadataCountryCode);
+            }
 
-            //// Use original runtime here, actual file runtime later in MediaInfo
-            //var runTimeTicks = item.RunTimeTicks;
+            // Use original runtime here, actual file runtime later in MediaInfo
+            var runTimeTicks = item.RunTimeTicks;
 
-            //if (runTimeTicks.HasValue)
-            //{
-            //    var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
+            if (runTimeTicks.HasValue)
+            {
+                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
-            //    builder.Append("<RunningTime>" + Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture) + "</RunningTime>");
-            //}
+                writer.WriteElementString("RunningTime", Convert.ToInt32(timespan.TotalMinutes).ToString(UsCulture));
+            }
 
-            //if (item.ProviderIds != null)
-            //{
-            //    foreach (var providerKey in item.ProviderIds.Keys)
-            //    {
-            //        var providerId = item.ProviderIds[providerKey];
-            //        if (!string.IsNullOrEmpty(providerId))
-            //        {
-            //            builder.Append(string.Format("<{0}>{1}</{0}>", providerKey + "Id", SecurityElement.Escape(providerId)));
-            //        }
-            //    }
-            //}
+            if (item.ProviderIds != null)
+            {
+                foreach (var providerKey in item.ProviderIds.Keys)
+                {
+                    var providerId = item.ProviderIds[providerKey];
+                    if (!string.IsNullOrEmpty(providerId))
+                    {
+                        writer.WriteElementString(providerKey + "Id", providerId);
+                    }
+                }
+            }
 
-            //if (!string.IsNullOrWhiteSpace(item.Tagline))
-            //{
-            //    builder.Append("<Taglines>");
-            //    builder.Append("<Tagline>" + SecurityElement.Escape(item.Tagline) + "</Tagline>");
-            //    builder.Append("</Taglines>");
-            //}
+            if (!string.IsNullOrWhiteSpace(item.Tagline))
+            {
+                writer.WriteStartElement("Taglines");
+                writer.WriteElementString("Tagline", item.Tagline);
+                writer.WriteEndElement();
+            }
 
-            //if (item.Genres.Count > 0)
-            //{
-            //    builder.Append("<Genres>");
+            if (item.Genres.Count > 0)
+            {
+                writer.WriteStartElement("Genres");
 
-            //    foreach (var genre in item.Genres)
-            //    {
-            //        builder.Append("<Genre>" + SecurityElement.Escape(genre) + "</Genre>");
-            //    }
+                foreach (var genre in item.Genres)
+                {
+                    writer.WriteElementString("Genre", genre);
+                }
 
-            //    builder.Append("</Genres>");
-            //}
+                writer.WriteEndElement();
+            }
 
-            //if (item.Studios.Count > 0)
-            //{
-            //    builder.Append("<Studios>");
+            if (item.Studios.Count > 0)
+            {
+                writer.WriteStartElement("Studios");
 
-            //    foreach (var studio in item.Studios)
-            //    {
-            //        builder.Append("<Studio>" + SecurityElement.Escape(studio) + "</Studio>");
-            //    }
+                foreach (var studio in item.Studios)
+                {
+                    writer.WriteElementString("Studio", studio);
+                }
 
-            //    builder.Append("</Studios>");
-            //}
+                writer.WriteEndElement();
+            }
 
             if (item.Tags.Count > 0)
             {
@@ -565,29 +565,29 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            //var people = libraryManager.GetPeople(item);
+            var people = libraryManager.GetPeople(item);
 
-            //if (people.Count > 0)
-            //{
-            //    builder.Append("<Persons>");
+            if (people.Count > 0)
+            {
+                writer.WriteStartElement("Persons");
 
-            //    foreach (var person in people)
-            //    {
-            //        builder.Append("<Person>");
-            //        builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");
-            //        builder.Append("<Type>" + SecurityElement.Escape(person.Type) + "</Type>");
-            //        builder.Append("<Role>" + SecurityElement.Escape(person.Role) + "</Role>");
+                foreach (var person in people)
+                {
+                    writer.WriteStartElement("Person");
+                    writer.WriteElementString("Name", person.Name);
+                    writer.WriteElementString("Type", person.Type);
+                    writer.WriteElementString("Role", person.Role);
 
-            //        if (person.SortOrder.HasValue)
-            //        {
-            //            builder.Append("<SortOrder>" + SecurityElement.Escape(person.SortOrder.Value.ToString(UsCulture)) + "</SortOrder>");
-            //        }
+                    if (person.SortOrder.HasValue)
+                    {
+                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(UsCulture));
+                    }
 
-            //        builder.Append("</Person>");
-            //    }
+                    writer.WriteEndElement();
+                }
 
-            //    builder.Append("</Persons>");
-            //}
+                writer.WriteEndElement();
+            }
 
             var boxset = item as BoxSet;
             if (boxset != null)
