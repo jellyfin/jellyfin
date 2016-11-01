@@ -229,6 +229,7 @@ div[data-role='page'] {
     color: #111 !important;
     font-weight: 500 !important;
     vertical-align: middle;
+    font-size: 110%;
 }
 
     .sidebarLink:hover {

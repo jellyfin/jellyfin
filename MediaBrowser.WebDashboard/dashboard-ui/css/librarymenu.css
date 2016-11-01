@@ -238,14 +238,8 @@ body:not(.dashboardDocument) .btnNotifications {
         margin-left: 1.6em;
     }
 
-i.sidebarLinkIcon {
-    font-size: 114%;
-    height: auto;
-    width: auto;
-}
-
 .darkDrawer i.sidebarLinkIcon {
-    margin-left: 1.7em;
+    margin-left: 1.9em;
 }
 
 .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {

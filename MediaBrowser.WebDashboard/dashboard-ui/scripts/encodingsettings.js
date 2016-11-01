@@ -188,7 +188,12 @@
 
             ApiClient.getSystemInfo().then(function (systemInfo) {
 
-                page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
+                if (systemInfo.EncoderLocationType == "External") {
+                    page.querySelector('.fldSelectEncoderPathType').classList.add('hide');
+                } else {
+                    page.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
+                }
+
                 loadPage(page, config, systemInfo);
             });
         });
