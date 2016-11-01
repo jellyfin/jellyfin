@@ -126,7 +126,7 @@ namespace MediaBrowser.Api.System
                     .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 files = new List<FileSystemMetadata>();
             }

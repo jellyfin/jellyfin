@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api
 {
@@ -22,8 +23,8 @@ namespace MediaBrowser.Api
         /// <summary>
         /// The _active connections
         /// </summary>
-        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>> ActiveConnections =
-            new List<Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>>();
+        protected readonly List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>> ActiveConnections =
+            new List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>>();
 
         /// <summary>
         /// Gets the name.
@@ -43,12 +44,9 @@ namespace MediaBrowser.Api
         /// </summary>
         protected ILogger Logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BasePeriodicWebSocketListener{TStateType}" /> class.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">logger</exception>
-        protected BasePeriodicWebSocketListener(ILogger logger)
+        protected ITimerFactory TimerFactory { get; private set; }
+
+        protected BasePeriodicWebSocketListener(ILogger logger, ITimerFactory timerFactory)
         {
             if (logger == null)
             {
@@ -56,6 +54,7 @@ namespace MediaBrowser.Api
             }
 
             Logger = logger;
+            TimerFactory = timerFactory;
         }
 
         /// <summary>
@@ -124,7 +123,7 @@ namespace MediaBrowser.Api
             Logger.Debug("{1} Begin transmitting over websocket to {0}", message.Connection.RemoteEndPoint, GetType().Name);
 
             var timer = SendOnTimer ?
-                new Timer(TimerCallback, message.Connection, Timeout.Infinite, Timeout.Infinite) :
+                TimerFactory.Create(TimerCallback, message.Connection, Timeout.Infinite, Timeout.Infinite) :
                 null;
 
             var state = new TStateType
@@ -137,7 +136,7 @@ namespace MediaBrowser.Api
 
             lock (ActiveConnections)
             {
-                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>(message.Connection, cancellationTokenSource, timer, state, semaphore));
+                ActiveConnections.Add(new Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>(message.Connection, cancellationTokenSource, timer, state, semaphore));
             }
 
             if (timer != null)
@@ -154,7 +153,7 @@ namespace MediaBrowser.Api
         {
             var connection = (IWebSocketConnection)state;
 
-            Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> tuple;
+            Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> tuple;
 
             lock (ActiveConnections)
             {
@@ -177,7 +176,7 @@ namespace MediaBrowser.Api
 
         protected void SendData(bool force)
         {
-            List<Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim>> tuples;
+            List<Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim>> tuples;
 
             lock (ActiveConnections)
             {
@@ -205,7 +204,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> tuple)
+        private async void SendData(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> tuple)
         {
             var connection = tuple.Item1;
 
@@ -266,7 +265,7 @@ namespace MediaBrowser.Api
         /// Disposes the connection.
         /// </summary>
         /// <param name="connection">The connection.</param>
-        private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, Timer, TStateType, SemaphoreSlim> connection)
+        private void DisposeConnection(Tuple<IWebSocketConnection, CancellationTokenSource, ITimer, TStateType, SemaphoreSlim> connection)
         {
             Logger.Debug("{1} stop transmitting over websocket to {0}", connection.Item1.RemoteEndPoint, GetType().Name);
 

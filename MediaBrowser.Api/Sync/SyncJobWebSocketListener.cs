@@ -1,11 +1,11 @@
-﻿using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Sync;
+﻿using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api.Sync
 {
@@ -26,8 +26,8 @@ namespace MediaBrowser.Api.Sync
         private readonly ISyncManager _syncManager;
         private string _jobId;
 
-        public SyncJobWebSocketListener(ILogger logger, ISyncManager syncManager)
-            : base(logger)
+        public SyncJobWebSocketListener(ILogger logger, ISyncManager syncManager, ITimerFactory timerFactory)
+            : base(logger, timerFactory)
         {
             _syncManager = syncManager;
             _syncManager.SyncJobCancelled += _syncManager_SyncJobCancelled;

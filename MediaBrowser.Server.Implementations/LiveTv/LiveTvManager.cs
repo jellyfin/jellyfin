@@ -75,6 +75,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
         public event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
 
+        public string GetEmbyTvActiveRecordingPath(string id)
+        {
+            return EmbyTV.EmbyTV.Current.GetActiveRecordingPath(id);
+        }
+
+        public Task<LiveStream> GetEmbyTvLiveStream(string id)
+        {
+            return EmbyTV.EmbyTV.Current.GetLiveStream(id);
+        }
+
         public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem, ISecurityManager security)
         {
             _config = config;

@@ -106,6 +106,8 @@
     <Compile Include="Devices\LocalFileInfo.cs" />
     <Compile Include="Devices\DeviceInfo.cs" />
     <Compile Include="Devices\DevicesOptions.cs" />
+    <Compile Include="Diagnostics\IProcess.cs" />
+    <Compile Include="Diagnostics\IProcessFactory.cs" />
     <Compile Include="Dlna\CodecProfile.cs" />
     <Compile Include="Dlna\ContainerProfile.cs" />
     <Compile Include="Dlna\DeviceProfile.cs" />
@@ -422,6 +424,8 @@
     <Compile Include="Tasks\ScheduledTaskHelpers.cs" />
     <Compile Include="Tasks\TaskCompletionEventArgs.cs" />
     <Compile Include="Tasks\TaskExecutionOptions.cs" />
+    <Compile Include="Threading\ITimer.cs" />
+    <Compile Include="Threading\ITimerFactory.cs" />
     <Compile Include="Updates\CheckForUpdateResult.cs" />
     <Compile Include="Updates\PackageTargetSystem.cs" />
     <Compile Include="Updates\InstallationInfo.cs" />

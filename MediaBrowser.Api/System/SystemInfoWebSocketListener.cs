@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api.System
 {
@@ -28,10 +29,8 @@ namespace MediaBrowser.Api.System
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemInfoWebSocketListener" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="appHost">The app host.</param>
-        public SystemInfoWebSocketListener(ILogger logger, IServerApplicationHost appHost)
-            : base(logger)
+        public SystemInfoWebSocketListener(ILogger logger, IServerApplicationHost appHost, ITimerFactory timerFactory)
+            : base(logger, timerFactory)
         {
             _appHost = appHost;
         }
