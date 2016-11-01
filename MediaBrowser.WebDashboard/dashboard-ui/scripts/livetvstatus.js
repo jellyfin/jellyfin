@@ -423,7 +423,7 @@
         switch (providerId) {
 
             case 'm3u':
-                return 'M3U Playlist';
+                return 'M3U';
             case 'hdhomerun':
                 return 'HDHomerun';
             case 'satip':
