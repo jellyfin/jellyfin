@@ -2,8 +2,8 @@
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using System;
-using System.IO;
-using System.Threading;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -11,15 +11,19 @@ namespace MediaBrowser.Api.Playback
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
-        private Timer _timer;
+        private ITimer _timer;
         private bool _isPaused;
         private readonly IConfigurationManager _config;
+        private readonly ITimerFactory _timerFactory;
+        private readonly IFileSystem _fileSystem;
 
-        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config, ITimerFactory timerFactory, IFileSystem fileSystem)
         {
             _job = job;
             _logger = logger;
             _config = config;
+            _timerFactory = timerFactory;
+            _fileSystem = fileSystem;
         }
 
         private EncodingOptions GetOptions()
@@ -29,7 +33,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Start()
         {
-            _timer = new Timer(TimerCallback, null, 5000, 5000);
+            _timer = _timerFactory.Create(TimerCallback, null, 5000, 5000);
         }
 
         private void TimerCallback(object state)
@@ -120,7 +124,7 @@ namespace MediaBrowser.Api.Playback
 
                 try
                 {
-                    var bytesTranscoded = job.BytesTranscoded ?? new FileInfo(path).Length;
+                    var bytesTranscoded = job.BytesTranscoded ?? _fileSystem.GetFileInfo(path).Length;
 
                     // Estimate the bytes the transcoder should be ahead
                     double gapFactor = gapLengthInTicks;

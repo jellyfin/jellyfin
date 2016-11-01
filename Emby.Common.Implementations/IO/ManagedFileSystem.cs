@@ -577,6 +577,23 @@ namespace Emby.Common.Implementations.IO
             Directory.CreateDirectory(path);
         }
 
+        public List<FileSystemMetadata> GetDrives()
+        {
+            // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
+            return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemMetadata
+            {
+                Name = GetName(d),
+                FullName = d.RootDirectory.FullName,
+                IsDirectory = true
+
+            }).ToList();
+        }
+
+        private string GetName(DriveInfo drive)
+        {
+            return drive.Name;
+        }
+
         public IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
         {
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;

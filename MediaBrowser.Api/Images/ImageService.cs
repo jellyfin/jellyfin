@@ -320,7 +320,7 @@ namespace MediaBrowser.Api.Images
                 {
                     if (info.IsLocalFile)
                     {
-                        var fileInfo = new FileInfo(info.Path);
+                        var fileInfo = _fileSystem.GetFileInfo(info.Path);
                         length = fileInfo.Length;
 
                         var size = _imageProcessor.GetImageSize(info);

@@ -305,6 +305,8 @@ namespace MediaBrowser.Model.IO
         char DirectorySeparatorChar { get; }
 
         string GetFullPath(string path);
+
+        List<FileSystemMetadata> GetDrives();
     }
 
     public enum FileOpenMode

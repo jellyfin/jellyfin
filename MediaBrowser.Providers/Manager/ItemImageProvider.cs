@@ -556,7 +556,7 @@ namespace MediaBrowser.Providers.Manager
             switch (type)
             {
                 case ImageType.Primary:
-                    return !(item is Movie || item is Series || item is Season || item is Game);
+                    return !(item is Movie || item is Series || item is Game);
                 default:
                     return true;
             }

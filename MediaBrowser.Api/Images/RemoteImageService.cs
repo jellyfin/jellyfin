@@ -234,21 +234,18 @@ namespace MediaBrowser.Api.Images
 
             try
             {
-                using (var reader = new StreamReader(pointerCachePath))
-                {
-                    contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
-                }
+                contentPath = _fileSystem.ReadAllText(pointerCachePath);
 
-				if (_fileSystem.FileExists(contentPath))
+                if (_fileSystem.FileExists(contentPath))
 				{
 				    return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
 				}
             }
-            catch (DirectoryNotFoundException)
+            catch (FileNotFoundException)
             {
                 // Means the file isn't cached yet
             }
-            catch (FileNotFoundException)
+            catch (IOException)
             {
                 // Means the file isn't cached yet
             }
@@ -256,10 +253,7 @@ namespace MediaBrowser.Api.Images
             await DownloadImage(request.ImageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
 
             // Read the pointer file again
-            using (var reader = new StreamReader(pointerCachePath))
-            {
-                contentPath = await reader.ReadToEndAsync().ConfigureAwait(false);
-            }
+            contentPath = _fileSystem.ReadAllText(pointerCachePath);
 
             return await ResultFactory.GetStaticFileResult(Request, contentPath).ConfigureAwait(false);
         }
@@ -294,10 +288,7 @@ namespace MediaBrowser.Api.Images
             }
 
 			_fileSystem.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
-            using (var writer = new StreamWriter(pointerCachePath))
-            {
-                await writer.WriteAsync(fullCachePath).ConfigureAwait(false);
-            }
+            _fileSystem.WriteAllText(pointerCachePath, fullCachePath);
         }
 
         /// <summary>
