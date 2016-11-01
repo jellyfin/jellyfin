@@ -56,7 +56,7 @@ namespace Emby.Common.Implementations.Diagnostics
         {
             if (Exited != null)
             {
-                Exited(_process, e);
+                Exited(this, e);
             }
         }
 
