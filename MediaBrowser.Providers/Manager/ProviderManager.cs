@@ -129,7 +129,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 CancellationToken = cancellationToken,
                 ResourcePool = resourcePool,
-                Url = url
+                Url = url,
+                BufferContent = false
 
             }).ConfigureAwait(false);
 

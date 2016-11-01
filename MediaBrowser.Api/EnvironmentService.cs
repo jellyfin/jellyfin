@@ -4,12 +4,8 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
@@ -110,6 +106,7 @@ namespace MediaBrowser.Api
     public class EnvironmentService : BaseApiService
     {
         const char UncSeparator = '\\';
+        const string UncSeparatorString = "\\";
 
         /// <summary>
         /// The _network manager
@@ -139,7 +136,7 @@ namespace MediaBrowser.Api
             try
             {
                 var qnap = "/share/CACHEDEV1_DATA";
-                if (Directory.Exists(qnap))
+                if (_fileSystem.DirectoryExists(qnap))
                 {
                     result.Path = qnap;
                 }
@@ -166,7 +163,7 @@ namespace MediaBrowser.Api
                 throw new ArgumentNullException("Path");
             }
 
-            var networkPrefix = UncSeparator.ToString(CultureInfo.InvariantCulture) + UncSeparator.ToString(CultureInfo.InvariantCulture);
+            var networkPrefix = UncSeparatorString + UncSeparatorString;
 
             if (path.StartsWith(networkPrefix, StringComparison.OrdinalIgnoreCase) && path.LastIndexOf(UncSeparator) == 1)
             {
@@ -203,13 +200,11 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetDrives()
         {
-            // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
-            return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemEntryInfo
+            return _fileSystem.GetDrives().Select(d => new FileSystemEntryInfo
             {
-                Name = GetName(d),
-                Path = d.RootDirectory.FullName,
+                Name = d.Name,
+                Path = d.FullName,
                 Type = FileSystemEntryType.Directory
-
             });
         }
 
@@ -225,16 +220,6 @@ namespace MediaBrowser.Api
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(result);
-        }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <param name="drive">The drive.</param>
-        /// <returns>System.String.</returns>
-        private string GetName(DriveInfo drive)
-        {
-            return drive.Name;
         }
 
         /// <summary>

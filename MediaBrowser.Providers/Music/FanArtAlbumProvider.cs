@@ -211,8 +211,7 @@ namespace MediaBrowser.Providers.Music
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
+                Url = url
             });
         }
     }

@@ -131,7 +131,8 @@ namespace MediaBrowser.Providers.Omdb
             {
                 Url = url,
                 ResourcePool = OmdbProvider.ResourcePool,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                BufferContent = true
 
             }).ConfigureAwait(false))
             {
@@ -296,8 +297,7 @@ namespace MediaBrowser.Providers.Omdb
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = OmdbProvider.ResourcePool
+                Url = url
             });
         }
 

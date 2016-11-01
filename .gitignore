@@ -13,6 +13,8 @@ tmp/
 *.bak
 *.swp
 *~.nib
+project.fragment.lock.json
+project.lock.json
 local.properties
 .classpath
 .settings/

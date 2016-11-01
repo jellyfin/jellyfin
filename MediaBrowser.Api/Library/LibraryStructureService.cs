@@ -259,7 +259,7 @@ namespace MediaBrowser.Api.Library
 
             if (!_fileSystem.DirectoryExists(currentPath))
             {
-                throw new DirectoryNotFoundException("The media collection does not exist");
+                throw new FileNotFoundException("The media collection does not exist");
             }
 
             if (!string.Equals(currentPath, newPath, StringComparison.OrdinalIgnoreCase) && _fileSystem.DirectoryExists(newPath))

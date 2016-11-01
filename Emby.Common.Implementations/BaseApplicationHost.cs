@@ -27,11 +27,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using Emby.Common.Implementations.Cryptography;
+using Emby.Common.Implementations.Diagnostics;
+using Emby.Common.Implementations.Threading;
 using MediaBrowser.Common;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Threading;
+
 #if NETSTANDARD1_6
 using System.Runtime.Loader;
 #endif
@@ -145,6 +150,9 @@ namespace Emby.Common.Implementations
         protected IIsoManager IsoManager { get; private set; }
 
         protected ISystemEvents SystemEvents { get; private set; }
+
+        protected IProcessFactory ProcessFactory { get; private set; }
+        protected ITimerFactory TimerFactory { get; private set; }
 
         /// <summary>
         /// Gets the name.
@@ -534,6 +542,12 @@ return null;
 
             IsoManager = new IsoManager();
             RegisterSingleInstance(IsoManager);
+
+            ProcessFactory = new ProcessFactory();
+            RegisterSingleInstance(ProcessFactory);
+
+            TimerFactory = new TimerFactory();
+            RegisterSingleInstance(TimerFactory);
 
             return Task.FromResult(true);
         }

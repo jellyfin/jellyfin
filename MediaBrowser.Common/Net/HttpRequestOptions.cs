@@ -116,7 +116,6 @@ namespace MediaBrowser.Common.Net
         public HttpRequestOptions()
         {
             EnableHttpCompression = true;
-            BufferContent = true;
 
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
