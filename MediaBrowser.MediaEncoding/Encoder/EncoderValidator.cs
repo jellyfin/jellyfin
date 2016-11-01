@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -8,10 +9,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class EncoderValidator
     {
         private readonly ILogger _logger;
+        private readonly IProcessFactory _processFactory;
 
-        public EncoderValidator(ILogger logger)
+        public EncoderValidator(ILogger logger, IProcessFactory processFactory)
         {
             _logger = logger;
+            _processFactory = processFactory;
         }
 
         public Tuple<List<string>, List<string>> Validate(string encoderPath)
@@ -145,19 +148,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments)
         {
-            var process = new Process
+            var process = _processFactory.Create(new ProcessOptions
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    FileName = path,
-                    Arguments = arguments,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-                    RedirectStandardOutput = true
-                }
-            };
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                FileName = path,
+                Arguments = arguments,
+                IsHidden = true,
+                ErrorDialog = false,
+                RedirectStandardOutput = true
+            });
 
             _logger.Info("Running {0} {1}", path, arguments);
 

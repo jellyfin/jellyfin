@@ -70,9 +70,7 @@ namespace MediaBrowser.Providers.Omdb
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = OmdbProvider.ResourcePool
-
+                Url = url
             });
         }
 

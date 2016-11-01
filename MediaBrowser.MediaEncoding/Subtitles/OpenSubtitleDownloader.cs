@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
@@ -31,14 +32,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IEncryptionManager _encryption;
 
         private readonly IJsonSerializer _json;
+        private readonly IFileSystem _fileSystem;
 
-        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json)
+        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger(GetType().Name);
             _httpClient = httpClient;
             _config = config;
             _encryption = encryption;
             _json = json;
+            _fileSystem = fileSystem;
 
             _config.NamedConfigurationUpdating += _config_NamedConfigurationUpdating;
 
@@ -133,7 +136,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if ((DateTime.UtcNow - _lastRateLimitException).TotalHours < 1)
             {
-                throw new ApplicationException("OpenSubtitles rate limit reached");
+                throw new Exception("OpenSubtitles rate limit reached");
             }
 
             var resultDownLoad = await OpenSubtitles.DownloadSubtitlesAsync(downloadsList, cancellationToken).ConfigureAwait(false);
@@ -141,12 +144,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if ((resultDownLoad.Status ?? string.Empty).IndexOf("407", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 _lastRateLimitException = DateTime.UtcNow;
-                throw new ApplicationException("OpenSubtitles rate limit reached");
+                throw new Exception("OpenSubtitles rate limit reached");
             }
 
             if (!(resultDownLoad is MethodResponseSubtitleDownload))
             {
-                throw new ApplicationException("Invalid response type");
+                throw new Exception("Invalid response type");
             }
 
             var results = ((MethodResponseSubtitleDownload)resultDownLoad).Results;
@@ -269,11 +272,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subLanguageId = NormalizeLanguage(request.Language);
             string hash;
 
-            using (var fileStream = File.OpenRead(request.MediaPath))
+            using (var fileStream = _fileSystem.OpenRead(request.MediaPath))
             {
                 hash = Utilities.ComputeHash(fileStream);
             }
-            var fileInfo = new FileInfo(request.MediaPath);
+            var fileInfo = _fileSystem.GetFileInfo(request.MediaPath);
             var movieByteSize = fileInfo.Length;
             var searchImdbId = request.ContentType == VideoContentType.Movie ? imdbId.ToString(_usCulture) : "";
             var subtitleSearchParameters = request.ContentType == VideoContentType.Episode

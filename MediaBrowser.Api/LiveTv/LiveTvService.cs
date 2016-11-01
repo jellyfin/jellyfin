@@ -22,7 +22,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Api.LiveTv
 {
@@ -708,11 +707,11 @@ namespace MediaBrowser.Api.LiveTv
             _fileSystem = fileSystem;
         }
 
-        public async Task<object> Get(GetLiveRecordingFile request)
+        public object Get(GetLiveRecordingFile request)
         {
-            var path = EmbyTV.Current.GetActiveRecordingPath(request.Id);
+            var path = _liveTvManager.GetEmbyTvActiveRecordingPath(request.Id);
 
-            if (path == null)
+            if (string.IsNullOrWhiteSpace(path))
             {
                 throw new FileNotFoundException();
             }
@@ -729,7 +728,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetLiveStreamFile request)
         {
-            var directStreamProvider = (await EmbyTV.Current.GetLiveStream(request.Id).ConfigureAwait(false)) as IDirectStreamProvider;
+            var directStreamProvider = (await _liveTvManager.GetEmbyTvLiveStream(request.Id).ConfigureAwait(false)) as IDirectStreamProvider;
             var outputHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             outputHeaders["Content-Type"] = Model.Net.MimeTypes.GetMimeType("file." + request.Container);

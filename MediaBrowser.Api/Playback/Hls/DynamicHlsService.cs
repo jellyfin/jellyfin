@@ -356,7 +356,8 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
 
-                Thread.Sleep(100);
+                var task = Task.Delay(100);
+                Task.WaitAll(task);
                 DeleteFile(file, retryCount + 1);
             }
             catch (Exception ex)
@@ -378,7 +379,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .FirstOrDefault();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return null;
             }
@@ -881,7 +882,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (state.IsOutputVideo && !EnableCopyTs(state) && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
             {
-                timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
+                timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0);
             }
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;

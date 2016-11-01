@@ -79,11 +79,13 @@ namespace MediaBrowser.Api.Playback.Hls
     {
         private readonly IServerApplicationPaths _appPaths;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public HlsSegmentService(IServerApplicationPaths appPaths, IServerConfigurationManager config)
+        public HlsSegmentService(IServerApplicationPaths appPaths, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         public Task<object> Get(GetHlsPlaylistLegacy request)
@@ -111,7 +113,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var normalizedPlaylistId = request.PlaylistId;
 
-            var playlistPath = Directory.EnumerateFiles(_config.ApplicationPaths.TranscodingTempPath, "*")
+            var playlistPath = _fileSystem.GetFilePaths(_config.ApplicationPaths.TranscodingTempPath)
                 .FirstOrDefault(i => string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase) && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
 
             return GetFileResult(file, playlistPath);

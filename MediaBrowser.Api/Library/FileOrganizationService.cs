@@ -204,10 +204,10 @@ namespace MediaBrowser.Api.Library
 
         public void Post(DeleteSmartMatchEntry request)
         {
-            request.Entries.ForEach(entry =>
+            foreach (var entry in request.Entries)
             {
                 _iFileOrganizationService.DeleteSmartMatchEntry(entry.Name, entry.Value);
-            });
+            }
         }
     }
 }

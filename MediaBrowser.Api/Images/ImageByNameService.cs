@@ -150,7 +150,7 @@ namespace MediaBrowser.Api.Images
                     .OrderBy(i => i.Name)
                     .ToList();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return new List<ImageByNameInfo>();
             }
