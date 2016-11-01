@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Model.Diagnostics
 {
@@ -22,6 +18,7 @@ namespace MediaBrowser.Model.Diagnostics
         public bool ErrorDialog { get; set; }
         public bool RedirectStandardError { get; set; }
         public bool RedirectStandardInput { get; set; }
+        public bool RedirectStandardOutput { get; set; }
         public bool IsHidden { get; set; }
     }
 }

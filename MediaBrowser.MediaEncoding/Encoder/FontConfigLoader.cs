@@ -88,9 +88,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>Task.</returns>
         private async Task DownloadFontFile(string fontsDirectory, string fontFilename, IProgress<double> progress)
         {
-            var existingFile = Directory
-                .EnumerateFiles(_appPaths.ProgramDataPath, fontFilename, SearchOption.AllDirectories)
-                .FirstOrDefault();
+            var existingFile = _fileSystem
+                .GetFilePaths(_appPaths.ProgramDataPath, true)
+                .FirstOrDefault(i => string.Equals(fontFilename, Path.GetFileName(i), StringComparison.OrdinalIgnoreCase));
 
             if (existingFile != null)
             {
