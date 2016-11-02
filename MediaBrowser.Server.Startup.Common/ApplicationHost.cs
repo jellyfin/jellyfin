@@ -50,7 +50,6 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.Activity;
-using MediaBrowser.Server.Implementations.Channels;
 using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Connect;
@@ -108,6 +107,8 @@ using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
+using Emby.Server.Implementations.Channels;
+using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -123,7 +124,6 @@ using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Reflection;
 using MediaBrowser.Server.Implementations.Serialization;
 using MediaBrowser.Server.Implementations.TextEncoding;
-using MediaBrowser.Server.Implementations.Updates;
 using MediaBrowser.Server.Implementations.Xml;
 using OpenSubtitlesHandler;
 using ServiceStack;
@@ -530,7 +530,7 @@ namespace MediaBrowser.Server.Startup.Common
             SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager);
             RegisterSingleInstance(SecurityManager);
 
-            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager);
+            InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(InstallationManager);
 
             ZipClient = new ZipClient(FileSystemManager);
@@ -626,7 +626,7 @@ namespace MediaBrowser.Server.Startup.Common
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ServerConfigurationManager, LogManager.GetLogger("DeviceManager"), NetworkManager);
             RegisterSingleInstance(DeviceManager);
 
-            var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
+            var newsService = new Emby.Server.Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
 
             var fileOrganizationService = new FileOrganizationService(TaskManager, FileOrganizationRepository, LogManager.GetLogger("FileOrganizationService"), LibraryMonitor, LibraryManager, ServerConfigurationManager, FileSystemManager, ProviderManager);
@@ -1160,8 +1160,11 @@ namespace MediaBrowser.Server.Startup.Common
             // Common implementations
             list.Add(typeof(TaskManager).Assembly);
 
-            // Server implementations
+            // MediaBrowser.Server implementations
             list.Add(typeof(ServerApplicationPaths).Assembly);
+
+            // Emby.Server implementations
+            list.Add(typeof(InstallationManager).Assembly);
 
             // MediaEncoding
             list.Add(typeof(MediaEncoder).Assembly);

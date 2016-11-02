@@ -112,12 +112,6 @@
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Archiving\ZipClient.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
-    <Compile Include="Channels\ChannelConfigurations.cs" />
-    <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
-    <Compile Include="Channels\ChannelImageProvider.cs" />
-    <Compile Include="Channels\ChannelManager.cs" />
-    <Compile Include="Channels\ChannelPostScanTask.cs" />
-    <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
@@ -175,7 +169,6 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
-    <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
@@ -273,6 +266,7 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
+    <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="Notifications\IConfigurableNotificationService.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
@@ -293,11 +287,8 @@
     <Compile Include="TextEncoding\TextEncoding.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
-    <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
-    <Compile Include="News\NewsEntryPoint.cs" />
-    <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
     <Compile Include="Notifications\InternalNotificationService.cs" />
     <Compile Include="Notifications\NotificationConfigurationFactory.cs" />

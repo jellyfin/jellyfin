@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Channels
+namespace Emby.Server.Implementations.Channels
 {
     class RefreshChannelsScheduledTask : IScheduledTask
     {
