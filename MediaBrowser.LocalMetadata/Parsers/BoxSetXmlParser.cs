@@ -31,11 +31,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromCollectionItemsNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
-            reader.MoveToContent();
-
             var list = new List<LinkedChild>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -55,11 +57,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
