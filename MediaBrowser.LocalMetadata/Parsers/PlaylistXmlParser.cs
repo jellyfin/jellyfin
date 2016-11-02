@@ -65,11 +65,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromCollectionItemsNode(XmlReader reader, Playlist item)
         {
-            reader.MoveToContent();
-
             var list = new List<LinkedChild>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -89,11 +91,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -102,11 +109,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromSharesNode(XmlReader reader, Playlist item)
         {
-            reader.MoveToContent();
-
             var list = new List<Share>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -126,11 +135,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
