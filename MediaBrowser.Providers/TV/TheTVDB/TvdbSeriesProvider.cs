@@ -334,9 +334,10 @@ namespace MediaBrowser.Providers.TV
         private string FindSeriesId(XmlReader reader)
         {
             reader.MoveToContent();
+            reader.Read();
 
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -358,6 +359,10 @@ namespace MediaBrowser.Providers.TV
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
