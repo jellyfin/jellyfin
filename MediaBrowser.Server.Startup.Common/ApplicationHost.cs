@@ -108,6 +108,8 @@ using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Server.Implementations.Channels;
+using Emby.Server.Implementations.Collections;
+using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dlna;
