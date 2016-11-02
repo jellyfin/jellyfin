@@ -200,9 +200,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                     using (var reader = XmlReader.Create(streamReader))
                     {
                         reader.MoveToContent();
+                        reader.Read();
 
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -219,6 +220,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                                         break;
                                 }
                             }
+                            else
+                            {
+                                reader.Read();
+                            }
                         }
                     }
                 }
@@ -227,13 +232,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ReadFromDictNode(XmlReader reader, MediaInfo info)
         {
-            reader.MoveToContent();
-
             string currentKey = null;
             List<NameValuePair> pairs = new List<NameValuePair>();
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -272,17 +278,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private List<NameValuePair> ReadValueArray(XmlReader reader)
         {
-            reader.MoveToContent();
 
             List<NameValuePair> pairs = new List<NameValuePair>();
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -302,6 +314,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -360,13 +376,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private NameValuePair GetNameValuePair(XmlReader reader)
         {
-            reader.MoveToContent();
-
             string name = null;
             string value = null;
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -382,6 +399,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 

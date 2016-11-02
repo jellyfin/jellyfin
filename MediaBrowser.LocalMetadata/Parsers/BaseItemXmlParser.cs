@@ -906,8 +906,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchFromTaglinesNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -923,11 +925,14 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 }
                                 break;
                             }
-
                         default:
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
         }

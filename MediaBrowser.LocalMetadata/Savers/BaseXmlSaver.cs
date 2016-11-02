@@ -718,8 +718,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                             return;
                         }
 
+                        reader.Read();
+
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -733,6 +735,10 @@ namespace MediaBrowser.LocalMetadata.Savers
                                 {
                                     reader.Skip();
                                 }
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }
