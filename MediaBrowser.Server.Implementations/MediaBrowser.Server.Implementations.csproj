@@ -111,7 +111,6 @@
     <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Archiving\ZipClient.cs" />
-    <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
@@ -274,6 +273,7 @@
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
     <Compile Include="Reflection\AssemblyInfo.cs" />
+    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
@@ -302,12 +302,6 @@
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
     <Compile Include="Playlists\PlaylistManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
-    <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
-    <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
-    <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
-    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
-    <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
     <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="ServerApplicationPaths.cs" />

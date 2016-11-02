@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Branding;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Branding
+namespace Emby.Server.Implementations.Branding
 {
     public class BrandingConfigurationFactory : IConfigurationFactory
     {
