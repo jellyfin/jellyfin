@@ -402,7 +402,33 @@
 
         return apiClient.getUserViews({}, userId).then(function (result) {
 
-            return result.Items;
+            var items = result.Items;
+
+            var list = [];
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                var view = items[i];
+
+                list.push(view);
+
+                if (view.CollectionType == 'livetv') {
+
+                    view.ImageTags = {};
+                    view.icon = 'live_tv';
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
+
+                    var guideView = Object.assign({}, view);
+                    guideView.Name = Globalize.translate('ButtonGuide');
+                    guideView.ImageTags = {};
+                    guideView.icon = 'dvr';
+                    guideView.url = 'livetv.html?tab=1';
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
+                    list.push(guideView);
+                }
+            }
+
+            return list;
         });
     }
 

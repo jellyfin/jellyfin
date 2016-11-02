@@ -86,6 +86,7 @@ namespace MediaBrowser.Providers.Music
                 using (var reader = XmlReader.Create(oReader, settings))
                 {
                     reader.MoveToContent();
+                    reader.Read();
 
                     // Loop through each element
                     while (!reader.EOF)
@@ -124,6 +125,7 @@ namespace MediaBrowser.Providers.Music
             var list = new List<RemoteSearchResult>();
 
             reader.MoveToContent();
+            reader.Read();
 
             // Loop through each element
             while (!reader.EOF)

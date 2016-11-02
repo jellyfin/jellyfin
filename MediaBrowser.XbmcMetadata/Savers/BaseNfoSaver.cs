@@ -1057,8 +1057,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                             return;
                         }
 
+                        reader.Read();
+
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -1072,6 +1074,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                                 {
                                     reader.Skip();
                                 }
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }
