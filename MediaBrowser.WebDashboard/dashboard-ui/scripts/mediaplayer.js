@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appSettings, userSettings, appStorage, datetime) {
+define(['appSettings', 'userSettings', 'appStorage', 'datetime', 'browser'], function (appSettings, userSettings, appStorage, datetime, browser) {
     'use strict';
 
     function mediaPlayer() {
@@ -97,7 +97,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
             // Ease up with safari because it doesn't perform as well
-            if (browserInfo.safari) {
+            if (browser.safari) {
                 intervalTime = Math.max(intervalTime, 5000);
             }
             self.lastProgressReport = 0;
@@ -149,14 +149,20 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
         function getProfileOptions(item) {
 
-            var disableVideoAudioCodecs = [];
-            if (!AppInfo.isNativeApp && !item.RunTimeTicks) {
-                disableVideoAudioCodecs.push('ac3');
-            }
-
             var options = {};
 
             if (!AppInfo.isNativeApp) {
+                var disableHlsVideoAudioCodecs = [];
+
+                if (!self.canPlayNativeHls()) {
+                    // hls.js does not support this
+                    disableHlsVideoAudioCodecs.push('mp3');
+                }
+                if (!item.RunTimeTicks) {
+                    // hls.js does not support this
+                    disableHlsVideoAudioCodecs.push('ac3');
+                }
+
                 options.enableMkvProgressive = item.RunTimeTicks != null;
 
                 if (item.RunTimeTicks == null) {
@@ -164,7 +170,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 }
 
                 options.enableMkvProgressive = false;
-                options.disableVideoAudioCodecs = disableVideoAudioCodecs;
+                options.disableHlsVideoAudioCodecs = disableHlsVideoAudioCodecs;
             }
 
             return options;
@@ -1493,7 +1499,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 return true;
             }
 
-            if (browserInfo.mobile) {
+            if (browser.mobile) {
                 return false;
             }
 

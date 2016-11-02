@@ -68,7 +68,7 @@ button.emby-button.raised.more {
 }
 
 button.emby-button.mini:not(.fab) {
-    padding: 0.4em 0.7em;
+    padding: 0.5em 0.7em;
 }
 
 .ui-body-b .paperListLabel, .ui-body-b .fieldDescription, .ui-body-b .selectLabelUnfocused, .ui-body-b .inputLabelUnfocused, .ui-body-b .textareaLabelUnfocused {
