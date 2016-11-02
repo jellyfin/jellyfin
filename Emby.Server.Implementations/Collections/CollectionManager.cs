@@ -11,11 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Collections
+namespace Emby.Server.Implementations.Collections
 {
     public class CollectionManager : ICollectionManager
     {

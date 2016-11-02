@@ -111,11 +111,11 @@
     <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Archiving\ZipClient.cs" />
-    <Compile Include="Collections\CollectionManager.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Connect\ConnectData.cs" />
+    <Compile Include="Connect\ConnectEntryPoint.cs" />
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
@@ -133,7 +133,6 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
-    <Compile Include="Connect\ConnectEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\Extensions.cs" />
@@ -300,7 +299,6 @@
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
-    <Compile Include="Playlists\PlaylistManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />

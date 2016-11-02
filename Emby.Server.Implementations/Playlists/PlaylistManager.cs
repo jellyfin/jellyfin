@@ -16,7 +16,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Playlists
+namespace Emby.Server.Implementations.Playlists
 {
     public class PlaylistManager : IPlaylistManager
     {
@@ -267,9 +267,10 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public Folder GetPlaylistsFolder(string userId)
         {
-            return _libraryManager.RootFolder.Children.OfType<PlaylistsFolder>()
-                .FirstOrDefault() ?? _libraryManager.GetUserRootFolder().Children.OfType<PlaylistsFolder>()
-                .FirstOrDefault();
+            var typeName = "PlaylistsFolder";
+
+            return _libraryManager.RootFolder.Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, typeName, StringComparison.Ordinal)) ?? 
+                _libraryManager.GetUserRootFolder().Children.OfType<Folder>().FirstOrDefault(i => string.Equals(i.GetType().Name, typeName, StringComparison.Ordinal));
         }
     }
 }
