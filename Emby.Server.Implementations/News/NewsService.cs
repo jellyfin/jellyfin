@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.News
+namespace Emby.Server.Implementations.News
 {
     public class NewsService : INewsService
     {
@@ -25,7 +25,7 @@ namespace MediaBrowser.Server.Implementations.News
             {
                 return GetProductNewsInternal(query);
             }
-            catch (DirectoryNotFoundException)
+            catch (FileNotFoundException)
             {
                 // No biggie
                 return new QueryResult<NewsItem>
@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.News
                     Items = new NewsItem[] { }
                 };
             }
-            catch (FileNotFoundException)
+            catch (IOException)
             {
                 // No biggie
                 return new QueryResult<NewsItem>

@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Channels
+namespace Emby.Server.Implementations.Channels
 {
     public static class ChannelConfigurationExtension
     {

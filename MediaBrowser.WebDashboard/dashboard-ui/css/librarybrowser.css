@@ -85,7 +85,7 @@
 }
 
 .homePageSection {
-    margin-top: 30px;
+    margin-top: 3em;
 }
 
 .sectionHeaderButton {
@@ -132,12 +132,12 @@
 }
 
 .homePageSection h1 {
-    padding-left: 2vw;
+    padding-left: 3.1vw;
 }
 
 .homePageSection .itemsContainer {
-    padding-left: 1vw;
-    padding-right: 1vw;
+    padding-left: 2.5vw;
+    padding-right: 2.5vw;
 }
 
 @media all and (min-width: 1200px) {

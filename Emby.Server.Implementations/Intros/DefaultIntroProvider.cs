@@ -11,13 +11,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Server.Implementations.Intros
+namespace Emby.Server.Implementations.Intros
 {
     public class DefaultIntroProvider : IIntroProvider
     {

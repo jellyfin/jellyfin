@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Server.Implementations.Channels
+namespace Emby.Server.Implementations.Channels
 {
     public class ChannelPostScanTask
     {

@@ -31,7 +31,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Server.Implementations.Channels
+namespace Emby.Server.Implementations.Channels
 {
     public class ChannelManager : IChannelManager
     {
@@ -410,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                     }
                 }
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }
@@ -781,7 +781,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
 
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }
@@ -801,7 +801,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
 
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
 
                 }
@@ -943,7 +943,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
 
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }
@@ -963,7 +963,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
 
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
 
                 }
@@ -1104,7 +1104,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
 
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }
@@ -1127,7 +1127,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
 
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
 
                 }

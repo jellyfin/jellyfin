@@ -102,6 +102,10 @@
       <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
       <Name>Emby.Photos</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{d08b8079-08b3-48f2-83c4-e9ccce48aff1}</Project>
+      <Name>Emby.Server.Implementations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>
       <Name>MediaBrowser.Api</Name>

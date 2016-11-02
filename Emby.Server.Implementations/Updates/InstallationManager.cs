@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -14,13 +13,14 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 
-namespace MediaBrowser.Server.Implementations.Updates
+namespace Emby.Server.Implementations.Updates
 {
     /// <summary>
     /// Manages all install, uninstall and update operations (both plugins and system)
@@ -115,7 +115,9 @@ namespace MediaBrowser.Server.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem)
+        private readonly ICryptographyProvider _cryptographyProvider;
+
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
         {
             if (logger == null)
             {
@@ -132,6 +134,7 @@ namespace MediaBrowser.Server.Implementations.Updates
             _securityManager = securityManager;
             _config = config;
             _fileSystem = fileSystem;
+            _cryptographyProvider = cryptographyProvider;
             _logger = logger;
         }
 
@@ -597,13 +600,12 @@ namespace MediaBrowser.Server.Implementations.Updates
             var packageChecksum = string.IsNullOrWhiteSpace(package.checksum) ? Guid.Empty : new Guid(package.checksum);
             if (packageChecksum != Guid.Empty) // support for legacy uploads for now
             {
-                using (var crypto = new MD5CryptoServiceProvider())
-                using (var stream = new BufferedStream(_fileSystem.OpenRead(tempFile), 100000))
+                using (var stream = _fileSystem.OpenRead(tempFile))
                 {
-                    var check = Guid.Parse(BitConverter.ToString(crypto.ComputeHash(stream)).Replace("-", String.Empty));
+                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.GetMD5Bytes(stream)).Replace("-", String.Empty));
                     if (check != packageChecksum)
                     {
-                        throw new ApplicationException(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
+                        throw new Exception(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));
                     }
                 }
             }
