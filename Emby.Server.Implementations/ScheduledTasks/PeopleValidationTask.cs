@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class PeopleValidationTask

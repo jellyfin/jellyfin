@@ -8,7 +8,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class RefreshIntrosTask

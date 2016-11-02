@@ -16,7 +16,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Class ChapterImagesTask
@@ -32,12 +32,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
-        /// <summary>
-        /// The current new item timer
-        /// </summary>
-        /// <value>The new item timer.</value>
-        private Timer NewItemTimer { get; set; }
-
         private readonly IItemRepository _itemRepo;
 
         private readonly IApplicationPaths _appPaths;
@@ -48,9 +42,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="itemRepo">The item repo.</param>
         public ChapterImagesTask(ILogManager logManager, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
         {
             _logger = logManager.GetLogger(GetType().Name);
@@ -115,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             {
                 previouslyFailedImages = new List<string>();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 previouslyFailedImages = new List<string>();
             }

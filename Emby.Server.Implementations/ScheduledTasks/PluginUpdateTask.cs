@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
     /// Plugin Update Task
