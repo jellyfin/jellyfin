@@ -13,15 +13,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Server.Implementations.IO;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class MediaSync
     {
@@ -30,17 +29,19 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IConfigurationManager _config;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         public const string PathSeparatorString = "/";
         public const char PathSeparatorChar = '/';
 
-        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem, IConfigurationManager config)
+        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
         {
             _logger = logger;
             _syncManager = syncManager;
             _appHost = appHost;
             _fileSystem = fileSystem;
             _config = config;
+            _cryptographyProvider = cryptographyProvider;
         }
 
         public async Task Sync(IServerSyncProvider provider,
@@ -360,19 +361,16 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private static string GetLocalId(string jobItemId, string itemId)
+        private string GetLocalId(string jobItemId, string itemId)
         {
             var bytes = Encoding.UTF8.GetBytes(jobItemId + itemId);
             bytes = CreateMd5(bytes);
             return BitConverter.ToString(bytes, 0, bytes.Length).Replace("-", string.Empty);
         }
 
-        private static byte[] CreateMd5(byte[] value)
+        private byte[] CreateMd5(byte[] value)
         {
-            using (var provider = MD5.Create())
-            {
-                return provider.ComputeHash(value);
-            }
+            return _cryptographyProvider.GetMD5Bytes(value);
         }
 
         public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncedItem syncedItem, SyncJob job, SyncTarget target, BaseItemDto libraryItem, string serverId, string serverName, string originalFileName)

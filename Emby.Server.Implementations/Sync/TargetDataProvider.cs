@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class TargetDataProvider : ISyncDataProvider
     {

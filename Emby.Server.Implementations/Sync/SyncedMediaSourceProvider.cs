@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncedMediaSourceProvider : IMediaSourceProvider
     {
@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             mediaSource.Id = item.Id;
             mediaSource.SupportsTranscoding = false;
-            if (mediaSource.Protocol == Model.MediaInfo.MediaProtocol.File)
+            if (mediaSource.Protocol == MediaBrowser.Model.MediaInfo.MediaProtocol.File)
             {
                 mediaSource.ETag = item.Id;
             }

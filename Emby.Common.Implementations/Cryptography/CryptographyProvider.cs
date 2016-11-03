@@ -35,5 +35,13 @@ namespace Emby.Common.Implementations.Cryptography
                 return provider.ComputeHash(str);
             }
         }
+
+        public byte[] GetMD5Bytes(byte[] bytes)
+        {
+            using (var provider = MD5.Create())
+            {
+                return provider.ComputeHash(bytes);
+            }
+        }
     }
 }

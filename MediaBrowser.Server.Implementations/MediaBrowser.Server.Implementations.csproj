@@ -144,7 +144,6 @@
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\EmbyTV\DirectRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EmbyTV.cs" />
@@ -202,17 +201,12 @@
     <Compile Include="Persistence\DataExtensions.cs" />
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
-    <Compile Include="Reflection\AssemblyInfo.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
-    <Compile Include="Sync\SyncHelper.cs" />
-    <Compile Include="Sync\SyncJobOptions.cs" />
-    <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
-    <Compile Include="TextEncoding\TextEncoding.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
@@ -235,23 +229,9 @@
     <Compile Include="Persistence\SqliteItemRepository.cs" />
     <Compile Include="Persistence\SqliteUserDataRepository.cs" />
     <Compile Include="Persistence\SqliteUserRepository.cs" />
-    <Compile Include="Sync\AppSyncProvider.cs" />
-    <Compile Include="Sync\CloudSyncProfile.cs" />
-    <Compile Include="Sync\IHasSyncQuality.cs" />
-    <Compile Include="Sync\MediaSync.cs" />
-    <Compile Include="Sync\MultiProviderSync.cs" />
-    <Compile Include="Sync\ServerSyncScheduledTask.cs" />
-    <Compile Include="Sync\SyncedMediaSourceProvider.cs" />
-    <Compile Include="Sync\SyncRegistrationInfo.cs" />
-    <Compile Include="Sync\SyncConfig.cs" />
-    <Compile Include="Sync\SyncJobProcessor.cs" />
-    <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
-    <Compile Include="Sync\SyncConvertScheduledTask.cs" />
-    <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="Udp\UdpMessageReceivedEventArgs.cs" />
     <Compile Include="Udp\UdpServer.cs" />
-    <Compile Include="Xml\XmlReaderSettingsFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

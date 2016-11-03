@@ -23,6 +23,7 @@ using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,7 +31,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncManager : ISyncManager
     {
@@ -124,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (string.IsNullOrWhiteSpace(request.Name))
             {
-                request.Name = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
+                request.Name = DateTime.Now.ToString("f1", CultureInfo.CurrentCulture);
             }
 
             var target = GetSyncTargets(request.UserId)
@@ -419,7 +420,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 _fileSystem.DeleteDirectory(path, true);
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }
@@ -574,7 +575,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     _fileSystem.DeleteDirectory(jobItem.TemporaryPath, true);
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                 }
                 catch (Exception ex)
@@ -1061,7 +1062,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 _fileSystem.DeleteDirectory(path, true);
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
 
             }

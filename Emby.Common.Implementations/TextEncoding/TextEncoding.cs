@@ -2,7 +2,7 @@
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.TextEncoding;
 
-namespace MediaBrowser.Server.Implementations.TextEncoding
+namespace Emby.Common.Implementations.TextEncoding
 {
     public class TextEncoding : IEncoding
     {
@@ -42,8 +42,7 @@ namespace MediaBrowser.Server.Implementations.TextEncoding
             if (buffer[0] == 0x2b && buffer[1] == 0x2f && buffer[2] == 0x76)
                 return Encoding.UTF7;
 
-            // It's ok - anything aside from utf is ok since that's what we're looking for
-            return Encoding.Default;
+            return null;
         }
     }
 }

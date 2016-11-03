@@ -69,6 +69,7 @@
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
+    <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
     <Compile Include="Library\LocalTrailerPostScanTask.cs" />
@@ -161,14 +162,28 @@
     <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
+    <Compile Include="Sync\AppSyncProvider.cs" />
+    <Compile Include="Sync\CloudSyncProfile.cs" />
+    <Compile Include="Sync\IHasSyncQuality.cs" />
+    <Compile Include="Sync\MediaSync.cs" />
+    <Compile Include="Sync\MultiProviderSync.cs" />
+    <Compile Include="Sync\ServerSyncScheduledTask.cs" />
+    <Compile Include="Sync\SyncConfig.cs" />
+    <Compile Include="Sync\SyncConvertScheduledTask.cs" />
+    <Compile Include="Sync\SyncedMediaSourceProvider.cs" />
+    <Compile Include="Sync\SyncHelper.cs" />
+    <Compile Include="Sync\SyncJobOptions.cs" />
+    <Compile Include="Sync\SyncJobProcessor.cs" />
+    <Compile Include="Sync\SyncManager.cs" />
+    <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
+    <Compile Include="Sync\SyncRegistrationInfo.cs" />
+    <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="IO\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>

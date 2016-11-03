@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Common.Security;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncRegistrationInfo : IRequiresRegistration
     {

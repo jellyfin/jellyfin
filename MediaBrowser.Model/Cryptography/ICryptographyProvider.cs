@@ -9,5 +9,6 @@ namespace MediaBrowser.Model.Cryptography
         byte[] GetMD5Bytes(string str);
         byte[] GetSHA1Bytes(byte[] bytes);
         byte[] GetMD5Bytes(Stream str);
+        byte[] GetMD5Bytes(byte[] bytes);
     }
 }

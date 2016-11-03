@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class AppSyncProvider : ISyncProvider, IHasUniqueTargetIds, IHasSyncQuality, IHasDuplicateCheck
     {

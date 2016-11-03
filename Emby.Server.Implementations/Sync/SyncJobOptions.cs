@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Dlna;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncJobOptions
     {

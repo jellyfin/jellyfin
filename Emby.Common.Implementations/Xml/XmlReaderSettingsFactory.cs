@@ -1,7 +1,7 @@
 ﻿using System.Xml;
 using MediaBrowser.Model.Xml;
 
-namespace MediaBrowser.Server.Implementations.Xml
+namespace Emby.Common.Implementations.Xml
 {
     public class XmlReaderSettingsFactory : IXmlReaderSettingsFactory
     {
@@ -11,7 +11,9 @@ namespace MediaBrowser.Server.Implementations.Xml
 
             if (!enableValidation)
             {
+#if NET46
                 settings.ValidationType = ValidationType.None;
+#endif
             }
 
             return settings;

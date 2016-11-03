@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Sync;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncNotificationEntryPoint : IServerEntryPoint
     {

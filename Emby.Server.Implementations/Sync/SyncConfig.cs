@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncConfigurationFactory : IConfigurationFactory
     {
