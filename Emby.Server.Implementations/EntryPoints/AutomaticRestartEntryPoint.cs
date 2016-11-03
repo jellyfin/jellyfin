@@ -10,8 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
+using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     public class AutomaticRestartEntryPoint : IServerEntryPoint
     {
@@ -21,10 +22,11 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IServerConfigurationManager _config;
         private readonly ILiveTvManager _liveTvManager;
+        private readonly ITimerFactory _timerFactory;
 
-        private Timer _timer;
+        private ITimer _timer;
 
-        public AutomaticRestartEntryPoint(IServerApplicationHost appHost, ILogger logger, ITaskManager iTaskManager, ISessionManager sessionManager, IServerConfigurationManager config, ILiveTvManager liveTvManager)
+        public AutomaticRestartEntryPoint(IServerApplicationHost appHost, ILogger logger, ITaskManager iTaskManager, ISessionManager sessionManager, IServerConfigurationManager config, ILiveTvManager liveTvManager, ITimerFactory timerFactory)
         {
             _appHost = appHost;
             _logger = logger;
@@ -32,6 +34,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _sessionManager = sessionManager;
             _config = config;
             _liveTvManager = liveTvManager;
+            _timerFactory = timerFactory;
         }
 
         public void Run()
@@ -48,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             if (_appHost.HasPendingRestart)
             {
-                _timer = new Timer(TimerCallback, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+                _timer = _timerFactory.Create(TimerCallback, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
             }
         }
 

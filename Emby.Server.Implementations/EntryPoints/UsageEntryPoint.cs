@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class UsageEntryPoint

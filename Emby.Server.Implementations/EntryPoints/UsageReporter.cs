@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     public class UsageReporter
     {

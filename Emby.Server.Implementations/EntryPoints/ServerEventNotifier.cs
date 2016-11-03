@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class WebSocketEvents

@@ -3,9 +3,9 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.Threading;
+using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class LoadRegistrations
@@ -22,16 +22,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         private readonly ILogger _logger;
 
-        private PeriodicTimer _timer;
+        private ITimer _timer;
+        private readonly ITimerFactory _timerFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoadRegistrations" /> class.
         /// </summary>
         /// <param name="securityManager">The security manager.</param>
         /// <param name="logManager">The log manager.</param>
-        public LoadRegistrations(ISecurityManager securityManager, ILogManager logManager)
+        public LoadRegistrations(ISecurityManager securityManager, ILogManager logManager, ITimerFactory timerFactory)
         {
             _securityManager = securityManager;
+            _timerFactory = timerFactory;
 
             _logger = logManager.GetLogger("Registration Loader");
         }
@@ -41,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            _timer = new PeriodicTimer(s => LoadAllRegistrations(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(12));
+            _timer = _timerFactory.Create(s => LoadAllRegistrations(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromHours(12));
         }
 
         private async Task LoadAllRegistrations()

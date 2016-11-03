@@ -10,8 +10,9 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     public class LibraryChangedNotifier : IServerEntryPoint
     {
@@ -23,6 +24,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
+        private readonly ITimerFactory _timerFactory;
 
         /// <summary>
         /// The _library changed sync lock
@@ -40,19 +42,20 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// Gets or sets the library update timer.
         /// </summary>
         /// <value>The library update timer.</value>
-        private Timer LibraryUpdateTimer { get; set; }
+        private ITimer LibraryUpdateTimer { get; set; }
 
         /// <summary>
         /// The library update duration
         /// </summary>
         private const int LibraryUpdateDuration = 5000;
 
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger)
+        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, ITimerFactory timerFactory)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
             _userManager = userManager;
             _logger = logger;
+            _timerFactory = timerFactory;
         }
 
         public void Run()
@@ -79,7 +82,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
@@ -112,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
@@ -140,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
+                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else
