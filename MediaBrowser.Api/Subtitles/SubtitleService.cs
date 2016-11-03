@@ -213,20 +213,22 @@ namespace MediaBrowser.Api.Subtitles
                 return await ResultFactory.GetStaticFileResult(Request, subtitleStream.Path).ConfigureAwait(false);
             }
 
-            using (var stream = await GetSubtitles(request).ConfigureAwait(false))
+            if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
             {
-                using (var reader = new StreamReader(stream))
+                using (var stream = await GetSubtitles(request).ConfigureAwait(false))
                 {
-                    var text = reader.ReadToEnd();
-
-                    if (string.Equals(request.Format, "vtt", StringComparison.OrdinalIgnoreCase) && request.AddVttTimeMap)
+                    using (var reader = new StreamReader(stream))
                     {
-                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
-                    }
+                        var text = reader.ReadToEnd();
 
-                    return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));
+                        text = text.Replace("WEBVTT", "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000");
+
+                        return ResultFactory.GetResult(text, MimeTypes.GetMimeType("file." + request.Format));
+                    }
                 }
             }
+
+            return ResultFactory.GetResult(await GetSubtitles(request).ConfigureAwait(false), MimeTypes.GetMimeType("file." + request.Format));
         }
 
         private Task<Stream> GetSubtitles(GetSubtitle request)
