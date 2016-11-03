@@ -109,6 +109,9 @@
     <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
     <Compile Include="Library\Validators\StudiosValidator.cs" />
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
+    <Compile Include="LiveTv\ChannelImageProvider.cs" />
+    <Compile Include="LiveTv\ProgramImageProvider.cs" />
+    <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
