@@ -61,9 +61,6 @@
       <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Mono.Nat">
-      <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
-    </Reference>
     <Reference Include="Patterns.Logging, Version=1.0.6151.25559, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Patterns.Logging.1.0.0.5\lib\netstandard1.0\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
@@ -283,6 +280,10 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
+      <Project>{e9db21d4-05e8-4883-b161-c55071166579}</Project>
+      <Name>Mono.Nat</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
