@@ -14,13 +14,13 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Server.Implementations.Threading;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Server.Implementations.Connect
 {
     public class ConnectEntryPoint : IServerEntryPoint
     {
-        private PeriodicTimer _timer;
+        private ITimer _timer;
         private readonly IHttpClient _httpClient;
         private readonly IApplicationPaths _appPaths;
         private readonly ILogger _logger;
@@ -29,8 +29,9 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
+        private readonly ITimerFactory _timerFactory;
 
-        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost, IFileSystem fileSystem)
+        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost, IFileSystem fileSystem, ITimerFactory timerFactory)
         {
             _httpClient = httpClient;
             _appPaths = appPaths;
@@ -39,13 +40,14 @@ namespace MediaBrowser.Server.Implementations.Connect
             _connectManager = connectManager;
             _appHost = appHost;
             _fileSystem = fileSystem;
+            _timerFactory = timerFactory;
         }
 
         public void Run()
         {
             LoadCachedAddress();
 
-            _timer = new PeriodicTimer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(1));
+            _timer = _timerFactory.Create(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(1));
             ((ConnectManager)_connectManager).Start();
         }
 

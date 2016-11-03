@@ -14,10 +14,11 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Threading;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Providers.TV;
 
-namespace MediaBrowser.Server.Implementations.TV
+namespace Emby.Server.Implementations.TV
 {
     class SeriesGroup : List<Series>, IGrouping<string, Series>
     {
@@ -132,8 +133,9 @@ namespace MediaBrowser.Server.Implementations.TV
         private const int LibraryUpdateDuration = 180000;
         private readonly ITaskManager _taskManager;
         private readonly IXmlReaderSettingsFactory _xmlSettings;
+        private readonly ITimerFactory _timerFactory;
 
-        public CleanMissingEpisodesEntryPoint(ILibraryManager libraryManager, IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, IFileSystem fileSystem, ITaskManager taskManager, IXmlReaderSettingsFactory xmlSettings)
+        public CleanMissingEpisodesEntryPoint(ILibraryManager libraryManager, IServerConfigurationManager config, ILogger logger, ILocalizationManager localization, IFileSystem fileSystem, ITaskManager taskManager, IXmlReaderSettingsFactory xmlSettings, ITimerFactory timerFactory)
         {
             _libraryManager = libraryManager;
             _config = config;
@@ -142,9 +144,10 @@ namespace MediaBrowser.Server.Implementations.TV
             _fileSystem = fileSystem;
             _taskManager = taskManager;
             _xmlSettings = xmlSettings;
+            _timerFactory = timerFactory;
         }
 
-        private Timer LibraryUpdateTimer { get; set; }
+        private ITimer LibraryUpdateTimer { get; set; }
 
         public void Run()
         {
@@ -162,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.TV
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
+                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {

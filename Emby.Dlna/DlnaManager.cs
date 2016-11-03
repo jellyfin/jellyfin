@@ -560,17 +560,19 @@ namespace Emby.Dlna
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
+            var resource = GetType().Namespace + ".Images." + filename.ToLower();
+
 #if NET46
             return new ImageStream
             {
                 Format = format,
-                Stream = GetType().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
+                Stream = GetType().Assembly.GetManifestResourceStream(resource)
             };
 #elif NETSTANDARD1_6
             return new ImageStream
             {
                 Format = format,
-                Stream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("MediaBrowser.Dlna.Images." + filename.ToLower())
+                Stream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(resource)
             };
 #endif
             throw new NotImplementedException();

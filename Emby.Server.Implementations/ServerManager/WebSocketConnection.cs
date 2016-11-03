@@ -12,9 +12,10 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.TextEncoding;
 using UniversalDetector;
 
-namespace MediaBrowser.Server.Implementations.ServerManager
+namespace Emby.Server.Implementations.ServerManager
 {
     /// <summary>
     /// Class WebSocketConnection
@@ -77,6 +78,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <value>The query string.</value>
         public QueryParamCollection QueryString { get; set; }
         private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IEncoding _textEncoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -86,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamProvider memoryStreamProvider, IEncoding textEncoding)
         {
             if (socket == null)
             {
@@ -113,6 +115,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             RemoteEndPoint = remoteEndPoint;
             _logger = logger;
             _memoryStreamProvider = memoryStreamProvider;
+            _textEncoding = textEncoding;
 
             socket.Closed += socket_Closed;
         }
@@ -138,11 +141,11 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
             {
-                OnReceiveInternal(Encoding.UTF8.GetString(bytes));
+                OnReceiveInternal(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
             }
             else
             {
-                OnReceiveInternal(Encoding.ASCII.GetString(bytes));
+                OnReceiveInternal(_textEncoding.GetASCIIString(bytes, 0, bytes.Length));
             }
         }
         private string DetectCharset(byte[] bytes)

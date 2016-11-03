@@ -62,7 +62,6 @@ using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Security;
-using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Social;
 using MediaBrowser.Server.Implementations.Sync;
@@ -113,6 +112,7 @@ using Emby.Server.Implementations.MediaEncoder;
 using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Persistence;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
@@ -603,7 +603,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamProvider);
+            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamProvider, textEncoding);
             RegisterSingleInstance(ServerManager);
 
             var innerProgress = new ActionableProgress<double>();

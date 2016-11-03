@@ -207,8 +207,6 @@
     <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Social\SharingManager.cs" />
     <Compile Include="Social\SharingRepository.cs" />
-    <Compile Include="Threading\PeriodicTimer.cs" />
-    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
@@ -217,8 +215,6 @@
     <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
-    <Compile Include="ServerManager\ServerManager.cs" />
-    <Compile Include="ServerManager\WebSocketConnection.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
     <Compile Include="Session\SessionManager.cs">
       <SubType>Code</SubType>
