@@ -46,23 +46,27 @@
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
     <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.59\lib\netstandard1.0\Emby.XmlTv.dll</HintPath>
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.62\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.26611, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.58\lib\netstandard1.0\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.25559, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.5\lib\netstandard1.0\Patterns.Logging.dll</HintPath>
+    <Reference Include="Mono.Nat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">
@@ -280,10 +284,6 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Mono.Nat\Mono.Nat.csproj">
-      <Project>{e9db21d4-05e8-4883-b161-c55071166579}</Project>
-      <Name>Mono.Nat</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

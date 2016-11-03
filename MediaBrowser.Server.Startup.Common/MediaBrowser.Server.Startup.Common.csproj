@@ -42,8 +42,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.25559, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.5\lib\netstandard1.0\Patterns.Logging.dll</HintPath>
+    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="RSSDP">
