@@ -131,6 +131,8 @@
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="ServerManager\ServerManager.cs" />
+    <Compile Include="ServerManager\WebSocketConnection.cs" />
     <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
     <Compile Include="Sorting\AirTimeComparer.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
@@ -178,6 +180,7 @@
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
     <Compile Include="Sync\TargetDataProvider.cs" />
+    <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
@@ -196,6 +199,10 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
+      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
+      <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

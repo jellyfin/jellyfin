@@ -10,14 +10,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.TextEncoding;
 
-namespace MediaBrowser.Server.Implementations.ServerManager
+namespace Emby.Server.Implementations.ServerManager
 {
     /// <summary>
     /// Manages the Http Server, Udp Server and WebSocket connections
@@ -76,6 +76,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
         private bool _disposed;
         private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IEncoding _textEncoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
@@ -85,7 +86,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, IMemoryStreamProvider memoryStreamProvider)
+        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, IMemoryStreamProvider memoryStreamProvider, IEncoding textEncoding)
         {
             if (applicationHost == null)
             {
@@ -105,6 +106,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             _applicationHost = applicationHost;
             ConfigurationManager = configurationManager;
             _memoryStreamProvider = memoryStreamProvider;
+            _textEncoding = textEncoding;
         }
 
         /// <summary>
@@ -127,15 +129,13 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
                 HttpServer.StartServer(urlPrefixes, certificatePath);
             }
-            catch (SocketException ex)
-            {
-                _logger.ErrorException("The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system.", ex);
-
-                throw;
-            }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error starting Http Server", ex);
+                var msg = string.Equals(ex.GetType().Name, "SocketException", StringComparison.OrdinalIgnoreCase)
+                    ? "The http server is unable to start due to a Socket error. This can occasionally happen when the operating system takes longer than usual to release the IP bindings from the previous session. This can take up to five minutes. Please try waiting or rebooting the system."
+                    : "Error starting Http Server";
+
+                _logger.ErrorException(msg, ex);
 
                 throw;
             }
@@ -155,7 +155,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
                 return;
             }
 
-            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger, _memoryStreamProvider)
+            var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger, _memoryStreamProvider, _textEncoding)
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,

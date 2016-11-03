@@ -2,7 +2,7 @@
 using System.Threading;
 using Microsoft.Win32;
 
-namespace MediaBrowser.Server.Implementations.Threading
+namespace MediaBrowser.Server.Startup.Common.Threading
 {
     public class PeriodicTimer : IDisposable
     {
@@ -46,13 +46,13 @@ namespace MediaBrowser.Server.Implementations.Threading
             {
                 _timer = new Timer(TimerCallback, _state, dueTime, _period);
 
-                SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+                Microsoft.Win32.SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
             }
         }
 
         private void DisposeTimer()
         {
-            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
+            Microsoft.Win32.SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
             
             lock (_timerLock)
             {
