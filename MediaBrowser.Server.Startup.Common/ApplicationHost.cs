@@ -54,9 +54,7 @@ using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Connect;
 using MediaBrowser.Server.Implementations.Devices;
-using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.EntryPoints;
-using MediaBrowser.Server.Implementations.FileOrganization;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.HttpServer.Security;
 using MediaBrowser.Server.Implementations.IO;
@@ -107,8 +105,13 @@ using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
+using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
+using Emby.Server.Implementations.Dto;
+using Emby.Server.Implementations.FileOrganization;
+using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Persistence;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
@@ -588,7 +591,7 @@ namespace MediaBrowser.Server.Startup.Common
             var musicManager = new MusicManager(LibraryManager);
             RegisterSingleInstance<IMusicManager>(new MusicManager(LibraryManager));
 
-            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, this);
+            LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, TimerFactory);
             RegisterSingleInstance(LibraryMonitor);
 
             ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer, MemoryStreamProvider);
@@ -639,7 +642,7 @@ namespace MediaBrowser.Server.Startup.Common
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient, ProviderManager);
             RegisterSingleInstance(ChannelManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager);
+            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager, TimerFactory);
             RegisterSingleInstance(MediaSourceManager);
 
             SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
