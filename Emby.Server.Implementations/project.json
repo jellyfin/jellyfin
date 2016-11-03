@@ -1,12 +1,10 @@
-﻿{
+{
   "supports": {},
   "dependencies": {
-    "MediaBrowser.Naming": "1.0.0.58",
-    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
-    "NETStandard.Library": "1.6.0",
-    "Patterns.Logging": "1.0.0.5"
+    "MediaBrowser.Naming": "1.0.0.59",
+    "Patterns.Logging": "1.0.0.6"
   },
   "frameworks": {
-    "netstandard1.3": {}
+    ".NETPortable,Version=v4.5,Profile=Profile7": {}
   }
 }
