@@ -793,7 +793,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             if (protocol == MediaProtocol.File)
             {
-                if (_textEncoding.GetFileEncoding(path).Equals(Encoding.UTF8))
+                var fileEncoding = _textEncoding.GetFileEncoding(path);
+
+                if (fileEncoding != null && fileEncoding.Equals(Encoding.UTF8))
                 {
                     return string.Empty;
                 }

@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Dlna;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class CloudSyncProfile : DeviceProfile
     {

@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     class ServerSyncScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -19,14 +20,16 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfigurationManager _config;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
-        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost, IConfigurationManager config)
+        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
         {
             _syncManager = syncManager;
             _logger = logger;
             _fileSystem = fileSystem;
             _appHost = appHost;
             _config = config;
+            _cryptographyProvider = cryptographyProvider;
         }
 
         public string Name
@@ -49,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new MultiProviderSync((SyncManager)_syncManager, _appHost, _logger, _fileSystem, _config)
+            return new MultiProviderSync((SyncManager)_syncManager, _appHost, _logger, _fileSystem, _config, _cryptographyProvider)
                 .Sync(ServerSyncProviders, progress, cancellationToken);
         }
 

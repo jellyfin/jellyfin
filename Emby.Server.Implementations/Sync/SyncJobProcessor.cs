@@ -28,7 +28,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncJobProcessor
     {

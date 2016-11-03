@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.IO
+namespace Emby.Server.Implementations.IO
 {
     /// <summary>
     /// Class for streaming data with throttling support.
@@ -326,9 +326,10 @@ namespace MediaBrowser.Server.Implementations.IO
                         try
                         {
                             // The time to sleep is more then a millisecond, so sleep.
-                            Thread.Sleep(toSleep);
+                            var task = Task.Delay(toSleep);
+                            Task.WaitAll(task);
                         }
-                        catch (ThreadAbortException)
+                        catch
                         {
                             // Eatup ThreadAbortException.
                         }

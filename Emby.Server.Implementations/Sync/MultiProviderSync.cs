@@ -11,9 +11,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class MultiProviderSync
     {
@@ -22,14 +23,16 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IConfigurationManager _config;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
-        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem, IConfigurationManager config)
+        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
         {
             _syncManager = syncManager;
             _appHost = appHost;
             _logger = logger;
             _fileSystem = fileSystem;
             _config = config;
+            _cryptographyProvider = cryptographyProvider;
         }
 
         public async Task Sync(IEnumerable<IServerSyncProvider> providers, IProgress<double> progress, CancellationToken cancellationToken)
@@ -61,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var dataProvider = _syncManager.GetDataProvider(target.Item1, target.Item2);
 
-                await new MediaSync(_logger, _syncManager, _appHost, _fileSystem, _config)
+                await new MediaSync(_logger, _syncManager, _appHost, _fileSystem, _config, _cryptographyProvider)
                     .Sync(target.Item1, dataProvider, target.Item2, innerProgress, cancellationToken)
                     .ConfigureAwait(false);
 

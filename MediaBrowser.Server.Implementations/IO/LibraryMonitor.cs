@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
-using Microsoft.Win32;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,6 +16,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
+using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.IO
 {

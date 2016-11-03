@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Server.Implementations.Sync
+namespace Emby.Server.Implementations.Sync
 {
     public class SyncHelper
     {
