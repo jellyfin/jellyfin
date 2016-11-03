@@ -23,27 +23,20 @@
         "System.Xml.Serialization": "4.0.0.0"
       },
       "dependencies": {
-        "MediaBrowser.Common": {
-          "target": "project"
-        },
+        "SimpleInjector": "3.2.4",
+        "NLog": "4.4.0-betaV15",
         "MediaBrowser.Model": {
           "target": "project"
         },
-		"SimpleInjector": "3.2.4",
-		"NLog": "4.4.0-betaV15"
-      }
+        "MediaBrowser.Common": {
+          "target": "project"
+        }      }
     },
     "netstandard1.6": {
       "imports": "dnxcore50",
       "dependencies": {
         "NETStandard.Library": "1.6.0",
-		"MediaBrowser.Common": {
-          "target": "project"
-        },
-        "MediaBrowser.Model": {
-          "target": "project"
-        },
-        "System.IO.FileSystem.DriveInfo": "4.0.0",
+		"System.IO.FileSystem.DriveInfo": "4.0.0",
 		"System.Diagnostics.Process": "4.1.0",
 		"System.Threading.Timer": "4.0.1",
 		"System.Net.Requests": "4.0.11",
@@ -58,8 +51,13 @@
 		"System.Reflection.Primitives": "4.0.1",
 		"System.Runtime.Loader": "4.0.0",
 		"SimpleInjector": "3.2.4",
-		"NLog": "4.4.0-betaV15"
-      }
+        "NLog": "4.4.0-betaV15",
+        "MediaBrowser.Model": {
+          "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        }      }
     }
   }
 }

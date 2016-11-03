@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 CancellationToken = cancellationToken,
                 Url = path,
                 Progress = new Progress<Double>(),
-                DecompressionMethod = DecompressionMethods.GZip,
+                DecompressionMethod = CompressionMethod.Gzip,
 
                 // It's going to come back gzipped regardless of this value
                 // So we need to make sure the decompression method is set to gzip
