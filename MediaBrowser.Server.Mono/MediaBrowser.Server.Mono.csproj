@@ -69,8 +69,8 @@
       <HintPath>..\packages\NLog.4.4.0-betaV15\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6149.1756, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.4\lib\portable-net45+dnxcore50+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

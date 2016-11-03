@@ -38,12 +38,16 @@
     <Reference Include="Emby.Dlna">
       <HintPath>..\ThirdParty\emby\Emby.Dlna.dll</HintPath>
     </Reference>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6149.1756, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.4\lib\portable-net45+dnxcore50+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="RSSDP">
@@ -91,6 +95,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StartupOptions.cs" />
     <Compile Include="SystemEvents.cs" />
+    <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="UnhandledExceptionWriter.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +106,10 @@
     <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
       <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
       <Name>Emby.Photos</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>

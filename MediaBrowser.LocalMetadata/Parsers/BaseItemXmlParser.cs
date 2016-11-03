@@ -1329,11 +1329,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         protected Share GetShare(XmlReader reader)
         {
-            reader.MoveToContent();
-
             var item = new Share();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1350,11 +1352,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
                                 item.CanEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 

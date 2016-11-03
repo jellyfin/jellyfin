@@ -4,7 +4,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
-using MediaBrowser.Server.Implementations.Threading;
+using MediaBrowser.Server.Startup.Common.Threading;
 
 namespace MediaBrowser.Server.Startup.Common.EntryPoints
 {

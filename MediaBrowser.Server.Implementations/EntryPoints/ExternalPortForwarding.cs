@@ -11,7 +11,7 @@ using System.Net;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
-using MediaBrowser.Server.Implementations.Threading;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -23,16 +23,18 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IServerConfigurationManager _config;
         private readonly IDeviceDiscovery _deviceDiscovery;
 
-        private PeriodicTimer _timer;
+        private ITimer _timer;
         private bool _isStarted;
+        private readonly ITimerFactory _timerFactory;
 
-        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient)
+        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, ITimerFactory timerFactory)
         {
             _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
             _deviceDiscovery = deviceDiscovery;
             _httpClient = httpClient;
+            _timerFactory = timerFactory;
         }
 
         private string _lastConfigIdentifier;
@@ -94,7 +96,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             NatUtility.StartDiscovery();
 
-            _timer = new PeriodicTimer(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            _timer = _timerFactory.Create(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
 
