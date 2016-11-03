@@ -1,8 +1,7 @@
-{
+﻿{
   "supports": {},
   "dependencies": {
-    "MediaBrowser.Naming": "1.0.0.59",
-    "Patterns.Logging": "1.0.0.6"
+    "MediaBrowser.Naming": "1.0.0.59"
   },
   "frameworks": {
     ".NETPortable,Version=v4.5,Profile=Profile7": {}

@@ -18,7 +18,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Library;
 
-namespace MediaBrowser.Server.Implementations.MediaEncoder
+namespace Emby.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
@@ -143,11 +143,11 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             var container = video.Container;
 
                             var tempFile = await _encoder.ExtractVideoImage(inputPath, container, protocol, video.Video3DFormat, time, cancellationToken).ConfigureAwait(false);
-                            File.Copy(tempFile, path, true);
+                            _fileSystem.CopyFile(tempFile, path, true);
 
                             try
                             {
-                                File.Delete(tempFile);
+                                _fileSystem.DeleteFile(tempFile);
                             }
                             catch
                             {
@@ -205,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                 return _fileSystem.GetFilePaths(path)
                     .ToList();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return new List<string>();
             }

@@ -11,8 +11,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     class UserDataChangeNotifier : IServerEntryPoint
     {
@@ -22,17 +23,19 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IUserManager _userManager;
 
         private readonly object _syncLock = new object();
-        private Timer UpdateTimer { get; set; }
+        private ITimer UpdateTimer { get; set; }
+        private readonly ITimerFactory _timerFactory;
         private const int UpdateDuration = 500;
 
         private readonly Dictionary<Guid, List<IHasUserData>> _changedItems = new Dictionary<Guid, List<IHasUserData>>();
 
-        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager)
+        public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, ILogger logger, IUserManager userManager, ITimerFactory timerFactory)
         {
             _userDataManager = userDataManager;
             _sessionManager = sessionManager;
             _logger = logger;
             _userManager = userManager;
+            _timerFactory = timerFactory;
         }
 
         public void Run()
@@ -51,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             {
                 if (UpdateTimer == null)
                 {
-                    UpdateTimer = new Timer(UpdateTimerCallback, null, UpdateDuration,
+                    UpdateTimer = _timerFactory.Create(UpdateTimerCallback, null, UpdateDuration,
                                                    Timeout.Infinite);
                 }
                 else

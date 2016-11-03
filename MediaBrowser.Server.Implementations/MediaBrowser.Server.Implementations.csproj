@@ -46,15 +46,11 @@
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
     <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.62\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.63\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -120,17 +116,8 @@
     <Compile Include="Connect\Validator.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
-    <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
-    <Compile Include="EntryPoints\LoadRegistrations.cs" />
-    <Compile Include="EntryPoints\RecordingNotifier.cs" />
-    <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
-    <Compile Include="EntryPoints\UsageEntryPoint.cs" />
-    <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
-    <Compile Include="EntryPoints\ServerEventNotifier.cs" />
-    <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
@@ -211,8 +198,6 @@
     <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
-    <Compile Include="MediaEncoder\EncodingManager.cs" />
-    <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\DataExtensions.cs" />
     <Compile Include="Persistence\IDbConnector.cs" />
@@ -287,23 +272,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\us.txt" />
-    <EmbeddedResource Include="Localization\Ratings\au.txt" />
-    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
-    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
-    <EmbeddedResource Include="Localization\Ratings\br.txt" />
-    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
-    <EmbeddedResource Include="Localization\Ratings\de.txt" />
-    <EmbeddedResource Include="Localization\Ratings\mx.txt" />
-    <EmbeddedResource Include="Localization\Ratings\co.txt" />
-    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
-    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
-    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
-    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
-    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
-    <EmbeddedResource Include="Localization\Ratings\ru.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
       <Link>swagger-ui\lib\backbone-min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -368,7 +336,6 @@
       <Link>swagger-ui\swagger-ui.min.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="Localization\countries.json" />
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
       <Link>swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -401,46 +368,25 @@
       <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Localization\Ratings\us.txt" />
+    <EmbeddedResource Include="Localization\Ratings\ru.txt" />
+    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
+    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
+    <EmbeddedResource Include="Localization\Ratings\mx.txt" />
+    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
+    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
+    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
+    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
+    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
+    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
+    <EmbeddedResource Include="Localization\Ratings\de.txt" />
+    <EmbeddedResource Include="Localization\Ratings\co.txt" />
+    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
+    <EmbeddedResource Include="Localization\Ratings\br.txt" />
+    <EmbeddedResource Include="Localization\Ratings\be.txt" />
+    <EmbeddedResource Include="Localization\Ratings\au.txt" />
+    <EmbeddedResource Include="Localization\iso6392.txt" />
     <None Include="app.config" />
-    <EmbeddedResource Include="Localization\Core\core.json" />
-    <EmbeddedResource Include="Localization\Core\ar.json" />
-    <EmbeddedResource Include="Localization\Core\bg-BG.json" />
-    <EmbeddedResource Include="Localization\Core\ca.json" />
-    <EmbeddedResource Include="Localization\Core\cs.json" />
-    <EmbeddedResource Include="Localization\Core\da.json" />
-    <EmbeddedResource Include="Localization\Core\de.json" />
-    <EmbeddedResource Include="Localization\Core\el.json" />
-    <EmbeddedResource Include="Localization\Core\en-GB.json" />
-    <EmbeddedResource Include="Localization\Core\en-US.json" />
-    <EmbeddedResource Include="Localization\Core\es-AR.json" />
-    <EmbeddedResource Include="Localization\Core\es-MX.json" />
-    <EmbeddedResource Include="Localization\Core\es.json" />
-    <EmbeddedResource Include="Localization\Core\fi.json" />
-    <EmbeddedResource Include="Localization\Core\fr.json" />
-    <EmbeddedResource Include="Localization\Core\gsw.json" />
-    <EmbeddedResource Include="Localization\Core\he.json" />
-    <EmbeddedResource Include="Localization\Core\hr.json" />
-    <EmbeddedResource Include="Localization\Core\it.json" />
-    <EmbeddedResource Include="Localization\Core\kk.json" />
-    <EmbeddedResource Include="Localization\Core\ko.json" />
-    <EmbeddedResource Include="Localization\Core\ms.json" />
-    <EmbeddedResource Include="Localization\Core\nb.json" />
-    <EmbeddedResource Include="Localization\Core\nl.json" />
-    <EmbeddedResource Include="Localization\Core\pl.json" />
-    <EmbeddedResource Include="Localization\Core\pt-BR.json" />
-    <EmbeddedResource Include="Localization\Core\pt-PT.json" />
-    <EmbeddedResource Include="Localization\Core\ro.json" />
-    <EmbeddedResource Include="Localization\Core\ru.json" />
-    <EmbeddedResource Include="Localization\Core\sl-SI.json" />
-    <EmbeddedResource Include="Localization\Core\sv.json" />
-    <EmbeddedResource Include="Localization\Core\tr.json" />
-    <EmbeddedResource Include="Localization\Core\uk.json" />
-    <EmbeddedResource Include="Localization\Core\vi.json" />
-    <EmbeddedResource Include="Localization\Core\zh-CN.json" />
-    <EmbeddedResource Include="Localization\Core\zh-TW.json" />
-    <EmbeddedResource Include="Localization\Core\zh-HK.json" />
-    <EmbeddedResource Include="Localization\Core\hu.json" />
-    <EmbeddedResource Include="Localization\Core\id.json" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\0030.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\0049.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\0070.ini" />
@@ -610,11 +556,48 @@
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3560.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3592.ini" />
     <EmbeddedResource Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
+    <EmbeddedResource Include="Localization\Core\ar.json" />
+    <EmbeddedResource Include="Localization\Core\bg-BG.json" />
+    <EmbeddedResource Include="Localization\Core\ca.json" />
+    <EmbeddedResource Include="Localization\Core\core.json" />
+    <EmbeddedResource Include="Localization\Core\cs.json" />
+    <EmbeddedResource Include="Localization\Core\da.json" />
+    <EmbeddedResource Include="Localization\Core\de.json" />
+    <EmbeddedResource Include="Localization\Core\el.json" />
+    <EmbeddedResource Include="Localization\Core\en-GB.json" />
+    <EmbeddedResource Include="Localization\Core\en-US.json" />
+    <EmbeddedResource Include="Localization\Core\es-AR.json" />
+    <EmbeddedResource Include="Localization\Core\es-MX.json" />
+    <EmbeddedResource Include="Localization\Core\es.json" />
+    <EmbeddedResource Include="Localization\Core\fi.json" />
     <EmbeddedResource Include="Localization\Core\fr-CA.json" />
+    <EmbeddedResource Include="Localization\Core\fr.json" />
+    <EmbeddedResource Include="Localization\Core\gsw.json" />
+    <EmbeddedResource Include="Localization\Core\he.json" />
+    <EmbeddedResource Include="Localization\Core\hr.json" />
+    <EmbeddedResource Include="Localization\Core\hu.json" />
+    <EmbeddedResource Include="Localization\Core\id.json" />
+    <EmbeddedResource Include="Localization\Core\it.json" />
+    <EmbeddedResource Include="Localization\Core\kk.json" />
+    <EmbeddedResource Include="Localization\Core\ko.json" />
+    <EmbeddedResource Include="Localization\Core\ms.json" />
+    <EmbeddedResource Include="Localization\Core\nb.json" />
+    <EmbeddedResource Include="Localization\Core\nl.json" />
+    <EmbeddedResource Include="Localization\Core\pl.json" />
+    <EmbeddedResource Include="Localization\Core\pt-BR.json" />
+    <EmbeddedResource Include="Localization\Core\pt-PT.json" />
+    <EmbeddedResource Include="Localization\Core\ro.json" />
+    <EmbeddedResource Include="Localization\Core\ru.json" />
+    <EmbeddedResource Include="Localization\Core\sl-SI.json" />
+    <EmbeddedResource Include="Localization\Core\sv.json" />
+    <EmbeddedResource Include="Localization\Core\tr.json" />
+    <EmbeddedResource Include="Localization\Core\uk.json" />
+    <EmbeddedResource Include="Localization\Core\vi.json" />
+    <EmbeddedResource Include="Localization\Core\zh-CN.json" />
+    <EmbeddedResource Include="Localization\Core\zh-HK.json" />
+    <EmbeddedResource Include="Localization\Core\zh-TW.json" />
+    <EmbeddedResource Include="Localization\countries.json" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
@@ -665,8 +648,6 @@
       <Link>swagger-ui\lib\shred\content.js</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="Localization\iso6392.txt" />
-    <EmbeddedResource Include="Localization\Ratings\be.txt" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

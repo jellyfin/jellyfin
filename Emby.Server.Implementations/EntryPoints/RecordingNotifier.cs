@@ -7,7 +7,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     public class RecordingNotifier : IServerEntryPoint
     {
@@ -32,22 +32,22 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             _liveTvManager.SeriesTimerCreated += _liveTvManager_SeriesTimerCreated;
         }
 
-        private void _liveTvManager_SeriesTimerCreated(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void _liveTvManager_SeriesTimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("SeriesTimerCreated", e.Argument);
         }
 
-        private void _liveTvManager_TimerCreated(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void _liveTvManager_TimerCreated(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("TimerCreated", e.Argument);
         }
 
-        private void _liveTvManager_SeriesTimerCancelled(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void _liveTvManager_SeriesTimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("SeriesTimerCancelled", e.Argument);
         }
 
-        private void _liveTvManager_TimerCancelled(object sender, Model.Events.GenericEventArgs<TimerEventInfo> e)
+        private void _liveTvManager_TimerCancelled(object sender, MediaBrowser.Model.Events.GenericEventArgs<TimerEventInfo> e)
         {
             SendMessage("TimerCancelled", e.Argument);
         }
