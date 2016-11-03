@@ -144,7 +144,6 @@
     <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="LiveTv\ChannelImageProvider.cs" />
     <Compile Include="LiveTv\EmbyTV\DirectRecorder.cs" />
     <Compile Include="LiveTv\EmbyTV\EmbyTV.cs" />
     <Compile Include="LiveTv\EmbyTV\EmbyTVRegistration.cs" />
@@ -168,8 +167,6 @@
     <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunLiveStream.cs" />
     <Compile Include="LiveTv\TunerHosts\M3uParser.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
-    <Compile Include="LiveTv\ProgramImageProvider.cs" />
-    <Compile Include="LiveTv\RecordingImageProvider.cs" />
     <Compile Include="LiveTv\RefreshChannelsScheduledTask.cs" />
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
     <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />

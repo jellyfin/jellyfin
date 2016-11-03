@@ -1,31 +1,22 @@
-﻿using MediaBrowser.Common;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.LiveTv
+namespace Emby.Server.Implementations.LiveTv
 {
-    public class ChannelImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
+    public class RecordingImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
     {
         private readonly ILiveTvManager _liveTvManager;
-        private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
-        private readonly IApplicationHost _appHost;
 
-        public ChannelImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger, IApplicationHost appHost)
+        public RecordingImageProvider(ILiveTvManager liveTvManager)
         {
             _liveTvManager = liveTvManager;
-            _httpClient = httpClient;
-            _logger = logger;
-            _appHost = appHost;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -35,17 +26,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
-            var liveTvItem = (LiveTvChannel)item;
+            var liveTvItem = (ILiveTvRecording)item;
 
             var imageResponse = new DynamicImageResponse();
 
             var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
-            if (service != null && !item.HasImage(ImageType.Primary))
+            if (service != null)
             {
                 try
                 {
-                    var response = await service.GetChannelImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
+                    var response = await service.GetRecordingImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
 
                     if (response != null)
                     {
@@ -69,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool Supports(IHasImages item)
         {
-            return item is LiveTvChannel;
+            return item is ILiveTvRecording;
         }
 
         public int Order
@@ -79,7 +70,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService)
         {
-            return GetSupportedImages(item).Any(i => !item.HasImage(i));
+            var liveTvItem = item as ILiveTvRecording;
+
+            if (liveTvItem != null)
+            {
+                return !liveTvItem.HasImage(ImageType.Primary);
+            }
+            return false;
         }
     }
 }

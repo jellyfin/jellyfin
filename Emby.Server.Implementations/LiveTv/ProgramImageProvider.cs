@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.LiveTv
+namespace Emby.Server.Implementations.LiveTv
 {
     public class ProgramImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
