@@ -62,7 +62,6 @@ using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Security;
-using MediaBrowser.Server.Implementations.Session;
 using MediaBrowser.Server.Implementations.Social;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
@@ -108,11 +107,13 @@ using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.MediaEncoder;
 using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Persistence;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ServerManager;
+using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
@@ -644,7 +645,7 @@ namespace MediaBrowser.Server.Startup.Common
             MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"), JsonSerializer, FileSystemManager, UserDataManager, TimerFactory);
             RegisterSingleInstance(MediaSourceManager);
 
-            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager, TimerFactory);
             RegisterSingleInstance(SessionManager);
 
             var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer, this);
