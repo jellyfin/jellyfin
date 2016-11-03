@@ -40,7 +40,11 @@ namespace Emby.Server.Implementations.Updates
         /// <summary>
         /// The completed installations
         /// </summary>
-        public ConcurrentBag<InstallationInfo> CompletedInstallations { get; set; }
+        private ConcurrentBag<InstallationInfo> CompletedInstallationsInternal { get; set; }
+
+        public IEnumerable<InstallationInfo> CompletedInstallations {
+            get { return CompletedInstallationsInternal; }
+        }
 
         #region PluginUninstalled Event
         /// <summary>
@@ -125,7 +129,7 @@ namespace Emby.Server.Implementations.Updates
             }
 
             CurrentInstallations = new List<Tuple<InstallationInfo, CancellationTokenSource>>();
-            CompletedInstallations = new ConcurrentBag<InstallationInfo>();
+            CompletedInstallationsInternal = new ConcurrentBag<InstallationInfo>();
 
             _applicationHost = appHost;
             _appPaths = appPaths;
@@ -503,7 +507,7 @@ namespace Emby.Server.Implementations.Updates
 
                 progress.Report(100);
 
-                CompletedInstallations.Add(installationInfo);
+                CompletedInstallationsInternal.Add(installationInfo);
 
                 EventHelper.FireEventIfNotNull(PackageInstallationCompleted, this, installationEventArgs, _logger);
             }

@@ -46,15 +46,15 @@
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
     <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.58\lib\portable-net46+win10\Emby.XmlTv.dll</HintPath>
+      <HintPath>..\packages\Emby.XmlTv.1.0.0.59\lib\netstandard1.0\Emby.XmlTv.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6146.28476, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.57\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.26611, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.58\lib\netstandard1.0\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -64,8 +64,8 @@
     <Reference Include="Mono.Nat">
       <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6149.1756, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.4\lib\portable-net45+dnxcore50+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    <Reference Include="Patterns.Logging, Version=1.0.6151.25559, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.5\lib\netstandard1.0\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Api.Swagger">

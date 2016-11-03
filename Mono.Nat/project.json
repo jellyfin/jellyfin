@@ -21,21 +21,19 @@
         },
         "MediaBrowser.Model": {
           "target": "project"
-        }
-      }
+        }      }
     },
     "netstandard1.6": {
       "imports": "dnxcore50",
       "dependencies": {
         "NETStandard.Library": "1.6.0",
-        "MediaBrowser.Common": {
-          "target": "project"
-        },
+        "System.Net.NetworkInformation": "4.1.0",
         "MediaBrowser.Model": {
           "target": "project"
         },
-        "System.Net.NetworkInformation": "4.1.0"
-      }
+        "MediaBrowser.Common": {
+          "target": "project"
+        }      }
     }
   }
 }
