@@ -148,14 +148,20 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
         function getProfileOptions(item) {
 
-            var disableVideoAudioCodecs = [];
-            if (!AppInfo.isNativeApp && !item.RunTimeTicks) {
-                disableVideoAudioCodecs.push('ac3');
-            }
-
             var options = {};
 
             if (!AppInfo.isNativeApp) {
+                var disableHlsVideoAudioCodecs = [];
+
+                if (!self.canPlayNativeHls()) {
+                    // hls.js does not support this
+                    disableHlsVideoAudioCodecs.push('mp3');
+                }
+                if (!item.RunTimeTicks) {
+                    // hls.js does not support this
+                    disableHlsVideoAudioCodecs.push('ac3');
+                }
+
                 options.enableMkvProgressive = item.RunTimeTicks != null;
 
                 if (item.RunTimeTicks == null) {
@@ -163,9 +169,8 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 }
 
                 options.enableMkvProgressive = false;
-                options.disableVideoAudioCodecs = disableVideoAudioCodecs;
+                options.disableHlsVideoAudioCodecs = disableHlsVideoAudioCodecs;
             }
-
             return options;
         }
 
