@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.LiveTv.TunerHosts;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -20,7 +21,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.SatIp
 {

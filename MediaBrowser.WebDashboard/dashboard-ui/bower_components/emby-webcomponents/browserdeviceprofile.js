@@ -184,6 +184,10 @@ define(['browser'], function (browser) {
             case 'ts':
                 supported = testCanPlayTs();
                 videoCodecs.push('h264');
+                if (canPlayH265()) {
+                    videoCodecs.push('h265');
+                    videoCodecs.push('hevc');
+                }
                 profileContainer = 'ts,mpegts';
                 break;
             default:
@@ -300,7 +304,7 @@ define(['browser'], function (browser) {
             //videoAudioCodecs.push('truehd');
         }
 
-        videoAudioCodecs = videoAudioCodecs.filter(function(c) {
+        videoAudioCodecs = videoAudioCodecs.filter(function (c) {
             return (options.disableVideoAudioCodecs || []).indexOf(c) === -1;
         });
 

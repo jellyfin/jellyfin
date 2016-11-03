@@ -7,6 +7,8 @@ namespace MediaBrowser.Model.Cryptography
     {
         Guid GetMD5(string str);
         byte[] GetMD5Bytes(string str);
+        byte[] GetSHA1Bytes(byte[] bytes);
         byte[] GetMD5Bytes(Stream str);
+        byte[] GetMD5Bytes(byte[] bytes);
     }
 }

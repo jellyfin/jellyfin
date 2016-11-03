@@ -1,0 +1,11 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Emby.XmlTv": "1.0.0.63",
+    "MediaBrowser.Naming": "1.0.0.59",
+    "UniversalDetector": "1.0.1"
+  },
+  "frameworks": {
+    ".NETPortable,Version=v4.5,Profile=Profile7": {}
+  }
+}

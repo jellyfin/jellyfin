@@ -169,9 +169,23 @@ namespace Emby.Common.Implementations.HttpClientManager
                 AddRequestHeaders(httpWebRequest, options);
 
 #if NET46
-                httpWebRequest.AutomaticDecompression = options.EnableHttpCompression ?
-                    (options.DecompressionMethod ?? DecompressionMethods.Deflate) :
-                    DecompressionMethods.None;
+                if (options.EnableHttpCompression)
+                {
+                    if (options.DecompressionMethod.HasValue)
+                    {
+                        httpWebRequest.AutomaticDecompression = options.DecompressionMethod.Value == CompressionMethod.Gzip
+                            ? DecompressionMethods.GZip
+                            : DecompressionMethods.Deflate;
+                    }
+                    else
+                    {
+                        httpWebRequest.AutomaticDecompression = DecompressionMethods.Deflate;
+                    }
+                }
+                else
+                {
+                    httpWebRequest.AutomaticDecompression = DecompressionMethods.None;
+                }
 #endif    
             }
 

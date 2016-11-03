@@ -103,7 +103,7 @@
                         preferThumb: true,
                         context: 'tv',
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -160,7 +160,7 @@
                         context: 'tv',
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
 

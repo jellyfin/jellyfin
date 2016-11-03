@@ -549,6 +549,8 @@ return null;
             TimerFactory = new TimerFactory();
             RegisterSingleInstance(TimerFactory);
 
+            RegisterSingleInstance(CryptographyProvider);
+
             return Task.FromResult(true);
         }
 

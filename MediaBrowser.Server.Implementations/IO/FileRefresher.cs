@@ -14,7 +14,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Server.Implementations.ScheduledTasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -26,13 +26,14 @@ namespace MediaBrowser.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
         private readonly IFileSystem _fileSystem;
         private readonly List<string> _affectedPaths = new List<string>();
-        private Timer _timer;
+        private ITimer _timer;
+        private readonly ITimerFactory _timerFactory;
         private readonly object _timerLock = new object();
         public string Path { get; private set; }
 
         public event EventHandler<EventArgs> Completed;
 
-        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger)
+        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory)
         {
             logger.Debug("New file refresher created for {0}", path);
             Path = path;
@@ -42,6 +43,7 @@ namespace MediaBrowser.Server.Implementations.IO
             LibraryManager = libraryManager;
             TaskManager = taskManager;
             Logger = logger;
+            _timerFactory = timerFactory;
             AddPath(path);
         }
 
@@ -88,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.IO
 
                 if (_timer == null)
                 {
-                    _timer = new Timer(OnTimerCallback, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _timer = _timerFactory.Create(OnTimerCallback, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.LibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
@@ -163,7 +165,7 @@ namespace MediaBrowser.Server.Implementations.IO
             // If the root folder changed, run the library task so the user can see it
             if (itemsToRefresh.Any(i => i is AggregateFolder))
             {
-                TaskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+                LibraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
                 return;
             }
 
@@ -268,11 +270,11 @@ namespace MediaBrowser.Server.Implementations.IO
                     return false;
                 }
             }
-            catch (DirectoryNotFoundException)
-            {
-                // File may have been deleted
-                return false;
-            }
+            //catch (DirectoryNotFoundException)
+            //{
+            //    // File may have been deleted
+            //    return false;
+            //}
             catch (FileNotFoundException)
             {
                 // File may have been deleted

@@ -2020,5 +2020,6 @@
   "LabelOptionalNetworkPathHelp": "If this folder is shared on your network, supplying the network share path can allow Emby apps on other devices to access media files directly.",
   "ButtonPlayExternalPlayer": "Play with external player",
   "NotScheduledToRecord": "Not scheduled to record",
-  "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update."
+  "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
+  "LatestFromLibrary": "Latest {0}"
 }

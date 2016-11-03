@@ -6,7 +6,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>0a82260b-4c22-4fd2-869a-e510044e3502</ProjectGuid>
+    <ProjectGuid>4acab6a2-ac9a-4b50-baec-1fe4a1f3b8bc</ProjectGuid>
     <RootNamespace>Mono.Nat</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
