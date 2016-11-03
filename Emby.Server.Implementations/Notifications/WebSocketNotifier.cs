@@ -3,7 +3,7 @@ using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Plugins;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     /// <summary>
     /// Notifies clients anytime a notification is added or udpated

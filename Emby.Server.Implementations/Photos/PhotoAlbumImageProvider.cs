@@ -5,12 +5,11 @@ using MediaBrowser.Controller.Providers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
+using Emby.Server.Implementations.Images;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Entities;
 
-namespace MediaBrowser.Server.Implementations.Photos
+namespace Emby.Server.Implementations.Photos
 {
     public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>
     {

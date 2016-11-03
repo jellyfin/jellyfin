@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.Configuration;
 
-namespace MediaBrowser.Server.Implementations.TV
+namespace Emby.Server.Implementations.TV
 {
     public class TVSeriesManager : ITVSeriesManager
     {

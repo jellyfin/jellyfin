@@ -22,8 +22,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     /// <summary>
     /// Creates notifications for various system events
@@ -40,14 +41,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
         private readonly ILibraryManager _libraryManager;
         private readonly ISessionManager _sessionManager;
         private readonly IServerApplicationHost _appHost;
+        private readonly ITimerFactory _timerFactory;
 
-        private Timer LibraryUpdateTimer { get; set; }
+        private ITimer LibraryUpdateTimer { get; set; }
         private readonly object _libraryChangedSyncLock = new object();
 
         private readonly IConfigurationManager _config;
         private readonly IDeviceManager _deviceManager;
 
-        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager)
+        public Notifications(IInstallationManager installationManager, IUserManager userManager, ILogger logger, ITaskManager taskManager, INotificationManager notificationManager, ILibraryManager libraryManager, ISessionManager sessionManager, IServerApplicationHost appHost, IConfigurationManager config, IDeviceManager deviceManager, ITimerFactory timerFactory)
         {
             _installationManager = installationManager;
             _userManager = userManager;
@@ -59,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             _appHost = appHost;
             _config = config;
             _deviceManager = deviceManager;
+            _timerFactory = timerFactory;
         }
 
         public void Run()
@@ -332,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, 5000,
+                    LibraryUpdateTimer = _timerFactory.Create(LibraryUpdateTimerCallback, null, 5000,
                                                    Timeout.Infinite);
                 }
                 else

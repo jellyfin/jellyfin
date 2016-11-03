@@ -18,7 +18,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.Server.Implementations.Photos
+namespace Emby.Server.Implementations.Images
 {
     public abstract class BaseDynamicImageProvider<T> : IHasItemChangeMonitor, IForcedProvider, ICustomMetadataProvider<T>, IHasOrder
         where T : IHasMetadata
@@ -353,7 +353,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             var ext = Path.GetExtension(image);
 
             var outputPath = Path.ChangeExtension(outputPathWithoutExtension, ext);
-            File.Copy(image, outputPath);
+            FileSystem.CopyFile(image, outputPath, true);
 
             return outputPath;
         }

@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.Activity
 {
     public class ActivityLogEntryPoint : IServerEntryPoint
     {
