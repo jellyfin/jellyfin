@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Server.Implementations", "Emby.Server.Implementations\Emby.Server.Implementations.csproj", "{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,12 @@ Global
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Release Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Release Mono|Any CPU.Build.0 = Release|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -184,5 +192,6 @@ Global
 		{89AB4548-770D-41FD-A891-8DAFF44F452C} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{4FD51AC5-2C16-4308-A993-C3A84F3B4582} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
+		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 	EndGlobalSection
 EndGlobal
