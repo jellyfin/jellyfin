@@ -1,39 +1,11 @@
-{
-  "version": "1.0.0-*",
-
+﻿{
+  "supports": {},
   "dependencies": {
-    
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.0",
+    "System.Net.NetworkInformation": "4.1.0"
   },
-
   "frameworks": {
-    "net46": {
-      "frameworkAssemblies": {
-        "System.Collections": "4.0.0.0",
-        "System.Net": "4.0.0.0",
-        "System.Runtime": "4.0.0.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0"
-      },
-      "dependencies": {
-        "MediaBrowser.Common": {
-          "target": "project"
-        },
-        "MediaBrowser.Model": {
-          "target": "project"
-        }      }
-    },
-    "netstandard1.6": {
-      "imports": "dnxcore50",
-      "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "System.Net.NetworkInformation": "4.1.0",
-        "MediaBrowser.Model": {
-          "target": "project"
-        },
-        "MediaBrowser.Common": {
-          "target": "project"
-        }      }
-    }
+    "netstandard1.3": {}
   }
 }
