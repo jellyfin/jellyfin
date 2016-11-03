@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Notifications;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     public class NotificationConfigurationFactory : IConfigurationFactory
     {

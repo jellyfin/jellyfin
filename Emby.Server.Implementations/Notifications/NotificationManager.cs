@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Server.Implementations.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     public class NotificationManager : INotificationManager
     {

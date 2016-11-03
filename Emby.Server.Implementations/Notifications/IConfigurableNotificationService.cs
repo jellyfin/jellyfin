@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Server.Implementations.Notifications
+﻿namespace Emby.Server.Implementations.Notifications
 {
     public interface IConfigurableNotificationService
     {

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System;
 
-namespace MediaBrowser.Server.Implementations.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     public class InternalNotificationService : INotificationService, IConfigurableNotificationService
     {

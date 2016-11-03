@@ -107,6 +107,7 @@ using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.Library;
+using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Persistence;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.TV;

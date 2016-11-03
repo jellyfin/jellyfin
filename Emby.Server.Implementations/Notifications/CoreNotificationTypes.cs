@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Globalization;
 
-namespace MediaBrowser.Server.Implementations.Notifications
+namespace Emby.Server.Implementations.Notifications
 {
     public class CoreNotificationTypes : INotificationTypeFactory
     {

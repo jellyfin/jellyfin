@@ -115,6 +115,11 @@
     <Compile Include="Library\Validators\YearsPostScanTask.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="News\NewsService.cs" />
+    <Compile Include="Notifications\CoreNotificationTypes.cs" />
+    <Compile Include="Notifications\IConfigurableNotificationService.cs" />
+    <Compile Include="Notifications\InternalNotificationService.cs" />
+    <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
+    <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Notifications\Notifications.cs" />
     <Compile Include="Notifications\WebSocketNotifier.cs" />
     <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />

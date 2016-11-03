@@ -212,7 +212,6 @@
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
-    <Compile Include="Notifications\IConfigurableNotificationService.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
     <Compile Include="Persistence\DataExtensions.cs" />
     <Compile Include="Persistence\IDbConnector.cs" />
@@ -230,10 +229,6 @@
     <Compile Include="TextEncoding\TextEncoding.cs" />
     <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
-    <Compile Include="Notifications\CoreNotificationTypes.cs" />
-    <Compile Include="Notifications\InternalNotificationService.cs" />
-    <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
-    <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
