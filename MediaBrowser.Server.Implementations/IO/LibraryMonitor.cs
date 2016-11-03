@@ -16,6 +16,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -136,12 +137,12 @@ namespace MediaBrowser.Server.Implementations.IO
         private IServerConfigurationManager ConfigurationManager { get; set; }
 
         private readonly IFileSystem _fileSystem;
-        private readonly IServerApplicationHost _appHost;
+        private readonly ITimerFactory _timerFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IServerApplicationHost appHost)
+        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory)
         {
             if (taskManager == null)
             {
@@ -153,7 +154,7 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger = logManager.GetLogger(GetType().Name);
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
-            _appHost = appHost;
+            _timerFactory = timerFactory;
 
             SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
         }
@@ -528,7 +529,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger);
+                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }

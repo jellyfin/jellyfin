@@ -15,7 +15,6 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Server.Implementations.FileOrganization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1528,28 +1527,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async void OnSuccessfulRecording(TimerInfo timer, string path)
         {
-            if (timer.IsProgramSeries && GetConfiguration().EnableAutoOrganize)
-            {
-                try
-                {
-                    // this is to account for the library monitor holding a lock for additional time after the change is complete.
-                    // ideally this shouldn't be hard-coded
-                    await Task.Delay(30000).ConfigureAwait(false);
+            //if (timer.IsProgramSeries && GetConfiguration().EnableAutoOrganize)
+            //{
+            //    try
+            //    {
+            //        // this is to account for the library monitor holding a lock for additional time after the change is complete.
+            //        // ideally this shouldn't be hard-coded
+            //        await Task.Delay(30000).ConfigureAwait(false);
 
-                    var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
+            //        var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
 
-                    var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
+            //        var result = await organize.OrganizeEpisodeFile(path, _config.GetAutoOrganizeOptions(), false, CancellationToken.None).ConfigureAwait(false);
 
-                    if (result.Status == FileSortingStatus.Success)
-                    {
-                        return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error processing new recording", ex);
-                }
-            }
+            //        if (result.Status == FileSortingStatus.Success)
+            //        {
+            //            return;
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.ErrorException("Error processing new recording", ex);
+            //    }
+            //}
         }
 
         private void SaveNfo(TimerInfo timer, string recordingPath, string seriesPath)

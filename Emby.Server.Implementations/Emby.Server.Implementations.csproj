@@ -13,7 +13,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile75</TargetFrameworkProfile>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -52,6 +52,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
@@ -60,18 +61,112 @@
     <Compile Include="Channels\ChannelPostScanTask.cs" />
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
+    <Compile Include="Dto\DtoService.cs" />
+    <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
+    <Compile Include="FileOrganization\Extensions.cs" />
+    <Compile Include="FileOrganization\FileOrganizationNotifier.cs" />
+    <Compile Include="FileOrganization\FileOrganizationService.cs" />
+    <Compile Include="FileOrganization\NameUtils.cs" />
+    <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
+    <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
+    <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
+    <Compile Include="Library\LibraryManager.cs" />
+    <Compile Include="Library\LocalTrailerPostScanTask.cs" />
+    <Compile Include="Library\MediaSourceManager.cs" />
+    <Compile Include="Library\MusicManager.cs" />
+    <Compile Include="Library\PathExtensions.cs" />
+    <Compile Include="Library\ResolverHelper.cs" />
+    <Compile Include="Library\Resolvers\Audio\AudioResolver.cs" />
+    <Compile Include="Library\Resolvers\Audio\MusicAlbumResolver.cs" />
+    <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
+    <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
+    <Compile Include="Library\Resolvers\FolderResolver.cs" />
+    <Compile Include="Library\Resolvers\ItemResolver.cs" />
+    <Compile Include="Library\Resolvers\Movies\BoxSetResolver.cs" />
+    <Compile Include="Library\Resolvers\Movies\MovieResolver.cs" />
+    <Compile Include="Library\Resolvers\PhotoAlbumResolver.cs" />
+    <Compile Include="Library\Resolvers\PhotoResolver.cs" />
+    <Compile Include="Library\Resolvers\PlaylistResolver.cs" />
+    <Compile Include="Library\Resolvers\SpecialFolderResolver.cs" />
+    <Compile Include="Library\Resolvers\TV\EpisodeResolver.cs" />
+    <Compile Include="Library\Resolvers\TV\SeasonResolver.cs" />
+    <Compile Include="Library\Resolvers\TV\SeriesResolver.cs" />
+    <Compile Include="Library\Resolvers\VideoResolver.cs" />
+    <Compile Include="Library\SearchEngine.cs" />
+    <Compile Include="Library\UserViewManager.cs" />
+    <Compile Include="Library\Validators\ArtistsPostScanTask.cs" />
+    <Compile Include="Library\Validators\ArtistsValidator.cs" />
+    <Compile Include="Library\Validators\GameGenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\GameGenresValidator.cs" />
+    <Compile Include="Library\Validators\GenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\GenresValidator.cs" />
+    <Compile Include="Library\Validators\MusicGenresPostScanTask.cs" />
+    <Compile Include="Library\Validators\MusicGenresValidator.cs" />
+    <Compile Include="Library\Validators\PeopleValidator.cs" />
+    <Compile Include="Library\Validators\StudiosPostScanTask.cs" />
+    <Compile Include="Library\Validators\StudiosValidator.cs" />
+    <Compile Include="Library\Validators\YearsPostScanTask.cs" />
+    <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="News\NewsService.cs" />
+    <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
     <Compile Include="Playlists\PlaylistManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
     <Compile Include="ScheduledTasks\PluginUpdateTask.cs" />
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
+    <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
+    <Compile Include="Sorting\AirTimeComparer.cs" />
+    <Compile Include="Sorting\AlbumArtistComparer.cs" />
+    <Compile Include="Sorting\AlbumComparer.cs" />
+    <Compile Include="Sorting\AlphanumComparator.cs" />
+    <Compile Include="Sorting\ArtistComparer.cs" />
+    <Compile Include="Sorting\BudgetComparer.cs" />
+    <Compile Include="Sorting\CommunityRatingComparer.cs" />
+    <Compile Include="Sorting\CriticRatingComparer.cs" />
+    <Compile Include="Sorting\DateCreatedComparer.cs" />
+    <Compile Include="Sorting\DateLastMediaAddedComparer.cs" />
+    <Compile Include="Sorting\DatePlayedComparer.cs" />
+    <Compile Include="Sorting\GameSystemComparer.cs" />
+    <Compile Include="Sorting\IsFavoriteOrLikeComparer.cs" />
+    <Compile Include="Sorting\IsFolderComparer.cs" />
+    <Compile Include="Sorting\IsPlayedComparer.cs" />
+    <Compile Include="Sorting\IsUnplayedComparer.cs" />
+    <Compile Include="Sorting\MetascoreComparer.cs" />
+    <Compile Include="Sorting\NameComparer.cs" />
+    <Compile Include="Sorting\OfficialRatingComparer.cs" />
+    <Compile Include="Sorting\PlayCountComparer.cs" />
+    <Compile Include="Sorting\PlayersComparer.cs" />
+    <Compile Include="Sorting\PremiereDateComparer.cs" />
+    <Compile Include="Sorting\ProductionYearComparer.cs" />
+    <Compile Include="Sorting\RandomComparer.cs" />
+    <Compile Include="Sorting\RevenueComparer.cs" />
+    <Compile Include="Sorting\RuntimeComparer.cs" />
+    <Compile Include="Sorting\SeriesSortNameComparer.cs" />
+    <Compile Include="Sorting\SortNameComparer.cs" />
+    <Compile Include="Sorting\StartDateComparer.cs" />
+    <Compile Include="Sorting\StudioComparer.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6146.28476, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.57\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Patterns.Logging, Version=1.0.6149.1756, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.4\lib\portable-net45+dnxcore50+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IO\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
