@@ -6,19 +6,17 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.Photos;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
+using Emby.Server.Implementations.Images;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Server.Implementations.UserViews
+namespace Emby.Server.Implementations.UserViews
 {
     public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {

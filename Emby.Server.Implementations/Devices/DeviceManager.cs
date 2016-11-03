@@ -21,7 +21,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.IO;
 
-namespace MediaBrowser.Server.Implementations.Devices
+namespace Emby.Server.Implementations.Devices
 {
     public class DeviceManager : IDeviceManager
     {

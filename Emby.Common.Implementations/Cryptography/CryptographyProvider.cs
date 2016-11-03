@@ -19,6 +19,15 @@ namespace Emby.Common.Implementations.Cryptography
                 return provider.ComputeHash(Encoding.Unicode.GetBytes(str));
             }
         }
+
+        public byte[] GetSHA1Bytes(byte[] bytes)
+        {
+            using (var provider = SHA1.Create())
+            {
+                return provider.ComputeHash(bytes);
+            }
+        }
+
         public byte[] GetMD5Bytes(Stream str)
         {
             using (var provider = MD5.Create())

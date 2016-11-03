@@ -23,15 +23,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Library
+namespace Emby.Server.Implementations.Library
 {
     /// <summary>
     /// Class UserManager
@@ -72,8 +70,10 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly Func<IConnectManager> _connectFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
+        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly string _defaultUserName;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider, string defaultUserName)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -85,6 +85,8 @@ namespace MediaBrowser.Server.Implementations.Library
             _appHost = appHost;
             _jsonSerializer = jsonSerializer;
             _fileSystem = fileSystem;
+            _cryptographyProvider = cryptographyProvider;
+            _defaultUserName = defaultUserName;
             ConfigurationManager = configurationManager;
             Users = new List<User>();
 
@@ -188,7 +190,14 @@ namespace MediaBrowser.Server.Implementations.Library
         public bool IsValidUsername(string username)
         {
             // Usernames can contain letters (a-z), numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)
-            return username.All(IsValidUsernameCharacter);
+            foreach (var currentChar in username)
+            {
+                if (!IsValidUsernameCharacter(currentChar))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private bool IsValidUsernameCharacter(char i)
@@ -273,8 +282,8 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 user.Policy.InvalidLoginAttemptCount = newValue;
 
-                var maxCount = user.Policy.IsAdministrator ? 
-                    3 : 
+                var maxCount = user.Policy.IsAdministrator ?
+                    3 :
                     5;
 
                 var fireLockout = false;
@@ -323,13 +332,9 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns>System.String.</returns>
-        private static string GetSha1String(string str)
+        private string GetSha1String(string str)
         {
-            using (var provider = SHA1.Create())
-            {
-                var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(str));
-                return BitConverter.ToString(hash).Replace("-", string.Empty);
-            }
+            return BitConverter.ToString(_cryptographyProvider.GetSHA1Bytes(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
         }
 
         /// <summary>
@@ -343,7 +348,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // There always has to be at least one user.
             if (users.Count == 0)
             {
-                var name = MakeValidUsername(Environment.UserName);
+                var name = MakeValidUsername(_defaultUserName);
 
                 var user = InstantiateNewUser(name);
 
@@ -741,9 +746,12 @@ namespace MediaBrowser.Server.Implementations.Library
             text.AppendLine(string.Empty);
             text.AppendLine(pin);
             text.AppendLine(string.Empty);
-            text.AppendLine("The pin code will expire at " + expiration.ToLocalTime().ToShortDateString() + " " + expiration.ToLocalTime().ToShortTimeString());
 
-			_fileSystem.WriteAllText(path, text.ToString(), Encoding.UTF8);
+            var localExpirationTime = expiration.ToLocalTime();
+            // Tuesday, 22 August 2006 06:30 AM
+            text.AppendLine("The pin code will expire at " + localExpirationTime.ToString("f1", CultureInfo.CurrentCulture));
+
+            _fileSystem.WriteAllText(path, text.ToString(), Encoding.UTF8);
 
             var result = new PasswordPinCreationResult
             {
@@ -875,11 +883,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     return (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), path);
                 }
             }
-            catch (DirectoryNotFoundException)
+            catch (FileNotFoundException)
             {
                 return GetDefaultPolicy(user);
             }
-            catch (FileNotFoundException)
+            catch (IOException)
             {
                 return GetDefaultPolicy(user);
             }
@@ -917,7 +925,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var path = GetPolifyFilePath(user);
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_policySyncLock)
             {
@@ -970,11 +978,11 @@ namespace MediaBrowser.Server.Implementations.Library
                     return (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), path);
                 }
             }
-            catch (DirectoryNotFoundException)
+            catch (FileNotFoundException)
             {
                 return new UserConfiguration();
             }
-            catch (FileNotFoundException)
+            catch (IOException)
             {
                 return new UserConfiguration();
             }
@@ -1004,7 +1012,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 config = _jsonSerializer.DeserializeFromString<UserConfiguration>(json);
             }
 
-			_fileSystem.CreateDirectory(Path.GetDirectoryName(path));
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
             lock (_configSyncLock)
             {

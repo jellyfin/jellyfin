@@ -6,16 +6,14 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.Photos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
+using Emby.Server.Implementations.Images;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Extensions;
 
-namespace MediaBrowser.Server.Implementations.Collections
+namespace Emby.Server.Implementations.Collections
 {
     public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>
     {

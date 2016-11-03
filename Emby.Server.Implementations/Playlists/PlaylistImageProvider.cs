@@ -6,10 +6,10 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.Photos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -17,7 +17,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Server.Implementations.Playlists
+namespace Emby.Server.Implementations.Playlists
 {
     public class PlaylistImageProvider : BaseDynamicImageProvider<Playlist>
     {

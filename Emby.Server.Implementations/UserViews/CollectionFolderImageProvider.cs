@@ -5,12 +5,12 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.Photos;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Collections;
@@ -20,7 +20,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Server.Implementations.UserViews
+namespace Emby.Server.Implementations.UserViews
 {
     public class CollectionFolderImageProvider : BaseDynamicImageProvider<CollectionFolder>
     {

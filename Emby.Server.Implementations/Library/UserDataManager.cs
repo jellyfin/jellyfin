@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Library
+namespace Emby.Server.Implementations.Library
 {
     /// <summary>
     /// Class UserDataManager
