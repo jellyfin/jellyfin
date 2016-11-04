@@ -159,6 +159,9 @@
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\MBLicenseFile.cs" />
+    <Compile Include="Security\PluginSecurityManager.cs" />
+    <Compile Include="Security\RegRecord.cs" />
     <Compile Include="ServerManager\ServerManager.cs" />
     <Compile Include="ServerManager\WebSocketConnection.cs" />
     <Compile Include="Session\HttpSessionController.cs" />
