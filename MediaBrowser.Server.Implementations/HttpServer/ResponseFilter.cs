@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
-using ServiceStack.Web;
 using System;
 using System.Globalization;
 using System.Net;

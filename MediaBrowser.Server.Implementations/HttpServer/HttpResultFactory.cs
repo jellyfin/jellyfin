@@ -9,14 +9,12 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using ServiceStack;
-using ServiceStack.Web;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
+using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
