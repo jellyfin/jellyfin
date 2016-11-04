@@ -16,7 +16,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.IO
+namespace Emby.Server.Implementations.IO
 {
     public class FileRefresher : IDisposable
     {
@@ -226,11 +226,11 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private bool IsFileLocked(string path)
         {
-            if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            {
-                // Causing lockups on linux
-                return false;
-            }
+            //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
+            //{
+            //    // Causing lockups on linux
+            //    return false;
+            //}
 
             try
             {

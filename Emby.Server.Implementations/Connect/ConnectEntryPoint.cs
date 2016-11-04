@@ -7,16 +7,12 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.IO;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Threading;
 
-namespace MediaBrowser.Server.Implementations.Connect
+namespace Emby.Server.Implementations.Connect
 {
     public class ConnectEntryPoint : IServerEntryPoint
     {
@@ -59,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private async void TimerCallback(object state)
         {
-            IPAddress validIpAddress = null;
+            IpAddressInfo validIpAddress = null;
 
             foreach (var ipLookupUrl in _ipLookups)
             {
@@ -68,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                     validIpAddress = await GetIpAddress(ipLookupUrl).ConfigureAwait(false);
 
                     // Try to find the ipv4 address, if present
-                    if (validIpAddress.AddressFamily == AddressFamily.InterNetwork)
+                    if (!validIpAddress.IsIpv6)
                     {
                         break;
                     }
@@ -83,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
 
             // If this produced an ipv6 address, try again
-            if (validIpAddress != null && validIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
+            if (validIpAddress != null && validIpAddress.IsIpv6)
             {
                 foreach (var ipLookupUrl in _ipLookups)
                 {
@@ -92,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                         var newAddress = await GetIpAddress(ipLookupUrl, true).ConfigureAwait(false);
 
                         // Try to find the ipv4 address, if present
-                        if (newAddress.AddressFamily == AddressFamily.InterNetwork)
+                        if (!newAddress.IsIpv6)
                         {
                             validIpAddress = newAddress;
                             break;
@@ -115,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
         }
 
-        private async Task<IPAddress> GetIpAddress(string lookupUrl, bool preferIpv4 = false)
+        private async Task<IpAddressInfo> GetIpAddress(string lookupUrl, bool preferIpv4 = false)
         {
             // Sometimes whatismyipaddress might fail, but it won't do us any good having users raise alarms over it.
             var logErrors = false;
@@ -140,7 +136,7 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     var addressString = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    return IPAddress.Parse(addressString);
+                    return _networkManager.ParseIpAddress(addressString);
                 }
             }
         }
@@ -150,7 +146,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             get { return Path.Combine(_appPaths.DataPath, "wan.txt"); }
         }
 
-        private void CacheAddress(IPAddress address)
+        private void CacheAddress(IpAddressInfo address)
         {
             var path = CacheFilePath;
 
@@ -174,9 +170,9 @@ namespace MediaBrowser.Server.Implementations.Connect
             try
             {
                 var endpoint = _fileSystem.ReadAllText(path, Encoding.UTF8);
-                IPAddress ipAddress;
+                IpAddressInfo ipAddress;
 
-                if (IPAddress.TryParse(endpoint, out ipAddress))
+                if (_networkManager.TryParseIpAddress(endpoint, out ipAddress))
                 {
                     ((ConnectManager)_connectManager).OnWanAddressResolved(ipAddress);
                 }

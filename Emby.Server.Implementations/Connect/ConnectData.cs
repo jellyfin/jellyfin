@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Server.Implementations.Connect
+namespace Emby.Server.Implementations.Connect
 {
     public class ConnectData
     {
