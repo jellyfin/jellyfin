@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 
-namespace MediaBrowser.Server.Implementations.Connect
+namespace Emby.Server.Implementations.Connect
 {
     public class ServerRegistrationResponse
     {

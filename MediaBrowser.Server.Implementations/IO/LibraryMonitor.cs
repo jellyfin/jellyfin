@@ -10,13 +10,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
-using Microsoft.Win32;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
@@ -142,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory)
+        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory, ISystemEvents systemEvents)
         {
             if (taskManager == null)
             {
@@ -156,15 +157,10 @@ namespace MediaBrowser.Server.Implementations.IO
             _fileSystem = fileSystem;
             _timerFactory = timerFactory;
 
-            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            systemEvents.Resume += _systemEvents_Resume;
         }
 
-        /// <summary>
-        /// Handles the PowerModeChanged event of the SystemEvents control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="PowerModeChangedEventArgs"/> instance containing the event data.</param>
-        void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        private void _systemEvents_Resume(object sender, EventArgs e)
         {
             Restart();
         }

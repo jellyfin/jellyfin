@@ -8,6 +8,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Common.Implementations.Networking
 {
@@ -381,6 +382,36 @@ namespace Emby.Common.Implementations.Networking
                 throw new ArgumentException(String.Format("Host not found: {0}", p));
 
             return hosts[0];
+        }
+
+        public IpAddressInfo ParseIpAddress(string ipAddress)
+        {
+            IpAddressInfo info;
+            if (TryParseIpAddress(ipAddress, out info))
+            {
+                return info;
+            }
+
+            throw new ArgumentException("Invalid ip address: " + ipAddress);
+        }
+
+        public bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo)
+        {
+            IPAddress address;
+            if (IPAddress.TryParse(ipAddress, out address))
+            {
+
+                ipAddressInfo = new IpAddressInfo
+                {
+                    Address = address.ToString(),
+                    IsIpv6 = address.AddressFamily == AddressFamily.InterNetworkV6
+                };
+
+                return true;
+            }
+
+            ipAddressInfo = null;
+            return false;
         }
     }
 }

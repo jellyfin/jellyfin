@@ -260,7 +260,7 @@ namespace Rssdp.Infrastructure
             var socket = _SendSocket;
             if (socket != null)
             {
-                await _SendSocket.SendTo(messageData, destination).ConfigureAwait(false);
+                await _SendSocket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
             }
             else
             {
@@ -290,7 +290,7 @@ namespace Rssdp.Infrastructure
 
         private IUdpSocket CreateSocketAndListenForResponsesAsync()
         {
-            _SendSocket = _SocketFactory.CreateUdpSocket(_LocalPort);
+            _SendSocket = _SocketFactory.CreateSsdpUdpSocket(_LocalPort);
 
             ListenToSocket(_SendSocket);
 
@@ -316,7 +316,7 @@ namespace Rssdp.Infrastructure
                             // Strange cannot convert compiler error here if I don't explicitly
                             // assign or cast to Action first. Assignment is easier to read,
                             // so went with that.
-                            Action processWork = () => ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.ReceivedFrom);
+                            Action processWork = () => ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint);
                             var processTask = Task.Run(processWork);
                         }
                     }

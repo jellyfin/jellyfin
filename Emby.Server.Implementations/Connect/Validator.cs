@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MediaBrowser.Server.Implementations.Connect
+namespace Emby.Server.Implementations.Connect
 {
     public static class Validator
     {

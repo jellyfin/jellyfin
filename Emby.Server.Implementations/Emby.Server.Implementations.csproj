@@ -43,6 +43,11 @@
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
+    <Compile Include="Connect\ConnectData.cs" />
+    <Compile Include="Connect\ConnectEntryPoint.cs" />
+    <Compile Include="Connect\ConnectManager.cs" />
+    <Compile Include="Connect\Responses.cs" />
+    <Compile Include="Connect\Validator.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
@@ -51,6 +56,7 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
+    <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
@@ -68,6 +74,7 @@
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
+    <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
@@ -159,6 +166,7 @@
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
@@ -217,6 +225,7 @@
     <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
+    <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />

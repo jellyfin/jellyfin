@@ -19,16 +19,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 
-namespace MediaBrowser.Server.Implementations.Connect
+namespace Emby.Server.Implementations.Connect
 {
     public class ConnectManager : IConnectManager
     {
@@ -57,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             get { return _data.AccessKey; }
         }
 
-        private IPAddress DiscoveredWanIpAddress { get; set; }
+        private IpAddressInfo DiscoveredWanIpAddress { get; set; }
 
         public string WanIpAddress
         {
@@ -77,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (string.IsNullOrWhiteSpace(address) && DiscoveredWanIpAddress != null)
                 {
-                    if (DiscoveredWanIpAddress.AddressFamily == AddressFamily.InterNetworkV6)
+                    if (DiscoveredWanIpAddress.IsIpv6)
                     {
                         address = "[" + DiscoveredWanIpAddress + "]";
                     }
@@ -148,7 +145,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _config.ConfigurationUpdated += _config_ConfigurationUpdated;
         }
 
-        internal void OnWanAddressResolved(IPAddress address)
+        internal void OnWanAddressResolved(IpAddressInfo address)
         {
             DiscoveredWanIpAddress = address;
 

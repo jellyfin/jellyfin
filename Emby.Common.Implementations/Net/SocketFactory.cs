@@ -37,10 +37,9 @@ namespace Emby.Common.Implementations.Net
         #region ISocketFactory Members
 
         /// <summary>
-        /// Creates a new UDP socket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// Creates a new UDP socket and binds it to the specified local port.
         /// </summary>
         /// <param name="localPort">An integer specifying the local port to bind the socket to.</param>
-        /// <returns>An implementation of the <see cref="IUdpSocket"/> interface used by RSSDP components to perform socket operations.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The purpose of this method is to create and returns a disposable result, it is up to the caller to dispose it when they are done with it.")]
         public IUdpSocket CreateUdpSocket(int localPort)
         {
@@ -50,9 +49,34 @@ namespace Emby.Common.Implementations.Net
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                return new UdpSocket(retVal, localPort, _LocalIP);
+            }
+            catch
+            {
+                if (retVal != null)
+                    retVal.Dispose();
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new UDP socket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// </summary>
+        /// <param name="localPort">An integer specifying the local port to bind the socket to.</param>
+        /// <returns>An implementation of the <see cref="IUdpSocket"/> interface used by RSSDP components to perform socket operations.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The purpose of this method is to create and returns a disposable result, it is up to the caller to dispose it when they are done with it.")]
+        public IUdpSocket CreateSsdpUdpSocket(int localPort)
+        {
+            if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
+
+            var retVal = new Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
+            try
+            {
+                retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), _LocalIP));
-                return new UdpSocket(retVal, localPort, _LocalIP.ToString());
+                return new UdpSocket(retVal, localPort, _LocalIP);
             }
             catch
             {
@@ -97,7 +121,7 @@ namespace Emby.Common.Implementations.Net
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse(ipAddress), _LocalIP));
                 retVal.MulticastLoopback = true;
 
-                return new UdpSocket(retVal, localPort, _LocalIP.ToString());
+                return new UdpSocket(retVal, localPort, _LocalIP);
             }
             catch
             {
