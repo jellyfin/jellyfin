@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 
 namespace Rssdp.Infrastructure
 {
@@ -24,7 +26,8 @@ namespace Rssdp.Infrastructure
         private IList<SsdpRootDevice> _Devices;
         private ReadOnlyEnumerable<SsdpRootDevice> _ReadOnlyDevices;
 
-        private System.Threading.Timer _RebroadcastAliveNotificationsTimer;
+        private ITimer _RebroadcastAliveNotificationsTimer;
+        private ITimerFactory _timerFactory;
         //private TimeSpan _RebroadcastAliveNotificationsTimeSpan;
         private DateTime _LastNotificationTime;
 
@@ -47,10 +50,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="communicationsServer">The <see cref="ISsdpCommunicationsServer"/> implementation, used to send and receive SSDP network messages.</param>
-        /// <param name="osName">Then name of the operating system running the server.</param>
-        /// <param name="osVersion">The version of the operating system running the server.</param>
-        protected SsdpDevicePublisherBase(ISsdpCommunicationsServer communicationsServer, string osName, string osVersion)
+        protected SsdpDevicePublisherBase(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory, string osName, string osVersion)
         {
             if (communicationsServer == null) throw new ArgumentNullException("communicationsServer");
             if (osName == null) throw new ArgumentNullException("osName");
@@ -59,6 +59,7 @@ namespace Rssdp.Infrastructure
             if (osVersion.Length == 0) throw new ArgumentException("osVersion cannot be an empty string.", "osName");
 
             _SupportPnpRootDevice = true;
+            _timerFactory = timerFactory;
             _Devices = new List<SsdpRootDevice>();
             _ReadOnlyDevices = new ReadOnlyEnumerable<SsdpRootDevice>(_Devices);
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
@@ -234,7 +235,7 @@ namespace Rssdp.Infrastructure
 
         #region Search Related Methods
 
-        private void ProcessSearchRequest(string mx, string searchTarget, UdpEndPoint endPoint)
+        private void ProcessSearchRequest(string mx, string searchTarget, IpEndPointInfo endPoint)
         {
             if (String.IsNullOrEmpty(searchTarget))
             {
@@ -305,7 +306,7 @@ namespace Rssdp.Infrastructure
             return _Devices.Union(_Devices.SelectManyRecursive<SsdpDevice>((d) => d.Devices));
         }
 
-        private void SendDeviceSearchResponses(SsdpDevice device, UdpEndPoint endPoint)
+        private void SendDeviceSearchResponses(SsdpDevice device, IpEndPointInfo endPoint)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
@@ -325,7 +326,7 @@ namespace Rssdp.Infrastructure
             return String.Format("{0}::{1}", udn, fullDeviceType);
         }
 
-        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, UdpEndPoint endPoint)
+        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, IpEndPointInfo endPoint)
         {
             var rootDevice = device.ToRootDevice();
 
@@ -357,7 +358,7 @@ namespace Rssdp.Infrastructure
             WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
         }
 
-        private bool IsDuplicateSearchRequest(string searchTarget, UdpEndPoint endPoint)
+        private bool IsDuplicateSearchRequest(string searchTarget, IpEndPointInfo endPoint)
         {
             var isDuplicateRequest = false;
 
@@ -590,7 +591,7 @@ namespace Rssdp.Infrastructure
             }
 
             //_RebroadcastAliveNotificationsTimeSpan = rebroadCastInterval;
-            _RebroadcastAliveNotificationsTimer = new System.Threading.Timer(SendAllAliveNotifications, null, nextBroadcastInterval, rebroadCastInterval);
+            _RebroadcastAliveNotificationsTimer = _timerFactory.Create(SendAllAliveNotifications, null, nextBroadcastInterval, rebroadCastInterval);
 
             WriteTrace(String.Format("Rebroadcast Interval = {0}, Next Broadcast At = {1}", rebroadCastInterval.ToString(), nextBroadcastInterval.ToString()));
         }
@@ -704,7 +705,7 @@ namespace Rssdp.Infrastructure
 
         private class SearchRequest
         {
-            public UdpEndPoint EndPoint { get; set; }
+            public IpEndPointInfo EndPoint { get; set; }
             public DateTime Received { get; set; }
             public string SearchTarget { get; set; }
 

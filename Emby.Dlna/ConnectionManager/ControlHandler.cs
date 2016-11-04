@@ -6,18 +6,13 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.ConnectionManager
 {
     public class ControlHandler : BaseControlHandler
     {
         private readonly DeviceProfile _profile;
-
-        public ControlHandler(ILogger logger, DeviceProfile profile, IServerConfigurationManager config)
-            : base(config, logger)
-        {
-            _profile = profile;
-        }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
         {
@@ -36,6 +31,11 @@ namespace Emby.Dlna.ConnectionManager
                 { "Source", _profile.ProtocolInfo },
                 { "Sink", "" }
             };
+        }
+
+        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory, DeviceProfile profile) : base(config, logger, xmlReaderSettingsFactory)
+        {
+            _profile = profile;
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -29,6 +30,7 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IUserViewManager _userViewManager;
         private readonly Func<IMediaEncoder> _mediaEncoder;
+        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
         public ContentDirectory(IDlnaManager dlna,
             IUserDataManager userDataManager,
@@ -37,7 +39,7 @@ namespace Emby.Dlna.ContentDirectory
             IServerConfigurationManager config,
             IUserManager userManager,
             ILogger logger,
-            IHttpClient httpClient, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, Func<IMediaEncoder> mediaEncoder)
+            IHttpClient httpClient, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, Func<IMediaEncoder> mediaEncoder, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
             : base(logger, httpClient)
         {
             _dlna = dlna;
@@ -51,6 +53,7 @@ namespace Emby.Dlna.ContentDirectory
             _mediaSourceManager = mediaSourceManager;
             _userViewManager = userViewManager;
             _mediaEncoder = mediaEncoder;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         private int SystemUpdateId
@@ -93,7 +96,8 @@ namespace Emby.Dlna.ContentDirectory
                 _channelManager,
                 _mediaSourceManager,
                 _userViewManager,
-                _mediaEncoder())
+                _mediaEncoder(),
+                XmlReaderSettingsFactory)
                 .ProcessControlRequest(request);
         }
 

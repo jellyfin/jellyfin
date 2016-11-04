@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace Rssdp.Infrastructure
 {
@@ -24,7 +25,8 @@ namespace Rssdp.Infrastructure
         private IList<DiscoveredSsdpDevice> _SearchResults;
         private object _SearchResultsSynchroniser;
 
-        private System.Threading.Timer _ExpireCachedDevicesTimer;
+        private ITimer _ExpireCachedDevicesTimer;
+        private ITimerFactory _timerFactory;
 
         private const string HttpURequestMessageFormat = @"{0} * HTTP/1.1
 HOST: {1}:{2}
@@ -44,12 +46,12 @@ ST: {4}
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="communicationsServer">The <see cref="ISsdpCommunicationsServer"/> implementation to use for network communications.</param>
-        protected SsdpDeviceLocatorBase(ISsdpCommunicationsServer communicationsServer)
+        protected SsdpDeviceLocatorBase(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory)
         {
             if (communicationsServer == null) throw new ArgumentNullException("communicationsServer");
 
             _CommunicationsServer = communicationsServer;
+            _timerFactory = timerFactory;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
             _SearchResultsSynchroniser = new object();
@@ -521,7 +523,7 @@ ST: {4}
             if (IsDisposed) return;
 
             if (_ExpireCachedDevicesTimer == null)
-                _ExpireCachedDevicesTimer = new Timer(this.ExpireCachedDevices, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _ExpireCachedDevicesTimer = _timerFactory.Create(this.ExpireCachedDevices, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
 
             _ExpireCachedDevicesTimer.Change(60000, System.Threading.Timeout.Infinite);
         }

@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{805844AB-E92F-45E6-9D99-4F6D48D129A5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Emby.Dlna</RootNamespace>
+    <AssemblyName>Emby.Dlna</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <EmbeddedResource Include="Profiles\Json\BubbleUPnp.json" />
+    <EmbeddedResource Include="Profiles\Json\Default.json" />
+    <EmbeddedResource Include="Profiles\Json\Denon AVR.json" />
+    <EmbeddedResource Include="Profiles\Json\DirecTV HD-DVR.json" />
+    <EmbeddedResource Include="Profiles\Json\Dish Hopper-Joey.json" />
+    <EmbeddedResource Include="Profiles\Json\foobar2000.json" />
+    <EmbeddedResource Include="Profiles\Json\Kodi.json" />
+    <EmbeddedResource Include="Profiles\Json\LG Smart TV.json" />
+    <EmbeddedResource Include="Profiles\Json\Linksys DMA2100.json" />
+    <EmbeddedResource Include="Profiles\Json\MediaMonkey.json" />
+    <EmbeddedResource Include="Profiles\Json\Panasonic Viera.json" />
+    <EmbeddedResource Include="Profiles\Json\Popcorn Hour.json" />
+    <EmbeddedResource Include="Profiles\Json\Samsung Smart TV.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2013.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2014.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2015.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2016.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282010%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282011%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282012%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282013%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282014%29.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 3.json" />
+    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 4.json" />
+    <EmbeddedResource Include="Profiles\Json\Vlc.json" />
+    <EmbeddedResource Include="Profiles\Json\WDTV Live.json" />
+    <EmbeddedResource Include="Profiles\Json\Xbox 360.json" />
+    <EmbeddedResource Include="Profiles\Json\Xbox One.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\Argument.cs" />
+    <Compile Include="Common\DeviceIcon.cs" />
+    <Compile Include="Common\DeviceService.cs" />
+    <Compile Include="Common\ServiceAction.cs" />
+    <Compile Include="Common\StateVariable.cs" />
+    <Compile Include="ConfigurationExtension.cs" />
+    <Compile Include="ConnectionManager\ConnectionManager.cs" />
+    <Compile Include="ConnectionManager\ConnectionManagerXmlBuilder.cs" />
+    <Compile Include="ConnectionManager\ControlHandler.cs" />
+    <Compile Include="ConnectionManager\ServiceActionListBuilder.cs" />
+    <Compile Include="ContentDirectory\ContentDirectory.cs" />
+    <Compile Include="ContentDirectory\ContentDirectoryBrowser.cs" />
+    <Compile Include="ContentDirectory\ContentDirectoryXmlBuilder.cs" />
+    <Compile Include="ContentDirectory\ControlHandler.cs" />
+    <Compile Include="ContentDirectory\ServiceActionListBuilder.cs" />
+    <Compile Include="Didl\DidlBuilder.cs" />
+    <Compile Include="Didl\Filter.cs" />
+    <Compile Include="Didl\StringWriterWithEncoding.cs" />
+    <Compile Include="DlnaManager.cs" />
+    <Compile Include="Eventing\EventManager.cs" />
+    <Compile Include="Eventing\EventSubscription.cs" />
+    <Compile Include="Main\DlnaEntryPoint.cs" />
+    <Compile Include="MediaReceiverRegistrar\ControlHandler.cs" />
+    <Compile Include="MediaReceiverRegistrar\MediaReceiverRegistrar.cs" />
+    <Compile Include="MediaReceiverRegistrar\MediaReceiverRegistrarXmlBuilder.cs" />
+    <Compile Include="MediaReceiverRegistrar\ServiceActionListBuilder.cs" />
+    <Compile Include="PlayTo\CurrentIdEventArgs.cs" />
+    <Compile Include="PlayTo\Device.cs" />
+    <Compile Include="PlayTo\DeviceInfo.cs" />
+    <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
+    <Compile Include="PlayTo\PlaybackStartEventArgs.cs" />
+    <Compile Include="PlayTo\PlaybackStoppedEventArgs.cs" />
+    <Compile Include="PlayTo\PlaylistItem.cs" />
+    <Compile Include="PlayTo\PlaylistItemFactory.cs" />
+    <Compile Include="PlayTo\PlayToController.cs" />
+    <Compile Include="PlayTo\PlayToManager.cs" />
+    <Compile Include="PlayTo\SsdpHttpClient.cs" />
+    <Compile Include="PlayTo\TransportCommands.cs" />
+    <Compile Include="PlayTo\TRANSPORTSTATE.cs" />
+    <Compile Include="PlayTo\TransportStateEventArgs.cs" />
+    <Compile Include="PlayTo\uBaseObject.cs" />
+    <Compile Include="PlayTo\uParser.cs" />
+    <Compile Include="PlayTo\uParserObject.cs" />
+    <Compile Include="PlayTo\UpnpContainer.cs" />
+    <Compile Include="PlayTo\uPnpNamespaces.cs" />
+    <Compile Include="ProfileSerialization\CodecProfile.cs" />
+    <Compile Include="ProfileSerialization\ContainerProfile.cs" />
+    <Compile Include="ProfileSerialization\DeviceProfile.cs" />
+    <Compile Include="ProfileSerialization\DirectPlayProfile.cs" />
+    <Compile Include="ProfileSerialization\HttpHeaderInfo.cs" />
+    <Compile Include="ProfileSerialization\ProfileCondition.cs" />
+    <Compile Include="ProfileSerialization\ResponseProfile.cs" />
+    <Compile Include="ProfileSerialization\SubtitleProfile.cs" />
+    <Compile Include="ProfileSerialization\TranscodingProfile.cs" />
+    <Compile Include="ProfileSerialization\XmlAttribute.cs" />
+    <Compile Include="Profiles\BubbleUpnpProfile.cs" />
+    <Compile Include="Profiles\DefaultProfile.cs" />
+    <Compile Include="Profiles\DenonAvrProfile.cs" />
+    <Compile Include="Profiles\DirectTvProfile.cs" />
+    <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
+    <Compile Include="Profiles\Foobar2000Profile.cs" />
+    <Compile Include="Profiles\KodiProfile.cs" />
+    <Compile Include="Profiles\LgTvProfile.cs" />
+    <Compile Include="Profiles\LinksysDMA2100Profile.cs" />
+    <Compile Include="Profiles\MediaMonkeyProfile.cs" />
+    <Compile Include="Profiles\PanasonicVieraProfile.cs" />
+    <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\SamsungSmartTvProfile.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2013.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2014.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2015.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayer2016.cs" />
+    <Compile Include="Profiles\SonyBlurayPlayerProfile.cs" />
+    <Compile Include="Profiles\SonyBravia2010Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2011Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2012Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2013Profile.cs" />
+    <Compile Include="Profiles\SonyBravia2014Profile.cs" />
+    <Compile Include="Profiles\SonyPs3Profile.cs" />
+    <Compile Include="Profiles\SonyPs4Profile.cs" />
+    <Compile Include="Profiles\VlcProfile.cs" />
+    <Compile Include="Profiles\WdtvLiveProfile.cs" />
+    <Compile Include="Profiles\Xbox360Profile.cs" />
+    <Compile Include="Profiles\XboxOneProfile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\DescriptionXmlBuilder.cs" />
+    <Compile Include="Server\Headers.cs" />
+    <Compile Include="Server\UpnpDevice.cs" />
+    <Compile Include="Service\BaseControlHandler.cs" />
+    <Compile Include="Service\BaseService.cs" />
+    <Compile Include="Service\ControlErrorHandler.cs" />
+    <Compile Include="Service\ServiceXmlBuilder.cs" />
+    <Compile Include="Ssdp\DeviceDiscovery.cs" />
+    <Compile Include="Ssdp\Extensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\logo120.jpg" />
+    <EmbeddedResource Include="Images\logo120.png" />
+    <EmbeddedResource Include="Images\logo240.jpg" />
+    <EmbeddedResource Include="Images\logo240.png" />
+    <EmbeddedResource Include="Images\logo48.jpg" />
+    <EmbeddedResource Include="Images\logo48.png" />
+    <EmbeddedResource Include="Images\people48.jpg" />
+    <EmbeddedResource Include="Images\people48.png" />
+    <EmbeddedResource Include="Images\people480.jpg" />
+    <EmbeddedResource Include="Images\people480.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
+      <Project>{17e1f4e6-8abd-4fe5-9ecf-43d4b6087ba2}</Project>
+      <Name>MediaBrowser.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
+      <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
+      <Name>MediaBrowser.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RSSDP\RSSDP.csproj">
+      <Project>{21002819-c39a-4d3e-be83-2a276a77fb1f}</Project>
+      <Name>RSSDP</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
