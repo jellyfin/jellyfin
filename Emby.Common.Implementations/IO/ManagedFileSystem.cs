@@ -641,6 +641,16 @@ namespace Emby.Common.Implementations.IO
             }).Where(i => i != null);
         }
 
+        public string[] ReadAllLines(string path)
+        {
+            return File.ReadAllLines(path);
+        }
+
+        public void WriteAllLines(string path, IEnumerable<string> lines)
+        {
+            File.WriteAllLines(path, lines);
+        }
+
         public Stream OpenRead(string path)
         {
             return File.OpenRead(path);

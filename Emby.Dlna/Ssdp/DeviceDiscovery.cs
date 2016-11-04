@@ -7,12 +7,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Rssdp;
 
 namespace Emby.Dlna.Ssdp
@@ -30,18 +31,23 @@ namespace Emby.Dlna.Ssdp
 
         private SsdpDeviceLocator _DeviceLocator;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config)
+        private readonly ITimerFactory _timerFactory;
+        private readonly ISocketFactory _socketFactory;
+
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, ISocketFactory socketFactory, ITimerFactory timerFactory)
         {
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
             _config = config;
+            _socketFactory = socketFactory;
+            _timerFactory = timerFactory;
         }
 
         // Call this method from somewhere in your code to start the search.
         public void BeginSearch()
         {
-            _DeviceLocator = new SsdpDeviceLocator();
+            _DeviceLocator = new SsdpDeviceLocator(_socketFactory, _timerFactory);
 
             // (Optional) Set the filter so we only see notifications for devices we care about 
             // (can be any search target value i.e device type, uuid value etc - any value that appears in the 

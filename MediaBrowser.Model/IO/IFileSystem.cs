@@ -276,6 +276,10 @@ namespace MediaBrowser.Model.IO
         /// <returns>System.String.</returns>
         string ReadAllText(string path, Encoding encoding);
 
+        string[] ReadAllLines(string path);
+
+        void WriteAllLines(string path, IEnumerable<string> lines);
+
         /// <summary>
         /// Gets the directory paths.
         /// </summary>

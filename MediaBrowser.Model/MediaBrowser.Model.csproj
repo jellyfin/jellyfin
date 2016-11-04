@@ -137,6 +137,10 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
+    <Compile Include="Net\IpEndPointInfo.cs" />
+    <Compile Include="Net\ISocketFactory.cs" />
+    <Compile Include="Net\IUdpSocket.cs" />
+    <Compile Include="Net\ReceivedUdpData.cs" />
     <Compile Include="TextEncoding\IEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />

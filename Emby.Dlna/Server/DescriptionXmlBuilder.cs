@@ -216,7 +216,17 @@ namespace Emby.Dlna.Server
                 return "Emby - " + _serverName;
             }
 
-            var characters = _serverName.Where(c => (char.IsLetterOrDigit(c) || c == '-')).ToArray();
+            var characterList = new List<char>();
+
+            foreach (var c in _serverName)
+            {
+                if (char.IsLetterOrDigit(c) || c == '-')
+                {
+                    characterList.Add(c);
+                }
+            }
+
+            var characters = characterList.ToArray();
 
             var serverName = new string(characters);
 

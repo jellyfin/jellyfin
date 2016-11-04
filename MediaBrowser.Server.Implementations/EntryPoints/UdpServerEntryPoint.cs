@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Udp;
-using System.Net.Sockets;
 
 namespace MediaBrowser.Server.Implementations.EntryPoints
 {
@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 UdpServer = udpServer;
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
                 _logger.ErrorException("Failed to start UDP Server", ex);
             }

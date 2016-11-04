@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Dlna.Server
 {
@@ -9,9 +10,9 @@ namespace Emby.Dlna.Server
         public readonly string Type;
         public readonly string USN;
         public readonly string Uuid;
-        public readonly IPAddress Address;
+        public readonly IpAddressInfo Address;
 
-        public UpnpDevice(string aUuid, string aType, Uri aDescriptor, IPAddress address)
+        public UpnpDevice(string aUuid, string aType, Uri aDescriptor, IpAddressInfo address)
         {
             Uuid = aUuid;
             Type = aType;

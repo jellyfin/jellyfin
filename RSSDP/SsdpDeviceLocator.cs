@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Rssdp.Infrastructure;
 
 namespace Rssdp
@@ -19,7 +21,7 @@ namespace Rssdp
 		/// Default constructor. Constructs a new instance using the default <see cref="ISsdpCommunicationsServer"/> and <see cref="ISocketFactory"/> implementations for this platform.
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification="Can't expose along exception paths here (exceptions should be very rare anyway, and probably fatal too) and we shouldn't dipose the items we pass to base in any other case.")]
-		public SsdpDeviceLocator() : base(new SsdpCommunicationsServer(new SocketFactory(null)))
+		public SsdpDeviceLocator(ISocketFactory socketFactory, ITimerFactory timerFacatory) : base(new SsdpCommunicationsServer(socketFactory), timerFacatory)
 		{
 			// This is not the problem you are looking for;
 			// Yes, this is poor man's dependency injection which some call an anti-pattern.
@@ -30,14 +32,5 @@ namespace Rssdp
 			// There is a constructor that takes a manually injected dependency anyway, so proper DI using
 			// a container or whatever can be done anyway.
 		}
-
-		/// <summary>
-		/// Full constructor. Constructs a new instance using the provided <see cref="ISsdpCommunicationsServer"/> implementation.
-		/// </summary>
-		public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
-			: base(communicationsServer)
-		{
-		}
-
 	}
 }

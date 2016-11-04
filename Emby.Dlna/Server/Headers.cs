@@ -11,7 +11,7 @@ namespace Emby.Dlna.Server
     {
         private readonly bool _asIs = false;
         private readonly Dictionary<string, string> _dict = new Dictionary<string, string>();
-        private readonly static Regex Validator = new Regex(@"^[a-z\d][a-z\d_.-]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly static Regex Validator = new Regex(@"^[a-z\d][a-z\d_.-]+$", RegexOptions.IgnoreCase);
 
         public Headers(bool asIs)
         {
@@ -40,13 +40,6 @@ namespace Emby.Dlna.Server
                     hb.AppendFormat("{0}: {1}\r\n", h.Key, h.Value);
                 }
                 return hb.ToString();
-            }
-        }
-        public Stream HeaderStream
-        {
-            get
-            {
-                return new MemoryStream(Encoding.ASCII.GetBytes(HeaderBlock));
             }
         }
         public bool IsReadOnly
