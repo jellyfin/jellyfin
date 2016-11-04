@@ -102,29 +102,10 @@ namespace Emby.Common.Implementations.Net
                     {
                         taskSource.TrySetException(ex);
                     }
-                    catch (ObjectDisposedException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
-                    catch (SecurityException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
+
                 }, null);
             }
-            catch (SocketException ex)
-            {
-                taskSource.TrySetException(ex);
-            }
-            catch (ObjectDisposedException ex)
-            {
-                taskSource.TrySetException(ex);
-            }
-            catch (SecurityException ex)
+            catch (Exception ex)
             {
                 taskSource.TrySetException(ex);
             }

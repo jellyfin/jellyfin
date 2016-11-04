@@ -124,9 +124,17 @@ namespace Emby.Server.Implementations.Security
                 //the rest of the lines should be pairs of features and timestamps
                 for (var i = 2; i < contents.Length; i = i + 2)
                 {
-                    var feat = Guid.Parse(contents[i]);
+                    var line = contents[i];
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        continue;
+                    }
 
-                    SetUpdateRecord(feat, new DateTime(Convert.ToInt64(contents[i + 1])));
+                    Guid feat;
+                    if (Guid.TryParse(line, out feat))
+                    {
+                        SetUpdateRecord(feat, new DateTime(Convert.ToInt64(contents[i + 1])));
+                    }
                 }
             }
         }

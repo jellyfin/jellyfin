@@ -240,6 +240,8 @@ namespace Emby.Dlna.Main
 
             var addresses = (await _appHost.GetLocalIpAddresses().ConfigureAwait(false)).ToList();
 
+            var udn = CreateUuid(_appHost.SystemId);
+
             foreach (var address in addresses)
             {
                 //if (IPAddress.IsLoopback(address))
@@ -249,8 +251,6 @@ namespace Emby.Dlna.Main
                 //}
 
                 var addressString = address.ToString();
-
-                var udn = CreateUuid(addressString);
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
@@ -299,7 +299,12 @@ namespace Emby.Dlna.Main
 
         private string CreateUuid(string text)
         {
-            return text.GetMD5().ToString("N");
+            Guid guid;
+            if (!Guid.TryParse(text, out guid))
+            {
+                guid = text.GetMD5();
+            }
+            return guid.ToString("N");
         }
 
         private void SetProperies(SsdpDevice device, string fullDeviceType)
