@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Session;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.Security
+namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class SessionContext : ISessionContext
     {

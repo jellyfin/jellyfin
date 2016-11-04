@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.Security
+namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
