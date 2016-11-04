@@ -1,11 +1,5 @@
 ﻿{
-  "supports": {},
-  "dependencies": {
-    "Emby.XmlTv": "1.0.0.63",
-    "MediaBrowser.Naming": "1.0.0.59",
-    "UniversalDetector": "1.0.1"
-  },
-  "frameworks":{
+    "frameworks":{
         "netstandard1.6":{
            "dependencies":{
                 "NETStandard.Library":"1.6.0",
