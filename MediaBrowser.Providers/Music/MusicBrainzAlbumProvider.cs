@@ -262,8 +262,6 @@ namespace MediaBrowser.Providers.Music
 
             public static List<ReleaseResult> Parse(XmlReader reader)
             {
-                var list = new List<ReleaseResult>();
-
                 reader.MoveToContent();
                 reader.Read();
 
@@ -278,9 +276,8 @@ namespace MediaBrowser.Providers.Music
                                 {
                                     using (var subReader = reader.ReadSubtree())
                                     {
-                                        list.AddRange(ParseReleaseList(subReader));
+                                        return ParseReleaseList(subReader);
                                     }
-                                    break;
                                 }
                             default:
                                 {
@@ -295,7 +292,7 @@ namespace MediaBrowser.Providers.Music
                     }
                 }
 
-                return list;
+                return new List<ReleaseResult>();
             }
 
             private static List<ReleaseResult> ParseReleaseList(XmlReader reader)
@@ -384,9 +381,7 @@ namespace MediaBrowser.Providers.Music
                             case "release-group":
                                 {
                                     result.ReleaseGroupId = reader.GetAttribute("id");
-                                    using (var subtree = reader.ReadSubtree())
-                                    {
-                                    }
+                                    reader.Skip();
                                     break;
                                 }
                             default:
