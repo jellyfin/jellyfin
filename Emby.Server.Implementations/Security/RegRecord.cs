@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MediaBrowser.Server.Implementations.Security
+namespace Emby.Server.Implementations.Security
 {
     class RegRecord
     {

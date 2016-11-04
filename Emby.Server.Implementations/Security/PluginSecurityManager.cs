@@ -5,18 +5,18 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Server.Implementations.Security
+namespace Emby.Server.Implementations.Security
 {
     /// <summary>
     /// Class PluginSecurityManager
@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Security
         private MBLicenseFile _licenseFile;
         private MBLicenseFile LicenseFile
         {
-            get { return _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths)); }
+            get { return _licenseFile ?? (_licenseFile = new MBLicenseFile(_appPaths, _fileSystem, _cryptographyProvider)); }
         }
 
         private readonly IHttpClient _httpClient;
@@ -64,6 +64,7 @@ namespace MediaBrowser.Server.Implementations.Security
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         private IEnumerable<IRequiresRegistration> _registeredEntities;
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
@@ -78,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Security
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         public PluginSecurityManager(IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
-            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem)
+            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
         {
             if (httpClient == null)
             {
@@ -90,6 +91,7 @@ namespace MediaBrowser.Server.Implementations.Security
             _jsonSerializer = jsonSerializer;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
+            _cryptographyProvider = cryptographyProvider;
             _logger = logManager.GetLogger("SecurityManager");
         }
 
@@ -191,7 +193,7 @@ namespace MediaBrowser.Server.Implementations.Security
                     {
                         var msg = "Result from appstore registration was null.";
                         _logger.Error(msg);
-                        throw new ApplicationException(msg);
+                        throw new ArgumentException(msg);
                     }
                     if (!String.IsNullOrEmpty(reg.key))
                     {
@@ -200,7 +202,7 @@ namespace MediaBrowser.Server.Implementations.Security
                 }
 
             }
-            catch (ApplicationException)
+            catch (ArgumentException)
             {
                 SaveAppStoreInfo(parameters);
                 throw;
@@ -213,14 +215,14 @@ namespace MediaBrowser.Server.Implementations.Security
                 {
                     throw new PaymentRequiredException();
                 }
-                throw new ApplicationException("Error registering store sale");
+                throw new Exception("Error registering store sale");
             }
             catch (Exception e)
             {
                 _logger.ErrorException("Error registering appstore purchase {0}", e, parameters ?? "NO PARMS SENT");
                 SaveAppStoreInfo(parameters);
                 //TODO - could create a re-try routine on start-up if this file is there.  For now we can handle manually.
-                throw new ApplicationException("Error registering store sale");
+                throw new Exception("Error registering store sale");
             }
 
         }

@@ -4,15 +4,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Cryptography;
+using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Security
+namespace Emby.Server.Implementations.Security
 {
     internal class MBLicenseFile
     {
         private readonly IApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
+        private readonly ICryptographyProvider _cryptographyProvider;
 
         public string RegKey
         {
@@ -40,9 +43,11 @@ namespace MediaBrowser.Server.Implementations.Security
         private readonly object _fileLock = new object();
         private string _regKey;
 
-        public MBLicenseFile(IApplicationPaths appPaths)
+        public MBLicenseFile(IApplicationPaths appPaths, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
+            _cryptographyProvider = cryptographyProvider;
 
             Load();
         }
@@ -54,41 +59,30 @@ namespace MediaBrowser.Server.Implementations.Security
 
         public void AddRegCheck(string featureId)
         {
-            using (var provider = new MD5CryptoServiceProvider())
-            {
-                var key = new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId)));
-                var value = DateTime.UtcNow;
+            var key = new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId)));
+            var value = DateTime.UtcNow;
 
-                SetUpdateRecord(key, value);
-                Save();
-            }
-
+            SetUpdateRecord(key, value);
+            Save();
         }
 
         public void RemoveRegCheck(string featureId)
         {
-            using (var provider = new MD5CryptoServiceProvider())
-            {
-                var key = new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId)));
-                DateTime val;
+            var key = new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId)));
+            DateTime val;
 
-                _updateRecords.TryRemove(key, out val);
+            _updateRecords.TryRemove(key, out val);
 
-                Save();
-            }
-
+            Save();
         }
 
         public DateTime LastChecked(string featureId)
         {
-            using (var provider = new MD5CryptoServiceProvider())
-            {
-                DateTime last;
-                _updateRecords.TryGetValue(new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(featureId))), out last);
+            DateTime last;
+            _updateRecords.TryGetValue(new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId))), out last);
 
-                // guard agains people just putting a large number in the file
-                return last < DateTime.UtcNow ? last : DateTime.MinValue;  
-            }
+            // guard agains people just putting a large number in the file
+            return last < DateTime.UtcNow ? last : DateTime.MinValue;
         }
 
         private void Load()
@@ -99,15 +93,21 @@ namespace MediaBrowser.Server.Implementations.Security
             {
                 try
                 {
-					contents = File.ReadAllLines(licenseFile);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    File.Create(licenseFile).Close();
+                    contents = _fileSystem.ReadAllLines(licenseFile);
                 }
                 catch (FileNotFoundException)
                 {
-					File.Create(licenseFile).Close();
+                    lock (_fileLock)
+                    {
+                        _fileSystem.WriteAllBytes(licenseFile, new byte[] {});
+                    }
+                }
+                catch (IOException)
+                {
+                    lock (_fileLock)
+                    {
+                        _fileSystem.WriteAllBytes(licenseFile, new byte[] { });
+                    }
                 }
             }
             if (contents != null && contents.Length > 0)
@@ -150,8 +150,11 @@ namespace MediaBrowser.Server.Implementations.Security
             }
 
             var licenseFile = Filename;
-			Directory.CreateDirectory(Path.GetDirectoryName(licenseFile));
-			lock (_fileLock) File.WriteAllLines(licenseFile, lines);
+            _fileSystem.CreateDirectory(Path.GetDirectoryName(licenseFile));
+            lock (_fileLock)
+            {
+                _fileSystem.WriteAllLines(licenseFile, lines);
+            }
         }
     }
 }

@@ -112,6 +112,7 @@ using Emby.Server.Implementations.MediaEncoder;
 using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Persistence;
 using Emby.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.Sync;
@@ -532,7 +533,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
 
-            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager);
+            SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(SecurityManager);
 
             InstallationManager = new InstallationManager(LogManager.GetLogger("InstallationManager"), this, ApplicationPaths, HttpClient, JsonSerializer, SecurityManager, ConfigurationManager, FileSystemManager, CryptographyProvider);
