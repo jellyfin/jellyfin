@@ -5,15 +5,12 @@ using Emby.Dlna.Service;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.MediaReceiverRegistrar
 {
     public class ControlHandler : BaseControlHandler
     {
-        public ControlHandler(IServerConfigurationManager config, ILogger logger) : base(config, logger)
-        {
-        }
-
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
         {
             if (string.Equals(methodName, "IsAuthorized", StringComparison.OrdinalIgnoreCase))
@@ -38,6 +35,10 @@ namespace Emby.Dlna.MediaReceiverRegistrar
             {
                 { "Result", "1" }
             };
+        }
+
+        public ControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(config, logger, xmlReaderSettingsFactory)
+        {
         }
     }
 }

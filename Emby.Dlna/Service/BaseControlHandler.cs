@@ -4,9 +4,12 @@ using Emby.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Emby.Dlna.Didl;
+using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.Service
 {
@@ -16,11 +19,13 @@ namespace Emby.Dlna.Service
         
         protected readonly IServerConfigurationManager Config;
         protected readonly ILogger Logger;
+        protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
 
-        protected BaseControlHandler(IServerConfigurationManager config, ILogger logger)
+        protected BaseControlHandler(IServerConfigurationManager config, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
         {
             Config = config;
             Logger = logger;
+            XmlReaderSettingsFactory = xmlReaderSettingsFactory;
         }
 
         public ControlResponse ProcessControlRequest(ControlRequest request)
@@ -53,47 +58,57 @@ namespace Emby.Dlna.Service
 
         private ControlResponse ProcessControlRequestInternal(ControlRequest request)
         {
-            var soap = new XmlDocument();
-            soap.LoadXml(request.InputXml);
-            var sparams = new Headers();
-            var body = soap.GetElementsByTagName("Body", NS_SOAPENV).Item(0);
+            ControlRequestInfo requestInfo = null;
 
-            var method = body.FirstChild;
-
-            foreach (var p in method.ChildNodes)
+            using (var streamReader = new StreamReader(request.InputXml))
             {
-                var e = p as XmlElement;
-                if (e == null)
+                var readerSettings = XmlReaderSettingsFactory.Create(false);
+
+                readerSettings.CheckCharacters = false;
+                readerSettings.IgnoreProcessingInstructions = true;
+                readerSettings.IgnoreComments = true;
+
+                using (var reader = XmlReader.Create(streamReader, readerSettings))
                 {
-                    continue;
+                    requestInfo = ParseRequest(reader);
                 }
-                sparams.Add(e.LocalName, e.InnerText.Trim());
             }
 
-            Logger.Debug("Received control request {0}", method.LocalName);
+            Logger.Debug("Received control request {0}", requestInfo.LocalName);
 
-            var result = GetResult(method.LocalName, sparams);
+            var result = GetResult(requestInfo.LocalName, requestInfo.Headers);
 
-            var env = new XmlDocument();
-            env.AppendChild(env.CreateXmlDeclaration("1.0", "utf-8", string.Empty));
-            var envelope = env.CreateElement("SOAP-ENV", "Envelope", NS_SOAPENV);
-            env.AppendChild(envelope);
-            envelope.SetAttribute("encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
-
-            var rbody = env.CreateElement("SOAP-ENV:Body", NS_SOAPENV);
-            env.DocumentElement.AppendChild(rbody);
-
-            var response = env.CreateElement(String.Format("u:{0}Response", method.LocalName), method.NamespaceURI);
-            rbody.AppendChild(response);
-
-            foreach (var i in result)
+            var settings = new XmlWriterSettings
             {
-                var ri = env.CreateElement(i.Key);
-                ri.InnerText = i.Value;
-                response.AppendChild(ri);
+                Encoding = Encoding.UTF8,
+                CloseOutput = false
+            };
+
+            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
+
+            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            {
+                writer.WriteStartDocument(true);
+
+                writer.WriteStartElement("SOAP-ENV", "Envelope", NS_SOAPENV);
+                writer.WriteAttributeString(string.Empty, "encodingStyle", NS_SOAPENV, "http://schemas.xmlsoap.org/soap/encoding/");
+
+                writer.WriteStartElement("SOAP-ENV", "Body", NS_SOAPENV);
+                writer.WriteStartElement("u", requestInfo.LocalName + "Response", requestInfo.NamespaceURI);
+                foreach (var i in result)
+                {
+                    writer.WriteStartElement(i.Key);
+                    writer.WriteString(i.Value);
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
             }
 
-            var xml = env.OuterXml.Replace("xmlns:m=", "xmlns:u=");
+            var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=");
             
             var controlResponse = new ControlResponse
             {
@@ -106,6 +121,102 @@ namespace Emby.Dlna.Service
             controlResponse.Headers.Add("EXT", string.Empty);
 
             return controlResponse;
+        }
+
+        private ControlRequestInfo ParseRequest(XmlReader reader)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.LocalName)
+                    {
+                        case "Body":
+                        {
+                            using (var subReader = reader.ReadSubtree())
+                            {
+                                return ParseBodyTag(subReader);
+                            }
+                        }
+                        default:
+                            {
+                                reader.Skip();
+                                break;
+                            }
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            return new ControlRequestInfo();
+        }
+
+        private ControlRequestInfo ParseBodyTag(XmlReader reader)
+        {
+            var result = new ControlRequestInfo();
+
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    result.LocalName = reader.LocalName;
+                    result.NamespaceURI = reader.NamespaceURI;
+
+                    using (var subReader = reader.ReadSubtree())
+                    {
+                        result.Headers = ParseFirstBodyChild(subReader);
+
+                        return result;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            return result;
+        }
+
+        private Headers ParseFirstBodyChild(XmlReader reader)
+        {
+            var result = new Headers();
+
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    result.Add(reader.LocalName, reader.ReadElementContentAsString());
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            return result;
+        }
+
+        private class ControlRequestInfo
+        {
+            public string LocalName;
+            public string NamespaceURI;
+            public Headers Headers = new Headers();
         }
 
         protected abstract IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams);

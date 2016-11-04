@@ -558,7 +558,8 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
-            RegisterSingleInstance<IAssemblyInfo>(new AssemblyInfo());
+            IAssemblyInfo assemblyInfo = new AssemblyInfo();
+            RegisterSingleInstance<IAssemblyInfo>(assemblyInfo);
 
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
@@ -648,10 +649,10 @@ namespace MediaBrowser.Server.Startup.Common
             SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager, TimerFactory);
             RegisterSingleInstance(SessionManager);
 
-            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer, this);
+            var dlnaManager = new DlnaManager(XmlSerializer, FileSystemManager, ApplicationPaths, LogManager.GetLogger("Dlna"), JsonSerializer, this, assemblyInfo);
             RegisterSingleInstance<IDlnaManager>(dlnaManager);
 
-            var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient);
+            var connectionManager = new ConnectionManager(dlnaManager, ServerConfigurationManager, LogManager.GetLogger("UpnpConnectionManager"), HttpClient, new XmlReaderSettingsFactory());
             RegisterSingleInstance<IConnectionManager>(connectionManager);
 
             CollectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"), ProviderManager);
@@ -666,10 +667,10 @@ namespace MediaBrowser.Server.Startup.Common
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager, UserViewManager, () => MediaEncoder);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager, UserViewManager, () => MediaEncoder, new XmlReaderSettingsFactory());
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
-            var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager);
+            var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager, new XmlReaderSettingsFactory());
             RegisterSingleInstance<IMediaReceiverRegistrar>(mediaRegistrar);
 
             NotificationManager = new NotificationManager(LogManager, UserManager, ServerConfigurationManager);
@@ -678,7 +679,7 @@ namespace MediaBrowser.Server.Startup.Common
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
             RegisterSingleInstance(SubtitleManager);
 
-            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager));
+            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager, SocketFactory, TimerFactory));
 
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);

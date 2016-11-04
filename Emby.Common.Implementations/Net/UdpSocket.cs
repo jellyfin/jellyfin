@@ -1,15 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Rssdp.Infrastructure;
+using MediaBrowser.Model.Net;
 
-namespace Rssdp
+namespace Emby.Common.Implementations.Net
 {
     // THIS IS A LINKED FILE - SHARED AMONGST MULTIPLE PLATFORMS	
     // Be careful to check any changes compile and work for all platform projects it is shared in.
@@ -48,7 +46,7 @@ namespace Rssdp
 
         #region IUdpSocket Members
 
-        public System.Threading.Tasks.Task<ReceivedUdpData> ReceiveAsync()
+        public Task<ReceivedUdpData> ReceiveAsync()
         {
             ThrowIfDisposed();
 
@@ -76,7 +74,7 @@ namespace Rssdp
             return tcs.Task;
         }
 
-        public Task SendTo(byte[] messageData, UdpEndPoint endPoint)
+        public Task SendTo(byte[] messageData, IpEndPointInfo endPoint)
         {
             ThrowIfDisposed();
 
@@ -84,14 +82,14 @@ namespace Rssdp
             if (endPoint == null) throw new ArgumentNullException("endPoint");
 
 #if NETSTANDARD1_6
-            _Socket.SendTo(messageData, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IPAddress), endPoint.Port));
+            _Socket.SendTo(messageData, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port));
             return Task.FromResult(true);
 #else
             var taskSource = new TaskCompletionSource<bool>();
 
             try
             {
-                _Socket.BeginSendTo(messageData, 0, messageData.Length, SocketFlags.None, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IPAddress), endPoint.Port), result =>
+                _Socket.BeginSendTo(messageData, 0, messageData.Length, SocketFlags.None, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port), result =>
                 {
                     try
                     {
@@ -166,11 +164,7 @@ namespace Rssdp
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        ReceivedFrom = new UdpEndPoint()
-                        {
-                            IPAddress = ipEndPoint.Address.ToString(),
-                            Port = ipEndPoint.Port
-                        }
+                        ReceivedFrom = ToIpEndPointInfo(ipEndPoint)
                     }
                 );
             }
@@ -191,6 +185,25 @@ namespace Rssdp
             }
         }
 
+        private static IpEndPointInfo ToIpEndPointInfo(IPEndPoint endpoint)
+        {
+            if (endpoint == null)
+            {
+                return null;
+            }
+
+            return new IpEndPointInfo
+            {
+                IpAddress = new IpAddressInfo
+                {
+                    Address = endpoint.Address.ToString(),
+                    IsIpv6 = endpoint.AddressFamily == AddressFamily.InterNetworkV6
+                },
+
+                Port = endpoint.Port
+            };
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions via task methods should be reported by task completion source, so this should be ok.")]
         private void ProcessResponse(IAsyncResult asyncResult)
         {
@@ -206,11 +219,7 @@ namespace Rssdp
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        ReceivedFrom = new UdpEndPoint()
-                        {
-                            IPAddress = ipEndPoint.Address.ToString(),
-                            Port = ipEndPoint.Port
-                        }
+                        ReceivedFrom = ToIpEndPointInfo(ipEndPoint)
                     }
                 );
             }
@@ -245,7 +254,7 @@ namespace Rssdp
             }
 
             public EndPoint EndPoint;
-            public byte[] Buffer = new byte[SsdpConstants.DefaultUdpSocketBufferSize];
+            public byte[] Buffer = new byte[8192];
 
             public System.Net.Sockets.Socket Socket { get; private set; }
 

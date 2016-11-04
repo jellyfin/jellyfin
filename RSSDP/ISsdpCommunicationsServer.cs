@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
@@ -44,8 +45,8 @@ namespace Rssdp.Infrastructure
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
         /// <param name="messageData">A byte array containing the data to send.</param>
-        /// <param name="destination">A <see cref="UdpEndPoint"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
-        Task SendMessage(byte[] messageData, UdpEndPoint destination);
+        /// <param name="destination">A <see cref="IpEndPointInfo"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
+        Task SendMessage(byte[] messageData, IpEndPointInfo destination);
 
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.

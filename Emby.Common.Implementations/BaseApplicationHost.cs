@@ -28,11 +28,13 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using Emby.Common.Implementations.Cryptography;
 using Emby.Common.Implementations.Diagnostics;
+using Emby.Common.Implementations.Net;
 using Emby.Common.Implementations.Threading;
 using MediaBrowser.Common;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
@@ -153,6 +155,7 @@ namespace Emby.Common.Implementations
 
         protected IProcessFactory ProcessFactory { get; private set; }
         protected ITimerFactory TimerFactory { get; private set; }
+        protected ISocketFactory SocketFactory { get; private set; }
 
         /// <summary>
         /// Gets the name.
@@ -548,6 +551,9 @@ return null;
 
             TimerFactory = new TimerFactory();
             RegisterSingleInstance(TimerFactory);
+
+            SocketFactory = new SocketFactory(null);
+            RegisterSingleInstance(SocketFactory);
 
             RegisterSingleInstance(CryptographyProvider);
 

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
@@ -157,10 +158,10 @@ namespace Rssdp.Infrastructure
         /// Sends a message to a particular address (uni or multicast) and port.
         /// </summary>
         /// <param name="messageData">A byte array containing the data to send.</param>
-        /// <param name="destination">A <see cref="UdpEndPoint"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
+        /// <param name="destination">A <see cref="IpEndPointInfo"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
         /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="messageData"/> argument is null.</exception>
         /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
-        public async Task SendMessage(byte[] messageData, UdpEndPoint destination)
+        public async Task SendMessage(byte[] messageData, IpEndPointInfo destination)
         {
             if (messageData == null) throw new ArgumentNullException("messageData");
 
@@ -188,7 +189,7 @@ namespace Rssdp.Infrastructure
 
             // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
             await Repeat(SsdpConstants.UdpResendCount, TimeSpan.FromMilliseconds(100),
-                () => SendMessageIfSocketNotDisposed(messageData, new UdpEndPoint() { IPAddress = SsdpConstants.MulticastLocalAdminAddress, Port = SsdpConstants.MulticastPort })).ConfigureAwait(false);
+                () => SendMessageIfSocketNotDisposed(messageData, new IpEndPointInfo() { IpAddress = new IpAddressInfo { Address = SsdpConstants.MulticastLocalAdminAddress }, Port = SsdpConstants.MulticastPort })).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -254,7 +255,7 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
-        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, UdpEndPoint destination)
+        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination)
         {
             var socket = _SendSocket;
             if (socket != null)
@@ -343,7 +344,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessMessage(string data, UdpEndPoint endPoint)
+        private void ProcessMessage(string data, IpEndPointInfo endPoint)
         {
             //Responses start with the HTTP version, prefixed with HTTP/ while
             //requests start with a method which can vary and might be one we haven't 
@@ -375,7 +376,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void OnRequestReceived(HttpRequestMessage data, UdpEndPoint endPoint)
+        private void OnRequestReceived(HttpRequestMessage data, IpEndPointInfo endPoint)
         {
             //SSDP specification says only * is currently used but other uri's might
             //be implemented in the future and should be ignored unless understood.
@@ -387,7 +388,7 @@ namespace Rssdp.Infrastructure
                 handlers(this, new RequestReceivedEventArgs(data, endPoint));
         }
 
-        private void OnResponseReceived(HttpResponseMessage data, UdpEndPoint endPoint)
+        private void OnResponseReceived(HttpResponseMessage data, IpEndPointInfo endPoint)
         {
             var handlers = this.ResponseReceived;
             if (handlers != null)
