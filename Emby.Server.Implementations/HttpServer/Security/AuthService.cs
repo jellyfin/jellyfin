@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.Security
+namespace Emby.Server.Implementations.HttpServer.Security
 {
     public class AuthService : IAuthService
     {

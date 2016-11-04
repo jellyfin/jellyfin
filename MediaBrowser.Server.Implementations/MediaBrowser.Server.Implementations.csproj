@@ -122,8 +122,6 @@
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
-    <Compile Include="HttpServer\IHttpListener.cs" />
-    <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
@@ -131,14 +129,11 @@
     <Compile Include="HttpServer\LoggerUtils.cs" />
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
-    <Compile Include="HttpServer\Security\AuthService.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\ServerLogFactory.cs" />
     <Compile Include="HttpServer\ServerLogger.cs" />
-    <Compile Include="HttpServer\Security\SessionContext.cs" />
     <Compile Include="HttpServer\SocketSharp\HttpUtility.cs" />
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
-    <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
     <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
