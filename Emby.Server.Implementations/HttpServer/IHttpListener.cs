@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public interface IHttpListener : IDisposable
     {

@@ -67,6 +67,11 @@
     <Compile Include="FileOrganization\NameUtils.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
+    <Compile Include="HttpServer\IHttpListener.cs" />
+    <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
+    <Compile Include="HttpServer\Security\AuthService.cs" />
+    <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
