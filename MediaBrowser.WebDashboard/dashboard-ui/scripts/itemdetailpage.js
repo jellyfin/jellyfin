@@ -460,7 +460,7 @@
         }
 
         if (item.MediaSources && item.MediaSources.length) {
-            renderMediaSources(page, item);
+            renderMediaSources(page, user, item);
         }
 
         var chapters = item.Chapters || [];
@@ -1704,11 +1704,11 @@
         }
     }
 
-    function renderMediaSources(page, item) {
+    function renderMediaSources(page, user, item) {
 
         var html = item.MediaSources.map(function (v) {
 
-            return getMediaSourceHtml(item, v);
+            return getMediaSourceHtml(user, item, v);
 
         }).join('<div style="border-top:1px solid #444;margin: 1em 0;"></div>');
 
@@ -1720,7 +1720,7 @@
         mediaInfoContent.innerHTML = html;
     }
 
-    function getMediaSourceHtml(item, version) {
+    function getMediaSourceHtml(user, item, version) {
 
         var html = '';
 
@@ -1848,7 +1848,7 @@
             //html += '<div><span class="mediaInfoLabel">'+Globalize.translate('MediaInfoFormat')+'</span><span class="mediaInfoAttribute">' + version.Formats.join(',') + '</span></div>';
         }
 
-        if (version.Path && version.Protocol != 'Http') {
+        if (version.Path && version.Protocol != 'Http' && user && user.Policy.IsAdministrator) {
             html += '<div style="max-width:600px;overflow:hidden;"><span class="mediaInfoLabel">' + Globalize.translate('MediaInfoPath') + '</span><span class="mediaInfoAttribute">' + version.Path + '</span></div>';
         }
 

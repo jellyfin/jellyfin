@@ -434,13 +434,19 @@
 
         var screenWidth = dom.getWindowSize().innerWidth;
 
+        var limit = screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6));
+
+        if (!enableScrollX()) {
+            limit = Math.min(limit, 5);
+        }
+
         var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
+            Limit: limit,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             CollapseBoxSetItems: false,

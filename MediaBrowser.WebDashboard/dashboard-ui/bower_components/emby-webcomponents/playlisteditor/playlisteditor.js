@@ -127,6 +127,12 @@
 
             select.innerHTML = html;
             select.value = userSettings.get('playlisteditor-lastplaylistid') || '';
+            
+            // If the value is empty set it again, in case we tried to set a lastplaylistid that is no longer valid
+            if (!select.value) {
+                select.value = '';
+            }
+
             triggerChange(select);
 
             loading.hide();
