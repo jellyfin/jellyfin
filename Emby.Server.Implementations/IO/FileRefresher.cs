@@ -13,6 +13,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
 
@@ -32,8 +33,9 @@ namespace Emby.Server.Implementations.IO
         public string Path { get; private set; }
 
         public event EventHandler<EventArgs> Completed;
+        private readonly IEnvironmentInfo _environmentInfo;
 
-        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory)
+        public FileRefresher(string path, IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ITaskManager taskManager, ILogger logger, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo)
         {
             logger.Debug("New file refresher created for {0}", path);
             Path = path;
@@ -44,6 +46,7 @@ namespace Emby.Server.Implementations.IO
             TaskManager = taskManager;
             Logger = logger;
             _timerFactory = timerFactory;
+            _environmentInfo = environmentInfo;
             AddPath(path);
         }
 
@@ -226,11 +229,11 @@ namespace Emby.Server.Implementations.IO
 
         private bool IsFileLocked(string path)
         {
-            //if (Environment.OSVersion.Platform != PlatformID.Win32NT)
-            //{
-            //    // Causing lockups on linux
-            //    return false;
-            //}
+            if (_environmentInfo.OperatingSystem != OperatingSystem.Windows)
+            {
+                // Causing lockups on linux
+                return false;
+            }
 
             try
             {

@@ -20,6 +20,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
 using Rssdp;
 using Rssdp.Infrastructure;
@@ -52,7 +53,7 @@ namespace Emby.Dlna.Main
 
         private readonly ITimerFactory _timerFactory;
         private readonly ISocketFactory _socketFactory;
-
+        private readonly IEnvironmentInfo _environmentInfo;
 
         public DlnaEntryPoint(IServerConfigurationManager config,
             ILogManager logManager,
@@ -66,7 +67,7 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder, ISocketFactory socketFactory, ITimerFactory timerFactory)
+            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder, ISocketFactory socketFactory, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo)
         {
             _config = config;
             _appHost = appHost;
@@ -83,6 +84,7 @@ namespace Emby.Dlna.Main
             _mediaEncoder = mediaEncoder;
             _socketFactory = socketFactory;
             _timerFactory = timerFactory;
+            _environmentInfo = environmentInfo;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -169,7 +171,7 @@ namespace Emby.Dlna.Main
         private void StartPublishing()
         {
             SsdpDevicePublisherBase.LogFunction = LogMessage;
-            _Publisher = new SsdpDevicePublisher(_socketFactory, _timerFactory, "Windows", "10");
+            _Publisher = new SsdpDevicePublisher(_socketFactory, _timerFactory, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
         }
 
         private void StartDeviceDiscovery()
