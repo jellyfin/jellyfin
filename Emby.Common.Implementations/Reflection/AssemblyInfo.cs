@@ -14,5 +14,13 @@ namespace Emby.Common.Implementations.Reflection
 #endif
             return type.GetTypeInfo().Assembly.GetManifestResourceStream(resource);
         }
+
+        public string[] GetManifestResourceNames(Type type)
+        {
+#if NET46
+            return type.Assembly.GetManifestResourceNames();
+#endif
+            return type.GetTypeInfo().Assembly.GetManifestResourceNames();
+        }
     }
 }

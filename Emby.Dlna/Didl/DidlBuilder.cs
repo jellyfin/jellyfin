@@ -17,6 +17,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
@@ -62,50 +63,66 @@ namespace Emby.Dlna.Didl
 
         public string GetItemDidl(DlnaOptions options, BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
-            var result = new XmlDocument();
-
-            var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
-            didl.SetAttribute("xmlns:dc", NS_DC);
-            didl.SetAttribute("xmlns:dlna", NS_DLNA);
-            didl.SetAttribute("xmlns:upnp", NS_UPNP);
-            //didl.SetAttribute("xmlns:sec", NS_SEC);
-
-            foreach (var att in _profile.XmlRootAttributes)
+            var settings = new XmlWriterSettings
             {
-                didl.SetAttribute(att.Name, att.Value);
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
+
+            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
+
+            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            {
+                //writer.WriteStartDocument();
+
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+
+                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                //didl.SetAttribute("xmlns:sec", NS_SEC);
+
+                foreach (var att in _profile.XmlRootAttributes)
+                {
+                    writer.WriteAttributeString(att.Name, att.Value);
+                }
+
+                WriteItemElement(options, writer, item, context, null, deviceId, filter, streamInfo);
+
+                writer.WriteEndElement();
+                //writer.WriteEndDocument();
             }
 
-            result.AppendChild(didl);
-
-            result.DocumentElement.AppendChild(GetItemElement(options, result, item, context, null, deviceId, filter, streamInfo));
-
-            return result.DocumentElement.OuterXml;
+            return builder.ToString();
         }
 
-        public XmlElement GetItemElement(DlnaOptions options, XmlDocument doc, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        public void WriteItemElement(DlnaOptions options, XmlWriter writer, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             var clientId = GetClientId(item, null);
 
-            var element = doc.CreateElement(string.Empty, "item", NS_DIDL);
-            element.SetAttribute("restricted", "1");
-            element.SetAttribute("id", clientId);
+            writer.WriteStartElement(string.Empty, "item", NS_DIDL);
+
+            writer.WriteAttributeString("restricted", "1");
+            writer.WriteAttributeString("id", clientId);
 
             if (context != null)
             {
-                element.SetAttribute("parentID", GetClientId(context, contextStubType));
+                writer.WriteAttributeString("parentID", GetClientId(context, contextStubType));
             }
             else
             {
                 var parent = item.DisplayParentId;
                 if (parent.HasValue)
                 {
-                    element.SetAttribute("parentID", GetClientId(parent.Value, null));
+                    writer.WriteAttributeString("parentID", GetClientId(parent.Value, null));
                 }
             }
 
             //AddBookmarkInfo(item, user, element);
 
-            AddGeneralProperties(item, null, context, element, filter);
+            AddGeneralProperties(item, null, context, writer, filter);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -116,17 +133,16 @@ namespace Emby.Dlna.Didl
             {
                 if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddAudioResource(options, element, hasMediaSources, deviceId, filter, streamInfo);
+                    AddAudioResource(options, writer, hasMediaSources, deviceId, filter, streamInfo);
                 }
                 else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddVideoResource(options, element, hasMediaSources, deviceId, filter, streamInfo);
+                    AddVideoResource(options, writer, hasMediaSources, deviceId, filter, streamInfo);
                 }
             }
 
-            AddCover(item, context, null, element);
-
-            return element;
+            AddCover(item, context, null, writer);
+            writer.WriteEndElement();
         }
 
         private ILogger GetStreamBuilderLogger(DlnaOptions options)
@@ -139,7 +155,7 @@ namespace Emby.Dlna.Didl
             return new NullLogger();
         }
 
-        private void AddVideoResource(DlnaOptions options, XmlElement container, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddVideoResource(DlnaOptions options, XmlWriter writer, IHasMediaSources video, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
             if (streamInfo == null)
             {
@@ -182,14 +198,14 @@ namespace Emby.Dlna.Didl
 
             foreach (var contentFeature in contentFeatureList)
             {
-                AddVideoResource(container, video, deviceId, filter, contentFeature, streamInfo);
+                AddVideoResource(writer, video, deviceId, filter, contentFeature, streamInfo);
             }
 
             foreach (var subtitle in streamInfo.GetSubtitleProfiles(false, _serverAddress, _accessToken))
             {
                 if (subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
                 {
-                    var subtitleAdded = AddSubtitleElement(container, subtitle);
+                    var subtitleAdded = AddSubtitleElement(writer, subtitle);
 
                     if (subtitleAdded && _profile.EnableSingleSubtitleLimit)
                     {
@@ -199,7 +215,7 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        private bool AddSubtitleElement(XmlElement container, SubtitleStreamInfo info)
+        private bool AddSubtitleElement(XmlWriter writer, SubtitleStreamInfo info)
         {
             var subtitleProfile = _profile.SubtitleProfiles
                 .FirstOrDefault(i => string.Equals(info.Format, i.Format, StringComparison.OrdinalIgnoreCase) && i.Method == SubtitleDeliveryMethod.External);
@@ -216,52 +232,45 @@ namespace Emby.Dlna.Didl
                 // <sec:CaptionInfoEx sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfoEx>
                 // <sec:CaptionInfo sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfo>
 
-                var res = container.OwnerDocument.CreateElement("CaptionInfoEx", "sec");
+                writer.WriteStartElement("sec", "CaptionInfoEx", null);
+                writer.WriteAttributeString("sec", "type", null, info.Format.ToLower());
 
-                res.InnerText = info.Url;
-
-                //// TODO: attribute needs SEC:
-                res.SetAttribute("type", "sec", info.Format.ToLower());
-                container.AppendChild(res);
+                writer.WriteString(info.Url);
+                writer.WriteEndElement();
             }
             else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
             {
-                var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+                writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
-                res.InnerText = info.Url;
+                writer.WriteAttributeString("protocolInfo", "http-get:*:smi/caption:*");
 
-                res.SetAttribute("protocolInfo", "http-get:*:smi/caption:*");
-
-                container.AppendChild(res);
+                writer.WriteString(info.Url);
+                writer.WriteEndElement();
             }
             else
             {
-                var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
-
-                res.InnerText = info.Url;
-
+                writer.WriteStartElement(string.Empty, "res", NS_DIDL);
                 var protocolInfo = string.Format("http-get:*:text/{0}:*", info.Format.ToLower());
-                res.SetAttribute("protocolInfo", protocolInfo);
+                writer.WriteAttributeString("protocolInfo", protocolInfo);
 
-                container.AppendChild(res);
+                writer.WriteString(info.Url);
+                writer.WriteEndElement();
             }
 
             return true;
         }
 
-        private void AddVideoResource(XmlElement container, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
+        private void AddVideoResource(XmlWriter writer, IHasMediaSources video, string deviceId, Filter filter, string contentFeatures, StreamInfo streamInfo)
         {
-            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
             var url = streamInfo.ToDlnaUrl(_serverAddress, _accessToken);
-
-            res.InnerText = url;
 
             var mediaSource = streamInfo.MediaSource;
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -272,7 +281,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(_usCulture));
                     }
                 }
             }
@@ -286,25 +295,25 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
             }
 
             if (filter.Contains("res@resolution"))
             {
                 if (targetWidth.HasValue && targetHeight.HasValue)
                 {
-                    res.SetAttribute("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
+                    writer.WriteAttributeString("resolution", string.Format("{0}x{1}", targetWidth.Value, targetHeight.Value));
                 }
             }
 
             if (targetSampleRate.HasValue)
             {
-                res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
             }
 
             if (totalBitrate.HasValue)
             {
-                res.SetAttribute("bitrate", totalBitrate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(_usCulture));
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(streamInfo.Container,
@@ -332,13 +341,15 @@ namespace Emby.Dlna.Didl
                ? MimeTypes.GetMimeType(filename)
                : mediaProfile.MimeType;
 
-            res.SetAttribute("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
                 ));
 
-            container.AppendChild(res);
+            writer.WriteString(url);
+
+            writer.WriteEndElement();
         }
 
         private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
@@ -382,32 +393,30 @@ namespace Emby.Dlna.Didl
             return item.Name;
         }
 
-        private void AddAudioResource(DlnaOptions options, XmlElement container, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        private void AddAudioResource(DlnaOptions options, XmlWriter writer, IHasMediaSources audio, string deviceId, Filter filter, StreamInfo streamInfo = null)
         {
-            var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
             if (streamInfo == null)
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
 
                 streamInfo = new StreamBuilder(_mediaEncoder, GetStreamBuilderLogger(options)).BuildAudioItem(new AudioOptions
-               {
-                   ItemId = GetClientId(audio),
-                   MediaSources = sources,
-                   Profile = _profile,
-                   DeviceId = deviceId
-               });
+                {
+                    ItemId = GetClientId(audio),
+                    MediaSources = sources,
+                    Profile = _profile,
+                    DeviceId = deviceId
+                });
             }
 
             var url = streamInfo.ToDlnaUrl(_serverAddress, _accessToken);
-
-            res.InnerText = url;
 
             var mediaSource = streamInfo.MediaSource;
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                res.SetAttribute("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -418,7 +427,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        res.SetAttribute("size", size.Value.ToString(_usCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(_usCulture));
                     }
                 }
             }
@@ -429,17 +438,17 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                res.SetAttribute("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
             }
 
             if (targetSampleRate.HasValue)
             {
-                res.SetAttribute("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
             }
 
             if (targetAudioBitrate.HasValue)
             {
-                res.SetAttribute("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(streamInfo.Container,
@@ -462,13 +471,15 @@ namespace Emby.Dlna.Didl
                 streamInfo.RunTimeTicks,
                 streamInfo.TranscodeSeekInfo);
 
-            res.SetAttribute("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 mimeType,
                 contentFeatures
                 ));
 
-            container.AppendChild(res);
+            writer.WriteString(url);
+
+            writer.WriteEndElement();
         }
 
         public static bool IsIdRoot(string id)
@@ -486,47 +497,48 @@ namespace Emby.Dlna.Didl
             return false;
         }
 
-        public XmlElement GetFolderElement(XmlDocument doc, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
+        public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
-            var container = doc.CreateElement(string.Empty, "container", NS_DIDL);
-            container.SetAttribute("restricted", "0");
-            container.SetAttribute("searchable", "1");
-            container.SetAttribute("childCount", childCount.ToString(_usCulture));
+            writer.WriteStartElement(string.Empty, "container", NS_DIDL);
+
+            writer.WriteAttributeString("restricted", "0");
+            writer.WriteAttributeString("searchable", "1");
+            writer.WriteAttributeString("childCount", childCount.ToString(_usCulture));
 
             var clientId = GetClientId(folder, stubType);
 
             if (string.Equals(requestedId, "0"))
             {
-                container.SetAttribute("id", "0");
-                container.SetAttribute("parentID", "-1");
+                writer.WriteAttributeString("id", "0");
+                writer.WriteAttributeString("parentID", "-1");
             }
             else
             {
-                container.SetAttribute("id", clientId);
+                writer.WriteAttributeString("id", clientId);
 
                 if (context != null)
                 {
-                    container.SetAttribute("parentID", GetClientId(context, null));
+                    writer.WriteAttributeString("parentID", GetClientId(context, null));
                 }
                 else
                 {
                     var parent = folder.DisplayParentId;
                     if (!parent.HasValue)
                     {
-                        container.SetAttribute("parentID", "0");
+                        writer.WriteAttributeString("parentID", "0");
                     }
                     else
                     {
-                        container.SetAttribute("parentID", GetClientId(parent.Value, null));
+                        writer.WriteAttributeString("parentID", GetClientId(parent.Value, null));
                     }
                 }
             }
 
-            AddCommonFields(folder, stubType, null, container, filter);
+            AddCommonFields(folder, stubType, null, writer, filter);
 
-            AddCover(folder, context, stubType, container);
+            AddCover(folder, context, stubType, writer);
 
-            return container;
+            writer.WriteEndElement();
         }
 
         //private void AddBookmarkInfo(BaseItem item, User user, XmlElement element)
@@ -544,27 +556,22 @@ namespace Emby.Dlna.Didl
         /// <summary>
         /// Adds fields used by both items and folders
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="itemStubType">Type of the item stub.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="element">The element.</param>
-        /// <param name="filter">The filter.</param>
-        private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlElement element, Filter filter)
+        private void AddCommonFields(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
             // Don't filter on dc:title because not all devices will include it in the filter
             // MediaMonkey for example won't display content without a title
             //if (filter.Contains("dc:title"))
             {
-                AddValue(element, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
+                AddValue(writer, "dc", "title", GetDisplayName(item, itemStubType, context), NS_DC);
             }
 
-            element.AppendChild(CreateObjectClass(element.OwnerDocument, item, itemStubType));
+            WriteObjectClass(writer, item, itemStubType);
 
             if (filter.Contains("dc:date"))
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(element, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o"), NS_DC);
                 }
             }
 
@@ -572,13 +579,13 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var genre in item.Genres)
                 {
-                    AddValue(element, "upnp", "genre", genre, NS_UPNP);
+                    AddValue(writer, "upnp", "genre", genre, NS_UPNP);
                 }
             }
 
             foreach (var studio in item.Studios)
             {
-                AddValue(element, "upnp", "publisher", studio, NS_UPNP);
+                AddValue(writer, "upnp", "publisher", studio, NS_UPNP);
             }
 
             if (filter.Contains("dc:description"))
@@ -592,14 +599,14 @@ namespace Emby.Dlna.Didl
 
                 if (!string.IsNullOrWhiteSpace(desc))
                 {
-                    AddValue(element, "dc", "description", desc, NS_DC);
+                    AddValue(writer, "dc", "description", desc, NS_DC);
                 }
             }
             if (filter.Contains("upnp:longDescription"))
             {
                 if (!string.IsNullOrWhiteSpace(item.Overview))
                 {
-                    AddValue(element, "upnp", "longDescription", item.Overview, NS_UPNP);
+                    AddValue(writer, "upnp", "longDescription", item.Overview, NS_UPNP);
                 }
             }
 
@@ -607,23 +614,23 @@ namespace Emby.Dlna.Didl
             {
                 if (filter.Contains("dc:rating"))
                 {
-                    AddValue(element, "dc", "rating", item.OfficialRating, NS_DC);
+                    AddValue(writer, "dc", "rating", item.OfficialRating, NS_DC);
                 }
                 if (filter.Contains("upnp:rating"))
                 {
-                    AddValue(element, "upnp", "rating", item.OfficialRating, NS_UPNP);
+                    AddValue(writer, "upnp", "rating", item.OfficialRating, NS_UPNP);
                 }
             }
 
-            AddPeople(item, element);
+            AddPeople(item, writer);
         }
 
-        private XmlElement CreateObjectClass(XmlDocument result, BaseItem item, StubType? stubType)
+        private void WriteObjectClass(XmlWriter writer, BaseItem item, StubType? stubType)
         {
             // More types here
             // http://oss.linn.co.uk/repos/Public/LibUpnpCil/DidlLite/UpnpAv/Test/TestDidlLite.cs
 
-            var objectClass = result.CreateElement("upnp", "class", NS_UPNP);
+            writer.WriteStartElement("upnp", "class", NS_UPNP);
 
             if (item.IsFolder || stubType.HasValue)
             {
@@ -653,48 +660,48 @@ namespace Emby.Dlna.Didl
                     }
                 }
 
-                objectClass.InnerText = classType ?? "object.container.storageFolder";
+                writer.WriteString(classType ?? "object.container.storageFolder");
             }
             else if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
-                objectClass.InnerText = "object.item.audioItem.musicTrack";
+                writer.WriteString("object.item.audioItem.musicTrack");
             }
             else if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                objectClass.InnerText = "object.item.imageItem.photo";
+                writer.WriteString("object.item.imageItem.photo");
             }
             else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
             {
                 if (!_profile.RequiresPlainVideoItems && item is Movie)
                 {
-                    objectClass.InnerText = "object.item.videoItem.movie";
+                    writer.WriteString("object.item.videoItem.movie");
                 }
                 else if (!_profile.RequiresPlainVideoItems && item is MusicVideo)
                 {
-                    objectClass.InnerText = "object.item.videoItem.musicVideoClip";
+                    writer.WriteString("object.item.videoItem.musicVideoClip");
                 }
                 else
                 {
-                    objectClass.InnerText = "object.item.videoItem";
+                    writer.WriteString("object.item.videoItem");
                 }
             }
             else if (item is MusicGenre)
             {
-                objectClass.InnerText = _profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre.musicGenre";
+                writer.WriteString(_profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre.musicGenre");
             }
             else if (item is Genre || item is GameGenre)
             {
-                objectClass.InnerText = _profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre";
+                writer.WriteString(_profile.RequiresPlainFolders ? "object.container.storageFolder" : "object.container.genre");
             }
             else
             {
-                objectClass.InnerText = "object.item";
+                writer.WriteString("object.item");
             }
 
-            return objectClass;
+            writer.WriteEndElement();
         }
 
-        private void AddPeople(BaseItem item, XmlElement element)
+        private void AddPeople(BaseItem item, XmlWriter writer)
         {
             var types = new[]
             {
@@ -718,7 +725,7 @@ namespace Emby.Dlna.Didl
                 var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
                     ?? PersonType.Actor;
 
-                AddValue(element, "upnp", type.ToLower(), actor.Name, NS_UPNP);
+                AddValue(writer, "upnp", type.ToLower(), actor.Name, NS_UPNP);
 
                 index++;
 
@@ -729,9 +736,9 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlElement element, Filter filter)
+        private void AddGeneralProperties(BaseItem item, StubType? itemStubType, BaseItem context, XmlWriter writer, Filter filter)
         {
-            AddCommonFields(item, itemStubType, context, element, filter);
+            AddCommonFields(item, itemStubType, context, writer, filter);
 
             var audio = item as Audio;
 
@@ -739,17 +746,17 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var artist in audio.Artists)
                 {
-                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
+                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
                 }
 
                 if (!string.IsNullOrEmpty(audio.Album))
                 {
-                    AddValue(element, "upnp", "album", audio.Album, NS_UPNP);
+                    AddValue(writer, "upnp", "album", audio.Album, NS_UPNP);
                 }
 
                 foreach (var artist in audio.AlbumArtists)
                 {
-                    AddAlbumArtist(element, artist);
+                    AddAlbumArtist(writer, artist);
                 }
             }
 
@@ -759,12 +766,12 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var artist in album.AlbumArtists)
                 {
-                    AddAlbumArtist(element, artist);
-                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
+                    AddAlbumArtist(writer, artist);
+                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
                 }
                 foreach (var artist in album.Artists)
                 {
-                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
+                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
                 }
             }
 
@@ -774,37 +781,37 @@ namespace Emby.Dlna.Didl
             {
                 foreach (var artist in musicVideo.Artists)
                 {
-                    AddValue(element, "upnp", "artist", artist, NS_UPNP);
-                    AddAlbumArtist(element, artist);
+                    AddValue(writer, "upnp", "artist", artist, NS_UPNP);
+                    AddAlbumArtist(writer, artist);
                 }
 
                 if (!string.IsNullOrEmpty(musicVideo.Album))
                 {
-                    AddValue(element, "upnp", "album", musicVideo.Album, NS_UPNP);
+                    AddValue(writer, "upnp", "album", musicVideo.Album, NS_UPNP);
                 }
             }
 
             if (item.IndexNumber.HasValue)
             {
-                AddValue(element, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
 
                 if (item is Episode)
                 {
-                    AddValue(element, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
+                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NS_UPNP);
                 }
             }
         }
 
-        private void AddAlbumArtist(XmlElement elem, string name)
+        private void AddAlbumArtist(XmlWriter writer, string name)
         {
             try
             {
-                var newNode = elem.OwnerDocument.CreateElement("upnp", "artist", NS_UPNP);
-                newNode.InnerText = name;
+                writer.WriteStartElement("upnp", "artist", NS_UPNP);
+                writer.WriteAttributeString("role", "AlbumArtist");
 
-                newNode.SetAttribute("role", "AlbumArtist");
+                writer.WriteString(name);
 
-                elem.AppendChild(newNode);
+                writer.WriteEndElement();
             }
             catch (XmlException)
             {
@@ -812,13 +819,11 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        private void AddValue(XmlElement elem, string prefix, string name, string value, string namespaceUri)
+        private void AddValue(XmlWriter writer, string prefix, string name, string value, string namespaceUri)
         {
             try
             {
-                var date = elem.OwnerDocument.CreateElement(prefix, name, namespaceUri);
-                date.InnerText = value;
-                elem.AppendChild(date);
+                writer.WriteElementString(prefix, name, namespaceUri, value);
             }
             catch (XmlException)
             {
@@ -826,11 +831,11 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlElement element)
+        private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlWriter writer)
         {
             if (stubType.HasValue && stubType.Value == StubType.People)
             {
-                AddEmbeddedImageAsCover("people", element);
+                AddEmbeddedImageAsCover("people", writer);
                 return;
             }
 
@@ -859,8 +864,6 @@ namespace Emby.Dlna.Didl
             {
                 return;
             }
-
-            var result = element.OwnerDocument;
 
             var playbackPercentage = 0;
             var unplayedCount = 0;
@@ -891,18 +894,14 @@ namespace Emby.Dlna.Didl
 
             var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, playbackPercentage, unplayedCount, "jpg");
 
-            var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
-            var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
-            profile.InnerText = _profile.AlbumArtPn;
-            icon.SetAttributeNode(profile);
-            icon.InnerText = albumartUrlInfo.Url;
-            element.AppendChild(icon);
+            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
+            writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
+            writer.WriteString(albumartUrlInfo.Url);
+            writer.WriteEndElement();
 
             // TOOD: Remove these default values
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, playbackPercentage, unplayedCount, "jpg");
-            icon = result.CreateElement("upnp", "icon", NS_UPNP);
-            icon.InnerText = iconUrlInfo.Url;
-            element.AppendChild(icon);
+            writer.WriteElementString("upnp", "icon", NS_UPNP, iconUrlInfo.Url);
 
             if (!_profile.EnableAlbumArtInDidl)
             {
@@ -916,36 +915,30 @@ namespace Emby.Dlna.Didl
                 }
             }
 
-            AddImageResElement(item, element, 160, 160, playbackPercentage, unplayedCount, "jpg", "JPEG_TN");
+            AddImageResElement(item, writer, 160, 160, playbackPercentage, unplayedCount, "jpg", "JPEG_TN");
 
             if (!_profile.EnableSingleAlbumArtLimit)
             {
-                AddImageResElement(item, element, 4096, 4096, playbackPercentage, unplayedCount, "jpg", "JPEG_LRG");
-                AddImageResElement(item, element, 1024, 768, playbackPercentage, unplayedCount, "jpg", "JPEG_MED");
-                AddImageResElement(item, element, 640, 480, playbackPercentage, unplayedCount, "jpg", "JPEG_SM");
-                AddImageResElement(item, element, 4096, 4096, playbackPercentage, unplayedCount, "png", "PNG_LRG");
-                AddImageResElement(item, element, 160, 160, playbackPercentage, unplayedCount, "png", "PNG_TN");
+                AddImageResElement(item, writer, 4096, 4096, playbackPercentage, unplayedCount, "jpg", "JPEG_LRG");
+                AddImageResElement(item, writer, 1024, 768, playbackPercentage, unplayedCount, "jpg", "JPEG_MED");
+                AddImageResElement(item, writer, 640, 480, playbackPercentage, unplayedCount, "jpg", "JPEG_SM");
+                AddImageResElement(item, writer, 4096, 4096, playbackPercentage, unplayedCount, "png", "PNG_LRG");
+                AddImageResElement(item, writer, 160, 160, playbackPercentage, unplayedCount, "png", "PNG_TN");
             }
         }
 
-        private void AddEmbeddedImageAsCover(string name, XmlElement element)
+        private void AddEmbeddedImageAsCover(string name, XmlWriter writer)
         {
-            var result = element.OwnerDocument;
+            writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
+            writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
+            writer.WriteString(_serverAddress + "/Dlna/icons/people480.jpg");
+            writer.WriteEndElement();
 
-            var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
-            var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
-            profile.InnerText = _profile.AlbumArtPn;
-            icon.SetAttributeNode(profile);
-            icon.InnerText = _serverAddress + "/Dlna/icons/people480.jpg";
-            element.AppendChild(icon);
-
-            icon = result.CreateElement("upnp", "icon", NS_UPNP);
-            icon.InnerText = _serverAddress + "/Dlna/icons/people48.jpg";
-            element.AppendChild(icon);
+            writer.WriteElementString("upnp", "icon", NS_UPNP, _serverAddress + "/Dlna/icons/people48.jpg");
         }
 
         private void AddImageResElement(BaseItem item,
-            XmlElement element,
+            XmlWriter writer,
             int maxWidth,
             int maxHeight,
             int playbackPercentage,
@@ -960,13 +953,9 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var result = element.OwnerDocument;
-
             var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, playbackPercentage, unplayedCount, format);
 
-            var res = result.CreateElement(string.Empty, "res", NS_DIDL);
-
-            res.InnerText = albumartUrlInfo.Url;
+            writer.WriteStartElement(string.Empty, "res", NS_DIDL);
 
             var width = albumartUrlInfo.Width;
             var height = albumartUrlInfo.Height;
@@ -974,7 +963,7 @@ namespace Emby.Dlna.Didl
             var contentFeatures = new ContentFeatureBuilder(_profile)
                 .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
 
-            res.SetAttribute("protocolInfo", String.Format(
+            writer.WriteAttributeString("protocolInfo", String.Format(
                 "http-get:*:{0}:{1}",
                 MimeTypes.GetMimeType("file." + format),
                 contentFeatures
@@ -982,10 +971,12 @@ namespace Emby.Dlna.Didl
 
             if (width.HasValue && height.HasValue)
             {
-                res.SetAttribute("resolution", string.Format("{0}x{1}", width.Value, height.Value));
+                writer.WriteAttributeString("resolution", string.Format("{0}x{1}", width.Value, height.Value));
             }
 
-            element.AppendChild(res);
+            writer.WriteString(albumartUrlInfo.Url);
+
+            writer.WriteEndElement();
         }
 
         private ImageDownloadInfo GetImageInfo(BaseItem item)

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
 {
@@ -17,7 +18,7 @@ namespace Rssdp.Infrastructure
 		#region Fields
 
 		private readonly HttpResponseMessage _Message;
-		private readonly UdpEndPoint _ReceivedFrom;
+		private readonly IpEndPointInfo _ReceivedFrom;
 
 		#endregion
 
@@ -26,9 +27,7 @@ namespace Rssdp.Infrastructure
 		/// <summary>
 		/// Full constructor.
 		/// </summary>
-		/// <param name="message">The <see cref="HttpResponseMessage"/> that was received.</param>
-		/// <param name="receivedFrom">A <see cref="UdpEndPoint"/> representing the sender's address (sometimes used for replies).</param>
-		public ResponseReceivedEventArgs(HttpResponseMessage message, UdpEndPoint receivedFrom)
+		public ResponseReceivedEventArgs(HttpResponseMessage message, IpEndPointInfo receivedFrom)
 		{
 			_Message = message;
 			_ReceivedFrom = receivedFrom;
@@ -49,7 +48,7 @@ namespace Rssdp.Infrastructure
 		/// <summary>
 		/// The <see cref="UdpEndPoint"/> the response came from.
 		/// </summary>
-		public UdpEndPoint ReceivedFrom
+		public IpEndPointInfo ReceivedFrom
 		{
 			get { return _ReceivedFrom; }
 		}

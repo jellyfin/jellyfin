@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using Rssdp;
 using Rssdp.Infrastructure;
 
@@ -29,7 +31,6 @@ namespace Emby.Dlna.Main
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
-        private readonly INetworkManager _network;
 
         private PlayToManager _manager;
         private readonly ISessionManager _sessionManager;
@@ -49,10 +50,13 @@ namespace Emby.Dlna.Main
         private bool _dlnaServerStarted;
         private SsdpDevicePublisher _Publisher;
 
+        private readonly ITimerFactory _timerFactory;
+        private readonly ISocketFactory _socketFactory;
+
+
         public DlnaEntryPoint(IServerConfigurationManager config,
             ILogManager logManager,
             IServerApplicationHost appHost,
-            INetworkManager network,
             ISessionManager sessionManager,
             IHttpClient httpClient,
             ILibraryManager libraryManager,
@@ -62,11 +66,10 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder)
+            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder, ISocketFactory socketFactory, ITimerFactory timerFactory)
         {
             _config = config;
             _appHost = appHost;
-            _network = network;
             _sessionManager = sessionManager;
             _httpClient = httpClient;
             _libraryManager = libraryManager;
@@ -78,6 +81,8 @@ namespace Emby.Dlna.Main
             _mediaSourceManager = mediaSourceManager;
             _deviceDiscovery = deviceDiscovery;
             _mediaEncoder = mediaEncoder;
+            _socketFactory = socketFactory;
+            _timerFactory = timerFactory;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -164,7 +169,7 @@ namespace Emby.Dlna.Main
         private void StartPublishing()
         {
             SsdpDevicePublisherBase.LogFunction = LogMessage;
-            _Publisher = new SsdpDevicePublisher();
+            _Publisher = new SsdpDevicePublisher(_socketFactory, _timerFactory, "Windows", "10");
         }
 
         private void StartDeviceDiscovery()
@@ -328,7 +333,8 @@ namespace Emby.Dlna.Main
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
-                        _mediaEncoder);
+                        _mediaEncoder,
+                        _timerFactory);
 
                     _manager.Start();
                 }

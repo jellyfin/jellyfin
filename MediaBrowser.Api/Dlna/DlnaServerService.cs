@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.Dlna
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UuId { get; set; }
-        
+
         [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Filename { get; set; }
     }
@@ -152,41 +152,38 @@ namespace MediaBrowser.Api.Dlna
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
+        public object Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _mediaReceiverRegistrar);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
+        public object Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _contentDirectory);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessConnectionManagerControlRequest request)
+        public object Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _connectionManager).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _connectionManager);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        private async Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
+        private ControlResponse PostAsync(Stream requestStream, IUpnpService service)
         {
             var id = GetPathValue(2);
 
-            using (var reader = new StreamReader(requestStream))
+            return service.ProcessControlRequest(new ControlRequest
             {
-                return service.ProcessControlRequest(new ControlRequest
-                {
-                    Headers = Request.Headers.ToDictionary(),
-                    InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
-                    TargetServerUuId = id,
-                    RequestedUrl = Request.AbsoluteUri
-                });
-            }
+                Headers = Request.Headers.ToDictionary(),
+                InputXml = requestStream,
+                TargetServerUuId = id,
+                RequestedUrl = Request.AbsoluteUri
+            });
         }
 
         public object Get(GetIcon request)

@@ -17,6 +17,7 @@ using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -24,6 +25,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -35,7 +37,6 @@ namespace Emby.Dlna.ContentDirectory
         private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
-        private readonly IMediaEncoder _mediaEncoder;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
         private const string NS_DIDL = "urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/";
@@ -49,8 +50,8 @@ namespace Emby.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder)
-            : base(config, logger)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager, IUserViewManager userViewManager, IMediaEncoder mediaEncoder, IXmlReaderSettingsFactory xmlReaderSettingsFactory)
+            : base(config, logger, xmlReaderSettingsFactory)
         {
             _libraryManager = libraryManager;
             _userDataManager = userDataManager;
@@ -58,11 +59,10 @@ namespace Emby.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _channelManager = channelManager;
             _userViewManager = userViewManager;
-            _mediaEncoder = mediaEncoder;
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, _mediaEncoder);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, mediaEncoder);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -209,73 +209,92 @@ namespace Emby.Dlna.ContentDirectory
                 start = startVal;
             }
 
-            //var root = GetItem(id) as IMediaFolder;
-            var result = new XmlDocument();
+            var settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
 
-            var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
-            didl.SetAttribute("xmlns:dc", NS_DC);
-            didl.SetAttribute("xmlns:dlna", NS_DLNA);
-            didl.SetAttribute("xmlns:upnp", NS_UPNP);
-            //didl.SetAttribute("xmlns:sec", NS_SEC);
-            result.AppendChild(didl);
-
-            var serverItem = GetItemFromObjectId(id, user);
-            var item = serverItem.Item;
+            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
 
             int totalCount;
 
-            if (string.Equals(flag, "BrowseMetadata"))
+            using (XmlWriter writer = XmlWriter.Create(builder, settings))
             {
-                totalCount = 1;
+                //writer.WriteStartDocument();
 
-                if (item.IsFolder || serverItem.StubType.HasValue)
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+
+                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                //didl.SetAttribute("xmlns:sec", NS_SEC);
+
+                foreach (var att in _profile.XmlRootAttributes)
                 {
-                    var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
-
-                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id));
+                    writer.WriteAttributeString(att.Name, att.Value);
                 }
-                else
+
+                var serverItem = GetItemFromObjectId(id, user);
+                var item = serverItem.Item;
+
+                if (string.Equals(flag, "BrowseMetadata"))
                 {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, item, null, null, deviceId, filter));
-                }
+                    totalCount = 1;
 
-                provided++;
-            }
-            else
-            {
-                var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
-                totalCount = childrenResult.TotalRecordCount;
-
-                provided = childrenResult.Items.Length;
-
-                foreach (var i in childrenResult.Items)
-                {
-                    var childItem = i.Item;
-                    var displayStubType = i.StubType;
-
-                    if (childItem.IsFolder || displayStubType.HasValue)
+                    if (item.IsFolder || serverItem.StubType.HasValue)
                     {
-                        var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
-                            .TotalRecordCount;
+                        var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
 
-                        result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, childItem, displayStubType, item, childCount, filter));
+                        _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
                     }
                     else
                     {
-                        result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, childItem, item, serverItem.StubType, deviceId, filter));
+                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, item, null, null, deviceId, filter);
+                    }
+
+                    provided++;
+                }
+                else
+                {
+                    var childrenResult = (await GetUserItems(item, serverItem.StubType, user, sortCriteria, start, requestedCount).ConfigureAwait(false));
+                    totalCount = childrenResult.TotalRecordCount;
+
+                    provided = childrenResult.Items.Length;
+
+                    foreach (var i in childrenResult.Items)
+                    {
+                        var childItem = i.Item;
+                        var displayStubType = i.StubType;
+
+                        if (childItem.IsFolder || displayStubType.HasValue)
+                        {
+                            var childCount = (await GetUserItems(childItem, displayStubType, user, sortCriteria, null, 0).ConfigureAwait(false))
+                                .TotalRecordCount;
+
+                            _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
+                        }
+                        else
+                        {
+                            _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, childItem, item, serverItem.StubType, deviceId, filter);
+                        }
                     }
                 }
+                writer.WriteEndElement();
+                //writer.WriteEndDocument();
             }
 
-            var resXML = result.OuterXml;
+            var resXML = builder.ToString();
 
             return new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("Result", resXML),
-                new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
-                new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
-            };
+                {
+                    new KeyValuePair<string,string>("Result", resXML),
+                    new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
+                    new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
+                    new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
+                };
         }
 
         private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(Headers sparams, User user, string deviceId)
@@ -303,55 +322,72 @@ namespace Emby.Dlna.ContentDirectory
                 start = startVal;
             }
 
-            //var root = GetItem(id) as IMediaFolder;
-            var result = new XmlDocument();
-
-            var didl = result.CreateElement(string.Empty, "DIDL-Lite", NS_DIDL);
-            didl.SetAttribute("xmlns:dc", NS_DC);
-            didl.SetAttribute("xmlns:dlna", NS_DLNA);
-            didl.SetAttribute("xmlns:upnp", NS_UPNP);
-
-            foreach (var att in _profile.XmlRootAttributes)
+            var settings = new XmlWriterSettings
             {
-                didl.SetAttribute(att.Name, att.Value);
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
+
+            StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8);
+            int totalCount = 0;
+            int provided = 0;
+
+            using (XmlWriter writer = XmlWriter.Create(builder, settings))
+            {
+                //writer.WriteStartDocument();
+
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NS_DIDL);
+
+                writer.WriteAttributeString("xmlns", "dc", null, NS_DC);
+                writer.WriteAttributeString("xmlns", "dlna", null, NS_DLNA);
+                writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
+                //didl.SetAttribute("xmlns:sec", NS_SEC);
+
+                foreach (var att in _profile.XmlRootAttributes)
+                {
+                    writer.WriteAttributeString(att.Name, att.Value);
+                }
+
+                var serverItem = GetItemFromObjectId(sparams["ContainerID"], user);
+
+                var item = serverItem.Item;
+
+                var childrenResult = (await GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requestedCount).ConfigureAwait(false));
+
+                totalCount = childrenResult.TotalRecordCount;
+
+                provided = childrenResult.Items.Length;
+
+                foreach (var i in childrenResult.Items)
+                {
+                    if (i.IsFolder)
+                    {
+                        var childCount = (await GetChildrenSorted(i, user, searchCriteria, sortCriteria, null, 0).ConfigureAwait(false))
+                            .TotalRecordCount;
+
+                        _didlBuilder.WriteFolderElement(writer, i, null, item, childCount, filter);
+                    }
+                    else
+                    {
+                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, i, item, serverItem.StubType, deviceId, filter);
+                    }
+                }
+
+                writer.WriteEndElement();
+                //writer.WriteEndDocument();
             }
 
-            result.AppendChild(didl);
-
-            var serverItem = GetItemFromObjectId(sparams["ContainerID"], user);
-
-            var item = serverItem.Item;
-
-            var childrenResult = (await GetChildrenSorted(item, user, searchCriteria, sortCriteria, start, requestedCount).ConfigureAwait(false));
-
-            var totalCount = childrenResult.TotalRecordCount;
-
-            var provided = childrenResult.Items.Length;
-
-            foreach (var i in childrenResult.Items)
-            {
-                if (i.IsFolder)
-                {
-                    var childCount = (await GetChildrenSorted(i, user, searchCriteria, sortCriteria, null, 0).ConfigureAwait(false))
-                        .TotalRecordCount;
-
-                    result.DocumentElement.AppendChild(_didlBuilder.GetFolderElement(result, i, null, item, childCount, filter));
-                }
-                else
-                {
-                    result.DocumentElement.AppendChild(_didlBuilder.GetItemElement(_config.GetDlnaConfiguration(), result, i, item, serverItem.StubType, deviceId, filter));
-                }
-            }
-
-            var resXML = result.OuterXml;
+            var resXML = builder.ToString();
 
             return new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("Result", resXML),
-                new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
-                new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
-                new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
-            };
+                {
+                    new KeyValuePair<string,string>("Result", resXML),
+                    new KeyValuePair<string,string>("NumberReturned", provided.ToString(_usCulture)),
+                    new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
+                    new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
+                };
         }
 
         private Task<QueryResult<BaseItem>> GetChildrenSorted(BaseItem item, User user, SearchCriteria search, SortCriteria sort, int? startIndex, int? limit)
