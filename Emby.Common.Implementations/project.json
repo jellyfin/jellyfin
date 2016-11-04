@@ -12,15 +12,14 @@
         "System.IO": "4.0.0.0",
         "System.Net": "4.0.0.0",
         "System.Net.Http": "4.0.0.0",
-        "System.Net.Http.WebRequest": "4.0.0.0",
         "System.Net.Primitives": "4.0.0.0",
+        "System.Net.Http.WebRequest": "4.0.0.0",
         "System.Runtime": "4.0.0.0",
         "System.Runtime.Extensions": "4.0.0.0",
         "System.Text.Encoding": "4.0.0.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.0.0",
-        "System.Xml": "4.0.0.0",
-        "System.Xml.Serialization": "4.0.0.0"
+		"System.Xml.ReaderWriter": "4.0.0"
       },
       "dependencies": {
         "SimpleInjector": "3.2.4",
@@ -30,7 +29,8 @@
         },
         "MediaBrowser.Common": {
           "target": "project"
-        }      }
+        }      
+	}
     },
     "netstandard1.6": {
       "imports": "dnxcore50",
@@ -40,6 +40,7 @@
 		"System.Diagnostics.Process": "4.1.0",
 		"System.Threading.Timer": "4.0.1",
 		"System.Net.Requests": "4.0.11",
+		"System.Xml.ReaderWriter": "4.0.11",
 		"System.Xml.XmlSerializer": "4.0.11",
 		"System.Net.Http": "4.1.0",
 		"System.Net.Primitives": "4.0.11",

@@ -139,11 +139,12 @@ namespace MediaBrowser.Server.Implementations.IO
 
         private readonly IFileSystem _fileSystem;
         private readonly ITimerFactory _timerFactory;
+        private readonly IEnvironmentInfo _environmentInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
         /// </summary>
-        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory, ISystemEvents systemEvents)
+        public LibraryMonitor(ILogManager logManager, ITaskManager taskManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ITimerFactory timerFactory, ISystemEvents systemEvents, IEnvironmentInfo environmentInfo)
         {
             if (taskManager == null)
             {
@@ -156,6 +157,7 @@ namespace MediaBrowser.Server.Implementations.IO
             ConfigurationManager = configurationManager;
             _fileSystem = fileSystem;
             _timerFactory = timerFactory;
+            _environmentInfo = environmentInfo;
 
             systemEvents.Resume += _systemEvents_Resume;
         }
@@ -525,7 +527,7 @@ namespace MediaBrowser.Server.Implementations.IO
                     }
                 }
 
-                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory);
+                var newRefresher = new FileRefresher(path, _fileSystem, ConfigurationManager, LibraryManager, TaskManager, Logger, _timerFactory, _environmentInfo);
                 newRefresher.Completed += NewRefresher_Completed;
                 _activeRefreshers.Add(newRefresher);
             }
