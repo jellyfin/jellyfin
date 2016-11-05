@@ -107,7 +107,7 @@ button {
 
 .btnCardOptions {
     position: absolute;
-    bottom: 0;
+    bottom: .25em;
     right: 0;
     margin: 0 !important;
     z-index: 1;

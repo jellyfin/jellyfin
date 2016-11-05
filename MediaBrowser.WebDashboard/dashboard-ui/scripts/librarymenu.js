@@ -22,7 +22,7 @@
         html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft hide"><i class="md-icon">menu</i></button>';
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><i class="md-icon">home</i></button>';
 
-        html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
+        html += '<h3 class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</h3>';
 
         html += '<div class="viewMenuSecondary">';
 
