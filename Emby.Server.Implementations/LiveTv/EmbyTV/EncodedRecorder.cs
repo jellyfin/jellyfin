@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 var format = _liveTvOptions.RecordingEncodingFormat;
 
-                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase) || string.Equals(_liveTvOptions.RecordedVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(format, "mkv", StringComparison.OrdinalIgnoreCase))
                 {
                     return "mkv";
                 }

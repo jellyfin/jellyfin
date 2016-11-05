@@ -170,7 +170,7 @@ define(['browser'], function (browser) {
                 supported = browser.tizen;
                 break;
             case 'mov':
-                supported = browser.chrome || browser.edgeUwp;
+                supported = browser.tizen || browser.chrome || browser.edgeUwp;
                 videoCodecs.push('h264');
                 break;
             case 'm2ts':
@@ -329,7 +329,11 @@ define(['browser'], function (browser) {
                 AudioCodec: videoAudioCodecs.join(',')
             });
         }
-
+        
+        if (browser.tizen) {
+            mp4VideoCodecs.push('mpeg2video')
+        }
+        
         if (canPlayMkv && mp4VideoCodecs.length) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv',

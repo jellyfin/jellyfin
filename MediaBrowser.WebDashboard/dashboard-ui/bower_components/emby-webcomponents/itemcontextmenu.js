@@ -233,7 +233,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.openAlbum !== false && item.AlbumId) {
+            if (options.openAlbum !== false && item.AlbumId && item.MediaType !== 'Photo') {
                 commands.push({
                     name: Globalize.translate('sharedcomponents#ViewAlbum'),
                     id: 'album'

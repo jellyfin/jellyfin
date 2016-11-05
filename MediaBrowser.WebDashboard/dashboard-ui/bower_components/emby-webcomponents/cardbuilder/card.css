@@ -408,7 +408,7 @@ button {
     max-width: 200px;
 }
 
-@media all and (min-width: 420px) {
+@media all and (min-width: 400px) {
 
     .backdropCard-scalable {
         width: 50%;

@@ -36,8 +36,20 @@
         var folderHtml = '';
 
         folderHtml += '<div class="checkboxList">';
+        var excludeViewTypes = ['playlists', 'livetv', 'boxsets', 'channels'];
+        var excludeItemTypes = ['Channel'];
+
         folderHtml += result.Items.map(function (i) {
 
+            if (excludeViewTypes.indexOf(i.CollectionType || []) !== -1) {
+                return '';
+            }
+
+            // not implemented yet
+            if (excludeItemTypes.indexOf(i.Type) !== -1) {
+                return '';
+            }
+            
             var currentHtml = '';
 
             var id = 'chkIncludeInLatest' + i.Id;

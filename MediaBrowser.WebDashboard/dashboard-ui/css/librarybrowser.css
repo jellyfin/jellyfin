@@ -45,6 +45,10 @@
     padding-top: 10px;
 }
 
+.pageWithAbsoluteTabs .pageTabContent {
+    padding-top: 2.2em;
+}
+
 /*.pageWithAbsoluteTabs .pageTabContent {
     padding-left: .5em !important;
     padding-right: .5em !important;
@@ -85,7 +89,7 @@
 }
 
 .homePageSection {
-    margin-top: 3em;
+    margin-bottom: 3.6em;
 }
 
 .sectionHeaderButton {
@@ -132,12 +136,12 @@
 }
 
 .homePageSection h1 {
-    padding-left: 3.1vw;
+    padding-left: .55em;
 }
 
 .homePageSection .itemsContainer {
-    padding-left: 2.5vw;
-    padding-right: 2.5vw;
+    padding-left: .7em;
+    padding-right: .7em;
 }
 
 @media all and (min-width: 1200px) {
@@ -166,7 +170,6 @@
 
 .listPaging {
     text-align: center;
-    margin: .5em 0 .5em;
 }
 
 .viewControls + .listTopPaging {

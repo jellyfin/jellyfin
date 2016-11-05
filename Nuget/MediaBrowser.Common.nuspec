@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common</id>
-        <version>3.0.682</version>
+        <version>3.0.683</version>
         <title>Emby.Common</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
@@ -13,7 +13,7 @@
         <copyright>Copyright © Emby 2013</copyright>
     </metadata>
     <files>
-        <file src="dlls\MediaBrowser.Common.dll" target="lib\netstandard1.0\MediaBrowser.Common.dll" />
-        <file src="dlls\MediaBrowser.Model.dll" target="lib\netstandard1.0\MediaBrowser.Model.dll" />
+        <file src="dlls\MediaBrowser.Common.dll" target="lib\portable-net45+win8+wpa81\MediaBrowser.Common.dll" />
+        <file src="dlls\MediaBrowser.Model.dll" target="lib\portable-net45+win8+wpa81\MediaBrowser.Model.dll" />
     </files>
 </package>

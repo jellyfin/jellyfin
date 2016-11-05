@@ -724,7 +724,7 @@ var Dashboard = {
                     profile.SubtitleProfiles.push({
                         Format: 'ass',
                         Method: 'Embed'
-                    }); 
+                    });
                     profile.SubtitleProfiles.push({
                         Format: 'ssa',
                         Method: 'Embed'
@@ -1627,7 +1627,11 @@ var AppInfo = {};
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
         if (Dashboard.isRunningInCordova()) {
-            define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
+            if (window.MainActivity && window.MainActivity.getAndroidBuildVersion() >= 24) {
+                define("actionsheet", ["webActionSheet"], returnFirstDependency);
+            } else {
+                define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
+            }
         } else {
             define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }

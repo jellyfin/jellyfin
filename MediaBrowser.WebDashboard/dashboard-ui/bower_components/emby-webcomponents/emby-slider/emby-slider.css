@@ -224,3 +224,6 @@ _:-ms-input-placeholder, :root .mdl-slider {
     align-items: center;
     justify-content: center;
 }
+.sliderBubbleText {
+    margin: 0;
+}
