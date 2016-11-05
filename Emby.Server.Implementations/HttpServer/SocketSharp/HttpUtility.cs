@@ -1,33 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Text;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public static class MyHttpUtility
     {
-        sealed class HttpQSCollection : NameValueCollection
-        {
-            public override string ToString()
-            {
-                int count = Count;
-                if (count == 0)
-                    return "";
-                StringBuilder sb = new StringBuilder();
-                string[] keys = AllKeys;
-                for (int i = 0; i < count; i++)
-                {
-                    sb.AppendFormat("{0}={1}&", keys[i], this[keys[i]]);
-                }
-                if (sb.Length > 0)
-                    sb.Length--;
-                return sb.ToString();
-            }
-        }
-
         // Must be sorted
         static readonly long[] entities = new long[] {
 			(long)'A' << 56 | (long)'E' << 48 | (long)'l' << 40 | (long)'i' << 32 | (long)'g' << 24, 
@@ -607,7 +587,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
             byte[] buf = bytes.ToArray();
             bytes = null;
-            return e.GetString(buf);
+            return e.GetString(buf, 0, buf.Length);
 
         }
 

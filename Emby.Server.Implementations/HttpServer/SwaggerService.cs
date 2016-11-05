@@ -1,17 +1,20 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using System.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public class SwaggerService : IHasResultFactory, IService
     {
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IFileSystem _fileSystem;
 
-        public SwaggerService(IServerApplicationPaths appPaths)
+        public SwaggerService(IServerApplicationPaths appPaths, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
+            _fileSystem = fileSystem;
         }
 
         /// <summary>
@@ -23,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var swaggerDirectory = Path.Combine(_appPaths.ApplicationResourcesPath, "swagger-ui");
 
-            var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', Path.DirectorySeparatorChar));
+            var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', _fileSystem.DirectorySeparatorChar));
 
             return ResultFactory.GetStaticFileResult(Request, requestedFile).Result;
         }

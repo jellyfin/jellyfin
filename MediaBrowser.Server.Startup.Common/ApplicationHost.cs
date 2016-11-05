@@ -54,7 +54,6 @@ using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Devices;
 using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
-using MediaBrowser.Server.Implementations.Localization;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Implementations.Security;
@@ -107,6 +106,7 @@ using Emby.Server.Implementations.FileOrganization;
 using Emby.Server.Implementations.HttpServer.Security;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
+using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.MediaEncoder;
 using Emby.Server.Implementations.Notifications;
 using Emby.Server.Implementations.Persistence;
@@ -548,7 +548,10 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(ServerConfigurationManager);
 
-            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LogManager.GetLogger("LocalizationManager"));
+            IAssemblyInfo assemblyInfo = new AssemblyInfo();
+            RegisterSingleInstance<IAssemblyInfo>(assemblyInfo);
+
+            LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer, LogManager.GetLogger("LocalizationManager"), assemblyInfo, new TextLocalizer());
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
@@ -558,8 +561,6 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
 
             RegisterSingleInstance<IXmlReaderSettingsFactory>(new XmlReaderSettingsFactory());
-            IAssemblyInfo assemblyInfo = new AssemblyInfo();
-            RegisterSingleInstance<IAssemblyInfo>(assemblyInfo);
 
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
