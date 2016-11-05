@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.LiveTv
                 Protocol = mediaSource.Protocol,
                 MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                 ExtractChapters = false,
-                AnalyzeDurationSections = 2
+                AnalyzeDurationSections = 3
 
             }, cancellationToken).ConfigureAwait(false);
 

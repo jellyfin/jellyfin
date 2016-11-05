@@ -17,25 +17,19 @@ namespace Emby.Common.Implementations.Net
 
         #region Fields
 
-        private System.Net.Sockets.Socket _Socket;
+        private Socket _Socket;
         private int _LocalPort;
 
         #endregion
 
         #region Constructors
 
-        public UdpSocket(System.Net.Sockets.Socket socket, int localPort, string ipAddress)
+        public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
             if (socket == null) throw new ArgumentNullException("socket");
 
             _Socket = socket;
             _LocalPort = localPort;
-
-            IPAddress ip = null;
-            if (String.IsNullOrEmpty(ipAddress))
-                ip = IPAddress.Any;
-            else
-                ip = IPAddress.Parse(ipAddress);
 
             _Socket.Bind(new IPEndPoint(ip, _LocalPort));
             if (_LocalPort == 0)
@@ -46,18 +40,18 @@ namespace Emby.Common.Implementations.Net
 
         #region IUdpSocket Members
 
-        public Task<ReceivedUdpData> ReceiveAsync()
+        public Task<SocketReceiveResult> ReceiveAsync()
         {
             ThrowIfDisposed();
 
-            var tcs = new TaskCompletionSource<ReceivedUdpData>();
+            var tcs = new TaskCompletionSource<SocketReceiveResult>();
 
-            System.Net.EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
             var state = new AsyncReceiveState(_Socket, receivedFromEndPoint);
             state.TaskCompletionSource = tcs;
 
 #if NETSTANDARD1_6
-            _Socket.ReceiveFromAsync(new System.ArraySegment<Byte>(state.Buffer), System.Net.Sockets.SocketFlags.None, state.EndPoint)
+            _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer),SocketFlags.None, state.EndPoint)
                 .ContinueWith((task, asyncState) =>
                 {
                     if (task.Status != TaskStatus.Faulted)
@@ -68,28 +62,36 @@ namespace Emby.Common.Implementations.Net
                     }
                 }, state);
 #else
-            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, System.Net.Sockets.SocketFlags.None, ref state.EndPoint, new AsyncCallback(this.ProcessResponse), state);
+            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.EndPoint, new AsyncCallback(this.ProcessResponse), state);
 #endif
 
             return tcs.Task;
         }
 
-        public Task SendTo(byte[] messageData, IpEndPointInfo endPoint)
+        public Task SendAsync(byte[] buffer, int size, IpEndPointInfo endPoint)
         {
             ThrowIfDisposed();
 
-            if (messageData == null) throw new ArgumentNullException("messageData");
+            if (buffer == null) throw new ArgumentNullException("messageData");
             if (endPoint == null) throw new ArgumentNullException("endPoint");
 
 #if NETSTANDARD1_6
-            _Socket.SendTo(messageData, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port));
+
+            if (size != buffer.Length)
+            {
+                byte[] copy = new byte[size];
+                Buffer.BlockCopy(buffer, 0, copy, 0, size);
+                buffer = copy;
+            }
+
+            _Socket.SendTo(buffer, new IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port));
             return Task.FromResult(true);
 #else
             var taskSource = new TaskCompletionSource<bool>();
 
             try
             {
-                _Socket.BeginSendTo(messageData, 0, messageData.Length, SocketFlags.None, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port), result =>
+                _Socket.BeginSendTo(buffer, 0, size, SocketFlags.None, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port), result =>
                 {
                     try
                     {
@@ -100,29 +102,10 @@ namespace Emby.Common.Implementations.Net
                     {
                         taskSource.TrySetException(ex);
                     }
-                    catch (ObjectDisposedException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
-                    catch (SecurityException ex)
-                    {
-                        taskSource.TrySetException(ex);
-                    }
+
                 }, null);
             }
-            catch (SocketException ex)
-            {
-                taskSource.TrySetException(ex);
-            }
-            catch (ObjectDisposedException ex)
-            {
-                taskSource.TrySetException(ex);
-            }
-            catch (SecurityException ex)
+            catch (Exception ex)
             {
                 taskSource.TrySetException(ex);
             }
@@ -151,7 +134,6 @@ namespace Emby.Common.Implementations.Net
 
         #region Private Methods
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions via task methods should be reported by task completion source, so this should be ok.")]
         private static void ProcessResponse(AsyncReceiveState state, Func<int> receiveData)
         {
             try
@@ -160,11 +142,11 @@ namespace Emby.Common.Implementations.Net
 
                 var ipEndPoint = state.EndPoint as IPEndPoint;
                 state.TaskCompletionSource.SetResult(
-                    new ReceivedUdpData()
+                    new SocketReceiveResult()
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        ReceivedFrom = ToIpEndPointInfo(ipEndPoint)
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint)
                     }
                 );
             }
@@ -204,7 +186,6 @@ namespace Emby.Common.Implementations.Net
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions via task methods should be reported by task completion source, so this should be ok.")]
         private void ProcessResponse(IAsyncResult asyncResult)
         {
 #if NET46
@@ -215,11 +196,11 @@ namespace Emby.Common.Implementations.Net
 
                 var ipEndPoint = state.EndPoint as IPEndPoint;
                 state.TaskCompletionSource.SetResult(
-                    new ReceivedUdpData()
+                    new SocketReceiveResult
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        ReceivedFrom = ToIpEndPointInfo(ipEndPoint)
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint)
                     }
                 );
             }
@@ -247,7 +228,7 @@ namespace Emby.Common.Implementations.Net
 
         private class AsyncReceiveState
         {
-            public AsyncReceiveState(System.Net.Sockets.Socket socket, EndPoint endPoint)
+            public AsyncReceiveState(Socket socket, EndPoint endPoint)
             {
                 this.Socket = socket;
                 this.EndPoint = endPoint;
@@ -256,9 +237,9 @@ namespace Emby.Common.Implementations.Net
             public EndPoint EndPoint;
             public byte[] Buffer = new byte[8192];
 
-            public System.Net.Sockets.Socket Socket { get; private set; }
+            public Socket Socket { get; private set; }
 
-            public TaskCompletionSource<ReceivedUdpData> TaskCompletionSource { get; set; }
+            public TaskCompletionSource<SocketReceiveResult> TaskCompletionSource { get; set; }
 
         }
 

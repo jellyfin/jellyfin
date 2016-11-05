@@ -322,7 +322,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var item = i.Item2[0];
                 var childCount = 0;
 
-                if (i.Item1 != null && i.Item2.Count > 0)
+                if (i.Item1 != null && i.Item2.Count > 1)
                 {
                     item = i.Item1;
                     childCount = i.Item2.Count;

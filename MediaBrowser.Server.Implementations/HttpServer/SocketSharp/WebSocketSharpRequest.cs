@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using Emby.Server.Implementations.HttpServer.SocketSharp;
 using Funq;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;

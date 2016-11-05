@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using System.Xml.Serialization;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -13,12 +14,12 @@ namespace Emby.Common.Implementations.Serialization
     /// <summary>
     /// Provides a wrapper around third party xml serialization.
     /// </summary>
-    public class XmlSerializer : IXmlSerializer
+    public class MyXmlSerializer : IXmlSerializer
     {
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
 
-        public XmlSerializer(IFileSystem fileSystem, ILogger logger)
+        public MyXmlSerializer(IFileSystem fileSystem, ILogger logger)
         {
             _fileSystem = fileSystem;
             _logger = logger;
@@ -26,18 +27,18 @@ namespace Emby.Common.Implementations.Serialization
 
         // Need to cache these
         // http://dotnetcodebox.blogspot.com/2013/01/xmlserializer-class-may-result-in.html
-        private readonly Dictionary<string, System.Xml.Serialization.XmlSerializer> _serializers =
-            new Dictionary<string, System.Xml.Serialization.XmlSerializer>();
+        private readonly Dictionary<string, XmlSerializer> _serializers =
+            new Dictionary<string, XmlSerializer>();
 
-        private System.Xml.Serialization.XmlSerializer GetSerializer(Type type)
+        private XmlSerializer GetSerializer(Type type)
         {
             var key = type.FullName;
             lock (_serializers)
             {
-                System.Xml.Serialization.XmlSerializer serializer;
+                XmlSerializer serializer;
                 if (!_serializers.TryGetValue(key, out serializer))
                 {
-                    serializer = new System.Xml.Serialization.XmlSerializer(type);
+                    serializer = new XmlSerializer(type);
                     _serializers[key] = serializer;
                 }
                 return serializer;
@@ -80,7 +81,7 @@ namespace Emby.Common.Implementations.Serialization
 #if NET46
             using (var writer = new XmlTextWriter(stream, null))            
             {
-                writer.Formatting = System.Xml.Formatting.Indented;
+                writer.Formatting = Formatting.Indented;
                 SerializeToWriter(obj, writer);
             }
 #else

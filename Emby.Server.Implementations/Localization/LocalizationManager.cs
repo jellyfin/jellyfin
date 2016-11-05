@@ -9,14 +9,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Reflection;
 
-namespace MediaBrowser.Server.Implementations.Localization
+namespace Emby.Server.Implementations.Localization
 {
     /// <summary>
     /// Class LocalizationManager
@@ -39,6 +36,8 @@ namespace MediaBrowser.Server.Implementations.Localization
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
+        private readonly IAssemblyInfo _assemblyInfo;
+        private readonly ITextLocalizer _textLocalizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -46,12 +45,14 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <param name="configurationManager">The configuration manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger)
+        public LocalizationManager(IServerConfigurationManager configurationManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, ILogger logger, IAssemblyInfo assemblyInfo, ITextLocalizer textLocalizer)
         {
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
+            _assemblyInfo = assemblyInfo;
+            _textLocalizer = textLocalizer;
 
             ExtractAll();
         }
@@ -65,20 +66,20 @@ namespace MediaBrowser.Server.Implementations.Localization
 
 			_fileSystem.CreateDirectory(localizationPath);
 
-            var existingFiles = Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly)
+            var existingFiles = GetRatingsFiles(localizationPath)
                 .Select(Path.GetFileName)
                 .ToList();
 
             // Extract from the assembly
-            foreach (var resource in type.Assembly
-                .GetManifestResourceNames()
+            foreach (var resource in _assemblyInfo
+                .GetManifestResourceNames(type)
                 .Where(i => i.StartsWith(resourcePath)))
             {
                 var filename = "ratings-" + resource.Substring(resourcePath.Length);
 
                 if (!existingFiles.Contains(filename))
                 {
-                    using (var stream = type.Assembly.GetManifestResourceStream(resource))
+                    using (var stream = _assemblyInfo.GetManifestResourceStream(type, resource))
                     {
                         var target = Path.Combine(localizationPath, filename);
                         _logger.Info("Extracting ratings to {0}", target);
@@ -90,11 +91,19 @@ namespace MediaBrowser.Server.Implementations.Localization
                     }
                 }
             }
-
-            foreach (var file in Directory.EnumerateFiles(localizationPath, "ratings-*.txt", SearchOption.TopDirectoryOnly))
+            
+            foreach (var file in GetRatingsFiles(localizationPath))
             {
                 LoadRatings(file);
             }
+        }
+
+        private List<string> GetRatingsFiles(string directory)
+        {
+            return _fileSystem.GetFilePaths(directory, false)
+                .Where(i => string.Equals(Path.GetExtension(i), ".txt", StringComparison.OrdinalIgnoreCase))
+                .Where(i => Path.GetFileName(i).StartsWith("ratings-", StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
         /// <summary>
@@ -111,16 +120,12 @@ namespace MediaBrowser.Server.Implementations.Localization
 
         public string RemoveDiacritics(string text)
         {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
+            return _textLocalizer.RemoveDiacritics(text);
         }
 
         public string NormalizeFormKD(string text)
         {
-            return text.Normalize(NormalizationForm.FormKD);
+            return _textLocalizer.NormalizeFormKD(text);
         }
 
         /// <summary>
@@ -134,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             var list = new List<CultureDto>();
 
-            using (var stream = type.Assembly.GetManifestResourceStream(path))
+            using (var stream = _assemblyInfo.GetManifestResourceStream(type, path))
             {
                 using (var reader = new StreamReader(stream))
                 {
@@ -176,7 +181,7 @@ namespace MediaBrowser.Server.Implementations.Localization
             var type = GetType();
             var path = type.Namespace + ".countries.json";
 
-            using (var stream = type.Assembly.GetManifestResourceStream(path))
+            using (var stream = _assemblyInfo.GetManifestResourceStream(type, path))
             {
                 return _jsonSerializer.DeserializeFromStream<List<CountryInfo>>(stream);
             }
@@ -234,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.Localization
         /// <returns>Dictionary{System.StringParentalRating}.</returns>
         private void LoadRatings(string file)
         {
-			var dict = File.ReadAllLines(file).Select(i =>
+			var dict = _fileSystem.ReadAllLines(file).Select(i =>
             {
                 if (!string.IsNullOrWhiteSpace(i))
                 {
@@ -337,18 +342,17 @@ namespace MediaBrowser.Server.Implementations.Localization
         {
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var assembly = GetType().Assembly;
             var namespaceName = GetType().Namespace + "." + prefix;
 
-            CopyInto(dictionary, namespaceName + "." + baseFilename, assembly);
-            CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture), assembly);
+            CopyInto(dictionary, namespaceName + "." + baseFilename);
+            CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture));
 
             return dictionary;
         }
 
-        private void CopyInto(IDictionary<string, string> dictionary, string resourcePath, Assembly assembly)
+        private void CopyInto(IDictionary<string, string> dictionary, string resourcePath)
         {
-            using (var stream = assembly.GetManifestResourceStream(resourcePath))
+            using (var stream = _assemblyInfo.GetManifestResourceStream(GetType(), resourcePath))
             {
                 if (stream != null)
                 {
@@ -418,5 +422,12 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             }.OrderBy(i => i.Name);
         }
+    }
+
+    public interface ITextLocalizer
+    {
+        string RemoveDiacritics(string text);
+
+        string NormalizeFormKD(string text);
     }
 }

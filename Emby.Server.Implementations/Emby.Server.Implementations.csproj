@@ -43,6 +43,11 @@
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
+    <Compile Include="Connect\ConnectData.cs" />
+    <Compile Include="Connect\ConnectEntryPoint.cs" />
+    <Compile Include="Connect\ConnectManager.cs" />
+    <Compile Include="Connect\Responses.cs" />
+    <Compile Include="Connect\Validator.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
@@ -51,6 +56,7 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
+    <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
@@ -61,13 +67,17 @@
     <Compile Include="FileOrganization\NameUtils.cs" />
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
+    <Compile Include="HttpServer\GetSwaggerResource.cs" />
+    <Compile Include="HttpServer\SocketSharp\HttpUtility.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\Security\AuthService.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
+    <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
+    <Compile Include="IO\FileRefresher.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
@@ -137,6 +147,7 @@
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
     <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
+    <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
@@ -159,6 +170,7 @@
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
     <Compile Include="Security\RegRecord.cs" />
@@ -217,11 +229,14 @@
     <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
+    <Compile Include="Udp\UdpServer.cs" />
     <Compile Include="Updates\InstallationManager.cs" />
     <Compile Include="UserViews\CollectionFolderImageProvider.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\iso6392.txt" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
@@ -257,7 +272,245 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.svg">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.svg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.svg">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.svg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\images\explorer_icons.png">
+      <Link>swagger-ui\images\explorer_icons.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\images\logo_small.png">
+      <Link>swagger-ui\images\logo_small.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\images\pet_store_api.png">
+      <Link>swagger-ui\images\pet_store_api.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\images\throbber.gif">
+      <Link>swagger-ui\images\throbber.gif</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\images\wordnik_api.png">
+      <Link>swagger-ui\images\wordnik_api.png</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\index.html">
+      <Link>swagger-ui\index.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\backbone-min.js">
+      <Link>swagger-ui\lib\backbone-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\handlebars-2.0.0.js">
+      <Link>swagger-ui\lib\handlebars-2.0.0.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\highlight.7.3.pack.js">
+      <Link>swagger-ui\lib\highlight.7.3.pack.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\jquery-1.8.0.min.js">
+      <Link>swagger-ui\lib\jquery-1.8.0.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\jquery.ba-bbq.min.js">
+      <Link>swagger-ui\lib\jquery.ba-bbq.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\jquery.slideto.min.js">
+      <Link>swagger-ui\lib\jquery.slideto.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\jquery.wiggle.min.js">
+      <Link>swagger-ui\lib\jquery.wiggle.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\marked.js">
+      <Link>swagger-ui\lib\marked.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\shred.bundle.js">
+      <Link>swagger-ui\lib\shred.bundle.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\shred\content.js">
+      <Link>swagger-ui\lib\shred\content.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\swagger-client.js">
+      <Link>swagger-ui\lib\swagger-client.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\swagger-oauth.js">
+      <Link>swagger-ui\lib\swagger-oauth.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\lib\underscore-min.js">
+      <Link>swagger-ui\lib\underscore-min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\o2c.html">
+      <Link>swagger-ui\o2c.html</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\patch.js">
+      <Link>swagger-ui\patch.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\swagger-ui.js">
+      <Link>swagger-ui\swagger-ui.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\swagger-ui.min.js">
+      <Link>swagger-ui\swagger-ui.min.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Localization\Core\ar.json" />
+    <EmbeddedResource Include="Localization\Core\bg-BG.json" />
+    <EmbeddedResource Include="Localization\Core\ca.json" />
+    <EmbeddedResource Include="Localization\Core\core.json" />
+    <EmbeddedResource Include="Localization\Core\cs.json" />
+    <EmbeddedResource Include="Localization\Core\da.json" />
+    <EmbeddedResource Include="Localization\Core\de.json" />
+    <EmbeddedResource Include="Localization\Core\el.json" />
+    <EmbeddedResource Include="Localization\Core\en-GB.json" />
+    <EmbeddedResource Include="Localization\Core\en-US.json" />
+    <EmbeddedResource Include="Localization\Core\es-AR.json" />
+    <EmbeddedResource Include="Localization\Core\es-MX.json" />
+    <EmbeddedResource Include="Localization\Core\es.json" />
+    <EmbeddedResource Include="Localization\Core\fi.json" />
+    <EmbeddedResource Include="Localization\Core\fr-CA.json" />
+    <EmbeddedResource Include="Localization\Core\fr.json" />
+    <EmbeddedResource Include="Localization\Core\gsw.json" />
+    <EmbeddedResource Include="Localization\Core\he.json" />
+    <EmbeddedResource Include="Localization\Core\hr.json" />
+    <EmbeddedResource Include="Localization\Core\hu.json" />
+    <EmbeddedResource Include="Localization\Core\id.json" />
+    <EmbeddedResource Include="Localization\Core\it.json" />
+    <EmbeddedResource Include="Localization\Core\kk.json" />
+    <EmbeddedResource Include="Localization\Core\ko.json" />
+    <EmbeddedResource Include="Localization\Core\ms.json" />
+    <EmbeddedResource Include="Localization\Core\nb.json" />
+    <EmbeddedResource Include="Localization\Core\nl.json" />
+    <EmbeddedResource Include="Localization\Core\pl.json" />
+    <EmbeddedResource Include="Localization\Core\pt-BR.json" />
+    <EmbeddedResource Include="Localization\Core\pt-PT.json" />
+    <EmbeddedResource Include="Localization\Core\ro.json" />
+    <EmbeddedResource Include="Localization\Core\ru.json" />
+    <EmbeddedResource Include="Localization\Core\sl-SI.json" />
+    <EmbeddedResource Include="Localization\Core\sv.json" />
+    <EmbeddedResource Include="Localization\Core\tr.json" />
+    <EmbeddedResource Include="Localization\Core\uk.json" />
+    <EmbeddedResource Include="Localization\Core\vi.json" />
+    <EmbeddedResource Include="Localization\Core\zh-CN.json" />
+    <EmbeddedResource Include="Localization\Core\zh-HK.json" />
+    <EmbeddedResource Include="Localization\Core\zh-TW.json" />
+    <EmbeddedResource Include="Localization\countries.json" />
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
+      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\au.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\be.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\br.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\ca.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\co.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\de.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\dk.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\fr.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\gb.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\ie.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\jp.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\kz.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\mx.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\nl.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\nz.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\ru.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\us.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\css\reset.css">
+      <Link>swagger-ui\css\reset.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\css\screen.css">
+      <Link>swagger-ui\css\screen.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\thirdparty\servicestack\swagger-ui\css\typography.css">
+      <Link>swagger-ui\css\typography.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
