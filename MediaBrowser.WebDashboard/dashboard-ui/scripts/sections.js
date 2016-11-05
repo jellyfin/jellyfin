@@ -13,6 +13,10 @@
         return browserInfo.mobile && AppInfo.enableAppLayouts;
     }
 
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
+    }
+
     function getThumbShape() {
         return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
     }
@@ -281,18 +285,28 @@
 
                 var shape = viewType === 'movies' ?
                     getPortraitShape() :
+                    viewType === 'music' ?
+                    getSquareShape() :
                     getThumbShape();
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+                var cardLayout = supportsImageAnalysis && (viewType === 'music' || !viewType);
 
                 html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: shape,
-                    preferThumb: viewType != 'movies',
+                    preferThumb: viewType !== 'movies' && viewType !== 'music',
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     context: 'home',
-                    centerText: true,
+                    overlayText: !cardLayout,
+                    centerText: !cardLayout,
                     overlayPlayButton: viewType !== 'photos',
-                    allowBottomPadding: !enableScrollX()
+                    allowBottomPadding: !enableScrollX() && !cardLayout,
+                    cardLayout: cardLayout,
+                    showTitle: viewType === 'music' || !viewType,
+                    showParentTitle: viewType === 'music' || !viewType,
+                    vibrant: supportsImageAnalysis && cardLayout
                 });
                 html += '</div>';
             }
@@ -479,7 +493,7 @@
                     overlayPlayButton: true,
                     context: 'home',
                     centerText: true,
-                    allowBottomPadding: !enableScrollX()
+                    allowBottomPadding: false
                 });
                 html += '</div>';
             }
