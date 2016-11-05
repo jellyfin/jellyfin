@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
+using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
