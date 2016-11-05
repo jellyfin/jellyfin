@@ -29,6 +29,7 @@ using MediaBrowser.Common.Extensions;
 using Emby.Common.Implementations.Cryptography;
 using Emby.Common.Implementations.Diagnostics;
 using Emby.Common.Implementations.Net;
+using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.Threading;
 using MediaBrowser.Common;
 using MediaBrowser.Common.IO;
@@ -171,6 +172,8 @@ namespace Emby.Common.Implementations
 
         protected ICryptographyProvider CryptographyProvider = new CryptographyProvider();
 
+        protected IEnvironmentInfo EnvironmentInfo = new Emby.Common.Implementations.EnvironmentInfo.EnvironmentInfo();
+
         private DeviceId _deviceId;
         public string SystemId
         {
@@ -187,16 +190,7 @@ namespace Emby.Common.Implementations
 
         public virtual string OperatingSystemDisplayName
         {
-            get
-            {
-#if NET46
-                return Environment.OSVersion.VersionString;
-#endif
-#if NETSTANDARD1_6
-                return System.Runtime.InteropServices.RuntimeInformation.OSDescription;
-#endif
-                return "Operating System";
-            }
+            get { return EnvironmentInfo.OperatingSystemName; }
         }
 
         public IMemoryStreamProvider MemoryStreamProvider { get; set; }
@@ -216,7 +210,7 @@ namespace Emby.Common.Implementations
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
 
-            XmlSerializer = new XmlSerializer(fileSystem, logManager.GetLogger("XmlSerializer"));
+            XmlSerializer = new MyXmlSerializer(fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
             ApplicationPaths = applicationPaths;
@@ -534,6 +528,7 @@ return null;
             RegisterSingleInstance(Logger);
 
             RegisterSingleInstance(TaskManager);
+            RegisterSingleInstance(EnvironmentInfo);
 
             RegisterSingleInstance(FileSystemManager);
 

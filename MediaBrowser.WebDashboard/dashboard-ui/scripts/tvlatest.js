@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder'], function (categorysyncbuttons, groupedcards, cardBuilder) {
+﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder', 'apphost'], function (categorysyncbuttons, groupedcards, cardBuilder, appHost) {
     'use strict';
 
     function getView() {
@@ -31,40 +31,27 @@
 
         promise.then(function (items) {
 
-            var view = getView();
             var html = '';
 
-            if (view == 'ThumbCard') {
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
 
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    inheritThumb: false,
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    showTitle: true,
-                    cardLayout: true
-                });
-
-            } else if (view == 'Thumb') {
-
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    inheritThumb: false,
-                    showParentTitle: false,
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    centerText: true,
-                    lazy: true,
-                    showTitle: false,
-                    overlayPlayButton: true
-                });
-            }
+            html += cardBuilder.getCardsHtml({
+                items: items,
+                shape: "backdrop",
+                preferThumb: true,
+                showTitle: true,
+                showSeriesYear: true,
+                showParentTitle: true,
+                overlayText: false,
+                cardLayout: true,
+                showUnplayedIndicator: false,
+                showChildCountIndicator: true,
+                centerText: false,
+                lazy: true,
+                overlayPlayButton: true,
+                vibrant: supportsImageAnalysis,
+                lines: 2
+            });
 
             var elem = context.querySelector('#latestEpisodes');
             elem.innerHTML = html;

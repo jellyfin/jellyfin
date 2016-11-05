@@ -36,7 +36,7 @@
         $('.collectionItems', page).empty();
 
         if (item.MediaSources && item.MediaSources.length) {
-            ItemDetailPage.renderMediaSources(page, item);
+            ItemDetailPage.renderMediaSources(page, null, item);
         }
 
         var chapters = item.Chapters || [];

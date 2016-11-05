@@ -107,7 +107,7 @@ button {
 
 .btnCardOptions {
     position: absolute;
-    bottom: 0;
+    bottom: .25em;
     right: 0;
     margin: 0 !important;
     z-index: 1;
@@ -408,7 +408,7 @@ button {
     max-width: 200px;
 }
 
-@media all and (min-width: 420px) {
+@media all and (min-width: 400px) {
 
     .backdropCard-scalable {
         width: 50%;

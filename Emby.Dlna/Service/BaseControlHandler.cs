@@ -228,7 +228,7 @@ namespace Emby.Dlna.Service
             var headers = string.Join(", ", request.Headers.Select(i => string.Format("{0}={1}", i.Key, i.Value)).ToArray());
             builder.AppendFormat("Headers: {0}", headers);
             builder.AppendLine();
-            builder.Append(request.InputXml);
+            //builder.Append(request.InputXml);
 
             Logger.LogMultiline("Control request", LogSeverity.Debug, builder);
         }

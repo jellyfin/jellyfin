@@ -1,18 +1,16 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
+﻿using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Emby.Common.Implementations.Networking;
+using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Net;
 
-namespace MediaBrowser.Server.Implementations.Udp
+namespace Emby.Server.Implementations.Udp
 {
     /// <summary>
     /// Provides a Udp Server
@@ -24,14 +22,9 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// </summary>
         private readonly ILogger _logger;
 
-        /// <summary>
-        /// The _network manager
-        /// </summary>
-        private readonly INetworkManager _networkManager;
-
         private bool _isDisposed;
 
-        private readonly List<Tuple<string, bool, Func<string, string, Encoding, Task>>> _responders = new List<Tuple<string, bool, Func<string, string, Encoding, Task>>>();
+        private readonly List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>> _responders = new List<Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>>();
 
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
@@ -39,46 +32,43 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="networkManager">The network manager.</param>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="json">The json.</param>
-        public UdpServer(ILogger logger, INetworkManager networkManager, IServerApplicationHost appHost, IJsonSerializer json)
+        public UdpServer(ILogger logger, IServerApplicationHost appHost, IJsonSerializer json, ISocketFactory socketFactory)
         {
             _logger = logger;
-            _networkManager = networkManager;
             _appHost = appHost;
             _json = json;
+            _socketFactory = socketFactory;
 
             AddMessageResponder("who is EmbyServer?", true, RespondToV2Message);
             AddMessageResponder("who is MediaBrowserServer_v2?", false, RespondToV2Message);
         }
 
-        private void AddMessageResponder(string message, bool isSubstring, Func<string, string, Encoding, Task> responder)
+        private void AddMessageResponder(string message, bool isSubstring, Func<string, IpEndPointInfo, Encoding, Task> responder)
         {
-            _responders.Add(new Tuple<string, bool, Func<string, string, Encoding, Task>>(message, isSubstring, responder));
+            _responders.Add(new Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>(message, isSubstring, responder));
         }
 
         /// <summary>
         /// Raises the <see cref="E:MessageReceived" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
-        private async void OnMessageReceived(UdpMessageReceivedEventArgs e)
+        private async void OnMessageReceived(GenericEventArgs<SocketReceiveResult> e)
         {
+            var message = e.Argument;
+
             var encoding = Encoding.UTF8;
-            var responder = GetResponder(e.Bytes, encoding);
+            var responder = GetResponder(message.Buffer, message.ReceivedBytes, encoding);
 
             if (responder == null)
             {
                 encoding = Encoding.Unicode;
-                responder = GetResponder(e.Bytes, encoding);
+                responder = GetResponder(message.Buffer, message.ReceivedBytes, encoding);
             }
 
             if (responder != null)
             {
                 try
                 {
-                    await responder.Item2.Item3(responder.Item1, e.RemoteEndPoint, encoding).ConfigureAwait(false);
+                    await responder.Item2.Item3(responder.Item1, message.RemoteEndPoint, encoding).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -87,9 +77,9 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
         }
 
-        private Tuple<string, Tuple<string, bool, Func<string, string, Encoding, Task>>> GetResponder(byte[] bytes, Encoding encoding)
+        private Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>> GetResponder(byte[] buffer, int bytesReceived, Encoding encoding)
         {
-            var text = encoding.GetString(bytes);
+            var text = encoding.GetString(buffer, 0, bytesReceived);
             var responder = _responders.FirstOrDefault(i =>
             {
                 if (i.Item2)
@@ -103,10 +93,10 @@ namespace MediaBrowser.Server.Implementations.Udp
             {
                 return null;
             }
-            return new Tuple<string, Tuple<string, bool, Func<string, string, Encoding, Task>>>(text, responder);
+            return new Tuple<string, Tuple<string, bool, Func<string, IpEndPointInfo, Encoding, Task>>>(text, responder);
         }
 
-        private async Task RespondToV2Message(string messageText, string endpoint, Encoding encoding)
+        private async Task RespondToV2Message(string messageText, IpEndPointInfo endpoint, Encoding encoding)
         {
             var parts = messageText.Split('|');
 
@@ -122,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.Udp
                 };
 
                 await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint).ConfigureAwait(false);
-                
+
                 if (parts.Length > 1)
                 {
                     _appHost.EnableLoopback(parts[1]);
@@ -137,7 +127,8 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <summary>
         /// The _udp client
         /// </summary>
-        private UdpClient _udpClient;
+        private IUdpSocket _udpClient;
+        private readonly ISocketFactory _socketFactory;
 
         /// <summary>
         /// Starts the specified port.
@@ -145,9 +136,7 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="port">The port.</param>
         public void Start(int port)
         {
-            _udpClient = new UdpClient(new IPEndPoint(IPAddress.Any, port));
-
-            _udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            _udpClient = _socketFactory.CreateUdpSocket(port);
 
             Task.Run(() => StartListening());
         }
@@ -158,35 +147,17 @@ namespace MediaBrowser.Server.Implementations.Udp
             {
                 try
                 {
-                    var result = await GetResult().ConfigureAwait(false);
+                    var result = await _udpClient.ReceiveAsync().ConfigureAwait(false);
 
                     OnMessageReceived(result);
                 }
                 catch (ObjectDisposedException)
                 {
-                    break;
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error in StartListening", ex);
+                    _logger.ErrorException("Error receiving udp message", ex);
                 }
-            }
-        }
-
-        private Task<UdpReceiveResult> GetResult()
-        {
-            try
-            {
-                return _udpClient.ReceiveAsync();
-            }
-            catch (ObjectDisposedException)
-            {
-                return Task.FromResult(new UdpReceiveResult(new byte[] { }, new IPEndPoint(IPAddress.Any, 0)));
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error receiving udp message", ex);
-                return Task.FromResult(new UdpReceiveResult(new byte[] { }, new IPEndPoint(IPAddress.Any, 0)));
             }
         }
 
@@ -194,20 +165,18 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// Called when [message received].
         /// </summary>
         /// <param name="message">The message.</param>
-        private void OnMessageReceived(UdpReceiveResult message)
+        private void OnMessageReceived(SocketReceiveResult message)
         {
             if (message.RemoteEndPoint.Port == 0)
             {
                 return;
             }
-            var bytes = message.Buffer;
 
             try
             {
-                OnMessageReceived(new UdpMessageReceivedEventArgs
+                OnMessageReceived(new GenericEventArgs<SocketReceiveResult>
                 {
-                    Bytes = bytes,
-                    RemoteEndPoint = message.RemoteEndPoint.ToString()
+                    Argument = message
                 });
             }
             catch (Exception ex)
@@ -234,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             if (_udpClient != null)
             {
-                _udpClient.Close();
+                _udpClient.Dispose();
             }
         }
 
@@ -250,71 +219,21 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
         }
 
-        /// <summary>
-        /// Sends the async.
-        /// </summary>
-        /// <param name="data">The data.</param>
-        /// <param name="ipAddress">The ip address.</param>
-        /// <param name="port">The port.</param>
-        /// <returns>Task{System.Int32}.</returns>
-        /// <exception cref="System.ArgumentNullException">data</exception>
-        public Task SendAsync(string data, string ipAddress, int port)
-        {
-            return SendAsync(Encoding.UTF8.GetBytes(data), ipAddress, port);
-        }
-
-        /// <summary>
-        /// Sends the async.
-        /// </summary>
-        /// <param name="bytes">The bytes.</param>
-        /// <param name="ipAddress">The ip address.</param>
-        /// <param name="port">The port.</param>
-        /// <returns>Task{System.Int32}.</returns>
-        /// <exception cref="System.ArgumentNullException">bytes</exception>
-        public Task SendAsync(byte[] bytes, string ipAddress, int port)
+        public async Task SendAsync(byte[] bytes, IpEndPointInfo remoteEndPoint)
         {
             if (bytes == null)
             {
                 throw new ArgumentNullException("bytes");
             }
 
-            if (string.IsNullOrEmpty(ipAddress))
-            {
-                throw new ArgumentNullException("ipAddress");
-            }
-
-            return _udpClient.SendAsync(bytes, bytes.Length, ipAddress, port);
-        }
-
-        /// <summary>
-        /// Sends the async.
-        /// </summary>
-        /// <param name="bytes">The bytes.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentNullException">
-        /// bytes
-        /// or
-        /// remoteEndPoint
-        /// </exception>
-        public async Task SendAsync(byte[] bytes, string remoteEndPoint)
-        {
-            if (bytes == null)
-            {
-                throw new ArgumentNullException("bytes");
-            }
-
-            if (string.IsNullOrEmpty(remoteEndPoint))
+            if (remoteEndPoint == null)
             {
                 throw new ArgumentNullException("remoteEndPoint");
             }
 
             try
             {
-                // Need to do this until Common will compile with this method
-                var nativeNetworkManager = (BaseNetworkManager) _networkManager;
-
-                await _udpClient.SendAsync(bytes, bytes.Length, nativeNetworkManager.Parse(remoteEndPoint)).ConfigureAwait(false);
+                await _udpClient.SendAsync(bytes, bytes.Length, remoteEndPoint).ConfigureAwait(false);
 
                 _logger.Info("Udp message sent to {0}", remoteEndPoint);
             }

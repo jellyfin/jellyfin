@@ -1,6 +1,6 @@
-﻿using ServiceStack;
+﻿using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class GetDashboardResource

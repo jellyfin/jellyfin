@@ -15,13 +15,11 @@ namespace MediaBrowser.Model.Net
 		/// Waits for and returns the next UDP message sent to this socket (uni or multicast).
 		/// </summary>
 		/// <returns></returns>
-		Task<ReceivedUdpData> ReceiveAsync();
+		Task<SocketReceiveResult> ReceiveAsync();
 
         /// <summary>
         /// Sends a UDP message to a particular end point (uni or multicast).
         /// </summary>
-        /// <param name="messageData">The data to send.</param>
-        /// <param name="endPoint">The <see cref="IpEndPointInfo"/> providing the address and port to send to.</param>
-        Task SendTo(byte[] messageData, IpEndPointInfo endPoint);
+        Task SendAsync(byte[] buffer, int bytes, IpEndPointInfo endPoint);
 	}
 }

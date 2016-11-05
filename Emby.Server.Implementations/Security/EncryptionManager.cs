@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace MediaBrowser.Server.Implementations.Security
+namespace Emby.Server.Implementations.Security
 {
     public class EncryptionManager : IEncryptionManager
     {
@@ -45,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.Security
             // Yes, this isn't good, but ProtectedData in mono is throwing exceptions, so use this for now
 
             var bytes = Convert.FromBase64String(value);
-            return Encoding.UTF8.GetString(bytes);
+            return Encoding.UTF8.GetString(bytes, 0, bytes.Length);
         }
     }
 }

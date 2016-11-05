@@ -1,12 +1,12 @@
 ﻿using System;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Server.Implementations.Udp;
+using Emby.Server.Implementations.Udp;
+using MediaBrowser.Model.Net;
 
-namespace MediaBrowser.Server.Implementations.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class UdpServerEntryPoint
@@ -23,10 +23,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// The _logger
         /// </summary>
         private readonly ILogger _logger;
-        /// <summary>
-        /// The _network manager
-        /// </summary>
-        private readonly INetworkManager _networkManager;
+        private readonly ISocketFactory _socketFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
 
@@ -35,16 +32,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="networkManager">The network manager.</param>
-        /// <param name="appHost">The application host.</param>
-        /// <param name="json">The json.</param>
-        public UdpServerEntryPoint(ILogger logger, INetworkManager networkManager, IServerApplicationHost appHost, IJsonSerializer json)
+        public UdpServerEntryPoint(ILogger logger, IServerApplicationHost appHost, IJsonSerializer json, ISocketFactory socketFactory)
         {
             _logger = logger;
-            _networkManager = networkManager;
             _appHost = appHost;
             _json = json;
+            _socketFactory = socketFactory;
         }
 
         /// <summary>
@@ -52,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// </summary>
         public void Run()
         {
-            var udpServer = new UdpServer(_logger, _networkManager, _appHost, _json);
+            var udpServer = new UdpServer(_logger, _appHost, _json, _socketFactory);
 
             try
             {

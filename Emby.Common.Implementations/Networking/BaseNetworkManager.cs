@@ -8,6 +8,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Common.Implementations.Networking
 {
@@ -21,7 +22,7 @@ namespace Emby.Common.Implementations.Networking
             Logger = logger;
         }
 
-		private List<IPAddress> _localIpAddresses;
+        private List<IPAddress> _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
         /// <summary>
@@ -50,24 +51,24 @@ namespace Emby.Common.Implementations.Networking
             return _localIpAddresses;
         }
 
-		private IEnumerable<IPAddress> GetLocalIpAddressesInternal()
+        private IEnumerable<IPAddress> GetLocalIpAddressesInternal()
         {
             var list = GetIPsDefault()
                 .ToList();
 
             if (list.Count == 0)
             {
-				list.AddRange(GetLocalIpAddressesFallback().Result);
+                list.AddRange(GetLocalIpAddressesFallback().Result);
             }
 
-			return list.Where(FilterIpAddress).DistinctBy(i => i.ToString());
+            return list.Where(FilterIpAddress).DistinctBy(i => i.ToString());
         }
 
-		private bool FilterIpAddress(IPAddress address)
+        private bool FilterIpAddress(IPAddress address)
         {
-			var addressString = address.ToString ();
+            var addressString = address.ToString();
 
-			if (addressString.StartsWith("169.", StringComparison.OrdinalIgnoreCase))
+            if (addressString.StartsWith("169.", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -155,12 +156,12 @@ namespace Emby.Common.Implementations.Networking
                 {
                     var prefix = addressString.Substring(0, lengthMatch);
 
-					if (GetLocalIpAddresses().Any(i => i.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                    if (GetLocalIpAddresses().Any(i => i.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                     {
                         return true;
                     }
                 }
-            } 
+            }
             else if (resolveHost)
             {
                 Uri uri;
@@ -199,45 +200,50 @@ namespace Emby.Common.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
-		private List<IPAddress> GetIPsDefault()
-		{
-			NetworkInterface[] interfaces;
+        private List<IPAddress> GetIPsDefault()
+        {
+            NetworkInterface[] interfaces;
 
-			try
-			{
-				interfaces = NetworkInterface.GetAllNetworkInterfaces();
-			}
-			catch (Exception ex)
-			{
-				Logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
-				return new List<IPAddress>();
-			}
+            try
+            {
+                var validStatuses = new[] { OperationalStatus.Up, OperationalStatus.Unknown };
 
-			return interfaces.SelectMany(network => {
+                interfaces = NetworkInterface.GetAllNetworkInterfaces()
+                    .Where(i => validStatuses.Contains(i.OperationalStatus))
+                    .ToArray();
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error in GetAllNetworkInterfaces", ex);
+                return new List<IPAddress>();
+            }
 
-				try
-				{
+            return interfaces.SelectMany(network =>
+            {
+
+                try
+                {
                     Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
-					var properties = network.GetIPProperties();
+                    var properties = network.GetIPProperties();
 
-					return properties.UnicastAddresses
+                    return properties.UnicastAddresses
                         .Where(i => i.IsDnsEligible)
                         .Select(i => i.Address)
                         .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
-						.ToList();
-				}
-				catch (Exception ex)
-				{
-					Logger.ErrorException("Error querying network interface", ex);
-					return new List<IPAddress>();
-				}
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error querying network interface", ex);
+                    return new List<IPAddress>();
+                }
 
-			}).DistinctBy(i => i.ToString())
-				.ToList();
-		}
+            }).DistinctBy(i => i.ToString())
+                .ToList();
+        }
 
-		private async Task<IEnumerable<IPAddress>> GetLocalIpAddressesFallback()
+        private async Task<IEnumerable<IPAddress>> GetLocalIpAddressesFallback()
         {
             var host = await Dns.GetHostEntryAsync(Dns.GetHostName()).ConfigureAwait(false);
 
@@ -309,7 +315,7 @@ namespace Emby.Common.Implementations.Networking
             string[] values = endpointstring.Split(new char[] { ':' });
             IPAddress ipaddy;
             int port = -1;
-          
+
             //check if we have an IPv6 or ports
             if (values.Length <= 2) // ipv4 or hostname
             {
@@ -381,6 +387,36 @@ namespace Emby.Common.Implementations.Networking
                 throw new ArgumentException(String.Format("Host not found: {0}", p));
 
             return hosts[0];
+        }
+
+        public IpAddressInfo ParseIpAddress(string ipAddress)
+        {
+            IpAddressInfo info;
+            if (TryParseIpAddress(ipAddress, out info))
+            {
+                return info;
+            }
+
+            throw new ArgumentException("Invalid ip address: " + ipAddress);
+        }
+
+        public bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo)
+        {
+            IPAddress address;
+            if (IPAddress.TryParse(ipAddress, out address))
+            {
+
+                ipAddressInfo = new IpAddressInfo
+                {
+                    Address = address.ToString(),
+                    IsIpv6 = address.AddressFamily == AddressFamily.InterNetworkV6
+                };
+
+                return true;
+            }
+
+            ipAddressInfo = null;
+            return false;
         }
     }
 }

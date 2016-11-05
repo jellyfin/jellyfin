@@ -29,14 +29,14 @@
         });
     }
 
-    function updateBubble(range, value, bubble) {
+    function updateBubble(range, value, bubble, bubbleText) {
 
         bubble.style.left = (value - 1) + '%';
 
         if (range.getBubbleText) {
             value = range.getBubbleText(value);
         }
-        bubble.innerHTML = value;
+        bubbleText.innerHTML = value;
     }
 
     EmbySliderPrototype.attachedCallback = function () {
@@ -59,20 +59,21 @@
             htmlToInsert += '<div class="mdl-slider__background-flex"><div class="mdl-slider__background-lower"></div><div class="mdl-slider__background-upper"></div></div>';
         }
 
-        htmlToInsert += '<div class="sliderBubble hide"></div>';
+        htmlToInsert += '<div class="sliderBubble hide"><h1 class="sliderBubbleText"></h1></div>';
 
         containerElement.insertAdjacentHTML('beforeend', htmlToInsert);
 
         var backgroundLower = containerElement.querySelector('.mdl-slider__background-lower');
         var backgroundUpper = containerElement.querySelector('.mdl-slider__background-upper');
         var sliderBubble = containerElement.querySelector('.sliderBubble');
+        var sliderBubbleText = containerElement.querySelector('.sliderBubbleText');
 
         var hasHideClass = sliderBubble.classList.contains('hide');
 
         dom.addEventListener(this, 'input', function (e) {
             this.dragging = true;
 
-            updateBubble(this, this.value, sliderBubble);
+            updateBubble(this, this.value, sliderBubble, sliderBubbleText);
 
             if (hasHideClass) {
                 sliderBubble.classList.remove('hide');
@@ -102,7 +103,7 @@
                     var clientX = e.clientX;
                     var bubbleValue = (clientX - rect.left) / rect.width;
                     bubbleValue *= 100;
-                    updateBubble(this, Math.round(bubbleValue), sliderBubble);
+                    updateBubble(this, Math.round(bubbleValue), sliderBubble, sliderBubbleText);
 
                     if (hasHideClass) {
                         sliderBubble.classList.remove('hide');

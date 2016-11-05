@@ -104,6 +104,8 @@ namespace Emby.Dlna.Didl
 
             writer.WriteStartElement(string.Empty, "item", NS_DIDL);
 
+            AddGeneralProperties(item, null, context, writer, filter);
+
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("id", clientId);
 
@@ -121,8 +123,6 @@ namespace Emby.Dlna.Didl
             }
 
             //AddBookmarkInfo(item, user, element);
-
-            AddGeneralProperties(item, null, context, writer, filter);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -501,6 +501,8 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "container", NS_DIDL);
 
+            AddGeneralProperties(folder, stubType, context, writer, filter);
+
             writer.WriteAttributeString("restricted", "0");
             writer.WriteAttributeString("searchable", "1");
             writer.WriteAttributeString("childCount", childCount.ToString(_usCulture));
@@ -533,8 +535,6 @@ namespace Emby.Dlna.Didl
                     }
                 }
             }
-
-            AddCommonFields(folder, stubType, null, writer, filter);
 
             AddCover(folder, context, stubType, writer);
 
