@@ -368,6 +368,18 @@
       <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
+      <Link>swagger-ui\css\reset.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
+      <Link>swagger-ui\css\screen.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\typography.css">
+      <Link>swagger-ui\css\typography.css</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
     <EmbeddedResource Include="Localization\Core\ca.json" />
@@ -409,38 +421,6 @@
     <EmbeddedResource Include="Localization\Core\zh-HK.json" />
     <EmbeddedResource Include="Localization\Core\zh-TW.json" />
     <EmbeddedResource Include="Localization\countries.json" />
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -493,20 +473,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\us.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\css\reset.css">
-      <Link>swagger-ui\css\reset.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\css\screen.css">
-      <Link>swagger-ui\css\screen.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\thirdparty\servicestack\swagger-ui\css\typography.css">
-      <Link>swagger-ui\css\typography.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
