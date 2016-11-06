@@ -99,12 +99,12 @@ namespace Emby.Dlna.Service
                 {
                     writer.WriteStartElement(i.Key);
                     writer.WriteString(i.Value);
-                    writer.WriteEndElement();
+                    writer.WriteFullEndElement();
                 }
-                writer.WriteEndElement();
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
+                writer.WriteFullEndElement();
 
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
                 writer.WriteEndDocument();
             }
 
