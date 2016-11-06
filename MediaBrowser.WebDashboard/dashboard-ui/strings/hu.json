@@ -1,4 +1,5 @@
 {
+    "LatestFromLibrary": "Latest {0}",
     "LabelPrevious": "El\u0151z\u0151",
     "LabelFinish": "Befejez",
     "LabelNext": "K\u00f6vetkez\u0151",
@@ -712,7 +713,7 @@
     "LabelSkipIfGraphicalSubsPresent": "Skip if the video already contains embedded subtitles",
     "LabelSkipIfGraphicalSubsPresentHelp": "Keeping text versions of subtitles will result in more efficient delivery and decrease the likelihood of video transcoding.",
     "TabSubtitles": "Feliratok",
-    "TabChapters": "Fejezetek",
+    "TabChapters": "Jelenetek",
     "LabelOpenSubtitlesUsername": "Open Subtitles username:",
     "LabelOpenSubtitlesPassword": "Open Subtitles password:",
     "LabelPlayDefaultAudioTrack": "Play default audio track regardless of language",
@@ -891,7 +892,7 @@
     "HeaderAdvanced": "Halad\u00f3",
     "ButtonSync": "Sync",
     "TabScheduledTasks": "\u00dctemezett feladatok",
-    "HeaderChapters": "Fejezetek",
+    "HeaderChapters": "Jelenetek",
     "HeaderResumeSettings": "Resume Settings",
     "TabSync": "Sync",
     "TitleUsers": "Felhaszn\u00e1l\u00f3k",

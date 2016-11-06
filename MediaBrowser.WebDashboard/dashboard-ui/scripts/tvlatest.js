@@ -34,6 +34,7 @@
             var html = '';
 
             var supportsImageAnalysis = appHost.supports('imageanalysis');
+            var cardLayout = supportsImageAnalysis;
 
             html += cardBuilder.getCardsHtml({
                 items: items,
@@ -43,10 +44,10 @@
                 showSeriesYear: true,
                 showParentTitle: true,
                 overlayText: false,
-                cardLayout: true,
+                cardLayout: cardLayout,
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
-                centerText: false,
+                centerText: !cardLayout,
                 lazy: true,
                 overlayPlayButton: true,
                 vibrant: supportsImageAnalysis,
