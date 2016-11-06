@@ -76,8 +76,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.6153.41639, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SocketHttpListener.1.0.0.43\lib\net45\SocketHttpListener.dll</HintPath>
+    <Reference Include="SocketHttpListener, Version=1.0.6154.22657, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SocketHttpListener.1.0.0.44\lib\net45\SocketHttpListener.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
