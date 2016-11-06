@@ -30,7 +30,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
         {
             this.OperationName = operationName;
-            this.RequestAttributes = requestAttributes;
             _memoryStreamProvider = memoryStreamProvider;
             this.request = httpContext.Request;
             this.response = new WebSocketSharpResponse(logger, httpContext.Response, this);
@@ -55,8 +54,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get { return response; }
         }
-
-        public RequestAttributes RequestAttributes { get; set; }
 
         public T TryResolve<T>()
         {
@@ -262,13 +259,114 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get
             {
                 return responseContentType
-                    ?? (responseContentType = this.GetResponseContentType());
+                    ?? (responseContentType = GetResponseContentType(this));
             }
             set
             {
                 this.responseContentType = value;
                 HasExplicitResponseContentType = true;
             }
+        }
+
+        private static string GetResponseContentType(IRequest httpReq)
+        {
+            var specifiedContentType = GetQueryStringContentType(httpReq);
+            if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
+
+            var acceptContentTypes = httpReq.AcceptTypes;
+            var defaultContentType = httpReq.ContentType;
+            if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
+            {
+                defaultContentType = HostContext.Config.DefaultContentType;
+            }
+
+            var customContentTypes = HostContext.ContentTypes.ContentTypeFormats.Values;
+            var preferredContentTypes = new string[] {};
+
+            var acceptsAnything = false;
+            var hasDefaultContentType = !string.IsNullOrEmpty(defaultContentType);
+            if (acceptContentTypes != null)
+            {
+                var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
+                foreach (var acceptsType in acceptContentTypes)
+                {
+                    var contentType = ContentFormat.GetRealContentType(acceptsType);
+                    acceptsAnything = acceptsAnything || contentType == "*/*";
+
+                    for (var i = 0; i < preferredContentTypes.Length; i++)
+                    {
+                        if (hasPreferredContentTypes[i]) continue;
+                        var preferredContentType = preferredContentTypes[i];
+                        hasPreferredContentTypes[i] = contentType.StartsWith(preferredContentType);
+
+                        //Prefer Request.ContentType if it is also a preferredContentType
+                        if (hasPreferredContentTypes[i] && preferredContentType == defaultContentType)
+                            return preferredContentType;
+                    }
+                }
+
+                for (var i = 0; i < preferredContentTypes.Length; i++)
+                {
+                    if (hasPreferredContentTypes[i]) return preferredContentTypes[i];
+                }
+
+                if (acceptsAnything)
+                {
+                    if (hasDefaultContentType)
+                        return defaultContentType;
+                    if (HostContext.Config.DefaultContentType != null)
+                        return HostContext.Config.DefaultContentType;
+                }
+
+                foreach (var contentType in acceptContentTypes)
+                {
+                    foreach (var customContentType in customContentTypes)
+                    {
+                        if (contentType.StartsWith(customContentType, StringComparison.OrdinalIgnoreCase))
+                            return customContentType;
+                    }
+                }
+            }
+
+            if (httpReq.ContentType.MatchesContentType(MimeTypes.Soap12))
+            {
+                return MimeTypes.Soap12;
+            }
+
+            if (acceptContentTypes == null && httpReq.ContentType == MimeTypes.Soap11)
+            {
+                return MimeTypes.Soap11;
+            }
+
+            //We could also send a '406 Not Acceptable', but this is allowed also
+            return HostContext.Config.DefaultContentType;
+        }
+
+        private static string GetQueryStringContentType(IRequest httpReq)
+        {
+            var callback = httpReq.QueryString[Keywords.Callback];
+            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
+
+            var format = httpReq.QueryString[Keywords.Format];
+            if (format == null)
+            {
+                const int formatMaxLength = 4;
+                var pi = httpReq.PathInfo;
+                if (pi == null || pi.Length <= formatMaxLength) return null;
+                if (pi[0] == '/') pi = pi.Substring(1);
+                format = pi.LeftPart('/');
+                if (format.Length > formatMaxLength) return null;
+            }
+
+            format = format.LeftPart('.').ToLower();
+            if (format.Contains("json")) return MimeTypes.Json;
+            if (format.Contains("xml")) return MimeTypes.Xml;
+            if (format.Contains("jsv")) return MimeTypes.Jsv;
+
+            string contentType;
+            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
+
+            return contentType;
         }
 
         public bool HasExplicitResponseContentType { get; private set; }
@@ -286,7 +384,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                     if (pos != -1)
                     {
                         var path = request.RawUrl.Substring(0, pos);
-                        this.pathInfo = HttpRequestExtensions.GetPathInfo(
+                        this.pathInfo = GetPathInfo(
                             path,
                             mode,
                             mode ?? "");
@@ -301,6 +399,55 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 }
                 return this.pathInfo;
             }
+        }
+
+        private static string GetPathInfo(string fullPath, string mode, string appPath)
+        {
+            var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
+            if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+
+            //Wildcard mode relies on this to work out the handlerPath
+            pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
+            if (!string.IsNullOrEmpty(pathInfo)) return pathInfo;
+
+            return fullPath;
+        }
+
+
+
+        private static string ResolvePathInfoFromMappedPath(string fullPath, string mappedPathRoot)
+        {
+            if (mappedPathRoot == null) return null;
+
+            var sbPathInfo = new StringBuilder();
+            var fullPathParts = fullPath.Split('/');
+            var mappedPathRootParts = mappedPathRoot.Split('/');
+            var fullPathIndexOffset = mappedPathRootParts.Length - 1;
+            var pathRootFound = false;
+
+            for (var fullPathIndex = 0; fullPathIndex < fullPathParts.Length; fullPathIndex++)
+            {
+                if (pathRootFound)
+                {
+                    sbPathInfo.Append("/" + fullPathParts[fullPathIndex]);
+                }
+                else if (fullPathIndex - fullPathIndexOffset >= 0)
+                {
+                    pathRootFound = true;
+                    for (var mappedPathRootIndex = 0; mappedPathRootIndex < mappedPathRootParts.Length; mappedPathRootIndex++)
+                    {
+                        if (!string.Equals(fullPathParts[fullPathIndex - fullPathIndexOffset + mappedPathRootIndex], mappedPathRootParts[mappedPathRootIndex], StringComparison.OrdinalIgnoreCase))
+                        {
+                            pathRootFound = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!pathRootFound) return null;
+
+            var path = sbPathInfo.ToString();
+            return path.Length > 1 ? path.TrimEnd('/') : "/";
         }
 
         private Dictionary<string, System.Net.Cookie> cookies;
