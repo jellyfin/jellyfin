@@ -161,7 +161,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             var operationName = httpContext.Request.GetOperationName();
 
             var req = new WebSocketSharpRequest(httpContext, operationName, RequestAttributes.None, _logger, _memoryStreamProvider);
-            req.RequestAttributes = req.GetAttributes();
 
             return req;
         }
