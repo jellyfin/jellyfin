@@ -84,18 +84,31 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
                 //didl.SetAttribute("xmlns:sec", NS_SEC);
 
-                foreach (var att in _profile.XmlRootAttributes)
-                {
-                    writer.WriteAttributeString(att.Name, att.Value);
-                }
+                WriteXmlRootAttributes(_profile, writer);
 
                 WriteItemElement(options, writer, item, context, null, deviceId, filter, streamInfo);
 
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
                 //writer.WriteEndDocument();
             }
 
             return builder.ToString();
+        }
+
+        public static void WriteXmlRootAttributes(DeviceProfile profile, XmlWriter writer)
+        {
+            foreach (var att in profile.XmlRootAttributes)
+            {
+                var parts = att.Name.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                {
+                    writer.WriteAttributeString(parts[0], parts[1], null, att.Value);
+                }
+                else
+                {
+                    writer.WriteAttributeString(att.Name, att.Value);
+                }
+            }
         }
 
         public void WriteItemElement(DlnaOptions options, XmlWriter writer, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
@@ -103,8 +116,6 @@ namespace Emby.Dlna.Didl
             var clientId = GetClientId(item, null);
 
             writer.WriteStartElement(string.Empty, "item", NS_DIDL);
-
-            AddGeneralProperties(item, null, context, writer, filter);
 
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("id", clientId);
@@ -121,6 +132,8 @@ namespace Emby.Dlna.Didl
                     writer.WriteAttributeString("parentID", GetClientId(parent.Value, null));
                 }
             }
+
+            AddGeneralProperties(item, null, context, writer, filter);
 
             //AddBookmarkInfo(item, user, element);
 
@@ -142,7 +155,7 @@ namespace Emby.Dlna.Didl
             }
 
             AddCover(item, context, null, writer);
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         private ILogger GetStreamBuilderLogger(DlnaOptions options)
@@ -236,7 +249,7 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("sec", "type", null, info.Format.ToLower());
 
                 writer.WriteString(info.Url);
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
             }
             else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
             {
@@ -245,7 +258,7 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("protocolInfo", "http-get:*:smi/caption:*");
 
                 writer.WriteString(info.Url);
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
             }
             else
             {
@@ -254,7 +267,7 @@ namespace Emby.Dlna.Didl
                 writer.WriteAttributeString("protocolInfo", protocolInfo);
 
                 writer.WriteString(info.Url);
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
             }
 
             return true;
@@ -349,7 +362,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteString(url);
 
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         private string GetDisplayName(BaseItem item, StubType? itemStubType, BaseItem context)
@@ -479,7 +492,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteString(url);
 
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         public static bool IsIdRoot(string id)
@@ -500,8 +513,6 @@ namespace Emby.Dlna.Didl
         public void WriteFolderElement(XmlWriter writer, BaseItem folder, StubType? stubType, BaseItem context, int childCount, Filter filter, string requestedId = null)
         {
             writer.WriteStartElement(string.Empty, "container", NS_DIDL);
-
-            AddGeneralProperties(folder, stubType, context, writer, filter);
 
             writer.WriteAttributeString("restricted", "0");
             writer.WriteAttributeString("searchable", "1");
@@ -536,9 +547,11 @@ namespace Emby.Dlna.Didl
                 }
             }
 
+            AddGeneralProperties(folder, stubType, context, writer, filter);
+
             AddCover(folder, context, stubType, writer);
 
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         //private void AddBookmarkInfo(BaseItem item, User user, XmlElement element)
@@ -698,7 +711,7 @@ namespace Emby.Dlna.Didl
                 writer.WriteString("object.item");
             }
 
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         private void AddPeople(BaseItem item, XmlWriter writer)
@@ -811,7 +824,7 @@ namespace Emby.Dlna.Didl
 
                 writer.WriteString(name);
 
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
             }
             catch (XmlException)
             {
@@ -897,7 +910,7 @@ namespace Emby.Dlna.Didl
             writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
             writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
             writer.WriteString(albumartUrlInfo.Url);
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
 
             // TOOD: Remove these default values
             var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, playbackPercentage, unplayedCount, "jpg");
@@ -932,7 +945,7 @@ namespace Emby.Dlna.Didl
             writer.WriteStartElement("upnp", "albumArtURI", NS_UPNP);
             writer.WriteAttributeString("dlna", "profileID", NS_DLNA, _profile.AlbumArtPn);
             writer.WriteString(_serverAddress + "/Dlna/icons/people480.jpg");
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
 
             writer.WriteElementString("upnp", "icon", NS_UPNP, _serverAddress + "/Dlna/icons/people48.jpg");
         }
@@ -976,7 +989,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteString(albumartUrlInfo.Url);
 
-            writer.WriteEndElement();
+            writer.WriteFullEndElement();
         }
 
         private ImageDownloadInfo GetImageInfo(BaseItem item)
