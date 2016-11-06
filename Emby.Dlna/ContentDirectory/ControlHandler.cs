@@ -232,10 +232,7 @@ namespace Emby.Dlna.ContentDirectory
                 writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
                 //didl.SetAttribute("xmlns:sec", NS_SEC);
 
-                foreach (var att in _profile.XmlRootAttributes)
-                {
-                    writer.WriteAttributeString(att.Name, att.Value);
-                }
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
                 var serverItem = GetItemFromObjectId(id, user);
                 var item = serverItem.Item;
@@ -282,7 +279,7 @@ namespace Emby.Dlna.ContentDirectory
                         }
                     }
                 }
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
                 //writer.WriteEndDocument();
             }
 
@@ -345,10 +342,7 @@ namespace Emby.Dlna.ContentDirectory
                 writer.WriteAttributeString("xmlns", "upnp", null, NS_UPNP);
                 //didl.SetAttribute("xmlns:sec", NS_SEC);
 
-                foreach (var att in _profile.XmlRootAttributes)
-                {
-                    writer.WriteAttributeString(att.Name, att.Value);
-                }
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
 
                 var serverItem = GetItemFromObjectId(sparams["ContainerID"], user);
 
@@ -375,7 +369,7 @@ namespace Emby.Dlna.ContentDirectory
                     }
                 }
 
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
                 //writer.WriteEndDocument();
             }
 

@@ -36,12 +36,12 @@ namespace Emby.Dlna.Service
 
                 writer.WriteStartElement("detail");
                 writer.WriteRaw("<UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\"><errorCode>401</errorCode><errorDescription>Invalid Action</errorDescription></UPnPError>");
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
 
-                writer.WriteEndElement();
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
+                writer.WriteFullEndElement();
 
-                writer.WriteEndElement();
+                writer.WriteFullEndElement();
                 writer.WriteEndDocument();
             }
 

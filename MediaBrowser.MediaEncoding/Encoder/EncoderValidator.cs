@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Logging;
 
@@ -40,9 +41,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
             }
 
+            output = output ?? string.Empty;
+
             if (logOutput)
             {
-                _logger.Info("ffmpeg info: {0}", output ?? string.Empty);
+                _logger.Info("ffmpeg info: {0}", output);
             }
 
             if (string.IsNullOrWhiteSpace(output))
@@ -53,6 +56,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
+            }
+
+            output = " " + output + " ";
+
+            for (var i = 2013; i <= 2015; i++)
+            {
+                var yearString = i.ToString(CultureInfo.InvariantCulture);
+                if (output.IndexOf(" " + yearString + " ", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return false;
+                }
             }
 
             return true;

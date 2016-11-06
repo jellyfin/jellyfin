@@ -40,10 +40,6 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>Task&lt;Stream&gt;.</returns>
         Task<Stream> GetFile(string id, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets the files.
-        /// </summary>
-        Task<QueryResult<FileSystemMetadata>> GetFiles(string id, SyncTarget target, CancellationToken cancellationToken);
         Task<QueryResult<FileSystemMetadata>> GetFiles(string[] pathParts, SyncTarget target, CancellationToken cancellationToken);
         Task<QueryResult<FileSystemMetadata>> GetFiles(SyncTarget target, CancellationToken cancellationToken);
     }
