@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Security
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
         private IEnumerable<IRequiresRegistration> _registeredEntities;
         protected IEnumerable<IRequiresRegistration> RegisteredEntities
@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Security
         /// Initializes a new instance of the <see cref="PluginSecurityManager" /> class.
         /// </summary>
         public PluginSecurityManager(IServerApplicationHost appHost, IHttpClient httpClient, IJsonSerializer jsonSerializer,
-            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
+            IApplicationPaths appPaths, ILogManager logManager, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             if (httpClient == null)
             {

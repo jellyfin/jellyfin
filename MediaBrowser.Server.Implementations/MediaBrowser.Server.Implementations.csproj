@@ -69,16 +69,12 @@
       <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Api.Swagger">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
-    </Reference>
     <Reference Include="SharpCompress, Version=0.10.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.6154.22657, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SocketHttpListener.1.0.0.44\lib\net45\SocketHttpListener.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SocketHttpListener.Portable">
+      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -88,7 +84,6 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
@@ -119,18 +114,9 @@
     <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
-    <Compile Include="HttpServer\LoggerUtils.cs" />
-    <Compile Include="HttpServer\RangeRequestWriter.cs" />
-    <Compile Include="HttpServer\ResponseFilter.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
-    <Compile Include="HttpServer\ServerLogFactory.cs" />
-    <Compile Include="HttpServer\ServerLogger.cs" />
-    <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
-    <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
     <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />

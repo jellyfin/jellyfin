@@ -20,9 +20,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
     /// </summary>
     public class SqliteDisplayPreferencesRepository : BaseSqliteRepository, IDisplayPreferencesRepository
     {
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IDbConnector dbConnector, IMemoryStreamProvider memoryStreamProvider)
+        public SqliteDisplayPreferencesRepository(ILogManager logManager, IJsonSerializer jsonSerializer, IApplicationPaths appPaths, IDbConnector dbConnector, IMemoryStreamFactory memoryStreamProvider)
             : base(logManager, dbConnector)
         {
             _jsonSerializer = jsonSerializer;

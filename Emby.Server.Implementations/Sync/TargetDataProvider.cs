@@ -26,9 +26,9 @@ namespace Emby.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly IApplicationPaths _appPaths;
         private readonly IServerApplicationHost _appHost;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths, IMemoryStreamProvider memoryStreamProvider)
+        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths, IMemoryStreamFactory memoryStreamProvider)
         {
             _logger = logger;
             _json = json;

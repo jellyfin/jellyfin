@@ -19,7 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Diagnostics;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 using UniversalDetector;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
@@ -34,11 +34,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         private readonly IJsonSerializer _json;
         private readonly IHttpClient _httpClient;
         private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
         private readonly IProcessFactory _processFactory;
-        private readonly IEncoding _textEncoding;
+        private readonly ITextEncoding _textEncoding;
 
-        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json, IHttpClient httpClient, IMediaSourceManager mediaSourceManager, IMemoryStreamProvider memoryStreamProvider, IProcessFactory processFactory, IEncoding textEncoding)
+        public SubtitleEncoder(ILibraryManager libraryManager, ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem, IMediaEncoder mediaEncoder, IJsonSerializer json, IHttpClient httpClient, IMediaSourceManager mediaSourceManager, IMemoryStreamFactory memoryStreamProvider, IProcessFactory processFactory, ITextEncoding textEncoding)
         {
             _libraryManager = libraryManager;
             _logger = logger;

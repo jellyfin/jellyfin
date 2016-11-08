@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Common.Implementations.Net
@@ -22,16 +23,28 @@ namespace Emby.Common.Implementations.Net
         /// </summary>
         private IPAddress _LocalIP;
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="localIP">A string containing the IP address of the local network adapter to bind sockets to. Null or empty string will use <see cref="IPAddress.Any"/>.</param>
-        public SocketFactory(string localIP)
+        private ILogger _logger;
+
+        public SocketFactory(ILogger logger)
         {
-            if (String.IsNullOrEmpty(localIP))
-                _LocalIP = IPAddress.Any;
-            else
-                _LocalIP = IPAddress.Parse(localIP);
+            _logger = logger;
+            _LocalIP = IPAddress.Any;
+        }
+
+        public ISocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
+        {
+            var addressFamily = family == IpAddressFamily.InterNetwork
+                ? AddressFamily.InterNetwork
+                : AddressFamily.InterNetworkV6;
+
+            var socket = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+
+            if (dualMode)
+            {
+                socket.DualMode = true;
+            }
+
+            return new NetSocket(socket, _logger);
         }
 
         #region ISocketFactory Members
@@ -44,7 +57,7 @@ namespace Emby.Common.Implementations.Net
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -68,7 +81,7 @@ namespace Emby.Common.Implementations.Net
         {
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -99,7 +112,7 @@ namespace Emby.Common.Implementations.Net
             if (multicastTimeToLive <= 0) throw new ArgumentException("multicastTimeToLive cannot be zero or less.", "multicastTimeToLive");
             if (localPort < 0) throw new ArgumentException("localPort cannot be less than zero.", "localPort");
 
-            var retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var retVal = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, System.Net.Sockets.ProtocolType.Udp);
 
             try
             {

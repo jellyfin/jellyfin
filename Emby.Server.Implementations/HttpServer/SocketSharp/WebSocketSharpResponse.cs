@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using MediaBrowser.Model.Logging;
-using ServiceStack;
-using ServiceStack.Host;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpResponse : IHttpResponse
     {
@@ -98,12 +97,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
                 try
                 {
-                    this._response.CloseOutputStream(_logger);
+                    CloseOutputStream(this._response);
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error closing HttpListener output stream", ex);
                 }
+            }
+        }
+
+        public void CloseOutputStream(HttpListenerResponse response)
+        {
+            try
+            {
+                response.OutputStream.Flush();
+                response.OutputStream.Dispose();
+                response.Close();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
         }
 
@@ -133,9 +146,48 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public void SetCookie(Cookie cookie)
         {
-            var cookieStr = cookie.AsHeaderValue();
-            _response.Headers.Add(HttpHeaders.SetCookie, cookieStr);
+            var cookieStr = AsHeaderValue(cookie);
+            _response.Headers.Add("Set-Cookie", cookieStr);
         }
+
+        public static string AsHeaderValue(Cookie cookie)
+        {
+            var defaultExpires = DateTime.MinValue;
+
+            var path = cookie.Expires == defaultExpires
+                ? "/"
+                : cookie.Path ?? "/";
+
+            var sb = new StringBuilder();
+
+            sb.Append($"{cookie.Name}={cookie.Value};path={path}");
+
+            if (cookie.Expires != defaultExpires)
+            {
+                sb.Append($";expires={cookie.Expires:R}");
+            }
+
+            if (!string.IsNullOrEmpty(cookie.Domain))
+            {
+                sb.Append($";domain={cookie.Domain}");
+            }
+            //else if (restrictAllCookiesToDomain != null)
+            //{
+            //    sb.Append($";domain={restrictAllCookiesToDomain}");
+            //}
+
+            if (cookie.Secure)
+            {
+                sb.Append(";Secure");
+            }
+            if (cookie.HttpOnly)
+            {
+                sb.Append(";HttpOnly");
+            }
+
+            return sb.ToString();
+        }
+
 
         public bool SendChunked
         {

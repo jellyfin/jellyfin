@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security;
 using System.Threading.Tasks;
+using Emby.Common.Implementations.Networking;
 using MediaBrowser.Model.Net;
 
 namespace Emby.Common.Implementations.Net
@@ -174,16 +175,7 @@ namespace Emby.Common.Implementations.Net
                 return null;
             }
 
-            return new IpEndPointInfo
-            {
-                IpAddress = new IpAddressInfo
-                {
-                    Address = endpoint.Address.ToString(),
-                    IsIpv6 = endpoint.AddressFamily == AddressFamily.InterNetworkV6
-                },
-
-                Port = endpoint.Port
-            };
+            return BaseNetworkManager.ToIpEndPointInfo(endpoint);
         }
 
         private void ProcessResponse(IAsyncResult asyncResult)

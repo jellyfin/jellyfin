@@ -27,5 +27,17 @@ namespace MediaBrowser.Model.Net
         /// <param name="localPort">The local port to bind to.</param>
         /// <returns>A <see cref="IUdpSocket"/> implementation.</returns>
         IUdpSocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort);
-	}
+
+        ISocket CreateSocket(IpAddressFamily family, SocketType socketType, ProtocolType protocolType, bool dualMode);
+    }
+
+    public enum SocketType
+    {
+        Stream
+    }
+
+    public enum ProtocolType
+    {
+        Tcp
+    }
 }

@@ -1,37 +1,51 @@
-﻿using System.Collections.Specialized;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using SocketHttpListener.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.Logging;
-using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Services;
-using ServiceStack;
+using MediaBrowser.Model.Text;
+using SocketHttpListener.Primitives;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public class WebSocketSharpListener : IHttpListener
     {
         private HttpListener _listener;
 
         private readonly ILogger _logger;
-        private readonly string _certificatePath;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly ICertificate _certificate;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
+        private readonly ITextEncoding _textEncoding;
+        private readonly INetworkManager _networkManager;
+        private readonly ISocketFactory _socketFactory;
+        private readonly ICryptoProvider _cryptoProvider;
+        private readonly IStreamFactory _streamFactory;
+        private readonly Func<HttpListenerContext, IHttpRequest> _httpRequestFactory;
+        private readonly bool _enableDualMode;
 
-        public WebSocketSharpListener(ILogger logger, string certificatePath, IMemoryStreamProvider memoryStreamProvider)
+        public WebSocketSharpListener(ILogger logger, ICertificate certificate, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, INetworkManager networkManager, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IStreamFactory streamFactory, bool enableDualMode, Func<HttpListenerContext, IHttpRequest> httpRequestFactory)
         {
             _logger = logger;
-            _certificatePath = certificatePath;
+            _certificate = certificate;
             _memoryStreamProvider = memoryStreamProvider;
+            _textEncoding = textEncoding;
+            _networkManager = networkManager;
+            _socketFactory = socketFactory;
+            _cryptoProvider = cryptoProvider;
+            _streamFactory = streamFactory;
+            _enableDualMode = enableDualMode;
+            _httpRequestFactory = httpRequestFactory;
         }
 
         public Action<Exception, IRequest> ErrorHandler { get; set; }
-
         public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
 
         public Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
@@ -41,7 +55,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public void Start(IEnumerable<string> urlPrefixes)
         {
             if (_listener == null)
-                _listener = new HttpListener(new PatternsLogger(_logger), _certificatePath);
+                _listener = new HttpListener(new PatternsLogger(_logger), _cryptoProvider, _streamFactory, _socketFactory, _networkManager, _textEncoding, _memoryStreamProvider);
+
+            _listener.EnableDualMode = _enableDualMode;
+
+            if (_certificate != null)
+            {
+                _listener.LoadCert(_certificate);
+            }
 
             foreach (var prefix in urlPrefixes)
             {
@@ -59,40 +80,31 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             Task.Factory.StartNew(() => InitTask(context));
         }
 
-        private void InitTask(HttpListenerContext context)
+        private Task InitTask(HttpListenerContext context)
         {
+            IHttpRequest httpReq = null;
+            var request = context.Request;
+
             try
             {
-                var task = this.ProcessRequestAsync(context);
-                task.ContinueWith(x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
+                if (request.IsWebSocketRequest)
+                {
+                    LoggerUtils.LogRequest(_logger, request);
 
-                //if (task.Status == TaskStatus.Created)
-                //{
-                //    task.RunSynchronously();
-                //}
+                    ProcessWebSocketRequest(context);
+                    return Task.FromResult(true);
+                }
+
+                httpReq = GetRequest(context);
             }
             catch (Exception ex)
             {
-                HandleError(ex, context);
-            }
-        }
+                _logger.ErrorException("Error processing request", ex);
 
-        private Task ProcessRequestAsync(HttpListenerContext context)
-        {
-            var request = context.Request;
-
-            if (request.IsWebSocketRequest)
-            {
-                LoggerUtils.LogRequest(_logger, request);
-
-                ProcessWebSocketRequest(context);
+                httpReq = httpReq ?? GetRequest(context);
+                ErrorHandler(ex, httpReq);
                 return Task.FromResult(true);
             }
-
-            if (string.IsNullOrEmpty(context.Request.RawUrl))
-                return ((object)null).AsTaskResult();
-
-            var httpReq = GetRequest(context);
 
             return RequestHandler(httpReq, request.Url);
         }
@@ -103,19 +115,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
                 var url = ctx.Request.RawUrl;
-                var queryString = ctx.Request.QueryString ?? new NameValueCollection();
-
-                var queryParamCollection = new QueryParamCollection();
-
-                foreach (var key in queryString.AllKeys)
-                {
-                    queryParamCollection[key] = queryString[key];
-                }
 
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
                     Url = url,
-                    QueryString = queryParamCollection,
+                    QueryString = ctx.Request.QueryString,
                     Endpoint = endpoint
                 };
 
@@ -135,7 +139,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         WebSocketConnected(new WebSocketConnectEventArgs
                         {
                             Url = url,
-                            QueryString = queryParamCollection,
+                            QueryString = ctx.Request.QueryString,
                             WebSocket = new SharpWebSocket(webSocketContext.WebSocket, _logger),
                             Endpoint = endpoint
                         });
@@ -158,22 +162,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)
         {
-            var operationName = httpContext.Request.GetOperationName();
-
-            var req = new WebSocketSharpRequest(httpContext, operationName, RequestAttributes.None, _logger, _memoryStreamProvider);
-            req.RequestAttributes = req.GetAttributes();
-
-            return req;
-        }
-
-        private void HandleError(Exception ex, HttpListenerContext context)
-        {
-            var httpReq = GetRequest(context);
-
-            if (ErrorHandler != null)
-            {
-                ErrorHandler(ex, httpReq);
-            }
+            return _httpRequestFactory(httpContext);
         }
 
         public void Stop()
@@ -214,4 +203,5 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
     }
+
 }

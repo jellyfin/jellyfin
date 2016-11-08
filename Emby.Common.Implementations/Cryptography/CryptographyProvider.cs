@@ -6,21 +6,14 @@ using MediaBrowser.Model.Cryptography;
 
 namespace Emby.Common.Implementations.Cryptography
 {
-    public class CryptographyProvider : ICryptographyProvider
+    public class CryptographyProvider : ICryptoProvider
     {
         public Guid GetMD5(string str)
         {
-            return new Guid(GetMD5Bytes(str));
-        }
-        public byte[] GetMD5Bytes(string str)
-        {
-            using (var provider = MD5.Create())
-            {
-                return provider.ComputeHash(Encoding.Unicode.GetBytes(str));
-            }
+            return new Guid(ComputeMD5(Encoding.Unicode.GetBytes(str)));
         }
 
-        public byte[] GetSHA1Bytes(byte[] bytes)
+        public byte[] ComputeSHA1(byte[] bytes)
         {
             using (var provider = SHA1.Create())
             {
@@ -28,7 +21,7 @@ namespace Emby.Common.Implementations.Cryptography
             }
         }
 
-        public byte[] GetMD5Bytes(Stream str)
+        public byte[] ComputeMD5(Stream str)
         {
             using (var provider = MD5.Create())
             {
@@ -36,7 +29,7 @@ namespace Emby.Common.Implementations.Cryptography
             }
         }
 
-        public byte[] GetMD5Bytes(byte[] bytes)
+        public byte[] ComputeMD5(byte[] bytes)
         {
             using (var provider = MD5.Create())
             {

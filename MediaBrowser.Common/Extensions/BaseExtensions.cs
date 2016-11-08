@@ -10,7 +10,7 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class BaseExtensions
     {
-        public static ICryptographyProvider CryptographyProvider { get; set; }
+        public static ICryptoProvider CryptographyProvider { get; set; }
 
         /// <summary>
         /// Strips the HTML.

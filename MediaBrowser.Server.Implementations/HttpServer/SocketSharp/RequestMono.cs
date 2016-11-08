@@ -2,11 +2,10 @@
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 
 namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
@@ -128,7 +127,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept]) ? null : request.Headers[HttpHeaders.Accept];
+                return string.IsNullOrEmpty(request.Headers["Accept"]) ? null : request.Headers["Accept"];
             }
         }
 
@@ -136,7 +135,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
+                return string.IsNullOrEmpty(request.Headers["Authorization"]) ? null : request.Headers["Authorization"];
             }
         }
 
@@ -152,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             string msg = String.Format("A potentially dangerous Request.{0} value was " +
                             "detected from the client ({1}={2}).", name, key, v);
 
-            throw new HttpRequestValidationException(msg);
+            throw new Exception(msg);
         }
 
         static void ValidateNameValueCollection(string name, QueryParamCollection coll)
@@ -278,9 +277,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         void AddRawKeyValue(StringBuilder key, StringBuilder value)
         {
-            string decodedKey = HttpUtility.UrlDecode(key.ToString(), ContentEncoding);
+            string decodedKey = WebUtility.UrlDecode(key.ToString());
             form.Add(decodedKey,
-                  HttpUtility.UrlDecode(value.ToString(), ContentEncoding));
+                  WebUtility.UrlDecode(value.ToString()));
 
             key.Length = 0;
             value.Length = 0;

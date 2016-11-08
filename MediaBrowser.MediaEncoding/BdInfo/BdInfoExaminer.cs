@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
@@ -15,9 +15,9 @@ namespace MediaBrowser.MediaEncoding.BdInfo
     public class BdInfoExaminer : IBlurayExaminer
     {
         private readonly IFileSystem _fileSystem;
-        private readonly IEncoding _textEncoding;
+        private readonly ITextEncoding _textEncoding;
 
-        public BdInfoExaminer(IFileSystem fileSystem, IEncoding textEncoding)
+        public BdInfoExaminer(IFileSystem fileSystem, ITextEncoding textEncoding)
         {
             _fileSystem = fileSystem;
             _textEncoding = textEncoding;

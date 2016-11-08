@@ -68,11 +68,18 @@
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
+    <Compile Include="HttpServer\LoggerUtils.cs" />
+    <Compile Include="HttpServer\RangeRequestWriter.cs" />
+    <Compile Include="HttpServer\ResponseFilter.cs" />
+    <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
     <Compile Include="HttpServer\SocketSharp\HttpUtility.cs" />
     <Compile Include="HttpServer\IHttpListener.cs" />
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\Security\AuthService.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
@@ -254,6 +261,9 @@
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
+    <Reference Include="SocketHttpListener.Portable">
+      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
+    </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
       <Private>True</Private>

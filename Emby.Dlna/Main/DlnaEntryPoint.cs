@@ -250,14 +250,12 @@ namespace Emby.Dlna.Main
                 //    continue;
                 //}
 
-                var addressString = address.ToString();
-
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.Info("Registering publisher for {0} on {1}", fullService, addressString);
+                _logger.Info("Registering publisher for {0} on {1}", fullService, address.ToString());
 
                 var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(addressString, address.IsIpv6) + descriptorUri);
+                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
