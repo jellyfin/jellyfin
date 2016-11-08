@@ -119,9 +119,9 @@ namespace Emby.Server.Implementations.Updates
         /// <value>The application host.</value>
         private readonly IApplicationHost _applicationHost;
 
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
-        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
+        public InstallationManager(ILogger logger, IApplicationHost appHost, IApplicationPaths appPaths, IHttpClient httpClient, IJsonSerializer jsonSerializer, ISecurityManager securityManager, IConfigurationManager config, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             if (logger == null)
             {
@@ -606,7 +606,7 @@ namespace Emby.Server.Implementations.Updates
             {
                 using (var stream = _fileSystem.OpenRead(tempFile))
                 {
-                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.GetMD5Bytes(stream)).Replace("-", String.Empty));
+                    var check = Guid.Parse(BitConverter.ToString(_cryptographyProvider.ComputeMD5(stream)).Replace("-", String.Empty));
                     if (check != packageChecksum)
                     {
                         throw new Exception(string.Format("Download validation failed for {0}.  Probably corrupted during transfer.", package.name));

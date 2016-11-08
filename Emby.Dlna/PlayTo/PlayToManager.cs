@@ -16,6 +16,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 
 namespace Emby.Dlna.PlayTo
@@ -131,11 +132,11 @@ namespace Emby.Dlna.PlayTo
                     string serverAddress;
                     if (info.LocalIpAddress == null)
                     {
-                        serverAddress = await GetServerAddress(null, false).ConfigureAwait(false);
+                        serverAddress = await GetServerAddress(null).ConfigureAwait(false);
                     }
                     else
                     {
-                        serverAddress = await GetServerAddress(info.LocalIpAddress.Address, info.LocalIpAddress.IsIpv6).ConfigureAwait(false);
+                        serverAddress = await GetServerAddress(info.LocalIpAddress).ConfigureAwait(false);
                     }
 
                     string accessToken = null;
@@ -189,14 +190,14 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
-        private Task<string> GetServerAddress(string ipAddress, bool isIpv6)
+        private Task<string> GetServerAddress(IpAddressInfo address)
         {
-            if (string.IsNullOrWhiteSpace(ipAddress))
+            if (address == null)
             {
                 return _appHost.GetLocalApiUrl();
             }
 
-            return Task.FromResult(_appHost.GetLocalApiUrl(ipAddress, isIpv6));
+            return Task.FromResult(_appHost.GetLocalApiUrl(address));
         }
 
         public void Dispose()

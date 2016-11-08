@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebSocketState = MediaBrowser.Model.Net.WebSocketState;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public class SharpWebSocket : IWebSocket
     {
@@ -25,12 +25,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NativeWebSocket" /> class.
-        /// </summary>
-        /// <param name="socket">The socket.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="System.ArgumentNullException">socket</exception>
         public SharpWebSocket(SocketHttpListener.WebSocket socket, ILogger logger)
         {
             if (socket == null)

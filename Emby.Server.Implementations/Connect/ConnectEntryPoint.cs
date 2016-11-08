@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Connect
                     validIpAddress = await GetIpAddress(ipLookupUrl).ConfigureAwait(false);
 
                     // Try to find the ipv4 address, if present
-                    if (!validIpAddress.IsIpv6)
+                    if (validIpAddress.AddressFamily != IpAddressFamily.InterNetworkV6)
                     {
                         break;
                     }
@@ -77,9 +77,9 @@ namespace Emby.Server.Implementations.Connect
                     _logger.ErrorException("Error getting connection info", ex);
                 }
             }
-
+           
             // If this produced an ipv6 address, try again
-            if (validIpAddress != null && validIpAddress.IsIpv6)
+            if (validIpAddress != null && validIpAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
                 foreach (var ipLookupUrl in _ipLookups)
                 {
@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Connect
                         var newAddress = await GetIpAddress(ipLookupUrl, true).ConfigureAwait(false);
 
                         // Try to find the ipv4 address, if present
-                        if (!newAddress.IsIpv6)
+                        if (newAddress.AddressFamily != IpAddressFamily.InterNetworkV6)
                         {
                             validIpAddress = newAddress;
                             break;

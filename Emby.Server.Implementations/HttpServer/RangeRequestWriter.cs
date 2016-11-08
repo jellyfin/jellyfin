@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public class RangeRequestWriter : IAsyncStreamWriter, IHttpResult
     {
@@ -41,7 +40,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public Func<IDisposable> ResultScope { get; set; }
         public List<Cookie> Cookies { get; private set; }
 
         /// <summary>
@@ -213,8 +211,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public object Response { get; set; }
 
-        public IContentTypeWriter ResponseFilter { get; set; }
-
         public int Status { get; set; }
 
         public HttpStatusCode StatusCode
@@ -224,7 +220,5 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public string StatusDescription { get; set; }
-
-        public int PaddingLength { get; set; }
     }
 }

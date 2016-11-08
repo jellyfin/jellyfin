@@ -99,12 +99,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _updateInheritedTagsCommand;
 
         public const int LatestSchemaVersion = 109;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamProvider memoryStreamProvider)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamFactory memoryStreamProvider)
             : base(logManager, connector)
         {
             if (config == null)

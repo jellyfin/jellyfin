@@ -3,7 +3,7 @@ using System;
 using System.Globalization;
 using SocketHttpListener.Net;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public static class LoggerUtils
     {

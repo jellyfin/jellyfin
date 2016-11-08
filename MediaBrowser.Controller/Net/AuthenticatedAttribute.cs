@@ -7,7 +7,7 @@ namespace MediaBrowser.Controller.Net
 {
     public class AuthenticatedAttribute : Attribute, IHasRequestFilter, IAuthenticationAttributes
     {
-        public IAuthService AuthService { get; set; }
+        public static IAuthService AuthService { get; set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value><c>true</c> if [allow before startup wizard]; otherwise, <c>false</c>.</value>
         public bool AllowBeforeStartupWizard { get; set; }
-        
+
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
@@ -41,15 +41,6 @@ namespace MediaBrowser.Controller.Net
         }
 
         /// <summary>
-        /// A new shallow copy of this filter is used on every request.
-        /// </summary>
-        /// <returns>IHasRequestFilter.</returns>
-        public IHasRequestFilter Copy()
-        {
-            return this;
-        }
-
-        /// <summary>
         /// Order in which Request Filters are executed.
         /// &lt;0 Executed before global request filters
         /// &gt;0 Executed after global request filters
@@ -59,7 +50,6 @@ namespace MediaBrowser.Controller.Net
         {
             get { return 0; }
         }
-
 
         public IEnumerable<string> GetRoles()
         {

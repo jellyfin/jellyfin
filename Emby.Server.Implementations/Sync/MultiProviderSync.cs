@@ -23,9 +23,9 @@ namespace Emby.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IConfigurationManager _config;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
-        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
+        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem, IConfigurationManager config, ICryptoProvider cryptographyProvider)
         {
             _syncManager = syncManager;
             _appHost = appHost;

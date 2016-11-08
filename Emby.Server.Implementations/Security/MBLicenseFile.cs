@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Security
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
         public string RegKey
         {
@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Security
         private readonly object _fileLock = new object();
         private string _regKey;
 
-        public MBLicenseFile(IApplicationPaths appPaths, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider)
+        public MBLicenseFile(IApplicationPaths appPaths, IFileSystem fileSystem, ICryptoProvider cryptographyProvider)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.Security
 
         public void AddRegCheck(string featureId)
         {
-            var key = new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId)));
+            var key = new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
             var value = DateTime.UtcNow;
 
             SetUpdateRecord(key, value);
@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.Security
 
         public void RemoveRegCheck(string featureId)
         {
-            var key = new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId)));
+            var key = new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
             DateTime val;
 
             _updateRecords.TryRemove(key, out val);
@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Security
         public DateTime LastChecked(string featureId)
         {
             DateTime last;
-            _updateRecords.TryGetValue(new Guid(_cryptographyProvider.GetMD5Bytes(Encoding.Unicode.GetBytes(featureId))), out last);
+            _updateRecords.TryGetValue(new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId))), out last);
 
             // guard agains people just putting a large number in the file
             return last < DateTime.UtcNow ? last : DateTime.MinValue;

@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Services
     {
         public QueryParamCollection()
         {
-            
+
         }
 
         public QueryParamCollection(IDictionary<string, string> headers)
@@ -30,15 +30,30 @@ namespace MediaBrowser.Model.Services
             return StringComparer.OrdinalIgnoreCase;
         }
 
+        public string GetKey(int index)
+        {
+            return this[index].Name;
+        }
+
+        public string Get(int index)
+        {
+            return this[index].Value;
+        }
+
+        public virtual string[] GetValues(int index)
+        {
+            return new[] { Get(index) };
+        }
+
         /// <summary>
         /// Adds a new query parameter.
         /// </summary>
-        public void Add(string key, string value)
+        public virtual void Add(string key, string value)
         {
             Add(new NameValuePair(key, value));
         }
 
-        public void Set(string key, string value)
+        public virtual void Set(string key, string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -81,17 +96,21 @@ namespace MediaBrowser.Model.Services
         /// </summary>
         /// <returns>The number of parameters that were removed</returns>
         /// <exception cref="ArgumentNullException"><paramref name="name" /> is null.</exception>
-        public int Remove(string name)
+        public virtual int Remove(string name)
         {
             return RemoveAll(p => p.Name == name);
         }
 
         public string Get(string name)
         {
-            return GetValues(name).FirstOrDefault();
+            var stringComparison = GetStringComparison();
+
+            return this.Where(p => string.Equals(p.Name, name, stringComparison))
+                .Select(p => p.Value)
+                .FirstOrDefault();
         }
 
-        public string[] GetValues(string name)
+        public virtual string[] GetValues(string name)
         {
             var stringComparison = GetStringComparison();
 

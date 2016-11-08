@@ -4,7 +4,7 @@ using Microsoft.IO;
 
 namespace MediaBrowser.Server.Implementations.IO
 {
-    public class RecyclableMemoryStreamProvider : IMemoryStreamProvider
+    public class RecyclableMemoryStreamProvider : IMemoryStreamFactory
     {
         readonly RecyclableMemoryStreamManager _manager = new RecyclableMemoryStreamManager();
 
@@ -22,9 +22,15 @@ namespace MediaBrowser.Server.Implementations.IO
         {
             return _manager.GetStream("RecyclableMemoryStream", buffer, 0, buffer.Length);
         }
+
+        public bool TryGetBuffer(MemoryStream stream, out byte[] buffer)
+        {
+            buffer = stream.GetBuffer();
+            return true;
+        }
     }
 
-    public class MemoryStreamProvider : IMemoryStreamProvider
+    public class MemoryStreamProvider : IMemoryStreamFactory
     {
         public MemoryStream CreateNew()
         {
@@ -39,6 +45,12 @@ namespace MediaBrowser.Server.Implementations.IO
         public MemoryStream CreateNew(byte[] buffer)
         {
             return new MemoryStream(buffer);
+        }
+
+        public bool TryGetBuffer(MemoryStream stream, out byte[] buffer)
+        {
+            buffer = stream.GetBuffer();
+            return true;
         }
     }
 }
