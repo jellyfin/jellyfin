@@ -170,7 +170,7 @@ namespace Emby.Common.Implementations
         /// <value><c>true</c> if this instance is running as service; otherwise, <c>false</c>.</value>
         public abstract bool IsRunningAsService { get; }
 
-        protected ICryptographyProvider CryptographyProvider = new CryptographyProvider();
+        protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
 
         protected IEnvironmentInfo EnvironmentInfo = new Emby.Common.Implementations.EnvironmentInfo.EnvironmentInfo();
 
@@ -183,7 +183,7 @@ namespace Emby.Common.Implementations
                 {
                     _deviceId = new DeviceId(ApplicationPaths, LogManager.GetLogger("SystemId"), FileSystemManager);
                 }
-
+             
                 return _deviceId.Value;
             }
         }
@@ -193,7 +193,7 @@ namespace Emby.Common.Implementations
             get { return EnvironmentInfo.OperatingSystemName; }
         }
 
-        public IMemoryStreamProvider MemoryStreamProvider { get; set; }
+        public IMemoryStreamFactory MemoryStreamProvider { get; set; }
 
         /// <summary>
         /// The container
@@ -209,7 +209,7 @@ namespace Emby.Common.Implementations
         {
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
-
+            
             XmlSerializer = new MyXmlSerializer(fileSystem, logManager.GetLogger("XmlSerializer"));
             FailedAssemblies = new List<string>();
 
@@ -267,7 +267,7 @@ namespace Emby.Common.Implementations
             progress.Report(100);
         }
 
-        protected abstract IMemoryStreamProvider CreateMemoryStreamProvider();
+        protected abstract IMemoryStreamFactory CreateMemoryStreamProvider();
         protected abstract ISystemEvents CreateSystemEvents();
 
         protected virtual void OnLoggerLoaded(bool isFirstLoad)

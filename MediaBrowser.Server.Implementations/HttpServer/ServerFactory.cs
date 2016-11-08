@@ -2,9 +2,11 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Logging;
+using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Text;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
 {
@@ -21,13 +23,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             ILogManager logManager,
             IServerConfigurationManager config, 
             INetworkManager networkmanager,
-            IMemoryStreamProvider streamProvider,
+            IMemoryStreamFactory streamProvider,
             string serverName, 
-            string defaultRedirectpath)
+            string defaultRedirectpath,
+            ITextEncoding textEncoding,
+            ISocketFactory socketFactory,
+            ICryptoProvider cryptoProvider)
         {
-            LogManager.LogFactory = new ServerLogFactory(logManager);
-
-            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, networkmanager, streamProvider);
+            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, networkmanager, streamProvider, textEncoding, socketFactory, cryptoProvider);
         }
     }
 }

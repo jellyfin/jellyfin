@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace MediaBrowser.Model.Services
 {
     public interface IHasRequestFilter
@@ -22,11 +17,5 @@ namespace MediaBrowser.Model.Services
         /// <param name="res">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
         void RequestFilter(IRequest req, IResponse res, object requestDto);
-
-        /// <summary>
-        /// A new shallow copy of this filter is used on every request.
-        /// </summary>
-        /// <returns></returns>
-        IHasRequestFilter Copy();
     }
 }

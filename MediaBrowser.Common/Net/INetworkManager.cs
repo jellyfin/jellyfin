@@ -2,6 +2,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
@@ -46,9 +47,13 @@ namespace MediaBrowser.Common.Net
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
 
+        IEnumerable<IpAddressInfo> GetLocalIpAddresses();
+
         IpAddressInfo ParseIpAddress(string ipAddress);
 
         bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo);
+
+        Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
 
         /// <summary>
         /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.

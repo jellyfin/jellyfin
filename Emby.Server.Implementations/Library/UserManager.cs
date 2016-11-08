@@ -70,10 +70,10 @@ namespace Emby.Server.Implementations.Library
         private readonly Func<IConnectManager> _connectFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly IFileSystem _fileSystem;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
         private readonly string _defaultUserName;
 
-        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptographyProvider cryptographyProvider, string defaultUserName)
+        public UserManager(ILogger logger, IServerConfigurationManager configurationManager, IUserRepository userRepository, IXmlSerializer xmlSerializer, INetworkManager networkManager, Func<IImageProcessor> imageProcessorFactory, Func<IDtoService> dtoServiceFactory, Func<IConnectManager> connectFactory, IServerApplicationHost appHost, IJsonSerializer jsonSerializer, IFileSystem fileSystem, ICryptoProvider cryptographyProvider, string defaultUserName)
         {
             _logger = logger;
             UserRepository = userRepository;
@@ -334,7 +334,7 @@ namespace Emby.Server.Implementations.Library
         /// <returns>System.String.</returns>
         private string GetSha1String(string str)
         {
-            return BitConverter.ToString(_cryptographyProvider.GetSHA1Bytes(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
+            return BitConverter.ToString(_cryptographyProvider.ComputeSHA1(Encoding.UTF8.GetBytes(str))).Replace("-", string.Empty);
         }
 
         /// <summary>

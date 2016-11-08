@@ -1,12 +1,11 @@
 ﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using System;
 using System.Globalization;
-using System.Net;
 using System.Text;
+using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public class ResponseFilter
     {
@@ -28,6 +27,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             // Try to prevent compatibility view
             res.AddHeader("X-UA-Compatible", "IE=Edge");
+            res.AddHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Range, X-MediaBrowser-Token, X-Emby-Authorization");
+            res.AddHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+            res.AddHeader("Access-Control-Allow-Origin", "*");
 
             var exception = dto as Exception;
 
@@ -68,15 +70,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     {
                         res.SetContentLength(length);
                         
-                        var listenerResponse = res.OriginalResponse as HttpListenerResponse;
+                        //var listenerResponse = res.OriginalResponse as HttpListenerResponse;
 
-                        if (listenerResponse != null)
-                        {
-                            // Disable chunked encoding. Technically this is only needed when using Content-Range, but
-                            // anytime we know the content length there's no need for it
-                            listenerResponse.SendChunked = false;
-                            return;
-                        }
+                        //if (listenerResponse != null)
+                        //{
+                        //    // Disable chunked encoding. Technically this is only needed when using Content-Range, but
+                        //    // anytime we know the content length there's no need for it
+                        //    listenerResponse.SendChunked = false;
+                        //    return;
+                        //}
 
                         if (sharpResponse != null)
                         {

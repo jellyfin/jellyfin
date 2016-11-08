@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.Connect
 
                 if (string.IsNullOrWhiteSpace(address) && DiscoveredWanIpAddress != null)
                 {
-                    if (DiscoveredWanIpAddress.IsIpv6)
+                    if (DiscoveredWanIpAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
                     {
                         address = "[" + DiscoveredWanIpAddress + "]";
                     }

@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         /// <returns>Stream.</returns>
         /// <exception cref="System.ArgumentNullException">reader</exception>
-        public static Stream GetMemoryStream(this IDataReader reader, int ordinal, IMemoryStreamProvider streamProvider)
+        public static Stream GetMemoryStream(this IDataReader reader, int ordinal, IMemoryStreamFactory streamProvider)
         {
             if (reader == null)
             {
@@ -134,7 +134,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         /// <returns>System.Byte[][].</returns>
         /// <exception cref="System.ArgumentNullException">obj</exception>
-        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj, IMemoryStreamProvider streamProvider)
+        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj, IMemoryStreamFactory streamProvider)
         {
             if (obj == null)
             {

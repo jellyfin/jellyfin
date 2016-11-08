@@ -20,9 +20,9 @@ namespace Emby.Server.Implementations.Sync
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfigurationManager _config;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
-        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
+        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost, IConfigurationManager config, ICryptoProvider cryptographyProvider)
         {
             _syncManager = syncManager;
             _logger = logger;

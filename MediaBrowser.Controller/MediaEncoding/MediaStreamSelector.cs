@@ -69,7 +69,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (!ContainsOrdinal(preferredLanguages, audioTrackLanguage))
                 {
-                    stream = streams.Where(s => !s.IsForced).FirstOrDefault(s => ContainsOrdinal(preferredLanguages, s.Language));
+                    stream = streams.Where(s => !s.IsForced).FirstOrDefault(s => ContainsOrdinal(preferredLanguages, s.Language)) ??
+                        streams.FirstOrDefault(s => ContainsOrdinal(preferredLanguages, s.Language));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)

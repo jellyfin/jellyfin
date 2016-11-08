@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
 using Funq;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 using ServiceStack;
 using ServiceStack.Host;
-using ServiceStack.Web;
 using SocketHttpListener.Net;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
@@ -25,9 +22,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public Container Container { get; set; }
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, RequestAttributes requestAttributes, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
+        public WebSocketSharpRequest(HttpListenerContext httpContext, string operationName, ILogger logger, IMemoryStreamFactory memoryStreamProvider)
         {
             this.OperationName = operationName;
             _memoryStreamProvider = memoryStreamProvider;
@@ -55,35 +52,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get { return response; }
         }
 
-        public T TryResolve<T>()
-        {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container == null
-                ? HostContext.TryResolve<T>()
-                : Container.TryResolve<T>();
-        }
-
         public string OperationName { get; set; }
 
         public object Dto { get; set; }
-
-        public string GetRawBody()
-        {
-            if (bufferedStream != null)
-            {
-                return bufferedStream.ToArray().FromUtf8Bytes();
-            }
-
-            using (var reader = new StreamReader(InputStream))
-            {
-                return reader.ReadToEnd();
-            }
-        }
 
         public string RawUrl
         {
@@ -104,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return String.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedFor]) ? null : request.Headers[HttpHeaders.XForwardedFor];
+                return String.IsNullOrEmpty(request.Headers["X-Forwarded-For"]) ? null : request.Headers["X-Forwarded-For"];
             }
         }
 
@@ -112,7 +83,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedPort]) ? (int?)null : int.Parse(request.Headers[HttpHeaders.XForwardedPort]);
+                return string.IsNullOrEmpty(request.Headers["X-Forwarded-Port"]) ? (int?)null : int.Parse(request.Headers["X-Forwarded-Port"]);
             }
         }
 
@@ -120,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return string.IsNullOrEmpty(request.Headers[HttpHeaders.XForwardedProtocol]) ? null : request.Headers[HttpHeaders.XForwardedProtocol];
+                return string.IsNullOrEmpty(request.Headers["X-Forwarded-Proto"]) ? null : request.Headers["X-Forwarded-Proto"];
             }
         }
 
@@ -128,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             get
             {
-                return String.IsNullOrEmpty(request.Headers[HttpHeaders.XRealIp]) ? null : request.Headers[HttpHeaders.XRealIp];
+                return String.IsNullOrEmpty(request.Headers["X-Real-IP"]) ? null : request.Headers["X-Real-IP"];
             }
         }
 
@@ -140,7 +111,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 return remoteIp ??
                     (remoteIp = (CheckBadChars(XForwardedFor)) ??
                                 (NormalizeIp(CheckBadChars(XRealIp)) ??
-                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.Address.ToString()) : null)));
+                                (request.RemoteEndPoint != null ? NormalizeIp(request.RemoteEndPoint.IpAddress.ToString()) : null)));
             }
         }
 
@@ -280,7 +251,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 defaultContentType = HostContext.Config.DefaultContentType;
             }
 
-            var customContentTypes = HostContext.ContentTypes.ContentTypeFormats.Values;
+            var customContentTypes = ContentTypes.Instance.ContentTypeFormats.Values;
             var preferredContentTypes = new string[] {};
 
             var acceptsAnything = false;
@@ -328,11 +299,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 }
             }
 
-            if (httpReq.ContentType.MatchesContentType(MimeTypes.Soap12))
-            {
-                return MimeTypes.Soap12;
-            }
-
             if (acceptContentTypes == null && httpReq.ContentType == MimeTypes.Soap11)
             {
                 return MimeTypes.Soap11;
@@ -344,10 +310,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private static string GetQueryStringContentType(IRequest httpReq)
         {
-            var callback = httpReq.QueryString[Keywords.Callback];
-            if (!string.IsNullOrEmpty(callback)) return MimeTypes.Json;
-
-            var format = httpReq.QueryString[Keywords.Format];
+            var format = httpReq.QueryString["format"];
             if (format == null)
             {
                 const int formatMaxLength = 4;
@@ -359,12 +322,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
 
             format = format.LeftPart('.').ToLower();
-            if (format.Contains("json")) return MimeTypes.Json;
+            if (format.Contains("json")) return "application/json";
             if (format.Contains("xml")) return MimeTypes.Xml;
-            if (format.Contains("jsv")) return MimeTypes.Jsv;
 
             string contentType;
-            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
+            ContentTypes.Instance.ContentTypeFormats.TryGetValue(format, out contentType);
 
             return contentType;
         }
@@ -474,10 +436,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get { return request.UserAgent; }
         }
 
-        private QueryParamCollection headers;
         public QueryParamCollection Headers
         {
-            get { return headers ?? (headers = ToQueryParams(request.Headers)); }
+            get { return request.Headers; }
         }
 
         private QueryParamCollection queryString;
@@ -490,18 +451,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public QueryParamCollection FormData
         {
             get { return formData ?? (formData = this.Form); }
-        }
-
-        private QueryParamCollection ToQueryParams(NameValueCollection collection)
-        {
-            var result = new QueryParamCollection();
-
-            foreach (var key in collection.AllKeys)
-            {
-                result[key] = collection[key];
-            }
-
-            return result;
         }
 
         public bool IsLocal
@@ -563,21 +512,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
-        public bool UseBufferedStream
-        {
-            get { return bufferedStream != null; }
-            set
-            {
-                bufferedStream = value
-                    ? bufferedStream ?? _memoryStreamProvider.CreateNew(request.InputStream.ReadFully())
-                    : null;
-            }
-        }
-
-        private MemoryStream bufferedStream;
         public Stream InputStream
         {
-            get { return bufferedStream ?? request.InputStream; }
+            get { return request.InputStream; }
         }
 
         public long ContentLength
@@ -613,7 +550,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
-        static Stream GetSubStream(Stream stream, IMemoryStreamProvider streamProvider)
+        static Stream GetSubStream(Stream stream, IMemoryStreamFactory streamProvider)
         {
             if (stream is MemoryStream)
             {
@@ -653,5 +590,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
             return pathInfo;
         }
+    }
+
+    public class HttpFile : IHttpFile
+    {
+        public string Name { get; set; }
+        public string FileName { get; set; }
+        public long ContentLength { get; set; }
+        public string ContentType { get; set; }
+        public Stream InputStream { get; set; }
     }
 }

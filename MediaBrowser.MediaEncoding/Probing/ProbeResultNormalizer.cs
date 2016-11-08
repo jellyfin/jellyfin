@@ -23,9 +23,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, IMemoryStreamProvider memoryStreamProvider)
+        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider)
         {
             _logger = logger;
             _fileSystem = fileSystem;

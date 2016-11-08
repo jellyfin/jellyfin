@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace BDInfo
 {
@@ -75,7 +75,7 @@ namespace BDInfo
         public event OnPlaylistFileScanError PlaylistFileScanError;
 
         public BDROM(
-            string path, IFileSystem fileSystem, IEncoding textEncoding)
+            string path, IFileSystem fileSystem, ITextEncoding textEncoding)
         {
             _fileSystem = fileSystem;
             //

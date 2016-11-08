@@ -126,7 +126,7 @@ using MediaBrowser.Model.Reflection;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
 using MediaBrowser.Server.Implementations.Serialization;
@@ -251,6 +251,8 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         /// <value>The zip client.</value>
         protected IZipClient ZipClient { get; private set; }
+
+        protected IAuthService AuthService { get; private set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _releaseAssetFilename;
@@ -410,7 +412,7 @@ namespace MediaBrowser.Server.Startup.Common
             LogManager.RemoveConsoleOutput();
         }
 
-        protected override IMemoryStreamProvider CreateMemoryStreamProvider()
+        protected override IMemoryStreamFactory CreateMemoryStreamProvider()
         {
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
@@ -555,7 +557,7 @@ namespace MediaBrowser.Server.Startup.Common
             StringExtensions.LocalizationManager = LocalizationManager;
             RegisterSingleInstance(LocalizationManager);
 
-            IEncoding textEncoding = new TextEncoding(FileSystemManager);
+            ITextEncoding textEncoding = new TextEncoding(FileSystemManager);
             RegisterSingleInstance(textEncoding);
             Utilities.EncodingHelper = textEncoding;
             RegisterSingleInstance<IBlurayExaminer>(() => new BdInfoExaminer(FileSystemManager, textEncoding));
@@ -601,7 +603,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -702,7 +704,9 @@ namespace MediaBrowser.Server.Startup.Common
             var authContext = new AuthorizationContext(AuthenticationRepository, ConnectManager);
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
-            RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager));
+
+            AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager);
+            RegisterSingleInstance<IAuthService>(AuthService);
 
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider, ProcessFactory, textEncoding);
             RegisterSingleInstance(SubtitleEncoder);
@@ -900,6 +904,7 @@ namespace MediaBrowser.Server.Startup.Common
             BaseStreamingService.AppHost = this;
             BaseStreamingService.HttpClient = HttpClient;
             Utilities.CryptographyProvider = CryptographyProvider;
+            AuthenticatedAttribute.AuthService = AuthService;
         }
 
         /// <summary>
@@ -1291,7 +1296,7 @@ namespace MediaBrowser.Server.Startup.Common
             try
             {
                 // Return the first matched address, if found, or the first known local address
-                var address = (await GetLocalIpAddressesInternal().ConfigureAwait(false)).FirstOrDefault(i => !IPAddress.IsLoopback(i));
+                var address = (await GetLocalIpAddresses().ConfigureAwait(false)).FirstOrDefault(i => !i.Equals(IpAddressInfo.Loopback) && !i.Equals(IpAddressInfo.IPv6Loopback));
 
                 if (address != null)
                 {
@@ -1308,19 +1313,14 @@ namespace MediaBrowser.Server.Startup.Common
             return null;
         }
 
-        public string GetLocalApiUrl(IPAddress ipAddress)
+        public string GetLocalApiUrl(IpAddressInfo ipAddress)
         {
-            return GetLocalApiUrl(ipAddress.ToString(), ipAddress.AddressFamily == AddressFamily.InterNetworkV6);
-        }
-
-        public string GetLocalApiUrl(string ipAddress, bool isIpv6)
-        {
-            if (isIpv6)
+            if (ipAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
             {
-                return GetLocalApiUrl("[" + ipAddress + "]");
+                return GetLocalApiUrl("[" + ipAddress.Address + "]");
             }
 
-            return GetLocalApiUrl(ipAddress);
+            return GetLocalApiUrl(ipAddress.Address);
         }
 
         public string GetLocalApiUrl(string host)
@@ -1332,23 +1332,8 @@ namespace MediaBrowser.Server.Startup.Common
 
         public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
         {
-            var list = await GetLocalIpAddressesInternal().ConfigureAwait(false);
-
-            return list.Select(i => new IpAddressInfo
-            {
-                Address = i.ToString(),
-                IsIpv6 = i.AddressFamily == AddressFamily.InterNetworkV6
-
-            }).ToList();
-        }
-
-        private async Task<List<IPAddress>> GetLocalIpAddressesInternal()
-        {
-            // Need to do this until Common will compile with this method
-            var nativeNetworkManager = (BaseNetworkManager)NetworkManager;
-
-            var addresses = nativeNetworkManager.GetLocalIpAddresses().ToList();
-            var list = new List<IPAddress>();
+            var addresses = NetworkManager.GetLocalIpAddresses().ToList();
+            var list = new List<IpAddressInfo>();
 
             foreach (var address in addresses)
             {
@@ -1364,9 +1349,10 @@ namespace MediaBrowser.Server.Startup.Common
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
         private DateTime _lastAddressCacheClear;
-        private async Task<bool> IsIpAddressValidAsync(IPAddress address)
+        private async Task<bool> IsIpAddressValidAsync(IpAddressInfo address)
         {
-            if (IPAddress.IsLoopback(address))
+            if (address.Equals(IpAddressInfo.Loopback) ||
+                address.Equals(IpAddressInfo.IPv6Loopback))
             {
                 return true;
             }
