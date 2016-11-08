@@ -114,6 +114,7 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;

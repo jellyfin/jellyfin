@@ -138,8 +138,6 @@
 
         $('.libraryPathMappingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-        page.querySelector('.labelFromHelp').innerHTML = Globalize.translate('LabelFromHelp', 'D:\\Movies');
-
     }).on('pageshow', "#libraryPathMappingPage", function () {
 
         LibraryMenu.setTabs('librarysetup', 2, getTabs);

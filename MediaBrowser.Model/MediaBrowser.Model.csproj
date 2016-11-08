@@ -143,6 +143,7 @@
     <Compile Include="Net\IUdpSocket.cs" />
     <Compile Include="Net\SocketReceiveResult.cs" />
     <Compile Include="Services\IHttpResult.cs" />
+    <Compile Include="Social\ISharingRepository.cs" />
     <Compile Include="System\IEnvironmentInfo.cs" />
     <Compile Include="Text\ITextEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
