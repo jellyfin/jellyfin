@@ -106,26 +106,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (NotSupportedException), 500}
             };
 
-            HostConfig.Instance.GlobalResponseHeaders = new Dictionary<string, string>();
-
             // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
             // Custom format allows images
             HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.Xml | Feature.CustomFormat;
 
             Container.Adapter = _containerAdapter;
-
-            //Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
-            //    new SessionAuthProvider(_containerAdapter.Resolve<ISessionContext>()),
-            //}));
-
-            //PreRequestFilters.Add((httpReq, httpRes) =>
-            //{
-            //    //Handles Request and closes Responses after emitting global HTTP Headers
-            //    if (string.Equals(httpReq.Verb, "OPTIONS", StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        httpRes.EndRequest(); //add a 'using ServiceStack;'
-            //    }
-            //});
 
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
             foreach (var filter in requestFilters)
@@ -144,13 +129,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        public override void OnAfterInit()
-        {
-            SetAppDomainData();
-
-            base.OnAfterInit();
-        }
-
         public override void OnConfigLoad()
         {
             base.OnConfigLoad();
@@ -165,23 +143,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var types = _restServices.Select(r => r.GetType()).ToArray();
 
             return new ServiceController(this, () => types);
-        }
-
-        public virtual void SetAppDomainData()
-        {
-            //Required for Mono to resolve VirtualPathUtility and Url.Content urls
-            var domain = Thread.GetDomain(); // or AppDomain.Current
-            domain.SetData(".appDomain", "1");
-            domain.SetData(".appVPath", "/");
-            domain.SetData(".appPath", domain.BaseDirectory);
-            if (string.IsNullOrEmpty(domain.GetData(".appId") as string))
-            {
-                domain.SetData(".appId", "1");
-            }
-            if (string.IsNullOrEmpty(domain.GetData(".domainId") as string))
-            {
-                domain.SetData(".domainId", "1");
-            }
         }
 
         public override ServiceStackHost Start(string listeningAtUrlBase)
@@ -225,7 +186,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 ? GetCert(CertificatePath) :
                 null;
 
-            return new WebSocketSharpListener(_logger, cert, _memoryStreamProvider, _textEncoding, _networkManager, _socketFactory, _cryptoProvider, new StreamFactory(), GetRequest);
+            var enableDualMode = Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+            return new WebSocketSharpListener(_logger, cert, _memoryStreamProvider, _textEncoding, _networkManager, _socketFactory, _cryptoProvider, new StreamFactory(), enableDualMode, GetRequest);
         }
 
         public static ICertificate GetCert(string certificateLocation)

@@ -2496,10 +2496,12 @@ namespace Emby.Server.Implementations.Library
                 }).OrderBy(i => i.Path).ToList();
         }
 
+        private static readonly string[] ExtrasSubfolderNames = new[] { "extras", "specials", "shorts", "scenes", "featurettes", "behind the scenes", "deleted scenes" };
+
         public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, "extras", StringComparison.OrdinalIgnoreCase) || string.Equals(i.Name, "specials", StringComparison.OrdinalIgnoreCase))
+                .Where(i => ExtrasSubfolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();
 
@@ -2788,7 +2790,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
 
-                    _fileSystem.WriteAllBytes(path, new byte[] {});
+                    _fileSystem.WriteAllBytes(path, new byte[] { });
                 }
 
                 CollectionFolder.SaveLibraryOptions(virtualFolderPath, options);
