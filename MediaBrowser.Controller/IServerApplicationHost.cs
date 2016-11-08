@@ -85,7 +85,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the local API URL.
         /// </summary>
-        string GetLocalApiUrl(string ipAddress, bool isIpv6);
+        string GetLocalApiUrl(IpAddressInfo address);
 
         void LaunchUrl(string url);
 

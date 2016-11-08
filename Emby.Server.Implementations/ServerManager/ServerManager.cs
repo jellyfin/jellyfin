@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace Emby.Server.Implementations.ServerManager
 {
@@ -75,8 +75,8 @@ namespace Emby.Server.Implementations.ServerManager
         private readonly List<IWebSocketListener> _webSocketListeners = new List<IWebSocketListener>();
 
         private bool _disposed;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
-        private readonly IEncoding _textEncoding;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
+        private readonly ITextEncoding _textEncoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerManager" /> class.
@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.ServerManager
         /// <param name="logger">The logger.</param>
         /// <param name="configurationManager">The configuration manager.</param>
         /// <exception cref="System.ArgumentNullException">applicationHost</exception>
-        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, IMemoryStreamProvider memoryStreamProvider, IEncoding textEncoding)
+        public ServerManager(IServerApplicationHost applicationHost, IJsonSerializer jsonSerializer, ILogger logger, IServerConfigurationManager configurationManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding)
         {
             if (applicationHost == null)
             {

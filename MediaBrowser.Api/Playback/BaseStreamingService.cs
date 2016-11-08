@@ -1263,6 +1263,7 @@ namespace MediaBrowser.Api.Playback
 
         private bool EnableThrottling(StreamState state)
         {
+            return false;
             // do not use throttling with hardware encoders
             return state.InputProtocol == MediaProtocol.File &&
                 state.RunTimeTicks.HasValue &&

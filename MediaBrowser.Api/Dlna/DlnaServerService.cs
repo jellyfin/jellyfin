@@ -111,9 +111,9 @@ namespace MediaBrowser.Api.Dlna
         private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
         private const string XMLContentType = "text/xml; charset=UTF-8";
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar, IMemoryStreamProvider memoryStreamProvider)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar, IMemoryStreamFactory memoryStreamProvider)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;

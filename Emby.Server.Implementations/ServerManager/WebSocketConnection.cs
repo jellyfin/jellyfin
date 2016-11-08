@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 using UniversalDetector;
 
 namespace Emby.Server.Implementations.ServerManager
@@ -77,8 +77,8 @@ namespace Emby.Server.Implementations.ServerManager
         /// </summary>
         /// <value>The query string.</value>
         public QueryParamCollection QueryString { get; set; }
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
-        private readonly IEncoding _textEncoding;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
+        private readonly ITextEncoding _textEncoding;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.ServerManager
         /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="System.ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamProvider memoryStreamProvider, IEncoding textEncoding)
+        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding)
         {
             if (socket == null)
             {
@@ -145,7 +145,7 @@ namespace Emby.Server.Implementations.ServerManager
             }
             else
             {
-                OnReceiveInternal(_textEncoding.GetASCIIString(bytes, 0, bytes.Length));
+                OnReceiveInternal(_textEncoding.GetASCIIEncoding().GetString(bytes, 0, bytes.Length));
             }
         }
         private string DetectCharset(byte[] bytes)

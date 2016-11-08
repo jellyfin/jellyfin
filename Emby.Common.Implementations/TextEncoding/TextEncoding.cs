@@ -1,10 +1,10 @@
 ﻿using System.Text;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace Emby.Common.Implementations.TextEncoding
 {
-    public class TextEncoding : IEncoding
+    public class TextEncoding : ITextEncoding
     {
         private readonly IFileSystem _fileSystem;
 
@@ -13,14 +13,9 @@ namespace Emby.Common.Implementations.TextEncoding
             _fileSystem = fileSystem;
         }
 
-        public byte[] GetASCIIBytes(string text)
+        public Encoding GetASCIIEncoding()
         {
-            return Encoding.ASCII.GetBytes(text);
-        }
-
-        public string GetASCIIString(byte[] bytes, int startIndex, int length)
-        {
-            return Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+            return Encoding.ASCII;
         }
 
         public Encoding GetFileEncoding(string srcFile)

@@ -24,7 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace OpenSubtitlesHandler
 {
@@ -33,9 +33,9 @@ namespace OpenSubtitlesHandler
     /// </summary>
     public sealed class Utilities
     {
-        public static ICryptographyProvider CryptographyProvider { get; set; }
+        public static ICryptoProvider CryptographyProvider { get; set; }
         public static IHttpClient HttpClient { get; set; }
-        public static IEncoding EncodingHelper { get; set; }
+        public static ITextEncoding EncodingHelper { get; set; }
 
         private const string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
 
@@ -124,13 +124,13 @@ namespace OpenSubtitlesHandler
                     data.Add((byte)r);
                 }
                 var bytes = data.ToArray();
-                return EncodingHelper.GetASCIIString(bytes, 0, bytes.Length);
+                return EncodingHelper.GetASCIIEncoding().GetString(bytes, 0, bytes.Length);
             }
         }
 
         public static byte[] GetASCIIBytes(string text)
         {
-            return EncodingHelper.GetASCIIBytes(text);
+            return EncodingHelper.GetASCIIEncoding().GetBytes(text);
         }
 
         /// <summary>

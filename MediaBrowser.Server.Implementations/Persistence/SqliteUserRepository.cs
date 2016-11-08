@@ -20,9 +20,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
     public class SqliteUserRepository : BaseSqliteRepository, IUserRepository
     {
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public SqliteUserRepository(ILogManager logManager, IServerApplicationPaths appPaths, IJsonSerializer jsonSerializer, IDbConnector dbConnector, IMemoryStreamProvider memoryStreamProvider) : base(logManager, dbConnector)
+        public SqliteUserRepository(ILogManager logManager, IServerApplicationPaths appPaths, IJsonSerializer jsonSerializer, IDbConnector dbConnector, IMemoryStreamFactory memoryStreamProvider) : base(logManager, dbConnector)
         {
             _jsonSerializer = jsonSerializer;
             _memoryStreamProvider = memoryStreamProvider;

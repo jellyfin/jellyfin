@@ -23,14 +23,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.TextEncoding;
+using MediaBrowser.Model.Text;
 
 namespace BDInfo
 {
     public class TSPlaylistFile
     {
         private readonly IFileSystem _fileSystem;
-        private readonly IEncoding _textEncoding;
+        private readonly ITextEncoding _textEncoding;
         private FileSystemMetadata FileInfo = null;
         public string FileType = null;
         public bool IsInitialized = false;
@@ -67,7 +67,7 @@ namespace BDInfo
 
         public TSPlaylistFile(
             BDROM bdrom,
-            FileSystemMetadata fileInfo, IFileSystem fileSystem, IEncoding textEncoding)
+            FileSystemMetadata fileInfo, IFileSystem fileSystem, ITextEncoding textEncoding)
         {
             BDROM = bdrom;
             FileInfo = fileInfo;
@@ -79,7 +79,7 @@ namespace BDInfo
         public TSPlaylistFile(
             BDROM bdrom,
             string name,
-            List<TSStreamClip> clips, IFileSystem fileSystem, IEncoding textEncoding)
+            List<TSStreamClip> clips, IFileSystem fileSystem, ITextEncoding textEncoding)
         {
             BDROM = bdrom;
             Name = name;
@@ -1247,7 +1247,7 @@ namespace BDInfo
             ref int pos)
         {
             string val =
-                _textEncoding.GetASCIIString(data, pos, count);
+                _textEncoding.GetASCIIEncoding().GetString(data, pos, count);
 
             pos += count;
 

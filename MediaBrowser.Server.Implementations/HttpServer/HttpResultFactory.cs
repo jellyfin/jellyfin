@@ -9,6 +9,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using ServiceStack;

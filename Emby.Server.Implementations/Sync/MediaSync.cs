@@ -29,12 +29,12 @@ namespace Emby.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IConfigurationManager _config;
-        private readonly ICryptographyProvider _cryptographyProvider;
+        private readonly ICryptoProvider _cryptographyProvider;
 
         public const string PathSeparatorString = "/";
         public const char PathSeparatorChar = '/';
 
-        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem, IConfigurationManager config, ICryptographyProvider cryptographyProvider)
+        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem, IConfigurationManager config, ICryptoProvider cryptographyProvider)
         {
             _logger = logger;
             _syncManager = syncManager;
@@ -370,7 +370,7 @@ namespace Emby.Server.Implementations.Sync
 
         private byte[] CreateMd5(byte[] value)
         {
-            return _cryptographyProvider.GetMD5Bytes(value);
+            return _cryptographyProvider.ComputeMD5(value);
         }
 
         public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncedItem syncedItem, SyncJob job, SyncTarget target, BaseItemDto libraryItem, string serverId, string serverName, string originalFileName)

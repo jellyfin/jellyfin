@@ -22,14 +22,10 @@ namespace Emby.Common.Implementations.Networking
             Logger = logger;
         }
 
-        private List<IPAddress> _localIpAddresses;
+        private List<IpAddressInfo> _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
-        /// <summary>
-        /// Gets the machine's local ip address
-        /// </summary>
-        /// <returns>IPAddress.</returns>
-		public IEnumerable<IPAddress> GetLocalIpAddresses()
+        public IEnumerable<IpAddressInfo> GetLocalIpAddresses()
         {
             const int cacheMinutes = 5;
 
@@ -39,7 +35,7 @@ namespace Emby.Common.Implementations.Networking
 
                 if (_localIpAddresses == null || forceRefresh)
                 {
-                    var addresses = GetLocalIpAddressesInternal().ToList();
+                    var addresses = GetLocalIpAddressesInternal().Select(ToIpAddressInfo).ToList();
 
                     _localIpAddresses = addresses;
                     _lastRefresh = DateTime.UtcNow;
@@ -405,18 +401,85 @@ namespace Emby.Common.Implementations.Networking
             IPAddress address;
             if (IPAddress.TryParse(ipAddress, out address))
             {
-
-                ipAddressInfo = new IpAddressInfo
-                {
-                    Address = address.ToString(),
-                    IsIpv6 = address.AddressFamily == AddressFamily.InterNetworkV6
-                };
-
+                ipAddressInfo = ToIpAddressInfo(address);
                 return true;
             }
 
             ipAddressInfo = null;
             return false;
+        }
+
+        public static IpEndPointInfo ToIpEndPointInfo(IPEndPoint endpoint)
+        {
+            if (endpoint == null)
+            {
+                return null;
+            }
+
+            return new IpEndPointInfo(ToIpAddressInfo(endpoint.Address), endpoint.Port);
+        }
+
+        public static IPEndPoint ToIPEndPoint(IpEndPointInfo endpoint)
+        {
+            if (endpoint == null)
+            {
+                return null;
+            }
+
+            return new IPEndPoint(ToIPAddress(endpoint.IpAddress), endpoint.Port);
+        }
+
+        public static IPAddress ToIPAddress(IpAddressInfo address)
+        {
+            if (address.Equals(IpAddressInfo.Any))
+            {
+                return IPAddress.Any;
+            }
+            if (address.Equals(IpAddressInfo.IPv6Any))
+            {
+                return IPAddress.IPv6Any;
+            }
+            if (address.Equals(IpAddressInfo.Loopback))
+            {
+                return IPAddress.Loopback;
+            }
+            if (address.Equals(IpAddressInfo.IPv6Loopback))
+            {
+                return IPAddress.IPv6Loopback;
+            }
+
+            return IPAddress.Parse(address.Address);
+        }
+
+        public static IpAddressInfo ToIpAddressInfo(IPAddress address)
+        {
+            if (address.Equals(IPAddress.Any))
+            {
+                return IpAddressInfo.Any;
+            }
+            if (address.Equals(IPAddress.IPv6Any))
+            {
+                return IpAddressInfo.IPv6Any;
+            }
+            if (address.Equals(IPAddress.Loopback))
+            {
+                return IpAddressInfo.Loopback;
+            }
+            if (address.Equals(IPAddress.IPv6Loopback))
+            {
+                return IpAddressInfo.IPv6Loopback;
+            }
+            return new IpAddressInfo
+            {
+                Address = address.ToString(),
+                AddressFamily = address.AddressFamily == AddressFamily.InterNetworkV6 ? IpAddressFamily.InterNetworkV6 : IpAddressFamily.InterNetwork
+            };
+        }
+
+        public async Task<IpAddressInfo[]> GetHostAddressesAsync(string host)
+        {
+            var addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
+            return addresses.Select(ToIpAddressInfo).ToArray();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace MediaBrowser.Model.Net
 {
@@ -8,11 +9,22 @@ namespace MediaBrowser.Model.Net
 
         public int Port { get; set; }
 
+        public IpEndPointInfo()
+        {
+
+        }
+
+        public IpEndPointInfo(IpAddressInfo address, int port)
+        {
+            IpAddress = address;
+            Port = port;
+        }
+
         public override string ToString()
         {
             var ipAddresString = IpAddress == null ? string.Empty : IpAddress.ToString();
 
-            return ipAddresString + ":" + this.Port.ToString();
+            return ipAddresString + ":" + Port.ToString(CultureInfo.InvariantCulture);
         }
     }
 }
