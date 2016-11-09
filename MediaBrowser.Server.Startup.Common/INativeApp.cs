@@ -88,13 +88,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>INetworkManager.</returns>
         INetworkManager CreateNetworkManager(ILogger logger);
 
-        /// <summary>
-        /// Prevents the system stand by.
-        /// </summary>
-        void PreventSystemStandby();
-
-        void AllowSystemStandby();
-
         FFMpegInstallInfo GetFfmpegInstallInfo();
 
         void LaunchUrl(string url);

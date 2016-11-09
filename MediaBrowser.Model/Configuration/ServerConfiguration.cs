@@ -8,6 +8,9 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class ServerConfiguration : BaseApplicationConfiguration
     {
+        public const int DefaultHttpPort = 8096;
+        public const int DefaultHttpsPort = 8920;
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable u pn p].
         /// </summary>
@@ -225,10 +228,10 @@ namespace MediaBrowser.Model.Configuration
             EnableExternalContentInSuggestions = true;
 
             ImageSavingConvention = ImageSavingConvention.Compatible;
-            PublicPort = 8096;
-            PublicHttpsPort = 8920;
-            HttpServerPortNumber = 8096;
-            HttpsPortNumber = 8920;
+            PublicPort = DefaultHttpPort;
+            PublicHttpsPort = DefaultHttpsPort;
+            HttpServerPortNumber = DefaultHttpPort;
+            HttpsPortNumber = DefaultHttpsPort;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
             EnableDashboardResourceMinification = true;

@@ -320,8 +320,9 @@ namespace MediaBrowser.ServerApplication
                 logManager,
                 options,
                 fileSystem,
-                "emby.windows.zip",
-                nativeApp);
+                nativeApp, 
+                new PowerManagement(),
+                "emby.windows.zip");
 
             var initProgress = new Progress<double>();
 
