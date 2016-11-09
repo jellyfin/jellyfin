@@ -265,6 +265,10 @@ namespace MediaBrowser.Providers.Manager
                     {
                         _fileSystem.SetHidden(file.FullName, false);
                     }
+                    if (file.IsReadOnly)
+                    {
+                        _fileSystem.SetReadOnly(path, false);
+                    }
                 }
 
                 using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))

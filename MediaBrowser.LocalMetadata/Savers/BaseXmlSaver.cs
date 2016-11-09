@@ -226,8 +226,11 @@ namespace MediaBrowser.LocalMetadata.Savers
                 if (file.IsHidden)
                 {
                     FileSystem.SetHidden(path, false);
-
                     wasHidden = true;
+                }
+                if (file.IsReadOnly)
+                {
+                    FileSystem.SetReadOnly(path, false);
                 }
             }
 
