@@ -1892,19 +1892,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (info.IsLocalFile)
             {
-                // Delete the source file
-                var currentFile = FileSystem.GetFileInfo(info.Path);
-
-                // Deletion will fail if the file is hidden so remove the attribute first
-                if (currentFile.Exists)
-                {
-                    if (currentFile.IsHidden)
-                    {
-                        FileSystem.SetHidden(currentFile.FullName, false);
-                    }
-
-                    FileSystem.DeleteFile(currentFile.FullName);
-                }
+                FileSystem.DeleteFile(info.Path);
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);

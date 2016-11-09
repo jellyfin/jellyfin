@@ -75,7 +75,6 @@
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="Browser\BrowserLauncher.cs" />
-    <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
@@ -90,7 +89,6 @@
     <Compile Include="StartupOptions.cs" />
     <Compile Include="SystemEvents.cs" />
     <Compile Include="TextLocalizer.cs" />
-    <Compile Include="Threading\PeriodicTimer.cs" />
     <Compile Include="UnhandledExceptionWriter.cs" />
   </ItemGroup>
   <ItemGroup>

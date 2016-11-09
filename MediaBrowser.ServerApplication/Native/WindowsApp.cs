@@ -139,16 +139,6 @@ namespace MediaBrowser.ServerApplication.Native
             return new NetworkManager(logger);
         }
 
-        public void PreventSystemStandby()
-        {
-            MainStartup.Invoke(Standby.PreventSleep);
-        }
-
-        public void AllowSystemStandby()
-        {
-            MainStartup.Invoke(Standby.AllowSleep);
-        }
-
         public FFMpegInstallInfo GetFfmpegInstallInfo()
         {
             var info = new FFMpegInstallInfo();

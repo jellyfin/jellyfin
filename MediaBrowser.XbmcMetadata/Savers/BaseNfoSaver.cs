@@ -221,6 +221,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                     wasHidden = true;
                 }
+                if (file.IsReadOnly)
+                {
+                    FileSystem.SetReadOnly(path, false);
+                }
             }
 
             using (var filestream = FileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
