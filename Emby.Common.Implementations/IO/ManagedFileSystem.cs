@@ -419,6 +419,25 @@ namespace Emby.Common.Implementations.IO
             }
         }
 
+        public void SetReadOnly(string path, bool isReadOnly)
+        {
+            var info = GetFileInfo(path);
+
+            if (info.Exists && info.IsReadOnly != isReadOnly)
+            {
+                if (isReadOnly)
+                {
+                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
+                }
+                else
+                {
+                    FileAttributes attributes = File.GetAttributes(path);
+                    attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
+                    File.SetAttributes(path, attributes);
+                }
+            }
+        }
+
         private static FileAttributes RemoveAttribute(FileAttributes attributes, FileAttributes attributesToRemove)
         {
             return attributes & ~attributesToRemove;
@@ -564,6 +583,20 @@ namespace Emby.Common.Implementations.IO
 
         public void DeleteFile(string path)
         {
+            var fileInfo = GetFileInfo(path);
+
+            if (fileInfo.Exists)
+            {
+                if (fileInfo.IsHidden)
+                {
+                    SetHidden(path, false);
+                }
+                if (fileInfo.IsReadOnly)
+                {
+                    SetReadOnly(path, false);
+                }
+            }
+
             File.Delete(path);
         }
 

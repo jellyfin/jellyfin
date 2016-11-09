@@ -7,16 +7,16 @@ using MediaBrowser.Model.Social;
 using System;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Social
+namespace Emby.Server.Implementations.Social
 {
     public class SharingManager : ISharingManager
     {
-        private readonly SharingRepository _repository;
+        private readonly ISharingRepository _repository;
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerApplicationHost _appHost;
 
-        public SharingManager(SharingRepository repository, IServerConfigurationManager config, ILibraryManager libraryManager, IServerApplicationHost appHost)
+        public SharingManager(ISharingRepository repository, IServerConfigurationManager config, ILibraryManager libraryManager, IServerApplicationHost appHost)
         {
             _repository = repository;
             _config = config;

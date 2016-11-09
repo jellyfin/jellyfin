@@ -134,8 +134,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             base.OnConfigLoad();
 
             Config.HandlerFactoryPath = null;
-
-            Config.MetadataRedirectPath = "metadata";
         }
 
         protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
@@ -574,7 +572,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             httpRes.StatusCode = 302;
             httpRes.AddHeader(HttpHeaders.Location, url);
-            httpRes.EndRequest();
         }
 
 

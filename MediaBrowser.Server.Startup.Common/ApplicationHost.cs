@@ -114,10 +114,12 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.ServerManager;
 using Emby.Server.Implementations.Session;
+using Emby.Server.Implementations.Social;
 using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
@@ -259,26 +261,24 @@ namespace MediaBrowser.Server.Startup.Common
 
         internal INativeApp NativeApp { get; set; }
 
+        internal IPowerManagement PowerManagement { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
         /// </summary>
-        /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="releaseAssetFilename">The release asset filename.</param>
-        /// <param name="nativeApp">The native application.</param>
         public ApplicationHost(ServerApplicationPaths applicationPaths,
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
-            string releaseAssetFilename,
-            INativeApp nativeApp)
+            INativeApp nativeApp, 
+            IPowerManagement powerManagement,
+            string releaseAssetFilename)
             : base(applicationPaths, logManager, fileSystem)
         {
             _startupOptions = options;
             _releaseAssetFilename = releaseAssetFilename;
             NativeApp = nativeApp;
+            PowerManagement = powerManagement;
 
             SetBaseExceptionMessage();
         }
@@ -484,6 +484,13 @@ namespace MediaBrowser.Server.Startup.Common
             HttpPort = ServerConfigurationManager.Configuration.HttpServerPortNumber;
             HttpsPort = ServerConfigurationManager.Configuration.HttpsPortNumber;
 
+            // Safeguard against invalid configuration
+            if (HttpPort == HttpsPort)
+            {
+                HttpPort = ServerConfiguration.DefaultHttpPort;
+                HttpsPort = ServerConfiguration.DefaultHttpsPort;
+            }
+
             return base.Init(progress);
         }
 
@@ -533,6 +540,8 @@ namespace MediaBrowser.Server.Startup.Common
         protected override async Task RegisterResources(IProgress<double> progress)
         {
             await base.RegisterResources(progress).ConfigureAwait(false);
+
+            RegisterSingleInstance(PowerManagement);
 
             SecurityManager = new PluginSecurityManager(this, HttpClient, JsonSerializer, ApplicationPaths, LogManager, FileSystemManager, CryptographyProvider);
             RegisterSingleInstance(SecurityManager);
@@ -998,13 +1007,13 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 Logger.ErrorException("Error starting http server", ex);
 
-                if (HttpPort == 8096)
+                if (HttpPort == ServerConfiguration.DefaultHttpPort)
                 {
                     throw;
                 }
             }
 
-            HttpPort = 8096;
+            HttpPort = ServerConfiguration.DefaultHttpPort;
 
             try
             {

@@ -100,6 +100,7 @@
     </Compile>
     <Compile Include="Native\BaseMonoApp.cs" />
     <Compile Include="Native\DbConnector.cs" />
+    <Compile Include="Native\PowerManagement.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

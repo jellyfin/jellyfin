@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Social
 {
-    public class SharingRepository : BaseSqliteRepository
+    public class SharingRepository : BaseSqliteRepository, ISharingRepository
     {
         public SharingRepository(ILogManager logManager, IApplicationPaths appPaths, IDbConnector dbConnector)
             : base(logManager, dbConnector)
