@@ -177,6 +177,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 inputModifiers = "-ss " + _mediaEncoder.GetTimeParameter(startTimeTicks) + " " + inputModifiers;
             }
 
+            var analyzeDurationSeconds = 5;
+            var analyzeDuration = " -analyzeduration " +
+                  (analyzeDurationSeconds * 1000000).ToString(CultureInfo.InvariantCulture);
+            inputModifiers += analyzeDuration;
+
             commandLineArgs = string.Format(commandLineArgs, inputTempFile, targetFile, videoArgs, GetAudioArgs(mediaSource), durationParam);
 
             return inputModifiers + " " + commandLineArgs;
