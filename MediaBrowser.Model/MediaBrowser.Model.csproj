@@ -145,6 +145,7 @@
     <Compile Include="Services\IHttpResult.cs" />
     <Compile Include="Social\ISharingRepository.cs" />
     <Compile Include="System\IEnvironmentInfo.cs" />
+    <Compile Include="System\IPowerManagement.cs" />
     <Compile Include="Text\ITextEncoding.cs" />
     <Compile Include="Extensions\LinqExtensions.cs" />
     <Compile Include="FileOrganization\SmartMatchInfo.cs" />

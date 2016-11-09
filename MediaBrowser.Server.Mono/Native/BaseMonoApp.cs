@@ -68,16 +68,6 @@ namespace MediaBrowser.Server.Mono.Native
             get { return false; }
         }
 
-        public void PreventSystemStandby()
-        {
-
-        }
-
-        public void AllowSystemStandby()
-        {
-
-        }
-
         public List<Assembly> GetAssembliesWithParts()
         {
             var list = new List<Assembly>();

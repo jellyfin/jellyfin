@@ -51,6 +51,7 @@
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
+    <Compile Include="EntryPoints\KeepServerAwake.cs" />
     <Compile Include="EntryPoints\LibraryChangedNotifier.cs" />
     <Compile Include="EntryPoints\LoadRegistrations.cs" />
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
