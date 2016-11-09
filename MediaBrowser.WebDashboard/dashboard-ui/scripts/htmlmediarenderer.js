@@ -559,11 +559,6 @@
 
         function enableNativeTrackSupport(track) {
 
-            if (browser.safari && browser.mobile) {
-                // Leave it to apple to have different behavior between safari on ios vs osx
-                return false;
-            }
-
             if (browser.firefox) {
                 if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
                     return false;
