@@ -2,9 +2,8 @@
 using System;
 using System.Collections;
 using System.Security.Cryptography;
-using MediaBrowser.Server.Mono.Security;
 
-namespace MediaBrowser.Server.Mono.Networking
+namespace Emby.Common.Implementations.Security
 {
     internal class CertificateGenerator
     {

@@ -32,7 +32,8 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
     public sealed class CryptoConvert {
 

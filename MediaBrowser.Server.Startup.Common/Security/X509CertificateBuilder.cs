@@ -32,9 +32,10 @@
 using System;
 using System.Security.Cryptography;
 
-namespace MediaBrowser.Server.Mono.Security {
-	// From RFC3280
-	/*
+namespace Emby.Common.Implementations.Security
+{
+    // From RFC3280
+    /*
 	 * Certificate  ::=  SEQUENCE  {
 	 *      tbsCertificate       TBSCertificate,
 	 *      signatureAlgorithm   AlgorithmIdentifier,
@@ -66,7 +67,7 @@ namespace MediaBrowser.Server.Mono.Security {
 	 *      generalTime    GeneralizedTime 
 	 * }
 	 */
-	public class X509CertificateBuilder : X509Builder {
+    public class X509CertificateBuilder : X509Builder {
  
 		private byte version;
 		private byte[] sn;

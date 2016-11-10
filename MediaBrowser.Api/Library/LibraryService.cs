@@ -323,13 +323,9 @@ namespace MediaBrowser.Api.Library
 
             if (item is Game)
             {
-                return new GamesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                return new GamesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _authContext)
                 {
-                    AuthorizationContext = AuthorizationContext,
-                    Logger = Logger,
                     Request = Request,
-                    SessionContext = SessionContext,
-                    ResultFactory = ResultFactory
 
                 }.Get(new GetSimilarGames
                 {
@@ -341,13 +337,9 @@ namespace MediaBrowser.Api.Library
             }
             if (item is MusicAlbum)
             {
-                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _authContext)
                 {
-                    AuthorizationContext = AuthorizationContext,
-                    Logger = Logger,
                     Request = Request,
-                    SessionContext = SessionContext,
-                    ResultFactory = ResultFactory
 
                 }.Get(new GetSimilarAlbums
                 {
@@ -360,13 +352,9 @@ namespace MediaBrowser.Api.Library
             }
             if (item is MusicArtist)
             {
-                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _authContext)
                 {
-                    AuthorizationContext = AuthorizationContext,
-                    Logger = Logger,
                     Request = Request,
-                    SessionContext = SessionContext,
-                    ResultFactory = ResultFactory
 
                 }.Get(new GetSimilarArtists
                 {
@@ -381,13 +369,9 @@ namespace MediaBrowser.Api.Library
 
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
-                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _config)
+                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _config, _authContext)
                 {
-                    AuthorizationContext = AuthorizationContext,
-                    Logger = Logger,
                     Request = Request,
-                    SessionContext = SessionContext,
-                    ResultFactory = ResultFactory
 
                 }.Get(new GetSimilarMovies
                 {
@@ -400,13 +384,9 @@ namespace MediaBrowser.Api.Library
 
             if (item is Series || (program != null && program.IsSeries))
             {
-                return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager)
+                return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager, _authContext)
                 {
-                    AuthorizationContext = AuthorizationContext,
-                    Logger = Logger,
                     Request = Request,
-                    SessionContext = SessionContext,
-                    ResultFactory = ResultFactory
 
                 }.Get(new GetSimilarShows
                 {
@@ -431,7 +411,7 @@ namespace MediaBrowser.Api.Library
                 items = items.Where(i => i.IsHidden == val).ToList();
             }
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = new ItemsResult
             {
@@ -612,7 +592,7 @@ namespace MediaBrowser.Api.Library
 
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             BaseItem parent = item.GetParent();
 
@@ -841,7 +821,7 @@ namespace MediaBrowser.Api.Library
                 item = item.GetParent();
             }
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = item.ThemeSongIds.Select(_libraryManager.GetItemById)
                             .Where(i => i != null)
@@ -885,7 +865,7 @@ namespace MediaBrowser.Api.Library
                 item = item.GetParent();
             }
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = item.ThemeVideoIds.Select(_libraryManager.GetItemById)
                             .Where(i => i != null)

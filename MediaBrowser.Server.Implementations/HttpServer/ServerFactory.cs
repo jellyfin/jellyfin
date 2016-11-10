@@ -6,6 +6,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Text;
 
 namespace MediaBrowser.Server.Implementations.HttpServer
@@ -28,9 +29,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             string defaultRedirectpath,
             ITextEncoding textEncoding,
             ISocketFactory socketFactory,
-            ICryptoProvider cryptoProvider)
+            ICryptoProvider cryptoProvider,
+            IJsonSerializer json,
+            IXmlSerializer xml)
         {
-            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, networkmanager, streamProvider, textEncoding, socketFactory, cryptoProvider);
+            return new HttpListenerHost(applicationHost, logManager, config, serverName, defaultRedirectpath, networkmanager, streamProvider, textEncoding, socketFactory, cryptoProvider, json, xml);
         }
     }
 }

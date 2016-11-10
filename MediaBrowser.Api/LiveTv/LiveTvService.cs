@@ -695,8 +695,10 @@ namespace MediaBrowser.Api.LiveTv
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
+        private readonly ISessionContext _sessionContext;
 
-        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IServerConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService, IFileSystem fileSystem)
+        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IServerConfigurationManager config, IHttpClient httpClient, ILibraryManager libraryManager, IDtoService dtoService, IFileSystem fileSystem, IAuthorizationContext authContext, ISessionContext sessionContext)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
@@ -705,6 +707,8 @@ namespace MediaBrowser.Api.LiveTv
             _libraryManager = libraryManager;
             _dtoService = dtoService;
             _fileSystem = fileSystem;
+            _authContext = authContext;
+            _sessionContext = sessionContext;
         }
 
         public object Get(GetLiveRecordingFile request)
@@ -819,7 +823,7 @@ namespace MediaBrowser.Api.LiveTv
 
         private void AssertUserCanManageLiveTv()
         {
-            var user = SessionContext.GetUser(Request).Result;
+            var user = _sessionContext.GetUser(Request).Result;
 
             if (user == null)
             {
@@ -907,7 +911,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var options = GetDtoOptions(request);
+            var options = GetDtoOptions(_authContext, request);
             RemoveFields(options);
 
             options.AddCurrentProgram = request.AddCurrentProgram;
@@ -937,7 +941,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var item = _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
@@ -1002,7 +1006,7 @@ namespace MediaBrowser.Api.LiveTv
                 }
             }
 
-            var result = await _liveTvManager.GetPrograms(query, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);
+            var result = await _liveTvManager.GetPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -1023,7 +1027,7 @@ namespace MediaBrowser.Api.LiveTv
                 EnableTotalRecordCount = request.EnableTotalRecordCount
             };
 
-            var result = await _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);
+            var result = await _liveTvManager.GetRecommendedPrograms(query, GetDtoOptions(_authContext, request), CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -1035,8 +1039,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecordings request)
         {
-            var options = GetDtoOptions(request);
-            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+            var options = GetDtoOptions(_authContext, request);
+            options.DeviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
             var result = await _liveTvManager.GetRecordings(new RecordingQuery
             {
@@ -1062,8 +1066,8 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecordingSeries request)
         {
-            var options = GetDtoOptions(request);
-            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+            var options = GetDtoOptions(_authContext, request);
+            options.DeviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
             var result = await _liveTvManager.GetRecordingSeries(new RecordingQuery
             {
@@ -1087,7 +1091,7 @@ namespace MediaBrowser.Api.LiveTv
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
             var options = new DtoOptions();
-            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+            options.DeviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
             var result = await _liveTvManager.GetRecording(request.Id, options, CancellationToken.None, user).ConfigureAwait(false);
 

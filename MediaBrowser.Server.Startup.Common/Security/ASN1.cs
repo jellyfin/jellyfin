@@ -34,7 +34,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security {
 
 	// References:
 	// a.	ITU ASN.1 standards (free download)

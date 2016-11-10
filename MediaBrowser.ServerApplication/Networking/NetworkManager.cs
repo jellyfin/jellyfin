@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Model.IO;
+﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
@@ -8,14 +7,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Emby.Common.Implementations.Networking;
 
 namespace MediaBrowser.ServerApplication.Networking
 {
     /// <summary>
     /// Class NetUtils
     /// </summary>
-    public class NetworkManager : BaseNetworkManager, INetworkManager
+    public class NetworkManager : Server.Startup.Common.Networking.NetworkManager
     {
         public NetworkManager(ILogger logger)
             : base(logger)
@@ -158,16 +156,6 @@ namespace MediaBrowser.ServerApplication.Networking
                 Path = NetworkPrefix + c,
                 Type = FileSystemEntryType.NetworkComputer
             });
-        }
-
-        /// <summary>
-        /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
-        /// </summary>
-        /// <param name="certificatePath">The path to generate the certificate.</param>
-        /// <param name="hostname">The common name for the certificate.</param>
-        public void GenerateSelfSignedSslCertificate(string certificatePath, string hostname)
-        {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certificatePath, hostname, Logger);
         }
 
         /// <summary>

@@ -31,8 +31,9 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
-	/*
+namespace Emby.Common.Implementations.Security
+{
+    /*
 	 * Extension  ::=  SEQUENCE  {
 	 *	extnID      OBJECT IDENTIFIER,
 	 *	critical    BOOLEAN DEFAULT FALSE,

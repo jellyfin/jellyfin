@@ -236,11 +236,12 @@ namespace MediaBrowser.Api.Images
         private readonly IItemRepository _itemRepo;
         private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IProviderManager providerManager, IItemRepository itemRepo, IImageProcessor imageProcessor, IFileSystem fileSystem)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IProviderManager providerManager, IItemRepository itemRepo, IImageProcessor imageProcessor, IFileSystem fileSystem, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -248,6 +249,7 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -425,7 +427,7 @@ namespace MediaBrowser.Api.Images
         public void Post(PostUserImage request)
         {
             var userId = GetPathValue(1);
-            AssertCanUpdateUser(_userManager, userId);
+            AssertCanUpdateUser(_authContext, _userManager, userId);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
@@ -460,7 +462,7 @@ namespace MediaBrowser.Api.Images
         public void Delete(DeleteUserImage request)
         {
             var userId = request.Id;
-            AssertCanUpdateUser(_userManager, userId);
+            AssertCanUpdateUser(_authContext, _userManager, userId);
 
             var item = _userManager.GetUserById(userId);
 

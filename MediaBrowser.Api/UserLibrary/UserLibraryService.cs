@@ -270,8 +270,9 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IDtoService _dtoService;
         private readonly IUserViewManager _userViewManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
 
-        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, IUserViewManager userViewManager, IFileSystem fileSystem)
+        public UserLibraryService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, IUserViewManager userViewManager, IFileSystem fileSystem, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -279,6 +280,7 @@ namespace MediaBrowser.Api.UserLibrary
             _dtoService = dtoService;
             _userViewManager = userViewManager;
             _fileSystem = fileSystem;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -315,7 +317,7 @@ namespace MediaBrowser.Api.UserLibrary
                 UserId = request.UserId
             });
 
-            var options = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = list.Select(i =>
             {
@@ -328,7 +330,7 @@ namespace MediaBrowser.Api.UserLibrary
                     childCount = i.Item2.Count;
                 }
 
-                var dto = _dtoService.GetBaseItemDto(item, options, user);
+                var dto = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
                 dto.ChildCount = childCount;
 
@@ -351,7 +353,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the child tree
             if (series != null)
             {
-                var dtoOptions = GetDtoOptions(request);
+                var dtoOptions = GetDtoOptions(_authContext, request);
 
                 // Avoid implicitly captured closure
                 var currentUser = user;
@@ -382,7 +384,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Get them from the db
             if (movie != null)
             {
-                var dtoOptions = GetDtoOptions(request);
+                var dtoOptions = GetDtoOptions(_authContext, request);
 
                 var dtos = movie.SpecialFeatureIds
                     .Select(_libraryManager.GetItemById)
@@ -421,7 +423,7 @@ namespace MediaBrowser.Api.UserLibrary
                 trailerIds = hasTrailers.GetTrailerIds();
             }
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = trailerIds
                 .Select(_libraryManager.GetItemById)
@@ -443,7 +445,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             await RefreshItemOnDemandIfNeeded(item).ConfigureAwait(false);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
@@ -482,7 +484,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var item = user.RootFolder;
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = _dtoService.GetBaseItemDto(item, dtoOptions, user);
 
@@ -502,7 +504,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var items = await _libraryManager.GetIntros(item, user).ConfigureAwait(false);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = items.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
                 .ToArray();

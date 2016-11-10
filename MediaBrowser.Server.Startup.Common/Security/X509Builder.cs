@@ -33,9 +33,10 @@ using System;
 using System.Globalization;
 using System.Security.Cryptography;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
-	public abstract class X509Builder {
+    public abstract class X509Builder {
 
 		private const string defaultHash = "SHA1";
 		private string hashName;

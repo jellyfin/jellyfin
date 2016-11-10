@@ -40,19 +40,21 @@ namespace MediaBrowser.Api.Music
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
+        private readonly IAuthorizationContext _authContext;
 
-        public AlbumsService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public AlbumsService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _authContext = authContext;
         }
 
         public async Task<object> Get(GetSimilarArtists request)
         {
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,
@@ -73,7 +75,7 @@ namespace MediaBrowser.Api.Music
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetSimilarAlbums request)
         {
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = await SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
                 _itemRepo,

@@ -80,6 +80,8 @@ namespace MediaBrowser.Api
         /// </summary>
         private readonly IDtoService _dtoService;
 
+        private readonly IAuthorizationContext _authContext;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GamesService" /> class.
         /// </summary>
@@ -88,13 +90,14 @@ namespace MediaBrowser.Api
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="itemRepo">The item repo.</param>
         /// <param name="dtoService">The dto service.</param>
-        public GamesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService)
+        public GamesService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _dtoService = dtoService;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -200,7 +203,7 @@ namespace MediaBrowser.Api
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {

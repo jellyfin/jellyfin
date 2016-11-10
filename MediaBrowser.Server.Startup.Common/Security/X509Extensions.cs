@@ -32,8 +32,9 @@
 using System;
 using System.Collections;
 
-namespace MediaBrowser.Server.Mono.Security {
-	/*
+namespace Emby.Common.Implementations.Security
+{
+    /*
 	 * Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
 	 * 
 	 * Note: 1..MAX -> There shouldn't be 0 Extensions in the ASN1 structure
