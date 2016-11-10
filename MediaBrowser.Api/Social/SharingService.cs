@@ -146,14 +146,14 @@ namespace MediaBrowser.Api.Social
             {
                 if (image.IsLocalFile)
                 {
-                    return _resultFactory.GetStaticFileResult(Request, image.Path);
+                    return await _resultFactory.GetStaticFileResult(Request, image.Path).ConfigureAwait(false);
                 }
 
                 try
                 {
                     // Don't fail the request over this
                     var updatedImage = await _libraryManager.ConvertImageToLocal(item, image, 0).ConfigureAwait(false);
-                    return _resultFactory.GetStaticFileResult(Request, updatedImage.Path);
+                    return await _resultFactory.GetStaticFileResult(Request, updatedImage.Path).ConfigureAwait(false);
                 }
                 catch
                 {
