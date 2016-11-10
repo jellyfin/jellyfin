@@ -37,7 +37,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
     public class PKCS5 {
 

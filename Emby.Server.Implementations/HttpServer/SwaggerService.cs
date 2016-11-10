@@ -6,15 +6,16 @@ using MediaBrowser.Model.Services;
 
 namespace Emby.Server.Implementations.HttpServer
 {
-    public class SwaggerService : IHasResultFactory, IService
+    public class SwaggerService : IService, IRequiresRequest
     {
         private readonly IServerApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
 
-        public SwaggerService(IServerApplicationPaths appPaths, IFileSystem fileSystem)
+        public SwaggerService(IServerApplicationPaths appPaths, IFileSystem fileSystem, IHttpResultFactory resultFactory)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
+            _resultFactory = resultFactory;
         }
 
         /// <summary>
@@ -28,14 +29,14 @@ namespace Emby.Server.Implementations.HttpServer
 
             var requestedFile = Path.Combine(swaggerDirectory, request.ResourceName.Replace('/', _fileSystem.DirectorySeparatorChar));
 
-            return ResultFactory.GetStaticFileResult(Request, requestedFile).Result;
+            return _resultFactory.GetStaticFileResult(Request, requestedFile).Result;
         }
 
         /// <summary>
         /// Gets or sets the result factory.
         /// </summary>
         /// <value>The result factory.</value>
-        public IHttpResultFactory ResultFactory { get; set; }
+        private readonly IHttpResultFactory _resultFactory;
 
         /// <summary>
         /// Gets or sets the request context.

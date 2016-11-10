@@ -31,15 +31,16 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
-	// References:
-	// 1.	Information technology - Open Systems Interconnection - The Directory: Models
-	//	http://www.itu.int/rec/recommendation.asp?type=items&lang=e&parent=T-REC-X.501-200102-I
-	// 2.	RFC2253: Lightweight Directory Access Protocol (v3): UTF-8 String Representation of Distinguished Names
-	//	http://www.ietf.org/rfc/rfc2253.txt
+    // References:
+    // 1.	Information technology - Open Systems Interconnection - The Directory: Models
+    //	http://www.itu.int/rec/recommendation.asp?type=items&lang=e&parent=T-REC-X.501-200102-I
+    // 2.	RFC2253: Lightweight Directory Access Protocol (v3): UTF-8 String Representation of Distinguished Names
+    //	http://www.ietf.org/rfc/rfc2253.txt
 
-	/*
+    /*
 	 * Name ::= CHOICE { RDNSequence }
 	 * 
 	 * RDNSequence ::= SEQUENCE OF RelativeDistinguishedName

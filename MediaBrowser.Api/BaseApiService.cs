@@ -17,28 +17,37 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    public class BaseApiService : IHasResultFactory, IService, IHasSession
+    public class BaseApiService : IService, IRequiresRequest
     {
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        public ILogger Logger { get; set; }
+        public ILogger Logger
+        {
+            get
+            {
+                return ApiEntryPoint.Instance.Logger;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
         /// <value>The HTTP result factory.</value>
-        public IHttpResultFactory ResultFactory { get; set; }
+        public IHttpResultFactory ResultFactory
+        {
+            get
+            {
+                return ApiEntryPoint.Instance.ResultFactory;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the request context.
         /// </summary>
         /// <value>The request context.</value>
         public IRequest Request { get; set; }
-
-        public ISessionContext SessionContext { get; set; }
-        public IAuthorizationContext AuthorizationContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -57,9 +66,9 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResult(Request, result);
         }
 
-        protected void AssertCanUpdateUser(IUserManager userManager, string userId)
+        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, string userId)
         {
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var auth = authContext.GetAuthorizationInfo(Request);
 
             var authenticatedUser = userManager.GetUserById(auth.UserId);
 
@@ -96,9 +105,9 @@ namespace MediaBrowser.Api
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        protected async Task<SessionInfo> GetSession()
+        protected async Task<SessionInfo> GetSession(ISessionContext sessionContext)
         {
-            var session = await SessionContext.GetSession(Request).ConfigureAwait(false);
+            var session = await sessionContext.GetSession(Request).ConfigureAwait(false);
 
             if (session == null)
             {
@@ -108,21 +117,11 @@ namespace MediaBrowser.Api
             return session;
         }
 
-        /// <summary>
-        /// To the static file result.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Object.</returns>
-        protected object ToStaticFileResult(string path)
-        {
-            return ResultFactory.GetStaticFileResult(Request, path).Result;
-        }
-
-        protected DtoOptions GetDtoOptions(object request)
+        protected DtoOptions GetDtoOptions(IAuthorizationContext authContext, object request)
         {
             var options = new DtoOptions();
 
-            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+            options.DeviceId = authContext.GetAuthorizationInfo(Request).DeviceId;
 
             var hasFields = request as IHasItemFields;
             if (hasFields != null)

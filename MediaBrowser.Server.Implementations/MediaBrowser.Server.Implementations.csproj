@@ -88,9 +88,6 @@
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -111,7 +108,6 @@
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="HttpServer\ContainerAdapter.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />

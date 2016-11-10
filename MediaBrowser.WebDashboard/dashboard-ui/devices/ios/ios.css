@@ -6,10 +6,6 @@ body:not(.dashboardDocument) .mainDrawerButton {
     display: none !important;
 }
 
-.ui-body-b select {
-    -webkit-appearance: none;
-}
-
 .pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
     padding-top: 88px !important;
 }

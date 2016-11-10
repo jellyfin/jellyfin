@@ -123,7 +123,11 @@ h1 a:hover {
     background-color: #fff;
 }
 
-.ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
+.ui-body-a [is="emby-select"] {
+    border-color: #ccc !important;
+}
+
+.ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
     border-color: #ccc !important;
 }
@@ -349,15 +353,6 @@ div[data-role='page'] {
     text-align: center;
     color: #bbb;
 }
-
-.ui-body-a select {
-    background: none;
-    border-color: #757575;
-}
-
-    .ui-body-a select option {
-        color: #000;
-    }
 
 .ui-body-a .emby-collapsible-button {
     border-color: #ddd;

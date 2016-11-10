@@ -47,11 +47,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Authenticated]
     public class StudiosService : BaseItemsByNameService<Studio>
     {
-        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
-            : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
-        {
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -73,8 +68,8 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = GetStudio(request.Name, LibraryManager);
 
-            var dtoOptions = GetDtoOptions(request);
-
+            var dtoOptions = GetDtoOptions(AuthorizationContext, request);
+            
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 var user = UserManager.GetUserById(request.UserId);
@@ -116,6 +111,10 @@ namespace MediaBrowser.Api.UserLibrary
                 .SelectMany(i => i.Studios)
                 .DistinctNames()
                 .Select(name => LibraryManager.GetStudio(name));
+        }
+
+        public StudiosService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
+        {
         }
     }
 }

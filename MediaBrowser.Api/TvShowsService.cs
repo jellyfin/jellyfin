@@ -265,6 +265,7 @@ namespace MediaBrowser.Api
         private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly ITVSeriesManager _tvSeriesManager;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TvShowsService" /> class.
@@ -272,7 +273,7 @@ namespace MediaBrowser.Api
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataManager">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TvShowsService(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, ITVSeriesManager tvSeriesManager)
+        public TvShowsService(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, ITVSeriesManager tvSeriesManager, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _userDataManager = userDataManager;
@@ -280,6 +281,7 @@ namespace MediaBrowser.Api
             _itemRepo = itemRepo;
             _dtoService = dtoService;
             _tvSeriesManager = tvSeriesManager;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -302,7 +304,7 @@ namespace MediaBrowser.Api
                 (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -334,7 +336,7 @@ namespace MediaBrowser.Api
 
             var parentIdGuid = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
-            var options = GetDtoOptions(request);
+            var options = GetDtoOptions(_authContext, request);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -379,7 +381,7 @@ namespace MediaBrowser.Api
 
             var user = _userManager.GetUserById(request.UserId);
 
-            var options = GetDtoOptions(request);
+            var options = GetDtoOptions(_authContext, request);
 
             var returnItems = (await _dtoService.GetBaseItemDtos(result.Items, options, user).ConfigureAwait(false)).ToArray();
 
@@ -434,7 +436,7 @@ namespace MediaBrowser.Api
 
             }).ConfigureAwait(false)).Items.OfType<Season>();
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var returnItems = (await _dtoService.GetBaseItemDtos(seasons, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();
@@ -526,7 +528,7 @@ namespace MediaBrowser.Api
 
             var pagedItems = ApplyPaging(returnList, request.StartIndex, request.Limit);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = (await _dtoService.GetBaseItemDtos(pagedItems, dtoOptions, user).ConfigureAwait(false))
                 .ToArray();

@@ -47,11 +47,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Authenticated]
     public class GenresService : BaseItemsByNameService<Genre>
     {
-        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
-            : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
-        {
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -72,8 +67,8 @@ namespace MediaBrowser.Api.UserLibrary
         private BaseItemDto GetItem(GetGenre request)
         {
             var item = GetGenre(request.Name, LibraryManager);
-
-            var dtoOptions = GetDtoOptions(request);
+            
+            var dtoOptions = GetDtoOptions(AuthorizationContext ,request);
 
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
@@ -123,6 +118,10 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             throw new NotImplementedException();
+        }
+
+        public GenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
+        {
         }
     }
 }

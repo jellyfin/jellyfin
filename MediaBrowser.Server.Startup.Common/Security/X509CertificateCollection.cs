@@ -31,9 +31,10 @@
 using System;
 using System.Collections;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
-	[Serializable]
+    [Serializable]
     public class X509CertificateCollection : CollectionBase, IEnumerable {
 		
 		public X509CertificateCollection () 
