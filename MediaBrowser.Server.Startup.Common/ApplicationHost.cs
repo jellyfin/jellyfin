@@ -1037,7 +1037,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             // Generate self-signed cert
             var certHost = GetHostnameFromExternalDns(ServerConfigurationManager.Configuration.WanDdns);
-            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + certHost.GetMD5().ToString("N") + ".pfx");
+            var certPath = Path.Combine(ServerConfigurationManager.ApplicationPaths.ProgramDataPath, "ssl", "cert_" + (certHost + "1").GetMD5().ToString("N") + ".pfx");
 
             if (generateCertificate)
             {

@@ -124,13 +124,13 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsAudioSegmentLegacy request)
+        public Task<object> Get(GetHlsAudioSegmentLegacy request)
         {
             // TODO: Deprecate with new iOS app
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
-            return ResultFactory.GetStaticFileResult(Request, file, FileShareMode.ReadWrite).Result;
+            return ResultFactory.GetStaticFileResult(Request, file, FileShareMode.ReadWrite);
         }
 
         private Task<object> GetFileResult(string path, string playlistPath)
