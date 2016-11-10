@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
-using Funq;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
@@ -19,7 +18,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
-        public Container Container { get; set; }
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
@@ -239,6 +237,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
         }
 
+        public const string FormUrlEncoded = "application/x-www-form-urlencoded";
+        public const string MultiPartFormData = "multipart/form-data";
         private static string GetResponseContentType(IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
@@ -246,7 +246,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
-            if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
+            if (HasAnyOfContentTypes(httpReq, FormUrlEncoded, MultiPartFormData))
             {
                 defaultContentType = HostContext.Config.DefaultContentType;
             }
@@ -299,15 +299,32 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 }
             }
 
-            if (acceptContentTypes == null && httpReq.ContentType == MimeTypes.Soap11)
+            if (acceptContentTypes == null && httpReq.ContentType == Soap11)
             {
-                return MimeTypes.Soap11;
+                return Soap11;
             }
 
             //We could also send a '406 Not Acceptable', but this is allowed also
             return HostContext.Config.DefaultContentType;
         }
+        public const string Soap11 = "text/xml; charset=utf-8";
 
+        public static bool HasAnyOfContentTypes(IRequest request, params string[] contentTypes)
+        {
+            if (contentTypes == null || request.ContentType == null) return false;
+            foreach (var contentType in contentTypes)
+            {
+                if (IsContentType(request, contentType)) return true;
+            }
+            return false;
+        }
+
+        public static bool IsContentType(IRequest request, string contentType)
+        {
+            return request.ContentType.StartsWith(contentType, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public const string Xml = "application/xml";
         private static string GetQueryStringContentType(IRequest httpReq)
         {
             var format = httpReq.QueryString["format"];
@@ -323,7 +340,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
             format = format.LeftPart('.').ToLower();
             if (format.Contains("json")) return "application/json";
-            if (format.Contains("xml")) return MimeTypes.Xml;
+            if (format.Contains("xml")) return Xml;
 
             string contentType;
             ContentTypes.Instance.ContentTypeFormats.TryGetValue(format, out contentType);
@@ -464,8 +481,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             get
             {
                 return httpMethod
-                    ?? (httpMethod = Param(HttpHeaders.XHttpMethodOverride)
-                    ?? request.HttpMethod);
+                    ?? (httpMethod = request.HttpMethod);
             }
         }
 

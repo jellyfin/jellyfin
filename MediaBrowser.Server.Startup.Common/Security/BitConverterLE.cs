@@ -29,9 +29,9 @@
 
 using System;
 
-namespace MediaBrowser.Server.Mono.Security
+namespace Emby.Common.Implementations.Security
 {
-	internal sealed class BitConverterLE
+    internal sealed class BitConverterLE
 	{
 		private BitConverterLE ()
 		{

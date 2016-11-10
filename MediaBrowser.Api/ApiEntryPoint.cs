@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dto;
@@ -37,7 +38,8 @@ namespace MediaBrowser.Api
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
+        internal ILogger Logger { get; private set; }
+        internal IHttpResultFactory ResultFactory { get; private set; }
 
         /// <summary>
         /// The application paths
@@ -66,7 +68,7 @@ namespace MediaBrowser.Api
         /// <param name="config">The configuration.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="mediaSourceManager">The media source manager.</param>
-        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager, ITimerFactory timerFactory, IProcessFactory processFactory)
+        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager, ITimerFactory timerFactory, IProcessFactory processFactory, IHttpResultFactory resultFactory)
         {
             Logger = logger;
             _sessionManager = sessionManager;
@@ -75,6 +77,7 @@ namespace MediaBrowser.Api
             _mediaSourceManager = mediaSourceManager;
             TimerFactory = timerFactory;
             ProcessFactory = processFactory;
+            ResultFactory = resultFactory;
 
             Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;

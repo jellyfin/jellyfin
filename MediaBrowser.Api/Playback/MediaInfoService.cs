@@ -72,8 +72,9 @@ namespace MediaBrowser.Api.Playback
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IUserManager _userManager;
         private readonly IJsonSerializer _json;
+        private readonly IAuthorizationContext _authContext;
 
-        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager, IJsonSerializer json)
+        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager, IMediaEncoder mediaEncoder, IUserManager userManager, IJsonSerializer json, IAuthorizationContext authContext)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
@@ -83,6 +84,7 @@ namespace MediaBrowser.Api.Playback
             _mediaEncoder = mediaEncoder;
             _userManager = userManager;
             _json = json;
+            _authContext = authContext;
         }
 
         public object Get(GetBitrateTestBytes request)
@@ -105,7 +107,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(OpenMediaSource request)
         {
-            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+            var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, true, CancellationToken.None).ConfigureAwait(false);
 
@@ -146,7 +148,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
-            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+            var authInfo = _authContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
 

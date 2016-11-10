@@ -1218,6 +1218,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string EscapeSubtitleFilterPath(string path)
         {
+            // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
+            // We need to double escape
+
+            var escapeChars = new[] {':', '\'', ','};
+
             return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\''");
         }
 

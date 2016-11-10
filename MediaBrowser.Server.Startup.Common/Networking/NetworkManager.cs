@@ -1,11 +1,12 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Collections.Generic;
+using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.Security;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
-using System.Collections.Generic;
-using Emby.Common.Implementations.Networking;
 
-namespace MediaBrowser.Server.Mono.Networking
+namespace MediaBrowser.Server.Startup.Common.Networking
 {
     /// <summary>
     /// Class NetUtils

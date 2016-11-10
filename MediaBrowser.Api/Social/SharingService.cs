@@ -66,13 +66,15 @@ namespace MediaBrowser.Api.Social
         private readonly ILibraryManager _libraryManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IDtoService _dtoService;
+        private readonly IHttpResultFactory _resultFactory;
 
-        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager, IDtoService dtoService)
+        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager, IDtoService dtoService, IHttpResultFactory resultFactory)
         {
             _sharingManager = sharingManager;
             _dlnaManager = dlnaManager;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _resultFactory = resultFactory;
         }
 
         public object Get(GetSocialShareInfo request)
@@ -144,14 +146,14 @@ namespace MediaBrowser.Api.Social
             {
                 if (image.IsLocalFile)
                 {
-                    return ToStaticFileResult(image.Path);
+                    return _resultFactory.GetStaticFileResult(Request, image.Path);
                 }
 
                 try
                 {
                     // Don't fail the request over this
                     var updatedImage = await _libraryManager.ConvertImageToLocal(item, image, 0).ConfigureAwait(false);
-                    return ToStaticFileResult(updatedImage.Path);
+                    return _resultFactory.GetStaticFileResult(Request, updatedImage.Path);
                 }
                 catch
                 {

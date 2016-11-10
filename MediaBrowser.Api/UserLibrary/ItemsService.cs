@@ -41,6 +41,7 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly ILocalizationManager _localization;
 
         private readonly IDtoService _dtoService;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsService" /> class.
@@ -49,7 +50,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="localization">The localization.</param>
         /// <param name="dtoService">The dto service.</param>
-        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILocalizationManager localization, IDtoService dtoService)
+        public ItemsService(IUserManager userManager, ILibraryManager libraryManager, ILocalizationManager localization, IDtoService dtoService, IAuthorizationContext authContext)
         {
             if (userManager == null)
             {
@@ -72,6 +73,7 @@ namespace MediaBrowser.Api.UserLibrary
             _libraryManager = libraryManager;
             _localization = localization;
             _dtoService = dtoService;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var result = await GetQueryResult(request, dtoOptions, user).ConfigureAwait(false);
 

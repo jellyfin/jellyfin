@@ -1,13 +1,10 @@
-﻿using Funq;
-using MediaBrowser.Common;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Host;
-using ServiceStack.Host.Handlers;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
@@ -17,7 +14,6 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.Net;
 using Emby.Server.Implementations.HttpServer;
@@ -29,6 +25,7 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Text;
 using SocketHttpListener.Net;
@@ -47,8 +44,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener _listener;
 
-        private readonly ContainerAdapter _containerAdapter;
-
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
         public event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
 
@@ -64,11 +59,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly ISocketFactory _socketFactory;
         private readonly ICryptoProvider _cryptoProvider;
 
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IXmlSerializer _xmlSerializer;
+
         public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogManager logManager,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
             : base(serviceName, new Assembly[] { })
         {
             _appHost = applicationHost;
@@ -78,11 +76,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _textEncoding = textEncoding;
             _socketFactory = socketFactory;
             _cryptoProvider = cryptoProvider;
+            _jsonSerializer = jsonSerializer;
+            _xmlSerializer = xmlSerializer;
             _config = config;
 
             _logger = logManager.GetLogger("HttpServer");
-
-            _containerAdapter = new ContainerAdapter(applicationHost);
         }
 
         public string GlobalResponse { get; set; }
@@ -106,19 +104,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (NotSupportedException), 500}
             };
 
-            // The Markdown feature causes slow startup times (5 mins+) on cold boots for some users
-            // Custom format allows images
-            HostConfig.Instance.EnableFeatures = Feature.Html | Feature.Json | Feature.Xml | Feature.CustomFormat;
-
-            Container.Adapter = _containerAdapter;
-
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
             foreach (var filter in requestFilters)
             {
-                HostContext.GlobalRequestFilters.Add(filter.Filter);
+                GlobalRequestFilters.Add(filter.Filter);
             }
 
-            HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
+            GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
         }
 
         protected override ILogger Logger
@@ -127,6 +119,21 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 return _logger;
             }
+        }
+
+        public override T Resolve<T>()
+        {
+            return _appHost.Resolve<T>();
+        }
+
+        public override T TryResolve<T>()
+        {
+            return _appHost.TryResolve<T>();
+        }
+
+        public override object CreateInstance(Type type)
+        {
+            return _appHost.CreateInstance(type);
         }
 
         public override void OnConfigLoad()
@@ -241,6 +248,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             try
             {
+                _logger.ErrorException("Error processing request", ex);
+
                 var httpRes = httpReq.Response;
 
                 if (httpRes.IsClosed)
@@ -248,39 +257,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     return;
                 }
 
-                var errorResponse = new ErrorResponse
-                {
-                    ResponseStatus = new ResponseStatus
-                    {
-                        ErrorCode = ex.GetType().GetOperationName(),
-                        Message = ex.Message,
-                        StackTrace = ex.StackTrace
-                    }
-                };
+                httpRes.StatusCode = 500;
 
-                var contentType = httpReq.ResponseContentType;
-
-                var serializer = ContentTypes.Instance.GetResponseSerializer(contentType);
-                if (serializer == null)
-                {
-                    contentType = HostContext.Config.DefaultContentType;
-                    serializer = ContentTypes.Instance.GetResponseSerializer(contentType);
-                }
-
-                var httpError = ex as IHttpError;
-                if (httpError != null)
-                {
-                    httpRes.StatusCode = httpError.Status;
-                    httpRes.StatusDescription = httpError.StatusDescription;
-                }
-                else
-                {
-                    httpRes.StatusCode = 500;
-                }
-
-                httpRes.ContentType = contentType;
-
-                serializer(httpReq, errorResponse, httpRes);
+                httpRes.ContentType = "text/html";
+                httpRes.Write(ex.Message);
 
                 httpRes.Close();
             }
@@ -571,7 +551,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public static void RedirectToUrl(IResponse httpRes, string url)
         {
             httpRes.StatusCode = 302;
-            httpRes.AddHeader(HttpHeaders.Location, url);
+            httpRes.AddHeader("Location", url);
         }
 
 
@@ -620,6 +600,26 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             return routes.ToArray();
+        }
+
+        public override void SerializeToJson(object o, Stream stream)
+        {
+            _jsonSerializer.SerializeToStream(o, stream);
+        }
+
+        public override void SerializeToXml(object o, Stream stream)
+        {
+            _xmlSerializer.SerializeToStream(o, stream);
+        }
+
+        public override object DeserializeXml(Type type, Stream stream)
+        {
+            return _xmlSerializer.DeserializeFromStream(type, stream);
+        }
+
+        public override object DeserializeJson(Type type, Stream stream)
+        {
+            return _jsonSerializer.DeserializeFromStream(stream, type);
         }
 
         private string NormalizeEmbyRoutePath(string path)
