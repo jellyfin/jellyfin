@@ -34,7 +34,8 @@ using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
     // References:
     // a.	Internet X.509 Public Key Infrastructure Certificate and CRL Profile

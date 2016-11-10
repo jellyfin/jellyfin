@@ -34,11 +34,12 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
-	// References:
-	// a.	ITU ASN.1 standards (free download)
-	//	http://www.itu.int/ITU-T/studygroups/com17/languages/
+    // References:
+    // a.	ITU ASN.1 standards (free download)
+    //	http://www.itu.int/ITU-T/studygroups/com17/languages/
 
     public static class ASN1Convert {
 		// RFC3280, section 4.2.1.5

@@ -39,8 +39,9 @@ namespace MediaBrowser.Api.Movies
         private readonly ICollectionManager _collectionManager;
         private readonly ILocalizationManager _localizationManager;
         private readonly IJsonSerializer _json;
+        private readonly IAuthorizationContext _authContext;
 
-        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService, ICollectionManager collectionManager, ILocalizationManager localizationManager, IJsonSerializer json)
+        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService, ICollectionManager collectionManager, ILocalizationManager localizationManager, IJsonSerializer json, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
@@ -49,6 +50,7 @@ namespace MediaBrowser.Api.Movies
             _collectionManager = collectionManager;
             _localizationManager = localizationManager;
             _json = json;
+            _authContext = authContext;
         }
 
         public object Get(Getrailers request)
@@ -58,13 +60,9 @@ namespace MediaBrowser.Api.Movies
 
             getItems.IncludeItemTypes = "Trailer";
 
-            return new ItemsService(_userManager, _libraryManager, _localizationManager, _dtoService)
+            return new ItemsService(_userManager, _libraryManager, _localizationManager, _dtoService, _authContext)
             {
-                AuthorizationContext = AuthorizationContext,
-                Logger = Logger,
                 Request = Request,
-                ResultFactory = ResultFactory,
-                SessionContext = SessionContext
 
             }.Get(getItems);
         }

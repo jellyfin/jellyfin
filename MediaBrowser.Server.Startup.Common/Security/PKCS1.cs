@@ -31,12 +31,13 @@
 using System;
 using System.Security.Cryptography;
 
-namespace MediaBrowser.Server.Mono.Security { 
+namespace Emby.Common.Implementations.Security
+{
 
-	// References:
-	// a.	PKCS#1: RSA Cryptography Standard 
-	//	http://www.rsasecurity.com/rsalabs/pkcs/pkcs-1/index.html
-	
+    // References:
+    // a.	PKCS#1: RSA Cryptography Standard 
+    //	http://www.rsasecurity.com/rsalabs/pkcs/pkcs-1/index.html
+
     public sealed class PKCS1 {
 
 		private PKCS1 () 

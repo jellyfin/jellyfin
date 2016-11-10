@@ -33,7 +33,8 @@ using System;
 using System.Collections;
 using System.Security.Cryptography;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
     public sealed class PKCS7 {
 

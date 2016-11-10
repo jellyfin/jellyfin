@@ -135,8 +135,9 @@ namespace MediaBrowser.Api.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem, IAuthorizationContext authContext)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
@@ -144,6 +145,7 @@ namespace MediaBrowser.Api.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
+            _authContext = authContext;
         }
 
         public async Task<object> Get(GetSubtitlePlaylist request)
@@ -170,7 +172,7 @@ namespace MediaBrowser.Api.Subtitles
             long positionTicks = 0;
             var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
 
-            var accessToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+            var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
 
             while (positionTicks < runtime)
             {

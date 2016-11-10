@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Api.Playback.Hls
@@ -24,11 +25,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     public abstract class BaseHlsService : BaseStreamingService
     {
-        protected BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer)
-            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer)
-        {
-        }
-
         /// <summary>
         /// Gets the audio arguments.
         /// </summary>
@@ -291,6 +287,10 @@ namespace MediaBrowser.Api.Playback.Hls
             var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
 
             return isLiveStream;
+        }
+
+        public BaseHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
+        {
         }
     }
 }

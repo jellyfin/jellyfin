@@ -394,14 +394,16 @@ define(['browser'], function (browser) {
                 Type: 'Audio',
                 AudioCodec: audioFormat,
                 Context: 'Streaming',
-                Protocol: 'http'
+                Protocol: 'http',
+                MaxAudioChannels: physicalAudioChannels.toString()
             });
             profile.TranscodingProfiles.push({
                 Container: audioFormat,
                 Type: 'Audio',
                 AudioCodec: audioFormat,
                 Context: 'Static',
-                Protocol: 'http'
+                Protocol: 'http',
+                MaxAudioChannels: physicalAudioChannels.toString()
             });
         });
 
@@ -489,14 +491,6 @@ define(['browser'], function (browser) {
         profile.ContainerProfiles = [];
 
         profile.CodecProfiles = [];
-        profile.CodecProfiles.push({
-            Type: 'Audio',
-            Conditions: [{
-                Condition: 'LessThanEqual',
-                Property: 'AudioChannels',
-                Value: '2'
-            }]
-        });
 
         // Handle he-aac not supported
         if (!videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.5"').replace(/no/, '')) {
@@ -549,6 +543,12 @@ define(['browser'], function (browser) {
             {
                 Condition: 'NotEquals',
                 Property: 'IsAnamorphic',
+                Value: 'true',
+                IsRequired: false
+            },
+            {
+                Condition: 'NotEquals',
+                Property: 'IsAVC',
                 Value: 'true',
                 IsRequired: false
             },

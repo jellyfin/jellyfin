@@ -2,7 +2,6 @@
     display: block;
     margin: 0;
     margin-bottom: 0 !important;
-    background: none;
     border: 1px solid #383838;
     border-width: 0 0 1px 0;
     /* Prefixed box-sizing rules necessary for older browsers */
@@ -15,17 +14,21 @@
     /* General select styles: change as needed */
     font-family: inherit;
     font-weight: inherit;
-    color: inherit;
     padding: .35em .8em .3em 0;
     cursor: pointer;
     outline: none !important;
     width: 100%;
+}
+
+.emby-select-withoptioncolor {
+    color: inherit;
+    background: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
 }
 
-    .emby-select option {
+    .emby-select-withoptioncolor > option {
         color: initial;
     }
 

@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Diagnostics;
 
 namespace MediaBrowser.Api.Playback
@@ -71,13 +72,15 @@ namespace MediaBrowser.Api.Playback
 
         public static IServerApplicationHost AppHost;
         public static IHttpClient HttpClient;
+        protected IAuthorizationContext AuthorizationContext { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext)
         {
             JsonSerializer = jsonSerializer;
+            AuthorizationContext = authorizationContext;
             ZipClient = zipClient;
             MediaSourceManager = mediaSourceManager;
             DeviceManager = deviceManager;

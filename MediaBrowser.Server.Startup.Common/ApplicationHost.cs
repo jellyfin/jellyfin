@@ -552,7 +552,7 @@ namespace MediaBrowser.Server.Startup.Common
             ZipClient = new ZipClient(FileSystemManager);
             RegisterSingleInstance(ZipClient);
 
-            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer));
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer, XmlSerializer));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
@@ -612,7 +612,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider);
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);

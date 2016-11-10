@@ -6,13 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using Emby.Server.Implementations.HttpServer;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Services;
 using ServiceStack;
+using ServiceStack.Host;
 using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;
@@ -30,6 +34,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
+        private readonly IXmlSerializer _xmlSerializer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
@@ -37,10 +42,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="jsonSerializer">The json serializer.</param>
-        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _xmlSerializer = xmlSerializer;
             _logger = logManager.GetLogger("HttpResultFactory");
         }
 
@@ -130,7 +136,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 throw new ArgumentNullException("result");
             }
 
-            var optimizedResult = requestContext.ToOptimizedResult(result);
+            var optimizedResult = ToOptimizedResult(requestContext, result);
 
             if (responseHeaders == null)
             {
@@ -152,7 +158,99 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             return optimizedResult;
         }
-        
+
+        public static string GetCompressionType(IRequest request)
+        {
+            var prefs = new RequestPreferences(request);
+
+            if (prefs.AcceptsDeflate)
+                return "deflate";
+
+            if (prefs.AcceptsGzip)
+                return "gzip";
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the optimized result for the IRequestContext. 
+        /// Does not use or store results in any cache.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        public object ToOptimizedResult<T>(IRequest request, T dto)
+        {
+            request.Response.Dto = dto;
+
+            var compressionType = GetCompressionType(request);
+            if (compressionType == null)
+            {
+                var contentType = request.ResponseContentType;
+                var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
+
+                switch (contentTypeAttr)
+                {
+                    case RequestAttributes.Xml:
+                        return SerializeToXmlString(dto);
+
+                    case RequestAttributes.Json:
+                        return _jsonSerializer.SerializeToString(dto);
+                }
+            }
+
+            using (var ms = new MemoryStream())
+            {
+                using (var compressionStream = GetCompressionStream(ms, compressionType))
+                {
+                    ContentTypes.Instance.SerializeToStream(request, dto, compressionStream);
+                    compressionStream.Close();
+
+                    var compressedBytes = ms.ToArray();
+
+                    var httpResult = new HttpResult(compressedBytes, request.ResponseContentType)
+                    {
+                        Status = request.Response.StatusCode
+                    };
+
+                    httpResult.Headers["Content-Length"] = compressedBytes.Length.ToString(UsCulture);
+                    httpResult.Headers["Content-Encoding"] = compressionType;
+
+                    return httpResult;
+                }
+            }
+        }
+
+        public static string SerializeToXmlString(object from)
+        {
+            using (var ms = new MemoryStream())
+            {
+                var xwSettings = new XmlWriterSettings();
+                xwSettings.Encoding = new UTF8Encoding(false);
+                xwSettings.OmitXmlDeclaration = false;
+
+                using (var xw = XmlWriter.Create(ms, xwSettings))
+                {
+                    var serializer = new DataContractSerializer(from.GetType());
+                    serializer.WriteObject(xw, from);
+                    xw.Flush();
+                    ms.Seek(0, SeekOrigin.Begin);
+                    var reader = new StreamReader(ms);
+                    return reader.ReadToEnd();
+                }
+            }
+        }
+
+        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
+        {
+            if (compressionType == "deflate")
+                return new DeflateStream(outputStream, CompressionMode.Compress);
+            if (compressionType == "gzip")
+                return new GZipStream(outputStream, CompressionMode.Compress);
+
+            throw new NotSupportedException(compressionType);
+        }
+
         /// <summary>
         /// Gets the optimized result using cache.
         /// </summary>
@@ -471,7 +569,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var contentType = options.ContentType;
             var responseHeaders = options.ResponseHeaders;
 
-            var requestedCompressionType = requestContext.GetCompressionType();
+            var requestedCompressionType = GetCompressionType(requestContext);
 
             if (!compress || string.IsNullOrEmpty(requestedCompressionType))
             {
@@ -513,16 +611,64 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
             }
 
-            var contents = content.Compress(requestedCompressionType);
+            var contents = Compress(content, requestedCompressionType);
 
             responseHeaders["Content-Length"] = contents.Length.ToString(UsCulture);
+            responseHeaders["Content-Encoding"] = requestedCompressionType;
 
             if (isHeadRequest)
             {
                 return GetHttpResult(new byte[] { }, contentType);
             }
 
-            return new CompressedResult(contents, requestedCompressionType, contentType);
+            return GetHttpResult(contents, contentType, responseHeaders);
+        }
+
+        public static byte[] Compress(string text, string compressionType)
+        {
+            if (compressionType == "deflate")
+                return Deflate(text);
+
+            if (compressionType == "gzip")
+                return GZip(text);
+
+            throw new NotSupportedException(compressionType);
+        }
+
+        public static byte[] Deflate(string text)
+        {
+            return Deflate(Encoding.UTF8.GetBytes(text));
+        }
+
+        public static byte[] Deflate(byte[] bytes)
+        {
+            // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
+            // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
+            using (var ms = new MemoryStream())
+            using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
+            {
+                zipStream.Write(bytes, 0, bytes.Length);
+                zipStream.Close();
+
+                return ms.ToArray();
+            }
+        }
+
+        public static byte[] GZip(string text)
+        {
+            return GZip(Encoding.UTF8.GetBytes(text));
+        }
+
+        public static byte[] GZip(byte[] buffer)
+        {
+            using (var ms = new MemoryStream())
+            using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
+            {
+                zipStream.Write(buffer, 0, buffer.Length);
+                zipStream.Close();
+
+                return ms.ToArray();
+            }
         }
 
         /// <summary>

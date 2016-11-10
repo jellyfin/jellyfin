@@ -30,19 +30,20 @@
 using System;
 using System.Text;
 
-namespace MediaBrowser.Server.Mono.Security {
+namespace Emby.Common.Implementations.Security
+{
 
-	// References:
-	// 1.	Information technology - Open Systems Interconnection - The Directory: Selected attribute types 
-	//	http://www.itu.int/rec/recommendation.asp?type=folders&lang=e&parent=T-REC-X.520 
-	// 2.	Internet X.509 Public Key Infrastructure Certificate and CRL Profile
-	//	http://www.ietf.org/rfc/rfc3280.txt
-	// 3.	A Summary of the X.500(96) User Schema for use with LDAPv3
-	//	http://www.faqs.org/rfcs/rfc2256.html
-	// 4.	RFC 2247 - Using Domains in LDAP/X.500 Distinguished Names
-	//	http://www.faqs.org/rfcs/rfc2247.html
+    // References:
+    // 1.	Information technology - Open Systems Interconnection - The Directory: Selected attribute types 
+    //	http://www.itu.int/rec/recommendation.asp?type=folders&lang=e&parent=T-REC-X.520 
+    // 2.	Internet X.509 Public Key Infrastructure Certificate and CRL Profile
+    //	http://www.ietf.org/rfc/rfc3280.txt
+    // 3.	A Summary of the X.500(96) User Schema for use with LDAPv3
+    //	http://www.faqs.org/rfcs/rfc2256.html
+    // 4.	RFC 2247 - Using Domains in LDAP/X.500 Distinguished Names
+    //	http://www.faqs.org/rfcs/rfc2247.html
 
-	/* 
+    /* 
 	 * AttributeTypeAndValue ::= SEQUENCE {
 	 * 	type     AttributeType,
 	 * 	value    AttributeValue 
