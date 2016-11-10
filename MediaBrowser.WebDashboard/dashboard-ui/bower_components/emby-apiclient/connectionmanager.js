@@ -1509,7 +1509,7 @@
             var updateDevicePromise;
 
             // Cache for 3 days
-            if (params.deviceId && (new Date().getTime() - (regInfo.lastValidDate || 0)) < 259200000) {
+            if (params.deviceId && (new Date().getTime() - (regInfo.lastValidDate || 0)) < 604800000) {
 
                 console.log('getRegistrationInfo has cached info');
 
