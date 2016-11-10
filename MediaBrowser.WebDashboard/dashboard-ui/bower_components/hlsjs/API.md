@@ -174,6 +174,7 @@ configuration parameters could be provided to hls.js upon instantiation of Hls O
       capLevelToPlayerSize: false,
       debug : false,
       defaultAudioCodec : undefined,
+      initialLiveManifestSize: 1,
       maxBufferLength : 30,
       maxMaxBufferLength : 600,
       maxBufferSize : 60*1000*1000,
@@ -254,6 +255,11 @@ a logger object could also be provided for custom logging : ```config.debug=cust
   - ```mp4a.40.5``` (HE-AAC) or
   - ```undefined``` (guess based on sampling rate)
 
+#### ```initialLiveManifestSize```
+(default 1)
+
+number of segments needed to start a playback of Live stream.
+
 #### ```maxBufferLength```
 (default 30s)
 
@@ -280,11 +286,15 @@ hls.js will jump over this buffer hole to reach the beginning of this following 
 ```maxSeekHole``` allows to configure this jumpable threshold.
 
 #### ```maxStarvationDelay```
-(default 2s)
+(default 4s)
 
 ABR algorithm will always try to choose a quality level that should avoid rebuffering.
 In case no quality level with this criteria can be found (lets say for example that buffer length is 1s, but fetching a fragment at lowest quality is predicted to take around 2s ... ie we can forecast around 1s of rebuffering ...) then ABR algorithm will try to find a level that should guarantee less than ```maxStarvationDelay``` of buffering.
-this max delay is also used in  automatic start level selection : in that mode ABR controller will ensure that video loading time (ie the time to fetch the first fragment at lowest quality level + the time to fetch the fragment at the appropriate quality level is less than ```maxStarvationDelay``` )
+
+#### ```maxLoadingDelay```
+(default 4s)
+
+max video loading delay used in  automatic start level selection : in that mode ABR controller will ensure that video loading time (ie the time to fetch the first fragment at lowest quality level + the time to fetch the fragment at the appropriate quality level is less than ```maxLoadingDelay``` )
 
 #### ```seekHoleNudgeDuration```
 (default 0.01s)

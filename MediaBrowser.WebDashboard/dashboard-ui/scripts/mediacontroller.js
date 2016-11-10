@@ -983,7 +983,7 @@
             });
         };
 
-        self.supportsDirectPlay = function (mediaSource) {
+        self.supportsDirectPlay = function (mediaSource, itemType) {
 
             return new Promise(function (resolve, reject) {
                 if (mediaSource.SupportsDirectPlay) {
@@ -996,6 +996,7 @@
                         }
                         else {
                             var val = mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                            //resolve(val || itemType !== 'TvChannel');
                             resolve(val);
                         }
                     }

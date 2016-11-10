@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
@@ -179,7 +180,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetGeneralImage request)
+        public Task<object> Get(GetGeneralImage request)
         {
             var filename = string.Equals(request.Type, "primary", StringComparison.OrdinalIgnoreCase)
                                ? "folder"
@@ -238,7 +239,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetMediaInfoImage request)
+        public Task<object> Get(GetMediaInfoImage request)
         {
             var themeFolder = Path.Combine(_appPaths.MediaInfoImagesPath, request.Theme);
 

@@ -196,17 +196,25 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return new WebSocketSharpListener(_logger, cert, _memoryStreamProvider, _textEncoding, _networkManager, _socketFactory, _cryptoProvider, new StreamFactory(), enableDualMode, GetRequest);
         }
 
-        public static ICertificate GetCert(string certificateLocation)
+        public ICertificate GetCert(string certificateLocation)
         {
-            X509Certificate2 localCert = new X509Certificate2(certificateLocation);
-            //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
-            if (localCert.PrivateKey == null)
+            try
             {
-                //throw new FileNotFoundException("Secure requested, no private key included", certificateLocation);
+                X509Certificate2 localCert = new X509Certificate2(certificateLocation);
+                //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
+                if (localCert.PrivateKey == null)
+                {
+                    //throw new FileNotFoundException("Secure requested, no private key included", certificateLocation);
+                    return null;
+                }
+
+                return new Certificate(localCert);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading cert from {0}", ex, certificateLocation);
                 return null;
             }
-
-            return new Certificate(localCert);
         }
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)
