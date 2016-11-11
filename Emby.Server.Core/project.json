@@ -13,6 +13,12 @@
       "dependencies": {
         "MediaBrowser.Model": {
           "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Controller": {
+          "target": "project"
         }
       }
     },
@@ -21,6 +27,12 @@
       "dependencies": {
         "NETStandard.Library": "1.6.0",
 		"MediaBrowser.Model": {
+          "target": "project"
+        },
+        "MediaBrowser.Common": {
+          "target": "project"
+        },
+        "MediaBrowser.Controller": {
           "target": "project"
         }
       }
