@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.HttpServer
             IServerConfigurationManager config,
             string serviceName,
             string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn)
-            : base(serviceName, new Assembly[] { })
+            : base(serviceName)
         {
             _appHost = applicationHost;
             DefaultRedirectPath = defaultRedirectPath;
@@ -134,11 +134,11 @@ namespace Emby.Server.Implementations.HttpServer
             return _appHost.CreateInstance(type);
         }
 
-        protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
+        protected override ServiceController CreateServiceController()
         {
             var types = _restServices.Select(r => r.GetType()).ToArray();
 
-            return new ServiceController(this, () => types);
+            return new ServiceController(() => types);
         }
 
         public override ServiceStackHost Start(string listeningAtUrlBase)
