@@ -3,7 +3,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core
 {
     public class UnhandledExceptionWriter
     {

@@ -172,7 +172,6 @@
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="SystemEvents.cs" />
     <Compile Include="TextLocalizer.cs" />
-    <Compile Include="UnhandledExceptionWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
