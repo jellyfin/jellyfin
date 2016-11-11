@@ -1,0 +1,25 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    
+  },
+
+  "frameworks": {
+    "net46": {
+      "frameworkAssemblies": {
+        
+      },
+      "dependencies": {
+        
+      }
+    },
+    "netstandard1.6": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "NETStandard.Library": "1.6.0",
+        
+      }
+    }
+  }
+}
