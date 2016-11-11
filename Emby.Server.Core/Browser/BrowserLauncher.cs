@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using System;
 
-namespace MediaBrowser.Server.Startup.Common.Browser
+namespace Emby.Server.Core.Browser
 {
     /// <summary>
     /// Class BrowserLauncher
