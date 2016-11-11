@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -14,8 +13,9 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Threading;
+using Emby.Server.Implementations.IO;
 
-namespace MediaBrowser.Server.Startup.Common.IO
+namespace Emby.Server.Core.IO
 {
     public class LibraryMonitor : ILibraryMonitor
     {
@@ -293,7 +293,7 @@ namespace MediaBrowser.Server.Startup.Common.IO
                         IncludeSubdirectories = true
                     };
 
-                    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                    if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
                     {
                         newWatcher.InternalBufferSize = 32767;
                     }
