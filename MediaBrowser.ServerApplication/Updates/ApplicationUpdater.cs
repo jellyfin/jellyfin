@@ -37,11 +37,6 @@ namespace MediaBrowser.ServerApplication.Updates
             logger.Info("Copying updater dependencies to temporary location");
             File.Copy(source, tempUpdaterDll, true);
             var product = "server";
-            // Our updater needs SS and ionic
-            source = Path.Combine(systemPath, "ServiceStack.Text.dll");
-            File.Copy(source, Path.Combine(tempPath, "ServiceStack.Text.dll"), true);
-            source = Path.Combine(systemPath, "SharpCompress.dll");
-            File.Copy(source, Path.Combine(tempPath, "SharpCompress.dll"), true);
 
             logger.Info("Starting updater process.");
 
