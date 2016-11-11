@@ -5,11 +5,11 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Core.Data;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Server.Startup.Common.Persistence;
 
 namespace MediaBrowser.Server.Startup.Common.Security
 {

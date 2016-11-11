@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Core;
+using Emby.Server.Core.FFMpeg;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {

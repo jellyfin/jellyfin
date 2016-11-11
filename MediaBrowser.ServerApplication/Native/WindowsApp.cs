@@ -9,11 +9,12 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 using Emby.Server.Core;
+using Emby.Server.Core.Data;
+using Emby.Server.Core.FFMpeg;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Startup.Common.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 

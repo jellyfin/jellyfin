@@ -22,6 +22,12 @@
         },
         "Emby.Common.Implementations": {
           "target": "project"
+        },
+        "Mono.Nat": {
+          "target": "project"
+        },
+        "Emby.Server.Implementations": {
+          "target": "project"
         }
       }
     },
@@ -29,6 +35,7 @@
       "imports": "dnxcore50",
       "dependencies": {
         "NETStandard.Library": "1.6.0",
+		"System.AppDomain": "2.0.11",
 		"MediaBrowser.Model": {
           "target": "project"
         },
@@ -39,6 +46,12 @@
           "target": "project"
         },
         "Emby.Common.Implementations": {
+          "target": "project"
+        },
+        "Mono.Nat": {
+          "target": "project"
+        },
+        "Emby.Server.Implementations": {
           "target": "project"
         }
       }
