@@ -9,6 +9,8 @@ namespace Emby.Common.Implementations.EnvironmentInfo
 {
     public class EnvironmentInfo : IEnvironmentInfo
     {
+        public MediaBrowser.Model.System.Architecture? CustomArchitecture { get; set; }
+
         public MediaBrowser.Model.System.OperatingSystem OperatingSystem
         {
             get
@@ -64,6 +66,33 @@ namespace Emby.Common.Implementations.EnvironmentInfo
             return System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
 #endif
                 return "1.0";
+            }
+        }
+
+        public MediaBrowser.Model.System.Architecture SystemArchitecture
+        {
+            get
+            {
+                if (CustomArchitecture.HasValue)
+                {
+                    return CustomArchitecture.Value;
+                }
+#if NET46
+                return Environment.Is64BitOperatingSystem ? MediaBrowser.Model.System.Architecture.X64 : MediaBrowser.Model.System.Architecture.X86;
+#elif NETSTANDARD1_6
+                switch(System.Runtime.InteropServices.RuntimeInformation.OSArchitecture)
+                {
+                    case System.Runtime.InteropServices.Architecture.Arm:
+                        return MediaBrowser.Model.System.Architecture.Arm;
+                    case System.Runtime.InteropServices.Architecture.Arm64:
+                        return MediaBrowser.Model.System.Architecture.Arm64;
+                    case System.Runtime.InteropServices.Architecture.X64:
+                        return MediaBrowser.Model.System.Architecture.X64;
+                    case System.Runtime.InteropServices.Architecture.X86:
+                        return MediaBrowser.Model.System.Architecture.X86;
+                }
+#endif
+                return MediaBrowser.Model.System.Architecture.X64;
             }
         }
     }

@@ -14,8 +14,6 @@ using Emby.Server.Core.FFMpeg;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
-using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
 namespace MediaBrowser.ServerApplication.Native
 {
@@ -47,19 +45,6 @@ namespace MediaBrowser.ServerApplication.Native
         public void AuthorizeServer(int udpPort, int httpServerPort, int httpsPort, string applicationPath, string tempDirectory)
         {
             ServerAuthorization.AuthorizeServer(udpPort, httpServerPort, httpsPort, applicationPath, tempDirectory);
-        }
-
-        public NativeEnvironment Environment
-        {
-            get
-            {
-                return new NativeEnvironment
-                {
-                    OperatingSystem = OperatingSystem.Windows,
-                    SystemArchitecture = System.Environment.Is64BitOperatingSystem ? Architecture.X64 : Architecture.X86,
-                    OperatingSystemVersionString = System.Environment.OSVersion.VersionString
-                };
-            }
         }
 
         public bool SupportsLibraryMonitor

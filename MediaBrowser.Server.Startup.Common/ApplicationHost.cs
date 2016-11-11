@@ -277,8 +277,9 @@ namespace MediaBrowser.Server.Startup.Common
             IFileSystem fileSystem,
             INativeApp nativeApp,
             IPowerManagement powerManagement,
-            string releaseAssetFilename)
-            : base(applicationPaths, logManager, fileSystem)
+            string releaseAssetFilename,
+            IEnvironmentInfo environmentInfo)
+            : base(applicationPaths, logManager, fileSystem, environmentInfo)
         {
             _startupOptions = options;
             _releaseAssetFilename = releaseAssetFilename;
@@ -301,11 +302,6 @@ namespace MediaBrowser.Server.Startup.Common
             }
         }
 
-        public override string OperatingSystemDisplayName
-        {
-            get { return NativeApp.Environment.OperatingSystemVersionString; }
-        }
-
         public override bool IsRunningAsService
         {
             get { return NativeApp.IsRunningAsService; }
@@ -314,11 +310,6 @@ namespace MediaBrowser.Server.Startup.Common
         public bool SupportsRunningAsService
         {
             get { return NativeApp.SupportsRunningAsService; }
-        }
-
-        public bool SupportsLibraryMonitor
-        {
-            get { return NativeApp.SupportsLibraryMonitor; }
         }
 
         /// <summary>
@@ -1300,7 +1291,7 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpServerPortNumber = HttpPort,
                 SupportsHttps = SupportsHttps,
                 HttpsPortNumber = HttpsPort,
-                OperatingSystem = NativeApp.Environment.OperatingSystem.ToString(),
+                OperatingSystem = EnvironmentInfo.OperatingSystem.ToString(),
                 OperatingSystemDisplayName = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
@@ -1312,9 +1303,9 @@ namespace MediaBrowser.Server.Startup.Common
                 SupportsRunningAsService = SupportsRunningAsService,
                 ServerName = FriendlyName,
                 LocalAddress = localAddress,
-                SupportsLibraryMonitor = SupportsLibraryMonitor,
+                SupportsLibraryMonitor = true,
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
-                SystemArchitecture = NativeApp.Environment.SystemArchitecture,
+                SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
                 PackageName = _startupOptions.GetOption("-package")
             };

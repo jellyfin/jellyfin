@@ -172,7 +172,7 @@ namespace Emby.Common.Implementations
 
         protected ICryptoProvider CryptographyProvider = new CryptographyProvider();
 
-        protected IEnvironmentInfo EnvironmentInfo = new Emby.Common.Implementations.EnvironmentInfo.EnvironmentInfo();
+        protected IEnvironmentInfo EnvironmentInfo { get; private set; }
 
         private DeviceId _deviceId;
         public string SystemId
@@ -205,8 +205,11 @@ namespace Emby.Common.Implementations
         /// </summary>
         protected BaseApplicationHost(TApplicationPathsType applicationPaths,
             ILogManager logManager,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            IEnvironmentInfo environmentInfo)
         {
+            EnvironmentInfo = environmentInfo;
+
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
             

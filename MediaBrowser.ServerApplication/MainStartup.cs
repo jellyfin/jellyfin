@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Core;
@@ -324,7 +325,8 @@ namespace MediaBrowser.ServerApplication
                 fileSystem,
                 nativeApp, 
                 new PowerManagement(),
-                "emby.windows.zip");
+                "emby.windows.zip",
+                new EnvironmentInfo());
 
             var initProgress = new Progress<double>();
 
