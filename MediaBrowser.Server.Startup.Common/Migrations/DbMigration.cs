@@ -2,7 +2,7 @@
 using Emby.Server.Implementations.Persistence;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Startup.Common.Persistence;
 
 namespace MediaBrowser.Server.Startup.Common.Migrations
 {

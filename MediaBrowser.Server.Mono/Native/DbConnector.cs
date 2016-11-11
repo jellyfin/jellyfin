@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Startup.Common.Persistence;
 
 namespace MediaBrowser.Server.Mono.Native
 {
