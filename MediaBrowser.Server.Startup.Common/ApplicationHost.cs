@@ -50,9 +50,7 @@ using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Implementations.Activity;
-using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Devices;
-using MediaBrowser.Server.Implementations.HttpServer;
 using MediaBrowser.Server.Implementations.IO;
 using MediaBrowser.Server.Implementations.Notifications;
 using MediaBrowser.Server.Implementations.Persistence;
@@ -72,6 +70,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Common.Implementations;
@@ -133,8 +132,10 @@ using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Text;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Implementations.Archiving;
+using MediaBrowser.Server.Startup.Common.Configuration;
 using OpenSubtitlesHandler;
 using ServiceStack;
+using SocketHttpListener.Primitives;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 
 namespace MediaBrowser.Server.Startup.Common
@@ -271,7 +272,7 @@ namespace MediaBrowser.Server.Startup.Common
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
-            INativeApp nativeApp, 
+            INativeApp nativeApp,
             IPowerManagement powerManagement,
             string releaseAssetFilename)
             : base(applicationPaths, logManager, fileSystem)
@@ -613,7 +614,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer);
+            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -734,6 +735,32 @@ namespace MediaBrowser.Server.Startup.Common
             SetStaticProperties();
 
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+        }
+
+        private ICertificate GetCertificate(string certificateLocation)
+        {
+            if (string.IsNullOrWhiteSpace(certificateLocation))
+            {
+                return null;
+            }
+
+            try
+            {
+                X509Certificate2 localCert = new X509Certificate2(certificateLocation);
+                //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
+                if (localCert.PrivateKey == null)
+                {
+                    //throw new FileNotFoundException("Secure requested, no private key included", certificateLocation);
+                    return null;
+                }
+
+                return new Certificate(localCert);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error loading cert from {0}", ex, certificateLocation);
+                return null;
+            }
         }
 
         private IImageProcessor GetImageProcessor()
@@ -969,6 +996,7 @@ namespace MediaBrowser.Server.Startup.Common
         }
 
         private string CertificatePath { get; set; }
+        private ICertificate Certificate { get; set; }
 
         private IEnumerable<string> GetUrlPrefixes()
         {
@@ -998,10 +1026,11 @@ namespace MediaBrowser.Server.Startup.Common
         private void StartServer()
         {
             CertificatePath = GetCertificatePath(true);
+            Certificate = GetCertificate(CertificatePath);
 
             try
             {
-                ServerManager.Start(GetUrlPrefixes(), CertificatePath);
+                ServerManager.Start(GetUrlPrefixes());
                 return;
             }
             catch (Exception ex)
@@ -1018,7 +1047,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             try
             {
-                ServerManager.Start(GetUrlPrefixes(), CertificatePath);
+                ServerManager.Start(GetUrlPrefixes());
             }
             catch (Exception ex)
             {
@@ -1298,7 +1327,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         public bool SupportsHttps
         {
-            get { return !string.IsNullOrWhiteSpace(HttpServer.CertificatePath); }
+            get { return Certificate != null; }
         }
 
         public async Task<string> GetLocalApiUrl()

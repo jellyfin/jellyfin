@@ -10,6 +10,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.Devices
 {

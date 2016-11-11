@@ -1,16 +1,14 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Playlists;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
-using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 
-namespace MediaBrowser.Server.Implementations.Playlists
+namespace Emby.Server.Implementations.Playlists
 {
     public class PlaylistsFolder : BasePluginFolder
     {
@@ -39,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
         public override string CollectionType
         {
-            get { return Model.Entities.CollectionType.Playlists; }
+            get { return MediaBrowser.Model.Entities.CollectionType.Playlists; }
         }
 
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
