@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSSDP", "RSSDP\RSSDP.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Implementations", "MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj", "{2E781478-814D-4A48-9D80-BFF206441A65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -169,6 +171,12 @@ Global
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release Mono|Any CPU.Build.0 = Release|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release Mono|Any CPU.ActiveCfg = Release Mono|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release Mono|Any CPU.Build.0 = Release Mono|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E781478-814D-4A48-9D80-BFF206441A65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,5 +201,6 @@ Global
 		{D08B8079-08B3-48F2-83C4-E9CCCE48AFF1} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{21002819-C39A-4D3E-BE83-2A276A77FB1F} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
+		{2E781478-814D-4A48-9D80-BFF206441A65} = {8ADD772F-F0A4-4A53-9B2F-AF4A4C585839}
 	EndGlobalSection
 EndGlobal
