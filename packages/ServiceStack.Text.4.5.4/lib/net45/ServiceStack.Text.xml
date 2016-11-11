@@ -1237,6 +1237,18 @@
             <param name="recursionInfo">Tracks how deeply nested we are</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
+            <summary>
+            Add a Property attribute at runtime. 
+            <para>Not threadsafe, should only add attributes on Startup.</para>
+            </summary>
+        </member>
         <member name="T:ServiceStack.Licensing">
             <summary>
             Public Code API to register commercial license for ServiceStack.
@@ -1249,7 +1261,7 @@
         </member>
         <member name="M:ServiceStack.PathUtils.MapProjectPath(System.String)">
             <summary>
-            Maps the path of a file in the context of a VS project
+            Maps the path of a file in the context of a VS project in a Consle App
             </summary>
             <param name="relativePath">the relative path</param>
             <returns>the absolute path</returns>
@@ -1258,7 +1270,7 @@
         </member>
         <member name="M:ServiceStack.PathUtils.MapAbsolutePath(System.String)">
             <summary>
-            Maps the path of a file in a self-hosted scenario
+            Maps the path of a file in the bin\ folder of a self-hosted scenario
             </summary>
             <param name="relativePath">the relative path</param>
             <returns>the absolute path</returns>
@@ -1266,7 +1278,7 @@
         </member>
         <member name="M:ServiceStack.PathUtils.MapHostAbsolutePath(System.String)">
             <summary>
-            Maps the path of a file in an Asp.Net hosted scenario
+            Maps the path of a file in an ASP.NET hosted scenario
             </summary>
             <param name="relativePath">the relative path</param>
             <returns>the absolute path</returns>
@@ -1293,18 +1305,6 @@
         <member name="M:ServiceStack.ReflectionExtensions.CreateInstance(System.Type)">
             <summary>
             Creates a new instance from the default constructor of type
-            </summary>
-        </member>
-        <member name="M:ServiceStack.PlatformExtensions.AddAttributes(System.Reflection.PropertyInfo,System.Attribute[])">
-            <summary>
-            Add a Property attribute at runtime. 
-            <para>Not threadsafe, should only add attributes on Startup.</para>
-            </summary>
-        </member>
-        <member name="M:ServiceStack.PlatformExtensions.ReplaceAttribute(System.Reflection.PropertyInfo,System.Attribute)">
-            <summary>
-            Add a Property attribute at runtime. 
-            <para>Not threadsafe, should only add attributes on Startup.</para>
             </summary>
         </member>
         <member name="F:ServiceStack.StreamExtensions.DefaultBufferSize">

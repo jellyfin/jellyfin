@@ -69,6 +69,7 @@
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
+    <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\LoggerUtils.cs" />
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
@@ -263,6 +264,9 @@
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
+    <Reference Include="ServiceStack">
+      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
+    </Reference>
     <Reference Include="SocketHttpListener.Portable">
       <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
     </Reference>

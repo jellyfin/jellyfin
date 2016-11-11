@@ -21,7 +21,7 @@ using IRequest = MediaBrowser.Model.Services.IRequest;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 using StreamWriter = Emby.Server.Implementations.HttpServer.StreamWriter;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
     /// Class HttpResultFactory
@@ -161,13 +161,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public static string GetCompressionType(IRequest request)
         {
-            var prefs = new RequestPreferences(request);
+            var acceptEncoding = request.Headers["Accept-Encoding"];
 
-            if (prefs.AcceptsDeflate)
-                return "deflate";
+            if (!string.IsNullOrWhiteSpace(acceptEncoding))
+            {
+                if (acceptEncoding.Contains("deflate"))
+                    return "deflate";
 
-            if (prefs.AcceptsGzip)
-                return "gzip";
+                if (acceptEncoding.Contains("gzip"))
+                    return "gzip";
+            }
 
             return null;
         }
@@ -187,14 +190,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (compressionType == null)
             {
                 var contentType = request.ResponseContentType;
-                var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
 
-                switch (contentTypeAttr)
+                switch (GetRealContentType(contentType))
                 {
-                    case RequestAttributes.Xml:
+                    case "application/xml":
+                    case "text/xml":
+                    case "text/xml; charset=utf-8": //"text/xml; charset=utf-8" also matches xml
                         return SerializeToXmlString(dto);
 
-                    case RequestAttributes.Json:
+                    case "application/json":
+                    case "text/json":
                         return _jsonSerializer.SerializeToString(dto);
                 }
             }
@@ -204,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 using (var compressionStream = GetCompressionStream(ms, compressionType))
                 {
                     ContentTypes.Instance.SerializeToStream(request, dto, compressionStream);
-                    compressionStream.Close();
+                    compressionStream.Dispose();
 
                     var compressedBytes = ms.ToArray();
 
@@ -219,6 +224,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     return httpResult;
                 }
             }
+        }
+
+        public static string GetRealContentType(string contentType)
+        {
+            return contentType == null
+                       ? null
+                       : contentType.Split(';')[0].ToLower().Trim();
         }
 
         public static string SerializeToXmlString(object from)
@@ -520,7 +532,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private bool ShouldCompressResponse(IRequest requestContext, string contentType)
         {
             // It will take some work to support compression with byte range requests
-            if (!string.IsNullOrEmpty(requestContext.GetHeader("Range")))
+            if (!string.IsNullOrEmpty(requestContext.Headers.Get("Range")))
             {
                 return false;
             }
@@ -573,7 +585,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (!compress || string.IsNullOrEmpty(requestedCompressionType))
             {
-                var rangeHeader = requestContext.GetHeader("Range");
+                var rangeHeader = requestContext.Headers.Get("Range");
 
                 var stream = await factoryFn().ConfigureAwait(false);
 
@@ -648,7 +660,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             using (var zipStream = new DeflateStream(ms, CompressionMode.Compress))
             {
                 zipStream.Write(bytes, 0, bytes.Length);
-                zipStream.Close();
+                zipStream.Dispose();
 
                 return ms.ToArray();
             }
@@ -665,7 +677,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
             {
                 zipStream.Write(buffer, 0, buffer.Length);
-                zipStream.Close();
+                zipStream.Dispose();
 
                 return ms.ToArray();
             }
@@ -747,7 +759,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             var isNotModified = true;
 
-            var ifModifiedSinceHeader = requestContext.GetHeader("If-Modified-Since");
+            var ifModifiedSinceHeader = requestContext.Headers.Get("If-Modified-Since");
 
             if (!string.IsNullOrEmpty(ifModifiedSinceHeader))
             {
@@ -759,7 +771,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
             }
 
-            var ifNoneMatchHeader = requestContext.GetHeader("If-None-Match");
+            var ifNoneMatchHeader = requestContext.Headers.Get("If-None-Match");
 
             // Validate If-None-Match
             if (isNotModified && (cacheKey.HasValue || !string.IsNullOrEmpty(ifNoneMatchHeader)))

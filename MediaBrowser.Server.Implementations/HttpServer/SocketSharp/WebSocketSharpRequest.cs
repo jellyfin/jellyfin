@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
 using ServiceStack;
-using ServiceStack.Host;
 using SocketHttpListener.Net;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
@@ -244,14 +244,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             var specifiedContentType = GetQueryStringContentType(httpReq);
             if (!string.IsNullOrEmpty(specifiedContentType)) return specifiedContentType;
 
+            var serverDefaultContentType = "application/json";
+
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
             if (HasAnyOfContentTypes(httpReq, FormUrlEncoded, MultiPartFormData))
             {
-                defaultContentType = HostContext.Config.DefaultContentType;
+                defaultContentType = serverDefaultContentType;
             }
 
-            var customContentTypes = ContentTypes.Instance.ContentTypeFormats.Values;
             var preferredContentTypes = new string[] {};
 
             var acceptsAnything = false;
@@ -261,7 +262,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 var hasPreferredContentTypes = new bool[preferredContentTypes.Length];
                 foreach (var acceptsType in acceptContentTypes)
                 {
-                    var contentType = ContentFormat.GetRealContentType(acceptsType);
+                    var contentType = HttpResultFactory.GetRealContentType(acceptsType);
                     acceptsAnything = acceptsAnything || contentType == "*/*";
 
                     for (var i = 0; i < preferredContentTypes.Length; i++)
@@ -285,17 +286,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 {
                     if (hasDefaultContentType)
                         return defaultContentType;
-                    if (HostContext.Config.DefaultContentType != null)
-                        return HostContext.Config.DefaultContentType;
-                }
-
-                foreach (var contentType in acceptContentTypes)
-                {
-                    foreach (var customContentType in customContentTypes)
-                    {
-                        if (contentType.StartsWith(customContentType, StringComparison.OrdinalIgnoreCase))
-                            return customContentType;
-                    }
+                    if (serverDefaultContentType != null)
+                        return serverDefaultContentType;
                 }
             }
 
@@ -305,8 +297,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             }
 
             //We could also send a '406 Not Acceptable', but this is allowed also
-            return HostContext.Config.DefaultContentType;
+            return serverDefaultContentType;
         }
+
         public const string Soap11 = "text/xml; charset=utf-8";
 
         public static bool HasAnyOfContentTypes(IRequest request, params string[] contentTypes)
@@ -342,10 +335,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             if (format.Contains("json")) return "application/json";
             if (format.Contains("xml")) return Xml;
 
-            string contentType;
-            ContentTypes.Instance.ContentTypeFormats.TryGetValue(format, out contentType);
-
-            return contentType;
+            return null;
         }
 
         public bool HasExplicitResponseContentType { get; private set; }
@@ -357,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 if (this.pathInfo == null)
                 {
-                    var mode = HostContext.Config.HandlerFactoryPath;
+                    var mode = HttpListenerHost.HandlerFactoryPath;
 
                     var pos = request.RawUrl.IndexOf("?");
                     if (pos != -1)

@@ -69,6 +69,10 @@
       <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SharpCompress, Version=0.10.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
@@ -88,9 +92,6 @@
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
@@ -109,7 +110,6 @@
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
-    <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
@@ -141,7 +141,6 @@
     <Compile Include="Persistence\DataExtensions.cs" />
     <Compile Include="Persistence\IDbConnector.cs" />
     <Compile Include="Persistence\MediaStreamColumns.cs" />
-    <Compile Include="Serialization\JsonSerializer.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
@@ -351,7 +350,9 @@
     <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Serialization\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
