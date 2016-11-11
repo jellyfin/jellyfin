@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
-using ServiceStack;
 using SocketHttpListener.Net;
 using IHttpFile = MediaBrowser.Model.Services.IHttpFile;
 using IHttpRequest = MediaBrowser.Model.Services.IHttpRequest;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IResponse = MediaBrowser.Model.Services.IResponse;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -327,18 +327,29 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 var pi = httpReq.PathInfo;
                 if (pi == null || pi.Length <= formatMaxLength) return null;
                 if (pi[0] == '/') pi = pi.Substring(1);
-                format = pi.LeftPart('/');
+                format = LeftPart(pi, '/');
                 if (format.Length > formatMaxLength) return null;
             }
 
-            format = format.LeftPart('.').ToLower();
+            format = LeftPart(format, '.').ToLower();
             if (format.Contains("json")) return "application/json";
             if (format.Contains("xml")) return Xml;
 
             return null;
         }
 
+        public static string LeftPart(string strVal, char needle)
+        {
+            if (strVal == null) return null;
+            var pos = strVal.IndexOf(needle);
+            return pos == -1
+                ? strVal
+                : strVal.Substring(0, pos);
+        }
+
         public bool HasExplicitResponseContentType { get; private set; }
+
+        public static string HandlerFactoryPath;
 
         private string pathInfo;
         public string PathInfo
@@ -347,7 +358,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 if (this.pathInfo == null)
                 {
-                    var mode = HttpListenerHost.HandlerFactoryPath;
+                    var mode = HandlerFactoryPath;
 
                     var pos = request.RawUrl.IndexOf("?");
                     if (pos != -1)
@@ -363,7 +374,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         this.pathInfo = request.RawUrl;
                     }
 
-                    this.pathInfo = this.pathInfo.UrlDecode();
+                    this.pathInfo = WebUtility.UrlDecode(pathInfo);
                     this.pathInfo = NormalizePathInfo(pathInfo, mode);
                 }
                 return this.pathInfo;
@@ -427,9 +438,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 if (cookies == null)
                 {
                     cookies = new Dictionary<string, System.Net.Cookie>();
-                    for (var i = 0; i < this.request.Cookies.Count; i++)
+                    foreach (var cookie in this.request.Cookies)
                     {
-                        var httpCookie = this.request.Cookies[i];
+                        var httpCookie = (Cookie) cookie;
                         cookies[httpCookie.Name] = new System.Net.Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain);
                     }
                 }
@@ -539,10 +550,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         return httpFiles = new IHttpFile[0];
 
                     httpFiles = new IHttpFile[files.Count];
-                    for (var i = 0; i < files.Count; i++)
+                    var i = 0;
+                    foreach (var pair in files)
                     {
-                        var reqFile = files[i];
-
+                        var reqFile = pair.Value;
                         httpFiles[i] = new HttpFile
                         {
                             ContentType = reqFile.ContentType,
@@ -550,6 +561,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                             FileName = reqFile.FileName,
                             InputStream = reqFile.InputStream,
                         };
+                        i++;
                     }
                 }
                 return httpFiles;
@@ -561,14 +573,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             if (stream is MemoryStream)
             {
                 var other = (MemoryStream)stream;
-                try
+
+                byte[] buffer;
+                if (streamProvider.TryGetBuffer(other, out buffer))
                 {
-                    return new MemoryStream(other.GetBuffer(), 0, (int)other.Length, false, true);
+                    return streamProvider.CreateNew(buffer);
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    return new MemoryStream(other.ToArray(), 0, (int)other.Length, false, true);
-                }
+                return streamProvider.CreateNew(other.ToArray());
             }
 
             return stream;
@@ -577,7 +588,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public static string GetHandlerPathIfAny(string listenerUrl)
         {
             if (listenerUrl == null) return null;
-            var pos = listenerUrl.IndexOf("://", StringComparison.InvariantCultureIgnoreCase);
+            var pos = listenerUrl.IndexOf("://", StringComparison.OrdinalIgnoreCase);
             if (pos == -1) return null;
             var startHostUrl = listenerUrl.Substring(pos + "://".Length);
             var endPos = startHostUrl.IndexOf('/');
@@ -589,7 +600,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         public static string NormalizePathInfo(string pathInfo, string handlerPath)
         {
             if (handlerPath != null && pathInfo.TrimStart('/').StartsWith(
-                handlerPath, StringComparison.InvariantCultureIgnoreCase))
+                handlerPath, StringComparison.OrdinalIgnoreCase))
             {
                 return pathInfo.TrimStart('/').Substring(handlerPath.Length);
             }

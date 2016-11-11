@@ -2,10 +2,8 @@
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
 using ServiceStack;
 using ServiceStack.Host;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -158,14 +156,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return this;
         }
 
-        public static string HandlerFactoryPath;
-
         /// <summary>
         /// Starts the Web Service
         /// </summary>
         private void StartListener()
         {
-            HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
+            WebSocketSharpRequest.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = GetListener();
 
