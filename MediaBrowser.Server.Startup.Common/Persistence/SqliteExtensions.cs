@@ -4,7 +4,7 @@ using System.Data.SQLite;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 
-namespace MediaBrowser.Server.Startup.Common.Persistence
+namespace Emby.Server.Core.Data
 {
     /// <summary>
     /// Class SQLiteExtensions

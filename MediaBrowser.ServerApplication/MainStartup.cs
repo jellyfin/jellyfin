@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.Server.Startup.Common.Browser;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.ServerApplication.Updates;
@@ -21,6 +20,7 @@ using System.Windows.Forms;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Core;
+using Emby.Server.Core.Browser;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 

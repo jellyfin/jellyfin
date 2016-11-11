@@ -77,6 +77,7 @@
     <Compile Include="Connect\IConnectManager.cs" />
     <Compile Include="Connect\UserLinkResult.cs" />
     <Compile Include="Devices\CameraImageUploadInfo.cs" />
+    <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Devices\IDeviceRepository.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="Persistence\IFileOrganizationRepository.cs" />
     <Compile Include="Persistence\MediaStreamQuery.cs" />
     <Compile Include="Playlists\IPlaylistManager.cs" />
+    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Playlists\Playlist.cs" />
     <Compile Include="Plugins\ILocalizablePlugin.cs" />
     <Compile Include="Providers\AlbumInfo.cs" />

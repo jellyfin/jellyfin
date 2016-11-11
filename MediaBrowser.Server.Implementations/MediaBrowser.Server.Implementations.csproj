@@ -44,9 +44,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Collections\CollectionsDynamicFolder.cs" />
-    <Compile Include="Devices\CameraUploadsFolder.cs" />
-    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
