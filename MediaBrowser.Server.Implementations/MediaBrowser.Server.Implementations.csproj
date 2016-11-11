@@ -111,8 +111,6 @@
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="HttpServer\HttpListenerHost.cs" />
     <Compile Include="HttpServer\ServerFactory.cs" />
-    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />

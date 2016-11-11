@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
-namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
+namespace Emby.Server.Implementations.HttpServer.SocketSharp
 {
     public partial class WebSocketSharpRequest : IHttpRequest
     {
@@ -68,7 +69,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         input.Position = e.Start;
                         input.Read(copy, 0, (int)e.Length);
 
-                        form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy));
+                        form.Add(e.Name, (e.Encoding ?? ContentEncoding).GetString(copy, 0, copy.Length));
                     }
                     else
                     {
@@ -76,7 +77,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                         // We use a substream, as in 2.x we will support large uploads streamed to disk,
                         //
                         HttpPostedFile sub = new HttpPostedFile(e.Filename, e.ContentType, input, e.Start, e.Length);
-                        files.AddFile(e.Name, sub);
+                        files[e.Name] = sub;
                     }
                 }
             }
@@ -89,7 +90,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 if (form == null)
                 {
                     form = new WebROCollection();
-                    files = new HttpFileCollection();
+                    files = new Dictionary<string, HttpPostedFile>();
 
                     if (IsContentType("multipart/form-data", true))
                     {
@@ -224,7 +225,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             if (starts_with)
                 return StrUtils.StartsWith(ContentType, ct, true);
 
-            return String.Compare(ContentType, ct, true, Helpers.InvariantCulture) == 0;
+            return string.Equals(ContentType, ct, StringComparison.OrdinalIgnoreCase);
         }
 
         async Task LoadWwwForm()
@@ -287,67 +288,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         WebROCollection form;
 
-        HttpFileCollection files;
+        Dictionary<string, HttpPostedFile> files;
 
-        public sealed class HttpFileCollection : NameObjectCollectionBase
-        {
-            internal HttpFileCollection()
-            {
-            }
-
-            internal void AddFile(string name, HttpPostedFile file)
-            {
-                BaseAdd(name, file);
-            }
-
-            public void CopyTo(Array dest, int index)
-            {
-                /* XXX this is kind of gross and inefficient
-                 * since it makes a copy of the superclass's
-                 * list */
-                object[] values = BaseGetAllValues();
-                values.CopyTo(dest, index);
-            }
-
-            public string GetKey(int index)
-            {
-                return BaseGetKey(index);
-            }
-
-            public HttpPostedFile Get(int index)
-            {
-                return (HttpPostedFile)BaseGet(index);
-            }
-
-            public HttpPostedFile Get(string key)
-            {
-                return (HttpPostedFile)BaseGet(key);
-            }
-
-            public HttpPostedFile this[string key]
-            {
-                get
-                {
-                    return Get(key);
-                }
-            }
-
-            public HttpPostedFile this[int index]
-            {
-                get
-                {
-                    return Get(index);
-                }
-            }
-
-            public string[] AllKeys
-            {
-                get
-                {
-                    return BaseGetAllKeys();
-                }
-            }
-        }
         class WebROCollection : QueryParamCollection
         {
             bool got_id;
@@ -589,29 +531,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         internal sealed class StrUtils
         {
-            StrUtils() { }
-
-            public static bool StartsWith(string str1, string str2)
-            {
-                return StartsWith(str1, str2, false);
-            }
-
             public static bool StartsWith(string str1, string str2, bool ignore_case)
             {
-                int l2 = str2.Length;
-                if (l2 == 0)
-                    return true;
-
-                int l1 = str1.Length;
-                if (l2 > l1)
+                if (string.IsNullOrWhiteSpace(str1))
+                {
                     return false;
+                }
 
-                return 0 == String.Compare(str1, 0, str2, 0, l2, ignore_case, Helpers.InvariantCulture);
-            }
-
-            public static bool EndsWith(string str1, string str2)
-            {
-                return EndsWith(str1, str2, false);
+                var comparison = ignore_case ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                return str1.IndexOf(str2, comparison) == 0;
             }
 
             public static bool EndsWith(string str1, string str2, bool ignore_case)
@@ -624,7 +552,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 if (l2 > l1)
                     return false;
 
-                return 0 == String.Compare(str1, l1 - l2, str2, 0, l2, ignore_case, Helpers.InvariantCulture);
+                var comparison = ignore_case ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                return str1.IndexOf(str2, comparison) == str1.Length - str2.Length - 1;
             }
         }
 
@@ -742,7 +671,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 for (int i = temp.Length - 1; i >= 0; i--)
                     source[i] = (byte)temp[i];
 
-                return encoding.GetString(source);
+                return encoding.GetString(source, 0, source.Length);
             }
 
             bool ReadBoundary()
