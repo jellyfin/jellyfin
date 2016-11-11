@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Emby.Server.Implementations.Logging;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Configuration;
@@ -171,7 +170,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                                 .ToList();
                         }
 
-                        var episodeResolver = new MediaBrowser.Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
+                        var episodeResolver = new MediaBrowser.Naming.TV.EpisodeResolver(namingOptions, new NullLogger());
                         var episodeInfo = episodeResolver.Resolve(fullName, false, false);
                         if (episodeInfo != null && episodeInfo.EpisodeNumber.HasValue)
                         {
