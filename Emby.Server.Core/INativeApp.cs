@@ -67,12 +67,6 @@ namespace Emby.Server.Core
         /// <param name="autorun">if set to <c>true</c> [autorun].</param>
         void ConfigureAutoRun(bool autorun);
 
-        /// <summary>
-        /// Gets the network manager.
-        /// </summary>
-        /// <returns>INetworkManager.</returns>
-        INetworkManager CreateNetworkManager(ILogger logger);
-
         FFMpegInstallInfo GetFfmpegInstallInfo();
 
         void LaunchUrl(string url);

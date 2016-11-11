@@ -60,8 +60,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
+    <Reference Include="Patterns.Logging, Version=1.0.6159.22455, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Patterns.Logging.1.0.0.7\lib\netstandard1.3\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -76,9 +76,9 @@
       <HintPath>..\packages\SimpleInjector.3.2.4\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SocketHttpListener.Portable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
+    <Reference Include="SocketHttpListener, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SocketHttpListener.Portable.1.0.50\lib\portable-net45+win8\SocketHttpListener.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -93,7 +93,6 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="Cryptography\ASN1.cs" />
     <Compile Include="Cryptography\ASN1Convert.cs" />
@@ -113,7 +112,7 @@
     <Compile Include="Cryptography\X509Extension.cs" />
     <Compile Include="Cryptography\X509Extensions.cs" />
     <Compile Include="Cryptography\X520Attributes.cs" />
-    <Compile Include="HttpServerFactory.cs" />
+    <Compile Include="ImageEncoderHelper.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
@@ -144,6 +143,14 @@
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
       <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
       <Name>Emby.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
+      <Project>{6cfee013-6e7c-432b-ac37-cabf0880c69a}</Project>
+      <Name>Emby.Drawing.ImageMagick</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
+      <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
+      <Name>Emby.Drawing.Net</Name>
     </ProjectReference>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>

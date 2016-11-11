@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Emby.Drawing.GDI
+namespace Emby.Drawing.Net
 {
     public class PercentPlayedDrawer
     {

@@ -31,8 +31,33 @@
         },
         "MediaBrowser.Server.Implementations": {
           "target": "project"
-        }
-      }
+        },
+        "Emby.Dlna": {
+          "target": "project"
+        },
+        "Emby.Photos": {
+          "target": "project"
+        },
+        "MediaBrowser.Api": {
+          "target": "project"
+        },
+        "MediaBrowser.MediaEncoding": {
+          "target": "project"
+        },
+        "MediaBrowser.XbmcMetadata": {
+          "target": "project"
+        },
+        "MediaBrowser.LocalMetadata": {
+          "target": "project"
+        },
+        "MediaBrowser.WebDashboard": {
+          "target": "project"
+        },
+        "Emby.Drawing": {
+          "target": "project"
+        },
+        "SocketHttpListener.Portable": "1.0.50"    
+		}
     },
     "netstandard1.6": {
       "imports": "dnxcore50",
@@ -41,6 +66,10 @@
 		"System.AppDomain": "2.0.11",
 		"System.Globalization.Extensions": "4.0.1",
 		"System.IO.FileSystem.Watcher": "4.0.0",
+		"System.Net.Security": "4.0.0",
+		"System.Security.Cryptography.X509Certificates": "4.1.0",
+		"System.Runtime.Extensions": "4.1.0",
+        "SocketHttpListener.Portable": "1.0.50",
 		"MediaBrowser.Model": {
           "target": "project"
         },
@@ -60,6 +89,30 @@
           "target": "project"
         },
         "MediaBrowser.Server.Implementations": {
+          "target": "project"
+        },
+        "Emby.Dlna": {
+          "target": "project"
+        },
+        "Emby.Photos": {
+          "target": "project"
+        },
+        "MediaBrowser.Api": {
+          "target": "project"
+        },
+        "MediaBrowser.MediaEncoding": {
+          "target": "project"
+        },
+        "MediaBrowser.XbmcMetadata": {
+          "target": "project"
+        },
+        "MediaBrowser.LocalMetadata": {
+          "target": "project"
+        },
+        "MediaBrowser.WebDashboard": {
+          "target": "project"
+        },
+        "Emby.Drawing": {
           "target": "project"
         }
       }

@@ -12,7 +12,7 @@ using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using ImageFormat = MediaBrowser.Model.Drawing.ImageFormat;
 
-namespace Emby.Drawing.GDI
+namespace Emby.Drawing.Net
 {
     public class GDIImageEncoder : IImageEncoder
     {

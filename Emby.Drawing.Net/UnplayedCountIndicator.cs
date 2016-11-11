@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Emby.Drawing.GDI
+namespace Emby.Drawing.Net
 {
     public class UnplayedCountIndicator
     {
