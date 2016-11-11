@@ -1,8 +1,8 @@
-﻿using Emby.Common.Implementations;
+﻿using System.IO;
+using Emby.Common.Implementations;
 using MediaBrowser.Controller;
-using System.IO;
 
-namespace MediaBrowser.Server.Implementations
+namespace MediaBrowser.Server.Startup.Common
 {
     /// <summary>
     /// Extends BaseApplicationPaths to add paths that are only applicable on the server

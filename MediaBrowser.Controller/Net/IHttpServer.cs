@@ -16,18 +16,10 @@ namespace MediaBrowser.Controller.Net
         IEnumerable<string> UrlPrefixes { get; }
 
         /// <summary>
-        /// Gets the certificate path.
-        /// </summary>
-        /// <value>The certificate path.</value>
-        string CertificatePath { get; }
-
-        /// <summary>
         /// Starts the specified server name.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
-        /// <param name="certificatePath">If an https prefix is specified, 
-        /// the ssl certificate localtion on the file system.</param>
-        void StartServer(IEnumerable<string> urlPrefixes, string certificatePath);
+        void StartServer(IEnumerable<string> urlPrefixes);
 
         /// <summary>
         /// Stops this instance.

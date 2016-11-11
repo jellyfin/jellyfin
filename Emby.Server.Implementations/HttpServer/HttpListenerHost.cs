@@ -8,12 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Security;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Emby.Common.Implementations.Net;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
 using MediaBrowser.Common.Net;
@@ -25,12 +21,12 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
+using MediaBrowser.Model.System;
 using MediaBrowser.Model.Text;
-using ServiceStack.Text.Jsv;
 using SocketHttpListener.Net;
 using SocketHttpListener.Primitives;
 
-namespace MediaBrowser.Server.Implementations.HttpServer
+namespace Emby.Server.Implementations.HttpServer
 {
     public class HttpListenerHost : ServiceStackHost, IHttpServer
     {
@@ -46,8 +42,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
         public event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
 
-        public string CertificatePath { get; private set; }
-
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
@@ -60,12 +54,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IXmlSerializer _xmlSerializer;
+        private readonly ICertificate _certificate;
+        private readonly IEnvironmentInfo _environment;
+        private readonly IStreamFactory _streamFactory;
+        private readonly Func<Type, Func<string, object>> _funcParseFn;
 
         public HttpListenerHost(IServerApplicationHost applicationHost,
-            ILogManager logManager,
+            ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn)
             : base(serviceName, new Assembly[] { })
         {
             _appHost = applicationHost;
@@ -77,9 +75,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             _cryptoProvider = cryptoProvider;
             _jsonSerializer = jsonSerializer;
             _xmlSerializer = xmlSerializer;
+            _environment = environment;
+            _certificate = certificate;
+            _streamFactory = streamFactory;
+            _funcParseFn = funcParseFn;
             _config = config;
 
-            _logger = logManager.GetLogger("HttpServer");
+            _logger = logger;
         }
 
         public string GlobalResponse { get; set; }
@@ -92,11 +94,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 {typeof (NotImplementedException), 500},
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
-                {typeof (DirectoryNotFoundException), 404},
+                //{typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
                 {typeof (PaymentRequiredException), 402},
                 {typeof (UnauthorizedAccessException), 500},
-                {typeof (ApplicationException), 500},
                 {typeof (PlatformNotSupportedException), 500},
                 {typeof (NotSupportedException), 500}
             };
@@ -121,16 +122,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public override T Resolve<T>()
         {
             return _appHost.Resolve<T>();
-        }
-
-        public override Type[] GetGenericArguments(Type type)
-        {
-            return type.GetGenericArguments();
-        }
-
-        public override bool IsAssignableFrom(Type type1, Type type2)
-        {
-            return type1.IsAssignableFrom(type2);
         }
 
         public override T TryResolve<T>()
@@ -187,34 +178,18 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            var cert = !string.IsNullOrWhiteSpace(CertificatePath) && File.Exists(CertificatePath)
-                ? GetCert(CertificatePath) :
-                null;
+            var enableDualMode = _environment.OperatingSystem == OperatingSystem.Windows;
 
-            var enableDualMode = Environment.OSVersion.Platform == PlatformID.Win32NT;
-
-            return new WebSocketSharpListener(_logger, cert, _memoryStreamProvider, _textEncoding, _networkManager, _socketFactory, _cryptoProvider, new StreamFactory(), enableDualMode, GetRequest);
-        }
-
-        public ICertificate GetCert(string certificateLocation)
-        {
-            try
-            {
-                X509Certificate2 localCert = new X509Certificate2(certificateLocation);
-                //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
-                if (localCert.PrivateKey == null)
-                {
-                    //throw new FileNotFoundException("Secure requested, no private key included", certificateLocation);
-                    return null;
-                }
-
-                return new Certificate(localCert);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error loading cert from {0}", ex, certificateLocation);
-                return null;
-            }
+            return new WebSocketSharpListener(_logger,
+                _certificate,
+                _memoryStreamProvider,
+                _textEncoding,
+                _networkManager,
+                _socketFactory,
+                _cryptoProvider,
+                _streamFactory,
+                enableDualMode,
+                GetRequest);
         }
 
         private IHttpRequest GetRequest(HttpListenerContext httpContext)
@@ -328,7 +303,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             // this gets all the query string key value pairs as a collection
             var newQueryString = MyHttpUtility.ParseQueryString(uri.Query);
 
-            if (newQueryString.Count == 0)
+            var originalCount = newQueryString.Count;
+
+            if (originalCount == 0)
             {
                 return url;
             }
@@ -336,8 +313,13 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             // this removes the key if exists
             newQueryString.Remove(key);
 
+            if (originalCount == newQueryString.Count)
+            {
+                return url;
+            }
+
             // this gets the page path from root without QueryString
-            string pagePathWithoutQueryString = uri.GetLeftPart(UriPartial.Path);
+            string pagePathWithoutQueryString = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries)[0];
 
             return newQueryString.Count > 0
                 ? String.Format("{0}?{1}", pagePathWithoutQueryString, newQueryString)
@@ -578,28 +560,28 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             base.Init();
         }
 
-        public override Model.Services.RouteAttribute[] GetRouteAttributes(Type requestType)
+        public override RouteAttribute[] GetRouteAttributes(Type requestType)
         {
             var routes = base.GetRouteAttributes(requestType).ToList();
             var clone = routes.ToList();
 
             foreach (var route in clone)
             {
-                routes.Add(new Model.Services.RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new Model.Services.RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
 
-                routes.Add(new Model.Services.RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
                     Priority = route.Priority,
@@ -622,14 +604,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 task.Wait();
 
-                var type = task.GetType();
+                var type = task.GetType().GetTypeInfo();
                 if (!type.IsGenericType)
                 {
                     return null;
                 }
 
                 Logger.Warn("Getting task result from " + requestName + " using reflection. For better performance have your api return Task<object>");
-                return type.GetProperty("Result").GetValue(task);
+                return type.GetDeclaredProperty("Result").GetValue(task);
             }
             catch (TypeAccessException)
             {
@@ -639,9 +621,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public override Func<string, object> GetParseFn(Type propertyType)
         {
-            var fn = JsvReader.GetParseFn(propertyType);
-
-            return s => fn(s);
+            return _funcParseFn(propertyType);
         }
 
         public override void SerializeToJson(object o, Stream stream)
@@ -721,44 +701,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             GC.SuppressFinalize(this);
         }
 
-        public void StartServer(IEnumerable<string> urlPrefixes, string certificatePath)
+        public void StartServer(IEnumerable<string> urlPrefixes)
         {
-            CertificatePath = certificatePath;
             UrlPrefixes = urlPrefixes.ToList();
             Start(UrlPrefixes.First());
         }
-    }
-
-    public class StreamFactory : IStreamFactory
-    {
-        public Stream CreateNetworkStream(ISocket socket, bool ownsSocket)
-        {
-            var netSocket = (NetSocket)socket;
-
-            return new NetworkStream(netSocket.Socket, ownsSocket);
-        }
-
-        public Task AuthenticateSslStreamAsServer(Stream stream, ICertificate certificate)
-        {
-            var sslStream = (SslStream)stream;
-            var cert = (Certificate)certificate;
-
-            return sslStream.AuthenticateAsServerAsync(cert.X509Certificate);
-        }
-
-        public Stream CreateSslStream(Stream innerStream, bool leaveInnerStreamOpen)
-        {
-            return new SslStream(innerStream, leaveInnerStreamOpen);
-        }
-    }
-
-    public class Certificate : ICertificate
-    {
-        public Certificate(X509Certificate x509Certificate)
-        {
-            X509Certificate = x509Certificate;
-        }
-
-        public X509Certificate X509Certificate { get; private set; }
     }
 }

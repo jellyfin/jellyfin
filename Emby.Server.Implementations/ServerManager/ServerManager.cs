@@ -112,22 +112,22 @@ namespace Emby.Server.Implementations.ServerManager
         /// <summary>
         /// Starts this instance.
         /// </summary>
-        public void Start(IEnumerable<string> urlPrefixes, string certificatePath)
+        public void Start(IEnumerable<string> urlPrefixes)
         {
-            ReloadHttpServer(urlPrefixes, certificatePath);
+            ReloadHttpServer(urlPrefixes);
         }
 
         /// <summary>
         /// Restarts the Http Server, or starts it if not currently running
         /// </summary>
-        private void ReloadHttpServer(IEnumerable<string> urlPrefixes, string certificatePath)
+        private void ReloadHttpServer(IEnumerable<string> urlPrefixes)
         {
             _logger.Info("Loading Http Server");
 
             try
             {
                 HttpServer = _applicationHost.Resolve<IHttpServer>();
-                HttpServer.StartServer(urlPrefixes, certificatePath);
+                HttpServer.StartServer(urlPrefixes);
             }
             catch (Exception ex)
             {

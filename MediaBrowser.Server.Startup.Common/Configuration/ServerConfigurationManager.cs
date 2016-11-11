@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Emby.Common.Implementations.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
-using Emby.Common.Implementations.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -10,16 +13,11 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
-using System;
-using System.IO;
-using System.Linq;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Implementations.Configuration
+namespace MediaBrowser.Server.Startup.Common.Configuration
 {
     /// <summary>
     /// Class ServerConfigurationManager

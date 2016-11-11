@@ -42,19 +42,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Emby.Common.Implementations">
-      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.63\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -65,20 +54,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="SharpCompress, Version=0.10.3.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
-    </Reference>
-    <Reference Include="SocketHttpListener.Portable">
-      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -86,17 +64,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
@@ -105,12 +74,9 @@
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Archiving\ZipClient.cs" />
     <Compile Include="Collections\CollectionsDynamicFolder.cs" />
-    <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="HttpServer\HttpListenerHost.cs" />
-    <Compile Include="HttpServer\ServerFactory.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
@@ -143,10 +109,8 @@
     <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
-    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\AuthenticationRepository.cs" />
-    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Persistence\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Persistence\SqliteItemRepository.cs" />
     <Compile Include="Persistence\SqliteUserDataRepository.cs" />
@@ -169,10 +133,6 @@
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
-      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
-      <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -348,9 +308,7 @@
     <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Serialization\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

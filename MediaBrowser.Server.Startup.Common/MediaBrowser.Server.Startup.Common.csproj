@@ -49,13 +49,21 @@
       <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ServiceStack, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="SimpleInjector, Version=3.2.4.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
       <HintPath>..\packages\SimpleInjector.3.2.4\lib\net45\SimpleInjector.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="SocketHttpListener.Portable, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -73,10 +81,12 @@
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
     <Compile Include="Browser\BrowserLauncher.cs" />
+    <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
+    <Compile Include="HttpServerFactory.cs" />
     <Compile Include="INativeApp.cs" />
     <Compile Include="MbLinkShortcutHandler.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
@@ -103,6 +113,7 @@
     <Compile Include="Security\X509Extension.cs" />
     <Compile Include="Security\X509Extensions.cs" />
     <Compile Include="Security\X520Attributes.cs" />
+    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="StartupOptions.cs" />
     <Compile Include="SystemEvents.cs" />
     <Compile Include="TextLocalizer.cs" />

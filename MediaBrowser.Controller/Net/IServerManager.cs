@@ -15,9 +15,7 @@ namespace MediaBrowser.Controller.Net
         /// Starts this instance.
         /// </summary>
         /// <param name="urlPrefixes">The URL prefixes.</param>
-        /// <param name="certificatePath">If an https prefix is specified, 
-        /// the ssl certificate localtion on the file system.</param>
-        void Start(IEnumerable<string> urlPrefixes, string certificatePath);
+        void Start(IEnumerable<string> urlPrefixes);
 
         /// <summary>
         /// Sends a message to all clients currently connected via a web socket
