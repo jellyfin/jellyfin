@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;

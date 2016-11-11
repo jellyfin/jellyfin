@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Server.Implementations.Playlists
 {
@@ -27,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
 
+        [IgnoreDataMember]
         public override bool IsHidden
         {
             get
@@ -35,6 +37,7 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }
         }
 
+        [IgnoreDataMember]
         public override string CollectionType
         {
             get { return MediaBrowser.Model.Entities.CollectionType.Playlists; }
