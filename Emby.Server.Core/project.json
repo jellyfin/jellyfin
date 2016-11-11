@@ -19,6 +19,9 @@
         },
         "MediaBrowser.Controller": {
           "target": "project"
+        },
+        "Emby.Common.Implementations": {
+          "target": "project"
         }
       }
     },
@@ -33,6 +36,9 @@
           "target": "project"
         },
         "MediaBrowser.Controller": {
+          "target": "project"
+        },
+        "Emby.Common.Implementations": {
           "target": "project"
         }
       }

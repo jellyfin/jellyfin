@@ -17,7 +17,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Server.Startup.Common.Configuration
+namespace Emby.Server.Core.Configuration
 {
     /// <summary>
     /// Class ServerConfigurationManager

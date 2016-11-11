@@ -96,7 +96,6 @@
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
-    <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
@@ -165,7 +164,6 @@
     <Compile Include="Cryptography\X509Extension.cs" />
     <Compile Include="Cryptography\X509Extensions.cs" />
     <Compile Include="Cryptography\X520Attributes.cs" />
-    <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="SystemEvents.cs" />
