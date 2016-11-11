@@ -8,7 +8,7 @@
   "frameworks": {
     "net46": {
       "frameworkAssemblies": {
-        
+        "System.Runtime": "4.0.0"
       },
       "dependencies": {
         "MediaBrowser.Model": {
