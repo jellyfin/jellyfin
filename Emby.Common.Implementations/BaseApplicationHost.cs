@@ -152,8 +152,6 @@ namespace Emby.Common.Implementations
 
         protected IIsoManager IsoManager { get; private set; }
 
-        protected ISystemEvents SystemEvents { get; private set; }
-
         protected IProcessFactory ProcessFactory { get; private set; }
         protected ITimerFactory TimerFactory { get; private set; }
         protected ISocketFactory SocketFactory { get; private set; }
@@ -193,12 +191,13 @@ namespace Emby.Common.Implementations
             get { return EnvironmentInfo.OperatingSystemName; }
         }
 
-        public IMemoryStreamFactory MemoryStreamProvider { get; set; }
-
         /// <summary>
         /// The container
         /// </summary>
         protected readonly SimpleInjector.Container Container = new SimpleInjector.Container();
+
+        protected ISystemEvents SystemEvents { get; private set; }
+        protected IMemoryStreamFactory MemoryStreamFactory { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationHost{TApplicationPathsType}"/> class.
@@ -206,9 +205,15 @@ namespace Emby.Common.Implementations
         protected BaseApplicationHost(TApplicationPathsType applicationPaths,
             ILogManager logManager,
             IFileSystem fileSystem,
-            IEnvironmentInfo environmentInfo)
+            IEnvironmentInfo environmentInfo,
+            ISystemEvents systemEvents,
+            IMemoryStreamFactory memoryStreamFactory,
+            INetworkManager networkManager)
         {
+            NetworkManager = networkManager;
             EnvironmentInfo = environmentInfo;
+            SystemEvents = systemEvents;
+            MemoryStreamFactory = memoryStreamFactory;
 
             // hack alert, until common can target .net core
             BaseExtensions.CryptographyProvider = CryptographyProvider;
@@ -235,9 +240,6 @@ namespace Emby.Common.Implementations
             progress.Report(1);
 
             JsonSerializer = CreateJsonSerializer();
-
-            MemoryStreamProvider = CreateMemoryStreamProvider();
-            SystemEvents = CreateSystemEvents();
 
             OnLoggerLoaded(true);
             LogManager.LoggerLoaded += (s, e) => OnLoggerLoaded(false);
@@ -269,9 +271,6 @@ namespace Emby.Common.Implementations
 
             progress.Report(100);
         }
-
-        protected abstract IMemoryStreamFactory CreateMemoryStreamProvider();
-        protected abstract ISystemEvents CreateSystemEvents();
 
         protected virtual void OnLoggerLoaded(bool isFirstLoad)
         {
@@ -524,7 +523,7 @@ return null;
 
             RegisterSingleInstance(JsonSerializer);
             RegisterSingleInstance(XmlSerializer);
-            RegisterSingleInstance(MemoryStreamProvider);
+            RegisterSingleInstance(MemoryStreamFactory);
             RegisterSingleInstance(SystemEvents);
 
             RegisterSingleInstance(LogManager);
@@ -535,10 +534,9 @@ return null;
 
             RegisterSingleInstance(FileSystemManager);
 
-            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamProvider);
+            HttpClient = new HttpClientManager.HttpClientManager(ApplicationPaths, LogManager.GetLogger("HttpClient"), FileSystemManager, MemoryStreamFactory);
             RegisterSingleInstance(HttpClient);
 
-            NetworkManager = CreateNetworkManager(LogManager.GetLogger("NetworkManager"));
             RegisterSingleInstance(NetworkManager);
 
             IsoManager = new IsoManager();
@@ -590,8 +588,6 @@ return null;
                 return ex.Types.Where(t => t != null);
             }
         }
-
-        protected abstract INetworkManager CreateNetworkManager(ILogger logger);
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependancies

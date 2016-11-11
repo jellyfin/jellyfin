@@ -20,7 +20,7 @@ using MediaBrowser.Model.Text;
 using ServiceStack.Text.Jsv;
 using SocketHttpListener.Primitives;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core
 {
     /// <summary>
     /// Class ServerFactory

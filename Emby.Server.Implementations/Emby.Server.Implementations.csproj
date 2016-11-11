@@ -278,9 +278,6 @@
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener.Portable">
-      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
-    </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
       <Private>True</Private>

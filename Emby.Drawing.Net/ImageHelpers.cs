@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Emby.Drawing
+namespace Emby.Drawing.Net
 {
     internal static class ImageHelpers
     {

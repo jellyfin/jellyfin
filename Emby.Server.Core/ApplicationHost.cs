@@ -1,7 +1,4 @@
-﻿using Emby.Drawing;
-using Emby.Drawing.GDI;
-using Emby.Drawing.ImageMagick;
-using MediaBrowser.Api;
+﻿using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -66,7 +63,6 @@ using Emby.Common.Implementations;
 using Emby.Common.Implementations.Archiving;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Reflection;
-using Emby.Common.Implementations.Security;
 using Emby.Common.Implementations.Serialization;
 using Emby.Common.Implementations.TextEncoding;
 using Emby.Common.Implementations.Updates;
@@ -135,13 +131,13 @@ using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Text;
 using MediaBrowser.Model.Xml;
-using MediaBrowser.Server.Startup.Common.IO;
 using OpenSubtitlesHandler;
 using ServiceStack;
 using SocketHttpListener.Primitives;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
+using Emby.Drawing;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core
 {
     /// <summary>
     /// Class CompositionRoot
@@ -267,6 +263,10 @@ namespace MediaBrowser.Server.Startup.Common
         internal INativeApp NativeApp { get; set; }
 
         internal IPowerManagement PowerManagement { get; private set; }
+        internal IImageEncoder ImageEncoder { get; private set; }
+
+        private readonly Action<string, string> _certificateGenerator;
+        private readonly Func<string> _defaultUserNameFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost" /> class.
@@ -278,13 +278,29 @@ namespace MediaBrowser.Server.Startup.Common
             INativeApp nativeApp,
             IPowerManagement powerManagement,
             string releaseAssetFilename,
-            IEnvironmentInfo environmentInfo)
-            : base(applicationPaths, logManager, fileSystem, environmentInfo)
+            IEnvironmentInfo environmentInfo,
+            IImageEncoder imageEncoder,
+            ISystemEvents systemEvents,
+            IMemoryStreamFactory memoryStreamFactory,
+            INetworkManager networkManager,
+            Action<string, string> certificateGenerator,
+            Func<string> defaultUsernameFactory)
+            : base(applicationPaths, 
+                  logManager, 
+                  fileSystem, 
+                  environmentInfo, 
+                  systemEvents, 
+                  memoryStreamFactory, 
+                  networkManager)
         {
             _startupOptions = options;
+            _certificateGenerator = certificateGenerator;
             _releaseAssetFilename = releaseAssetFilename;
+            _defaultUserNameFactory = defaultUsernameFactory;
             NativeApp = nativeApp;
             PowerManagement = powerManagement;
+
+            ImageEncoder = imageEncoder;
 
             SetBaseExceptionMessage();
         }
@@ -298,7 +314,7 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-                return _version ?? (_version = NativeApp.GetType().Assembly.GetName().Version);
+                return _version ?? (_version = GetAssembly(NativeApp.GetType()).GetName().Version);
             }
         }
 
@@ -322,6 +338,11 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 return "Emby Server";
             }
+        }
+
+        private Assembly GetAssembly(Type type)
+        {
+            return type.GetTypeInfo().Assembly;
         }
 
         /// <summary>
@@ -406,21 +427,6 @@ namespace MediaBrowser.Server.Startup.Common
             Logger.Info("All entry points have started");
 
             LogManager.RemoveConsoleOutput();
-        }
-
-        protected override IMemoryStreamFactory CreateMemoryStreamProvider()
-        {
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                return new RecyclableMemoryStreamProvider();
-            }
-
-            return new MemoryStreamProvider();
-        }
-
-        protected override ISystemEvents CreateSystemEvents()
-        {
-            return new SystemEvents(LogManager.GetLogger("SystemEvents"));
         }
 
         protected override IJsonSerializer CreateJsonSerializer()
@@ -574,11 +580,11 @@ namespace MediaBrowser.Server.Startup.Common
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector(), MemoryStreamProvider);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector(), MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector(), MemoryStreamProvider);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector(), MemoryStreamFactory);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -591,7 +597,7 @@ namespace MediaBrowser.Server.Startup.Common
             SyncRepository = await GetSyncRepository().ConfigureAwait(false);
             RegisterSingleInstance(SyncRepository);
 
-            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, Environment.UserName);
+            UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
             RegisterSingleInstance(UserManager);
 
             LibraryManager = new LibraryManager(Logger, TaskManager, UserManager, ServerConfigurationManager, UserDataManager, () => LibraryMonitor, FileSystemManager, () => ProviderManager, () => UserViewManager);
@@ -603,17 +609,17 @@ namespace MediaBrowser.Server.Startup.Common
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager, TimerFactory, SystemEvents, EnvironmentInfo);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer, MemoryStreamProvider);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager, JsonSerializer, MemoryStreamFactory);
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamProvider, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate);
+            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
-            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamProvider, textEncoding);
+            ServerManager = new ServerManager(this, JsonSerializer, LogManager.GetLogger("ServerManager"), ServerConfigurationManager, MemoryStreamFactory, textEncoding);
             RegisterSingleInstance(ServerManager);
 
             var innerProgress = new ActionableProgress<double>();
@@ -625,7 +631,7 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager, ServerConfigurationManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamProvider);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager, MemoryStreamFactory);
             RegisterSingleInstance(SyncManager);
 
             DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
@@ -713,7 +719,7 @@ namespace MediaBrowser.Server.Startup.Common
             AuthService = new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager);
             RegisterSingleInstance<IAuthService>(AuthService);
 
-            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamProvider, ProcessFactory, textEncoding);
+            SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamFactory, ProcessFactory, textEncoding);
             RegisterSingleInstance(SubtitleEncoder);
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
@@ -742,7 +748,7 @@ namespace MediaBrowser.Server.Startup.Common
             {
                 X509Certificate2 localCert = new X509Certificate2(certificateLocation);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
-                if (localCert.PrivateKey == null)
+                if (!localCert.HasPrivateKey)
                 {
                     //throw new FileNotFoundException("Secure requested, no private key included", certificateLocation);
                     return null;
@@ -766,38 +772,7 @@ namespace MediaBrowser.Server.Startup.Common
                 int.TryParse(_startupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
             }
 
-            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses, () => LibraryManager);
-        }
-
-        private IImageEncoder GetImageEncoder()
-        {
-            if (!_startupOptions.ContainsOption("-enablegdi"))
-            {
-                try
-                {
-                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths, HttpClient, FileSystemManager, ServerConfigurationManager);
-                }
-                catch
-                {
-                    Logger.Error("Error loading ImageMagick. Will revert to GDI.");
-                }
-            }
-
-            try
-            {
-                return new GDIImageEncoder(FileSystemManager, LogManager.GetLogger("GDI"));
-            }
-            catch
-            {
-                Logger.Error("Error loading GDI. Will revert to NullImageEncoder.");
-            }
-
-            return new NullImageEncoder();
-        }
-
-        protected override INetworkManager CreateNetworkManager(ILogger logger)
-        {
-            return NativeApp.CreateNetworkManager(logger);
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
         }
 
         /// <summary>
@@ -831,10 +806,11 @@ namespace MediaBrowser.Server.Startup.Common
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 HttpClient,
-                ZipClient, MemoryStreamProvider,
+                ZipClient, 
+                MemoryStreamFactory,
                 ProcessFactory,
-                Environment.Is64BitOperatingSystem ? (Environment.ProcessorCount > 2 ? 14000 : 20000) : 40000,
-                Environment.OSVersion.Platform == PlatformID.Win32NT);
+                (Environment.ProcessorCount > 2 ? 14000 : 40000),
+                EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);
@@ -846,7 +822,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamProvider);
+            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamFactory);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -1071,7 +1047,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                     try
                     {
-                        CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, Logger);
+                        _certificateGenerator(certPath, certHost);
                     }
                     catch (Exception ex)
                     {
@@ -1182,51 +1158,51 @@ namespace MediaBrowser.Server.Startup.Common
             // This will prevent the .dll file from getting locked, and allow us to replace it when needed
 
             // Include composable parts in the Api assembly 
-            list.Add(typeof(ApiEntryPoint).Assembly);
+            list.Add(GetAssembly(typeof(ApiEntryPoint)));
 
             // Include composable parts in the Dashboard assembly 
-            list.Add(typeof(DashboardService).Assembly);
+            list.Add(GetAssembly(typeof(DashboardService)));
 
             // Include composable parts in the Model assembly 
-            list.Add(typeof(SystemInfo).Assembly);
+            list.Add(GetAssembly(typeof(SystemInfo)));
 
             // Include composable parts in the Common assembly 
-            list.Add(typeof(IApplicationHost).Assembly);
+            list.Add(GetAssembly(typeof(IApplicationHost)));
 
             // Include composable parts in the Controller assembly 
-            list.Add(typeof(IServerApplicationHost).Assembly);
+            list.Add(GetAssembly(typeof(IServerApplicationHost)));
 
             // Include composable parts in the Providers assembly 
-            list.Add(typeof(ProviderUtils).Assembly);
+            list.Add(GetAssembly(typeof(ProviderUtils)));
 
             // Include composable parts in the Photos assembly 
-            list.Add(typeof(PhotoProvider).Assembly);
+            list.Add(GetAssembly(typeof(PhotoProvider)));
 
             // Common implementations
-            list.Add(typeof(TaskManager).Assembly);
+            list.Add(GetAssembly(typeof(TaskManager)));
 
             // Emby.Server implementations
-            list.Add(typeof(InstallationManager).Assembly);
+            list.Add(GetAssembly(typeof(InstallationManager)));
 
             // Emby.Server.Core
-            list.Add(typeof(ServerApplicationPaths).Assembly);
+            list.Add(GetAssembly(typeof(ServerApplicationPaths)));
 
             // MediaEncoding
-            list.Add(typeof(MediaEncoder).Assembly);
+            list.Add(GetAssembly(typeof(MediaEncoder)));
 
             // Dlna 
-            list.Add(typeof(DlnaEntryPoint).Assembly);
+            list.Add(GetAssembly(typeof(DlnaEntryPoint)));
 
             // Local metadata 
-            list.Add(typeof(BoxSetXmlSaver).Assembly);
+            list.Add(GetAssembly(typeof(BoxSetXmlSaver)));
 
             // Xbmc 
-            list.Add(typeof(ArtistNfoProvider).Assembly);
+            list.Add(GetAssembly(typeof(ArtistNfoProvider)));
 
             list.AddRange(NativeApp.GetAssembliesWithParts());
 
             // Include composable parts in the running assembly
-            list.Add(GetType().Assembly);
+            list.Add(GetAssembly(GetType()));
 
             return list;
         }

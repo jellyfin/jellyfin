@@ -7,7 +7,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
-namespace Emby.Drawing.GDI
+namespace Emby.Drawing.Net
 {
     public static class DynamicImageHelpers
     {

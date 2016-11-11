@@ -1,8 +1,7 @@
-﻿using MediaBrowser.Controller.Drawing;
+﻿using System;
 using MediaBrowser.Model.Drawing;
-using System;
 
-namespace Emby.Drawing
+namespace MediaBrowser.Controller.Drawing
 {
     public interface IImageEncoder : IDisposable
     {
