@@ -113,7 +113,6 @@
     <Compile Include="Cryptography\X509Extension.cs" />
     <Compile Include="Cryptography\X509Extensions.cs" />
     <Compile Include="Cryptography\X520Attributes.cs" />
-    <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="HttpServerFactory.cs" />
     <Compile Include="INativeApp.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
@@ -140,13 +139,9 @@
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\TransmissionMode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
-    <Compile Include="MbLinkShortcutHandler.cs" />
     <Compile Include="NativeEnvironment.cs" />
-    <Compile Include="Security\AuthenticationRepository.cs" />
-    <Compile Include="Networking\NetworkManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemEvents.cs" />
-    <Compile Include="TextLocalizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">

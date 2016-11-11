@@ -7,12 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Emby.Common.Implementations.Networking;
 using Emby.Server.Core;
 using Emby.Server.Core.Data;
 using Emby.Server.Core.FFMpeg;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Startup.Common.FFMpeg;
-using MediaBrowser.Server.Startup.Common.Networking;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
 namespace MediaBrowser.Server.Mono.Native

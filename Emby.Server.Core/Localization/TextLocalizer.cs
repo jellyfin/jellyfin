@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Emby.Server.Implementations.Localization;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core.Localization
 {
     public class TextLocalizer : ITextLocalizer
     {

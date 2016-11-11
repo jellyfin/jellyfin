@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using Mono.Unix.Native;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +11,7 @@ using System.Threading.Tasks;
 using Emby.Server.Core;
 using Emby.Server.Core.FFMpeg;
 
-namespace MediaBrowser.Server.Startup.Common.FFMpeg
+namespace Emby.Server.Core.FFMpeg
 {
     public class FFMpegLoader
     {
@@ -21,21 +20,19 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
         private readonly ILogger _logger;
         private readonly IZipClient _zipClient;
         private readonly IFileSystem _fileSystem;
-        private readonly NativeEnvironment _environment;
         private readonly FFMpegInstallInfo _ffmpegInstallInfo;
 
-        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, NativeEnvironment environment, FFMpegInstallInfo ffmpegInstallInfo)
+        public FFMpegLoader(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient, IZipClient zipClient, IFileSystem fileSystem, FFMpegInstallInfo ffmpegInstallInfo)
         {
             _logger = logger;
             _appPaths = appPaths;
             _httpClient = httpClient;
             _zipClient = zipClient;
             _fileSystem = fileSystem;
-            _environment = environment;
             _ffmpegInstallInfo = ffmpegInstallInfo;
         }
 
-        public async Task<FFMpegInfo> GetFFMpegInfo(NativeEnvironment environment, StartupOptions options, IProgress<double> progress)
+        public async Task<FFMpegInfo> GetFFMpegInfo(StartupOptions options, IProgress<double> progress)
         {
             var customffMpegPath = options.GetOption("-ffmpeg");
             var customffProbePath = options.GetOption("-ffprobe");
@@ -210,13 +207,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
 
         private void SetFilePermissions(string path)
         {
-            // Linux: File permission to 666, and user's execute bit
-            if (_environment.OperatingSystem == OperatingSystem.Bsd || _environment.OperatingSystem == OperatingSystem.Linux || _environment.OperatingSystem == OperatingSystem.Osx)
-            {
-                _logger.Info("Syscall.chmod {0} FilePermissions.DEFFILEMODE | FilePermissions.S_IRWXU | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH", path);
-
-                Syscall.chmod(path, FilePermissions.DEFFILEMODE | FilePermissions.S_IRWXU | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH);
-            }
+            _fileSystem.SetExecutable(path);
         }
 
         private void ExtractArchive(FFMpegInstallInfo downloadinfo, string archivePath, string targetPath)

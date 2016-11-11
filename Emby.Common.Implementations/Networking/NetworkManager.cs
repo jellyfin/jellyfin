@@ -9,15 +9,17 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Common.Net;
 
 namespace Emby.Common.Implementations.Networking
 {
-    public abstract class BaseNetworkManager
+    public class NetworkManager : INetworkManager
     {
         protected ILogger Logger { get; private set; }
         private DateTime _lastRefresh;
 
-        protected BaseNetworkManager(ILogger logger)
+        public NetworkManager(ILogger logger)
         {
             Logger = logger;
         }
@@ -480,6 +482,25 @@ namespace Emby.Common.Implementations.Networking
         {
             var addresses = await Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
             return addresses.Select(ToIpAddressInfo).ToArray();
+        }
+
+        /// <summary>
+        /// Gets the network shares.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>IEnumerable{NetworkShare}.</returns>
+        public IEnumerable<NetworkShare> GetNetworkShares(string path)
+        {
+            return new List<NetworkShare>();
+        }
+
+        /// <summary>
+        /// Gets available devices within the domain
+        /// </summary>
+        /// <returns>PC's in the Domain</returns>
+        public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
+        {
+            return new List<FileSystemEntryInfo>();
         }
     }
 }

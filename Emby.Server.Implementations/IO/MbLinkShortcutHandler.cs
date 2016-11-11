@@ -4,7 +4,7 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Implementations.IO
 {
     public class MbLinkShortcutHandler : IShortcutHandler
     {
@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Startup.Common
                 throw new ArgumentNullException("targetPath");
             }
 
-            File.WriteAllText(shortcutPath, targetPath);
+            _fileSystem.WriteAllText(shortcutPath, targetPath);
         }
     }
 }

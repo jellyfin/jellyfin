@@ -11,7 +11,7 @@ using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 
-namespace MediaBrowser.Server.Startup.Common.Security
+namespace Emby.Server.Core.Security
 {
     public class AuthenticationRepository : BaseSqliteRepository, IAuthenticationRepository
     {
