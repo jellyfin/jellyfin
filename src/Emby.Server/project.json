@@ -27,6 +27,9 @@
         "Emby.Dlna": {
           "target": "project"
         },
+        "Emby.Drawing": {
+          "target": "project"
+        },
         "Emby.Photos": {
           "target": "project"
         },
@@ -67,6 +70,12 @@
           "target": "project"
         },
         "RSSDP": {
+          "target": "project"
+        },
+        "ServiceStack": {
+          "target": "project"
+        },
+        "SocketHttpListener.Portable": {
           "target": "project"
         }
       }
