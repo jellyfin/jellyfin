@@ -127,23 +127,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person.Key);
 
-                    var hasMetdata = !string.IsNullOrWhiteSpace(item.Overview);
-                    var performFullRefresh = !hasMetdata && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= 30;
-
-                    var defaultMetadataRefreshMode = performFullRefresh
-                        ? MetadataRefreshMode.FullRefresh
-                        : MetadataRefreshMode.Default;
-
-                    var imageRefreshMode = performFullRefresh
-                        ? ImageRefreshMode.FullRefresh
-                        : ImageRefreshMode.Default;
-
-                    var options = new MetadataRefreshOptions(_fileSystem)
-                    {
-                        MetadataRefreshMode = person.Value ? defaultMetadataRefreshMode : MetadataRefreshMode.ValidationOnly,
-                        ImageRefreshMode = person.Value ? imageRefreshMode : ImageRefreshMode.ValidationOnly,
-                        ForceSave = performFullRefresh
-                    };
+                    var options = new MetadataRefreshOptions(_fileSystem);
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
                 }

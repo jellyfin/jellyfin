@@ -28,6 +28,7 @@ using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
 using MediaBrowser.Model.Text;
+using ServiceStack.Text.Jsv;
 using SocketHttpListener.Net;
 using SocketHttpListener.Primitives;
 
@@ -87,9 +88,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public override void Configure()
         {
-            HostConfig.Instance.DefaultRedirectPath = DefaultRedirectPath;
-
-            HostConfig.Instance.MapExceptionToStatusCode = new Dictionary<Type, int>
+            var mapExceptionToStatusCode = new Dictionary<Type, int>
             {
                 {typeof (InvalidOperationException), 500},
                 {typeof (NotImplementedException), 500},
@@ -126,6 +125,16 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return _appHost.Resolve<T>();
         }
 
+        public override Type[] GetGenericArguments(Type type)
+        {
+            return type.GetGenericArguments();
+        }
+
+        public override bool IsAssignableFrom(Type type1, Type type2)
+        {
+            return type1.IsAssignableFrom(type2);
+        }
+
         public override T TryResolve<T>()
         {
             return _appHost.TryResolve<T>();
@@ -134,13 +143,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public override object CreateInstance(Type type)
         {
             return _appHost.CreateInstance(type);
-        }
-
-        public override void OnConfigLoad()
-        {
-            base.OnConfigLoad();
-
-            Config.HandlerFactoryPath = null;
         }
 
         protected override ServiceController CreateServiceController(params Assembly[] assembliesWithServices)
@@ -156,12 +158,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             return this;
         }
 
+        public static string HandlerFactoryPath;
+
         /// <summary>
         /// Starts the Web Service
         /// </summary>
         private void StartListener()
         {
-            HostContext.Config.HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
+            HandlerFactoryPath = GetHandlerPathIfAny(UrlPrefixes.First());
 
             _listener = GetListener();
 
@@ -608,6 +612,40 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
 
             return routes.ToArray();
+        }
+
+        public override object GetTaskResult(Task task, string requestName)
+        {
+            try
+            {
+                var taskObject = task as Task<object>;
+                if (taskObject != null)
+                {
+                    return taskObject.Result;
+                }
+
+                task.Wait();
+
+                var type = task.GetType();
+                if (!type.IsGenericType)
+                {
+                    return null;
+                }
+
+                Logger.Warn("Getting task result from " + requestName + " using reflection. For better performance have your api return Task<object>");
+                return type.GetProperty("Result").GetValue(task);
+            }
+            catch (TypeAccessException)
+            {
+                return null; //return null for void Task's
+            }
+        }
+
+        public override Func<string, object> GetParseFn(Type propertyType)
+        {
+            var fn = JsvReader.GetParseFn(propertyType);
+
+            return s => fn(s);
         }
 
         public override void SerializeToJson(object o, Stream stream)

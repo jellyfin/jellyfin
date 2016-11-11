@@ -4,7 +4,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 
-namespace MediaBrowser.Server.Implementations.Serialization
+namespace Emby.Common.Implementations.Serialization
 {
     /// <summary>
     /// Provides a wrapper around third party json serialization.
