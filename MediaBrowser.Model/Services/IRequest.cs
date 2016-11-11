@@ -120,11 +120,6 @@ namespace MediaBrowser.Model.Services
 
     public interface IResponse
     {
-        /// <summary>
-        /// The underlying ASP.NET or HttpListener HttpResponse
-        /// </summary>
-        object OriginalResponse { get; }
-
         IRequest Request { get; }
 
         int StatusCode { get; set; }
