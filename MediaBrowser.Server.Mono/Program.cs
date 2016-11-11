@@ -10,18 +10,21 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
+using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.Security;
 using Emby.Server.Core;
 using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.System;
+using MediaBrowser.Server.Startup.Common.IO;
 using Mono.Unix.Native;
 using NLog;
 using ILogger = MediaBrowser.Model.Logging.ILogger;
+using X509Certificate = System.Security.Cryptography.X509Certificates.X509Certificate;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -90,7 +93,22 @@ namespace MediaBrowser.Server.Mono
 
             var nativeApp = new MonoApp(options, logManager.GetLogger("App"), environmentInfo);
 
-            _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, nativeApp, new PowerManagement(), "emby.mono.zip", environmentInfo);
+            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+
+            _appHost = new ApplicationHost(appPaths,
+                logManager,
+                options,
+                fileSystem,
+                nativeApp,
+                new PowerManagement(),
+                "emby.mono.zip",
+                environmentInfo,
+                imageEncoder,
+                new Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
+                new MemoryStreamProvider(),
+                new NetworkManager(logManager.GetLogger("NetworkManager")),
+                GenerateCertificate,
+                () => Environment.UserDomainName);
 
             if (options.ContainsOption("-v"))
             {
@@ -113,6 +131,11 @@ namespace MediaBrowser.Server.Mono
             task = ApplicationTaskCompletionSource.Task;
 
             Task.WaitAll(task);
+        }
+
+        private static void GenerateCertificate(string certPath, string certHost)
+        {
+            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
         }
 
         private static MonoEnvironmentInfo GetEnvironmentInfo()

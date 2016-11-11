@@ -1,9 +1,10 @@
-﻿using Emby.Drawing;
+﻿using System;
+using Emby.Drawing;
 using Emby.Drawing.Net;
 using Emby.Drawing.ImageMagick;
 using Emby.Server.Core;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -16,14 +17,14 @@ namespace MediaBrowser.Server.Startup.Common
             ILogManager logManager, 
             IFileSystem fileSystem, 
             StartupOptions startupOptions, 
-            IHttpClient httpClient,
-            IServerConfigurationManager config)
+            Func<IHttpClient> httpClient,
+            IApplicationPaths appPaths)
         {
             if (!startupOptions.ContainsOption("-enablegdi"))
             {
                 try
                 {
-                    return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), config.ApplicationPaths, httpClient, fileSystem, config);
+                    return new ImageMagickEncoder(logManager.GetLogger("ImageMagick"), appPaths, httpClient, fileSystem);
                 }
                 catch
                 {

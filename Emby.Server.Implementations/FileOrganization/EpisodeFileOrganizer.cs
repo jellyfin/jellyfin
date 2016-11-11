@@ -15,7 +15,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
-using Emby.Server.Implementations.Logging;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.IO;
@@ -71,7 +70,7 @@ namespace Emby.Server.Implementations.FileOrganization
             }
 
             var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
-            var resolver = new EpisodeResolver(namingOptions, new PatternsLogger());
+            var resolver = new EpisodeResolver(namingOptions, new NullLogger());
 
             var episodeInfo = resolver.Resolve(path, false) ??
                 new MediaBrowser.Naming.TV.EpisodeInfo();
