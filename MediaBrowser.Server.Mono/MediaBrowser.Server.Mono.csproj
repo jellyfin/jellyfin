@@ -92,7 +92,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+    <Compile Include="..\MediaBrowser.Server.Startup.Common\Persistence\SqliteExtensions.cs">
       <Link>Native\SqliteExtensions.cs</Link>
     </Compile>
     <Compile Include="..\SharedVersion.cs">

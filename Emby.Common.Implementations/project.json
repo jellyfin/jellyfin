@@ -25,6 +25,7 @@
         "SimpleInjector": "3.2.4",
         "ServiceStack.Text": "4.5.4",
         "NLog": "4.4.0-betaV15",
+        "sharpcompress": "0.14.0",
         "MediaBrowser.Model": {
           "target": "project"
         },
@@ -55,6 +56,7 @@
         "SimpleInjector": "3.2.4",
         "ServiceStack.Text.Core": "1.0.27",
         "NLog": "4.4.0-betaV15",
+        "sharpcompress": "0.14.0",
         "MediaBrowser.Model": {
           "target": "project"
         },

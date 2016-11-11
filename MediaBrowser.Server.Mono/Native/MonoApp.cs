@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Implementations.Persistence;
+using MediaBrowser.Server.Startup.Common.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using MediaBrowser.Server.Startup.Common.Networking;
 using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;

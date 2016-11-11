@@ -2,8 +2,8 @@
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
-using MediaBrowser.Server.Implementations.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
+using MediaBrowser.Server.Startup.Common.Persistence;
 
 namespace MediaBrowser.Server.Startup.Common
 {
