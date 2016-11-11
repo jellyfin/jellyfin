@@ -114,7 +114,6 @@
     <Compile Include="Cryptography\X509Extensions.cs" />
     <Compile Include="Cryptography\X520Attributes.cs" />
     <Compile Include="HttpServerFactory.cs" />
-    <Compile Include="INativeApp.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
@@ -138,7 +137,6 @@
     <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\TransmissionMode.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
-    <Compile Include="NativeEnvironment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemEvents.cs" />
   </ItemGroup>

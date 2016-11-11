@@ -6,7 +6,7 @@ using Emby.Server.Core;
 using Emby.Server.Core.Data;
 using Emby.Server.Core.FFMpeg;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core
 {
     public interface INativeApp
     {
@@ -19,17 +19,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Authorizes the server.
         /// </summary>
-        /// <param name="udpPort">The UDP port.</param>
-        /// <param name="httpServerPort">The HTTP server port.</param>
-        /// <param name="httpsServerPort">The HTTPS server port.</param>
-        /// <param name="tempDirectory">The temporary directory.</param>
         void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory);
-
-        /// <summary>
-        /// Gets the environment.
-        /// </summary>
-        /// <value>The environment.</value>
-        NativeEnvironment Environment { get; }
 
         /// <summary>
         /// Gets a value indicating whether [supports running as service].
@@ -54,12 +44,6 @@ namespace MediaBrowser.Server.Startup.Common
         /// </summary>
         /// <value><c>true</c> if [supports autorun at startup]; otherwise, <c>false</c>.</value>
         bool SupportsAutoRunAtStartup { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether [supports library monitor].
-        /// </summary>
-        /// <value><c>true</c> if [supports library monitor]; otherwise, <c>false</c>.</value>
-        bool SupportsLibraryMonitor { get; }
         
         /// <summary>
         /// Gets a value indicating whether this instance can self update.
