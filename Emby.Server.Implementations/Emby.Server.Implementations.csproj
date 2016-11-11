@@ -92,6 +92,7 @@
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
+    <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
@@ -269,6 +270,10 @@
     <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
     </ProjectReference>
     <Reference Include="ServiceStack">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>

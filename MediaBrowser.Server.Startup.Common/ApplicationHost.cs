@@ -48,9 +48,6 @@ using MediaBrowser.Model.Updates;
 using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Implementations.Devices;
-using MediaBrowser.Server.Startup.Common.FFMpeg;
 using MediaBrowser.WebDashboard.Api;
 using MediaBrowser.XbmcMetadata.Providers;
 using System;
@@ -69,6 +66,7 @@ using Emby.Common.Implementations;
 using Emby.Common.Implementations.Archiving;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Reflection;
+using Emby.Common.Implementations.Security;
 using Emby.Common.Implementations.Serialization;
 using Emby.Common.Implementations.TextEncoding;
 using Emby.Common.Implementations.Updates;
@@ -93,8 +91,11 @@ using Emby.Server.Core.Activity;
 using Emby.Server.Core.Configuration;
 using Emby.Server.Core.Data;
 using Emby.Server.Core.Devices;
+using Emby.Server.Core.FFMpeg;
+using Emby.Server.Core.Localization;
 using Emby.Server.Core.Migrations;
 using Emby.Server.Core.Notifications;
+using Emby.Server.Core.Security;
 using Emby.Server.Core.Social;
 using Emby.Server.Core.Sync;
 using Emby.Server.Implementations.Activity;
@@ -134,7 +135,6 @@ using MediaBrowser.Model.Social;
 using MediaBrowser.Model.Text;
 using MediaBrowser.Model.Xml;
 using MediaBrowser.Server.Startup.Common.IO;
-using MediaBrowser.Server.Startup.Common.Security;
 using OpenSubtitlesHandler;
 using ServiceStack;
 using SocketHttpListener.Primitives;
@@ -817,8 +817,8 @@ namespace MediaBrowser.Server.Startup.Common
             string encoderPath = null;
             string probePath = null;
 
-            var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.Environment, NativeApp.GetFfmpegInstallInfo())
-                .GetFFMpegInfo(NativeApp.Environment, _startupOptions, progress).ConfigureAwait(false);
+            var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.GetFfmpegInstallInfo())
+                .GetFFMpegInfo(_startupOptions, progress).ConfigureAwait(false);
 
             encoderPath = info.EncoderPath;
             probePath = info.ProbePath;
@@ -1079,7 +1079,7 @@ namespace MediaBrowser.Server.Startup.Common
 
                     try
                     {
-                        NetworkManager.GenerateSelfSignedSslCertificate(certPath, certHost);
+                        CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, Logger);
                     }
                     catch (Exception ex)
                     {
@@ -1213,11 +1213,11 @@ namespace MediaBrowser.Server.Startup.Common
             // Common implementations
             list.Add(typeof(TaskManager).Assembly);
 
-            // MediaBrowser.Server implementations
-            list.Add(typeof(ServerApplicationPaths).Assembly);
-
             // Emby.Server implementations
             list.Add(typeof(InstallationManager).Assembly);
+
+            // Emby.Server.Core
+            list.Add(typeof(ServerApplicationPaths).Assembly);
 
             // MediaEncoding
             list.Add(typeof(MediaEncoder).Assembly);

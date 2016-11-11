@@ -312,6 +312,8 @@ namespace MediaBrowser.Model.IO
         string GetFullPath(string path);
 
         List<FileSystemMetadata> GetDrives();
+
+        void SetExecutable(string path);
     }
 
     public enum FileOpenMode

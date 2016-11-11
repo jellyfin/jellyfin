@@ -21,6 +21,7 @@ using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Core;
 using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.IO;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 

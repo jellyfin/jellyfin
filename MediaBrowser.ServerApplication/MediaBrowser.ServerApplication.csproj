@@ -82,9 +82,6 @@
       <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -1063,6 +1060,10 @@
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
       <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
       <Name>Emby.Drawing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Api\MediaBrowser.Api.csproj">
       <Project>{4fd51ac5-2c16-4308-a993-c3a84f3b4582}</Project>

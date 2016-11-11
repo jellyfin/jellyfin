@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Core;
+using Emby.Server.Implementations.IO;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -76,7 +77,7 @@ namespace MediaBrowser.Server.Mono
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), false, false);
+            var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), false, false);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             var nativeApp = new MonoApp(options, logManager.GetLogger("App"));

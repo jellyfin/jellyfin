@@ -54,12 +54,5 @@ namespace MediaBrowser.Common.Net
         bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo);
 
         Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
-
-        /// <summary>
-        /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
-        /// </summary>
-        /// <param name="certificatePath">The path to generate the certificate.</param>
-        /// <param name="hostname">The common name for the certificate.</param>
-        void GenerateSelfSignedSslCertificate(string certificatePath, string hostname);
     }
 }

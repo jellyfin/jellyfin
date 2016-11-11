@@ -44,13 +44,11 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Devices\CameraUploadsFolder.cs" />
+    <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
-      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
-      <Name>Emby.Server.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
       <Name>MediaBrowser.Common</Name>

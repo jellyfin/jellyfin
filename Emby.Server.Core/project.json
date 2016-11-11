@@ -28,6 +28,9 @@
         },
         "Emby.Server.Implementations": {
           "target": "project"
+        },
+        "MediaBrowser.Server.Implementations": {
+          "target": "project"
         }
       }
     },
@@ -36,6 +39,7 @@
       "dependencies": {
         "NETStandard.Library": "1.6.0",
 		"System.AppDomain": "2.0.11",
+		"System.Globalization.Extensions": "4.0.1",
 		"MediaBrowser.Model": {
           "target": "project"
         },
@@ -52,6 +56,9 @@
           "target": "project"
         },
         "Emby.Server.Implementations": {
+          "target": "project"
+        },
+        "MediaBrowser.Server.Implementations": {
           "target": "project"
         }
       }
