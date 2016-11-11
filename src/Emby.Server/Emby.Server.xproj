@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\BDInfo\BDInfo.csproj" />
     <ProjectReference Include="..\..\DvdLib\DvdLib.csproj" />
     <ProjectReference Include="..\..\Emby.Dlna\Emby.Dlna.csproj" />
+    <ProjectReference Include="..\..\Emby.Drawing\Emby.Drawing.csproj" />
     <ProjectReference Include="..\..\Emby.Photos\Emby.Photos.csproj" />
     <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
     <ProjectReference Include="..\..\MediaBrowser.Api\MediaBrowser.Api.csproj" />
@@ -33,6 +34,8 @@
     <ProjectReference Include="..\..\MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj" />
     <ProjectReference Include="..\..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj" />
     <ProjectReference Include="..\..\RSSDP\RSSDP.csproj" />
+    <ProjectReference Include="..\..\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
