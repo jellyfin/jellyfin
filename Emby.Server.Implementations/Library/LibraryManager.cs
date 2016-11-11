@@ -29,7 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
-using Emby.Server.Implementations.Logging;
 using Emby.Server.Implementations.ScheduledTasks;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Channels;
@@ -2266,7 +2265,7 @@ namespace Emby.Server.Implementations.Library
 
         public bool IsVideoFile(string path, LibraryOptions libraryOptions)
         {
-            var resolver = new VideoResolver(GetNamingOptions(libraryOptions), new PatternsLogger());
+            var resolver = new VideoResolver(GetNamingOptions(libraryOptions), new NullLogger());
             return resolver.IsVideoFile(path);
         }
 
@@ -2294,7 +2293,7 @@ namespace Emby.Server.Implementations.Library
         public bool FillMissingEpisodeNumbersFromPath(Episode episode)
         {
             var resolver = new EpisodeResolver(GetNamingOptions(),
-                new PatternsLogger());
+                new NullLogger());
 
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd ||
                            episode.VideoType == VideoType.HdDvd;
@@ -2440,7 +2439,7 @@ namespace Emby.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions(), new PatternsLogger());
+            var resolver = new VideoResolver(GetNamingOptions(), new NullLogger());
 
             var result = resolver.CleanDateTime(name);
             var cleanName = resolver.CleanString(result.Name);
@@ -2459,7 +2458,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2505,7 +2504,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
+            var videoListResolver = new VideoListResolver(GetNamingOptions(), new NullLogger());
 
             var videos = videoListResolver.Resolve(fileSystemChildren);
 
@@ -2628,7 +2627,7 @@ namespace Emby.Server.Implementations.Library
 
         private void SetExtraTypeFromFilename(Video item)
         {
-            var resolver = new ExtraResolver(GetNamingOptions(), new PatternsLogger(), new RegexProvider());
+            var resolver = new ExtraResolver(GetNamingOptions(), new NullLogger(), new RegexProvider());
 
             var result = resolver.GetExtraInfo(item.Path);
 

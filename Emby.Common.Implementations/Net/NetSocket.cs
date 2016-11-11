@@ -23,7 +23,7 @@ namespace Emby.Common.Implementations.Net
         {
             get
             {
-                return BaseNetworkManager.ToIpEndPointInfo((IPEndPoint)Socket.LocalEndPoint);
+                return NetworkManager.ToIpEndPointInfo((IPEndPoint)Socket.LocalEndPoint);
             }
         }
 
@@ -31,7 +31,7 @@ namespace Emby.Common.Implementations.Net
         {
             get
             {
-                return BaseNetworkManager.ToIpEndPointInfo((IPEndPoint)Socket.RemoteEndPoint);
+                return NetworkManager.ToIpEndPointInfo((IPEndPoint)Socket.RemoteEndPoint);
             }
         }
 
@@ -64,7 +64,7 @@ namespace Emby.Common.Implementations.Net
 
         public void Bind(IpEndPointInfo endpoint)
         {
-            var nativeEndpoint = BaseNetworkManager.ToIPEndPoint(endpoint);
+            var nativeEndpoint = NetworkManager.ToIPEndPoint(endpoint);
 
             Socket.Bind(nativeEndpoint);
         }

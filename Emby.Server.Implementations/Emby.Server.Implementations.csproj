@@ -43,11 +43,13 @@
     <Compile Include="Channels\RefreshChannelsScheduledTask.cs" />
     <Compile Include="Collections\CollectionImageProvider.cs" />
     <Compile Include="Collections\CollectionManager.cs" />
+    <Compile Include="Collections\CollectionsDynamicFolder.cs" />
     <Compile Include="Connect\ConnectData.cs" />
     <Compile Include="Connect\ConnectEntryPoint.cs" />
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
+    <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="FileOrganization\OrganizerScheduledTask.cs" />
     <Compile Include="FileOrganization\TvFolderOrganizer.cs" />
     <Compile Include="HttpServer\GetSwaggerResource.cs" />
+    <Compile Include="HttpServer\HttpListenerHost.cs" />
+    <Compile Include="HttpServer\HttpResultFactory.cs" />
     <Compile Include="HttpServer\LoggerUtils.cs" />
     <Compile Include="HttpServer\RangeRequestWriter.cs" />
     <Compile Include="HttpServer\ResponseFilter.cs" />
@@ -78,14 +82,17 @@
     <Compile Include="HttpServer\Security\AuthorizationContext.cs" />
     <Compile Include="HttpServer\Security\AuthService.cs" />
     <Compile Include="HttpServer\Security\SessionContext.cs" />
+    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
+    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
     <Compile Include="Images\BaseDynamicImageProvider.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\FileRefresher.cs" />
+    <Compile Include="IO\MbLinkShortcutHandler.cs" />
     <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
     <Compile Include="Library\LibraryManager.cs" />
@@ -156,7 +163,6 @@
     <Compile Include="LiveTv\TunerHosts\MulticastStream.cs" />
     <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
-    <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
@@ -171,6 +177,7 @@
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
     <Compile Include="Playlists\PlaylistManager.cs" />
+    <Compile Include="Playlists\PlaylistsDynamicFolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScheduledTasks\ChapterImagesTask.cs" />
     <Compile Include="ScheduledTasks\PeopleValidationTask.cs" />
@@ -263,135 +270,32 @@
       <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
-    <Reference Include="SocketHttpListener.Portable">
-      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
+    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
+      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
+      <Name>MediaBrowser.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
+      <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
+      <Name>SocketHttpListener.Portable</Name>
+    </ProjectReference>
+    <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Emby.XmlTv.1.0.1\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MediaBrowser.Naming, Version=1.0.6159.25070, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaBrowser.Naming.1.0.2\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.63\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
-      <Link>swagger-ui\lib\backbone-min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-2.0.0.js">
-      <Link>swagger-ui\lib\handlebars-2.0.0.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
-      <Link>swagger-ui\lib\highlight.7.3.pack.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
-      <Link>swagger-ui\lib\jquery-1.8.0.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
-      <Link>swagger-ui\lib\jquery.ba-bbq.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
-      <Link>swagger-ui\lib\jquery.slideto.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
-      <Link>swagger-ui\lib\jquery.wiggle.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\marked.js">
-      <Link>swagger-ui\lib\marked.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
-      <Link>swagger-ui\lib\shred.bundle.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-client.js">
-      <Link>swagger-ui\lib\swagger-client.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-oauth.js">
-      <Link>swagger-ui\lib\swagger-oauth.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
-      <Link>swagger-ui\lib\underscore-min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\o2c.html">
-      <Link>swagger-ui\o2c.html</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\patch.js">
-      <Link>swagger-ui\patch.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
-      <Link>swagger-ui\swagger-ui.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
-      <Link>swagger-ui\swagger-ui.min.js</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
-      <Link>swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
-      <Link>swagger-ui\css\reset.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
-      <Link>swagger-ui\css\screen.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\ThirdParty\ServiceStack\swagger-ui\css\typography.css">
-      <Link>swagger-ui\css\typography.css</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <EmbeddedResource Include="Localization\Core\ar.json" />
     <EmbeddedResource Include="Localization\Core\bg-BG.json" />
     <EmbeddedResource Include="Localization\Core\ca.json" />

@@ -11,10 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Emby.Server.Implementations.Logging;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
-            var resolver = new VideoListResolver(namingOptions, new PatternsLogger());
+            var resolver = new VideoListResolver(namingOptions, new NullLogger());
             var resolverResult = resolver.Resolve(files, suppportMultiEditions).ToList();
 
             var result = new MultiItemResolverResult
@@ -486,7 +486,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             }
 
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-            var resolver = new StackResolver(namingOptions, new PatternsLogger());
+            var resolver = new StackResolver(namingOptions, new NullLogger());
 
             var result = resolver.ResolveDirectories(folderPaths);
 

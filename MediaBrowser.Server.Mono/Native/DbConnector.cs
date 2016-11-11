@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.Threading.Tasks;
+using Emby.Server.Core.Data;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.Persistence;
 
 namespace MediaBrowser.Server.Mono.Native
 {

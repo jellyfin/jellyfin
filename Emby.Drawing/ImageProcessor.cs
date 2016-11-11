@@ -21,8 +21,8 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Threading;
 using TagLib;
-using File = System.IO.File;
 
 namespace Emby.Drawing
 {
@@ -65,7 +65,7 @@ namespace Emby.Drawing
             IFileSystem fileSystem,
             IJsonSerializer jsonSerializer,
             IImageEncoder imageEncoder,
-            int maxConcurrentImageProcesses, Func<ILibraryManager> libraryManager)
+            int maxConcurrentImageProcesses, Func<ILibraryManager> libraryManager, ITimerFactory timerFactory)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -75,7 +75,7 @@ namespace Emby.Drawing
             _appPaths = appPaths;
 
             ImageEnhancers = new List<IImageEnhancer>();
-            _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
+            _saveImageSizeTimer = timerFactory.Create(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
 
             Dictionary<Guid, ImageSize> sizeDictionary;
 
@@ -89,7 +89,7 @@ namespace Emby.Drawing
                 // No biggie
                 sizeDictionary = new Dictionary<Guid, ImageSize>();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 // No biggie
                 sizeDictionary = new Dictionary<Guid, ImageSize>();
@@ -286,7 +286,7 @@ namespace Emby.Drawing
         {
             try
             {
-                File.Copy(src, destination, true);
+                _fileSystem.CopyFile(src, destination, true);
             }
             catch
             {
@@ -600,7 +600,7 @@ namespace Emby.Drawing
             return ImageHeader.GetDimensions(path, _logger, _fileSystem);
         }
 
-        private readonly Timer _saveImageSizeTimer;
+        private readonly ITimer _saveImageSizeTimer;
         private const int SaveImageSizeTimeout = 5000;
         private readonly object _saveImageSizeLock = new object();
         private void StartSaveImageSizeTimer()
@@ -801,7 +801,7 @@ namespace Emby.Drawing
 
                 try
                 {
-                    File.Copy(tmpPath, enhancedImagePath, true);
+                    _fileSystem.CopyFile(tmpPath, enhancedImagePath, true);
                 }
                 catch
                 {

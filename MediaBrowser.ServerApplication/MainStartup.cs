@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.Server.Startup.Common.Browser;
 using MediaBrowser.ServerApplication.Native;
 using MediaBrowser.ServerApplication.Splash;
 using MediaBrowser.ServerApplication.Updates;
@@ -18,10 +17,17 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
+using Emby.Common.Implementations.Networking;
+using Emby.Common.Implementations.Security;
+using Emby.Server.Core;
+using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.IO;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Server.Startup.Common.IO;
 
 namespace MediaBrowser.ServerApplication
 {
@@ -61,8 +67,8 @@ namespace MediaBrowser.ServerApplication
             return false;
         }
         /// <summary>
-         /// Defines the entry point of the application.
-         /// </summary>
+        /// Defines the entry point of the application.
+        /// </summary>
         public static void Main()
         {
             var options = new StartupOptions();
@@ -316,13 +322,22 @@ namespace MediaBrowser.ServerApplication
                 IsRunningAsService = runService
             };
 
+            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
+
             _appHost = new ApplicationHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
-                nativeApp, 
+                nativeApp,
                 new PowerManagement(),
-                "emby.windows.zip");
+                "emby.windows.zip",
+                new EnvironmentInfo(),
+                imageEncoder,
+                new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
+                new RecyclableMemoryStreamProvider(),
+                new NetworkManager(logManager.GetLogger("NetworkManager")),
+                GenerateCertificate,
+                () => Environment.UserDomainName);
 
             var initProgress = new Progress<double>();
 
@@ -361,6 +376,11 @@ namespace MediaBrowser.ServerApplication
                 task = ApplicationTaskCompletionSource.Task;
                 Task.WaitAll(task);
             }
+        }
+
+        private static void GenerateCertificate(string certPath, string certHost)
+        {
+            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
         }
 
         private static ServerNotifyIcon _serverNotifyIcon;

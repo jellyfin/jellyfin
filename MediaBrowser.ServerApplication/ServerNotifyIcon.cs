@@ -1,10 +1,10 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Startup.Common.Browser;
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
+using Emby.Server.Core.Browser;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.ServerApplication

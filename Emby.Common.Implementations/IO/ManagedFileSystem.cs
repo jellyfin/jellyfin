@@ -761,5 +761,10 @@ namespace Emby.Common.Implementations.IO
             var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
         }
+
+        public virtual void SetExecutable(string path)
+        {
+            
+        }
     }
 }
