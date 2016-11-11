@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MediaBrowser.Server.Startup.Common
+namespace Emby.Server.Core
 {
     public class StartupOptions
     {

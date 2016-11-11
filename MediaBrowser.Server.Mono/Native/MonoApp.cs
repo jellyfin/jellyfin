@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Emby.Server.Core;
 using MediaBrowser.Model.System;
 using MediaBrowser.Server.Startup.Common.Persistence;
 using MediaBrowser.Server.Startup.Common.FFMpeg;

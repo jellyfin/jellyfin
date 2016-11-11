@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
+using Emby.Server.Core;
 using MediaBrowser.Server.Startup.Common.FFMpeg;
 using MediaBrowser.Server.Startup.Common.Persistence;
 

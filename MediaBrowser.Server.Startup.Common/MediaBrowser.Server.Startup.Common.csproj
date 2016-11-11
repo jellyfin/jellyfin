@@ -37,6 +37,9 @@
     <Reference Include="Emby.Common.Implementations">
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
+    <Reference Include="Emby.Server.Core">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
+    </Reference>
     <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
       <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
       <Private>True</Private>
@@ -166,7 +169,6 @@
     <Compile Include="Cryptography\X520Attributes.cs" />
     <Compile Include="ServerApplicationPaths.cs" />
     <Compile Include="Social\SharingRepository.cs" />
-    <Compile Include="StartupOptions.cs" />
     <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="SystemEvents.cs" />
     <Compile Include="TextLocalizer.cs" />

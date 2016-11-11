@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
+using Emby.Server.Core;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
 
