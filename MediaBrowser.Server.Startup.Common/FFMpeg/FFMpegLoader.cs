@@ -9,9 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Model.IO;
+using Emby.Server.Core;
 
 namespace MediaBrowser.Server.Startup.Common.FFMpeg
 {

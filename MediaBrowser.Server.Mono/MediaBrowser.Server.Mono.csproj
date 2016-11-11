@@ -61,6 +61,9 @@
     <Reference Include="Emby.Common.Implementations">
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
     </Reference>
+    <Reference Include="Emby.Server.Core">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>

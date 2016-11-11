@@ -89,6 +89,7 @@ using Emby.Dlna.ContentDirectory;
 using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
+using Emby.Server.Core;
 using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;

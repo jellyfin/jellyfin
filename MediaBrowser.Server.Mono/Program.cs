@@ -14,6 +14,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
+using Emby.Server.Core;
 
 namespace MediaBrowser.Server.Mono
 {
