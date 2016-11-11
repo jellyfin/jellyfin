@@ -175,7 +175,7 @@ namespace Emby.Common.Implementations.Net
                 return null;
             }
 
-            return BaseNetworkManager.ToIpEndPointInfo(endpoint);
+            return NetworkManager.ToIpEndPointInfo(endpoint);
         }
 
         private void ProcessResponse(IAsyncResult asyncResult)

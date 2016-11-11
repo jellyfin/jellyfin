@@ -88,6 +88,7 @@
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
+    <Compile Include="Drawing\IImageEncoder.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageCollageOptions.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />

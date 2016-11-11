@@ -11,6 +11,7 @@ namespace MediaBrowser.Model.System
         MediaBrowser.Model.System.OperatingSystem OperatingSystem { get; }
         string OperatingSystemName { get; }
         string OperatingSystemVersion { get; }
+        Architecture SystemArchitecture { get; }
     }
 
     public enum OperatingSystem

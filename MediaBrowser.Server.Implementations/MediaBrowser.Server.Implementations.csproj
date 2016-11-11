@@ -11,10 +11,9 @@
     <AssemblyName>MediaBrowser.Server.Implementations</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <ReleaseVersion>
-    </ReleaseVersion>
-    <TargetFrameworkProfile />
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,125 +41,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Emby.Common.Implementations">
-      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
-    </Reference>
-    <Reference Include="Emby.XmlTv, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Emby.XmlTv.1.0.0.63\lib\portable-net45+win8\Emby.XmlTv.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="INIFileParser, Version=2.3.0.0, Culture=neutral, PublicKeyToken=79af7b307b65cf3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\ini-parser.2.3.0\lib\net20\INIFileParser.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MediaBrowser.Naming, Version=1.0.6151.30291, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaBrowser.Naming.1.0.0.59\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IO.RecyclableMemoryStream.1.1.0.0\lib\net45\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Mono.Nat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
-    </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.6151.30227, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.6\lib\portable-net45+win8\Patterns.Logging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SharpCompress, Version=0.10.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\SharpCompress\SharpCompress.dll</HintPath>
-    </Reference>
-    <Reference Include="SocketHttpListener.Portable">
-      <HintPath>..\ThirdParty\emby\SocketHttpListener.Portable.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\UniversalDetector.1.0.1\lib\portable-net45+sl4+wp71+win8+wpa81\UniversalDetector.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Activity\ActivityRepository.cs" />
-    <Compile Include="Archiving\ZipClient.cs" />
-    <Compile Include="Collections\CollectionsDynamicFolder.cs" />
-    <Compile Include="Configuration\ServerConfigurationManager.cs" />
-    <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
-    <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="HttpServer\HttpListenerHost.cs" />
-    <Compile Include="HttpServer\HttpResultFactory.cs" />
-    <Compile Include="HttpServer\ServerFactory.cs" />
-    <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
-    <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
-    <Compile Include="IO\LibraryMonitor.cs" />
-    <Compile Include="IO\MemoryStreamProvider.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpAppPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpByePacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpListener.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpReceiverReportPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpSenderReportPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\RtcpSourceDescriptionPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\SourceDescriptionBlock.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\SourceDescriptionItem.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtp\RtpListener.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtp\RtpPacket.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspMethod.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspRequest.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspResponse.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspSession.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Rtsp\RtspStatusCode.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpDiscovery.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\SatIpHost.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\TransmissionMode.cs" />
-    <Compile Include="LiveTv\TunerHosts\SatIp\Utils.cs" />
-    <Compile Include="Persistence\BaseSqliteRepository.cs" />
-    <Compile Include="Persistence\DataExtensions.cs" />
-    <Compile Include="Persistence\IDbConnector.cs" />
-    <Compile Include="Persistence\MediaStreamColumns.cs" />
-    <Compile Include="Serialization\JsonSerializer.cs" />
-    <Compile Include="Social\SharingRepository.cs" />
-    <Compile Include="Persistence\SqliteFileOrganizationRepository.cs" />
-    <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
-    <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Security\AuthenticationRepository.cs" />
-    <Compile Include="ServerApplicationPaths.cs" />
-    <Compile Include="Persistence\SqliteDisplayPreferencesRepository.cs" />
-    <Compile Include="Persistence\SqliteItemRepository.cs" />
-    <Compile Include="Persistence\SqliteUserDataRepository.cs" />
-    <Compile Include="Persistence\SqliteUserRepository.cs" />
-    <Compile Include="Sync\SyncRepository.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
-      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
-      <Name>Emby.Server.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
       <Name>MediaBrowser.Common</Name>
@@ -173,186 +61,12 @@
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Providers\MediaBrowser.Providers.csproj">
-      <Project>{442b5058-dcaf-4263-bb6a-f21e31120a1b}</Project>
-      <Name>MediaBrowser.Providers</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0030.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0049.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0070.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0090.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0100.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0130.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0160.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0170.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0192.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0200.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0215.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0235.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0255.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0260.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0282.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0305.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0308.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0310.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0315.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0330.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0360.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0380.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0390.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0400.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0420.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0435.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0450.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0460.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0475.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0480.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0490.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0505.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0510.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0520.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0525.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0530.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0549.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0560.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0570.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0600.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0620.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0642.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0650.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0660.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0685.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0705.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0721.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0740.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0750.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0765.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0785.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0830.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0851.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0865.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0875.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0880.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0900.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0915.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0922.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0935.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0950.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\0965.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1005.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1030.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1055.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1082.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1100.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1105.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1130.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1155.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1160.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1180.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1195.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1222.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1240.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1250.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1280.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1320.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1340.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1380.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1400.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1440.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1500.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1520.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1540.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1560.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1590.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1600 OPTUS D1 FTA %28160.0E%29.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1600.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1620.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1640.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1660.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1690.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1720.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1800.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\1830.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2210.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2230.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2250.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2270.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2290.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2310.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2330.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2350.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2370.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2390.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2410.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2432.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2451.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2470.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2489.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2500.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2527.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2550.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2570.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2590.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2608.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2630.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2650.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2669.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2690.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2710.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2728.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2730.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2750.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2760.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2770.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2780.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2812.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2820.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2830.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2850.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2873.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2880.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2881.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2882.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2900.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2930.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2950.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2970.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2985.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\2990.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3020.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3045.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3070.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3100.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3125.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3150.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3169.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3195.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3225.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3255.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3285.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3300.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3325.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3355.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3380.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3400.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3420.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3450.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3460.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3475.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3490.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3520.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3527.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3550.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3560.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3592.ini" />
-    <None Include="LiveTv\TunerHosts\SatIp\ini\satellite\3594.ini" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

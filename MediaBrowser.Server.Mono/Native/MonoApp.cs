@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Emby.Common.Implementations.Networking;
+using Emby.Server.Core;
+using Emby.Server.Core.Data;
+using Emby.Server.Core.FFMpeg;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Implementations.Persistence;
-using MediaBrowser.Server.Startup.Common.FFMpeg;
-using MediaBrowser.Server.Startup.Common.Networking;
-using OperatingSystem = MediaBrowser.Server.Startup.Common.OperatingSystem;
 
 namespace MediaBrowser.Server.Mono.Native
 {
@@ -19,11 +19,13 @@ namespace MediaBrowser.Server.Mono.Native
     {
         protected StartupOptions StartupOptions { get; private set; }
         protected ILogger Logger { get; private set; }
+        private readonly MonoEnvironmentInfo _environment;
 
-        public MonoApp(StartupOptions startupOptions, ILogger logger)
+        public MonoApp(StartupOptions startupOptions, ILogger logger, MonoEnvironmentInfo environment)
         {
             StartupOptions = startupOptions;
             Logger = logger;
+            _environment = environment;
         }
 
         /// <summary>
@@ -76,11 +78,6 @@ namespace MediaBrowser.Server.Mono.Native
         {
             var list = new List<Assembly>();
 
-            if (Environment.OperatingSystem == Startup.Common.OperatingSystem.Linux)
-            {
-                list.AddRange(GetLinuxAssemblies());
-            }
-
             list.Add(GetType().Assembly);
 
             return list;
@@ -90,19 +87,13 @@ namespace MediaBrowser.Server.Mono.Native
         {
             var list = new List<Assembly>();
 
-            list.Add(typeof(LinuxIsoManager).Assembly);
+            //list.Add(typeof(LinuxIsoManager).Assembly);
 
             return list;
         }
 
         public void AuthorizeServer(int udpPort, int httpServerPort, int httpsPort, string applicationPath, string tempDirectory)
         {
-        }
-
-        private NativeEnvironment _nativeEnvironment;
-        public NativeEnvironment Environment
-        {
-            get { return _nativeEnvironment ?? (_nativeEnvironment = GetEnvironmentInfo()); }
         }
 
         public bool SupportsRunningAsService
@@ -121,14 +112,6 @@ namespace MediaBrowser.Server.Mono.Native
             }
         }
 
-        public bool SupportsLibraryMonitor
-        {
-            get
-            {
-                return Environment.OperatingSystem != Startup.Common.OperatingSystem.Osx;
-            }
-        }
-
         public void ConfigureAutoRun(bool autorun)
         {
         }
@@ -138,96 +121,29 @@ namespace MediaBrowser.Server.Mono.Native
             return new NetworkManager(logger);
         }
 
-        private NativeEnvironment GetEnvironmentInfo()
-        {
-            var info = new NativeEnvironment
-            {
-                OperatingSystem = Startup.Common.OperatingSystem.Linux
-            };
-
-            var uname = GetUnixName();
-
-            var sysName = uname.sysname ?? string.Empty;
-
-            if (string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase))
-            {
-                info.OperatingSystem = Startup.Common.OperatingSystem.Osx;
-            }
-            else if (string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase))
-            {
-                info.OperatingSystem = Startup.Common.OperatingSystem.Linux;
-            }
-            else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
-            {
-                info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
-            }
-
-            var archX86 = new Regex("(i|I)[3-6]86");
-
-            if (archX86.IsMatch(uname.machine))
-            {
-                info.SystemArchitecture = Architecture.X86;
-            }
-            else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
-            {
-                info.SystemArchitecture = Architecture.X64;
-            }
-            else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
-            {
-                info.SystemArchitecture = Architecture.Arm;
-            }
-            else if (System.Environment.Is64BitOperatingSystem)
-            {
-                info.SystemArchitecture = Architecture.X64;
-            }
-            else
-            {
-                info.SystemArchitecture = Architecture.X86;
-            }
-
-            info.OperatingSystemVersionString = string.IsNullOrWhiteSpace(sysName) ?
-                System.Environment.OSVersion.VersionString :
-                sysName;
-
-            return info;
-        }
-
-        private Uname _unixName;
-
-        private Uname GetUnixName()
-        {
-            if (_unixName == null)
-            {
-                var uname = new Uname();
-                try
-                {
-                    Utsname utsname;
-                    var callResult = Syscall.uname(out utsname);
-                    if (callResult == 0)
-                    {
-                        uname.sysname = utsname.sysname ?? string.Empty;
-                        uname.machine = utsname.machine ?? string.Empty;
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error getting unix name", ex);
-                }
-                _unixName = uname;
-            }
-            return _unixName;
-        }
-
-        public class Uname
-        {
-            public string sysname = string.Empty;
-            public string machine = string.Empty;
-        }
-
         public FFMpegInstallInfo GetFfmpegInstallInfo()
         {
-            return GetInfo(Environment);
+            var info = new FFMpegInstallInfo();
+
+            // Windows builds: http://ffmpeg.zeranoe.com/builds/
+            // Linux builds: http://johnvansickle.com/ffmpeg/
+            // OS X builds: http://ffmpegmac.net/
+            // OS X x64: http://www.evermeet.cx/ffmpeg/
+
+            if (_environment.IsBsd)
+            {
+                
+            }
+            else if (_environment.OperatingSystem == Model.System.OperatingSystem.Linux)
+            {
+                info.ArchiveType = "7z";
+                info.Version = "20160215";
+            }
+
+            // No version available - user requirement
+            info.DownloadUrls = new string[] { };
+
+            return info;
         }
 
         public void LaunchUrl(string url)
@@ -238,33 +154,6 @@ namespace MediaBrowser.Server.Mono.Native
         public IDbConnector GetDbConnector()
         {
             return new DbConnector(Logger);
-        }
-
-        public static FFMpegInstallInfo GetInfo(NativeEnvironment environment)
-        {
-            var info = new FFMpegInstallInfo();
-
-            // Windows builds: http://ffmpeg.zeranoe.com/builds/
-            // Linux builds: http://johnvansickle.com/ffmpeg/
-            // OS X builds: http://ffmpegmac.net/
-            // OS X x64: http://www.evermeet.cx/ffmpeg/
-
-            switch (environment.OperatingSystem)
-            {
-                case OperatingSystem.Osx:
-                case OperatingSystem.Bsd:
-                    break;
-                case OperatingSystem.Linux:
-
-                    info.ArchiveType = "7z";
-                    info.Version = "20160215";
-                    break;
-            }
-
-            // No version available - user requirement
-            info.DownloadUrls = new string[] { };
-
-            return info;
         }
 
         public void EnableLoopback(string appName)
