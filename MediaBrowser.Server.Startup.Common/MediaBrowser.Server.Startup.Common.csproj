@@ -115,7 +115,6 @@
     <Compile Include="Cryptography\X520Attributes.cs" />
     <Compile Include="HttpServerFactory.cs" />
     <Compile Include="INativeApp.cs" />
-    <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="IO\MemoryStreamProvider.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\ChannelScan.cs" />
     <Compile Include="LiveTv\TunerHosts\SatIp\Rtcp\ReportBlock.cs" />
