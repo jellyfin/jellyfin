@@ -96,11 +96,9 @@
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="ApplicationHost.cs" />
     <Compile Include="ApplicationPathHelper.cs" />
-    <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="Configuration\ServerConfigurationManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="EntryPoints\ExternalPortForwarding.cs" />
-    <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
     <Compile Include="FFMpeg\FFMpegInfo.cs" />
