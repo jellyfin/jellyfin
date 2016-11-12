@@ -18,7 +18,7 @@ namespace ServiceStack.Host
             serializer(response, responseStream);
         }
 
-        private Action<object, Stream> GetStreamSerializer(string contentType)
+        public static Action<object, Stream> GetStreamSerializer(string contentType)
         {
             switch (GetRealContentType(contentType))
             {
