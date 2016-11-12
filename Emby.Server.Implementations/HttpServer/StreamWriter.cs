@@ -25,6 +25,8 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The source stream.</value>
         private Stream SourceStream { get; set; }
 
+        private byte[] SourceBytes { get; set; }
+
         /// <summary>
         /// The _options
         /// </summary>
@@ -40,7 +42,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         public Action OnComplete { get; set; }
         public Action OnError { get; set; }
-        private readonly byte[] _bytes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamWriter" /> class.
@@ -73,14 +74,13 @@ namespace Emby.Server.Implementations.HttpServer
         /// <param name="contentType">Type of the content.</param>
         /// <param name="logger">The logger.</param>
         public StreamWriter(byte[] source, string contentType, ILogger logger)
-            : this(new MemoryStream(source), contentType, logger)
         {
             if (string.IsNullOrEmpty(contentType))
             {
                 throw new ArgumentNullException("contentType");
             }
 
-            _bytes = source;
+            SourceBytes = source;
             Logger = logger;
 
             Headers["Content-Type"] = contentType;
@@ -92,9 +92,11 @@ namespace Emby.Server.Implementations.HttpServer
         {
             try
             {
-                if (_bytes != null)
+                var bytes = SourceBytes;
+
+                if (bytes != null)
                 {
-                    await responseStream.WriteAsync(_bytes, 0, _bytes.Length);
+                    await responseStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 }
                 else
                 {

@@ -20,11 +20,6 @@ namespace MediaBrowser.Model.Services
         HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
-        /// The HTTP Status Description
-        /// </summary>
-        string StatusDescription { get; set; }
-
-        /// <summary>
         /// The HTTP Response ContentType
         /// </summary>
         string ContentType { get; set; }

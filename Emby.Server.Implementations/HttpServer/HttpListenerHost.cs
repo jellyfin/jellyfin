@@ -86,9 +86,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public override void Configure()
-        {
-            var mapExceptionToStatusCode = new Dictionary<Type, int>
+        readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
             {
                 {typeof (InvalidOperationException), 500},
                 {typeof (NotImplementedException), 500},
@@ -102,6 +100,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {typeof (NotSupportedException), 500}
             };
 
+        public override void Configure()
+        {
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
             foreach (var filter in requestFilters)
             {
@@ -240,7 +240,12 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                httpRes.StatusCode = 500;
+                int statusCode;
+                if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
+                {
+                    statusCode = 500;
+                }
+                httpRes.StatusCode = statusCode;
 
                 httpRes.ContentType = "text/html";
                 httpRes.Write(ex.Message);
@@ -517,6 +522,10 @@ namespace Emby.Server.Implementations.HttpServer
                 if (handler != null)
                 {
                     await handler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigureAwait(false);
+                }
+                else
+                {
+                    ErrorHandler(new FileNotFoundException(), httpReq);
                 }
             }
             catch (Exception ex)
