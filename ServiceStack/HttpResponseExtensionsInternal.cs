@@ -15,19 +15,19 @@ namespace ServiceStack
 {
     public static class HttpResponseExtensionsInternal
     {
-        public static async Task<bool> WriteToOutputStream(IResponse response, Stream outputStream, object result)
+        public static async Task<bool> WriteToOutputStream(IResponse response, object result)
         {
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
             {
-                await asyncStreamWriter.WriteToAsync(outputStream, CancellationToken.None).ConfigureAwait(false);
+                await asyncStreamWriter.WriteToAsync(response.OutputStream, CancellationToken.None).ConfigureAwait(false);
                 return true;
             }
 
             var streamWriter = result as IStreamWriter;
             if (streamWriter != null)
             {
-                streamWriter.WriteTo(outputStream);
+                streamWriter.WriteTo(response.OutputStream);
                 return true;
             }
 
@@ -36,7 +36,7 @@ namespace ServiceStack
             {
                 using (stream)
                 {
-                    await stream.CopyToAsync(outputStream).ConfigureAwait(false);
+                    await stream.CopyToAsync(response.OutputStream).ConfigureAwait(false);
                     return true;
                 }
             }
@@ -47,7 +47,7 @@ namespace ServiceStack
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 return true;
             }
 
@@ -152,9 +152,7 @@ namespace ServiceStack
                 response.ContentType += "; charset=utf-8";
             }
 
-            var outputStream = response.OutputStream;
-
-            var writeToOutputStreamResult = await WriteToOutputStream(response, outputStream, result).ConfigureAwait(false);
+            var writeToOutputStreamResult = await WriteToOutputStream(response, result).ConfigureAwait(false);
             if (writeToOutputStreamResult)
             {
                 return;
@@ -167,11 +165,28 @@ namespace ServiceStack
                     response.ContentType = defaultContentType;
 
                 var bytes = Encoding.UTF8.GetBytes(responseText);
-                await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 return;
             }
 
-            ContentTypes.Instance.SerializeToStream(request, result, outputStream);
+            await WriteObject(request, result, response).ConfigureAwait(false);
+        }
+
+        public static async Task WriteObject(IRequest request, object result, IResponse response)
+        {
+            var contentType = request.ResponseContentType;
+            var serializer = ContentTypes.GetStreamSerializer(contentType);
+            
+            using (var ms = new MemoryStream())
+            {
+                serializer(result, ms);
+
+                ms.Position = 0;
+                response.SetContentLength(ms.Length);
+                await ms.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+            }
+
+            //serializer(result, outputStream);
         }
     }
 }

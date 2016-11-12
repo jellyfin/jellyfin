@@ -55,7 +55,7 @@ namespace ServiceStack
                 return;
             }
 
-            ContentTypes.Instance.SerializeToStream(this.RequestContext, this.Response, responseStream);
+            await HttpResponseExtensionsInternal.WriteObject(this.RequestContext, this.Response, response).ConfigureAwait(false);
         }
     }
 }
