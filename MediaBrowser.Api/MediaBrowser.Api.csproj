@@ -142,6 +142,7 @@
     <Compile Include="System\ActivityLogWebSocketListener.cs" />
     <Compile Include="System\SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
+    <Compile Include="TestService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />

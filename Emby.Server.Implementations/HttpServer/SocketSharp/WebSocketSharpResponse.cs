@@ -77,8 +77,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             get { return _response.OutputStream; }
         }
 
-        public object Dto { get; set; }
-
         public void Write(string text)
         {
             var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
@@ -118,11 +116,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             {
                 _logger.ErrorException("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
-        }
-
-        public void End()
-        {
-            Close();
         }
 
         public void Flush()

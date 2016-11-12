@@ -119,7 +119,6 @@ namespace SocketHttpListener.Net
             if (listener == null)
                 return false;
 
-            context.Listener = listener;
             context.Connection.Prefix = prefix;
             return true;
         }
@@ -129,7 +128,7 @@ namespace SocketHttpListener.Net
             if (context == null || context.Request == null)
                 return;
 
-            context.Listener.UnregisterContext(context);
+            listener.UnregisterContext(context);
         }
 
         HttpListener SearchListener(Uri uri, out ListenerPrefix prefix)
