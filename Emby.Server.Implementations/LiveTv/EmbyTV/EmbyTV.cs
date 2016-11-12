@@ -941,21 +941,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             await _liveStreamsSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            var result = _liveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
-
-            if (result != null && result.EnableStreamSharing)
-            {
-                var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
-                result.SharedStreamIds.Add(openedMediaSource.Id);
-                _liveStreamsSemaphore.Release();
-
-                _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
-
-                return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
-            }
-
             try
             {
+                var result = _liveStreams.FirstOrDefault(i => string.Equals(i.OriginalStreamId, streamId, StringComparison.OrdinalIgnoreCase));
+
+                if (result != null && result.EnableStreamSharing)
+                {
+                    var openedMediaSource = CloneMediaSource(result.OpenedMediaSource, result.EnableStreamSharing);
+                    result.SharedStreamIds.Add(openedMediaSource.Id);
+
+                    _logger.Info("Live stream {0} consumer count is now {1}", streamId, result.ConsumerCount);
+
+                    return new Tuple<LiveStream, MediaSourceInfo, ITunerHost>(result, openedMediaSource, result.TunerHost);
+                }
+
                 foreach (var hostInstance in _liveTvManager.TunerHosts)
                 {
                     try
@@ -1271,6 +1270,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             try
             {
+                var recorder = await GetRecorder().ConfigureAwait(false);
+
                 var allMediaSources = await GetChannelStreamMediaSources(timer.ChannelId, CancellationToken.None).ConfigureAwait(false);
 
                 var liveStreamInfo = await GetChannelStreamInternal(timer.ChannelId, allMediaSources[0].Id, CancellationToken.None)
@@ -1281,8 +1282,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 // HDHR doesn't seem to release the tuner right away after first probing with ffmpeg
                 //await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
-
-                var recorder = await GetRecorder().ConfigureAwait(false);
 
                 recordPath = recorder.GetOutputPath(mediaStreamInfo, recordPath);
                 recordPath = EnsureFileUnique(recordPath, timer.Id);
