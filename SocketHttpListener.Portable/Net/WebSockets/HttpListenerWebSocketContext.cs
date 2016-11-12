@@ -322,7 +322,8 @@ namespace SocketHttpListener.Net.WebSockets
 
         internal void Close(HttpStatusCode code)
         {
-            _context.Response.Close(code);
+            _context.Response.StatusCode = (int)code;
+            _context.Response.OutputStream.Dispose();
         }
 
         #endregion
