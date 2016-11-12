@@ -181,11 +181,11 @@ namespace SocketHttpListener.Net
 
             if (String.Compare(Headers["Expect"], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                ResponseStream output = context.Connection.GetResponseStream();
+                var output = context.Connection.GetResponseStream();
                 
                 var _100continue = _textEncoding.GetASCIIEncoding().GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
 
-                output.InternalWrite(_100continue, 0, _100continue.Length);
+                //output.InternalWrite(_100continue, 0, _100continue.Length);
             }
         }
 

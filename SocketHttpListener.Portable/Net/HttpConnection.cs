@@ -23,7 +23,7 @@ namespace SocketHttpListener.Net
         StringBuilder current_line;
         ListenerPrefix prefix;
         RequestStream i_stream;
-        ResponseStream o_stream;
+        Stream o_stream;
         bool chunked;
         int reuses;
         bool context_bound;
@@ -204,12 +204,23 @@ namespace SocketHttpListener.Net
             return i_stream;
         }
 
-        public ResponseStream GetResponseStream()
+        public Stream GetResponseStream()
         {
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
+                if (context.Response.SendChunked)
+                {
+                    o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
+                }
+                else
+                {
+                    o_stream = stream;
+                    using (var headerStream = ResponseStream.GetHeaders(context.Response, _memoryStreamFactory, false))
+                    {
+                        headerStream.CopyTo(o_stream);
+                    }
+                }
             }
             return o_stream;
         }

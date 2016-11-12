@@ -64,7 +64,7 @@ namespace SocketHttpListener.Net
             {
                 disposed = true;
                 byte[] bytes = null;
-                MemoryStream ms = GetHeaders(true);
+                MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
                 bool chunked = response.SendChunked;
                 if (stream.CanWrite)
                 {
@@ -102,14 +102,14 @@ namespace SocketHttpListener.Net
             base.Dispose(disposing);
         }
 
-        MemoryStream GetHeaders(bool closing)
+        internal static MemoryStream GetHeaders(HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, bool closing)
         {
             // SendHeaders works on shared headers
             lock (response.headers_lock)
             {
                 if (response.HeadersSent)
                     return null;
-                MemoryStream ms = _memoryStreamFactory.CreateNew();
+                MemoryStream ms = memoryStreamFactory.CreateNew();
                 response.SendHeaders(closing, ms);
                 return ms;
             }
@@ -137,7 +137,7 @@ namespace SocketHttpListener.Net
                 throw new ObjectDisposedException(GetType().ToString());
 
             byte[] bytes = null;
-            MemoryStream ms = GetHeaders(false);
+            MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
             bool chunked = response.SendChunked;
             if (ms != null)
             {
@@ -177,7 +177,7 @@ namespace SocketHttpListener.Net
                 throw new ObjectDisposedException(GetType().ToString());
 
             byte[] bytes = null;
-            MemoryStream ms = GetHeaders(false);
+            MemoryStream ms = GetHeaders(response, _memoryStreamFactory, false);
             bool chunked = response.SendChunked;
             if (ms != null)
             {
