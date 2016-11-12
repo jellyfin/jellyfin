@@ -18,7 +18,6 @@ namespace SocketHttpListener.Net
         HttpConnection cnc;
         string error;
         int err_status = 400;
-        internal HttpListener Listener;
         private readonly ILogger _logger;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IMemoryStreamFactory _memoryStreamFactory;

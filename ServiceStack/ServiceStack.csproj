@@ -73,7 +73,6 @@
     <Compile Include="Host\ContentTypes.cs" />
     <Compile Include="ReflectionExtensions.cs" />
     <Compile Include="StringMapTypeDeserializer.cs" />
-    <Compile Include="Host\HttpResponseStreamWrapper.cs" />
     <Compile Include="HttpResult.cs" />
     <Compile Include="ServiceStackHost.cs" />
     <Compile Include="ServiceStackHost.Runtime.cs" />

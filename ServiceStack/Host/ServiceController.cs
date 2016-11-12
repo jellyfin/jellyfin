@@ -210,9 +210,6 @@ namespace ServiceStack.Host
             //Executes the service and returns the result
             var response = await ServiceExecGeneral.Execute(serviceType, req, service, requestDto, requestType.GetOperationName()).ConfigureAwait(false);
 
-            if (req.Response.Dto == null)
-                req.Response.Dto = response;
-
             return response;
         }
     }

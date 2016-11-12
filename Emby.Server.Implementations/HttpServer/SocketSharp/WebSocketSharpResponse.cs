@@ -77,18 +77,6 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
             get { return _response.OutputStream; }
         }
 
-        public object Dto { get; set; }
-
-        public void Write(string text)
-        {
-            var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-            _response.ContentLength64 = bOutput.Length;
-
-            var outputStream = _response.OutputStream;
-            outputStream.Write(bOutput, 0, bOutput.Length);
-            Close();
-        }
-
         public void Close()
         {
             if (!this.IsClosed)
@@ -110,24 +98,16 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         {
             try
             {
-                response.OutputStream.Flush();
-                response.OutputStream.Dispose();
+                var outputStream = response.OutputStream;
+
+                outputStream.Flush();
+                outputStream.Dispose();
                 response.Close();
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error in HttpListenerResponseWrapper: " + ex.Message, ex);
             }
-        }
-
-        public void End()
-        {
-            Close();
-        }
-
-        public void Flush()
-        {
-            _response.OutputStream.Flush();
         }
 
         public bool IsClosed

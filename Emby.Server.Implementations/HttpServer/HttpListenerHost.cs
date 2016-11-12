@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.HttpServer;
 using Emby.Server.Implementations.HttpServer.SocketSharp;
@@ -86,9 +87,7 @@ namespace Emby.Server.Implementations.HttpServer
 
         public string GlobalResponse { get; set; }
 
-        public override void Configure()
-        {
-            var mapExceptionToStatusCode = new Dictionary<Type, int>
+        readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
             {
                 {typeof (InvalidOperationException), 500},
                 {typeof (NotImplementedException), 500},
@@ -102,6 +101,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {typeof (NotSupportedException), 500}
             };
 
+        public override void Configure()
+        {
             var requestFilters = _appHost.GetExports<IRequestFilter>().ToList();
             foreach (var filter in requestFilters)
             {
@@ -240,12 +241,15 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                httpRes.StatusCode = 500;
+                int statusCode;
+                if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
+                {
+                    statusCode = 500;
+                }
+                httpRes.StatusCode = statusCode;
 
                 httpRes.ContentType = "text/html";
-                httpRes.Write(ex.Message);
-
-                httpRes.Close();
+                Write(httpRes, ex.Message);
             }
             catch
             {
@@ -399,7 +403,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.StatusCode = 400;
                     httpRes.ContentType = "text/plain";
-                    httpRes.Write("Invalid host");
+                    Write(httpRes, "Invalid host");
                     return;
                 }
 
@@ -453,7 +457,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
                     {
-                        httpRes.Write(
+                        Write(httpRes,
                             "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
                             newUrl + "\">" + newUrl + "</a></body></html>");
                         return;
@@ -470,7 +474,7 @@ namespace Emby.Server.Implementations.HttpServer
 
                     if (!string.Equals(newUrl, urlString, StringComparison.OrdinalIgnoreCase))
                     {
-                        httpRes.Write(
+                        Write(httpRes,
                             "<!doctype html><html><head><title>Emby</title></head><body>Please update your Emby bookmark to <a href=\"" +
                             newUrl + "\">" + newUrl + "</a></body></html>");
                         return;
@@ -508,7 +512,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     httpRes.StatusCode = 503;
                     httpRes.ContentType = "text/html";
-                    httpRes.Write(GlobalResponse);
+                    Write(httpRes, GlobalResponse);
                     return;
                 }
 
@@ -517,6 +521,10 @@ namespace Emby.Server.Implementations.HttpServer
                 if (handler != null)
                 {
                     await handler.ProcessRequestAsync(httpReq, httpRes, operationName).ConfigureAwait(false);
+                }
+                else
+                {
+                    ErrorHandler(new FileNotFoundException(), httpReq);
                 }
             }
             catch (Exception ex)
@@ -536,6 +544,15 @@ namespace Emby.Server.Implementations.HttpServer
                     LoggerUtils.LogResponse(_logger, statusCode, urlToLog, remoteIp, duration);
                 }
             }
+        }
+
+        private void Write(IResponse response, string text)
+        {
+            var bOutput = Encoding.UTF8.GetBytes(text);
+            response.SetContentLength(bOutput.Length);
+
+            var outputStream = response.OutputStream;
+            outputStream.Write(bOutput, 0, bOutput.Length);
         }
 
         public static void RedirectToUrl(IResponse httpRes, string url)

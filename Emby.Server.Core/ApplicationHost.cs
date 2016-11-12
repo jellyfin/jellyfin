@@ -554,7 +554,7 @@ namespace Emby.Server.Core
             ZipClient = new ZipClient(FileSystemManager);
             RegisterSingleInstance(ZipClient);
 
-            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer, XmlSerializer));
+            RegisterSingleInstance<IHttpResultFactory>(new HttpResultFactory(LogManager, FileSystemManager, JsonSerializer, MemoryStreamFactory));
 
             RegisterSingleInstance<IServerApplicationHost>(this);
             RegisterSingleInstance<IServerApplicationPaths>(ApplicationPaths);
@@ -613,6 +613,9 @@ namespace Emby.Server.Core
             RegisterSingleInstance(ProviderManager);
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
+
+            CertificatePath = GetCertificatePath(true);
+            Certificate = GetCertificate(CertificatePath);
 
             HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
@@ -995,9 +998,6 @@ namespace Emby.Server.Core
         /// </summary>
         private void StartServer()
         {
-            CertificatePath = GetCertificatePath(true);
-            Certificate = GetCertificate(CertificatePath);
-
             try
             {
                 ServerManager.Start(GetUrlPrefixes());

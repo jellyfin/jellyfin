@@ -34,19 +34,16 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IXmlSerializer _xmlSerializer;
+        private readonly IMemoryStreamFactory _memoryStreamFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpResultFactory" /> class.
         /// </summary>
-        /// <param name="logManager">The log manager.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
+        public HttpResultFactory(ILogManager logManager, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IMemoryStreamFactory memoryStreamFactory)
         {
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
-            _xmlSerializer = xmlSerializer;
+            _memoryStreamFactory = memoryStreamFactory;
             _logger = logManager.GetLogger("HttpResultFactory");
         }
 
@@ -59,17 +56,13 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns>System.Object.</returns>
         public object GetResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
         {
-            return GetHttpResult(content, contentType, responseHeaders);
+            return GetHttpResult(content, contentType, true, responseHeaders);
         }
 
         /// <summary>
         /// Gets the HTTP result.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="contentType">Type of the content.</param>
-        /// <param name="responseHeaders">The response headers.</param>
-        /// <returns>IHasHeaders.</returns>
-        private IHasHeaders GetHttpResult(object content, string contentType, IDictionary<string, string> responseHeaders = null)
+        private IHasHeaders GetHttpResult(object content, string contentType, bool addCachePrevention, IDictionary<string, string> responseHeaders = null)
         {
             IHasHeaders result;
 
@@ -98,7 +91,7 @@ namespace Emby.Server.Implementations.HttpServer
                     }
                     else
                     {
-                        result = new HttpResult(content, contentType);
+                        result = new HttpResult(content, contentType, HttpStatusCode.OK);
                     }
                 }
             }
@@ -107,7 +100,11 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            responseHeaders["Expires"] = "-1";
+            if (addCachePrevention)
+            {
+                responseHeaders["Expires"] = "-1";
+            }
+
             AddResponseHeaders(result, responseHeaders);
 
             return result;
@@ -184,8 +181,6 @@ namespace Emby.Server.Implementations.HttpServer
         /// <returns></returns>
         public object ToOptimizedResult<T>(IRequest request, T dto)
         {
-            request.Response.Dto = dto;
-
             var compressionType = GetCompressionType(request);
             if (compressionType == null)
             {
@@ -204,6 +199,7 @@ namespace Emby.Server.Implementations.HttpServer
                 }
             }
 
+            // Do not use the memoryStreamFactory here, they don't place nice with compression
             using (var ms = new MemoryStream())
             {
                 using (var compressionStream = GetCompressionStream(ms, compressionType))
@@ -213,17 +209,24 @@ namespace Emby.Server.Implementations.HttpServer
 
                     var compressedBytes = ms.ToArray();
 
-                    var httpResult = new HttpResult(compressedBytes, request.ResponseContentType)
-                    {
-                        Status = request.Response.StatusCode
-                    };
+                    var httpResult = new StreamWriter(compressedBytes, request.ResponseContentType, _logger);
 
-                    httpResult.Headers["Content-Length"] = compressedBytes.Length.ToString(UsCulture);
+                    //httpResult.Headers["Content-Length"] = compressedBytes.Length.ToString(UsCulture);
                     httpResult.Headers["Content-Encoding"] = compressionType;
 
                     return httpResult;
                 }
             }
+        }
+
+        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
+        {
+            if (compressionType == "deflate")
+                return new DeflateStream(outputStream, CompressionMode.Compress, true);
+            if (compressionType == "gzip")
+                return new GZipStream(outputStream, CompressionMode.Compress, true);
+
+            throw new NotSupportedException(compressionType);
         }
 
         public static string GetRealContentType(string contentType)
@@ -233,7 +236,7 @@ namespace Emby.Server.Implementations.HttpServer
                        : contentType.Split(';')[0].ToLower().Trim();
         }
 
-        public static string SerializeToXmlString(object from)
+        private string SerializeToXmlString(object from)
         {
             using (var ms = new MemoryStream())
             {
@@ -251,16 +254,6 @@ namespace Emby.Server.Implementations.HttpServer
                     return reader.ReadToEnd();
                 }
             }
-        }
-
-        private static Stream GetCompressionStream(Stream outputStream, string compressionType)
-        {
-            if (compressionType == "deflate")
-                return new DeflateStream(outputStream, CompressionMode.Compress);
-            if (compressionType == "gzip")
-                return new GZipStream(outputStream, CompressionMode.Compress);
-
-            throw new NotSupportedException(compressionType);
         }
 
         /// <summary>
@@ -358,23 +351,7 @@ namespace Emby.Server.Implementations.HttpServer
                 return hasHeaders;
             }
 
-            IHasHeaders httpResult;
-
-            var stream = result as Stream;
-
-            if (stream != null)
-            {
-                httpResult = new StreamWriter(stream, contentType, _logger);
-            }
-            else
-            {
-                // Otherwise wrap into an HttpResult
-                httpResult = new HttpResult(result, contentType ?? "text/html", HttpStatusCode.NotModified);
-            }
-
-            AddResponseHeaders(httpResult, responseHeaders);
-
-            return httpResult;
+            return GetHttpResult(result, contentType, false, responseHeaders);
         }
 
         /// <summary>
@@ -603,7 +580,7 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     stream.Dispose();
 
-                    return GetHttpResult(new byte[] { }, contentType);
+                    return GetHttpResult(new byte[] { }, contentType, true);
                 }
 
                 return new StreamWriter(stream, contentType, _logger)
@@ -630,13 +607,13 @@ namespace Emby.Server.Implementations.HttpServer
 
             if (isHeadRequest)
             {
-                return GetHttpResult(new byte[] { }, contentType);
+                return GetHttpResult(new byte[] { }, contentType, true);
             }
 
-            return GetHttpResult(contents, contentType, responseHeaders);
+            return GetHttpResult(contents, contentType, true, responseHeaders);
         }
 
-        public static byte[] Compress(string text, string compressionType)
+        private byte[] Compress(string text, string compressionType)
         {
             if (compressionType == "deflate")
                 return Deflate(text);
@@ -647,12 +624,12 @@ namespace Emby.Server.Implementations.HttpServer
             throw new NotSupportedException(compressionType);
         }
 
-        public static byte[] Deflate(string text)
+        private byte[] Deflate(string text)
         {
             return Deflate(Encoding.UTF8.GetBytes(text));
         }
 
-        public static byte[] Deflate(byte[] bytes)
+        private byte[] Deflate(byte[] bytes)
         {
             // In .NET FX incompat-ville, you can't access compressed bytes without closing DeflateStream
             // Which means we must use MemoryStream since you have to use ToArray() on a closed Stream
@@ -666,12 +643,12 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        public static byte[] GZip(string text)
+        private byte[] GZip(string text)
         {
             return GZip(Encoding.UTF8.GetBytes(text));
         }
 
-        public static byte[] GZip(byte[] buffer)
+        private byte[] GZip(byte[] buffer)
         {
             using (var ms = new MemoryStream())
             using (var zipStream = new GZipStream(ms, CompressionMode.Compress))
