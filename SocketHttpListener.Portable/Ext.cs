@@ -168,12 +168,6 @@ namespace SocketHttpListener
                    : null;
         }
 
-        internal static void Close(this HttpListenerResponse response, HttpStatusCode code)
-        {
-            response.StatusCode = (int)code;
-            response.OutputStream.Dispose();
-        }
-
         internal static Stream Compress(this Stream stream, CompressionMethod method)
         {
             return method == CompressionMethod.Deflate
