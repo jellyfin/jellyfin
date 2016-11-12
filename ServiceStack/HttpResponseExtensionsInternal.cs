@@ -6,6 +6,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using MediaBrowser.Model.Services;
 using ServiceStack.Host;
@@ -14,19 +15,19 @@ namespace ServiceStack
 {
     public static class HttpResponseExtensionsInternal
     {
-        public static async Task<bool> WriteToOutputStream(IResponse response, object result)
+        public static async Task<bool> WriteToOutputStream(IResponse response, Stream outputStream, object result)
         {
             var asyncStreamWriter = result as IAsyncStreamWriter;
             if (asyncStreamWriter != null)
             {
-                await asyncStreamWriter.WriteToAsync(response.OutputStream, CancellationToken.None).ConfigureAwait(false);
+                await asyncStreamWriter.WriteToAsync(outputStream, CancellationToken.None).ConfigureAwait(false);
                 return true;
             }
 
             var streamWriter = result as IStreamWriter;
             if (streamWriter != null)
             {
-                streamWriter.WriteTo(response.OutputStream);
+                streamWriter.WriteTo(outputStream);
                 return true;
             }
 
@@ -35,7 +36,7 @@ namespace ServiceStack
             {
                 using (stream)
                 {
-                    await stream.CopyToAsync(response.OutputStream).ConfigureAwait(false);
+                    await stream.CopyToAsync(outputStream).ConfigureAwait(false);
                     return true;
                 }
             }
@@ -46,7 +47,7 @@ namespace ServiceStack
                 response.ContentType = "application/octet-stream";
                 response.SetContentLength(bytes.Length);
 
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 return true;
             }
 
@@ -151,10 +152,11 @@ namespace ServiceStack
                 response.ContentType += "; charset=utf-8";
             }
 
-            var writeToOutputStreamResult = await WriteToOutputStream(response, result).ConfigureAwait(false);
+            var outputStream = response.OutputStream;
+
+            var writeToOutputStreamResult = await WriteToOutputStream(response, outputStream, result).ConfigureAwait(false);
             if (writeToOutputStreamResult)
             {
-                response.Flush(); //required for Compression
                 return;
             }
 
@@ -164,12 +166,12 @@ namespace ServiceStack
                 if (response.ContentType == null || response.ContentType == "text/html")
                     response.ContentType = defaultContentType;
 
-                response.Write(responseText);
+                var bytes = Encoding.UTF8.GetBytes(responseText);
+                await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 return;
             }
 
-            var serializer = ContentTypes.Instance.GetResponseSerializer(defaultContentType);
-            serializer(result, response);
+            ContentTypes.Instance.SerializeToStream(request, result, outputStream);
         }
     }
 }
