@@ -28,7 +28,6 @@ namespace SocketHttpListener.Net
         HttpListenerPrefixCollection prefixes;
         AuthenticationSchemeSelector auth_selector;
         string realm;
-        bool ignore_write_exceptions;
         bool unsafe_ntlm_auth;
         bool listening;
         bool disposed;
@@ -89,16 +88,6 @@ namespace SocketHttpListener.Net
             {
                 CheckDisposed();
                 auth_selector = value;
-            }
-        }
-
-        public bool IgnoreWriteExceptions
-        {
-            get { return ignore_write_exceptions; }
-            set
-            {
-                CheckDisposed();
-                ignore_write_exceptions = value;
             }
         }
 

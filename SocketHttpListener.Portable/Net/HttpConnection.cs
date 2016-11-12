@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
@@ -210,12 +209,7 @@ namespace SocketHttpListener.Net
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                HttpListener listener = context.Listener;
-
-                if (listener == null)
-                    return new ResponseStream(stream, context.Response, true, _memoryStreamFactory, _textEncoding);
-
-                o_stream = new ResponseStream(stream, context.Response, listener.IgnoreWriteExceptions, _memoryStreamFactory, _textEncoding);
+                o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
             }
             return o_stream;
         }
@@ -257,7 +251,7 @@ namespace SocketHttpListener.Net
                     Close(true);
                     return;
                 }
-                HttpListener listener = context.Listener;
+                HttpListener listener = epl.Listener;
                 if (last_listener != listener)
                 {
                     RemoveConnection();

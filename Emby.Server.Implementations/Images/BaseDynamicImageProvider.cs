@@ -17,6 +17,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Net;
 
 namespace Emby.Server.Implementations.Images
 {
@@ -146,7 +147,9 @@ namespace Emby.Server.Implementations.Images
                 return ItemUpdateType.None;
             }
 
-            await ProviderManager.SaveImage(item, outputPath, "image/png", imageType, null, false, cancellationToken).ConfigureAwait(false);
+            var mimeType = MimeTypes.GetMimeType(outputPath);
+
+            await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.ImageUpdate;
         }

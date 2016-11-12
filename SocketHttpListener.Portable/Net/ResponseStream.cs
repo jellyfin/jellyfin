@@ -17,17 +17,15 @@ namespace SocketHttpListener.Net
     class ResponseStream : Stream
     {
         HttpListenerResponse response;
-        bool ignore_errors;
         bool disposed;
         bool trailer_sent;
         Stream stream;
         private readonly IMemoryStreamFactory _memoryStreamFactory;
         private readonly ITextEncoding _textEncoding;
 
-        internal ResponseStream(Stream stream, HttpListenerResponse response, bool ignore_errors, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
+        internal ResponseStream(Stream stream, HttpListenerResponse response, IMemoryStreamFactory memoryStreamFactory, ITextEncoding textEncoding)
         {
             this.response = response;
-            this.ignore_errors = ignore_errors;
             _memoryStreamFactory = memoryStreamFactory;
             _textEncoding = textEncoding;
             this.stream = stream;
@@ -130,18 +128,7 @@ namespace SocketHttpListener.Net
 
         internal void InternalWrite(byte[] buffer, int offset, int count)
         {
-            if (ignore_errors)
-            {
-                try
-                {
-                    stream.Write(buffer, offset, count);
-                }
-                catch { }
-            }
-            else
-            {
-                stream.Write(buffer, offset, count);
-            }
+            stream.Write(buffer, offset, count);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -214,23 +201,13 @@ namespace SocketHttpListener.Net
                 InternalWrite(bytes, 0, bytes.Length);
             }
 
-            try
+            if (count > 0)
             {
-                if (count > 0)
-                {
-                    await stream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
-                }
+                await stream.WriteAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+            }
 
-                if (response.SendChunked)
-                    stream.Write(crlf, 0, 2);
-            }
-            catch
-            {
-                if (!ignore_errors)
-                {
-                    throw;
-                }
-            }
+            if (response.SendChunked)
+                stream.Write(crlf, 0, 2);
         }
 
         //public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count,

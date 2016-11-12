@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common.Net;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
@@ -8,7 +10,7 @@ namespace MediaBrowser.Api.Playback
     /// <summary>
     /// Class StaticRemoteStreamWriter
     /// </summary>
-    public class StaticRemoteStreamWriter : IStreamWriter, IHasHeaders
+    public class StaticRemoteStreamWriter : IAsyncStreamWriter, IHasHeaders
     {
         /// <summary>
         /// The _input stream
@@ -34,15 +36,11 @@ namespace MediaBrowser.Api.Playback
             get { return _options; }
         }
 
-        /// <summary>
-        /// Writes to.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken cancellationToken)
         {
             using (_response)
             {
-                _response.Content.CopyTo(responseStream, 819200);
+                await _response.Content.CopyToAsync(responseStream, 81920, cancellationToken).ConfigureAwait(false);
             }
         }
     }
