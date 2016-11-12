@@ -23,32 +23,13 @@ namespace ServiceStack.Host
 
             var taskResult = ServiceStackHost.Instance.GetTaskResult(taskResponse, RequestName);
 
-            var taskResults = taskResult as Task[];
-
-            if (taskResults == null)
+            var subTask = taskResult as Task;
+            if (subTask != null)
             {
-                var subTask = taskResult as Task;
-                if (subTask != null)
-                    taskResult = ServiceStackHost.Instance.GetTaskResult(subTask, RequestName);
-
-                return taskResult;
+                taskResult = ServiceStackHost.Instance.GetTaskResult(subTask, RequestName);
             }
 
-            if (taskResults.Length == 0)
-            {
-                return new object[] { };
-            }
-
-            var firstResponse = ServiceStackHost.Instance.GetTaskResult(taskResults[0], RequestName);
-            var batchedResponses = firstResponse != null
-                ? (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
-                : new object[taskResults.Length];
-            batchedResponses[0] = firstResponse;
-            for (var i = 1; i < taskResults.Length; i++)
-            {
-                batchedResponses[i] = ServiceStackHost.Instance.GetTaskResult(taskResults[i], RequestName);
-            }
-            return batchedResponses;
+            return taskResult;
         }
 
         protected static object CreateContentTypeRequest(IRequest httpReq, Type requestType, string contentType)
@@ -141,18 +122,13 @@ namespace ServiceStack.Host
 
             var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
-            if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
-                return;
+            appHost.ApplyRequestFilters(httpReq, httpRes, request);
 
             var rawResponse = await ServiceStackHost.Instance.ServiceController.Execute(request, httpReq).ConfigureAwait(false);
 
-            if (httpRes.IsClosed)
-                return;
-
             var response = await HandleResponseAsync(rawResponse).ConfigureAwait(false);
 
-            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                return;
+            appHost.ApplyResponseFilters(httpReq, httpRes, response);
 
             await httpRes.WriteToResponse(httpReq, response).ConfigureAwait(false);
         }
