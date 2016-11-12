@@ -291,6 +291,10 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
+#if DEBUG
+                return false;
+#endif
+
                 if (_isRunningAsService)
                 {
                     return _canRestartService;

@@ -19,7 +19,7 @@ namespace SocketHttpListener.Net
         CookieCollection cookies;
         WebHeaderCollection headers = new WebHeaderCollection();
         bool keep_alive = true;
-        ResponseStream output_stream;
+        Stream output_stream;
         Version version = HttpVersion.Version11;
         string location;
         int status_code = 200;
