@@ -566,6 +566,23 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
+        private BaseItem GetNowPlayingItem(SessionInfo session, string itemId)
+        {
+            var idGuid = new Guid(itemId);
+
+            var item = session.FullNowPlayingItem;
+            if (item != null && item.Id == idGuid)
+            {
+                return item;
+            }
+
+            item = _libraryManager.GetItemById(itemId);
+
+            session.FullNowPlayingItem = item;
+
+            return item;
+        }
+
         /// <summary>
         /// Used to report that playback has started for an item
         /// </summary>
@@ -583,7 +600,7 @@ namespace Emby.Server.Implementations.Session
 
             var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
                 ? null
-                : _libraryManager.GetItemById(new Guid(info.ItemId));
+                : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
 
@@ -669,7 +686,7 @@ namespace Emby.Server.Implementations.Session
 
             var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
                 ? null
-                : _libraryManager.GetItemById(new Guid(info.ItemId));
+                : GetNowPlayingItem(session, info.ItemId);
 
             await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
 
@@ -773,7 +790,7 @@ namespace Emby.Server.Implementations.Session
 
             var libraryItem = string.IsNullOrWhiteSpace(info.ItemId)
                 ? null
-                : _libraryManager.GetItemById(new Guid(info.ItemId));
+                : GetNowPlayingItem(session, info.ItemId);
 
             // Normalize
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
@@ -1782,18 +1799,18 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException("itemId");
             }
 
-            var item = _libraryManager.GetItemById(new Guid(itemId));
+            //var item = _libraryManager.GetItemById(new Guid(itemId));
 
-            var info = GetItemInfo(item, null, null);
+            //var info = GetItemInfo(item, null, null);
 
-            ReportNowViewingItem(sessionId, info);
+            //ReportNowViewingItem(sessionId, info);
         }
 
         public void ReportNowViewingItem(string sessionId, BaseItemInfo item)
         {
-            var session = GetSession(sessionId);
+            //var session = GetSession(sessionId);
 
-            session.NowViewingItem = item;
+            //session.NowViewingItem = item;
         }
 
         public void ReportTranscodingInfo(string deviceId, TranscodingInfo info)
