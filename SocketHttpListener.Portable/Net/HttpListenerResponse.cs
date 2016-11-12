@@ -149,7 +149,7 @@ namespace SocketHttpListener.Net
             get
             {
                 if (output_stream == null)
-                    output_stream = context.Connection.GetResponseStream();
+                    output_stream = context.Connection.GetResponseStream(context.Request);
                 return output_stream;
             }
         }
@@ -489,7 +489,7 @@ namespace SocketHttpListener.Net
 
             int preamble = encoding.GetPreamble().Length;
             if (output_stream == null)
-                output_stream = context.Connection.GetResponseStream();
+                output_stream = context.Connection.GetResponseStream(context.Request);
 
             /* Assumes that the ms was at position 0 */
             ms.Position = preamble;

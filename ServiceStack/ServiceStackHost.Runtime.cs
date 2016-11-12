@@ -14,10 +14,8 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        public virtual void ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
-            if (res.IsClosed) return res.IsClosed;
-
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
             var i = 0;
@@ -25,16 +23,12 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 attribute.RequestFilter(req, res, requestDto);
-                if (res.IsClosed) return res.IsClosed;
             }
-
-            if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
             foreach (var requestFilter in GlobalRequestFilters)
             {
                 requestFilter(req, res, requestDto);
-                if (res.IsClosed) return res.IsClosed;
             }
 
             //Exec remaining RequestFilter attributes with Priority >= 0
@@ -42,10 +36,7 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 attribute.RequestFilter(req, res, requestDto);
-                if (res.IsClosed) return res.IsClosed;
             }
-
-            return res.IsClosed;
         }
 
         /// <summary>
@@ -53,21 +44,13 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object response)
+        public virtual void ApplyResponseFilters(IRequest req, IResponse res, object response)
         {
-            if (response != null)
-            {
-                if (res.IsClosed) return res.IsClosed;
-            }
-
             //Exec global filters
             foreach (var responseFilter in GlobalResponseFilters)
             {
                 responseFilter(req, res, response);
-                if (res.IsClosed) return res.IsClosed;
             }
-
-            return res.IsClosed;
         }
     }
 
