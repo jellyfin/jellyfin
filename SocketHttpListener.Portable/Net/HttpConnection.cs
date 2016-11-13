@@ -204,12 +204,12 @@ namespace SocketHttpListener.Net
             return i_stream;
         }
 
-        public Stream GetResponseStream(HttpListenerRequest request)
+        public Stream GetResponseStream(bool isExpect100Continue = false)
         {
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                if (context.Response.SendChunked || request == null || request.HasExpect100Continue)
+                if (context.Response.SendChunked || isExpect100Continue)
                 {
                     o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
                 }
@@ -490,7 +490,7 @@ namespace SocketHttpListener.Net
             {
                 if (!context.Request.IsWebSocketRequest || force_close)
                 {
-                    Stream st = GetResponseStream(context.Request);
+                    Stream st = GetResponseStream();
                     if (st != null)
                         st.Dispose();
 
