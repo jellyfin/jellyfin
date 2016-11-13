@@ -336,9 +336,12 @@ namespace MediaBrowser.Api.Playback
             {
                 // vaapi will throw an error with this input
                 // [vaapi @ 0x7faed8000960] No VAAPI support for codec mpeg4 profile -99.
-                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase) && videoStream.Level == -99)
+                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    if (videoStream.Level == -99 || videoStream.Level == 15)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
