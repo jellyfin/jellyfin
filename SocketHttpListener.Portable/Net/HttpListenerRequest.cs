@@ -179,19 +179,14 @@ namespace SocketHttpListener.Net
                 }
             }
 
-            if (HasExpect100Continue)
+            if (String.Compare(Headers["Expect"], "100-continue", StringComparison.OrdinalIgnoreCase) == 0)
             {
-                var output = (ResponseStream)context.Connection.GetResponseStream(this);
+                var output = (ResponseStream)context.Connection.GetResponseStream(true);
 
                 var _100continue = _textEncoding.GetASCIIEncoding().GetBytes("HTTP/1.1 100 Continue\r\n\r\n");
 
                 output.InternalWrite(_100continue, 0, _100continue.Length);
             }
-        }
-
-        public bool HasExpect100Continue
-        {
-            get { return String.Compare(Headers["Expect"], "100-continue", StringComparison.OrdinalIgnoreCase) == 0; }
         }
 
         static bool MaybeUri(string s)
