@@ -37,7 +37,7 @@ namespace MediaBrowser.ServerApplication
 
         private static ILogger _logger;
 
-        private static bool _isRunningAsService = false;
+        public static bool IsRunningAsService = false;
         private static bool _canRestartService = false;
         private static bool _appHostDisposed;
 
@@ -72,9 +72,9 @@ namespace MediaBrowser.ServerApplication
         public static void Main()
         {
             var options = new StartupOptions();
-            _isRunningAsService = options.ContainsOption("-service");
+            IsRunningAsService = options.ContainsOption("-service");
 
-            if (_isRunningAsService)
+            if (IsRunningAsService)
             {
                 //_canRestartService = CanRestartWindowsService();
             }
@@ -88,7 +88,7 @@ namespace MediaBrowser.ServerApplication
 
             var success = SetDllDirectory(architecturePath);
 
-            var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
+            var appPaths = CreateApplicationPaths(applicationPath, IsRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
@@ -148,7 +148,7 @@ namespace MediaBrowser.ServerApplication
 
             try
             {
-                RunApplication(appPaths, logManager, _isRunningAsService, options);
+                RunApplication(appPaths, logManager, IsRunningAsService, options);
             }
             finally
             {
@@ -204,7 +204,7 @@ namespace MediaBrowser.ServerApplication
                 }
             }
 
-            if (!_isRunningAsService)
+            if (!IsRunningAsService)
             {
                 return IsAlreadyRunningAsService(applicationPath);
             }
@@ -272,7 +272,7 @@ namespace MediaBrowser.ServerApplication
         {
             get
             {
-                if (_isRunningAsService)
+                if (IsRunningAsService)
                 {
                     return _canRestartService;
                 }
@@ -295,7 +295,7 @@ namespace MediaBrowser.ServerApplication
                 return false;
 #endif
 
-                if (_isRunningAsService)
+                if (IsRunningAsService)
                 {
                     return _canRestartService;
                 }
@@ -317,22 +317,16 @@ namespace MediaBrowser.ServerApplication
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new WindowsFileSystem(logManager.GetLogger("FileSystem"));
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true);
             fileSystem.AddShortcutHandler(new LnkShortcutHandler());
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            var nativeApp = new WindowsApp(fileSystem, _logger)
-            {
-                IsRunningAsService = runService
-            };
-
             var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
 
-            _appHost = new ApplicationHost(appPaths,
+            _appHost = new WindowsAppHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
-                nativeApp,
                 new PowerManagement(),
                 "emby.windows.zip",
                 new EnvironmentInfo(),
@@ -440,7 +434,7 @@ namespace MediaBrowser.ServerApplication
 
         public static void Invoke(Action action)
         {
-            if (_isRunningAsService)
+            if (IsRunningAsService)
             {
                 action();
             }
@@ -578,7 +572,7 @@ namespace MediaBrowser.ServerApplication
         /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
         static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
         {
-            if (e.Reason == SessionEndReasons.SystemShutdown || !_isRunningAsService)
+            if (e.Reason == SessionEndReasons.SystemShutdown || !IsRunningAsService)
             {
                 Shutdown();
             }
@@ -595,7 +589,7 @@ namespace MediaBrowser.ServerApplication
 
             new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
 
-            if (!_isRunningAsService)
+            if (!IsRunningAsService)
             {
                 MessageBox.Show("Unhandled exception: " + exception.Message);
             }
@@ -623,7 +617,7 @@ namespace MediaBrowser.ServerApplication
                 // Update is there - execute update
                 try
                 {
-                    var serviceName = _isRunningAsService ? BackgroundService.GetExistingServiceName() : string.Empty;
+                    var serviceName = IsRunningAsService ? BackgroundService.GetExistingServiceName() : string.Empty;
                     new ApplicationUpdater().UpdateApplication(appPaths, updateArchive, logger, serviceName);
 
                     // And just let the app exit so it can update
@@ -642,7 +636,7 @@ namespace MediaBrowser.ServerApplication
 
         public static void Shutdown()
         {
-            if (_isRunningAsService)
+            if (IsRunningAsService)
             {
                 ShutdownWindowsService();
             }
@@ -658,7 +652,7 @@ namespace MediaBrowser.ServerApplication
         {
             DisposeAppHost();
 
-            if (_isRunningAsService)
+            if (IsRunningAsService)
             {
                 RestartWindowsService();
             }
