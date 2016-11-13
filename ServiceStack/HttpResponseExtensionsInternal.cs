@@ -161,10 +161,8 @@ namespace ServiceStack
             var responseText = result as string;
             if (responseText != null)
             {
-                if (response.ContentType == null || response.ContentType == "text/html")
-                    response.ContentType = defaultContentType;
-
                 var bytes = Encoding.UTF8.GetBytes(responseText);
+                response.SetContentLength(bytes.Length);
                 await response.OutputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
                 return;
             }
