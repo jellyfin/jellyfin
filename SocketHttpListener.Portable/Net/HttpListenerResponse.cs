@@ -30,8 +30,6 @@ namespace SocketHttpListener.Net
         internal bool HeadersSent;
         internal object headers_lock = new object();
 
-        bool force_close_chunked;
-
         private readonly ILogger _logger;
         private readonly ITextEncoding _textEncoding;
 
@@ -48,11 +46,6 @@ namespace SocketHttpListener.Net
             {
                 return headers["Connection"] == "close";
             }
-        }
-
-        internal bool ForceCloseChunked
-        {
-            get { return force_close_chunked; }
         }
 
         public Encoding ContentEncoding
@@ -327,7 +320,7 @@ namespace SocketHttpListener.Net
             headers.Add(name, value);
         }
 
-        void Close(bool force)
+        private void Close(bool force)
         {
             if (force)
             {
@@ -342,20 +335,6 @@ namespace SocketHttpListener.Net
             if (disposed)
                 return;
 
-            Close(false);
-        }
-
-        public void Close(byte[] responseEntity, bool willBlock)
-        {
-            if (disposed)
-                return;
-
-            if (responseEntity == null)
-                throw new ArgumentNullException("responseEntity");
-
-            //TODO: if willBlock -> BeginWrite + Close ?
-            ContentLength64 = responseEntity.Length;
-            OutputStream.Write(responseEntity, 0, (int)content_length);
             Close(false);
         }
 

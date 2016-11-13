@@ -159,7 +159,7 @@ define(['browser'], function (browser) {
                 break;
             case 'mpg':
             case 'mpeg':
-                supported = browser.edgeUwp;
+                supported = browser.edgeUwp || browser.tizen;
                 break;
             case '3gp':
             case 'flv':
@@ -492,6 +492,8 @@ define(['browser'], function (browser) {
 
         profile.CodecProfiles = [];
 
+        var supportsSecondaryAudio = browser.tizen;
+
         // Handle he-aac not supported
         if (!videoTestElement.canPlayType('video/mp4; codecs="avc1.640029, mp4a.40.5"').replace(/no/, '')) {
             profile.CodecProfiles.push({
@@ -507,7 +509,24 @@ define(['browser'], function (browser) {
                         Condition: 'LessThanEqual',
                         Property: 'AudioBitrate',
                         Value: '128000'
-                    },
+                    }
+                ]
+            });
+
+            if (!supportsSecondaryAudio) {
+                profile.CodecProfiles[profile.CodecProfiles.length - 1].Conditions.push({
+                    Condition: 'Equals',
+                    Property: 'IsSecondaryAudio',
+                    Value: 'false',
+                    IsRequired: 'false'
+                });
+            }
+        }
+
+        if (!supportsSecondaryAudio) {
+            profile.CodecProfiles.push({
+                Type: 'VideoAudio',
+                Conditions: [
                     {
                         Condition: 'Equals',
                         Property: 'IsSecondaryAudio',
@@ -517,18 +536,6 @@ define(['browser'], function (browser) {
                 ]
             });
         }
-
-        profile.CodecProfiles.push({
-            Type: 'VideoAudio',
-            Conditions: [
-                {
-                    Condition: 'Equals',
-                    Property: 'IsSecondaryAudio',
-                    Value: 'false',
-                    IsRequired: 'false'
-                }
-            ]
-        });
 
         var maxLevel = '41';
 
