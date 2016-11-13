@@ -209,7 +209,7 @@ namespace SocketHttpListener.Net
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                if (context.Response.SendChunked || isExpect100Continue)
+                if (context.Response.SendChunked || isExpect100Continue || context.Response.ContentLength64 <= 0)
                 {
                     o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
                 }
@@ -438,7 +438,9 @@ namespace SocketHttpListener.Net
                     str = String.Format("<h1>{0}</h1>", description);
 
                 byte[] error = context.Response.ContentEncoding.GetBytes(str);
-                response.Close(error, false);
+                response.ContentLength64 = error.Length;
+                response.OutputStream.Write(error, 0, (int)error.Length);
+                response.Close();
             }
             catch
             {
@@ -492,7 +494,9 @@ namespace SocketHttpListener.Net
                 {
                     Stream st = GetResponseStream();
                     if (st != null)
+                    {
                         st.Dispose();
+                    }
 
                     o_stream = null;
                 }
@@ -514,16 +518,6 @@ namespace SocketHttpListener.Net
 
                 if (!force_close && context.Request.FlushInput())
                 {
-                    if (chunked && context.Response.ForceCloseChunked == false)
-                    {
-                        // Don't close. Keep working.
-                        reuses++;
-                        Unbind();
-                        Init();
-                        BeginReadRequest();
-                        return;
-                    }
-
                     reuses++;
                     Unbind();
                     Init();
