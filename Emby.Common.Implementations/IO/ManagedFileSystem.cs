@@ -57,6 +57,14 @@ namespace Emby.Common.Implementations.IO
             }
         }
 
+        public char PathSeparator
+        {
+            get
+            {
+                return Path.DirectorySeparatorChar;
+            }
+        }
+
         public string GetFullPath(string path)
         {
             return Path.GetFullPath(path);

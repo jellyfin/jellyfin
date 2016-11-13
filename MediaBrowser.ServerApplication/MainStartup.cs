@@ -44,6 +44,8 @@ namespace MediaBrowser.ServerApplication
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool SetDllDirectory(string lpPathName);
 
+        public static string ApplicationPath;
+
         public static bool TryGetLocalFromUncDirectory(string local, out string unc)
         {
             if ((local == null) || (local == ""))
@@ -81,14 +83,14 @@ namespace MediaBrowser.ServerApplication
 
             var currentProcess = Process.GetCurrentProcess();
 
-            var applicationPath = currentProcess.MainModule.FileName;
-            var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+            ApplicationPath = currentProcess.MainModule.FileName;
+            var architecturePath = Path.Combine(Path.GetDirectoryName(ApplicationPath), Environment.Is64BitProcess ? "x64" : "x86");
 
             Wand.SetMagickCoderModulePath(architecturePath);
 
             var success = SetDllDirectory(architecturePath);
 
-            var appPaths = CreateApplicationPaths(applicationPath, IsRunningAsService);
+            var appPaths = CreateApplicationPaths(ApplicationPath, IsRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
@@ -102,7 +104,7 @@ namespace MediaBrowser.ServerApplication
             if (options.ContainsOption("-installservice"))
             {
                 logger.Info("Performing service installation");
-                InstallService(applicationPath, logger);
+                InstallService(ApplicationPath, logger);
                 return;
             }
 
@@ -110,7 +112,7 @@ namespace MediaBrowser.ServerApplication
             if (options.ContainsOption("-installserviceasadmin"))
             {
                 logger.Info("Performing service installation");
-                RunServiceInstallation(applicationPath);
+                RunServiceInstallation(ApplicationPath);
                 return;
             }
 
@@ -118,7 +120,7 @@ namespace MediaBrowser.ServerApplication
             if (options.ContainsOption("-uninstallservice"))
             {
                 logger.Info("Performing service uninstallation");
-                UninstallService(applicationPath, logger);
+                UninstallService(ApplicationPath, logger);
                 return;
             }
 
@@ -126,15 +128,15 @@ namespace MediaBrowser.ServerApplication
             if (options.ContainsOption("-uninstallserviceasadmin"))
             {
                 logger.Info("Performing service uninstallation");
-                RunServiceUninstallation(applicationPath);
+                RunServiceUninstallation(ApplicationPath);
                 return;
             }
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-            RunServiceInstallationIfNeeded(applicationPath);
+            RunServiceInstallationIfNeeded(ApplicationPath);
 
-            if (IsAlreadyRunning(applicationPath, currentProcess))
+            if (IsAlreadyRunning(ApplicationPath, currentProcess))
             {
                 logger.Info("Shutting down because another instance of Emby Server is already running.");
                 return;
@@ -250,6 +252,8 @@ namespace MediaBrowser.ServerApplication
         /// <returns>ServerApplicationPaths.</returns>
         private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, bool runAsService)
         {
+            var appFolderPath = Path.GetDirectoryName(applicationPath);
+
             var resourcesPath = Path.GetDirectoryName(applicationPath);
 
             if (runAsService)
@@ -258,10 +262,10 @@ namespace MediaBrowser.ServerApplication
 
                 var programDataPath = Path.GetDirectoryName(systemPath);
 
-                return new ServerApplicationPaths(programDataPath, applicationPath, resourcesPath);
+                return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath);
             }
 
-            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), applicationPath, resourcesPath);
+            return new ServerApplicationPaths(ApplicationPathHelper.GetProgramDataPath(applicationPath), appFolderPath, resourcesPath);
         }
 
         /// <summary>
@@ -663,7 +667,7 @@ namespace MediaBrowser.ServerApplication
 
                 _logger.Info("Starting new instance");
                 //Application.Restart();
-                Process.Start(_appHost.ServerConfigurationManager.ApplicationPaths.ApplicationPath);
+                Process.Start(ApplicationPath);
 
                 ShutdownWindowsApplication();
             }

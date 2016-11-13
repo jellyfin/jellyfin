@@ -296,27 +296,10 @@ namespace MediaBrowser.Controller.Entities
         /// If this content came from an external service, the id of the content on that service
         /// </summary>
         [IgnoreDataMember]
-        public string ExternalId
-        {
-            get { return this.GetProviderId("ProviderExternalId"); }
-            set
-            {
-                this.SetProviderId("ProviderExternalId", value);
-            }
-        }
+        public string ExternalId { get; set; }
 
         [IgnoreDataMember]
         public string ExternalSeriesId { get; set; }
-
-        [IgnoreDataMember]
-        public string ExternalSeriesIdLegacy
-        {
-            get { return this.GetProviderId("ProviderExternalSeriesId"); }
-            set
-            {
-                this.SetProviderId("ProviderExternalSeriesId", value);
-            }
-        }
 
         /// <summary>
         /// Gets or sets the etag.

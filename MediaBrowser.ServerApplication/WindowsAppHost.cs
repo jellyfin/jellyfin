@@ -6,6 +6,7 @@ using System.Reflection;
 using Emby.Server.Core;
 using Emby.Server.Core.Data;
 using Emby.Server.Core.FFMpeg;
+using Emby.Server.Implementations.EntryPoints;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
@@ -60,9 +61,13 @@ namespace MediaBrowser.ServerApplication
             MainStartup.Shutdown();
         }
 
-        protected override void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory)
+        protected override void AuthorizeServer()
         {
-            ServerAuthorization.AuthorizeServer(udpPort, httpServerPort, httpsServerPort, applicationPath, tempDirectory);
+            ServerAuthorization.AuthorizeServer(UdpServerEntryPoint.PortNumber,
+                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
+                    ServerConfigurationManager.Configuration.HttpsPortNumber,
+                    MainStartup.ApplicationPath,
+                    ConfigurationManager.CommonApplicationPaths.TempDirectory);
         }
 
         protected override IDbConnector GetDbConnector()

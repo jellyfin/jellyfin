@@ -157,7 +157,7 @@ namespace Emby.Server.Core.Data
 
             string[] queries = {
 
-                                "create table if not exists TypedBaseItems (guid GUID primary key, type TEXT, data BLOB, ParentId GUID, Path TEXT)",
+                                "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
 
                                 "create table if not exists AncestorIds (ItemId GUID, AncestorId GUID, AncestorIdText TEXT, PRIMARY KEY (ItemId, AncestorId))",
                                 "create index if not exists idx_AncestorIds1 on AncestorIds(AncestorId)",
@@ -286,6 +286,7 @@ namespace Emby.Server.Core.Data
             _connection.AddColumn(Logger, "TypedBaseItems", "ExtraType", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "Artists", "Text");
             _connection.AddColumn(Logger, "TypedBaseItems", "AlbumArtists", "Text");
+            _connection.AddColumn(Logger, "TypedBaseItems", "ExternalId", "Text");
 
             _connection.AddColumn(Logger, "ItemValues", "CleanValue", "Text");
 
@@ -440,7 +441,8 @@ namespace Emby.Server.Core.Data
             "TotalBitrate",
             "ExtraType",
             "Artists",
-            "AlbumArtists"
+            "AlbumArtists",
+            "ExternalId"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -575,7 +577,8 @@ namespace Emby.Server.Core.Data
                 "TotalBitrate",
                 "ExtraType",
                 "Artists",
-                "AlbumArtists"
+                "AlbumArtists",
+                "ExternalId"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -1083,6 +1086,10 @@ namespace Emby.Server.Core.Data
                             _saveItemCommand.GetParameter(index++).Value = null;
                         }
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.ExternalId;
+
+                    //Logger.Debug(_saveItemCommand.CommandText);
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -1964,6 +1971,12 @@ namespace Emby.Server.Core.Data
             if (hasAlbumArtists != null && !reader.IsDBNull(index))
             {
                 hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|').Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
+            }
+            index++;
+
+            if (!reader.IsDBNull(index))
+            {
+                item.ExternalId = reader.GetString(index);
             }
             index++;
 

@@ -725,6 +725,11 @@ namespace Emby.Server.Core
 
             try
             {
+                if (!FileSystemManager.FileExists(certificateLocation))
+                {
+                    return null;
+                }
+
                 X509Certificate2 localCert = new X509Certificate2(certificateLocation);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
@@ -1438,12 +1443,7 @@ namespace Emby.Server.Core
 
             try
             {
-                AuthorizeServer(
-                    UdpServerEntryPoint.PortNumber,
-                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    ServerConfigurationManager.Configuration.HttpsPortNumber,
-                    ConfigurationManager.CommonApplicationPaths.ApplicationPath,
-                    ConfigurationManager.CommonApplicationPaths.TempDirectory);
+                AuthorizeServer();
             }
             catch (Exception ex)
             {
@@ -1451,7 +1451,7 @@ namespace Emby.Server.Core
             }
         }
 
-        protected abstract void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory);
+        protected abstract void AuthorizeServer();
         protected abstract IDbConnector GetDbConnector();
 
         public event EventHandler HasUpdateAvailableChanged;

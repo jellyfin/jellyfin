@@ -91,7 +91,7 @@ namespace MediaBrowser.Server.Mono
             MainClass.Shutdown();
         }
 
-        protected override void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory)
+        protected override void AuthorizeServer()
         {
             throw new NotImplementedException();
         }

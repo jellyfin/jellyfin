@@ -44,7 +44,7 @@ namespace MediaBrowser.ServerApplication.Updates
             // startpath = executable to launch
             // systempath = folder containing installation
             var args = string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3} service={4} installpath=\"{5}\" startpath=\"{6}\" systempath=\"{7}\"",
-                    product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath, appPaths.ApplicationPath, systemPath);
+                    product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath, MainStartup.ApplicationPath, systemPath);
 
             logger.Info("Args: {0}", args);
             Process.Start(tempUpdater, args);
