@@ -1,33 +1,24 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.ServerApplication.Native;
-using MediaBrowser.ServerApplication.Splash;
-using MediaBrowser.ServerApplication.Updates;
 using Microsoft.Win32;
 using System;
-using System.Configuration.Install;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Management;
 using System.Runtime.InteropServices;
-using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
-using Emby.Common.Implementations.Security;
+using Emby.Drawing;
 using Emby.Server.Core;
 using Emby.Server.Core.Browser;
 using Emby.Server.Implementations.IO;
-using ImageMagickSharp;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Server.Startup.Common.IO;
+using Emby.Server.IO;
 
 namespace Emby.Server
 {
@@ -60,11 +51,11 @@ namespace Emby.Server
             var currentProcess = Process.GetCurrentProcess();
 
             var applicationPath = currentProcess.MainModule.FileName;
-            var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+            //var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
 
-            Wand.SetMagickCoderModulePath(architecturePath);
+            //Wand.SetMagickCoderModulePath(architecturePath);
 
-            var success = SetDllDirectory(architecturePath);
+            //var success = SetDllDirectory(architecturePath);
 
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
@@ -227,31 +218,25 @@ namespace Emby.Server
         /// <param name="options">The options.</param>
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, bool runService, StartupOptions options)
         {
-            var fileSystem = new WindowsFileSystem(logManager.GetLogger("FileSystem"));
-            fileSystem.AddShortcutHandler(new LnkShortcutHandler());
+            var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true);
+
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-            var nativeApp = new WindowsApp(fileSystem, _logger)
-            {
-                IsRunningAsService = runService
-            };
+            var imageEncoder = new NullImageEncoder();
 
-            var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
-
-            _appHost = new ApplicationHost(appPaths,
+            _appHost = new CoreAppHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
-                nativeApp,
                 new PowerManagement(),
                 "emby.windows.zip",
                 new EnvironmentInfo(),
                 imageEncoder,
-                new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
-                new RecyclableMemoryStreamProvider(),
+                new CoreSystemEvents(),
+                new MemoryStreamFactory(),
                 new NetworkManager(logManager.GetLogger("NetworkManager")),
                 GenerateCertificate,
-                () => Environment.UserDomainName);
+                () => "EmbyUser");
 
             var initProgress = new Progress<double>();
 
@@ -275,12 +260,6 @@ namespace Emby.Server
             {
                 Task.WaitAll(task);
 
-                task = InstallVcredist2013IfNeeded(_appHost, _logger);
-                Task.WaitAll(task);
-
-                Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-                Microsoft.Win32.SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
-
                 task = ApplicationTaskCompletionSource.Task;
                 Task.WaitAll(task);
             }
@@ -288,15 +267,7 @@ namespace Emby.Server
 
         private static void GenerateCertificate(string certPath, string certHost)
         {
-            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
-        }
-
-        static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
-        {
-            if (e.Reason == SessionSwitchReason.SessionLogon)
-            {
-                BrowserLauncher.OpenDashboard(_appHost);
-            }
+            //CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
         }
 
         /// <summary>
@@ -304,11 +275,6 @@ namespace Emby.Server
         /// </summary>
         private static void StartService(ILogManager logManager)
         {
-            var service = new BackgroundService(logManager.GetLogger("Service"));
-
-            service.Disposed += service_Disposed;
-
-            ServiceBase.Run(service);
         }
 
         /// <summary>
@@ -330,19 +296,6 @@ namespace Emby.Server
         }
 
         /// <summary>
-        /// Handles the SessionEnding event of the SystemEvents control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
-        static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            if (e.Reason == SessionEndReasons.SystemShutdown || !_isRunningAsService)
-            {
-                Shutdown();
-            }
-        }
-
-        /// <summary>
         /// Handles the UnhandledException event of the CurrentDomain control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -355,7 +308,7 @@ namespace Emby.Server
 
             if (!_isRunningAsService)
             {
-                MessageBox.Show("Unhandled exception: " + exception.Message);
+                ShowMessageBox("Unhandled exception: " + exception.Message);
             }
 
             if (!Debugger.IsAttached)
@@ -381,8 +334,8 @@ namespace Emby.Server
                 // Update is there - execute update
                 try
                 {
-                    var serviceName = _isRunningAsService ? BackgroundService.GetExistingServiceName() : string.Empty;
-                    new ApplicationUpdater().UpdateApplication(appPaths, updateArchive, logger, serviceName);
+                    //var serviceName = _isRunningAsService ? BackgroundService.GetExistingServiceName() : string.Empty;
+                    //new ApplicationUpdater().UpdateApplication(appPaths, updateArchive, logger, serviceName);
 
                     // And just let the app exit so it can update
                     return true;
@@ -391,11 +344,16 @@ namespace Emby.Server
                 {
                     logger.ErrorException("Error starting updater.", e);
 
-                    MessageBox.Show(string.Format("Error attempting to update application.\n\n{0}\n\n{1}", e.GetType().Name, e.Message));
+                    ShowMessageBox(string.Format("Error attempting to update application.\n\n{0}\n\n{1}", e.GetType().Name, e.Message));
                 }
             }
 
             return false;
+        }
+
+        private static void ShowMessageBox(string msg)
+        {
+
         }
 
         public static void Shutdown()
@@ -467,90 +425,6 @@ namespace Emby.Server
         private static bool CanRestartWindowsService()
         {
             return false;
-        }
-
-        private static async Task InstallVcredist2013IfNeeded(ApplicationHost appHost, ILogger logger)
-        {
-            // Reference 
-            // http://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed
-
-            try
-            {
-                var subkey = Environment.Is64BitProcess
-                    ? "SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\12.0\\VC\\Runtimes\\x64"
-                    : "SOFTWARE\\Microsoft\\VisualStudio\\12.0\\VC\\Runtimes\\x86";
-
-                using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default)
-                    .OpenSubKey(subkey))
-                {
-                    if (ndpKey != null && ndpKey.GetValue("Version") != null)
-                    {
-                        var installedVersion = ((string)ndpKey.GetValue("Version")).TrimStart('v');
-                        if (installedVersion.StartsWith("12", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error getting .NET Framework version", ex);
-                return;
-            }
-
-            try
-            {
-                await InstallVcredist2013().ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException("Error installing Visual Studio C++ runtime", ex);
-            }
-        }
-
-        private async static Task InstallVcredist2013()
-        {
-            var httpClient = _appHost.HttpClient;
-
-            var tmp = await httpClient.GetTempFile(new HttpRequestOptions
-            {
-                Url = GetVcredist2013Url(),
-                Progress = new Progress<double>()
-
-            }).ConfigureAwait(false);
-
-            var exePath = Path.ChangeExtension(tmp, ".exe");
-            File.Copy(tmp, exePath);
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = exePath,
-
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                Verb = "runas",
-                ErrorDialog = false
-            };
-
-            _logger.Info("Running {0}", startInfo.FileName);
-
-            using (var process = Process.Start(startInfo))
-            {
-                process.WaitForExit();
-            }
-        }
-
-        private static string GetVcredist2013Url()
-        {
-            if (Environment.Is64BitProcess)
-            {
-                return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x64.exe";
-            }
-
-            // TODO: ARM url - https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_arm.exe
-
-            return "https://github.com/MediaBrowser/Emby.Resources/raw/master/vcredist2013/vcredist_x86.exe";
         }
 
         /// <summary>

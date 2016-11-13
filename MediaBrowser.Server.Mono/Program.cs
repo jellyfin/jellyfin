@@ -91,15 +91,12 @@ namespace MediaBrowser.Server.Mono
 
             var environmentInfo = GetEnvironmentInfo();
 
-            var nativeApp = new MonoApp(options, logManager.GetLogger("App"), environmentInfo);
-
             var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
 
-            _appHost = new ApplicationHost(appPaths,
+            _appHost = new MonoAppHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
-                nativeApp,
                 new PowerManagement(),
                 "emby.mono.zip",
                 environmentInfo,

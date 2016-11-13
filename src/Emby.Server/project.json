@@ -11,7 +11,11 @@
       "type": "platform",
       "version": "1.0.1"
     },
-    "Mono.Nat": "1.0.0-*"
+    "Mono.Nat": "1.0.0-*",
+	"Microsoft.Win32.Registry": "4.0.0",
+	"System.Runtime.Extensions": "4.1.0",
+	"System.Diagnostics.Process": "4.1.0",
+	"Microsoft.Data.SQLite": "1.0.0"
   },
 
   "frameworks": {
