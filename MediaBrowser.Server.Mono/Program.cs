@@ -5,6 +5,7 @@ using MediaBrowser.Server.Startup.Common;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -74,7 +75,9 @@ namespace MediaBrowser.Server.Mono
                 programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
             }
 
-            return new ServerApplicationPaths(programDataPath, applicationPath, Path.GetDirectoryName(applicationPath));
+            var appFolderPath = Path.GetDirectoryName(applicationPath);
+
+            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
@@ -305,5 +308,10 @@ namespace MediaBrowser.Server.Mono
     public class MonoEnvironmentInfo : EnvironmentInfo
     {
         public bool IsBsd { get; set; }
+
+        public virtual string GetUserId()
+        {
+            return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
+        }
     }
 }

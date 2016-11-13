@@ -8,7 +8,7 @@ namespace Emby.Server
 {
     public class ApplicationPathHelper
     {
-        public static string GetProgramDataPath(string applicationPath)
+        public static string GetProgramDataPath(string appDirectory)
         {
             var useDebugPath = false;
 
@@ -27,14 +27,7 @@ namespace Emby.Server
             // If it's a relative path, e.g. "..\"
             if (!Path.IsPathRooted(programDataPath))
             {
-                var path = Path.GetDirectoryName(applicationPath);
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    throw new Exception("Unable to determine running assembly location");
-                }
-
-                programDataPath = Path.Combine(path, programDataPath);
+                programDataPath = Path.Combine(appDirectory, programDataPath);
 
                 programDataPath = Path.GetFullPath(programDataPath);
             }

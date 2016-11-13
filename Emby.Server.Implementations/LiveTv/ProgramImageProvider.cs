@@ -24,6 +24,18 @@ namespace Emby.Server.Implementations.LiveTv
             return new[] { ImageType.Primary };
         }
 
+        private string GetItemExternalId(BaseItem item)
+        {
+            var externalId = item.ExternalId;
+
+            if (string.IsNullOrWhiteSpace(externalId))
+            {
+                externalId = item.GetProviderId("ProviderExternalId");
+            }
+
+            return externalId;
+        }
+
         public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
             var liveTvItem = (LiveTvProgram)item;
@@ -38,7 +50,7 @@ namespace Emby.Server.Implementations.LiveTv
                 {
                     var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
 
-                    var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
+                    var response = await service.GetProgramImageAsync(GetItemExternalId(liveTvItem), GetItemExternalId(channel), cancellationToken).ConfigureAwait(false);
 
                     if (response != null)
                     {

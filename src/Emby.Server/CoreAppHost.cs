@@ -51,7 +51,7 @@ namespace Emby.Server
             return list;
         }
 
-        protected override void AuthorizeServer(int udpPort, int httpServerPort, int httpsServerPort, string applicationPath, string tempDirectory)
+        protected override void AuthorizeServer()
         {
         }
 

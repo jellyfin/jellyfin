@@ -326,7 +326,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (requiresCallback != null)
             {
-                results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken)
+                results = await GetChannelItemMediaSourcesInternal(requiresCallback, GetItemExternalId(item), cancellationToken)
                     .ConfigureAwait(false);
             }
             else
@@ -1075,6 +1075,18 @@ namespace Emby.Server.Implementations.Channels
             return result;
         }
 
+        private string GetItemExternalId(BaseItem item)
+        {
+            var externalId = item.ExternalId;
+
+            if (string.IsNullOrWhiteSpace(externalId))
+            {
+                externalId = item.GetProviderId("ProviderExternalId");
+            }
+
+            return externalId;
+        }
+
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
         private async Task<ChannelItemResult> GetChannelItems(IChannel channel,
             User user,
@@ -1145,7 +1157,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     var categoryItem = _libraryManager.GetItemById(new Guid(folderId));
 
-                    query.FolderId = categoryItem.ExternalId;
+                    query.FolderId = GetItemExternalId(categoryItem);
                 }
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);

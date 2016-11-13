@@ -12,22 +12,18 @@ namespace Emby.Common.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseApplicationPaths"/> class.
         /// </summary>
-        protected BaseApplicationPaths(string programDataPath, string applicationPath)
+        protected BaseApplicationPaths(string programDataPath, string appFolderPath)
         {
             ProgramDataPath = programDataPath;
-            ApplicationPath = applicationPath;
+            ProgramSystemPath = appFolderPath;
         }
 
-        public string ApplicationPath { get; private set; }
         public string ProgramDataPath { get; private set; }
 
         /// <summary>
         /// Gets the path to the system folder
         /// </summary>
-        public string ProgramSystemPath
-        {
-            get { return Path.GetDirectoryName(ApplicationPath); }
-        }
+        public string ProgramSystemPath { get; private set; }
 
         /// <summary>
         /// The _data directory

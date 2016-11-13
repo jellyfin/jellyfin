@@ -396,6 +396,8 @@ namespace Emby.Server.Implementations.HttpServer
                 if (_disposed)
                 {
                     httpRes.StatusCode = 503;
+                    httpRes.ContentType = "text/plain";
+                    Write(httpRes, "Server shutting down");
                     return;
                 }
 

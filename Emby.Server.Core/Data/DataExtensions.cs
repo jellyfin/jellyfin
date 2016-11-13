@@ -40,7 +40,7 @@ namespace Emby.Server.Core.Data
         public static IDataParameter Add(this IDataParameterCollection paramCollection, IDbCommand cmd, string name)
         {
             var param = cmd.CreateParameter();
-
+            
             param.ParameterName = name;
 
             paramCollection.Add(param);
@@ -173,7 +173,7 @@ namespace Emby.Server.Core.Data
             var builder = new StringBuilder();
 
             builder.AppendLine("alter table " + table);
-            builder.AppendLine("add column " + columnName + " " + type);
+            builder.AppendLine("add column " + columnName + " " + type + " NULL");
 
             connection.RunQueries(new[] { builder.ToString() }, logger);
         }

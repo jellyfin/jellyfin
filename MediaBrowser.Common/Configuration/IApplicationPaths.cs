@@ -7,12 +7,6 @@ namespace MediaBrowser.Common.Configuration
     public interface IApplicationPaths
     {
         /// <summary>
-        /// Gets the application path.
-        /// </summary>
-        /// <value>The application path.</value>
-        string ApplicationPath { get; }
-
-        /// <summary>
         /// Gets the path to the program data folder
         /// </summary>
         /// <value>The program data path.</value>

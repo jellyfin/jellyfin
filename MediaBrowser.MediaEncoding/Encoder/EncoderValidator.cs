@@ -37,20 +37,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-version");
             }
-            catch
+            catch (Exception ex)
             {
-            }
-
-            output = output ?? string.Empty;
-
-            if (logOutput)
-            {
-                _logger.Info("ffmpeg info: {0}", output);
+                if (logOutput)
+                {
+                    _logger.ErrorException("Error validating encoder", ex);
+                }
             }
 
             if (string.IsNullOrWhiteSpace(output))
             {
                 return false;
+            }
+
+            if (logOutput)
+            {
+                _logger.Info("ffmpeg info: {0}", output);
             }
 
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)

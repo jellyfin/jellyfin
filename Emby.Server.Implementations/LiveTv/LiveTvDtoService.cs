@@ -269,6 +269,18 @@ namespace Emby.Server.Implementations.LiveTv
             return _libraryManager.GetNewItemId(name.ToLower(), typeof(ILiveTvRecording));
         }
 
+        private string GetItemExternalId(BaseItem item)
+        {
+            var externalId = item.ExternalId;
+
+            if (string.IsNullOrWhiteSpace(externalId))
+            {
+                externalId = item.GetProviderId("ProviderExternalId");
+            }
+
+            return externalId;
+        }
+
         public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)
         {
             var info = new TimerInfo
@@ -304,7 +316,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (channel != null)
                 {
-                    info.ChannelId = channel.ExternalId;
+                    info.ChannelId = GetItemExternalId(channel);
                 }
             }
 
@@ -314,7 +326,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (program != null)
                 {
-                    info.ProgramId = program.ExternalId;
+                    info.ProgramId = GetItemExternalId(program);
                 }
             }
 
@@ -370,7 +382,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (channel != null)
                 {
-                    info.ChannelId = channel.ExternalId;
+                    info.ChannelId = GetItemExternalId(channel);
                 }
             }
 
@@ -380,7 +392,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                 if (program != null)
                 {
-                    info.ProgramId = program.ExternalId;
+                    info.ProgramId = GetItemExternalId(program);
                 }
             }
 
