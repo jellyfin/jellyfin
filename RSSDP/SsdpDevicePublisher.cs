@@ -26,8 +26,8 @@ namespace Rssdp
 		/// <para>Uses the default <see cref="ISsdpCommunicationsServer"/> implementation and network settings for Windows and the SSDP specification.</para>
 		/// </remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "No way to do this here, and we don't want to dispose it except in the (rare) case of an exception anyway.")]
-		public SsdpDevicePublisher(ISocketFactory socketFactory, ITimerFactory timerFactory, string osName, string osVersion)
-			: base(new SsdpCommunicationsServer(socketFactory), timerFactory, osName, osVersion)
+		public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, ITimerFactory timerFactory, string osName, string osVersion)
+			: base(communicationsServer, timerFactory, osName, osVersion)
 		{
 
 		}

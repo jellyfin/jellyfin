@@ -291,7 +291,7 @@ namespace MediaBrowser.Server.Mono
     {
         public bool IsBsd { get; set; }
 
-        public virtual string GetUserId()
+        public override string GetUserId()
         {
             return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
         }

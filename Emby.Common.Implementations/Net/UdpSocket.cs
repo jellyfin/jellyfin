@@ -63,7 +63,7 @@ namespace Emby.Common.Implementations.Net
                     }
                 }, state);
 #else
-            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.EndPoint, new AsyncCallback(this.ProcessResponse), state);
+            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.EndPoint, ProcessResponse, state);
 #endif
 
             return tcs.Task;
@@ -99,7 +99,7 @@ namespace Emby.Common.Implementations.Net
                         _Socket.EndSend(result);
                         taskSource.TrySetResult(true);
                     }
-                    catch (SocketException ex)
+                    catch (Exception ex)
                     {
                         taskSource.TrySetException(ex);
                     }
@@ -199,13 +199,6 @@ namespace Emby.Common.Implementations.Net
             catch (ObjectDisposedException)
             {
                 state.TaskCompletionSource.SetCanceled();
-            }
-            catch (SocketException se)
-            {
-                if (se.SocketErrorCode != SocketError.Interrupted && se.SocketErrorCode != SocketError.OperationAborted && se.SocketErrorCode != SocketError.Shutdown)
-                    state.TaskCompletionSource.SetException(se);
-                else
-                    state.TaskCompletionSource.SetCanceled();
             }
             catch (Exception ex)
             {
