@@ -7,7 +7,7 @@ using Emby.Server.Core.FFMpeg;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Mono.Native;
+using Emby.Server.Mac.Native;
 using System.Diagnostics;
 
 namespace MediaBrowser.Server.Mac
