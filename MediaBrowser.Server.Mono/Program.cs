@@ -1,10 +1,9 @@
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Mono.Native;
 using MediaBrowser.Server.Startup.Common;
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,7 +12,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Common.Implementations.EnvironmentInfo;
-using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
@@ -74,15 +72,15 @@ namespace MediaBrowser.Server.Mono
                 programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
             }
 
-            return new ServerApplicationPaths(programDataPath, applicationPath, Path.GetDirectoryName(applicationPath));
+            var appFolderPath = Path.GetDirectoryName(applicationPath);
+
+            return new ServerApplicationPaths(programDataPath, appFolderPath, Path.GetDirectoryName(applicationPath));
         }
 
         private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
 
         private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
         {
-            Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-
             // Allow all https requests
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
@@ -91,15 +89,12 @@ namespace MediaBrowser.Server.Mono
 
             var environmentInfo = GetEnvironmentInfo();
 
-            var nativeApp = new MonoApp(options, logManager.GetLogger("App"), environmentInfo);
-
             var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, logManager, fileSystem, options, () => _appHost.HttpClient, appPaths);
 
-            _appHost = new ApplicationHost(appPaths,
+            _appHost = new MonoAppHost(appPaths,
                 logManager,
                 options,
                 fileSystem,
-                nativeApp,
                 new PowerManagement(),
                 "emby.mono.zip",
                 environmentInfo,
@@ -108,7 +103,7 @@ namespace MediaBrowser.Server.Mono
                 new MemoryStreamProvider(),
                 new NetworkManager(logManager.GetLogger("NetworkManager")),
                 GenerateCertificate,
-                () => Environment.UserDomainName);
+                () => Environment.UserName);
 
             if (options.ContainsOption("-v"))
             {
@@ -220,19 +215,6 @@ namespace MediaBrowser.Server.Mono
         }
 
         /// <summary>
-        /// Handles the SessionEnding event of the SystemEvents control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
-        static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            if (e.Reason == SessionEndReasons.SystemShutdown)
-            {
-                Shutdown();
-            }
-        }
-
-        /// <summary>
         /// Handles the UnhandledException event of the CurrentDomain control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -308,5 +290,10 @@ namespace MediaBrowser.Server.Mono
     public class MonoEnvironmentInfo : EnvironmentInfo
     {
         public bool IsBsd { get; set; }
+
+        public virtual string GetUserId()
+        {
+            return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
+        }
     }
 }

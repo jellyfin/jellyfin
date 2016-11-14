@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations.Persistence;
+using Emby.Server.Core.Data;
 
 namespace MediaBrowser.Server.Mac
 {

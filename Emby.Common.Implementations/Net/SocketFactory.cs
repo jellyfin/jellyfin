@@ -23,10 +23,15 @@ namespace Emby.Common.Implementations.Net
         /// </summary>
         private IPAddress _LocalIP;
 
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public SocketFactory(ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
             _logger = logger;
             _LocalIP = IPAddress.Any;
         }

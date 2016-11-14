@@ -14,7 +14,11 @@ namespace Emby.Server.Core.Data
         /// <summary>
         /// Connects to db.
         /// </summary>
-        public static async Task<IDbConnection> ConnectToDb(string dbPath, bool isReadOnly, bool enablePooling, int? cacheSize, ILogger logger)
+        public static async Task<IDbConnection> ConnectToDb(string dbPath, 
+            bool isReadOnly, 
+            bool enablePooling, 
+            int? cacheSize, 
+            ILogger logger)
         {
             if (string.IsNullOrEmpty(dbPath))
             {

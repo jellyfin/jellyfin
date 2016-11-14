@@ -18,12 +18,13 @@ namespace Emby.Common.Implementations.IO
         private readonly bool _supportsAsyncFileStreams;
         private char[] _invalidFileNameChars;
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-        protected bool EnableFileSystemRequestConcat = true;
+        private bool EnableFileSystemRequestConcat = true;
 
-        public ManagedFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars)
+        public ManagedFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars, bool enableFileSystemRequestConcat)
         {
             Logger = logger;
             _supportsAsyncFileStreams = supportsAsyncFileStreams;
+            EnableFileSystemRequestConcat = enableFileSystemRequestConcat;
             SetInvalidFileNameChars(enableManagedInvalidFileNameChars);
         }
 
@@ -49,6 +50,14 @@ namespace Emby.Common.Implementations.IO
         }
 
         public char DirectorySeparatorChar
+        {
+            get
+            {
+                return Path.DirectorySeparatorChar;
+            }
+        }
+
+        public char PathSeparator
         {
             get
             {

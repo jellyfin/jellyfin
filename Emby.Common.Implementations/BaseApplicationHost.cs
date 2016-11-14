@@ -326,7 +326,7 @@ namespace Emby.Common.Implementations
 
             builder.AppendLine(string.Format("Processor count: {0}", Environment.ProcessorCount));
             builder.AppendLine(string.Format("Program data path: {0}", appPaths.ProgramDataPath));
-            builder.AppendLine(string.Format("Application Path: {0}", appPaths.ApplicationPath));
+            builder.AppendLine(string.Format("Application directory: {0}", appPaths.ProgramSystemPath));
 
             return builder;
         }
@@ -548,7 +548,7 @@ return null;
             TimerFactory = new TimerFactory();
             RegisterSingleInstance(TimerFactory);
 
-            SocketFactory = new SocketFactory(null);
+            SocketFactory = new SocketFactory(LogManager.GetLogger("SocketFactory"));
             RegisterSingleInstance(SocketFactory);
 
             RegisterSingleInstance(CryptographyProvider);

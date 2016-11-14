@@ -976,7 +976,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (item.Bitrate.Value > maxBitrate.Value)
             {
-                _logger.Info("Bitrate exceeds DirectPlay limit");
+                _logger.Info("Bitrate exceeds DirectPlay limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 
@@ -1052,6 +1052,22 @@ namespace MediaBrowser.Model.Dlna
                             if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxAudioChannels = num;
+                            }
+                            break;
+                        }
+                    case ProfileConditionValue.IsAvc:
+                        {
+                            bool isAvc;
+                            if (bool.TryParse(value, out isAvc))
+                            {
+                                if (isAvc && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.RequireAvc = true;
+                                }
+                                else if (!isAvc && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.RequireAvc = true;
+                                }
                             }
                             break;
                         }
@@ -1135,6 +1151,8 @@ namespace MediaBrowser.Model.Dlna
                             }
                             break;
                         }
+                    default:
+                        break;
                 }
             }
         }

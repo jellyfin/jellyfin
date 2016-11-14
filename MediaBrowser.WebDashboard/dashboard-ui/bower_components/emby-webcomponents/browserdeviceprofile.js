@@ -554,12 +554,6 @@ define(['browser'], function (browser) {
                 IsRequired: false
             },
             {
-                Condition: 'NotEquals',
-                Property: 'IsAVC',
-                Value: 'true',
-                IsRequired: false
-            },
-            {
                 Condition: 'EqualsAny',
                 Property: 'VideoProfile',
                 Value: 'high|main|baseline|constrained baseline'
@@ -579,18 +573,6 @@ define(['browser'], function (browser) {
                 IsRequired: false
             });
         }
-
-        profile.CodecProfiles.push({
-            Type: 'Video',
-            Codec: 'vpx',
-            Conditions: [
-            {
-                Condition: 'NotEquals',
-                Property: 'IsAnamorphic',
-                Value: 'true',
-                IsRequired: false
-            }]
-        });
 
         // Subtitle profiles
         // External vtt or burn in

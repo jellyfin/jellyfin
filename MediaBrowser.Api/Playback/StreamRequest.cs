@@ -195,6 +195,7 @@ namespace MediaBrowser.Api.Playback
 
         public bool EnableSubtitlesInManifest { get; set; }
         public bool EnableSplittingOnNonKeyFrames { get; set; }
+        public bool RequireAvc { get; set; }
 
         public VideoStreamRequest()
         {

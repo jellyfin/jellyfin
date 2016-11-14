@@ -14,6 +14,23 @@ namespace Emby.Common.Implementations.Net
 
         public SocketAcceptor(ILogger logger, Socket originalSocket, Action<ISocket> onAccept, Func<bool> isClosed)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+            if (originalSocket == null)
+            {
+                throw new ArgumentNullException("originalSocket");
+            }
+            if (onAccept == null)
+            {
+                throw new ArgumentNullException("onAccept");
+            }
+            if (isClosed == null)
+            {
+                throw new ArgumentNullException("isClosed");
+            }
+
             _logger = logger;
             _originalSocket = originalSocket;
             _isClosed = isClosed;
@@ -101,11 +118,8 @@ namespace Emby.Common.Implementations.Net
                 _onAccept(new NetSocket(acceptSocket, _logger));
             }
 
-            if (_originalSocket != null)
-            {
-                // Accept the next connection request
-                StartAccept(e, ref acceptSocket);
-            }
+            // Accept the next connection request
+            StartAccept(e, ref acceptSocket);
         }
     }
 }

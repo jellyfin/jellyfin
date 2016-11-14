@@ -336,9 +336,12 @@ namespace MediaBrowser.Api.Playback
             {
                 // vaapi will throw an error with this input
                 // [vaapi @ 0x7faed8000960] No VAAPI support for codec mpeg4 profile -99.
-                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase) && videoStream.Level == -99)
+                if (string.Equals(videoStream.Codec, "mpeg4", StringComparison.OrdinalIgnoreCase))
                 {
-                    return false;
+                    if (videoStream.Level == -99 || videoStream.Level == 15)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
@@ -1756,6 +1759,13 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.EnableSplittingOnNonKeyFrames = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 30)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -2112,7 +2122,7 @@ namespace MediaBrowser.Api.Playback
 
             if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
-                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value && request.RequireAvc)
                 {
                     Logger.Debug("Cannot stream copy video. Stream is marked as not AVC");
                     return false;
