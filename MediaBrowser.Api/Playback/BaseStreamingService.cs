@@ -1759,6 +1759,13 @@ namespace MediaBrowser.Api.Playback
                         videoRequest.EnableSplittingOnNonKeyFrames = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
+                else if (i == 30)
+                {
+                    if (videoRequest != null)
+                    {
+                        videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
+                    }
+                }
             }
         }
 
@@ -2115,7 +2122,7 @@ namespace MediaBrowser.Api.Playback
 
             if (string.Equals("h264", videoStream.Codec, StringComparison.OrdinalIgnoreCase))
             {
-                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value)
+                if (videoStream.IsAVC.HasValue && !videoStream.IsAVC.Value && request.RequireAvc)
                 {
                     Logger.Debug("Cannot stream copy video. Stream is marked as not AVC");
                     return false;
