@@ -12,14 +12,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
-using MediaBrowser.Server.Startup.Common;
-using Microsoft.Win32;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
 using Emby.Common.Implementations.Logging;
 using Emby.Server.Mac.Native;
+using Emby.Server.Implementations.IO;
+using Emby.Common.Implementations.Networking;
+using MediaBrowser.Server.Startup.Common;
+using MediaBrowser.Server.Startup.Common.IO;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -85,21 +87,34 @@ namespace MediaBrowser.Server.Mac
 			ILogManager logManager, 
 			StartupOptions options)
 		{
-			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
-
 			// Allow all https requests
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
 			var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), false, false);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-			AppHost = new MacAppHost(appPaths, 
-			                         logManager, 
-			                         options, 
-			                         fileSystem, 
-			                         new PowerManagement(),
-			                         "Emby.Server.Mac.pkg", 
-			                         nativeApp);
+			var environmentInfo = GetEnvironmentInfo();
+
+			var imageEncoder = ImageEncoderHelper.GetImageEncoder(_logger, 
+			                                                      logManager, 
+			                                                      fileSystem, 
+			                                                      options, 
+			                                                      () => AppHost.HttpClient, 
+			                                                      appPaths);
+
+			AppHost = new MacAppHost(appPaths,
+									 logManager,
+									 options,
+									 fileSystem,
+									 new PowerManagement(),
+									 "Emby.Server.Mac.pkg",
+									 environmentInfo,
+									 imageEncoder,
+									 new Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
+									 new MemoryStreamProvider(),
+			                         new NetworkManager(logManager.GetLogger("NetworkManager")),
+									 GenerateCertificate,
+									 () => Environment.UserName);
 
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (AppHost.ApplicationVersion.ToString());
@@ -122,19 +137,6 @@ namespace MediaBrowser.Server.Mac
 			if (MenuBarIcon.Instance != null) 
 			{
 				MenuBarIcon.Instance.Localize ();
-			}
-		}
-
-		/// <summary>
-		/// Handles the SessionEnding event of the SystemEvents control.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
-		static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-		{
-			if (e.Reason == SessionEndReasons.SystemShutdown)
-			{
-				Shutdown();
 			}
 		}
 
