@@ -9,6 +9,8 @@ namespace MediaBrowser.Server.Startup.Common
     {
         public event EventHandler Resume;
         public event EventHandler Suspend;
+        public event EventHandler SessionLogoff;
+        public event EventHandler SystemShutdown;
 
         private readonly ILogger _logger;
 
@@ -16,6 +18,20 @@ namespace MediaBrowser.Server.Startup.Common
         {
             _logger = logger;
             Microsoft.Win32.SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+        }
+
+        private void SystemEvents_SessionEnding(object sender, Microsoft.Win32.SessionEndingEventArgs e)
+        {
+            switch (e.Reason)
+            {
+                case Microsoft.Win32.SessionEndReasons.Logoff:
+                    EventHelper.FireEventIfNotNull(SessionLogoff, this, EventArgs.Empty, _logger);
+                    break;
+                case Microsoft.Win32.SessionEndReasons.SystemShutdown:
+                    EventHelper.FireEventIfNotNull(SystemShutdown, this, EventArgs.Empty, _logger);
+                    break;
+            }
         }
 
         private void SystemEvents_PowerModeChanged(object sender, Microsoft.Win32.PowerModeChangedEventArgs e)

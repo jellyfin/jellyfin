@@ -59,6 +59,7 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
+    <Compile Include="EntryPoints\SystemEvents.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageReporter.cs" />
