@@ -2,7 +2,7 @@
 using MediaBrowser.Model.Logging;
 using Mono.Unix.Native;
 
-namespace MediaBrowser.Server.Mono.Native
+namespace Emby.Server.Mac.Native
 {
     public class MonoFileSystem : ManagedFileSystem
     {

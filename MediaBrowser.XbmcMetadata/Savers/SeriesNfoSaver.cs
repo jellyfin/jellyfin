@@ -90,8 +90,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         protected override List<string> GetTagsUsed()
         {
             var list = new List<string>

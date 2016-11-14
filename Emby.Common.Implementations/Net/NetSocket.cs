@@ -15,6 +15,15 @@ namespace Emby.Common.Implementations.Net
 
         public NetSocket(Socket socket, ILogger logger)
         {
+            if (socket == null)
+            {
+                throw new ArgumentNullException("socket");
+            }
+            if (logger == null)
+            {
+                throw new ArgumentNullException("logger");
+            }
+
             Socket = socket;
             _logger = logger;
         }

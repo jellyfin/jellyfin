@@ -95,5 +95,15 @@ namespace Emby.Common.Implementations.EnvironmentInfo
                 return MediaBrowser.Model.System.Architecture.X64;
             }
         }
+
+        public string GetEnvironmentVariable(string name)
+        {
+            return Environment.GetEnvironmentVariable(name);
+        }
+
+        public virtual string GetUserId()
+        {
+            return null;
+        }
     }
 }

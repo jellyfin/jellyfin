@@ -142,7 +142,7 @@ namespace Emby.Server.Core
     /// <summary>
     /// Class CompositionRoot
     /// </summary>
-    public class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost, IDependencyContainer
+    public abstract class ApplicationHost : BaseApplicationHost<ServerApplicationPaths>, IServerApplicationHost, IDependencyContainer
     {
         /// <summary>
         /// Gets the server configuration manager.
@@ -257,10 +257,8 @@ namespace Emby.Server.Core
 
         protected IAuthService AuthService { get; private set; }
 
-        private readonly StartupOptions _startupOptions;
+        protected readonly StartupOptions StartupOptions;
         private readonly string _releaseAssetFilename;
-
-        internal INativeApp NativeApp { get; set; }
 
         internal IPowerManagement PowerManagement { get; private set; }
         internal IImageEncoder ImageEncoder { get; private set; }
@@ -275,7 +273,6 @@ namespace Emby.Server.Core
             ILogManager logManager,
             StartupOptions options,
             IFileSystem fileSystem,
-            INativeApp nativeApp,
             IPowerManagement powerManagement,
             string releaseAssetFilename,
             IEnvironmentInfo environmentInfo,
@@ -293,11 +290,10 @@ namespace Emby.Server.Core
                   memoryStreamFactory, 
                   networkManager)
         {
-            _startupOptions = options;
+            StartupOptions = options;
             _certificateGenerator = certificateGenerator;
             _releaseAssetFilename = releaseAssetFilename;
             _defaultUserNameFactory = defaultUsernameFactory;
-            NativeApp = nativeApp;
             PowerManagement = powerManagement;
 
             ImageEncoder = imageEncoder;
@@ -314,19 +310,11 @@ namespace Emby.Server.Core
         {
             get
             {
-                return _version ?? (_version = GetAssembly(NativeApp.GetType()).GetName().Version);
+                return _version ?? (_version = GetAssembly(GetType()).GetName().Version);
             }
         }
 
-        public override bool IsRunningAsService
-        {
-            get { return NativeApp.IsRunningAsService; }
-        }
-
-        public bool SupportsRunningAsService
-        {
-            get { return NativeApp.SupportsRunningAsService; }
-        }
+        public abstract bool SupportsRunningAsService { get; }
 
         /// <summary>
         /// Gets the name.
@@ -345,19 +333,7 @@ namespace Emby.Server.Core
             return type.GetTypeInfo().Assembly;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self restart; otherwise, <c>false</c>.</value>
-        public override bool CanSelfRestart
-        {
-            get { return NativeApp.CanSelfRestart; }
-        }
-
-        public bool SupportsAutoRunAtStartup
-        {
-            get { return NativeApp.SupportsAutoRunAtStartup; }
-        }
+        public abstract bool SupportsAutoRunAtStartup { get; }
 
         private void SetBaseExceptionMessage()
         {
@@ -580,11 +556,11 @@ namespace Emby.Server.Core
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, NativeApp.GetDbConnector(), MemoryStreamFactory);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, GetDbConnector(), MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, NativeApp.GetDbConnector(), MemoryStreamFactory);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, GetDbConnector(), MemoryStreamFactory);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -707,7 +683,7 @@ namespace Emby.Server.Core
             EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
-            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, GetDbConnector());
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
 
@@ -727,7 +703,7 @@ namespace Emby.Server.Core
 
             await displayPreferencesRepo.Initialize().ConfigureAwait(false);
 
-            var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+            var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, GetDbConnector());
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             await itemRepo.Initialize(userDataRepo).ConfigureAwait(false);
@@ -749,6 +725,11 @@ namespace Emby.Server.Core
 
             try
             {
+                if (!FileSystemManager.FileExists(certificateLocation))
+                {
+                    return null;
+                }
+
                 X509Certificate2 localCert = new X509Certificate2(certificateLocation);
                 //localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
                 if (!localCert.HasPrivateKey)
@@ -770,13 +751,15 @@ namespace Emby.Server.Core
         {
             var maxConcurrentImageProcesses = Math.Max(Environment.ProcessorCount, 4);
 
-            if (_startupOptions.ContainsOption("-imagethreads"))
+            if (StartupOptions.ContainsOption("-imagethreads"))
             {
-                int.TryParse(_startupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
+                int.TryParse(StartupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
             }
 
             return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, ImageEncoder, maxConcurrentImageProcesses, () => LibraryManager, TimerFactory);
         }
+
+        protected abstract FFMpegInstallInfo GetFfmpegInstallInfo();
 
         /// <summary>
         /// Registers the media encoder.
@@ -787,8 +770,8 @@ namespace Emby.Server.Core
             string encoderPath = null;
             string probePath = null;
 
-            var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, NativeApp.GetFfmpegInstallInfo())
-                .GetFFMpegInfo(_startupOptions, progress).ConfigureAwait(false);
+            var info = await new FFMpegLoader(Logger, ApplicationPaths, HttpClient, ZipClient, FileSystemManager, GetFfmpegInstallInfo())
+                .GetFFMpegInfo(StartupOptions, progress).ConfigureAwait(false);
 
             encoderPath = info.EncoderPath;
             probePath = info.ProbePath;
@@ -825,7 +808,7 @@ namespace Emby.Server.Core
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, NativeApp.GetDbConnector(), MemoryStreamFactory);
+            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, GetDbConnector(), MemoryStreamFactory);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -838,7 +821,7 @@ namespace Emby.Server.Core
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
         {
-            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
+            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -847,7 +830,7 @@ namespace Emby.Server.Core
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
+            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -856,7 +839,7 @@ namespace Emby.Server.Core
 
         private async Task<IActivityRepository> GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
+            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -865,7 +848,7 @@ namespace Emby.Server.Core
 
         private async Task<ISyncRepository> GetSyncRepository()
         {
-            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths, NativeApp.GetDbConnector());
+            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -877,7 +860,7 @@ namespace Emby.Server.Core
         /// </summary>
         private async Task ConfigureNotificationsRepository()
         {
-            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, NativeApp.GetDbConnector());
+            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, GetDbConnector());
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -1123,24 +1106,12 @@ namespace Emby.Server.Core
                 Logger.ErrorException("Error sending server restart notification", ex);
             }
 
-            Logger.Info("Calling NativeApp.Restart");
+            Logger.Info("Calling RestartInternal");
 
-            NativeApp.Restart(_startupOptions);
+            RestartInternal();
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can self update.
-        /// </summary>
-        /// <value><c>true</c> if this instance can self update; otherwise, <c>false</c>.</value>
-        public override bool CanSelfUpdate
-        {
-            get
-            {
-#pragma warning disable 162
-                return NativeApp.CanSelfUpdate;
-#pragma warning restore 162
-            }
-        }
+        protected abstract void RestartInternal();
 
         /// <summary>
         /// Gets the composable part assemblies.
@@ -1196,13 +1167,15 @@ namespace Emby.Server.Core
             // Xbmc 
             list.Add(GetAssembly(typeof(ArtistNfoProvider)));
 
-            list.AddRange(NativeApp.GetAssembliesWithParts());
+            list.AddRange(GetAssembliesWithPartsInternal());
 
             // Include composable parts in the running assembly
-            list.Add(GetAssembly(GetType()));
+            list.Add(GetAssembly(typeof(ApplicationHost)));
 
             return list;
         }
+
+        protected abstract List<Assembly> GetAssembliesWithPartsInternal();
 
         /// <summary>
         /// Gets the plugin assemblies.
@@ -1280,7 +1253,7 @@ namespace Emby.Server.Core
                 EncoderLocationType = MediaEncoder.EncoderLocationType,
                 SystemArchitecture = EnvironmentInfo.SystemArchitecture,
                 SystemUpdateLevel = ConfigurationManager.CommonConfiguration.SystemUpdateLevel,
-                PackageName = _startupOptions.GetOption("-package")
+                PackageName = StartupOptions.GetOption("-package")
             };
         }
 
@@ -1456,8 +1429,10 @@ namespace Emby.Server.Core
                 Logger.ErrorException("Error sending server shutdown notification", ex);
             }
 
-            NativeApp.Shutdown();
+            ShutdownInternal();
         }
+
+        protected abstract void ShutdownInternal();
 
         /// <summary>
         /// Registers the server with administrator access.
@@ -1468,18 +1443,16 @@ namespace Emby.Server.Core
 
             try
             {
-                NativeApp.AuthorizeServer(
-                    UdpServerEntryPoint.PortNumber,
-                    ServerConfigurationManager.Configuration.HttpServerPortNumber,
-                    ServerConfigurationManager.Configuration.HttpsPortNumber,
-                    ConfigurationManager.CommonApplicationPaths.ApplicationPath,
-                    ConfigurationManager.CommonApplicationPaths.TempDirectory);
+                AuthorizeServer();
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error authorizing server", ex);
             }
         }
+
+        protected abstract void AuthorizeServer();
+        protected abstract IDbConnector GetDbConnector();
 
         public event EventHandler HasUpdateAvailableChanged;
 
@@ -1551,9 +1524,11 @@ namespace Emby.Server.Core
         {
             if (SupportsAutoRunAtStartup)
             {
-                NativeApp.ConfigureAutoRun(autorun);
+                ConfigureAutoRunInternal(autorun);
             }
         }
+
+        protected abstract void ConfigureAutoRunInternal(bool autorun);
 
         /// <summary>
         /// This returns localhost in the case of no external dns, and the hostname if the 
@@ -1578,15 +1553,14 @@ namespace Emby.Server.Core
             }
         }
 
-        public void LaunchUrl(string url)
-        {
-            NativeApp.LaunchUrl(url);
-        }
+        public abstract void LaunchUrl(string url);
 
         public void EnableLoopback(string appName)
         {
-            NativeApp.EnableLoopback(appName);
+            EnableLoopbackInternal(appName);
         }
+
+        protected abstract void EnableLoopbackInternal(string appName);
 
         private void RegisterModules()
         {

@@ -54,9 +54,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             catch (FileNotFoundException)
             {
             }
-            catch (IOException ex)
+            catch (IOException)
             {
-                Logger.ErrorException("Error deserializing {0}", ex, jsonFile);
             }
             catch (Exception ex)
             {

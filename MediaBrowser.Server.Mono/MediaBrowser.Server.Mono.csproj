@@ -106,7 +106,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Native\MonoApp.cs" />
+    <Compile Include="MonoAppHost.cs" />
     <Compile Include="Native\DbConnector.cs" />
     <Compile Include="Native\MonoFileSystem.cs" />
     <Compile Include="Native\PowerManagement.cs" />

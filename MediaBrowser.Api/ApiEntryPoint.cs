@@ -128,7 +128,11 @@ namespace MediaBrowser.Api
             {
                 // Don't clutter the log
             }
-            catch (IOException ex)
+            catch (IOException)
+            {
+                // Don't clutter the log
+            }
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error deleting encoded media cache", ex);
             }

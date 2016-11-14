@@ -444,10 +444,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             var process = _processFactory.Create(new ProcessOptions
             {
-                RedirectStandardOutput = false,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 FileName = _mediaEncoder.EncoderPath,
@@ -459,26 +455,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-convert-" + Guid.NewGuid() + ".txt");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
-
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read,
-                true);
-
             try
             {
                 process.Start();
             }
             catch (Exception ex)
             {
-                logFileStream.Dispose();
-
                 _logger.ErrorException("Error starting ffmpeg", ex);
 
                 throw;
             }
-            
-            var logTask = process.StandardError.BaseStream.CopyToAsync(logFileStream);
 
             var ranToCompletion = process.WaitForExit(60000);
 
@@ -488,18 +474,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     _logger.Info("Killing ffmpeg subtitle conversion process");
 
-                    process.StandardInput.WriteLine("q");
-                    process.WaitForExit(1000);
-
-                    await logTask.ConfigureAwait(false);
+                    process.Kill();
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error killing subtitle conversion process", ex);
-                }
-                finally
-                {
-                    logFileStream.Dispose();
                 }
             }
 
@@ -533,13 +512,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (failed)
             {
-                var msg = string.Format("ffmpeg subtitle converted failed for {0}", inputPath);
+                var msg = string.Format("ffmpeg subtitle conversion failed for {0}", inputPath);
 
                 _logger.Error(msg);
 
                 throw new Exception(msg);
             }
             await SetAssFont(outputPath).ConfigureAwait(false);
+
+            _logger.Info("ffmpeg subtitle conversion succeeded for {0}", inputPath);
         }
 
         /// <summary>
@@ -597,10 +578,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 CreateNoWindow = true,
                 UseShellExecute = false,
 
-                RedirectStandardOutput = false,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,
                 IsHidden = true,
@@ -609,27 +586,16 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "ffmpeg-sub-extract-" + Guid.NewGuid() + ".txt");
-            _fileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
-
-            var logFileStream = _fileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read,
-                true);
-
             try
             {
                 process.Start();
             }
             catch (Exception ex)
             {
-                logFileStream.Dispose();
-
                 _logger.ErrorException("Error starting ffmpeg", ex);
 
                 throw;
             }
-
-            // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            Task.Run(() => StartStreamingLog(process.StandardError.BaseStream, logFileStream));
 
             var ranToCompletion = process.WaitForExit(300000);
 
@@ -639,16 +605,11 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 {
                     _logger.Info("Killing ffmpeg subtitle extraction process");
 
-                    process.StandardInput.WriteLine("q");
-                    process.WaitForExit(1000);
+                    process.Kill();
                 }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error killing subtitle extraction process", ex);
-                }
-                finally
-                {
-                    logFileStream.Dispose();
                 }
             }
 
@@ -699,33 +660,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))
             {
                 await SetAssFont(outputPath).ConfigureAwait(false);
-            }
-        }
-
-        private async Task StartStreamingLog(Stream source, Stream target)
-        {
-            try
-            {
-                using (var reader = new StreamReader(source))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                        var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
-
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-                        await target.FlushAsync().ConfigureAwait(false);
-                    }
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error reading ffmpeg log", ex);
             }
         }
 
