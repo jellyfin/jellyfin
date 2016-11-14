@@ -104,7 +104,6 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Native\" />
-    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
@@ -115,69 +114,17 @@
     <Compile Include="AppController.designer.cs">
       <DependentUpon>AppController.cs</DependentUpon>
     </Compile>
-    <Compile Include="Native\NativeApp.cs" />
     <Compile Include="Native\BaseMonoApp.cs" />
-    <Compile Include="Native\NetworkManager.cs" />
     <Compile Include="..\SharedVersion.cs">
       <Link>SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Main.cs" />
     <Compile Include="MenuBarIcon.cs" />
-    <Compile Include="..\MediaBrowser.Server.Mono\Networking\CertificateGenerator.cs">
-      <Link>Native\CertificateGenerator.cs</Link>
-    </Compile>
     <Compile Include="Native\DbConnector.cs" />
-    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
+    <Compile Include="..\MediaBrowser.Server.Startup.Common\Persistence\SqliteExtensions.cs">
       <Link>Native\SqliteExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1.cs">
-      <Link>Security\ASN1.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1Convert.cs">
-      <Link>Security\ASN1Convert.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\BitConverterLE.cs">
-      <Link>Security\BitConverterLE.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\CryptoConvert.cs">
-      <Link>Security\CryptoConvert.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS1.cs">
-      <Link>Security\PKCS1.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS12.cs">
-      <Link>Security\PKCS12.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS7.cs">
-      <Link>Security\PKCS7.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS8.cs">
-      <Link>Security\PKCS8.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X501Name.cs">
-      <Link>Security\X501Name.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Builder.cs">
-      <Link>Security\X509Builder.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Certificate.cs">
-      <Link>Security\X509Certificate.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateBuilder.cs">
-      <Link>Security\X509CertificateBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateCollection.cs">
-      <Link>Security\X509CertificateCollection.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extension.cs">
-      <Link>Security\X509Extension.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extensions.cs">
-      <Link>Security\X509Extensions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X520Attributes.cs">
-      <Link>Security\X520Attributes.cs</Link>
-    </Compile>
+    <Compile Include="MacAppHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -264,114 +211,6 @@
   <ItemGroup>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
-      <Link>Resources\swagger-ui\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\o2c.html">
-      <Link>Resources\swagger-ui\o2c.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\patch.js">
-      <Link>Resources\swagger-ui\patch.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
-      <Link>Resources\swagger-ui\swagger-ui.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
-      <Link>Resources\swagger-ui\swagger-ui.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
-      <Link>Resources\swagger-ui\css\reset.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
-      <Link>Resources\swagger-ui\css\screen.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\typography.css">
-      <Link>Resources\swagger-ui\css\typography.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.svg">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.svg">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\explorer_icons.png">
-      <Link>Resources\swagger-ui\images\explorer_icons.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\logo_small.png">
-      <Link>Resources\swagger-ui\images\logo_small.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\pet_store_api.png">
-      <Link>Resources\swagger-ui\images\pet_store_api.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\throbber.gif">
-      <Link>Resources\swagger-ui\images\throbber.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\wordnik_api.png">
-      <Link>Resources\swagger-ui\images\wordnik_api.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
-      <Link>Resources\swagger-ui\lib\backbone-min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-2.0.0.js">
-      <Link>Resources\swagger-ui\lib\handlebars-2.0.0.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
-      <Link>Resources\swagger-ui\lib\highlight.7.3.pack.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
-      <Link>Resources\swagger-ui\lib\jquery-1.8.0.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.ba-bbq.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.slideto.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.wiggle.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\marked.js">
-      <Link>Resources\swagger-ui\lib\marked.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
-      <Link>Resources\swagger-ui\lib\shred.bundle.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-client.js">
-      <Link>Resources\swagger-ui\lib\swagger-client.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-oauth.js">
-      <Link>Resources\swagger-ui\lib\swagger-oauth.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
-      <Link>Resources\swagger-ui\lib\underscore-min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
-      <Link>Resources\swagger-ui\lib\shred\content.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
       <Link>Resources\dashboard-ui\about.html</Link>
     </BundleResource>
