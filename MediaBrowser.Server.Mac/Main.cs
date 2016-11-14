@@ -136,9 +136,9 @@ namespace MediaBrowser.Server.Mac
             CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
         }
 
-        private static MonoEnvironmentInfo GetEnvironmentInfo()
+        private static EnvironmentInfo GetEnvironmentInfo()
         {
-            var info = new MonoEnvironmentInfo();
+            var info = new EnvironmentInfo();
 
             var uname = GetUnixName();
 
@@ -155,7 +155,7 @@ namespace MediaBrowser.Server.Mac
             else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
             {
                 //info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
-                info.IsBsd = true;
+                //info.IsBsd = true;
             }
 
             var archX86 = new Regex("(i|I)[3-6]86");
@@ -302,16 +302,6 @@ namespace MediaBrowser.Server.Mac
 		{
 			return true;
 		}
-    }
-
-    public class MonoEnvironmentInfo : EnvironmentInfo
-    {
-        public bool IsBsd { get; set; }
-
-        public virtual string GetUserId()
-        {
-            return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
-        }
     }
 }
 
