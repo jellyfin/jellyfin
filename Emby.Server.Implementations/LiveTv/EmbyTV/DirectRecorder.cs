@@ -31,12 +31,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task Record(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            var httpRequestOptions = new HttpRequestOptions()
+            var httpRequestOptions = new HttpRequestOptions
             {
-                Url = mediaSource.Path
+                Url = mediaSource.Path,
+                BufferContent = false
             };
-
-            httpRequestOptions.BufferContent = false;
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
             {

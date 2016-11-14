@@ -51,8 +51,7 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        /// <param name="messageData">A byte array containing the data to send.</param>
-        Task SendMulticastMessage(byte[] messageData);
+        Task SendMulticastMessage(string message);
 
         #endregion
 

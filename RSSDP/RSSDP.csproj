@@ -65,6 +65,7 @@
     <Compile Include="SsdpDevicePublisher.cs" />
     <Compile Include="SsdpDevicePublisherBase.cs" />
     <Compile Include="SsdpEmbeddedDevice.cs" />
+    <Compile Include="SsdpHelper.cs" />
     <Compile Include="SsdpRootDevice.cs" />
     <Compile Include="UPnP10DeviceValidator.cs" />
   </ItemGroup>

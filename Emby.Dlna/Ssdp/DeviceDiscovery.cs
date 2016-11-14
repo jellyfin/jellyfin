@@ -15,6 +15,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
 using Rssdp;
+using Rssdp.Infrastructure;
 
 namespace Emby.Dlna.Ssdp
 {
@@ -29,7 +30,7 @@ namespace Emby.Dlna.Ssdp
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceDiscovered;
         public event EventHandler<GenericEventArgs<UpnpDeviceInfo>> DeviceLeft;
 
-        private SsdpDeviceLocator _DeviceLocator;
+        private SsdpDeviceLocator _deviceLocator;
 
         private readonly ITimerFactory _timerFactory;
         private readonly ISocketFactory _socketFactory;
@@ -45,9 +46,9 @@ namespace Emby.Dlna.Ssdp
         }
 
         // Call this method from somewhere in your code to start the search.
-        public void BeginSearch()
+        public void Start(ISsdpCommunicationsServer communicationsServer)
         {
-            _DeviceLocator = new SsdpDeviceLocator(_socketFactory, _timerFactory);
+            _deviceLocator = new SsdpDeviceLocator(communicationsServer, _timerFactory);
 
             // (Optional) Set the filter so we only see notifications for devices we care about 
             // (can be any search target value i.e device type, uuid value etc - any value that appears in the 
@@ -55,8 +56,8 @@ namespace Emby.Dlna.Ssdp
             //_DeviceLocator.NotificationFilter = "upnp:rootdevice";
 
             // Connect our event handler so we process devices as they are found
-            _DeviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
-            _DeviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
+            _deviceLocator.DeviceAvailable += deviceLocator_DeviceAvailable;
+            _deviceLocator.DeviceUnavailable += _DeviceLocator_DeviceUnavailable;
 
             // Perform a search so we don't have to wait for devices to broadcast notifications 
             // again to get any results right away (notifications are broadcast periodically).
@@ -72,9 +73,9 @@ namespace Emby.Dlna.Ssdp
                     try
                     {
                         // Enable listening for notifications (optional)
-                        _DeviceLocator.StartListeningForNotifications();
+                        _deviceLocator.StartListeningForNotifications();
 
-                        await _DeviceLocator.SearchAsync().ConfigureAwait(false);
+                        await _deviceLocator.SearchAsync().ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -128,11 +129,6 @@ namespace Emby.Dlna.Ssdp
             };
 
             EventHelper.FireEventIfNotNull(DeviceLeft, this, args, _logger);
-        }
-
-        public void Start()
-        {
-            BeginSearch();
         }
 
         public void Dispose()
