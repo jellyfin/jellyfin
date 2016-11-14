@@ -10,25 +10,22 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Implementations.IO;
-using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations;
 using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.Server.Startup.Common.Browser;
 using Microsoft.Win32;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
-using CommonIO;
-using MediaBrowser.Server.Implementations.Logging;
+using Emby.Server.Core;
+using Emby.Common.Implementations.Logging;
+using Emby.Server.Mac.Native;
 
 namespace MediaBrowser.Server.Mac
 {
 	class MainClass
 	{
-		internal static ApplicationHost AppHost;
+		internal static MacAppHost AppHost;
 
 		private static ILogger _logger;
 
@@ -41,7 +38,9 @@ namespace MediaBrowser.Server.Mac
 			// Allow this to be specified on the command line.
 			var customProgramDataPath = options.GetOption("-programdata");
 
-			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
+			var appFolderPath = Path.GetDirectoryName(applicationPath);
+
+			var appPaths = CreateApplicationPaths(appFolderPath, customProgramDataPath);
 
 			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
 			logManager.ReloadLogger(LogSeverity.Info);
@@ -58,7 +57,7 @@ namespace MediaBrowser.Server.Mac
 			NSApplication.Main (args);
 		}
 
-		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
+		private static ServerApplicationPaths CreateApplicationPaths(string appFolderPath, string programDataPath)
 		{
 			if (string.IsNullOrEmpty(programDataPath))
 			{
@@ -71,9 +70,9 @@ namespace MediaBrowser.Server.Mac
 			}
 
 			// Within the mac bundle, go uo two levels then down into Resources folder
-			var resourcesPath = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName (applicationPath)), "Resources");
+			var resourcesPath = Path.Combine(Path.GetDirectoryName(appFolderPath), "Resources");
 
-			return new ServerApplicationPaths(programDataPath, applicationPath, resourcesPath);
+			return new ServerApplicationPaths(programDataPath, appFolderPath, resourcesPath);
 		}
 
 		/// <summary>
@@ -91,12 +90,16 @@ namespace MediaBrowser.Server.Mac
 			// Allow all https requests
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-			var fileSystem = new ManagedFileSystem(new PatternsLogger(logManager.GetLogger("FileSystem")), false, true);
+			var fileSystem = new MonoFileSystem(logManager.GetLogger("FileSystem"), false, false);
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
-			var nativeApp = new NativeApp(logManager.GetLogger("App"));
-
-			AppHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "Emby.Server.Mac.pkg", nativeApp);
+			AppHost = new MacAppHost(appPaths, 
+			                         logManager, 
+			                         options, 
+			                         fileSystem, 
+			                         new PowerManagement(),
+			                         "Emby.Server.Mac.pkg", 
+			                         nativeApp);
 
 			if (options.ContainsOption("-v")) {
 				Console.WriteLine (AppHost.ApplicationVersion.ToString());
