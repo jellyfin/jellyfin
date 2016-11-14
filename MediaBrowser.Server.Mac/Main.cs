@@ -1,17 +1,22 @@
-﻿using System;
+﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Server.Mono.Native;
+using MediaBrowser.Server.Startup.Common;
+using MediaBrowser.Server.Startup.Common.IO;
+using MediaBrowser.Server.Implementations;
+using System;
 using System.Diagnostics;
-using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Implementations;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -20,8 +25,8 @@ using Emby.Common.Implementations.Logging;
 using Emby.Server.Mac.Native;
 using Emby.Server.Implementations.IO;
 using Emby.Common.Implementations.Networking;
-using MediaBrowser.Server.Startup.Common;
-using MediaBrowser.Server.Startup.Common.IO;
+using Emby.Common.Implementations.Security;
+using Mono.Unix.Native;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -124,9 +129,95 @@ namespace MediaBrowser.Server.Mac
 			Console.WriteLine ("appHost.Init");
 
 			Task.Run (() => StartServer(CancellationToken.None));
-		}
+        }
 
-		private static async void StartServer(CancellationToken cancellationToken) 
+        private static void GenerateCertificate(string certPath, string certHost)
+        {
+            CertificateGenerator.CreateSelfSignCertificatePfx(certPath, certHost, _logger);
+        }
+
+        private static MonoEnvironmentInfo GetEnvironmentInfo()
+        {
+            var info = new MonoEnvironmentInfo();
+
+            var uname = GetUnixName();
+
+            var sysName = uname.sysname ?? string.Empty;
+
+            if (string.Equals(sysName, "Darwin", StringComparison.OrdinalIgnoreCase))
+            {
+                //info.OperatingSystem = Startup.Common.OperatingSystem.Osx;
+            }
+            else if (string.Equals(sysName, "Linux", StringComparison.OrdinalIgnoreCase))
+            {
+                //info.OperatingSystem = Startup.Common.OperatingSystem.Linux;
+            }
+            else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
+            {
+                //info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
+                info.IsBsd = true;
+            }
+
+            var archX86 = new Regex("(i|I)[3-6]86");
+
+            if (archX86.IsMatch(uname.machine))
+            {
+                info.CustomArchitecture = Architecture.X86;
+            }
+            else if (string.Equals(uname.machine, "x86_64", StringComparison.OrdinalIgnoreCase))
+            {
+                info.CustomArchitecture = Architecture.X64;
+            }
+            else if (uname.machine.StartsWith("arm", StringComparison.OrdinalIgnoreCase))
+            {
+                info.CustomArchitecture = Architecture.Arm;
+            }
+            else if (System.Environment.Is64BitOperatingSystem)
+            {
+                info.CustomArchitecture = Architecture.X64;
+            }
+            else
+            {
+                info.CustomArchitecture = Architecture.X86;
+            }
+
+            return info;
+        }
+
+        private static Uname _unixName;
+
+        private static Uname GetUnixName()
+        {
+            if (_unixName == null)
+            {
+                var uname = new Uname();
+                try
+                {
+                    Utsname utsname;
+                    var callResult = Syscall.uname(out utsname);
+                    if (callResult == 0)
+                    {
+                        uname.sysname = utsname.sysname ?? string.Empty;
+                        uname.machine = utsname.machine ?? string.Empty;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting unix name", ex);
+                }
+                _unixName = uname;
+            }
+            return _unixName;
+        }
+
+        public class Uname
+        {
+            public string sysname = string.Empty;
+            public string machine = string.Empty;
+        }
+
+        private static async void StartServer(CancellationToken cancellationToken) 
 		{
 			var initProgress = new Progress<double>();
 
