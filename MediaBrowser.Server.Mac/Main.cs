@@ -302,6 +302,16 @@ namespace MediaBrowser.Server.Mac
 		{
 			return true;
 		}
-	}
+    }
+
+    public class MonoEnvironmentInfo : EnvironmentInfo
+    {
+        public bool IsBsd { get; set; }
+
+        public virtual string GetUserId()
+        {
+            return Syscall.getuid().ToString(CultureInfo.InvariantCulture);
+        }
+    }
 }
 
