@@ -368,7 +368,6 @@ namespace MediaBrowser.ServerApplication
                 task = InstallVcredist2013IfNeeded(_appHost, _logger);
                 Task.WaitAll(task);
 
-                Microsoft.Win32.SystemEvents.SessionEnding += SystemEvents_SessionEnding;
                 Microsoft.Win32.SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
 
                 HideSplashScreen();
@@ -566,19 +565,6 @@ namespace MediaBrowser.ServerApplication
             using (var process = Process.Start(startInfo))
             {
                 process.WaitForExit();
-            }
-        }
-
-        /// <summary>
-        /// Handles the SessionEnding event of the SystemEvents control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
-        static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-        {
-            if (e.Reason == SessionEndReasons.SystemShutdown || !IsRunningAsService)
-            {
-                Shutdown();
             }
         }
 
