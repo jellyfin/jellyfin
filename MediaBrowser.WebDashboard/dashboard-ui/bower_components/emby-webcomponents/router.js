@@ -499,8 +499,7 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
             resolve();
         }
     }, {
-        passive: true,
-        once: true
+        passive: true
     });
 
     var currentRouteInfo;
