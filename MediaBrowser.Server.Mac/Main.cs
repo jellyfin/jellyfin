@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Server.Mono.Native;
 using MediaBrowser.Server.Startup.Common;
 using MediaBrowser.Server.Startup.Common.IO;
 using MediaBrowser.Server.Implementations;
@@ -22,11 +21,13 @@ using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
 using Emby.Common.Implementations.Logging;
+using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Server.Mac.Native;
 using Emby.Server.Implementations.IO;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
 using Mono.Unix.Native;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -298,7 +299,10 @@ namespace MediaBrowser.Server.Mac
 
 	class NoCheckCertificatePolicy : ICertificatePolicy
 	{
-		public bool CheckValidationResult (ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+		public bool CheckValidationResult (ServicePoint srvPoint, 
+		                                   System.Security.Cryptography.X509Certificates.X509Certificate certificate, 
+		                                   WebRequest request, 
+		                                   int certificateProblem)
 		{
 			return true;
 		}
