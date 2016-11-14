@@ -32,9 +32,30 @@ namespace MediaBrowser.ServerApplication
 
             info.FFMpegFilename = "ffmpeg.exe";
             info.FFProbeFilename = "ffprobe.exe";
-            info.Version = "0";
+            info.Version = "20160410";
+            info.ArchiveType = "7z";
+            info.DownloadUrls = GetDownloadUrls();
 
             return info;
+        }
+
+        private string[] GetDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
+                    };
+            }
+
+            return new string[] { };
         }
 
         protected override void RestartInternal()
@@ -80,7 +101,7 @@ namespace MediaBrowser.ServerApplication
             var shortcutPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.StartMenu), "Emby", "Emby Server.lnk");
 
             var startupPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
-            
+
             if (autorun)
             {
                 //Copy our shortut into the startup folder for this user

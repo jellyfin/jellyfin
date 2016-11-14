@@ -88,8 +88,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly bool EnableEncoderFontFile;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IMemoryStreamFactory memoryStreamProvider, IProcessFactory processFactory, 
-            int defaultImageExtractionTimeoutMs, 
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IMemoryStreamFactory memoryStreamProvider, IProcessFactory processFactory,
+            int defaultImageExtractionTimeoutMs,
             bool enableEncoderFontFile)
         {
             _logger = logger;
@@ -459,7 +459,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (request.AnalyzeDurationSections > 0)
             {
                 analyzeDuration = "-analyzeduration " +
-                                  (request.AnalyzeDurationSections*1000000).ToString(CultureInfo.InvariantCulture);
+                                  (request.AnalyzeDurationSections * 1000000).ToString(CultureInfo.InvariantCulture);
             }
             else
             {
@@ -1221,9 +1221,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             // https://ffmpeg.org/ffmpeg-filters.html#Notes-on-filtergraph-escaping
             // We need to double escape
 
-            var escapeChars = new[] {':', '\'', ','};
-
-            return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\''");
+            return path.Replace('\\', '/').Replace(":", "\\:").Replace("'", "'\\\\\\''");
         }
 
         /// <summary>

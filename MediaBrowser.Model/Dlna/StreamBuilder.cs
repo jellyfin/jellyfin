@@ -976,7 +976,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (item.Bitrate.Value > maxBitrate.Value)
             {
-                _logger.Info("Bitrate exceeds DirectPlay limit");
+                _logger.Info("Bitrate exceeds DirectPlay limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 

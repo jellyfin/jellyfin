@@ -1108,7 +1108,11 @@ namespace Emby.Server.Implementations.Channels
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                        var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                        if (cachedResult != null)
+                        {
+                            return cachedResult;
+                        }
                     }
                 }
             }
@@ -1131,7 +1135,11 @@ namespace Emby.Server.Implementations.Channels
                     {
                         if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                         {
-                            return _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                            var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                            if (cachedResult != null)
+                            {
+                                return cachedResult;
+                            }
                         }
                     }
                 }
@@ -1161,6 +1169,11 @@ namespace Emby.Server.Implementations.Channels
                 }
 
                 var result = await channel.GetChannelItems(query, cancellationToken).ConfigureAwait(false);
+
+                if (result == null)
+                {
+                    throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
+                }
 
                 if (!startIndex.HasValue && !limit.HasValue)
                 {

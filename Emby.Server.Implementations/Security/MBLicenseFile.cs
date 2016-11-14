@@ -57,9 +57,14 @@ namespace Emby.Server.Implementations.Security
             _updateRecords.AddOrUpdate(key, value, (k, v) => value);
         }
 
+        private Guid GetKey(string featureId)
+        {
+            return new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
+        }
+
         public void AddRegCheck(string featureId)
         {
-            var key = new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
+            var key = GetKey(featureId);
             var value = DateTime.UtcNow;
 
             SetUpdateRecord(key, value);
@@ -68,7 +73,7 @@ namespace Emby.Server.Implementations.Security
 
         public void RemoveRegCheck(string featureId)
         {
-            var key = new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
+            var key = GetKey(featureId);
             DateTime val;
 
             _updateRecords.TryRemove(key, out val);
@@ -78,8 +83,9 @@ namespace Emby.Server.Implementations.Security
 
         public DateTime LastChecked(string featureId)
         {
+            var key = GetKey(featureId);
             DateTime last;
-            _updateRecords.TryGetValue(new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId))), out last);
+            _updateRecords.TryGetValue(key, out last);
 
             // guard agains people just putting a large number in the file
             return last < DateTime.UtcNow ? last : DateTime.MinValue;
