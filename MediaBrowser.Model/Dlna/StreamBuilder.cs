@@ -1055,6 +1055,22 @@ namespace MediaBrowser.Model.Dlna
                             }
                             break;
                         }
+                    case ProfileConditionValue.IsAvc:
+                        {
+                            bool isAvc;
+                            if (bool.TryParse(value, out isAvc))
+                            {
+                                if (isAvc && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.RequireAvc = true;
+                                }
+                                else if (!isAvc && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.RequireAvc = true;
+                                }
+                            }
+                            break;
+                        }
                     case ProfileConditionValue.IsAnamorphic:
                     case ProfileConditionValue.AudioProfile:
                     case ProfileConditionValue.Has64BitOffsets:
@@ -1135,6 +1151,8 @@ namespace MediaBrowser.Model.Dlna
                             }
                             break;
                         }
+                    default:
+                        break;
                 }
             }
         }
