@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Threading;
+using RSSDP;
 
 namespace Rssdp.Infrastructure
 {
@@ -344,7 +345,7 @@ namespace Rssdp.Infrastructure
             values["USN"] = uniqueServiceName;
             values["LOCATION"] = rootDevice.Location.ToString();
 
-            var message = BuildMessage(header, values);
+            var message = SsdpHelper.BuildMessage(header, values);
 
             try
             {
@@ -384,19 +385,15 @@ namespace Rssdp.Infrastructure
             return isDuplicateRequest;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capturing task to local variable avoids compiler warning, but value is otherwise not required.")]
         private void CleanUpRecentSearchRequestsAsync()
         {
-            var t = Task.Run(() =>
+            lock (_RecentSearchRequests)
             {
-                lock (_RecentSearchRequests)
+                foreach (var requestKey in (from r in _RecentSearchRequests where r.Value.IsOld() select r.Key).ToArray())
                 {
-                    foreach (var requestKey in (from r in _RecentSearchRequests where r.Value.IsOld() select r.Key).ToArray())
-                    {
-                        _RecentSearchRequests.Remove(requestKey);
-                    }
+                    _RecentSearchRequests.Remove(requestKey);
                 }
-            });
+            }
         }
 
         #endregion
@@ -481,29 +478,11 @@ namespace Rssdp.Infrastructure
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
 
-            var message = BuildMessage(header, values);
+            var message = SsdpHelper.BuildMessage(header, values);
 
-            _CommsServer.SendMulticastMessage(System.Text.UTF8Encoding.UTF8.GetBytes(message));
+            _CommsServer.SendMulticastMessage(message);
 
             WriteTrace(String.Format("Sent alive notification"), device);
-        }
-
-        private string BuildMessage(string header, Dictionary<string, string> values)
-        {
-            var builder = new StringBuilder();
-
-            const string argFormat = "{0}: {1}\r\n";
-
-            builder.AppendFormat("{0}\r\n", header);
-
-            foreach (var pair in values)
-            {
-                builder.AppendFormat(argFormat, pair.Key, pair.Value);
-            }
-
-            builder.Append("\r\n");
-
-            return builder.ToString();
         }
 
         #endregion
@@ -543,9 +522,9 @@ namespace Rssdp.Infrastructure
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
 
-            var message = BuildMessage(header, values);
+            var message = SsdpHelper.BuildMessage(header, values);
 
-            return _CommsServer.SendMulticastMessage(System.Text.UTF8Encoding.UTF8.GetBytes(message));
+            return _CommsServer.SendMulticastMessage(message);
 
             //WriteTrace(String.Format("Sent byebye notification"), device);
         }
@@ -686,7 +665,7 @@ namespace Rssdp.Infrastructure
         {
             if (this.IsDisposed) return;
 
-            if (e.Message.Method.Method == SsdpConstants.MSearchMethod)
+            if (string.Equals(e.Message.Method.Method, SsdpConstants.MSearchMethod, StringComparison.OrdinalIgnoreCase))
             {
                 //According to SSDP/UPnP spec, ignore message if missing these headers.
                 // Edit: But some devices do it anyway

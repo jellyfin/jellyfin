@@ -170,12 +170,11 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        /// <param name="messageData">A byte array containing the data to send.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="messageData"/> argument is null.</exception>
-        /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
-        public async Task SendMulticastMessage(byte[] messageData)
+        public async Task SendMulticastMessage(string message)
         {
-            if (messageData == null) throw new ArgumentNullException("messageData");
+            if (message == null) throw new ArgumentNullException("messageData");
+
+            byte[] messageData = Encoding.UTF8.GetBytes(message);
 
             ThrowIfDisposed();
 
@@ -294,21 +293,19 @@ namespace Rssdp.Infrastructure
             // Tasks are captured to local variables even if we don't use them just to avoid compiler warnings.
             var t = Task.Run(async () =>
             {
-
                 var cancelled = false;
                 while (!cancelled)
                 {
                     try
                     {
-                        var result = await socket.ReceiveAsync();
+                        var result = await socket.ReceiveAsync().ConfigureAwait(false);
 
                         if (result.ReceivedBytes > 0)
                         {
                             // Strange cannot convert compiler error here if I don't explicitly
                             // assign or cast to Action first. Assignment is easier to read,
                             // so went with that.
-                            Action processWork = () => ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint);
-                            var processTask = Task.Run(processWork);
+                            ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint);
                         }
                     }
                     catch (ObjectDisposedException)
@@ -330,7 +327,9 @@ namespace Rssdp.Infrastructure
                 lock (_SendSocketSynchroniser)
                 {
                     if (_SendSocket == null)
+                    {
                         _SendSocket = CreateSocketAndListenForResponsesAsync();
+                    }
                 }
             }
         }
