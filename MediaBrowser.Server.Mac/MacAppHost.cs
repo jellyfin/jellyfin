@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Mac
                     break;
             }
 
-            info.DownloadUrls = GetDownloadUrls(environment);
+            info.DownloadUrls = GetDownloadUrls();
 
             return info;
         }
@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Mac
 
         protected override void RestartInternal()
         {
-            MainClass.Restart(StartupOptions);
+            MainClass.Restart();
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
