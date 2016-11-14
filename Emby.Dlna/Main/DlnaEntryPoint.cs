@@ -55,6 +55,8 @@ namespace Emby.Dlna.Main
         private readonly ISocketFactory _socketFactory;
         private readonly IEnvironmentInfo _environmentInfo;
 
+        private ISsdpCommunicationsServer _communicationsServer;
+
         public DlnaEntryPoint(IServerConfigurationManager config,
             ILogManager logManager,
             IServerApplicationHost appHost,
@@ -152,10 +154,18 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                StartPublishing();
+                if (_communicationsServer == null)
+                {
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory)
+                    {
+                        IsShared = true
+                    };
+                }
+
+                StartPublishing(_communicationsServer);
                 _ssdpHandlerStarted = true;
 
-                StartDeviceDiscovery();
+                StartDeviceDiscovery(_communicationsServer);
             }
             catch (Exception ex)
             {
@@ -165,20 +175,20 @@ namespace Emby.Dlna.Main
 
         private void LogMessage(string msg)
         {
-            //_logger.Debug(msg);
+            _logger.Debug(msg);
         }
 
-        private void StartPublishing()
+        private void StartPublishing(ISsdpCommunicationsServer communicationsServer)
         {
             SsdpDevicePublisherBase.LogFunction = LogMessage;
-            _Publisher = new SsdpDevicePublisher(_socketFactory, _timerFactory, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
+            _Publisher = new SsdpDevicePublisher(communicationsServer, _timerFactory, _environmentInfo.OperatingSystemName, _environmentInfo.OperatingSystemVersion);
         }
 
-        private void StartDeviceDiscovery()
+        private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start();
+                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
             }
             catch (Exception ex)
             {
@@ -374,6 +384,12 @@ namespace Emby.Dlna.Main
             DisposeDlnaServer();
             DisposePlayToManager();
             DisposeSsdpHandler();
+
+            if (_communicationsServer != null)
+            {
+                _communicationsServer.Dispose();
+                _communicationsServer = null;
+            }
         }
 
         public void DisposeDlnaServer()

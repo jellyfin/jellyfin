@@ -61,7 +61,7 @@ namespace Emby.Common.Implementations.IO
         {
             get
             {
-                return Path.DirectorySeparatorChar;
+                return Path.PathSeparator;
             }
         }
 

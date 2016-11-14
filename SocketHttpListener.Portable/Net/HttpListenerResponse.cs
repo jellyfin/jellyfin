@@ -413,8 +413,8 @@ namespace SocketHttpListener.Net
              *	HttpStatusCode.InternalServerError 	500
              *	HttpStatusCode.ServiceUnavailable 	503
              */
-            bool conn_close = (status_code == 400 || status_code == 408 || status_code == 411 ||
-                    status_code == 413 || status_code == 414 || status_code == 500 ||
+            bool conn_close = (status_code == 408 || status_code == 411 ||
+                    status_code == 413 || status_code == 414 ||
                     status_code == 503);
 
             if (conn_close == false)
