@@ -368,7 +368,7 @@ namespace MediaBrowser.Providers.TV
                         var seasonNumber = i.Season.IndexNumber.Value + i.SeasonOffset;
 
                         // If there's a physical season with the same number, delete it
-                        if (physicalSeasons.Any(p => p.Season.IndexNumber.HasValue && (p.Season.IndexNumber.Value + p.SeasonOffset) == seasonNumber))
+                        if (physicalSeasons.Any(p => p.Season.IndexNumber.HasValue && (p.Season.IndexNumber.Value + p.SeasonOffset) == seasonNumber && string.Equals(p.Season.Series.PresentationUniqueKey, i.Season.Series.PresentationUniqueKey, StringComparison.Ordinal)))
                         {
                             return true;
                         }

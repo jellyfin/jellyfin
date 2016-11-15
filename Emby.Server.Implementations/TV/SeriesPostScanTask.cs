@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.TV
                     var group = new SeriesGroup();
                     FindAllLinked(series, visited, links, group);
 
-                    group.Key = group.Select(s => s.GetProviderId(MetadataProviders.Tvdb)).FirstOrDefault(id => !string.IsNullOrEmpty(id));
+                    group.Key = group.Select(s => s.PresentationUniqueKey).FirstOrDefault(id => !string.IsNullOrEmpty(id));
 
                     yield return group;
                 }
@@ -105,11 +105,7 @@ namespace Emby.Server.Implementations.TV
 
         private static bool ShareProviderId(Series a, Series b)
         {
-            return a.ProviderIds.Any(id =>
-            {
-                string value;
-                return b.ProviderIds.TryGetValue(id.Key, out value) && id.Value == value;
-            });
+            return string.Equals(a.PresentationUniqueKey, b.PresentationUniqueKey, StringComparison.Ordinal);
         }
 
         public int Order
