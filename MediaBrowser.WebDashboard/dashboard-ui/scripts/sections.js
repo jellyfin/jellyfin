@@ -299,7 +299,7 @@
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     context: 'home',
-                    overlayText: !cardLayout,
+                    overlayText: false,
                     centerText: !cardLayout,
                     overlayPlayButton: viewType !== 'photos',
                     allowBottomPadding: !enableScrollX() && !cardLayout,

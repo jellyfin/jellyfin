@@ -236,7 +236,7 @@
     "PackageInstallCompleted": "Instala\u00e7\u00e3o de {0} conclu\u00edda.",
     "PackageInstallFailed": "Instala\u00e7\u00e3o de {0} falhou.",
     "PackageInstallCancelled": "Instala\u00e7\u00e3o de {0} cancelada.",
-    "SeriesYearToPresent": "{0}-Presente",
+    "SeriesYearToPresent": "{0} - Presente",
     "ValueOneSong": "1 m\u00fasica",
     "ValueSongCount": "{0} m\u00fasicas",
     "ValueOneMovie": "1 filme",

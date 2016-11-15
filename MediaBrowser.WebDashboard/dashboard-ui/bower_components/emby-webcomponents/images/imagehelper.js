@@ -1,48 +1,11 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom', 'appSettings', 'require'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom, appSettings, require) {
+define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings', 'require'], function (lazyLoader, imageFetcher, layoutManager, browser, appSettings, require) {
     'use strict';
-
-    var thresholdX;
-    var thresholdY;
 
     var requestIdleCallback = window.requestIdleCallback || function (fn) {
         fn();
     };
 
     //var imagesWorker = new Worker(require.toUrl('.').split('?')[0] + '/imagesworker.js');
-
-    var supportsIntersectionObserver = function () {
-
-        if (window.IntersectionObserver) {
-
-            return true;
-        }
-
-        return false;
-    }();
-
-    function resetThresholds() {
-
-        var x = screen.availWidth;
-        var y = screen.availHeight;
-
-        if (browser.touch) {
-            x *= 1.5;
-            y *= 1.5;
-        }
-
-        thresholdX = x;
-        thresholdY = y;
-    }
-
-    if (!supportsIntersectionObserver) {
-        dom.addEventListener(window, "orientationchange", resetThresholds, { passive: true });
-        dom.addEventListener(window, 'resize', resetThresholds, { passive: true });
-        resetThresholds();
-    }
-
-    function isVisible(elem) {
-        return visibleinviewport(elem, true, thresholdX, thresholdY);
-    }
 
     var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
@@ -236,135 +199,9 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         elem.animate(keyframes, timing);
     }
 
-    function cancelAll(tokens) {
-        for (var i = 0, length = tokens.length; i < length; i++) {
-
-            tokens[i] = true;
-        }
-    }
-
-    function unveilWithIntersection(images, root) {
-
-        var filledCount = 0;
-
-        var options = {};
-
-        //options.rootMargin = "300%";
-
-        var observer = new IntersectionObserver(function (entries) {
-            for (var j = 0, length2 = entries.length; j < length2; j++) {
-                var entry = entries[j];
-                var target = entry.target;
-                observer.unobserve(target);
-                fillImage(target);
-                filledCount++;
-            }
-        },
-        options
-        );
-        // Start observing an element
-        for (var i = 0, length = images.length; i < length; i++) {
-            observer.observe(images[i]);
-        }
-    }
-
-    function unveilElements(images, root) {
-
-        if (!images.length) {
-            return;
-        }
-
-        if (supportsIntersectionObserver) {
-            unveilWithIntersection(images, root);
-            return;
-        }
-
-        var filledImages = [];
-        var cancellationTokens = [];
-
-        function unveilInternal(tokenIndex) {
-
-            var anyFound = false;
-            var out = false;
-
-            // TODO: This out construct assumes left to right, top to bottom
-
-            for (var i = 0, length = images.length; i < length; i++) {
-
-                if (cancellationTokens[tokenIndex]) {
-                    return;
-                }
-                if (filledImages[i]) {
-                    continue;
-                }
-                var img = images[i];
-                if (!out && isVisible(img)) {
-                    anyFound = true;
-                    filledImages[i] = true;
-                    fillImage(img);
-                } else {
-
-                    if (anyFound) {
-                        out = true;
-                    }
-                }
-            }
-
-            if (!images.length) {
-                dom.removeEventListener(document, 'focus', unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(document, 'scroll', unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(document, wheelEvent, unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(window, 'resize', unveil, {
-                    capture: true,
-                    passive: true
-                });
-            }
-        }
-
-        function unveil() {
-
-            cancelAll(cancellationTokens);
-
-            var index = cancellationTokens.length;
-            cancellationTokens.length++;
-
-            setTimeout(function () {
-                unveilInternal(index);
-            }, 1);
-        }
-
-        dom.addEventListener(document, 'focus', unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(document, 'scroll', unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(document, wheelEvent, unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(window, 'resize', unveil, {
-            capture: true,
-            passive: true
-        });
-
-        unveil();
-    }
-
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'), elem);
+        lazyLoader.lazyChildren(elem, fillImage);
     }
 
     function getPrimaryImageAspectRatio(items) {

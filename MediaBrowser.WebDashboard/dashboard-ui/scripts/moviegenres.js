@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost'], function (libraryBrowser, cardBuilder, lazyLoader, appHost) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -17,10 +17,9 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Movie",
                         Recursive: true,
-                        Fields: "DateCreated,ItemCounts,PrimaryImageAspectRatio",
-                        StartIndex: 0
+                        EnableTotalRecordCount: false
                     },
-                    view: libraryBrowser.getSavedView(key) || 'Thumb'
+                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -36,7 +35,7 @@
 
         function getSavedQueryKey() {
 
-            return libraryBrowser.getSavedQueryKey('genres');
+            return libraryBrowser.getSavedQueryKey('moviegenres');
         }
 
         function getPromise() {
@@ -47,64 +46,135 @@
             return ApiClient.getGenres(Dashboard.getCurrentUserId(), query);
         }
 
-        function reloadItems(context, promise) {
+        function enableScrollX() {
+            return browserInfo.mobile && AppInfo.enableAppLayouts;
+        }
 
-            var query = getQuery();
+        function getThumbShape() {
+            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+        }
 
-            promise.then(function (result) {
+        function getPortraitShape() {
+            return enableScrollX() ? 'overflowPortrait' : 'portrait';
+        }
 
-                var html = '';
+        function fillItemsContainer(elem) {
 
-                var viewStyle = self.getCurrentViewStyle();
-                var elem = context.querySelector('#items');
+            var id = elem.getAttribute('data-id');
+
+            var viewStyle = self.getCurrentViewStyle();
+
+            var limit = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
+                5 :
+                8;
+
+            var enableImageTypes = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
+              "Primary,Backdrop,Thumb" :
+              "Primary";
+
+            var query = {
+                SortBy: "SortName",
+                SortOrder: "Ascending",
+                IncludeItemTypes: "Movie",
+                Recursive: true,
+                Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
+                ImageTypeLimit: 1,
+                EnableImageTypes: enableImageTypes,
+                Limit: limit,
+                GenreIds: id,
+                EnableTotalRecordCount: false
+            };
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
 
                 if (viewStyle == "Thumb") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         preferThumb: true,
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        allowBottomPadding: false
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
 
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         preferThumb: true,
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: false,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis,
+                        showYear: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "auto",
+                        shape: getPortraitShape(),
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: false,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis,
+                        showYear: true
                     });
                 }
                 else if (viewStyle == "Poster") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "auto",
+                        shape: getPortraitShape(),
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        allowBottomPadding: false
                     });
                 }
+
+            });
+        }
+
+        function reloadItems(context, promise) {
+
+            var query = getQuery();
+
+            promise.then(function (result) {
+
+                var elem = context.querySelector('#items');
+                var html = '';
+
+                var items = result.Items;
+
+                for (var i = 0, length = items.length; i < length; i++) {
+
+                    var item = items[i];
+
+                    html += '<div class="homePageSection">';
+                    html += '<h1 class="listHeader">';
+                    html += item.Name;
+                    html += '</h1>';
+
+                    if (enableScrollX()) {
+                        html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX lazy" data-id="' + item.Id + '">';
+                    } else {
+                        html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap lazy" data-id="' + item.Id + '">';
+                    }
+                    html += '</div>';
+
+                    html += '</div>';
+                }
+
+                elem.innerHTML = html;
+
+                lazyLoader.lazyChildren(elem, fillItemsContainer);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
