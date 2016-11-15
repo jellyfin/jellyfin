@@ -1,5 +1,7 @@
 {
     "LatestFromLibrary": "Latest {0}",
+    "LabelMoviePrefixHelp": "If a prefix is applied to movie titles, enter it here so that Emby can handle it properly.",
+    "LabelMoviePrefix": "Movie prefix:",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Slut",
     "LabelNext": "N\u00e6ste",

@@ -1,5 +1,7 @@
 {
-    "LatestFromLibrary": "Latest {0}",
+    "LatestFromLibrary": "Neueste {0}",
+    "LabelMoviePrefixHelp": "Wenn ein Pr\u00e4fix in Filmtiteln angewendet wird, gib es hier ein damit Emby es korrekt behandeln kann.",
+    "LabelMoviePrefix": "Filmpr\u00e4fix:",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",

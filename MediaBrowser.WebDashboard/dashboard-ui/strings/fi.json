@@ -1,5 +1,7 @@
 {
     "LatestFromLibrary": "Latest {0}",
+    "LabelMoviePrefixHelp": "If a prefix is applied to movie titles, enter it here so that Emby can handle it properly.",
+    "LabelMoviePrefix": "Movie prefix:",
     "LabelPrevious": "Edellinen",
     "LabelFinish": "Valmis",
     "LabelNext": "Seuraava",
