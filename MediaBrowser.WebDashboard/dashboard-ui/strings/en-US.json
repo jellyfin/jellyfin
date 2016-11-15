@@ -2021,5 +2021,7 @@
   "ButtonPlayExternalPlayer": "Play with external player",
   "NotScheduledToRecord": "Not scheduled to record",
   "SynologyUpdateInstructions": "Please login to DSM and go to Package Center to update.",
-  "LatestFromLibrary": "Latest {0}"
+  "LatestFromLibrary": "Latest {0}",
+  "LabelMoviePrefix": "Movie prefix:",
+  "LabelMoviePrefixHelp": "If a prefix is applied to movie titles, enter it here so that Emby can handle it properly."
 }

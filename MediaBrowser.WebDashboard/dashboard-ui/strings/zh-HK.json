@@ -1,5 +1,7 @@
 {
     "LatestFromLibrary": "Latest {0}",
+    "LabelMoviePrefixHelp": "If a prefix is applied to movie titles, enter it here so that Emby can handle it properly.",
+    "LabelMoviePrefix": "Movie prefix:",
     "LabelPrevious": "\u524d\u4e00\u500b",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u500b",

@@ -83,6 +83,7 @@ namespace MediaBrowser.Model.LiveTv
         public string[] KidsCategories { get; set; }
         public string[] MovieCategories { get; set; }
         public NameValuePair[] ChannelMappings { get; set; }
+        public string MoviePrefix { get; set; }
 
         public ListingsProviderInfo()
         {
