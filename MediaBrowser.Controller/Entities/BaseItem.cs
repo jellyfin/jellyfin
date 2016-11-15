@@ -2134,13 +2134,18 @@ namespace MediaBrowser.Controller.Entities
             {
                 MetadataCountryCode = GetPreferredMetadataCountryCode(),
                 MetadataLanguage = GetPreferredMetadataLanguage(),
-                Name = Name,
+                Name = GetNameForMetadataLookup(),
                 ProviderIds = ProviderIds,
                 IndexNumber = IndexNumber,
                 ParentIndexNumber = ParentIndexNumber,
                 Year = ProductionYear,
                 PremiereDate = PremiereDate
             };
+        }
+
+        protected virtual string GetNameForMetadataLookup()
+        {
+            return Name;
         }
 
         /// <summary>
