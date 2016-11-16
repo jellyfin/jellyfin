@@ -35,7 +35,6 @@
                 }
 
                 var container = view.querySelector('#nextUpItems');
-
                 var supportsImageAnalysis = appHost.supports('imageanalysis');
 
                 cardBuilder.buildCards(result.Items, {
@@ -99,6 +98,7 @@
 
                 var container = view.querySelector('#resumableItems');
 
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
                 var cardLayout = appHost.preferVisualCards;
 
                 cardBuilder.buildCards(result.Items, {
@@ -112,7 +112,8 @@
                     centerText: !cardLayout,
                     overlayPlayButton: true,
                     allowBottomPadding: allowBottomPadding,
-                    cardLayout: cardLayout
+                    cardLayout: cardLayout,
+                    vibrant: supportsImageAnalysis
                 });
             });
         }

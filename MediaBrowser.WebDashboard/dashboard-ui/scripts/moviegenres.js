@@ -242,16 +242,5 @@
             self.preRender();
             self.renderTab();
         }
-
-        var btnSelectView = tabContent.querySelector('.btnSelectView');
-        btnSelectView.addEventListener('click', function (e) {
-
-            libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
-        });
-
-        btnSelectView.addEventListener('layoutchange', function (e) {
-
-            self.setCurrentViewStyle(e.detail.viewStyle);
-        });
     };
 });
