@@ -19,7 +19,7 @@
                         Recursive: true,
                         EnableTotalRecordCount: false
                     },
-                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -68,6 +68,10 @@
                 5 :
                 8;
 
+            if (enableScrollX()) {
+                limit = 10;
+            }
+
             var enableImageTypes = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
               "Primary,Backdrop,Thumb" :
               "Primary";
@@ -82,7 +86,8 @@
                 EnableImageTypes: enableImageTypes,
                 Limit: limit,
                 GenreIds: id,
-                EnableTotalRecordCount: false
+                EnableTotalRecordCount: false,
+                ParentId: params.topParentId
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
