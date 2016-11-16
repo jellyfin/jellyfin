@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost'], function (libraryBrowser, cardBuilder, lazyLoader, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost', 'globalize', 'dom'], function (libraryBrowser, cardBuilder, lazyLoader, appHost, globalize, dom) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -57,6 +57,23 @@
         function getPortraitShape() {
             return enableScrollX() ? 'overflowPortrait' : 'portrait';
         }
+
+        function getMoreItemsHref(itemId, type) {
+
+            return 'secondaryitems.html?type=' + type + '&parentId=' + itemId;
+        }
+
+        dom.addEventListener(tabContent, 'click', function (e) {
+
+            var btnMoreFromGenre = dom.parentWithClass(e.target, 'btnMoreFromGenre');
+            if (btnMoreFromGenre) {
+                var id = btnMoreFromGenre.getAttribute('data-id');
+                Dashboard.navigate(getMoreItemsHref(id, 'Series'));
+            }
+
+        }, {
+            passive: true
+        });
 
         function fillItemsContainer(elem) {
 
@@ -144,6 +161,9 @@
                     });
                 }
 
+                if (result.Items.length >= query.Limit) {
+                    tabContent.querySelector('.btnMoreFromGenre' + id).classList.remove('hide');
+                }
             });
         }
 
@@ -163,9 +183,15 @@
                     var item = items[i];
 
                     html += '<div class="homePageSection">';
+
+                    html += '<div style="display:flex;align-items:center;">';
                     html += '<h1 class="listHeader">';
                     html += item.Name;
                     html += '</h1>';
+                    html += '<button is="emby-button" type="button" class="raised more mini noIcon hide btnMoreFromGenre btnMoreFromGenre' + item.Id + '" data-id="' + item.Id + '">';
+                    html += '<span>' + globalize.translate('ButtonMore') + '</span>';
+                    html += '</button>';
+                    html += '</div>';
 
                     if (enableScrollX()) {
                         html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX lazy" data-id="' + item.Id + '">';

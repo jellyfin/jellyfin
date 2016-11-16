@@ -15,17 +15,24 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
 
         //options.rootMargin = "300%";
 
+        var observerId = 'obs' + new Date().getTime();
+
         var self = this;
         var observer = new IntersectionObserver(function (entries) {
             for (var j = 0, length2 = entries.length; j < length2; j++) {
                 var entry = entries[j];
                 var target = entry.target;
-                observer.unobserve(target);
-                callback(target);
-                loadedCount++;
 
-                if (loadedCount >= self.elementCount) {
-                    self.destroyObserver();
+                observer.unobserve(target);
+
+                if (!target[observerId]) {
+                    target[observerId] = 1;
+                    callback(target);
+                    loadedCount++;
+
+                    if (loadedCount >= self.elementCount) {
+                        self.destroyObserver();
+                    }
                 }
             }
         },
