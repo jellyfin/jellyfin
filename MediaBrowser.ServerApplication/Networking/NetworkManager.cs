@@ -25,7 +25,7 @@ namespace MediaBrowser.ServerApplication.Networking
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>IEnumerable{NetworkShare}.</returns>
-        public IEnumerable<NetworkShare> GetNetworkShares(string path)
+        public override IEnumerable<NetworkShare> GetNetworkShares(string path)
         {
             Logger.Info("Getting network shares from {0}", path);
             return new ShareCollection(path).OfType<Share>().Select(ToNetworkShare);
@@ -148,7 +148,7 @@ namespace MediaBrowser.ServerApplication.Networking
         /// Gets available devices within the domain
         /// </summary>
         /// <returns>PC's in the Domain</returns>
-        public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
+        public override IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
             return GetNetworkDevicesInternal().Select(c => new FileSystemEntryInfo
             {

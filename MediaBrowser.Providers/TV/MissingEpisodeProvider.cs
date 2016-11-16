@@ -30,7 +30,7 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private static readonly SemaphoreSlim _resourceLock = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim ResourceLock = new SemaphoreSlim(1, 1);
         public static bool IsRunning = false;
         private readonly IXmlReaderSettingsFactory _xmlSettings;
 
@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.TV
 
         public async Task Run(List<IGrouping<string, Series>> series, bool addNewItems, CancellationToken cancellationToken)
         {
-            await _resourceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await ResourceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             IsRunning = true;
 
             foreach (var seriesGroup in series)
@@ -59,9 +59,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     break;
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
                     //_logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
+                    _logger.ErrorException("Error in missing episode provider for series id {0}", ex, seriesGroup.Key);
                 }
                 catch (Exception ex)
                 {
@@ -70,12 +71,15 @@ namespace MediaBrowser.Providers.TV
             }
 
             IsRunning = false;
-            _resourceLock.Release();
+            ResourceLock.Release();
         }
 
         private async Task Run(IGrouping<string, Series> group, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = group.Key;
+            var seriesList = group.ToList();
+            var tvdbId = seriesList
+                .Select(i => i.GetProviderId(MetadataProviders.Tvdb))
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
 
             // Todo: Support series by imdb id
             var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -114,30 +118,30 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
-            var hasBadData = HasInvalidContent(group);
+            var hasBadData = HasInvalidContent(seriesList);
 
-            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(group, episodeLookup)
+            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(seriesList, episodeLookup)
                 .ConfigureAwait(false);
 
-            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(group, episodeLookup)
+            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(seriesList, episodeLookup)
                 .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
 
-            if (addNewItems && !group.Any(i => !i.IsInternetMetadataEnabled()))
+            if (addNewItems && seriesList.All(i => i.IsInternetMetadataEnabled()))
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
                 if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    hasNewEpisodes = await AddMissingEpisodes(group.ToList(), hasBadData, seriesDataPath, episodeLookup, cancellationToken)
+                    hasNewEpisodes = await AddMissingEpisodes(seriesList, hasBadData, seriesDataPath, episodeLookup, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
 
             if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
-                foreach (var series in group)
+                foreach (var series in seriesList)
                 {
                     var directoryService = new DirectoryService(_logger, _fileSystem);
 
