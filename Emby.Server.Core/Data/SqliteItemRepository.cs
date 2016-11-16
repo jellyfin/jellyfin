@@ -87,9 +87,6 @@ namespace Emby.Server.Core.Data
         private IDbCommand _deleteItemValuesCommand;
         private IDbCommand _saveItemValuesCommand;
 
-        private IDbCommand _deleteProviderIdsCommand;
-        private IDbCommand _saveProviderIdsCommand;
-
         private IDbCommand _deleteImagesCommand;
         private IDbCommand _saveImagesCommand;
 
@@ -165,10 +162,6 @@ namespace Emby.Server.Core.Data
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
 
-                                "create table if not exists ProviderIds (ItemId GUID, Name TEXT, Value TEXT, PRIMARY KEY (ItemId, Name))",
-                                // covering index
-                                "create index if not exists Idx_ProviderIds1 on ProviderIds(ItemId,Name,Value)",
-
                                 "create table if not exists Images (ItemId GUID NOT NULL, Path TEXT NOT NULL, ImageType INT NOT NULL, DateModified DATETIME, IsPlaceHolder BIT NOT NULL, SortOrder INT)",
                                 "create index if not exists idx_Images on Images(ItemId)",
 
@@ -182,9 +175,7 @@ namespace Emby.Server.Core.Data
 
                                 createMediaStreamsTableCommand,
 
-                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
-
-                                //"drop table if exists UserDataKeys"
+                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)"
 
                                };
 
@@ -316,6 +307,8 @@ namespace Emby.Server.Core.Data
                 "drop index if exists idx_ItemValues5",
                 "drop index if exists idx_UserDataKeys3",
                 "drop table if exists UserDataKeys",
+                "drop table if exists ProviderIds",
+                "drop index if exists Idx_ProviderIds1",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -671,17 +664,6 @@ namespace Emby.Server.Core.Data
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Type");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Value");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@CleanValue");
-
-            // provider ids
-            _deleteProviderIdsCommand = _connection.CreateCommand();
-            _deleteProviderIdsCommand.CommandText = "delete from ProviderIds where ItemId=@Id";
-            _deleteProviderIdsCommand.Parameters.Add(_deleteProviderIdsCommand, "@Id");
-
-            _saveProviderIdsCommand = _connection.CreateCommand();
-            _saveProviderIdsCommand.CommandText = "insert into ProviderIds (ItemId, Name, Value) values (@ItemId, @Name, @Value)";
-            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@ItemId");
-            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@Name");
-            _saveProviderIdsCommand.Parameters.Add(_saveProviderIdsCommand, "@Value");
 
             // images
             _deleteImagesCommand = _connection.CreateCommand();
@@ -1101,7 +1083,6 @@ namespace Emby.Server.Core.Data
                     }
 
                     UpdateImages(item.Id, item.ImageInfos, transaction);
-                    UpdateProviderIds(item.Id, item.ProviderIds, transaction);
                     UpdateItemValues(item.Id, GetItemValuesToSave(item), transaction);
                 }
 
@@ -3869,9 +3850,12 @@ namespace Emby.Server.Core.Data
                     }
 
                     var paramName = "@ExcludeProviderId" + index;
-                    excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
-                    cmd.Parameters.Add(cmd, paramName, DbType.String).Value = pair.Value;
+                    //excludeIds.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = '" + pair.Key + "'), '') <> " + paramName + ")");
+                    excludeIds.Add("ProviderIds not like " + paramName);
+                    cmd.Parameters.Add(cmd, paramName, DbType.String).Value = "%" + pair.Key + "=" + pair.Value + "%";
                     index++;
+
+                    break;
                 }
 
                 whereClauses.Add(string.Join(" AND ", excludeIds.ToArray()));
@@ -3879,20 +3863,17 @@ namespace Emby.Server.Core.Data
 
             if (query.HasImdbId.HasValue)
             {
-                var fn = query.HasImdbId.Value ? "<>" : "=";
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Imdb'), '') " + fn + " '')");
+                whereClauses.Add("ProviderIds like '%imdb=%'");
             }
 
             if (query.HasTmdbId.HasValue)
             {
-                var fn = query.HasTmdbId.Value ? "<>" : "=";
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tmdb'), '') " + fn + " '')");
+                whereClauses.Add("ProviderIds like '%tmdb=%'");
             }
 
             if (query.HasTvdbId.HasValue)
             {
-                var fn = query.HasTvdbId.Value ? "<>" : "=";
-                whereClauses.Add("(COALESCE((select value from ProviderIds where ItemId=Guid and Name = 'Tvdb'), '') " + fn + " '')");
+                whereClauses.Add("ProviderIds like '%tvdb=%'");
             }
 
             if (query.AlbumNames.Length > 0)
@@ -4254,11 +4235,6 @@ namespace Emby.Server.Core.Data
                 _deleteItemValuesCommand.GetParameter(0).Value = id;
                 _deleteItemValuesCommand.Transaction = transaction;
                 _deleteItemValuesCommand.ExecuteNonQuery();
-
-                // Delete provider ids
-                _deleteProviderIdsCommand.GetParameter(0).Value = id;
-                _deleteProviderIdsCommand.Transaction = transaction;
-                _deleteProviderIdsCommand.ExecuteNonQuery();
 
                 // Delete images
                 _deleteImagesCommand.GetParameter(0).Value = id;
@@ -4929,53 +4905,6 @@ namespace Emby.Server.Core.Data
 
                 _saveImagesCommand.ExecuteNonQuery();
                 index++;
-            }
-        }
-
-        private void UpdateProviderIds(Guid itemId, Dictionary<string, string> values, IDbTransaction transaction)
-        {
-            if (itemId == Guid.Empty)
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
-
-            // Just in case there might be case-insensitive duplicates, strip them out now
-            var newValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var pair in values)
-            {
-                newValues[pair.Key] = pair.Value;
-            }
-
-            CheckDisposed();
-
-            // First delete 
-            _deleteProviderIdsCommand.GetParameter(0).Value = itemId;
-            _deleteProviderIdsCommand.Transaction = transaction;
-
-            _deleteProviderIdsCommand.ExecuteNonQuery();
-
-            foreach (var pair in newValues)
-            {
-                if (string.IsNullOrWhiteSpace(pair.Key))
-                {
-                    continue;
-                }
-                if (string.IsNullOrWhiteSpace(pair.Value))
-                {
-                    continue;
-                }
-
-                _saveProviderIdsCommand.GetParameter(0).Value = itemId;
-                _saveProviderIdsCommand.GetParameter(1).Value = pair.Key;
-                _saveProviderIdsCommand.GetParameter(2).Value = pair.Value;
-                _saveProviderIdsCommand.Transaction = transaction;
-
-                _saveProviderIdsCommand.ExecuteNonQuery();
             }
         }
 

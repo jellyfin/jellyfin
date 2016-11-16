@@ -7,8 +7,13 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         var currentUserId;
         var currentApiClient;
         var displayPrefs;
+        var saveTimeout;
 
         self.setUserInfo = function (userId, apiClient) {
+
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
 
             currentUserId = userId;
             currentApiClient = apiClient;
@@ -24,7 +29,6 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             });
         };
 
-        var saveTimeout;
         function onSaveTimeout() {
             saveTimeout = null;
             currentApiClient.updateDisplayPreferences('usersettings', displayPrefs, currentUserId, 'emby');

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost'], function (libraryBrowser, cardBuilder, lazyLoader, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost', 'globalize', 'dom'], function (libraryBrowser, cardBuilder, lazyLoader, appHost, globalize, dom) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -19,7 +19,7 @@
                         Recursive: true,
                         EnableTotalRecordCount: false
                     },
-                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -58,6 +58,23 @@
             return enableScrollX() ? 'overflowPortrait' : 'portrait';
         }
 
+        function getMoreItemsHref(itemId, type) {
+
+            return 'secondaryitems.html?type=' + type + '&parentId=' + itemId;
+        }
+
+        dom.addEventListener(tabContent, 'click', function (e) {
+
+            var btnMoreFromGenre = dom.parentWithClass(e.target, 'btnMoreFromGenre');
+            if (btnMoreFromGenre) {
+                var id = btnMoreFromGenre.getAttribute('data-id');
+                Dashboard.navigate(getMoreItemsHref(id, 'Series'));
+            }
+
+        }, {
+            passive: true
+        });
+
         function fillItemsContainer(elem) {
 
             var id = elem.getAttribute('data-id');
@@ -67,6 +84,10 @@
             var limit = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
                 5 :
                 8;
+
+            if (enableScrollX()) {
+                limit = 10;
+            }
 
             var enableImageTypes = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
               "Primary,Backdrop,Thumb" :
@@ -82,7 +103,8 @@
                 EnableImageTypes: enableImageTypes,
                 Limit: limit,
                 GenreIds: id,
-                EnableTotalRecordCount: false
+                EnableTotalRecordCount: false,
+                ParentId: params.topParentId
             };
 
             ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
@@ -112,7 +134,7 @@
                         centerText: false,
                         cardLayout: true,
                         vibrant: supportsImageAnalysis,
-                        showYear: true
+                        showSeriesYear: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
@@ -124,7 +146,7 @@
                         centerText: false,
                         cardLayout: true,
                         vibrant: supportsImageAnalysis,
-                        showYear: true
+                        showSeriesYear: true
                     });
                 }
                 else if (viewStyle == "Poster") {
@@ -139,6 +161,9 @@
                     });
                 }
 
+                if (result.Items.length >= query.Limit) {
+                    tabContent.querySelector('.btnMoreFromGenre' + id).classList.remove('hide');
+                }
             });
         }
 
@@ -158,9 +183,15 @@
                     var item = items[i];
 
                     html += '<div class="homePageSection">';
+
+                    html += '<div style="display:flex;align-items:center;">';
                     html += '<h1 class="listHeader">';
                     html += item.Name;
                     html += '</h1>';
+                    html += '<button is="emby-button" type="button" class="raised more mini noIcon hide btnMoreFromGenre btnMoreFromGenre' + item.Id + '" data-id="' + item.Id + '">';
+                    html += '<span>' + globalize.translate('ButtonMore') + '</span>';
+                    html += '</button>';
+                    html += '</div>';
 
                     if (enableScrollX()) {
                         html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX lazy" data-id="' + item.Id + '">';

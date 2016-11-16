@@ -80,8 +80,6 @@
     <Compile Include="Movies\MovieDbSearch.cs" />
     <Compile Include="Movies\MovieMetadataService.cs" />
     <Compile Include="Movies\TmdbSettings.cs" />
-    <Compile Include="GameGenres\GameGenreImageProvider.cs" />
-    <Compile Include="Genres\GenreImageProvider.cs" />
     <Compile Include="ImagesByName\ImageUtils.cs" />
     <Compile Include="MediaInfo\AudioImageProvider.cs" />
     <Compile Include="MediaInfo\VideoImageProvider.cs" />
