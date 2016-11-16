@@ -388,7 +388,7 @@
         });
     }
 
-    function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
+    function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile) {
 
         return getUserViews(user.Id).then(function (items) {
 
@@ -418,7 +418,7 @@
                 html += cardBuilder.getCardsHtml({
                     items: items,
                     shape: scrollX ? 'overflowBackdrop' : shape,
-                    showTitle: showTitles,
+                    showTitle: true,
                     centerText: true,
                     overlayText: false,
                     lazy: true,

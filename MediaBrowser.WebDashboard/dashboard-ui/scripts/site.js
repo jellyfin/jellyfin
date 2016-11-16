@@ -314,7 +314,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+        Dashboard.navigate('mypreferencesmenu.html');
     },
 
     getPluginSecurityInfo: function () {
@@ -1222,7 +1222,11 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
-        define("lazyLoader", [embyWebComponentsBowerPath + "/images/lazyloader"], returnFirstDependency);
+        if (window.IntersectionObserver) {
+            define("lazyLoader", [embyWebComponentsBowerPath + "/lazyloader/lazyloader-intersectionobserver"], returnFirstDependency);
+        } else {
+            define("lazyLoader", [embyWebComponentsBowerPath + "/lazyloader/lazyloader-scroll"], returnFirstDependency);
+        }
         define("imageLoader", [embyWebComponentsBowerPath + "/images/imagehelper"], returnFirstDependency);
         define("syncJobList", ["components/syncjoblist/syncjoblist"], returnFirstDependency);
         define("appfooter", ["components/appfooter/appfooter"], returnFirstDependency);
@@ -1543,7 +1547,7 @@ var AppInfo = {};
             };
 
             embyRouter.showSettings = function () {
-                Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+                Dashboard.navigate('mypreferencesmenu.html');
             };
 
             embyRouter.showGuide = function () {

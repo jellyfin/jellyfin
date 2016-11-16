@@ -8,16 +8,6 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
         fn();
     };
 
-    var supportsIntersectionObserver = function () {
-
-        if (window.IntersectionObserver) {
-
-            return true;
-        }
-
-        return false;
-    }();
-
     function resetThresholds() {
 
         var x = screen.availWidth;
@@ -32,11 +22,9 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
         thresholdY = y;
     }
 
-    if (!supportsIntersectionObserver) {
-        dom.addEventListener(window, "orientationchange", resetThresholds, { passive: true });
-        dom.addEventListener(window, 'resize', resetThresholds, { passive: true });
-        resetThresholds();
-    }
+    dom.addEventListener(window, "orientationchange", resetThresholds, { passive: true });
+    dom.addEventListener(window, 'resize', resetThresholds, { passive: true });
+    resetThresholds();
 
     function isVisible(elem) {
         return visibleinviewport(elem, true, thresholdX, thresholdY);
@@ -52,50 +40,18 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
         }
     }
 
-    function unveilWithIntersection(elements, root, callback) {
-
-        var filledCount = 0;
-
-        var options = {};
-
-        //options.rootMargin = "300%";
-
-        var observer = new IntersectionObserver(function (entries) {
-            for (var j = 0, length2 = entries.length; j < length2; j++) {
-                var entry = entries[j];
-                var target = entry.target;
-                observer.unobserve(target);
-                callback(target);
-                filledCount++;
-            }
-        },
-        options
-        );
-        // Start observing an element
-        for (var i = 0, length = elements.length; i < length; i++) {
-            observer.observe(elements[i]);
-        }
-    }
-
-    function unveilElements(elements, root, callback) {
-
-        if (!elements.length) {
-            return;
-        }
-
-        if (supportsIntersectionObserver) {
-            unveilWithIntersection(elements, root, callback);
-            return;
-        }
+    function unveilElementsInternal(instance, callback) {
 
         var unveiledElements = [];
         var cancellationTokens = [];
+        var loadedCount = 0;
 
         function unveilInternal(tokenIndex) {
 
             var anyFound = false;
             var out = false;
 
+            var elements = instance.elements;
             // TODO: This out construct assumes left to right, top to bottom
 
             for (var i = 0, length = elements.length; i < length; i++) {
@@ -111,6 +67,7 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
                     anyFound = true;
                     unveiledElements[i] = true;
                     callback(elem);
+                    loadedCount++;
                 } else {
 
                     if (anyFound) {
@@ -119,7 +76,7 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
                 }
             }
 
-            if (!elements.length) {
+            if (loadedCount >= elements.length) {
                 dom.removeEventListener(document, 'focus', unveil, {
                     capture: true,
                     passive: true
@@ -171,12 +128,58 @@ define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, bro
         unveil();
     }
 
-    function lazyChildren(elem, callback) {
+    function LazyLoader(options) {
+
+        this.options = options;
+    }
+
+    LazyLoader.prototype.createObserver = function () {
+
+        unveilElementsInternal(this, this.options.callback);
+        this.observer = 1;
+    };
+
+    LazyLoader.prototype.addElements = function (elements) {
+
+        this.elements = this.elements || [];
+
+        for (var i = 0, length = elements.length; i < length; i++) {
+            this.elements.push(elements[i]);
+        }
+
+        var observer = this.observer;
+
+        if (!observer) {
+            this.createObserver();
+        }
+
+    };
+
+    LazyLoader.prototype.destroyObserver = function (elements) {
+
+    };
+
+    LazyLoader.prototype.destroy = function (elements) {
+
+        this.destroyObserver();
+        this.options = null;
+    };
+
+    function unveilElements(elements, root, callback) {
+
+        if (!elements.length) {
+            return;
+        }
+        var lazyLoader = new LazyLoader({
+            callback: callback
+        });
+        lazyLoader.addElements(elements);
+    }
+
+    LazyLoader.lazyChildren = function (elem, callback) {
 
         unveilElements(elem.getElementsByClassName('lazy'), elem, callback);
     }
 
-    self.lazyChildren = lazyChildren;
-
-    return self;
+    return LazyLoader;
 });
