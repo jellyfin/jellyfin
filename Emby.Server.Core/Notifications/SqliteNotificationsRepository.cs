@@ -260,16 +260,16 @@ namespace Emby.Server.Core.Notifications
                     {
                         transaction = connection.BeginTransaction();
 
-                        replaceNotificationCommand.GetParameter(0).Value = new Guid(notification.Id);
-                        replaceNotificationCommand.GetParameter(1).Value = new Guid(notification.UserId);
-                        replaceNotificationCommand.GetParameter(2).Value = notification.Date.ToUniversalTime();
-                        replaceNotificationCommand.GetParameter(3).Value = notification.Name;
-                        replaceNotificationCommand.GetParameter(4).Value = notification.Description;
-                        replaceNotificationCommand.GetParameter(5).Value = notification.Url;
-                        replaceNotificationCommand.GetParameter(6).Value = notification.Level.ToString();
-                        replaceNotificationCommand.GetParameter(7).Value = notification.IsRead;
-                        replaceNotificationCommand.GetParameter(8).Value = string.Empty;
-                        replaceNotificationCommand.GetParameter(9).Value = string.Empty;
+                        replaceNotificationCommand.GetParameter("@Id").Value = new Guid(notification.Id);
+                        replaceNotificationCommand.GetParameter("@UserId").Value = new Guid(notification.UserId);
+                        replaceNotificationCommand.GetParameter("@Date").Value = notification.Date.ToUniversalTime();
+                        replaceNotificationCommand.GetParameter("@Name").Value = notification.Name;
+                        replaceNotificationCommand.GetParameter("@Description").Value = notification.Description;
+                        replaceNotificationCommand.GetParameter("@Url").Value = notification.Url;
+                        replaceNotificationCommand.GetParameter("@Level").Value = notification.Level.ToString();
+                        replaceNotificationCommand.GetParameter("@IsRead").Value = notification.IsRead;
+                        replaceNotificationCommand.GetParameter("@Category").Value = string.Empty;
+                        replaceNotificationCommand.GetParameter("@RelatedId").Value = string.Empty;
 
                         replaceNotificationCommand.Transaction = transaction;
 

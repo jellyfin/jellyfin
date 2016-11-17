@@ -80,18 +80,16 @@ namespace Emby.Server.Core.Security
                     {
                         transaction = connection.BeginTransaction();
 
-                        var index = 0;
-
-                        saveInfoCommand.GetParameter(index++).Value = new Guid(info.Id);
-                        saveInfoCommand.GetParameter(index++).Value = info.AccessToken;
-                        saveInfoCommand.GetParameter(index++).Value = info.DeviceId;
-                        saveInfoCommand.GetParameter(index++).Value = info.AppName;
-                        saveInfoCommand.GetParameter(index++).Value = info.AppVersion;
-                        saveInfoCommand.GetParameter(index++).Value = info.DeviceName;
-                        saveInfoCommand.GetParameter(index++).Value = info.UserId;
-                        saveInfoCommand.GetParameter(index++).Value = info.IsActive;
-                        saveInfoCommand.GetParameter(index++).Value = info.DateCreated;
-                        saveInfoCommand.GetParameter(index++).Value = info.DateRevoked;
+                        saveInfoCommand.GetParameter("@Id").Value = new Guid(info.Id);
+                        saveInfoCommand.GetParameter("@AccessToken").Value = info.AccessToken;
+                        saveInfoCommand.GetParameter("@DeviceId").Value = info.DeviceId;
+                        saveInfoCommand.GetParameter("@AppName").Value = info.AppName;
+                        saveInfoCommand.GetParameter("@AppVersion").Value = info.AppVersion;
+                        saveInfoCommand.GetParameter("@DeviceName").Value = info.DeviceName;
+                        saveInfoCommand.GetParameter("@UserId").Value = info.UserId;
+                        saveInfoCommand.GetParameter("@IsActive").Value = info.IsActive;
+                        saveInfoCommand.GetParameter("@DateCreated").Value = info.DateCreated;
+                        saveInfoCommand.GetParameter("@DateRevoked").Value = info.DateRevoked;
 
                         saveInfoCommand.Transaction = transaction;
 
