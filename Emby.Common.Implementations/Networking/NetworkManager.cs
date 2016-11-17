@@ -489,7 +489,7 @@ namespace Emby.Common.Implementations.Networking
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>IEnumerable{NetworkShare}.</returns>
-        public IEnumerable<NetworkShare> GetNetworkShares(string path)
+        public virtual IEnumerable<NetworkShare> GetNetworkShares(string path)
         {
             return new List<NetworkShare>();
         }
@@ -498,7 +498,7 @@ namespace Emby.Common.Implementations.Networking
         /// Gets available devices within the domain
         /// </summary>
         /// <returns>PC's in the Domain</returns>
-        public IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
+        public virtual IEnumerable<FileSystemEntryInfo> GetNetworkDevices()
         {
             return new List<FileSystemEntryInfo>();
         }
