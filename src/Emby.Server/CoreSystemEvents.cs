@@ -7,5 +7,7 @@ namespace Emby.Server
     {
         public event EventHandler Resume;
         public event EventHandler Suspend;
+        public event EventHandler SessionLogoff;
+        public event EventHandler SystemShutdown;
     }
 }
