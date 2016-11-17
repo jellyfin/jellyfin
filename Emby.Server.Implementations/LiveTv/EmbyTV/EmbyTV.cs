@@ -992,6 +992,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
                 try

@@ -101,6 +101,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             if (IsValidChannelId(channelId))
             {
                 var hosts = GetTunerHosts();
@@ -161,6 +166,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<LiveStream> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             if (!IsValidChannelId(channelId))
             {
                 throw new FileNotFoundException();

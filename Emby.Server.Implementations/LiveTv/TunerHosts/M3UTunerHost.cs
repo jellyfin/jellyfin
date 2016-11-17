@@ -87,6 +87,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         protected override bool IsValidChannelId(string channelId)
         {
+            if (string.IsNullOrWhiteSpace(channelId))
+            {
+                throw new ArgumentNullException("channelId");
+            }
+
             return channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase);
         }
 
