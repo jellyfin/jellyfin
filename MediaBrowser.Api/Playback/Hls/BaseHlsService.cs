@@ -254,7 +254,10 @@ namespace MediaBrowser.Api.Playback.Hls
                     "hls/" + Path.GetFileNameWithoutExtension(outputPath));
             }
 
-            var args = string.Format("{0} {1} {2} -map_metadata -1 -threads {3} {4} {5} -avoid_negative_ts make_zero -fflags +genpts -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
+            // add when stream copying? 
+            // -avoid_negative_ts make_zero -fflags +genpts
+
+            var args = string.Format("{0} {1} {2} -map_metadata -1 -threads {3} {4} {5} -sc_threshold 0 {6} -hls_time {7} -start_number {8} -hls_list_size {9}{10} -y \"{11}\"",
                 itsOffset,
                 inputModifier,
                 GetInputArgument(state),

@@ -25,6 +25,11 @@ namespace Emby.Server.Core.Data
             return (IDataParameter)cmd.Parameters[index];
         }
 
+        public static IDataParameter GetParameter(this IDbCommand cmd, string name)
+        {
+            return (IDataParameter)cmd.Parameters[name];
+        }
+
         public static IDataParameter Add(this IDataParameterCollection paramCollection, IDbCommand cmd, string name, DbType type)
         {
             var param = cmd.CreateParameter();

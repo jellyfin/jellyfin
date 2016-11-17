@@ -448,9 +448,15 @@
 
         var screenWidth = dom.getWindowSize().innerWidth;
 
-        var limit = screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6));
+        var limit;
 
-        if (!enableScrollX()) {
+        if (enableScrollX()) {
+
+            limit = 12;
+
+        } else {
+
+            limit = screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6));
             limit = Math.min(limit, 5);
         }
 
@@ -481,6 +487,10 @@
                 } else {
                     html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+                var cardLayout = appHost.preferVisualCards;
+
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
@@ -492,8 +502,12 @@
                     showDetailsMenu: true,
                     overlayPlayButton: true,
                     context: 'home',
-                    centerText: true,
-                    allowBottomPadding: false
+                    centerText: !cardLayout,
+                    allowBottomPadding: false,
+                    cardLayout: cardLayout,
+                    showYear: true,
+                    lines: 2,
+                    vibrant: cardLayout && supportsImageAnalysis
                 });
                 html += '</div>';
             }

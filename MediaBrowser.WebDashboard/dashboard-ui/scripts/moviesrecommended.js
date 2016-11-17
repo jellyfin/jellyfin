@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom, appHost) {
     'use strict';
 
     function enableScrollX() {
@@ -72,13 +72,21 @@
             var allowBottomPadding = !enableScrollX();
 
             var container = page.querySelector('#resumableItems');
+
+            var supportsImageAnalysis = appHost.supports('imageanalysis');
+            var cardLayout = appHost.preferVisualCards;
+
             cardBuilder.buildCards(result.Items, {
                 itemsContainer: container,
                 preferThumb: true,
                 shape: getThumbShape(),
                 scalable: true,
                 overlayPlayButton: true,
-                allowBottomPadding: allowBottomPadding
+                allowBottomPadding: allowBottomPadding,
+                cardLayout: cardLayout,
+                vibrant: cardLayout && supportsImageAnalysis,
+                showTitle: cardLayout,
+                showYear: cardLayout
             });
 
         });
