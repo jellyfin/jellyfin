@@ -810,7 +810,15 @@ namespace Emby.Server.Core.Data
                         _saveItemCommand.GetParameter(index++).Value = item.ParentId;
                     }
 
-                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
+                    if (item.Genres.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
                     _saveItemCommand.GetParameter(index++).Value = item.GetInheritedParentalRatingValue() ?? 0;
 
                     _saveItemCommand.GetParameter(index++).Value = LatestSchemaVersion;
@@ -852,8 +860,23 @@ namespace Emby.Server.Core.Data
                     }
 
                     _saveItemCommand.GetParameter(index++).Value = item.IsInMixedFolder;
-                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
-                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
+                    if (item.LockedFields.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.LockedFields.Select(i => i.ToString()).ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+
+                    if (item.Studios.Count > 0)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Studios.ToArray());
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
 
                     if (item.Audio.HasValue)
                     {
@@ -1043,31 +1066,27 @@ namespace Emby.Server.Core.Data
                     _saveItemCommand.GetParameter(index++).Value = item.TotalBitrate;
                     _saveItemCommand.GetParameter(index++).Value = item.ExtraType;
 
+                    string artists = null;
                     var hasArtists = item as IHasArtist;
                     if (hasArtists != null)
                     {
                         if (hasArtists.Artists.Count > 0)
                         {
-                            _saveItemCommand.GetParameter(index++).Value = string.Join("|", hasArtists.Artists.ToArray());
-                        }
-                        else
-                        {
-                            _saveItemCommand.GetParameter(index++).Value = null;
+                            artists = string.Join("|", hasArtists.Artists.ToArray());
                         }
                     }
+                    _saveItemCommand.GetParameter(index++).Value = artists;
 
+                    string albumArtists = null;
                     var hasAlbumArtists = item as IHasAlbumArtist;
                     if (hasAlbumArtists != null)
                     {
                         if (hasAlbumArtists.AlbumArtists.Count > 0)
                         {
-                            _saveItemCommand.GetParameter(index++).Value = string.Join("|", hasAlbumArtists.AlbumArtists.ToArray());
-                        }
-                        else
-                        {
-                            _saveItemCommand.GetParameter(index++).Value = null;
+                            albumArtists = string.Join("|", hasAlbumArtists.AlbumArtists.ToArray());
                         }
                     }
+                    _saveItemCommand.GetParameter(index++).Value = albumArtists;
 
                     _saveItemCommand.GetParameter(index++).Value = item.ExternalId;
 
