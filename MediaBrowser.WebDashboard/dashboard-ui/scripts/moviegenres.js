@@ -188,7 +188,7 @@
                     html += '<h1 class="listHeader">';
                     html += item.Name;
                     html += '</h1>';
-                    html += '<button is="emby-button" type="button" class="raised more mini noIcon hide btnMoreFromGenre btnMoreFromGenre' + item.Id + '" data-id="' + item.Id + '">';
+                    html += '<button is="emby-button" type="button" class="raised more mini hide btnMoreFromGenre btnMoreFromGenre' + item.Id + '" data-id="' + item.Id + '">';
                     html += '<span>' + globalize.translate('ButtonMore') + '</span>';
                     html += '</button>';
                     html += '</div>';
