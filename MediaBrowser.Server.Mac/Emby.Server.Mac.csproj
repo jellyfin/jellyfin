@@ -983,6 +983,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\README.md">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\README.md</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\animations.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\animations.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\appsettings.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\appsettings.js</Link>
     </BundleResource>
@@ -1450,6 +1453,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\itemidentifier\itemidentifier.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\itemidentifier\itemidentifier.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\listview\listview.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\listview\listview.css</Link>
