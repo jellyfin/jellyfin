@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
@@ -25,7 +27,12 @@ namespace Emby.Server.Implementations.Data
 
         public static byte[] ToGuidParamValue(this string str)
         {
-            return new Guid(str).ToByteArray();
+            return ToGuidParamValue(new Guid(str));
+        }
+
+        public static byte[] ToGuidParamValue(this Guid guid)
+        {
+            return guid.ToByteArray();
         }
 
         public static Guid ReadGuid(this IResultSetValue result)
@@ -100,6 +107,25 @@ namespace Emby.Server.Implementations.Data
                 dateText, _datetimeFormats,
                 DateTimeFormatInfo.InvariantInfo,
                 DateTimeStyles.None).ToUniversalTime();
+        }
+
+        /// <summary>
+        /// Serializes to bytes.
+        /// </summary>
+        /// <returns>System.Byte[][].</returns>
+        /// <exception cref="System.ArgumentNullException">obj</exception>
+        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj, IMemoryStreamFactory streamProvider)
+        {
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+
+            using (var stream = streamProvider.CreateNew())
+            {
+                json.SerializeToStream(obj, stream);
+                return stream.ToArray();
+            }
         }
     }
 }
