@@ -69,7 +69,7 @@ namespace Emby.Server.Implementations.Data
             //}
 
             db.ExecuteAll(string.Join(";", queries));
-
+            
             return db;
         }
 
@@ -118,6 +118,28 @@ namespace Emby.Server.Implementations.Data
         protected virtual void CloseConnection()
         {
 
+        }
+
+        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type)
+        {
+            foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
+            {
+                if (row[1].SQLiteType != SQLiteType.Null)
+                {
+                    var name = row[1].ToString();
+
+                    if (string.Equals(name, columnName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                }
+            }
+
+            connection.ExecuteAll(string.Join(";", new string[]
+            {
+                "alter table " + table,
+                "add column " + columnName + " " + type + " NULL"
+            }));
         }
     }
 }

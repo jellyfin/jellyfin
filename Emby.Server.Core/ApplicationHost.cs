@@ -91,7 +91,7 @@ using Emby.Server.Core.FFMpeg;
 using Emby.Server.Core.IO;
 using Emby.Server.Core.Localization;
 using Emby.Server.Core.Migrations;
-using Emby.Server.Core.Security;
+using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Social;
 using Emby.Server.Core.Sync;
 using Emby.Server.Implementations.Channels;
@@ -554,7 +554,7 @@ namespace Emby.Server.Core
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, GetDbConnector(), MemoryStreamFactory);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
@@ -699,7 +699,7 @@ namespace Emby.Server.Core
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamFactory, ProcessFactory, textEncoding);
             RegisterSingleInstance(SubtitleEncoder);
 
-            await displayPreferencesRepo.Initialize().ConfigureAwait(false);
+            displayPreferencesRepo.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, GetDbConnector());
 
@@ -828,9 +828,9 @@ namespace Emby.Server.Core
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
+            var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }
