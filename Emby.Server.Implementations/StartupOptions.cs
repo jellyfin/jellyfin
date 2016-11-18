@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Emby.Server.Core
+namespace Emby.Server.Implementations
 {
     public class StartupOptions
     {
-        private readonly List<string> _options = Environment.GetCommandLineArgs().ToList();
+        private readonly List<string> _options;
+
+        public StartupOptions(string[] commandLineArgs)
+        {
+            _options = commandLineArgs.ToList();
+        }
 
         public bool ContainsOption(string option)
         {

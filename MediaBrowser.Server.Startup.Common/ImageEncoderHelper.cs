@@ -3,6 +3,7 @@ using Emby.Drawing;
 using Emby.Drawing.Net;
 using Emby.Drawing.ImageMagick;
 using Emby.Server.Core;
+using Emby.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;

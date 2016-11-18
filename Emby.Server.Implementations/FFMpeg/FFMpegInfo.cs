@@ -1,4 +1,4 @@
-﻿namespace Emby.Server.Core.FFMpeg
+﻿namespace Emby.Server.Implementations.FFMpeg
 {
     /// <summary>
     /// Class FFMpegInfo

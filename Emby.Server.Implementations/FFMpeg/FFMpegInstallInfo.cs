@@ -1,5 +1,5 @@
 ﻿
-namespace Emby.Server.Core.FFMpeg
+namespace Emby.Server.Implementations.FFMpeg
 {
     public class FFMpegInstallInfo
     {
