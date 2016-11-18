@@ -22,7 +22,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Emby.Server.Implementations.ScheduledTasks;
 
-namespace Emby.Server.Implementations.Persistence
+namespace Emby.Server.Implementations.Data
 {
     public class CleanDatabaseScheduledTask : IScheduledTask
     {

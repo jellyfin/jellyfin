@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
+using Emby.Server.Implementations.Migrations;
 
 namespace Emby.Server.Core.Migrations
 {

@@ -90,6 +90,8 @@ namespace MediaBrowser.ServerApplication
 
             var success = SetDllDirectory(architecturePath);
 
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+
             var appPaths = CreateApplicationPaths(ApplicationPath, IsRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
