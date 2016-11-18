@@ -552,7 +552,7 @@ namespace Emby.Server.Core
             UserDataManager = new UserDataManager(LogManager, ServerConfigurationManager);
             RegisterSingleInstance(UserDataManager);
 
-            UserRepository = await GetUserRepository().ConfigureAwait(false);
+            UserRepository = GetUserRepository();
 
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
@@ -804,11 +804,11 @@ namespace Emby.Server.Core
         /// Gets the user repository.
         /// </summary>
         /// <returns>Task{IUserRepository}.</returns>
-        private async Task<IUserRepository> GetUserRepository()
+        private IUserRepository GetUserRepository()
         {
-            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer, GetDbConnector(), MemoryStreamFactory);
+            var repo = new SqliteUserRepository(LogManager.GetLogger("SqliteUserRepository"), ApplicationPaths, JsonSerializer, MemoryStreamFactory);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }
