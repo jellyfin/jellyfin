@@ -562,7 +562,7 @@ namespace Emby.Server.Core
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
-            FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
+            FileOrganizationRepository = GetFileOrganizationRepository();
             RegisterSingleInstance(FileOrganizationRepository);
 
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
@@ -817,11 +817,11 @@ namespace Emby.Server.Core
         /// Gets the file organization repository.
         /// </summary>
         /// <returns>Task{IUserRepository}.</returns>
-        private async Task<IFileOrganizationRepository> GetFileOrganizationRepository()
+        private IFileOrganizationRepository GetFileOrganizationRepository()
         {
-            var repo = new SqliteFileOrganizationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
+            var repo = new SqliteFileOrganizationRepository(LogManager.GetLogger("SqliteFileOrganizationRepository"), ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }
