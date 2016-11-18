@@ -39,7 +39,9 @@ namespace MediaBrowser.Server.Mac
 
 		static void Main (string[] args)
 		{
-			var applicationPath = Assembly.GetEntryAssembly().Location;
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+
+            var applicationPath = Assembly.GetEntryAssembly().Location;
 
 			var options = new StartupOptions();
 
