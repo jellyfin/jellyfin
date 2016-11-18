@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Emby.Server.Core.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     public interface IVersionMigration
     {

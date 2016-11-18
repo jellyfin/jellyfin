@@ -34,6 +34,7 @@
   <ItemGroup>
     <Compile Include="Activity\ActivityLogEntryPoint.cs" />
     <Compile Include="Activity\ActivityManager.cs" />
+    <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
@@ -49,8 +50,10 @@
     <Compile Include="Connect\ConnectManager.cs" />
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
+    <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
     <Compile Include="EntryPoints\KeepServerAwake.cs" />
@@ -165,6 +168,7 @@
     <Compile Include="LiveTv\TunerHosts\QueueStream.cs" />
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
+    <Compile Include="Migrations\IVersionMigration.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
@@ -173,8 +177,11 @@
     <Compile Include="Notifications\NotificationConfigurationFactory.cs" />
     <Compile Include="Notifications\NotificationManager.cs" />
     <Compile Include="Notifications\Notifications.cs" />
+    <Compile Include="Notifications\SqliteNotificationsRepository.cs" />
     <Compile Include="Notifications\WebSocketNotifier.cs" />
-    <Compile Include="Persistence\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="Data\BaseSqliteRepository.cs" />
+    <Compile Include="Data\CleanDatabaseScheduledTask.cs" />
+    <Compile Include="Data\SqliteExtensions.cs" />
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
     <Compile Include="Playlists\PlaylistManager.cs" />
@@ -186,6 +193,7 @@
     <Compile Include="ScheduledTasks\RefreshIntrosTask.cs" />
     <Compile Include="ScheduledTasks\RefreshMediaLibraryTask.cs" />
     <Compile Include="ScheduledTasks\SystemUpdateTask.cs" />
+    <Compile Include="Security\AuthenticationRepository.cs" />
     <Compile Include="Security\EncryptionManager.cs" />
     <Compile Include="Security\MBLicenseFile.cs" />
     <Compile Include="Security\PluginSecurityManager.cs" />
@@ -197,6 +205,7 @@
     <Compile Include="Session\SessionWebSocketListener.cs" />
     <Compile Include="Session\WebSocketController.cs" />
     <Compile Include="Social\SharingManager.cs" />
+    <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\AiredEpisodeOrderComparer.cs" />
     <Compile Include="Sorting\AirTimeComparer.cs" />
     <Compile Include="Sorting\AlbumArtistComparer.cs" />
@@ -289,6 +298,14 @@
     </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.6159.25070, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MediaBrowser.Naming.1.0.2\lib\portable-net45+win8\MediaBrowser.Naming.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SQLitePCL.pretty, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCL.pretty.1.1.0\lib\portable-net45+netcore45+wpa81+wp8\SQLitePCL.pretty.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.0\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

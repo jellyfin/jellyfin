@@ -87,9 +87,6 @@ namespace Emby.Server.Core.Data
         private IDbCommand _deleteItemValuesCommand;
         private IDbCommand _saveItemValuesCommand;
 
-        private IDbCommand _deleteImagesCommand;
-        private IDbCommand _saveImagesCommand;
-
         private IDbCommand _updateInheritedTagsCommand;
 
         public const int LatestSchemaVersion = 109;
@@ -161,9 +158,6 @@ namespace Emby.Server.Core.Data
                                 "create index if not exists idx_AncestorIds2 on AncestorIds(AncestorIdText)",
 
                                 "create table if not exists ItemValues (ItemId GUID, Type INT, Value TEXT, CleanValue TEXT)",
-
-                                "create table if not exists Images (ItemId GUID NOT NULL, Path TEXT NOT NULL, ImageType INT NOT NULL, DateModified DATETIME, IsPlaceHolder BIT NOT NULL, SortOrder INT)",
-                                "create index if not exists idx_Images on Images(ItemId)",
 
                                 "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
 
@@ -309,6 +303,8 @@ namespace Emby.Server.Core.Data
                 "drop table if exists UserDataKeys",
                 "drop table if exists ProviderIds",
                 "drop index if exists Idx_ProviderIds1",
+                "drop table if exists Images",
+                "drop index if exists idx_Images",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -664,20 +660,6 @@ namespace Emby.Server.Core.Data
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Type");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@Value");
             _saveItemValuesCommand.Parameters.Add(_saveItemValuesCommand, "@CleanValue");
-
-            // images
-            _deleteImagesCommand = _connection.CreateCommand();
-            _deleteImagesCommand.CommandText = "delete from Images where ItemId=@Id";
-            _deleteImagesCommand.Parameters.Add(_deleteImagesCommand, "@Id");
-
-            _saveImagesCommand = _connection.CreateCommand();
-            _saveImagesCommand.CommandText = "insert into Images (ItemId, ImageType, Path, DateModified, IsPlaceHolder, SortOrder) values (@ItemId, @ImageType, @Path, @DateModified, @IsPlaceHolder, @SortOrder)";
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@ItemId");
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@ImageType");
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@Path");
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@DateModified");
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@IsPlaceHolder");
-            _saveImagesCommand.Parameters.Add(_saveImagesCommand, "@SortOrder");
         }
 
         /// <summary>
@@ -1101,7 +1083,6 @@ namespace Emby.Server.Core.Data
                         UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), transaction);
                     }
 
-                    UpdateImages(item.Id, item.ImageInfos, transaction);
                     UpdateItemValues(item.Id, GetItemValuesToSave(item), transaction);
                 }
 
@@ -3475,14 +3456,9 @@ namespace Emby.Server.Core.Data
 
             if (query.ImageTypes.Length > 0 && _config.Configuration.SchemaVersion >= 87)
             {
-                var requiredImageIndex = 0;
-
                 foreach (var requiredImage in query.ImageTypes)
                 {
-                    var paramName = "@RequiredImageType" + requiredImageIndex;
-                    whereClauses.Add("(select path from images where ItemId=Guid and ImageType=" + paramName + " limit 1) not null");
-                    cmd.Parameters.Add(cmd, paramName, DbType.Int32).Value = (int)requiredImage;
-                    requiredImageIndex++;
+                    whereClauses.Add("Images like '%" + requiredImage + "%'");
                 }
             }
 
@@ -4255,11 +4231,6 @@ namespace Emby.Server.Core.Data
                 _deleteItemValuesCommand.Transaction = transaction;
                 _deleteItemValuesCommand.ExecuteNonQuery();
 
-                // Delete images
-                _deleteImagesCommand.GetParameter(0).Value = id;
-                _deleteImagesCommand.Transaction = transaction;
-                _deleteImagesCommand.ExecuteNonQuery();
-
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
@@ -4873,58 +4844,6 @@ namespace Emby.Server.Core.Data
             list.AddRange(item.Keywords.Select(i => new Tuple<int, string>(5, i)));
 
             return list;
-        }
-
-        private void UpdateImages(Guid itemId, List<ItemImageInfo> images, IDbTransaction transaction)
-        {
-            if (itemId == Guid.Empty)
-            {
-                throw new ArgumentNullException("itemId");
-            }
-
-            if (images == null)
-            {
-                throw new ArgumentNullException("images");
-            }
-
-            CheckDisposed();
-
-            // First delete 
-            _deleteImagesCommand.GetParameter(0).Value = itemId;
-            _deleteImagesCommand.Transaction = transaction;
-
-            _deleteImagesCommand.ExecuteNonQuery();
-
-            var index = 0;
-            foreach (var image in images)
-            {
-                if (string.IsNullOrWhiteSpace(image.Path))
-                {
-                    // Invalid
-                    continue;
-                }
-
-                _saveImagesCommand.GetParameter(0).Value = itemId;
-                _saveImagesCommand.GetParameter(1).Value = image.Type;
-                _saveImagesCommand.GetParameter(2).Value = image.Path;
-
-                if (image.DateModified == default(DateTime))
-                {
-                    _saveImagesCommand.GetParameter(3).Value = null;
-                }
-                else
-                {
-                    _saveImagesCommand.GetParameter(3).Value = image.DateModified;
-                }
-
-                _saveImagesCommand.GetParameter(4).Value = image.IsPlaceholder;
-                _saveImagesCommand.GetParameter(5).Value = index;
-
-                _saveImagesCommand.Transaction = transaction;
-
-                _saveImagesCommand.ExecuteNonQuery();
-                index++;
-            }
         }
 
         private void UpdateItemValues(Guid itemId, List<Tuple<int, string>> values, IDbTransaction transaction)

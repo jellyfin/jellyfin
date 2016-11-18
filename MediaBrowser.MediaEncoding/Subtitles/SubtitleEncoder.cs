@@ -141,8 +141,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         .ConfigureAwait(false);
 
             var inputFormat = subtitle.Item2;
+            var writer = TryGetWriter(outputFormat);
 
-            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase) && TryGetWriter(outputFormat) == null)
+            if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase) && writer == null)
+            {
+                return subtitle.Item1;
+            }
+
+            if (writer == null)
             {
                 return subtitle.Item1;
             }

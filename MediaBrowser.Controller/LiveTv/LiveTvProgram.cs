@@ -264,9 +264,9 @@ namespace MediaBrowser.Controller.LiveTv
 
             if (listings != null)
             {
-                if (!string.IsNullOrWhiteSpace(listings.MoviePrefix))
+                if (!string.IsNullOrWhiteSpace(listings.MoviePrefix) && name.StartsWith(listings.MoviePrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    name = name.Replace(listings.MoviePrefix, string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+                    name = name.Substring(listings.MoviePrefix.Length).Trim();
                 }
             }
 

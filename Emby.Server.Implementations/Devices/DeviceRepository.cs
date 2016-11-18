@@ -12,7 +12,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 
-namespace Emby.Server.Core.Devices
+namespace Emby.Server.Implementations.Devices
 {
     public class DeviceRepository : IDeviceRepository
     {
@@ -147,7 +147,7 @@ namespace Emby.Server.Core.Devices
                 {
                     _fileSystem.DeleteDirectory(path, true);
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                 }
 
