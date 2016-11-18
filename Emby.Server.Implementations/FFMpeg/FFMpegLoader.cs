@@ -8,10 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Core;
-using Emby.Server.Core.FFMpeg;
+using Emby.Server.Implementations;
+using Emby.Server.Implementations.FFMpeg;
 
-namespace Emby.Server.Core.FFMpeg
+namespace Emby.Server.Implementations.FFMpeg
 {
     public class FFMpegLoader
     {
@@ -119,11 +119,11 @@ namespace Emby.Server.Core.FFMpeg
         {
             var encoderFilename = Path.GetFileName(info.EncoderPath);
             var probeFilename = Path.GetFileName(info.ProbePath);
-
-            foreach (var directory in Directory.EnumerateDirectories(rootEncoderPath, "*", SearchOption.TopDirectoryOnly)
+            
+            foreach (var directory in _fileSystem.GetDirectoryPaths(rootEncoderPath)
                 .ToList())
             {
-                var allFiles = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).ToList();
+                var allFiles = _fileSystem.GetFilePaths(directory, true).ToList();
 
                 var encoder = allFiles.FirstOrDefault(i => string.Equals(Path.GetFileName(i), encoderFilename, StringComparison.OrdinalIgnoreCase));
                 var probe = allFiles.FirstOrDefault(i => string.Equals(Path.GetFileName(i), probeFilename, StringComparison.OrdinalIgnoreCase));
@@ -182,7 +182,7 @@ namespace Emby.Server.Core.FFMpeg
             {
                 ExtractArchive(downloadinfo, tempFile, tempFolder);
 
-                var files = Directory.EnumerateFiles(tempFolder, "*", SearchOption.AllDirectories)
+                var files = _fileSystem.GetFilePaths(tempFolder, true)
                     .ToList();
 
                 foreach (var file in files.Where(i =>
