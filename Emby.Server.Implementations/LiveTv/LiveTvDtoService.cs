@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities.TV;
 
 namespace Emby.Server.Implementations.LiveTv
 {
@@ -130,6 +131,38 @@ namespace Emby.Server.Implementations.LiveTv
 
             dto.DayPattern = info.Days == null ? null : GetDayPattern(info.Days);
 
+            FillImages(dto, info);
+
+            return dto;
+        }
+
+        private void FillImages(SeriesTimerInfoDto dto, SeriesTimerInfo info)
+        {
+            var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new string[] { typeof(Series).Name },
+                Name = info.Name,
+                Limit = 1,
+                ImageTypes = new ImageType[] { ImageType.Thumb }
+
+            }).FirstOrDefault();
+
+            if (librarySeries != null)
+            {
+                var image = librarySeries.GetImageInfo(ImageType.Thumb, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        dto.ParentThumbImageTag = _imageProcessor.GetImageCacheTag(librarySeries, image);
+                        dto.ParentThumbItemId = librarySeries.Id.ToString("N");
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(info.SeriesId))
             {
                 var program = _libraryManager.GetItemList(new InternalItemsQuery
@@ -157,8 +190,6 @@ namespace Emby.Server.Implementations.LiveTv
                     }
                 }
             }
-
-            return dto;
         }
 
         public DayPattern? GetDayPattern(List<DayOfWeek> days)

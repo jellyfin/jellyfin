@@ -14,7 +14,6 @@
 
 .indicator {
     border-radius: 500px;
-    display: -ms-flex;
     display: -webkit-flex;
     display: flex;
     align-items: center;
@@ -45,7 +44,6 @@
 .countIndicator {
     background: rgba(82,181,75,1);
     border-radius: 500px;
-    display: -ms-flex;
     display: -webkit-flex;
     display: flex;
     align-items: center;
@@ -57,7 +55,6 @@
 .playedIndicator {
     background: rgba(82,181,75,1);
     border-radius: 500px;
-    display: -ms-flex;
     display: -webkit-flex;
     display: flex;
     align-items: center;

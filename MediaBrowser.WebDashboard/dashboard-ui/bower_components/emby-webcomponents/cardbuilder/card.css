@@ -133,7 +133,6 @@ button {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;
-    display: -ms-flex;
     display: -webkit-flex;
     display: flex;
     align-items: center;

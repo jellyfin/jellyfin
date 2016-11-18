@@ -186,6 +186,16 @@
     return promise
   }
 
+  function readArrayBufferAsText(buf) {
+    var view = new Uint8Array(buf)
+    var chars = new Array(view.length)
+
+    for (var i = 0; i < view.length; i++) {
+      chars[i] = String.fromCharCode(view[i])
+    }
+    return chars.join('')
+  }
+
   function bufferClone(buf) {
     if (buf.slice) {
       return buf.slice(0)
@@ -249,6 +259,14 @@
           return Promise.resolve(new Blob([this._bodyText]))
         }
       }
+
+      this.arrayBuffer = function() {
+        if (this._bodyArrayBuffer) {
+          return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+        } else {
+          return this.blob().then(readBlobAsArrayBuffer)
+        }
+      }
     }
 
     this.text = function() {
@@ -260,23 +278,11 @@
       if (this._bodyBlob) {
         return readBlobAsText(this._bodyBlob)
       } else if (this._bodyArrayBuffer) {
-        var view = new Uint8Array(this._bodyArrayBuffer)
-        var str = String.fromCharCode.apply(null, view)
-        return Promise.resolve(str)
+        return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
       } else if (this._bodyFormData) {
         throw new Error('could not read FormData body as text')
       } else {
         return Promise.resolve(this._bodyText)
-      }
-    }
-
-    if (support.arrayBuffer) {
-      this.arrayBuffer = function() {
-        if (this._bodyArrayBuffer) {
-          return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
-        } else {
-          return this.blob().then(readBlobAsArrayBuffer)
-        }
       }
     }
 

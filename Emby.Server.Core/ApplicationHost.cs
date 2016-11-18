@@ -83,23 +83,20 @@ using Emby.Dlna.Main;
 using Emby.Dlna.MediaReceiverRegistrar;
 using Emby.Dlna.Ssdp;
 using Emby.Server.Core;
-using Emby.Server.Core.Activity;
+using Emby.Server.Implementations.Activity;
 using Emby.Server.Core.Configuration;
 using Emby.Server.Core.Data;
-using Emby.Server.Core.Devices;
+using Emby.Server.Implementations.Devices;
 using Emby.Server.Core.FFMpeg;
 using Emby.Server.Core.IO;
 using Emby.Server.Core.Localization;
 using Emby.Server.Core.Migrations;
-using Emby.Server.Core.Notifications;
-using Emby.Server.Core.Security;
-using Emby.Server.Core.Social;
+using Emby.Server.Implementations.Security;
+using Emby.Server.Implementations.Social;
 using Emby.Server.Core.Sync;
-using Emby.Server.Implementations.Activity;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Connect;
-using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.Dto;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FileOrganization;
@@ -110,7 +107,7 @@ using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
 using Emby.Server.Implementations.MediaEncoder;
 using Emby.Server.Implementations.Notifications;
-using Emby.Server.Implementations.Persistence;
+using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.ServerManager;
@@ -136,6 +133,7 @@ using ServiceStack;
 using SocketHttpListener.Primitives;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using Emby.Drawing;
+using Emby.Server.Implementations.Migrations;
 
 namespace Emby.Server.Core
 {
@@ -282,12 +280,12 @@ namespace Emby.Server.Core
             INetworkManager networkManager,
             Action<string, string> certificateGenerator,
             Func<string> defaultUsernameFactory)
-            : base(applicationPaths, 
-                  logManager, 
-                  fileSystem, 
-                  environmentInfo, 
-                  systemEvents, 
-                  memoryStreamFactory, 
+            : base(applicationPaths,
+                  logManager,
+                  fileSystem,
+                  environmentInfo,
+                  systemEvents,
+                  memoryStreamFactory,
                   networkManager)
         {
             StartupOptions = options;
@@ -556,7 +554,7 @@ namespace Emby.Server.Core
 
             UserRepository = await GetUserRepository().ConfigureAwait(false);
 
-            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths, GetDbConnector(), MemoryStreamFactory);
+            var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
@@ -683,11 +681,11 @@ namespace Emby.Server.Core
             EncodingManager = new EncodingManager(FileSystemManager, Logger, MediaEncoder, ChapterManager, LibraryManager);
             RegisterSingleInstance(EncodingManager);
 
-            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths, GetDbConnector());
-            await sharingRepo.Initialize().ConfigureAwait(false);
+            var sharingRepo = new SharingRepository(LogManager.GetLogger("SharingRepository"), ApplicationPaths);
+            sharingRepo.Initialize();
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
 
-            var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
+            var activityLogRepo = GetActivityLogRepository();
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo, UserManager));
 
@@ -701,14 +699,14 @@ namespace Emby.Server.Core
             SubtitleEncoder = new SubtitleEncoder(LibraryManager, LogManager.GetLogger("SubtitleEncoder"), ApplicationPaths, FileSystemManager, MediaEncoder, JsonSerializer, HttpClient, MediaSourceManager, MemoryStreamFactory, ProcessFactory, textEncoding);
             RegisterSingleInstance(SubtitleEncoder);
 
-            await displayPreferencesRepo.Initialize().ConfigureAwait(false);
+            displayPreferencesRepo.Initialize();
 
             var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, GetDbConnector());
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             await itemRepo.Initialize(userDataRepo).ConfigureAwait(false);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
-            await ConfigureNotificationsRepository().ConfigureAwait(false);
+            ConfigureNotificationsRepository();
             progress.Report(100);
 
             SetStaticProperties();
@@ -792,7 +790,7 @@ namespace Emby.Server.Core
                 () => SubtitleEncoder,
                 () => MediaSourceManager,
                 HttpClient,
-                ZipClient, 
+                ZipClient,
                 MemoryStreamFactory,
                 ProcessFactory,
                 (Environment.ProcessorCount > 2 ? 14000 : 40000),
@@ -830,18 +828,18 @@ namespace Emby.Server.Core
 
         private async Task<IAuthenticationRepository> GetAuthenticationRepository()
         {
-            var repo = new AuthenticationRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
+            var repo = new AuthenticationRepository(LogManager.GetLogger("AuthenticationRepository"), ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }
 
-        private async Task<IActivityRepository> GetActivityLogRepository()
+        private IActivityRepository GetActivityLogRepository()
         {
-            var repo = new ActivityRepository(LogManager, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
+            var repo = new ActivityRepository(LogManager.GetLogger("ActivityRepository"), ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }
@@ -858,11 +856,11 @@ namespace Emby.Server.Core
         /// <summary>
         /// Configures the repositories.
         /// </summary>
-        private async Task ConfigureNotificationsRepository()
+        private void ConfigureNotificationsRepository()
         {
-            var repo = new SqliteNotificationsRepository(LogManager, ApplicationPaths, GetDbConnector());
+            var repo = new SqliteNotificationsRepository(LogManager.GetLogger("SqliteNotificationsRepository"), ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             NotificationsRepository = repo;
 

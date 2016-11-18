@@ -74,7 +74,7 @@
 
                 info.Path = page.querySelector('.txtPath').value;
 
-                info.MoviePrefix = page.querySelector('.txtMoviePrefix') || null;
+                info.MoviePrefix = page.querySelector('.txtMoviePrefix').value || null;
 
                 info.MovieCategories = getCategories(page.querySelector('.txtMovies'));
                 info.KidsCategories = getCategories(page.querySelector('.txtKids'));

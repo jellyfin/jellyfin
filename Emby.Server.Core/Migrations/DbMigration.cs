@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Emby.Server.Implementations.Persistence;
+using Emby.Server.Implementations.Data;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Tasks;
 using Emby.Server.Core.Data;
+using Emby.Server.Implementations.Migrations;
 
 namespace Emby.Server.Core.Migrations
 {

@@ -34,6 +34,8 @@ namespace MediaBrowser.Server.Mono
 
         public static void Main(string[] args)
         {
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+
             var applicationPath = Assembly.GetEntryAssembly().Location;
 
             var options = new StartupOptions();
