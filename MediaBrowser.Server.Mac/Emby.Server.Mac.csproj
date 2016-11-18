@@ -1508,6 +1508,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\README.md">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\test_adapter.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\test_adapter.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\lib\npo.src.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\lib\npo.src.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png</Link>
     </BundleResource>
@@ -2392,30 +2401,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\libjass\package.json">
       <Link>Resources\dashboard-ui\bower_components\libjass\package.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.npmignore">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.npmignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\README.md">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\build.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\build.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\package.json">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\package.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\test_adapter.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\test_adapter.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\lib\npo.src.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\lib\npo.src.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\query-string\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\query-string\.bower.json</Link>
