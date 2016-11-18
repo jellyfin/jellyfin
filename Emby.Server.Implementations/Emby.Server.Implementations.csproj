@@ -51,6 +51,7 @@
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
     <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
+    <Compile Include="Data\SqliteUserRepository.cs" />
     <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
