@@ -5,7 +5,7 @@
 
 (function UMD(name,context,definition){
 	// special form of UMD for polyfilling across evironments
-	context[name] = context[name] || definition();
+	context[name] = definition();
 	if (typeof module != "undefined" && module.exports) { module.exports = context[name]; }
 	else if (typeof define == "function" && define.amd) { define(function $AMD$(){ return context[name]; }); }
 })("Promise",typeof global != "undefined" ? global : this,function DEF(){

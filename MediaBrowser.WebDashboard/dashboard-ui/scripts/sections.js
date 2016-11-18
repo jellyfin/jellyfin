@@ -295,7 +295,7 @@
                     getThumbShape();
 
                 var supportsImageAnalysis = appHost.supports('imageanalysis');
-                var cardLayout = supportsImageAnalysis && (viewType === 'music' || !viewType);
+                var cardLayout = supportsImageAnalysis && (viewType === 'music' || viewType === 'movies' || viewType === 'tvshows' || !viewType);
 
                 html += cardBuilder.getCardsHtml({
                     items: items,
@@ -309,9 +309,12 @@
                     overlayPlayButton: viewType !== 'photos',
                     allowBottomPadding: !enableScrollX() && !cardLayout,
                     cardLayout: cardLayout,
-                    showTitle: viewType === 'music' || !viewType,
-                    showParentTitle: viewType === 'music' || !viewType,
-                    vibrant: supportsImageAnalysis && cardLayout
+                    showTitle: viewType === 'music' || !viewType || (cardLayout && (viewType === 'movies' || viewType === 'tvshows')),
+                    showYear: cardLayout && viewType === 'movies',
+                    showSeriesYear: cardLayout && viewType === 'tvshows',
+                    showParentTitle: viewType === 'music' || !viewType || (cardLayout && (viewType === 'tvshows')),
+                    vibrant: supportsImageAnalysis && cardLayout,
+                    lines: 2
                 });
                 html += '</div>';
             }
