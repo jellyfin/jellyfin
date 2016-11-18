@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Logging
 
             var messageText = new StringBuilder();
 
-            messageText.AppendLine(exception.Message);
+            messageText.AppendLine(exception.ToString());
 
             messageText.AppendLine(exception.GetType().FullName);
 
@@ -71,7 +71,7 @@ namespace MediaBrowser.Model.Logging
         private static void AppendInnerException(StringBuilder messageText, Exception e)
         {
             messageText.AppendLine("InnerException: " + e.GetType().FullName);
-            messageText.AppendLine(e.Message);
+            messageText.AppendLine(e.ToString());
 
             LogExceptionData(messageText, e);
 

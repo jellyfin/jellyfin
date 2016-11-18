@@ -127,7 +127,11 @@ namespace Emby.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person.Key);
 
-                    var options = new MetadataRefreshOptions(_fileSystem);
+                    var options = new MetadataRefreshOptions(_fileSystem)
+                    {
+                        ImageRefreshMode = ImageRefreshMode.ValidationOnly,
+                        MetadataRefreshMode = MetadataRefreshMode.ValidationOnly
+                    };
 
                     await item.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
                 }

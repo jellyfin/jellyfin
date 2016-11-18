@@ -50,6 +50,7 @@ namespace Emby.Server
             //var success = SetDllDirectory(architecturePath);
 
             var appPaths = CreateApplicationPaths(baseDirectory);
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
