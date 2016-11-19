@@ -86,7 +86,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -159,24 +159,27 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                var commandText = "select data from userdisplaypreferences where id = ? and userId=? and client=?";
-
-                var paramList = new List<object>();
-                paramList.Add(guidId.ToGuidParamValue());
-                paramList.Add(userId.ToGuidParamValue());
-                paramList.Add(client);
-
-                foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                using (var connection = CreateConnection(true))
                 {
-                    return Get(row);
+                    var commandText = "select data from userdisplaypreferences where id = ? and userId=? and client=?";
+
+                    var paramList = new List<object>();
+                    paramList.Add(guidId.ToGuidParamValue());
+                    paramList.Add(userId.ToGuidParamValue());
+                    paramList.Add(client);
+
+                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    {
+                        return Get(row);
+                    }
+
+                    return new DisplayPreferences
+                    {
+                        Id = guidId.ToString("N")
+                    };
                 }
-
-                return new DisplayPreferences
-                {
-                    Id = guidId.ToString("N")
-                };
             }
         }
 
@@ -190,16 +193,19 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<DisplayPreferences>();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                var commandText = "select data from userdisplaypreferences where userId=?";
-
-                var paramList = new List<object>();
-                paramList.Add(userId.ToGuidParamValue());
-
-                foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                using (var connection = CreateConnection(true))
                 {
-                    list.Add(Get(row));
+                    var commandText = "select data from userdisplaypreferences where userId=?";
+
+                    var paramList = new List<object>();
+                    paramList.Add(userId.ToGuidParamValue());
+
+                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    {
+                        list.Add(Get(row));
+                    }
                 }
             }
 

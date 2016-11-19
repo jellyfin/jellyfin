@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -281,7 +281,7 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -379,7 +379,7 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 var guid = new Guid(id);
 
@@ -407,7 +407,7 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("query");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -487,7 +487,7 @@ namespace Emby.Server.Implementations.Sync
 
             var now = DateTime.UtcNow;
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -650,7 +650,7 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
