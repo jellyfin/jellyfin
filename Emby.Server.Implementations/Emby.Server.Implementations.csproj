@@ -54,6 +54,7 @@
     <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
     <Compile Include="Data\SqliteFileOrganizationRepository.cs" />
     <Compile Include="Data\SqliteUserRepository.cs" />
+    <Compile Include="Data\TypeMapper.cs" />
     <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />

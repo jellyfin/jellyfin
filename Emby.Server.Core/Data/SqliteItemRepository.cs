@@ -28,6 +28,8 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Devices;
 using MediaBrowser.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Data;
+using MediaBrowser.Model.Reflection;
 
 namespace Emby.Server.Core.Data
 {
@@ -38,7 +40,7 @@ namespace Emby.Server.Core.Data
     {
         private IDbConnection _connection;
 
-        private readonly TypeMapper _typeMapper = new TypeMapper();
+        private readonly TypeMapper _typeMapper;
 
         /// <summary>
         /// Gets the name of the repository
@@ -95,7 +97,7 @@ namespace Emby.Server.Core.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamFactory memoryStreamProvider)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo)
             : base(logManager, connector)
         {
             if (config == null)
@@ -110,6 +112,7 @@ namespace Emby.Server.Core.Data
             _config = config;
             _jsonSerializer = jsonSerializer;
             _memoryStreamProvider = memoryStreamProvider;
+            _typeMapper = new TypeMapper(assemblyInfo);
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
