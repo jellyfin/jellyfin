@@ -64,23 +64,48 @@ namespace Emby.Server.Implementations.Data
 
             var db = SQLite3.Open(DbFilePath, connectionFlags, null);
 
-            var queries = new[]
+            var queries = new List<string>
             {
+                "pragma default_temp_store = memory",
                 "PRAGMA page_size=4096",
                 "PRAGMA journal_mode=WAL",
                 "PRAGMA temp_store=memory",
                 "PRAGMA synchronous=Normal",
                 //"PRAGMA cache size=-10000"
-                };
+            };
+
+            var cacheSize = CacheSize;
+            if (cacheSize.HasValue)
+            {
+                
+            }
+
+            if (EnableExclusiveMode)
+            {
+                queries.Add("PRAGMA locking_mode=EXCLUSIVE");
+            }
 
             //foreach (var query in queries)
             //{
             //    db.Execute(query);
             //}
 
-            db.ExecuteAll(string.Join(";", queries));
+            db.ExecuteAll(string.Join(";", queries.ToArray()));
 
             return db;
+        }
+
+        protected virtual int? CacheSize
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        protected virtual bool EnableExclusiveMode
+        {
+            get { return false; }
         }
 
         internal static void CheckOk(int rc)
