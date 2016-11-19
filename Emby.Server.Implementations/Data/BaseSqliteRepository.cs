@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 using SQLitePCL.pretty;
 using System.Linq;
+using SQLitePCL;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -24,11 +25,19 @@ namespace Emby.Server.Implementations.Data
             get { return true; }
         }
 
-        protected virtual SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
+        static BaseSqliteRepository()
         {
             SQLite3.EnableSharedCache = false;
 
+            int rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MEMSTATUS, 0);
+            //CheckOk(rc);
+        }
+
+        protected virtual SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
+        {
             ConnectionFlags connectionFlags;
+
+            //isReadOnly = false;
 
             if (isReadOnly)
             {
@@ -70,8 +79,25 @@ namespace Emby.Server.Implementations.Data
             //}
 
             db.ExecuteAll(string.Join(";", queries));
-            
+
             return db;
+        }
+
+        internal static void CheckOk(int rc)
+        {
+            string msg = "";
+
+            if (raw.SQLITE_OK != rc)
+            {
+                throw CreateException((ErrorCode)rc, msg);
+            }
+        }
+
+        internal static Exception CreateException(ErrorCode rc, string msg)
+        {
+            var exp = new Exception(msg);
+
+            return exp;
         }
 
         private bool _disposed;

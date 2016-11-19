@@ -81,8 +81,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-decoders");
             }
-            catch
+            catch (Exception )
             {
+                //_logger.ErrorException("Error detecting available decoders", ex);
             }
 
             var found = new List<string>();
