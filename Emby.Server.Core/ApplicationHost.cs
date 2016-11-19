@@ -550,7 +550,7 @@ namespace Emby.Server.Core
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, GetDbConnector(), MemoryStreamFactory);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, GetDbConnector(), MemoryStreamFactory, assemblyInfo);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 

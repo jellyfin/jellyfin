@@ -22,5 +22,10 @@ namespace Emby.Common.Implementations.Reflection
 #endif
             return type.GetTypeInfo().Assembly.GetManifestResourceNames();
         }
+
+        public Assembly[] GetCurrentAssemblies()
+        {
+            return AppDomain.CurrentDomain.GetAssemblies();
+        }
     }
 }
