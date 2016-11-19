@@ -65,7 +65,6 @@ using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Reflection;
 using Emby.Common.Implementations.Serialization;
 using Emby.Common.Implementations.TextEncoding;
-using Emby.Common.Implementations.Updates;
 using Emby.Common.Implementations.Xml;
 using Emby.Photos;
 using MediaBrowser.Model.IO;
@@ -90,10 +89,10 @@ using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Core.IO;
 using Emby.Server.Core.Localization;
-using Emby.Server.Core.Migrations;
+using Emby.Server.Implementations.Migrations;
 using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Social;
-using Emby.Server.Core.Sync;
+using Emby.Server.Implementations.Sync;
 using Emby.Server.Implementations.Channels;
 using Emby.Server.Implementations.Collections;
 using Emby.Server.Implementations.Connect;
@@ -357,12 +356,6 @@ namespace Emby.Server.Core
         {
             await PerformPreInitMigrations().ConfigureAwait(false);
 
-            if (ServerConfigurationManager.Configuration.MigrationVersion < CleanDatabaseScheduledTask.MigrationVersion &&
-                ServerConfigurationManager.Configuration.IsStartupWizardCompleted)
-            {
-                TaskManager.SuspendTriggers = true;
-            }
-
             await base.RunStartupTasks().ConfigureAwait(false);
 
             await MediaEncoder.Init().ConfigureAwait(false);
@@ -494,7 +487,6 @@ namespace Emby.Server.Core
         {
             var migrations = new List<IVersionMigration>
             {
-                new DbMigration(ServerConfigurationManager, TaskManager)
             };
 
             foreach (var task in migrations)
@@ -568,7 +560,7 @@ namespace Emby.Server.Core
             AuthenticationRepository = await GetAuthenticationRepository().ConfigureAwait(false);
             RegisterSingleInstance(AuthenticationRepository);
 
-            SyncRepository = await GetSyncRepository().ConfigureAwait(false);
+            SyncRepository = GetSyncRepository();
             RegisterSingleInstance(SyncRepository);
 
             UserManager = new UserManager(LogManager.GetLogger("UserManager"), ServerConfigurationManager, UserRepository, XmlSerializer, NetworkManager, () => ImageProcessor, () => DtoService, () => ConnectManager, this, JsonSerializer, FileSystemManager, CryptographyProvider, _defaultUserNameFactory());
@@ -591,7 +583,7 @@ namespace Emby.Server.Core
             CertificatePath = GetCertificatePath(true);
             Certificate = GetCertificate(CertificatePath);
 
-            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate);
+            HttpServer = HttpServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, NetworkManager, MemoryStreamFactory, "Emby", "web/index.html", textEncoding, SocketFactory, CryptographyProvider, JsonSerializer, XmlSerializer, EnvironmentInfo, Certificate, SupportsDualModeSockets);
             HttpServer.GlobalResponse = LocalizationManager.GetLocalizedString("StartupEmbyServerIsLoading");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
@@ -713,6 +705,8 @@ namespace Emby.Server.Core
 
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
         }
+
+        protected abstract bool SupportsDualModeSockets { get; }
 
         private ICertificate GetCertificate(string certificateLocation)
         {
@@ -844,11 +838,11 @@ namespace Emby.Server.Core
             return repo;
         }
 
-        private async Task<ISyncRepository> GetSyncRepository()
+        private ISyncRepository GetSyncRepository()
         {
-            var repo = new SyncRepository(LogManager, JsonSerializer, ServerConfigurationManager.ApplicationPaths, GetDbConnector());
+            var repo = new SyncRepository(LogManager.GetLogger("SyncRepository"), JsonSerializer, ServerConfigurationManager.ApplicationPaths);
 
-            await repo.Initialize().ConfigureAwait(false);
+            repo.Initialize();
 
             return repo;
         }

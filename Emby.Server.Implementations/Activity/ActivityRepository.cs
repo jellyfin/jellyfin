@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.Activity
 
                     if (minDate.HasValue)
                     {
-                        whereClauses.Add("DateCreated>=@DateCreated");
+                        whereClauses.Add("DateCreated>=?");
                         paramList.Add(minDate.Value.ToDateTimeParamValue());
                     }
 

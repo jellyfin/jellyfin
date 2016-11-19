@@ -74,7 +74,5 @@ namespace MediaBrowser.Model.Tasks
         
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
         event EventHandler<TaskCompletionEventArgs> TaskCompleted;
-
-        bool SuspendTriggers { get; set; }
     }
 }

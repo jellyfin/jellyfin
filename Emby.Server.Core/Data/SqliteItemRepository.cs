@@ -3060,18 +3060,6 @@ namespace Emby.Server.Core.Data
             {
                 //whereClauses.Add("(UserId is null or UserId=@UserId)");
             }
-            if (query.IsCurrentSchema.HasValue)
-            {
-                if (query.IsCurrentSchema.Value)
-                {
-                    whereClauses.Add("(SchemaVersion not null AND SchemaVersion=@SchemaVersion)");
-                }
-                else
-                {
-                    whereClauses.Add("(SchemaVersion is null or SchemaVersion<>@SchemaVersion)");
-                }
-                cmd.Parameters.Add(cmd, "@SchemaVersion", DbType.Int32).Value = LatestSchemaVersion;
-            }
             if (query.IsHD.HasValue)
             {
                 whereClauses.Add("IsHD=@IsHD");
@@ -3454,7 +3442,7 @@ namespace Emby.Server.Core.Data
                 cmd.Parameters.Add(cmd, "@NameLessThan", DbType.String).Value = query.NameLessThan.ToLower();
             }
 
-            if (query.ImageTypes.Length > 0 && _config.Configuration.SchemaVersion >= 87)
+            if (query.ImageTypes.Length > 0)
             {
                 foreach (var requiredImage in query.ImageTypes)
                 {
@@ -3738,15 +3726,8 @@ namespace Emby.Server.Core.Data
             }
             if (query.IsVirtualItem.HasValue)
             {
-                if (_config.Configuration.SchemaVersion >= 90)
-                {
-                    whereClauses.Add("IsVirtualItem=@IsVirtualItem");
-                    cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
-                }
-                else if (!query.IsVirtualItem.Value)
-                {
-                    whereClauses.Add("LocationType<>'Virtual'");
-                }
+                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
             }
             if (query.IsSpecialSeason.HasValue)
             {
@@ -3770,7 +3751,7 @@ namespace Emby.Server.Core.Data
                     whereClauses.Add("PremiereDate < DATETIME('now')");
                 }
             }
-            if (query.IsMissing.HasValue && _config.Configuration.SchemaVersion >= 90)
+            if (query.IsMissing.HasValue)
             {
                 if (query.IsMissing.Value)
                 {
@@ -3781,7 +3762,7 @@ namespace Emby.Server.Core.Data
                     whereClauses.Add("(IsVirtualItem=0 OR PremiereDate >= DATETIME('now'))");
                 }
             }
-            if (query.IsVirtualUnaired.HasValue && _config.Configuration.SchemaVersion >= 90)
+            if (query.IsVirtualUnaired.HasValue)
             {
                 if (query.IsVirtualUnaired.Value)
                 {

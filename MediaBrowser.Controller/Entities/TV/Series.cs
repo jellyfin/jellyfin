@@ -126,10 +126,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
         private static string GetUniqueSeriesKey(BaseItem series)
         {
-            if (ConfigurationManager.Configuration.SchemaVersion < 97)
-            {
-                return series.Id.ToString("N");
-            }
             return series.GetPresentationUniqueKey();
         }
 

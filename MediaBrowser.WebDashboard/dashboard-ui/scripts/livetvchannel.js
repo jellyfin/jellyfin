@@ -17,11 +17,12 @@
             var item = result.Items[i];
 
             var itemStartDate = datetime.parseISO8601Date(item.StartDate);
+
             if (!currentStartDate || !isSameDay(currentStartDate, itemStartDate)) {
 
                 if (currentItems.length) {
 
-                    html += '<h1>' + datetime.toLocaleDateString(itemStartDate, { weekday: 'long', month: 'long', day: 'numeric' }) + '</h1>';
+                    html += '<h1>' + datetime.toLocaleDateString(currentStartDate, { weekday: 'long', month: 'long', day: 'numeric' }) + '</h1>';
 
                     html += '<div is="emby-itemscontainer" class="vertical-list">' + listView.getListViewHtml({
                         items: currentItems,
@@ -37,7 +38,6 @@
 
                 currentStartDate = itemStartDate;
                 currentItems = [];
-
             }
 
             currentItems.push(item);

@@ -70,6 +70,7 @@
     <Compile Include="Security\IRequiresRegistration.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
     <Compile Include="Security\PaymentRequiredException.cs" />
+    <Compile Include="Updates\GithubUpdater.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Updates\InstallationEventArgs.cs" />
     <Compile Include="Updates\InstallationFailedEventArgs.cs" />

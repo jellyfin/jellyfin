@@ -40,7 +40,9 @@ namespace Emby.Server.Implementations.Security
 
                 connection.RunInTransaction(db =>
                 {
-                    AddColumn(db, "AccessTokens", "AppVersion", "TEXT");
+                    var existingColumnNames = GetColumnNames(db, "AccessTokens");
+
+                    AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
                 });
             }
         }

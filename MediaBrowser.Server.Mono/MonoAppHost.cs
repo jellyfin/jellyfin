@@ -92,6 +92,32 @@ namespace MediaBrowser.Server.Mono
             MainClass.Shutdown();
         }
 
+        protected override bool SupportsDualModeSockets
+        {
+            get
+            {
+                return GetMonoVersion() >= new Version(4, 6);
+            }
+        }
+
+        private static Version GetMonoVersion()
+        {
+            Type type = Type.GetType("Mono.Runtime");
+            if (type != null)
+            {
+                MethodInfo displayName = type.GetTypeInfo().GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
+                var displayNameValue = displayName.Invoke(null, null).ToString().Trim().Split(' ')[0];
+
+                Version version;
+                if (Version.TryParse(displayNameValue, out version))
+                {
+                    return version;
+                }
+            }
+
+            return new Version(1, 0);
+        }
+
         protected override void AuthorizeServer()
         {
             throw new NotImplementedException();
