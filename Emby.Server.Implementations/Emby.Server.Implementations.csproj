@@ -36,6 +36,7 @@
     <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
+    <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
@@ -51,6 +52,11 @@
     <Compile Include="Connect\Responses.cs" />
     <Compile Include="Connect\Validator.cs" />
     <Compile Include="Data\SqliteDisplayPreferencesRepository.cs" />
+    <Compile Include="Data\SqliteFileOrganizationRepository.cs" />
+    <Compile Include="Data\SqliteItemRepository.cs" />
+    <Compile Include="Data\SqliteUserDataRepository.cs" />
+    <Compile Include="Data\SqliteUserRepository.cs" />
+    <Compile Include="Data\TypeMapper.cs" />
     <Compile Include="Devices\CameraUploadsDynamicFolder.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
@@ -62,11 +68,15 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
+    <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="EntryPoints\SystemEvents.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageReporter.cs" />
     <Compile Include="EntryPoints\UserDataChangeNotifier.cs" />
+    <Compile Include="FFMpeg\FFMpegInfo.cs" />
+    <Compile Include="FFMpeg\FFMpegInstallInfo.cs" />
+    <Compile Include="FFMpeg\FFMpegLoader.cs" />
     <Compile Include="FileOrganization\EpisodeFileOrganizer.cs" />
     <Compile Include="FileOrganization\Extensions.cs" />
     <Compile Include="FileOrganization\FileOrganizationNotifier.cs" />
@@ -169,6 +179,7 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
+    <Compile Include="Migrations\UpdateLevelMigration.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
@@ -237,6 +248,7 @@
     <Compile Include="Sorting\SortNameComparer.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sorting\StudioComparer.cs" />
+    <Compile Include="StartupOptions.cs" />
     <Compile Include="Sync\AppSyncProvider.cs" />
     <Compile Include="Sync\CloudSyncProfile.cs" />
     <Compile Include="Sync\IHasSyncQuality.cs" />
@@ -252,6 +264,7 @@
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
+    <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />
@@ -305,7 +318,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\packages\SQLitePCLRaw.core.1.1.0\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.1-pre20161109081005\lib\portable-net45+netcore45+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCLRaw.core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="UniversalDetector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

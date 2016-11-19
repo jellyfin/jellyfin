@@ -28,6 +28,8 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Server.Implementations.Devices;
 using MediaBrowser.Server.Implementations.Playlists;
+using Emby.Server.Implementations.Data;
+using MediaBrowser.Model.Reflection;
 
 namespace Emby.Server.Core.Data
 {
@@ -38,7 +40,7 @@ namespace Emby.Server.Core.Data
     {
         private IDbConnection _connection;
 
-        private readonly TypeMapper _typeMapper = new TypeMapper();
+        private readonly TypeMapper _typeMapper;
 
         /// <summary>
         /// Gets the name of the repository
@@ -95,7 +97,7 @@ namespace Emby.Server.Core.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamFactory memoryStreamProvider)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogManager logManager, IDbConnector connector, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo)
             : base(logManager, connector)
         {
             if (config == null)
@@ -110,6 +112,7 @@ namespace Emby.Server.Core.Data
             _config = config;
             _jsonSerializer = jsonSerializer;
             _memoryStreamProvider = memoryStreamProvider;
+            _typeMapper = new TypeMapper(assemblyInfo);
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
@@ -3060,18 +3063,6 @@ namespace Emby.Server.Core.Data
             {
                 //whereClauses.Add("(UserId is null or UserId=@UserId)");
             }
-            if (query.IsCurrentSchema.HasValue)
-            {
-                if (query.IsCurrentSchema.Value)
-                {
-                    whereClauses.Add("(SchemaVersion not null AND SchemaVersion=@SchemaVersion)");
-                }
-                else
-                {
-                    whereClauses.Add("(SchemaVersion is null or SchemaVersion<>@SchemaVersion)");
-                }
-                cmd.Parameters.Add(cmd, "@SchemaVersion", DbType.Int32).Value = LatestSchemaVersion;
-            }
             if (query.IsHD.HasValue)
             {
                 whereClauses.Add("IsHD=@IsHD");
@@ -3454,7 +3445,7 @@ namespace Emby.Server.Core.Data
                 cmd.Parameters.Add(cmd, "@NameLessThan", DbType.String).Value = query.NameLessThan.ToLower();
             }
 
-            if (query.ImageTypes.Length > 0 && _config.Configuration.SchemaVersion >= 87)
+            if (query.ImageTypes.Length > 0)
             {
                 foreach (var requiredImage in query.ImageTypes)
                 {
@@ -3738,15 +3729,8 @@ namespace Emby.Server.Core.Data
             }
             if (query.IsVirtualItem.HasValue)
             {
-                if (_config.Configuration.SchemaVersion >= 90)
-                {
-                    whereClauses.Add("IsVirtualItem=@IsVirtualItem");
-                    cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
-                }
-                else if (!query.IsVirtualItem.Value)
-                {
-                    whereClauses.Add("LocationType<>'Virtual'");
-                }
+                whereClauses.Add("IsVirtualItem=@IsVirtualItem");
+                cmd.Parameters.Add(cmd, "@IsVirtualItem", DbType.Boolean).Value = query.IsVirtualItem.Value;
             }
             if (query.IsSpecialSeason.HasValue)
             {
@@ -3770,7 +3754,7 @@ namespace Emby.Server.Core.Data
                     whereClauses.Add("PremiereDate < DATETIME('now')");
                 }
             }
-            if (query.IsMissing.HasValue && _config.Configuration.SchemaVersion >= 90)
+            if (query.IsMissing.HasValue)
             {
                 if (query.IsMissing.Value)
                 {
@@ -3781,7 +3765,7 @@ namespace Emby.Server.Core.Data
                     whereClauses.Add("(IsVirtualItem=0 OR PremiereDate >= DATETIME('now'))");
                 }
             }
-            if (query.IsVirtualUnaired.HasValue && _config.Configuration.SchemaVersion >= 90)
+            if (query.IsVirtualUnaired.HasValue)
             {
                 if (query.IsVirtualUnaired.Value)
                 {

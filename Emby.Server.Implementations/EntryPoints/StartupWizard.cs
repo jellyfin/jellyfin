@@ -1,9 +1,9 @@
-﻿using MediaBrowser.Controller;
+﻿using Emby.Server.Implementations.Browser;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
-using Emby.Server.Core.Browser;
 
-namespace Emby.Server.Core.EntryPoints
+namespace Emby.Server.Implementations.EntryPoints
 {
     /// <summary>
     /// Class StartupWizard

@@ -4,7 +4,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.Browser;
 using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.ServerApplication

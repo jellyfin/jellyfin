@@ -5,8 +5,9 @@ using System.IO;
 using System.Reflection;
 using Emby.Server.Core;
 using Emby.Server.Core.Data;
-using Emby.Server.Core.FFMpeg;
+using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
+using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
@@ -116,6 +117,14 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        protected override bool SupportsDualModeSockets
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override void LaunchUrl(string url)
         {
             var process = new Process
@@ -136,6 +145,7 @@ namespace MediaBrowser.ServerApplication
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error launching url: {0}", url);
                 Logger.ErrorException("Error launching url: {0}", ex, url);
 
                 throw;

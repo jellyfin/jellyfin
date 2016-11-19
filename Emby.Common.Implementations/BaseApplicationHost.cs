@@ -4,7 +4,6 @@ using Emby.Common.Implementations.Devices;
 using Emby.Common.Implementations.IO;
 using Emby.Common.Implementations.ScheduledTasks;
 using Emby.Common.Implementations.Serialization;
-using Emby.Common.Implementations.Updates;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Progress;

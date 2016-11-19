@@ -996,7 +996,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 _splitWhiteList = new List<string>
                         {
-                            "AC/DV"
+                            "AC/DC"
                         };
             }
 

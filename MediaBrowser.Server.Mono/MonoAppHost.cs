@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Core;
 using Emby.Server.Core.Data;
-using Emby.Server.Core.FFMpeg;
+using Emby.Server.Implementations;
+using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -89,6 +90,32 @@ namespace MediaBrowser.Server.Mono
         protected override void ShutdownInternal()
         {
             MainClass.Shutdown();
+        }
+
+        protected override bool SupportsDualModeSockets
+        {
+            get
+            {
+                return GetMonoVersion() >= new Version(4, 6);
+            }
+        }
+
+        private static Version GetMonoVersion()
+        {
+            Type type = Type.GetType("Mono.Runtime");
+            if (type != null)
+            {
+                MethodInfo displayName = type.GetTypeInfo().GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
+                var displayNameValue = displayName.Invoke(null, null).ToString().Trim().Split(' ')[0];
+
+                Version version;
+                if (Version.TryParse(displayNameValue, out version))
+                {
+                    return version;
+                }
+            }
+
+            return new Version(1, 0);
         }
 
         protected override void AuthorizeServer()

@@ -148,10 +148,6 @@ namespace Emby.Server.Implementations.TV
 
         private string GetUniqueSeriesKey(BaseItem series)
         {
-            if (_config.Configuration.SchemaVersion < 97)
-            {
-                return series.Id.ToString("N");
-            }
             return series.GetPresentationUniqueKey();
         }
 

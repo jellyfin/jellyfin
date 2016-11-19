@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Common.Implementations.Updates;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
-using Emby.Server.Implementations.Migrations;
 
-namespace Emby.Server.Core.Migrations
+namespace Emby.Server.Implementations.Migrations
 {
     public class UpdateLevelMigration : IVersionMigration
     {

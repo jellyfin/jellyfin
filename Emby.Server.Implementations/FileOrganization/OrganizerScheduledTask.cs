@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.FileOrganization
             return new[] { 
             
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromMinutes(5).Ticks}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromMinutes(15).Ticks}
             };
         }
 
