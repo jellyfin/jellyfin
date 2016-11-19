@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("info.Id");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("id");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {

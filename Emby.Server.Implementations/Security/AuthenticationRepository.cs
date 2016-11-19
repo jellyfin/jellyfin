@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {

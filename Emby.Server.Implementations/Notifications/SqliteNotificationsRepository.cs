@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationResult();
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationsSummary();
 
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.Notifications
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -289,7 +289,7 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {

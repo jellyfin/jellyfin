@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -107,18 +107,21 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<User>();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                foreach (var row in connection.Query("select guid,data from users"))
+                using (var connection = CreateConnection(true))
                 {
-                    var id = row[0].ReadGuid();
-
-                    using (var stream = _memoryStreamProvider.CreateNew(row[1].ToBlob()))
+                    foreach (var row in connection.Query("select guid,data from users"))
                     {
-                        stream.Position = 0;
-                        var user = _jsonSerializer.DeserializeFromStream<User>(stream);
-                        user.Id = id;
-                        list.Add(user);
+                        var id = row[0].ReadGuid();
+
+                        using (var stream = _memoryStreamProvider.CreateNew(row[1].ToBlob()))
+                        {
+                            stream.Position = 0;
+                            var user = _jsonSerializer.DeserializeFromStream<User>(stream);
+                            user.Id = id;
+                            list.Add(user);
+                        }
                     }
                 }
             }
@@ -142,7 +145,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
