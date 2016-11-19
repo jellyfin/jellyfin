@@ -117,6 +117,14 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
+        protected override bool SupportsDualModeSockets
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override void LaunchUrl(string url)
         {
             var process = new Process
@@ -137,6 +145,7 @@ namespace MediaBrowser.ServerApplication
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Error launching url: {0}", url);
                 Logger.ErrorException("Error launching url: {0}", ex, url);
 
                 throw;

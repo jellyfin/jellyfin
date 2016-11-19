@@ -36,6 +36,7 @@
     <Compile Include="Activity\ActivityManager.cs" />
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
+    <Compile Include="Browser\BrowserLauncher.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="EntryPoints\RecordingNotifier.cs" />
     <Compile Include="EntryPoints\RefreshUsersMetadata.cs" />
     <Compile Include="EntryPoints\ServerEventNotifier.cs" />
+    <Compile Include="EntryPoints\StartupWizard.cs" />
     <Compile Include="EntryPoints\SystemEvents.cs" />
     <Compile Include="EntryPoints\UdpServerEntryPoint.cs" />
     <Compile Include="EntryPoints\UsageEntryPoint.cs" />
@@ -174,6 +176,7 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Migrations\IVersionMigration.cs" />
+    <Compile Include="Migrations\UpdateLevelMigration.cs" />
     <Compile Include="News\NewsEntryPoint.cs" />
     <Compile Include="News\NewsService.cs" />
     <Compile Include="Notifications\CoreNotificationTypes.cs" />
@@ -258,6 +261,7 @@
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Sync\SyncNotificationEntryPoint.cs" />
     <Compile Include="Sync\SyncRegistrationInfo.cs" />
+    <Compile Include="Sync\SyncRepository.cs" />
     <Compile Include="Sync\TargetDataProvider.cs" />
     <Compile Include="TV\SeriesPostScanTask.cs" />
     <Compile Include="TV\TVSeriesManager.cs" />

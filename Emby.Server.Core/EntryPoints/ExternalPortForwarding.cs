@@ -95,7 +95,7 @@ namespace Emby.Server.Core.EntryPoints
 
             NatUtility.StartDiscovery();
 
-            _timer = _timerFactory.Create(ClearCreatedRules, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            _timer = _timerFactory.Create(ClearCreatedRules, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
 
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
 
@@ -233,6 +233,7 @@ namespace Emby.Server.Core.EntryPoints
                 await device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
                 {
                     Description = _appHost.Name
+
                 }).ConfigureAwait(false);
             }
             catch (Exception ex)

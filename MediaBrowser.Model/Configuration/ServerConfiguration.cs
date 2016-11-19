@@ -192,9 +192,6 @@ namespace MediaBrowser.Model.Configuration
 
         public int SharingExpirationDays { get; set; }
 
-        public string[] Migrations { get; set; }
-
-        public int MigrationVersion { get; set; }
         public int SchemaVersion { get; set; }
         public int SqliteCacheSize { get; set; }
 
@@ -218,7 +215,6 @@ namespace MediaBrowser.Model.Configuration
         public ServerConfiguration()
         {
             LocalNetworkAddresses = new string[] { };
-            Migrations = new string[] { };
             CodecsUsed = new string[] { };
             SqliteCacheSize = 0;
             ImageExtractionTimeoutMs = 0;

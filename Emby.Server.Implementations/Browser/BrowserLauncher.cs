@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller;
 using System;
 
-namespace Emby.Server.Core.Browser
+namespace Emby.Server.Implementations.Browser
 {
     /// <summary>
     /// Class BrowserLauncher
@@ -65,10 +65,8 @@ namespace Emby.Server.Core.Browser
             {
                 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine("Error launching url: " + url);
-                Console.WriteLine(ex.Message);
             }
         }
     }

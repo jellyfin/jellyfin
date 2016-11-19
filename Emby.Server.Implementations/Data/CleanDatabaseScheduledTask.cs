@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Progress;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -7,20 +6,13 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.IO;
-using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
-using Emby.Server.Implementations.ScheduledTasks;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -29,26 +21,14 @@ namespace Emby.Server.Implementations.Data
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
         private readonly ILogger _logger;
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly IHttpServer _httpServer;
-        private readonly ILocalizationManager _localization;
-        private readonly ITaskManager _taskManager;
 
-        public const int MigrationVersion = 23;
-        public static bool EnableUnavailableMessage = false;
-        const int LatestSchemaVersion = 109;
-
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config, IFileSystem fileSystem, IHttpServer httpServer, ILocalizationManager localization, ITaskManager taskManager)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IFileSystem fileSystem)
         {
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _logger = logger;
-            _config = config;
             _fileSystem = fileSystem;
-            _httpServer = httpServer;
-            _localization = localization;
-            _taskManager = taskManager;
         }
 
         public string Name
@@ -68,8 +48,6 @@ namespace Emby.Server.Implementations.Data
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            OnProgress(0);
-
             // Ensure these objects are lazy loaded.
             // Without this there is a deadlock that will need to be investigated
             var rootChildren = _libraryManager.RootFolder.Children.ToList();
@@ -78,19 +56,7 @@ namespace Emby.Server.Implementations.Data
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p =>
             {
-                double newPercentCommplete = .4 * p;
-                OnProgress(newPercentCommplete);
-
-                progress.Report(newPercentCommplete);
-            });
-
-            await UpdateToLatestSchema(cancellationToken, innerProgress).ConfigureAwait(false);
-
-            innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(p =>
-            {
-                double newPercentCommplete = 40 + .05 * p;
-                OnProgress(newPercentCommplete);
+                double newPercentCommplete = .45 * p;
                 progress.Report(newPercentCommplete);
             });
             await CleanDeadItems(cancellationToken, innerProgress).ConfigureAwait(false);
@@ -100,122 +66,12 @@ namespace Emby.Server.Implementations.Data
             innerProgress.RegisterAction(p =>
             {
                 double newPercentCommplete = 45 + .55 * p;
-                OnProgress(newPercentCommplete);
                 progress.Report(newPercentCommplete);
             });
             await CleanDeletedItems(cancellationToken, innerProgress).ConfigureAwait(false);
             progress.Report(100);
 
             await _itemRepo.UpdateInheritedValues(cancellationToken).ConfigureAwait(false);
-
-            if (_config.Configuration.MigrationVersion < MigrationVersion)
-            {
-                _config.Configuration.MigrationVersion = MigrationVersion;
-                _config.SaveConfiguration();
-            }
-
-            if (_config.Configuration.SchemaVersion < LatestSchemaVersion)
-            {
-                _config.Configuration.SchemaVersion = LatestSchemaVersion;
-                _config.SaveConfiguration();
-            }
-
-            if (EnableUnavailableMessage)
-            {
-                EnableUnavailableMessage = false;
-                _httpServer.GlobalResponse = null;
-                _taskManager.QueueScheduledTask<RefreshMediaLibraryTask>();
-            }
-
-            _taskManager.SuspendTriggers = false;
-        }
-
-        private void OnProgress(double newPercentCommplete)
-        {
-            if (EnableUnavailableMessage)
-            {
-                var html = "<!doctype html><html><head><title>Emby</title></head><body>";
-                var text = _localization.GetLocalizedString("DbUpgradeMessage");
-                html += string.Format(text, newPercentCommplete.ToString("N2", CultureInfo.InvariantCulture));
-
-                html += "<script>setTimeout(function(){window.location.reload(true);}, 5000);</script>";
-                html += "</body></html>";
-
-                _httpServer.GlobalResponse = html;
-            }
-        }
-
-        private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
-        {
-            var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
-            {
-                IsCurrentSchema = false,
-                ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
-            });
-
-            var numComplete = 0;
-            var numItems = itemIds.Count;
-
-            _logger.Debug("Upgrading schema for {0} items", numItems);
-
-            var list = new List<BaseItem>();
-
-            foreach (var itemId in itemIds)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (itemId != Guid.Empty)
-                {
-                    // Somehow some invalid data got into the db. It probably predates the boundary checking
-                    var item = _libraryManager.GetItemById(itemId);
-
-                    if (item != null)
-                    {
-                        list.Add(item);
-                    }
-                }
-
-                if (list.Count >= 1000)
-                {
-                    try
-                    {
-                        await _itemRepo.SaveItems(list, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error saving item", ex);
-                    }
-
-                    list.Clear();
-                }
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= numItems;
-                progress.Report(percent * 100);
-            }
-
-            if (list.Count > 0)
-            {
-                try
-                {
-                    await _itemRepo.SaveItems(list, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error saving item", ex);
-                }
-            }
-
-            progress.Report(100);
         }
 
         private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)

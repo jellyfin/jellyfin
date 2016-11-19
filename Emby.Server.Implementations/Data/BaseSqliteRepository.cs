@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
 using SQLitePCL.pretty;
+using System.Linq;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -120,19 +121,28 @@ namespace Emby.Server.Implementations.Data
 
         }
 
-        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type)
+        protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
         {
+            var list = new List<string>();
+
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
                 if (row[1].SQLiteType != SQLiteType.Null)
                 {
                     var name = row[1].ToString();
 
-                    if (string.Equals(name, columnName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
+                    list.Add(name);
                 }
+            }
+
+            return list;
+        }
+
+        protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
+        {
+            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            {
+                return;
             }
 
             connection.ExecuteAll(string.Join(";", new string[]

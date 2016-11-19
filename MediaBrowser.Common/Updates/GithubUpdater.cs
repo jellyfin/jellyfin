@@ -8,7 +8,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Updates;
 
-namespace Emby.Common.Implementations.Updates
+namespace MediaBrowser.Common.Updates
 {
     public class GithubUpdater
     {
