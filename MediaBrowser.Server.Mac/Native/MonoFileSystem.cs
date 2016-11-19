@@ -6,7 +6,7 @@ namespace Emby.Server.Mac.Native
 {
     public class MonoFileSystem : ManagedFileSystem
     {
-        public MonoFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars) : base(logger, supportsAsyncFileStreams, enableManagedInvalidFileNameChars, false)
+        public MonoFileSystem(ILogger logger, bool supportsAsyncFileStreams, bool enableManagedInvalidFileNameChars) : base(logger, supportsAsyncFileStreams, enableManagedInvalidFileNameChars, true)
         {
         }
 

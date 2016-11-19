@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
@@ -126,6 +127,15 @@ namespace Emby.Server.Implementations.Data
                 json.SerializeToStream(obj, stream);
                 return stream.ToArray();
             }
+        }
+
+        public static void Attach(IDatabaseConnection db, string path, string alias)
+        {
+            var commandText = string.Format("attach ? as {0};", alias);
+            var paramList = new List<object>();
+            paramList.Add(path);
+
+            db.Execute(commandText, paramList.ToArray());
         }
     }
 }

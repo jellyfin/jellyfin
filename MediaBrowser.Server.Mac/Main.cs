@@ -20,6 +20,7 @@ using MonoMac.AppKit;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using Emby.Server.Core;
+using Emby.Server.Implementations;
 using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.EnvironmentInfo;
 using Emby.Server.Mac.Native;
@@ -43,7 +44,7 @@ namespace MediaBrowser.Server.Mac
 
             var applicationPath = Assembly.GetEntryAssembly().Location;
 
-			var options = new StartupOptions();
+			var options = new StartupOptions(Environment.GetCommandLineArgs());
 
 			// Allow this to be specified on the command line.
 			var customProgramDataPath = options.GetOption("-programdata");

@@ -1,8 +1,7 @@
 ﻿//using System;
 //using System.Collections.Generic;
-//using System.Globalization;
 //using System.IO;
-//using System.Text;
+//using System.Linq;
 //using System.Threading;
 //using System.Threading.Tasks;
 //using MediaBrowser.Common.Configuration;
@@ -125,7 +124,7 @@
 //                throw new ArgumentNullException("userId");
 //            }
 
-//            return PersistAllUserData(userId, userData, cancellationToken);
+//            return PersistAllUserData(userId, userData.ToList(), cancellationToken);
 //        }
 
 //        /// <summary>
@@ -140,141 +139,58 @@
 //        {
 //            cancellationToken.ThrowIfCancellationRequested();
 
-//            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-//            IDbTransaction transaction = null;
-
-//            try
+//            using (WriteLock.Write())
 //            {
-//                transaction = _connection.BeginTransaction();
-
-//                using (var cmd = _connection.CreateCommand())
+//                _connection.RunInTransaction(db =>
 //                {
-//                    cmd.CommandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)";
-
-//                    cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
-//                    cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-//                    cmd.Parameters.Add(cmd, "@rating", DbType.Double).Value = userData.Rating;
-//                    cmd.Parameters.Add(cmd, "@played", DbType.Boolean).Value = userData.Played;
-//                    cmd.Parameters.Add(cmd, "@playCount", DbType.Int32).Value = userData.PlayCount;
-//                    cmd.Parameters.Add(cmd, "@isFavorite", DbType.Boolean).Value = userData.IsFavorite;
-//                    cmd.Parameters.Add(cmd, "@playbackPositionTicks", DbType.Int64).Value = userData.PlaybackPositionTicks;
-//                    cmd.Parameters.Add(cmd, "@lastPlayedDate", DbType.DateTime).Value = userData.LastPlayedDate;
-//                    cmd.Parameters.Add(cmd, "@AudioStreamIndex", DbType.Int32).Value = userData.AudioStreamIndex;
-//                    cmd.Parameters.Add(cmd, "@SubtitleStreamIndex", DbType.Int32).Value = userData.SubtitleStreamIndex;
-
-//                    cmd.Transaction = transaction;
-
-//                    cmd.ExecuteNonQuery();
-//                }
-
-//                transaction.Commit();
+//                    SaveUserData(db, userId, key, userData);
+//                });
 //            }
-//            catch (OperationCanceledException)
+//        }
+
+//        private void SaveUserData(IDatabaseConnection db, Guid userId, string key, UserItemData userData)
+//        {
+//            var paramList = new List<object>();
+//            var commandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (?, ?, ?,?,?,?,?,?,?,?)";
+
+//            paramList.Add(key);
+//            paramList.Add(userId.ToGuidParamValue());
+//            paramList.Add(userData.Rating);
+//            paramList.Add(userData.Played);
+//            paramList.Add(userData.PlayCount);
+//            paramList.Add(userData.IsFavorite);
+//            paramList.Add(userData.PlaybackPositionTicks);
+
+//            if (userData.LastPlayedDate.HasValue)
 //            {
-//                if (transaction != null)
-//                {
-//                    transaction.Rollback();
-//                }
-
-//                throw;
+//                paramList.Add(userData.LastPlayedDate.Value.ToDateTimeParamValue());
 //            }
-//            catch (Exception e)
+//            else
 //            {
-//                Logger.ErrorException("Failed to save user data:", e);
-
-//                if (transaction != null)
-//                {
-//                    transaction.Rollback();
-//                }
-
-//                throw;
+//                paramList.Add(null);
 //            }
-//            finally
-//            {
-//                if (transaction != null)
-//                {
-//                    transaction.Dispose();
-//                }
+//            paramList.Add(userData.AudioStreamIndex);
+//            paramList.Add(userData.SubtitleStreamIndex);
 
-//                WriteLock.Release();
-//            }
+//            db.Execute(commandText, paramList.ToArray());
 //        }
 
 //        /// <summary>
 //        /// Persist all user data for the specified user
 //        /// </summary>
-//        /// <param name="userId"></param>
-//        /// <param name="userData"></param>
-//        /// <param name="cancellationToken"></param>
-//        /// <returns></returns>
-//        private async Task PersistAllUserData(Guid userId, IEnumerable<UserItemData> userData, CancellationToken cancellationToken)
+//        private async Task PersistAllUserData(Guid userId, List<UserItemData> userDataList, CancellationToken cancellationToken)
 //        {
 //            cancellationToken.ThrowIfCancellationRequested();
 
-//            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-//            IDbTransaction transaction = null;
-
-//            try
+//            using (WriteLock.Write())
 //            {
-//                transaction = _connection.BeginTransaction();
-
-//                foreach (var userItemData in userData)
+//                _connection.RunInTransaction(db =>
 //                {
-//                    using (var cmd = _connection.CreateCommand())
+//                    foreach (var userItemData in userDataList)
 //                    {
-//                        cmd.CommandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)";
-
-//                        cmd.Parameters.Add(cmd, "@key", DbType.String).Value = userItemData.Key;
-//                        cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-//                        cmd.Parameters.Add(cmd, "@rating", DbType.Double).Value = userItemData.Rating;
-//                        cmd.Parameters.Add(cmd, "@played", DbType.Boolean).Value = userItemData.Played;
-//                        cmd.Parameters.Add(cmd, "@playCount", DbType.Int32).Value = userItemData.PlayCount;
-//                        cmd.Parameters.Add(cmd, "@isFavorite", DbType.Boolean).Value = userItemData.IsFavorite;
-//                        cmd.Parameters.Add(cmd, "@playbackPositionTicks", DbType.Int64).Value = userItemData.PlaybackPositionTicks;
-//                        cmd.Parameters.Add(cmd, "@lastPlayedDate", DbType.DateTime).Value = userItemData.LastPlayedDate;
-//                        cmd.Parameters.Add(cmd, "@AudioStreamIndex", DbType.Int32).Value = userItemData.AudioStreamIndex;
-//                        cmd.Parameters.Add(cmd, "@SubtitleStreamIndex", DbType.Int32).Value = userItemData.SubtitleStreamIndex;
-
-//                        cmd.Transaction = transaction;
-
-//                        cmd.ExecuteNonQuery();
+//                        SaveUserData(db, userId, userItemData.Key, userItemData);
 //                    }
-
-//                    cancellationToken.ThrowIfCancellationRequested();
-//                }
-
-//                transaction.Commit();
-//            }
-//            catch (OperationCanceledException)
-//            {
-//                if (transaction != null)
-//                {
-//                    transaction.Rollback();
-//                }
-
-//                throw;
-//            }
-//            catch (Exception e)
-//            {
-//                Logger.ErrorException("Failed to save user data:", e);
-
-//                if (transaction != null)
-//                {
-//                    transaction.Rollback();
-//                }
-
-//                throw;
-//            }
-//            finally
-//            {
-//                if (transaction != null)
-//                {
-//                    transaction.Dispose();
-//                }
-
-//                WriteLock.Release();
+//                });
 //            }
 //        }
 
@@ -300,23 +216,18 @@
 //                throw new ArgumentNullException("key");
 //            }
 
-//            using (var cmd = _connection.CreateCommand())
+//            var commandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key = ? and userId=?";
+
+//            var paramList = new List<object>();
+//            paramList.Add(key);
+//            paramList.Add(userId.ToGuidParamValue());
+
+//            foreach (var row in _connection.Query(commandText, paramList.ToArray()))
 //            {
-//                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key = @key and userId=@userId";
-
-//                cmd.Parameters.Add(cmd, "@key", DbType.String).Value = key;
-//                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-
-//                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
-//                {
-//                    if (reader.Read())
-//                    {
-//                        return ReadRow(reader);
-//                    }
-//                }
-
-//                return null;
+//                return ReadRow(row);
 //            }
+
+//            return null;
 //        }
 
 //        public UserItemData GetUserData(Guid userId, List<string> keys)
@@ -330,40 +241,12 @@
 //                throw new ArgumentNullException("keys");
 //            }
 
-//            using (var cmd = _connection.CreateCommand())
+//            if (keys.Count == 0)
 //            {
-//                var index = 0;
-//                var userdataKeys = new List<string>();
-//                var builder = new StringBuilder();
-//                foreach (var key in keys)
-//                {
-//                    var paramName = "@Key" + index;
-//                    userdataKeys.Add("Key =" + paramName);
-//                    cmd.Parameters.Add(cmd, paramName, DbType.String).Value = key;
-//                    builder.Append(" WHEN Key=" + paramName + " THEN " + index);
-//                    index++;
-//                    break;
-//                }
-
-//                var keyText = string.Join(" OR ", userdataKeys.ToArray());
-
-//                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@userId AND (" + keyText + ") ";
-
-//                cmd.CommandText += " ORDER BY (Case " + builder + " Else " + keys.Count.ToString(CultureInfo.InvariantCulture) + " End )";
-//                cmd.CommandText += " LIMIT 1";
-
-//                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
-
-//                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
-//                {
-//                    if (reader.Read())
-//                    {
-//                        return ReadRow(reader);
-//                    }
-//                }
-
 //                return null;
 //            }
+
+//            return GetUserData(userId, keys[0]);
 //        }
 
 //        /// <summary>
@@ -378,56 +261,58 @@
 //                throw new ArgumentNullException("userId");
 //            }
 
-//            using (var cmd = _connection.CreateCommand())
+//            var list = new List<UserItemData>();
+
+//            using (WriteLock.Read())
 //            {
-//                cmd.CommandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@userId";
+//                var commandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=?";
 
-//                cmd.Parameters.Add(cmd, "@userId", DbType.Guid).Value = userId;
+//                var paramList = new List<object>();
+//                paramList.Add(userId.ToGuidParamValue());
 
-//                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+//                foreach (var row in _connection.Query(commandText, paramList.ToArray()))
 //                {
-//                    while (reader.Read())
-//                    {
-//                        yield return ReadRow(reader);
-//                    }
+//                    list.Add(ReadRow(row));
 //                }
 //            }
+
+//            return list;
 //        }
 
 //        /// <summary>
 //        /// Read a row from the specified reader into the provided userData object
 //        /// </summary>
 //        /// <param name="reader"></param>
-//        private UserItemData ReadRow(IDataReader reader)
+//        private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
 //        {
 //            var userData = new UserItemData();
 
-//            userData.Key = reader.GetString(0);
-//            userData.UserId = reader.GetGuid(1);
+//            userData.Key = reader[0].ToString();
+//            userData.UserId = reader[1].ReadGuid();
 
-//            if (!reader.IsDBNull(2))
+//            if (reader[2].SQLiteType != SQLiteType.Null)
 //            {
-//                userData.Rating = reader.GetDouble(2);
+//                userData.Rating = reader[2].ToDouble();
 //            }
 
-//            userData.Played = reader.GetBoolean(3);
-//            userData.PlayCount = reader.GetInt32(4);
-//            userData.IsFavorite = reader.GetBoolean(5);
-//            userData.PlaybackPositionTicks = reader.GetInt64(6);
+//            userData.Played = reader[3].ToBool();
+//            userData.PlayCount = reader[4].ToInt();
+//            userData.IsFavorite = reader[5].ToBool();
+//            userData.PlaybackPositionTicks = reader[6].ToInt64();
 
-//            if (!reader.IsDBNull(7))
+//            if (reader[7].SQLiteType != SQLiteType.Null)
 //            {
-//                userData.LastPlayedDate = reader.GetDateTime(7).ToUniversalTime();
+//                userData.LastPlayedDate = reader[7].ReadDateTime();
 //            }
 
-//            if (!reader.IsDBNull(8))
+//            if (reader[8].SQLiteType != SQLiteType.Null)
 //            {
-//                userData.AudioStreamIndex = reader.GetInt32(8);
+//                userData.AudioStreamIndex = reader[8].ToInt();
 //            }
 
-//            if (!reader.IsDBNull(9))
+//            if (reader[9].SQLiteType != SQLiteType.Null)
 //            {
-//                userData.SubtitleStreamIndex = reader.GetInt32(9);
+//                userData.SubtitleStreamIndex = reader[9].ToInt();
 //            }
 
 //            return userData;
