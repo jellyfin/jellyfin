@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Activity
                 throw new ArgumentNullException("entry");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Activity
 
         public QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit)
         {
-            lock (WriteLock)
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.Activity
 
                     if (minDate.HasValue)
                     {
-                        whereClauses.Add("DateCreated>=@DateCreated");
+                        whereClauses.Add("DateCreated>=?");
                         paramList.Add(minDate.Value.ToDateTimeParamValue());
                     }
 

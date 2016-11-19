@@ -16,6 +16,7 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
 using Emby.Server.Core;
+using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using MediaBrowser.Model.System;
 using MediaBrowser.Server.Startup.Common.IO;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Server.Mono
 
             var applicationPath = Assembly.GetEntryAssembly().Location;
 
-            var options = new StartupOptions();
+            var options = new StartupOptions(Environment.GetCommandLineArgs());
 
             // Allow this to be specified on the command line.
             var customProgramDataPath = options.GetOption("-programdata");

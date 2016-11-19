@@ -44,7 +44,8 @@ namespace Emby.Server.Core
             IJsonSerializer json,
             IXmlSerializer xml,
             IEnvironmentInfo environment,
-            ICertificate certificate)
+            ICertificate certificate,
+            bool enableDualModeSockets)
         {
             var logger = logManager.GetLogger("HttpServer");
 
@@ -63,7 +64,8 @@ namespace Emby.Server.Core
                 environment,
                 certificate,
                 new StreamFactory(),
-                GetParseFn);
+                GetParseFn,
+                enableDualModeSockets);
         }
 
         private static Func<string, object> GetParseFn(Type propertyType)

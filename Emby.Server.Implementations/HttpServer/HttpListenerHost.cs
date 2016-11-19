@@ -59,12 +59,13 @@ namespace Emby.Server.Implementations.HttpServer
         private readonly IEnvironmentInfo _environment;
         private readonly IStreamFactory _streamFactory;
         private readonly Func<Type, Func<string, object>> _funcParseFn;
+        private readonly bool _enableDualModeSockets;
 
         public HttpListenerHost(IServerApplicationHost applicationHost,
             ILogger logger,
             IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn)
+            string defaultRedirectPath, INetworkManager networkManager, IMemoryStreamFactory memoryStreamProvider, ITextEncoding textEncoding, ISocketFactory socketFactory, ICryptoProvider cryptoProvider, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer, IEnvironmentInfo environment, ICertificate certificate, IStreamFactory streamFactory, Func<Type, Func<string, object>> funcParseFn, bool enableDualModeSockets)
             : base(serviceName)
         {
             _appHost = applicationHost;
@@ -80,6 +81,7 @@ namespace Emby.Server.Implementations.HttpServer
             _certificate = certificate;
             _streamFactory = streamFactory;
             _funcParseFn = funcParseFn;
+            _enableDualModeSockets = enableDualModeSockets;
             _config = config;
 
             _logger = logger;
@@ -179,8 +181,6 @@ namespace Emby.Server.Implementations.HttpServer
 
         private IHttpListener GetListener()
         {
-            var enableDualMode = _environment.OperatingSystem == OperatingSystem.Windows;
-
             return new WebSocketSharpListener(_logger,
                 _certificate,
                 _memoryStreamProvider,
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.HttpServer
                 _socketFactory,
                 _cryptoProvider,
                 _streamFactory,
-                enableDualMode,
+                _enableDualModeSockets,
                 GetRequest);
         }
 

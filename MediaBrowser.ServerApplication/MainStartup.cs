@@ -23,7 +23,8 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Common.Implementations.Security;
 using Emby.Server.Core;
-using Emby.Server.Core.Browser;
+using Emby.Server.Implementations;
+using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
 using ImageMagickSharp;
 using MediaBrowser.Common.Net;
@@ -73,7 +74,7 @@ namespace MediaBrowser.ServerApplication
         /// </summary>
         public static void Main()
         {
-            var options = new StartupOptions();
+            var options = new StartupOptions(Environment.GetCommandLineArgs());
             IsRunningAsService = options.ContainsOption("-service");
 
             if (IsRunningAsService)

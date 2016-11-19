@@ -14,6 +14,7 @@
         "System.Net.Http": "4.0.0.0",
         "System.Net.Primitives": "4.0.0.0",
         "System.Net.Http.WebRequest": "4.0.0.0",
+        "System.Reflection": "4.0.0.0",
         "System.Runtime": "4.0.0.0",
         "System.Runtime.Extensions": "4.0.0.0",
         "System.Text.Encoding": "4.0.0.0",
@@ -57,6 +58,7 @@
         "ServiceStack.Text.Core": "1.0.27",
         "NLog": "4.4.0-betaV15",
         "sharpcompress": "0.14.0",
+		"System.AppDomain": "2.0.11",
         "MediaBrowser.Model": {
           "target": "project"
         },

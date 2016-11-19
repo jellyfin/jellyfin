@@ -55,25 +55,6 @@ namespace Emby.Common.Implementations.ScheduledTasks
         private ILogger Logger { get; set; }
         private readonly IFileSystem _fileSystem;
 
-        private bool _suspendTriggers;
-
-        public bool SuspendTriggers
-        {
-            get { return _suspendTriggers; }
-            set
-            {
-                Logger.Info("Setting SuspendTriggers to {0}", value);
-                var executeQueued = _suspendTriggers && !value;
-
-                _suspendTriggers = value;
-
-                if (executeQueued)
-                {
-                    ExecuteQueuedTasks();
-                }
-            }
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
@@ -230,7 +211,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
 
             lock (_taskQueue)
             {
-                if (task.State == TaskState.Idle && !SuspendTriggers)
+                if (task.State == TaskState.Idle)
                 {
                     Execute(task, options);
                     return;
@@ -322,11 +303,6 @@ namespace Emby.Common.Implementations.ScheduledTasks
         /// </summary>
         private void ExecuteQueuedTasks()
         {
-            if (SuspendTriggers)
-            {
-                return;
-            }
-
             Logger.Info("ExecuteQueuedTasks");
 
             // Execute queued tasks

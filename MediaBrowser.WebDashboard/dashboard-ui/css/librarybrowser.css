@@ -836,14 +836,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 20px;
 }
 
-@media all and (max-height: 480px) {
+@media all and (max-height: 500px) {
 
     .alphabetPicker {
         display: none !important;
     }
 }
 
-@media all and (min-height: 480px) {
+@media all and (min-height: 500px) {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
