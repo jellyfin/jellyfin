@@ -4,7 +4,7 @@ using MediaBrowser.Model.Logging;
 using System;
 using MonoMac.Foundation;
 using MonoMac.AppKit;
-using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.Browser;
 
 namespace MediaBrowser.Server.Mac
 {
