@@ -4,8 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Emby.Server.Core;
-using Emby.Server.Core.FFMpeg;
-using Emby.Server.Data;
+using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
@@ -39,7 +38,35 @@ namespace Emby.Server
         {
             var info = new FFMpegInstallInfo();
 
+            if (EnvironmentInfo.OperatingSystem == OperatingSystem.Windows)
+            {
+                info.FFMpegFilename = "ffmpeg.exe";
+                info.FFProbeFilename = "ffprobe.exe";
+                info.Version = "20160410";
+                info.ArchiveType = "7z";
+                info.DownloadUrls = GetDownloadUrls();
+            }
+
             return info;
+        }
+
+        private string[] GetDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win64.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20160410-win32.7z"
+                    };
+            }
+
+            return new string[] { };
         }
 
         protected override List<Assembly> GetAssembliesWithPartsInternal()
@@ -56,10 +83,6 @@ namespace Emby.Server
         }
 
         protected override void ConfigureAutoRunInternal(bool autorun)
-        {
-        }
-
-        public override void LaunchUrl(string url)
         {
         }
 
@@ -96,6 +119,14 @@ namespace Emby.Server
             get
             {
                 return Program.CanSelfUpdate;
+            }
+        }
+
+        protected override bool SupportsDualModeSockets
+        {
+            get
+            {
+                return true;
             }
         }
     }

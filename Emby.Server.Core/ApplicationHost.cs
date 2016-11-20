@@ -132,6 +132,8 @@ using SocketHttpListener.Primitives;
 using StringExtensions = MediaBrowser.Controller.Extensions.StringExtensions;
 using Emby.Drawing;
 using Emby.Server.Implementations.Migrations;
+using MediaBrowser.Model.Diagnostics;
+using Emby.Common.Implementations.Diagnostics;
 
 namespace Emby.Server.Core
 {
@@ -1543,7 +1545,39 @@ namespace Emby.Server.Core
             }
         }
 
-        public abstract void LaunchUrl(string url);
+        public void LaunchUrl(string url)
+        {
+            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                throw new NotImplementedException();
+            }
+
+            var process = ProcessFactory.Create(new ProcessOptions {
+                FileName = url,
+                EnableRaisingEvents = true,
+                UseShellExecute = true,
+                ErrorDialog = false
+            });
+
+            process.Exited += ProcessExited;
+
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error launching url: {0}", url);
+                Logger.ErrorException("Error launching url: {0}", ex, url);
+
+                throw;
+            }
+        }
+
+        private static void ProcessExited(object sender, EventArgs e)
+        {
+            ((IProcess)sender).Dispose();
+        }
 
         public void EnableLoopback(string appName)
         {
