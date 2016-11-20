@@ -168,14 +168,54 @@ namespace Emby.Server.Implementations.Data
             return result[index].ToFloat();
         }
 
-        public static DateTime GetDateTime(this IReadOnlyList<IResultSetValue> result, int index)
-        {
-            return result[index].ReadDateTime();
-        }
-
         public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
         {
             return result[index].ReadGuid();
+        }
+
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, string value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, bool value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, byte[] value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBindNull(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.BindNull();
+            }
+        }
+
+        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(
+            this IStatement This)
+        {
+            while (This.MoveNext())
+            {
+                yield return This.Current;
+            }
         }
     }
 }

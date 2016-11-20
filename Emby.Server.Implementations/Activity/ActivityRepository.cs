@@ -57,18 +57,21 @@ namespace Emby.Server.Implementations.Activity
                 {
                     connection.RunInTransaction(db =>
                     {
-                        var commandText = "replace into ActivityLogEntries (Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        using (var statement = db.PrepareStatement("replace into ActivityLogEntries (Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Id, @Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
+                        {
+                            statement.BindParameters.TryBind("@Id", entry.Id.ToGuidParamValue());
+                            statement.BindParameters.TryBind("@Name", entry.Name);
 
-                        db.Execute(commandText,
-                            entry.Id.ToGuidParamValue(),
-                            entry.Name,
-                            entry.Overview,
-                            entry.ShortOverview,
-                            entry.Type,
-                            entry.ItemId,
-                            entry.UserId,
-                            entry.Date.ToDateTimeParamValue(),
-                            entry.Severity.ToString());
+                            statement.BindParameters.TryBind("@Overview", entry.Overview);
+                            statement.BindParameters.TryBind("@ShortOverview", entry.ShortOverview);
+                            statement.BindParameters.TryBind("@Type", entry.Type);
+                            statement.BindParameters.TryBind("@ItemId", entry.ItemId);
+                            statement.BindParameters.TryBind("@UserId", entry.UserId);
+                            statement.BindParameters.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                            statement.BindParameters.TryBind("@LogSeverity", entry.Severity.ToString());
+
+                            statement.MoveNext();
+                        }
                     });
                 }
             }

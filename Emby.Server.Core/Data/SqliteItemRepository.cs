@@ -679,7 +679,7 @@ namespace Emby.Server.Core.Data
                 throw new ArgumentNullException("item");
             }
 
-            return SaveItems(new[] { item }, cancellationToken);
+            return SaveItems(new List<BaseItem> { item }, cancellationToken);
         }
 
         /// <summary>
@@ -693,7 +693,7 @@ namespace Emby.Server.Core.Data
         /// or
         /// cancellationToken
         /// </exception>
-        public async Task SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
+        public async Task SaveItems(List<BaseItem> items, CancellationToken cancellationToken)
         {
             if (items == null)
             {
