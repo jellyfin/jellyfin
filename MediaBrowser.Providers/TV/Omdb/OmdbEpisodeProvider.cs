@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.TV
 
             if (OmdbProvider.IsValidSeries(info.SeriesProviderIds) && info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
             {
-                var seriesImdbId = info.SeriesProviderIds[MetadataProviders.Imdb.ToString()];
+                var seriesImdbId = info.GetProviderId(MetadataProviders.Imdb);
 
                 result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
