@@ -62,13 +62,10 @@ namespace MediaBrowser.Providers.People
 
         public Task<IEnumerable<RemoteImageInfo>> GetImages(IHasImages item, CancellationToken cancellationToken)
         {
-            // Avoid implicitly captured closure
-            var itemName = item.Name;
-
             var seriesWithPerson = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                Person = itemName
+                PersonIds = new[] { item.Id.ToString("N") }
 
             }).Cast<Series>()
                 .Where(i => TvdbSeriesProvider.IsValidSeries(i.ProviderIds))

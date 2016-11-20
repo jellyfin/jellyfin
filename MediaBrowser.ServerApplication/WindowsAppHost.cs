@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Emby.Server.Core;
-using Emby.Server.Core.Data;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.FFMpeg;
@@ -90,11 +89,6 @@ namespace MediaBrowser.ServerApplication
                     ServerConfigurationManager.Configuration.HttpsPortNumber,
                     MainStartup.ApplicationPath,
                     ConfigurationManager.CommonApplicationPaths.TempDirectory);
-        }
-
-        protected override IDbConnector GetDbConnector()
-        {
-            return new DbConnector(Logger);
         }
 
         protected override void ConfigureAutoRunInternal(bool autorun)

@@ -137,5 +137,256 @@ namespace Emby.Server.Implementations.Data
 
             db.Execute(commandText, paramList.ToArray());
         }
+
+        public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].SQLiteType == SQLiteType.Null;
+        }
+
+        public static string GetString(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToString();
+        }
+
+        public static bool GetBoolean(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToBool();
+        }
+
+        public static int GetInt32(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToInt();
+        }
+
+        public static long GetInt64(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToInt64();
+        }
+
+        public static float GetFloat(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToFloat();
+        }
+
+        public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ReadGuid();
+        }
+
+        private static void CheckName(string name)
+        {
+#if DEBUG
+            //if (!name.IndexOf("@", StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                throw new Exception("Invalid param name: " + name);
+            }
+#endif
+        }
+
+        public static void TryBind(this IStatement statement, string name, double value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, string value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                if (value == null)
+                {
+                    bindParam.BindNull();
+                }
+                else
+                {
+                    bindParam.Bind(value);
+                }
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, bool value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, float value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, int value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, Guid value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value.ToGuidParamValue());
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, DateTime value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value.ToDateTimeParamValue());
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, long value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, byte[] value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBindNull(this IStatement statement, string name)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.BindNull();
+            }
+            else
+            {
+                CheckName(name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, DateTime? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, Guid? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, int? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, float? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, bool? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(
+            this IStatement This)
+        {
+            while (This.MoveNext())
+            {
+                yield return This.Current;
+            }
+        }
     }
 }

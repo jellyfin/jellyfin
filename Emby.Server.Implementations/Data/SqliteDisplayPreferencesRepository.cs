@@ -100,14 +100,17 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, IDatabaseConnection connection)
         {
-            var commandText = "replace into userdisplaypreferences (id, userid, client, data) values (?, ?, ?, ?)";
-            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
+            using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userid, @client, @data)"))
+            {
+                var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
 
-            connection.Execute(commandText,
-                displayPreferences.Id.ToGuidParamValue(),
-                userId.ToGuidParamValue(),
-                client,
-                serialized);
+                statement.TryBind("@id", displayPreferences.Id.ToGuidParamValue());
+                statement.TryBind("@userId", userId.ToGuidParamValue());
+                statement.TryBind("@client", client);
+                statement.TryBind("@data", serialized);
+
+                statement.MoveNext();
+            }
         }
 
         /// <summary>
@@ -163,16 +166,16 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var commandText = "select data from userdisplaypreferences where id = ? and userId=? and client=?";
-
-                    var paramList = new List<object>();
-                    paramList.Add(guidId.ToGuidParamValue());
-                    paramList.Add(userId.ToGuidParamValue());
-                    paramList.Add(client);
-
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                     {
-                        return Get(row);
+                        statement.TryBind("@id", guidId.ToGuidParamValue());
+                        statement.TryBind("@userId", userId.ToGuidParamValue());
+                        statement.TryBind("@client", client);
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            return Get(row);
+                        }
                     }
 
                     return new DisplayPreferences
@@ -197,14 +200,14 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var commandText = "select data from userdisplaypreferences where userId=?";
-
-                    var paramList = new List<object>();
-                    paramList.Add(userId.ToGuidParamValue());
-
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                     {
-                        list.Add(Get(row));
+                        statement.TryBind("@userId", userId.ToGuidParamValue());
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(Get(row));
+                        }
                     }
                 }
             }

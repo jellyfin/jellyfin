@@ -509,7 +509,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                Person = person.Name,
+                PersonIds = new[] { person.Id.ToString("N") },
                 IncludeItemTypes = new[] { typeof(Movie).Name, typeof(Series).Name, typeof(Trailer).Name },
                 SortBy = new[] { ItemSortBy.SortName },
                 Limit = limit,

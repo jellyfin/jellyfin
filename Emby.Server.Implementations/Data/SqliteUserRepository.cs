@@ -89,11 +89,12 @@ namespace Emby.Server.Implementations.Data
                 {
                     connection.RunInTransaction(db =>
                     {
-                        var commandText = "replace into users (guid, data) values (?, ?)";
-
-                        db.Execute(commandText,
-                            user.Id.ToGuidParamValue(),
-                            serialized);
+                        using (var statement = db.PrepareStatement("replace into users (guid, data) values (@guid, @data)"))
+                        {
+                            statement.TryBind("@guid", user.Id.ToGuidParamValue());
+                            statement.TryBind("@data", serialized);
+                            statement.MoveNext();
+                        }
                     });
                 }
             }
@@ -151,10 +152,11 @@ namespace Emby.Server.Implementations.Data
                 {
                     connection.RunInTransaction(db =>
                     {
-                        var commandText = "delete from users where guid=?";
-
-                        db.Execute(commandText,
-                            user.Id.ToGuidParamValue());
+                        using (var statement = db.PrepareStatement("delete from users where guid=@id"))
+                        {
+                            statement.TryBind("@id", user.Id.ToGuidParamValue());
+                            statement.MoveNext();
+                        }
                     });
                 }
             }

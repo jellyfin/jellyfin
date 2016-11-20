@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.Person = Name;
+            query.PersonIds = new[] { Id.ToString("N") };
 
             return LibraryManager.GetItemList(query);
         }
@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
             {
-                Person = Name
+                PersonIds = new[] { Id.ToString("N") }
             });
 
             return inputItems.Where(i => itemsWithPerson.Contains(i.Id));
