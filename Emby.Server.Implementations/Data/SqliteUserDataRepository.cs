@@ -152,48 +152,48 @@
 //        {
 //            using (var statement = _connection.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
 //            {
-//                statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
-//                statement.BindParameters.TryBind("@Key", key);
+//                statement.TryBind("@UserId", userId.ToGuidParamValue());
+//                statement.TryBind("@Key", key);
 
 //                if (userData.Rating.HasValue)
 //                {
-//                    statement.BindParameters.TryBind("@rating", userData.Rating.Value);
+//                    statement.TryBind("@rating", userData.Rating.Value);
 //                }
 //                else
 //                {
-//                    statement.BindParameters.TryBindNull("@rating");
+//                    statement.TryBindNull("@rating");
 //                }
 
-//                statement.BindParameters.TryBind("@played", userData.Played);
-//                statement.BindParameters.TryBind("@playCount", userData.PlayCount);
-//                statement.BindParameters.TryBind("@isFavorite", userData.IsFavorite);
-//                statement.BindParameters.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
+//                statement.TryBind("@played", userData.Played);
+//                statement.TryBind("@playCount", userData.PlayCount);
+//                statement.TryBind("@isFavorite", userData.IsFavorite);
+//                statement.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
 
 //                if (userData.LastPlayedDate.HasValue)
 //                {
-//                    statement.BindParameters.TryBind("@lastPlayedDate", userData.LastPlayedDate.Value.ToDateTimeParamValue());
+//                    statement.TryBind("@lastPlayedDate", userData.LastPlayedDate.Value.ToDateTimeParamValue());
 //                }
 //                else
 //                {
-//                    statement.BindParameters.TryBindNull("@lastPlayedDate");
+//                    statement.TryBindNull("@lastPlayedDate");
 //                }
 
 //                if (userData.AudioStreamIndex.HasValue)
 //                {
-//                    statement.BindParameters.TryBind("@AudioStreamIndex", userData.AudioStreamIndex.Value);
+//                    statement.TryBind("@AudioStreamIndex", userData.AudioStreamIndex.Value);
 //                }
 //                else
 //                {
-//                    statement.BindParameters.TryBindNull("@AudioStreamIndex");
+//                    statement.TryBindNull("@AudioStreamIndex");
 //                }
 
 //                if (userData.SubtitleStreamIndex.HasValue)
 //                {
-//                    statement.BindParameters.TryBind("@SubtitleStreamIndex", userData.SubtitleStreamIndex.Value);
+//                    statement.TryBind("@SubtitleStreamIndex", userData.SubtitleStreamIndex.Value);
 //                }
 //                else
 //                {
-//                    statement.BindParameters.TryBindNull("@SubtitleStreamIndex");
+//                    statement.TryBindNull("@SubtitleStreamIndex");
 //                }
 
 //                statement.MoveNext();
@@ -243,8 +243,8 @@
 
 //            using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
 //            {
-//                statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
-//                statement.BindParameters.TryBind("@Key", key);
+//                statement.TryBind("@UserId", userId.ToGuidParamValue());
+//                statement.TryBind("@Key", key);
 
 //                foreach (var row in statement.ExecuteQuery())
 //                {
@@ -292,7 +292,7 @@
 //            {
 //                using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@UserId"))
 //                {
-//                    statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+//                    statement.TryBind("@UserId", userId.ToGuidParamValue());
 
 //                    foreach (var row in statement.ExecuteQuery())
 //                    {

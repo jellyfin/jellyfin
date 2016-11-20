@@ -173,66 +173,153 @@ namespace Emby.Server.Implementations.Data
             return result[index].ReadGuid();
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, double value)
+        public static void TryBind(this IStatement statement, string name, double value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, string value)
+        public static void TryBind(this IStatement statement, string name, string value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, bool value)
+        public static void TryBind(this IStatement statement, string name, bool value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, int value)
+        public static void TryBind(this IStatement statement, string name, float value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, long value)
+        public static void TryBind(this IStatement statement, string name, int value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, byte[] value)
+        public static void TryBind(this IStatement statement, string name, Guid value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value.ToGuidParamValue());
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, DateTime value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value.ToDateTimeParamValue());
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, long value)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
             }
         }
 
-        public static void TryBindNull(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name)
+        public static void TryBind(this IStatement statement, string name, byte[] value)
         {
             IBindParameter bindParam;
-            if (bindParameters.TryGetValue(name, out bindParam))
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBindNull(this IStatement statement, string name)
+        {
+            IBindParameter bindParam;
+            if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.BindNull();
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, DateTime? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, Guid? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, int? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, float? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
+        public static void TryBind(this IStatement statement, string name, bool? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
             }
         }
 
