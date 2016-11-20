@@ -137,5 +137,45 @@ namespace Emby.Server.Implementations.Data
 
             db.Execute(commandText, paramList.ToArray());
         }
+
+        public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].SQLiteType == SQLiteType.Null;
+        }
+
+        public static string GetString(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToString();
+        }
+
+        public static bool GetBoolean(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToBool();
+        }
+
+        public static int GetInt32(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToInt();
+        }
+
+        public static long GetInt64(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToInt64();
+        }
+
+        public static float GetFloat(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ToFloat();
+        }
+
+        public static DateTime GetDateTime(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ReadDateTime();
+        }
+
+        public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
+        {
+            return result[index].ReadGuid();
+        }
     }
 }
