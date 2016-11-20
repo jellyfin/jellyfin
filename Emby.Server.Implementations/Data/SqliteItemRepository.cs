@@ -3860,7 +3860,7 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("LocationType=@LocationType");
                     if (statement != null)
                     {
-                        statement.TryBind("LocationType", query.LocationTypes[0].ToString());
+                        statement.TryBind("@LocationType", query.LocationTypes[0].ToString());
                     }
                 }
             }
@@ -3881,7 +3881,7 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("LocationType<>@ExcludeLocationTypes");
                     if (statement != null)
                     {
-                        statement.TryBind("ExcludeLocationTypes", query.ExcludeLocationTypes[0].ToString());
+                        statement.TryBind("@ExcludeLocationTypes", query.ExcludeLocationTypes[0].ToString());
                     }
                 }
             }
