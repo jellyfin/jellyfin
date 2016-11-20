@@ -15,10 +15,11 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Drawing;
 using Emby.Server.Core;
-using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
 using MediaBrowser.Common.Net;
 using Emby.Server.IO;
+using Emby.Server.Implementations;
 
 namespace Emby.Server
 {

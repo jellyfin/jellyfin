@@ -33,8 +33,17 @@ namespace Emby.Server.Implementations.Data
             //CheckOk(rc);
         }
 
+        private static bool _versionLogged;
+
         protected virtual SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
         {
+            if (!_versionLogged)
+            {
+                _versionLogged = true;
+                Logger.Info("Sqlite version: " + SQLite3.Version);
+                Logger.Info("Sqlite compiler options: " + string.Join(",", SQLite3.CompilerOptions.ToArray()));
+            }
+
             ConnectionFlags connectionFlags;
 
             //isReadOnly = false;
