@@ -119,38 +119,6 @@ namespace MediaBrowser.ServerApplication
             }
         }
 
-        public override void LaunchUrl(string url)
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = url
-                },
-
-                EnableRaisingEvents = true,
-            };
-
-            process.Exited += ProcessExited;
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error launching url: {0}", url);
-                Logger.ErrorException("Error launching url: {0}", ex, url);
-
-                throw;
-            }
-        }
-
-        private static void ProcessExited(object sender, EventArgs e)
-        {
-            ((Process)sender).Dispose();
-        }
-
         protected override void EnableLoopbackInternal(string appName)
         {
             LoopUtil.Run(appName);

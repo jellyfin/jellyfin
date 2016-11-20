@@ -15,7 +15,7 @@
     "Microsoft.Win32.Registry": "4.0.0",
     "System.Runtime.Extensions": "4.1.0",
     "System.Diagnostics.Process": "4.1.0",
-    "SQLitePCLRaw.provider.sqlite3.netstandard11": "1.1.0"
+    "SQLitePCLRaw.provider.sqlite3.netstandard11": "1.1.1-pre20161109081005"
   },
 
   "frameworks": {

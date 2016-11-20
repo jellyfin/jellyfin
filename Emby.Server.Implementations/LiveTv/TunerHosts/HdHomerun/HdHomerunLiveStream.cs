@@ -89,7 +89,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         {
                             Url = url,
                             CancellationToken = cancellationToken,
-                            BufferContent = false
+                            BufferContent = false,
+
+                            // Increase a little bit
+                            TimeoutMs = 30000
 
                         }, "GET").ConfigureAwait(false))
                         {

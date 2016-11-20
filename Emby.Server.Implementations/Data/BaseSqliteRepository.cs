@@ -12,12 +12,22 @@ namespace Emby.Server.Implementations.Data
     public abstract class BaseSqliteRepository : IDisposable
     {
         protected string DbFilePath { get; set; }
-        protected ReaderWriterLockSlim WriteLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        protected ReaderWriterLockSlim WriteLock;
+
         protected ILogger Logger { get; private set; }
 
         protected BaseSqliteRepository(ILogger logger)
         {
             Logger = logger;
+
+            WriteLock = AllowLockRecursion ?
+              new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion) :
+              new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        }
+
+        protected virtual bool AllowLockRecursion
+        {
+            get { return false; }
         }
 
         protected virtual bool EnableConnectionPooling
@@ -86,7 +96,7 @@ namespace Emby.Server.Implementations.Data
             var cacheSize = CacheSize;
             if (cacheSize.HasValue)
             {
-                
+
             }
 
             if (EnableExclusiveMode)
@@ -206,11 +216,7 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            connection.ExecuteAll(string.Join(";", new string[]
-            {
-                "alter table " + table,
-                "add column " + columnName + " " + type + " NULL"
-            }));
+            connection.Execute("alter table " + table + " add column " + columnName + " " + type + " NULL");
         }
     }
 
