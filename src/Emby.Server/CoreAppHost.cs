@@ -4,12 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Emby.Server.Core;
-using Emby.Server.Core.Data;
 using Emby.Server.Core.FFMpeg;
 using Emby.Server.Data;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
+using Emby.Server.Implementations;
 
 namespace Emby.Server
 {
@@ -53,11 +53,6 @@ namespace Emby.Server
 
         protected override void AuthorizeServer()
         {
-        }
-
-        protected override IDbConnector GetDbConnector()
-        {
-            return new DbConnector(Logger);
         }
 
         protected override void ConfigureAutoRunInternal(bool autorun)
