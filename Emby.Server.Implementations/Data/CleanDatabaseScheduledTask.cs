@@ -135,9 +135,9 @@ namespace Emby.Server.Implementations.Data
             });
 
             var numComplete = 0;
-            var numItems = result.Items.Length;
+            var numItems = result.Count;
 
-            foreach (var item in result.Items)
+            foreach (var item in result)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 

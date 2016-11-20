@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Core;
-using Emby.Server.Core.Data;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.IsoMounter;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.System;
-using MediaBrowser.Server.Mono.Native;
 
 namespace MediaBrowser.Server.Mono
 {
@@ -121,11 +119,6 @@ namespace MediaBrowser.Server.Mono
         protected override void AuthorizeServer()
         {
             throw new NotImplementedException();
-        }
-
-        protected override IDbConnector GetDbConnector()
-        {
-            return new DbConnector(Logger);
         }
 
         protected override void ConfigureAutoRunInternal(bool autorun)

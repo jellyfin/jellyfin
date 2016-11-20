@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;Tuple&lt;Guid, System.String&gt;&gt;.</returns>
-        QueryResult<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
+        List<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the item list.

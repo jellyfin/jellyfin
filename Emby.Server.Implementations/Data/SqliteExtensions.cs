@@ -173,12 +173,26 @@ namespace Emby.Server.Implementations.Data
             return result[index].ReadGuid();
         }
 
+        private static void CheckName(string name)
+        {
+#if DEBUG
+            //if (!name.IndexOf("@", StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                throw new Exception("Invalid param name: " + name);
+            }
+#endif
+        }
+
         public static void TryBind(this IStatement statement, string name, double value)
         {
             IBindParameter bindParam;
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 
@@ -187,7 +201,18 @@ namespace Emby.Server.Implementations.Data
             IBindParameter bindParam;
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
-                bindParam.Bind(value);
+                if (value == null)
+                {
+                    bindParam.BindNull();
+                }
+                else
+                {
+                    bindParam.Bind(value);
+                }
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 
@@ -198,6 +223,10 @@ namespace Emby.Server.Implementations.Data
             {
                 bindParam.Bind(value);
             }
+            else
+            {
+                CheckName(name);
+            }
         }
 
         public static void TryBind(this IStatement statement, string name, float value)
@@ -206,6 +235,10 @@ namespace Emby.Server.Implementations.Data
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 
@@ -216,6 +249,10 @@ namespace Emby.Server.Implementations.Data
             {
                 bindParam.Bind(value);
             }
+            else
+            {
+                CheckName(name);
+            }
         }
 
         public static void TryBind(this IStatement statement, string name, Guid value)
@@ -224,6 +261,10 @@ namespace Emby.Server.Implementations.Data
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value.ToGuidParamValue());
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 
@@ -234,6 +275,10 @@ namespace Emby.Server.Implementations.Data
             {
                 bindParam.Bind(value.ToDateTimeParamValue());
             }
+            else
+            {
+                CheckName(name);
+            }
         }
 
         public static void TryBind(this IStatement statement, string name, long value)
@@ -242,6 +287,10 @@ namespace Emby.Server.Implementations.Data
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.Bind(value);
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 
@@ -252,6 +301,10 @@ namespace Emby.Server.Implementations.Data
             {
                 bindParam.Bind(value);
             }
+            else
+            {
+                CheckName(name);
+            }
         }
 
         public static void TryBindNull(this IStatement statement, string name)
@@ -260,6 +313,10 @@ namespace Emby.Server.Implementations.Data
             if (statement.BindParameters.TryGetValue(name, out bindParam))
             {
                 bindParam.BindNull();
+            }
+            else
+            {
+                CheckName(name);
             }
         }
 

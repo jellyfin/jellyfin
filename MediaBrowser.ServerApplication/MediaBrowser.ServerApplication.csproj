@@ -102,10 +102,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.103.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\1.0.94.0\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
@@ -121,9 +117,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MediaBrowser.Server.Startup.Common\Persistence\SqliteExtensions.cs">
-      <Link>Native\SqliteExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
@@ -141,7 +134,6 @@
     </Compile>
     <Compile Include="MainStartup.cs" />
     <Compile Include="Native\LnkShortcutHandler.cs" />
-    <Compile Include="Native\DbConnector.cs" />
     <Compile Include="Native\LoopbackUtil.cs" />
     <Compile Include="Native\PowerManagement.cs" />
     <Compile Include="Native\Standby.cs" />
