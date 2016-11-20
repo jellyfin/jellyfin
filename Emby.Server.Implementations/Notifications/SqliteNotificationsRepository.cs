@@ -279,7 +279,7 @@ namespace Emby.Server.Implementations.Notifications
                 {
                     connection.RunInTransaction(conn =>
                     {
-                        conn.Execute("update Notifications set IsRead=? where UserId=?", userId.ToGuidParamValue(), isRead);
+                        conn.Execute("update Notifications set IsRead=? where UserId=?", isRead, userId.ToGuidParamValue());
                     });
                 }
             }
@@ -299,7 +299,7 @@ namespace Emby.Server.Implementations.Notifications
 
                         foreach (var id in notificationIdList)
                         {
-                            conn.Execute("update Notifications set IsRead=? where UserId=? and Id=?", userIdParam, isRead, id);
+                            conn.Execute("update Notifications set IsRead=? where UserId=? and Id=?", isRead, userIdParam, id);
                         }
                     });
                 }
