@@ -51,7 +51,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken);
+        Task SaveItems(List<BaseItem> items, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the item.
@@ -147,7 +147,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>QueryResult&lt;Tuple&lt;Guid, System.String&gt;&gt;.</returns>
-        QueryResult<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
+        List<Tuple<Guid, string>> GetItemIdsWithPath(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the item list.

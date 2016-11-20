@@ -492,14 +492,11 @@ namespace Emby.Server.Implementations.Sync
                 using (var connection = CreateConnection(true))
                 {
                     var commandText = "select ItemId,Status,Progress from SyncJobItems";
-
                     var whereClauses = new List<string>();
-                    var paramList = new List<object>();
 
                     if (!string.IsNullOrWhiteSpace(query.TargetId))
                     {
-                        whereClauses.Add("TargetId=?");
-                        paramList.Add(query.TargetId);
+                        whereClauses.Add("TargetId=@TargetId");
                     }
 
                     if (query.Statuses.Length > 0)
@@ -514,22 +511,39 @@ namespace Emby.Server.Implementations.Sync
                         commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
                     }
 
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    using (var statement = connection.PrepareStatement(commandText))
                     {
-                        AddStatusResult(row, result, false);
+                        if (!string.IsNullOrWhiteSpace(query.TargetId))
+                        {
+                            statement.TryBind("@TargetId", query.TargetId);
+                        }
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            AddStatusResult(row, result, false);
+                        }
+                        LogQueryTime("GetSyncedItemProgresses", commandText, now);
                     }
-                    LogQueryTime("GetSyncedItemProgresses", commandText, now);
 
                     commandText = commandText
                         .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
                         .Replace("'Synced'", "'Completed','CompletedWithError'");
 
                     now = DateTime.UtcNow;
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+
+                    using (var statement = connection.PrepareStatement(commandText))
                     {
-                        AddStatusResult(row, result, true);
+                        if (!string.IsNullOrWhiteSpace(query.TargetId))
+                        {
+                            statement.TryBind("@TargetId", query.TargetId);
+                        }
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            AddStatusResult(row, result, true);
+                        }
+                        LogQueryTime("GetSyncedItemProgresses", commandText, now);
                     }
-                    LogQueryTime("GetSyncedItemProgresses", commandText, now);
                 }
             }
 

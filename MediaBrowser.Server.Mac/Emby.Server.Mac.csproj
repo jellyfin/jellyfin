@@ -115,9 +115,6 @@
       <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.1-pre20161109081005\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\1.0.94.0\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="Emby.Common.Implementations">
       <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
@@ -151,9 +148,6 @@
     <Compile Include="Main.cs" />
     <Compile Include="MenuBarIcon.cs" />
     <Compile Include="Native\DbConnector.cs" />
-    <Compile Include="..\MediaBrowser.Server.Startup.Common\Persistence\SqliteExtensions.cs">
-      <Link>Native\SqliteExtensions.cs</Link>
-    </Compile>
     <Compile Include="MacAppHost.cs" />
     <Compile Include="Native\MonoFileSystem.cs" />
     <Compile Include="Native\PowerManagement.cs" />

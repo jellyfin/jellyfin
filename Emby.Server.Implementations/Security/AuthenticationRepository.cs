@@ -69,25 +69,59 @@ namespace Emby.Server.Implementations.Security
                 {
                     connection.RunInTransaction(db =>
                     {
-                        var commandText = "replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        using (var statement = db.PrepareStatement("replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)"))
+                        {
+                            statement.TryBind("@Id", info.Id.ToGuidParamValue());
+                            statement.TryBind("@AccessToken", info.AccessToken);
 
-                        db.Execute(commandText,
-                            info.Id.ToGuidParamValue(),
-                            info.AccessToken,
-                            info.DeviceId,
-                            info.AppName,
-                            info.AppVersion,
-                            info.DeviceName,
-                            info.UserId,
-                            info.IsActive,
-                            info.DateCreated.ToDateTimeParamValue(),
-                            info.DateRevoked.HasValue ? info.DateRevoked.Value.ToDateTimeParamValue() : null);
+                            statement.TryBind("@DeviceId", info.DeviceId);
+                            statement.TryBind("@AppName", info.AppName);
+                            statement.TryBind("@AppVersion", info.AppVersion);
+                            statement.TryBind("@DeviceName", info.DeviceName);
+                            statement.TryBind("@UserId", info.UserId);
+                            statement.TryBind("@IsActive", info.IsActive);
+                            statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
+
+                            if (info.DateRevoked.HasValue)
+                            {
+                                statement.TryBind("@DateRevoked", info.DateRevoked.Value.ToDateTimeParamValue());
+                            }
+                            else
+                            {
+                                statement.TryBindNull("@DateRevoked");
+                            }
+
+                            statement.MoveNext();
+                        }
                     });
                 }
             }
         }
 
         private const string BaseSelectText = "select Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked from AccessTokens";
+
+        private void BindAuthenticationQueryParams(AuthenticationInfoQuery query, IStatement statement)
+        {
+            if (!string.IsNullOrWhiteSpace(query.AccessToken))
+            {
+                statement.TryBind("@AccessToken", query.AccessToken);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.UserId))
+            {
+                statement.TryBind("@UserId", query.UserId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.DeviceId))
+            {
+                statement.TryBind("@DeviceId", query.DeviceId);
+            }
+
+            if (query.IsActive.HasValue)
+            {
+                statement.TryBind("@IsActive", query.IsActive.Value);
+            }
+        }
 
         public QueryResult<AuthenticationInfo> Get(AuthenticationInfoQuery query)
         {
@@ -99,7 +133,6 @@ namespace Emby.Server.Implementations.Security
             using (var connection = CreateConnection(true))
             {
                 var commandText = BaseSelectText;
-                var paramList = new List<object>();
 
                 var whereClauses = new List<string>();
 
@@ -107,26 +140,22 @@ namespace Emby.Server.Implementations.Security
 
                 if (!string.IsNullOrWhiteSpace(query.AccessToken))
                 {
-                    whereClauses.Add("AccessToken=?");
-                    paramList.Add(query.AccessToken);
+                    whereClauses.Add("AccessToken=@AccessToken");
                 }
 
                 if (!string.IsNullOrWhiteSpace(query.UserId))
                 {
-                    whereClauses.Add("UserId=?");
-                    paramList.Add(query.UserId);
+                    whereClauses.Add("UserId=@UserId");
                 }
 
                 if (!string.IsNullOrWhiteSpace(query.DeviceId))
                 {
-                    whereClauses.Add("DeviceId=?");
-                    paramList.Add(query.DeviceId);
+                    whereClauses.Add("DeviceId=@DeviceId");
                 }
 
                 if (query.IsActive.HasValue)
                 {
-                    whereClauses.Add("IsActive=?");
-                    paramList.Add(query.IsActive.Value);
+                    whereClauses.Add("IsActive=@IsActive");
                 }
 
                 if (query.HasUser.HasValue)
@@ -171,20 +200,30 @@ namespace Emby.Server.Implementations.Security
 
                 var list = new List<AuthenticationInfo>();
 
-                foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                using (var statement = connection.PrepareStatement(commandText))
                 {
-                    list.Add(Get(row));
+                    BindAuthenticationQueryParams(query, statement);
+
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        list.Add(Get(row));
+                    }
+
+                    using (var totalCountStatement = connection.PrepareStatement("select count (Id) from AccessTokens" + whereTextWithoutPaging))
+                    {
+                        BindAuthenticationQueryParams(query, totalCountStatement);
+
+                        var count = totalCountStatement.ExecuteQuery()
+                            .SelectScalarInt()
+                            .First();
+
+                        return new QueryResult<AuthenticationInfo>()
+                        {
+                            Items = list.ToArray(),
+                            TotalRecordCount = count
+                        };
+                    }
                 }
-
-                var count = connection.Query("select count (Id) from AccessTokens" + whereTextWithoutPaging, paramList.ToArray())
-                    .SelectScalarInt()
-                    .First();
-
-                return new QueryResult<AuthenticationInfo>()
-                {
-                    Items = list.ToArray(),
-                    TotalRecordCount = count
-                };
             }
         }
 
@@ -199,16 +238,18 @@ namespace Emby.Server.Implementations.Security
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var commandText = BaseSelectText + " where Id=?";
-                    var paramList = new List<object>();
+                    var commandText = BaseSelectText + " where Id=@Id";
 
-                    paramList.Add(id.ToGuidParamValue());
-
-                    foreach (var row in connection.Query(commandText, paramList.ToArray()))
+                    using (var statement = connection.PrepareStatement(commandText))
                     {
-                        return Get(row);
+                        statement.BindParameters["@Id"].Bind(id.ToGuidParamValue());
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            return Get(row);
+                        }
+                        return null;
                     }
-                    return null;
                 }
             }
         }

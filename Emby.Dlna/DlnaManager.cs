@@ -238,6 +238,12 @@ namespace Emby.Dlna
 
         private bool IsMatch(IDictionary<string, string> headers, HttpHeaderInfo header)
         {
+            // Handle invalid user setup
+            if (string.IsNullOrWhiteSpace(header.Name))
+            {
+                return false;
+            }
+
             string value;
 
             if (headers.TryGetValue(header.Name, out value))

@@ -84,7 +84,6 @@ using Emby.Dlna.Ssdp;
 using Emby.Server.Core;
 using Emby.Server.Implementations.Activity;
 using Emby.Server.Core.Configuration;
-using Emby.Server.Core.Data;
 using Emby.Server.Implementations.Devices;
 using Emby.Server.Implementations.FFMpeg;
 using Emby.Server.Core.IO;
@@ -550,7 +549,7 @@ namespace Emby.Server.Core
             DisplayPreferencesRepository = displayPreferencesRepo;
             RegisterSingleInstance(DisplayPreferencesRepository);
 
-            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager, GetDbConnector(), MemoryStreamFactory, assemblyInfo);
+            var itemRepo = new SqliteItemRepository(ServerConfigurationManager, JsonSerializer, LogManager.GetLogger("SqliteItemRepository"), MemoryStreamFactory, assemblyInfo, FileSystemManager);
             ItemRepository = itemRepo;
             RegisterSingleInstance(ItemRepository);
 
@@ -693,10 +692,10 @@ namespace Emby.Server.Core
 
             displayPreferencesRepo.Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LogManager, ApplicationPaths, GetDbConnector());
+            var userDataRepo = new SqliteUserDataRepository(LogManager.GetLogger("SqliteUserDataRepository"), ApplicationPaths);
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
-            await itemRepo.Initialize(userDataRepo).ConfigureAwait(false);
+            itemRepo.Initialize(userDataRepo);
             ((LibraryManager)LibraryManager).ItemRepository = ItemRepository;
             ConfigureNotificationsRepository();
             progress.Report(100);
@@ -1444,7 +1443,6 @@ namespace Emby.Server.Core
         }
 
         protected abstract void AuthorizeServer();
-        protected abstract IDbConnector GetDbConnector();
 
         public event EventHandler HasUpdateAvailableChanged;
 
