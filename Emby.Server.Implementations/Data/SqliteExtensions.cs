@@ -173,6 +173,15 @@ namespace Emby.Server.Implementations.Data
             return result[index].ReadGuid();
         }
 
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, double value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
         public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, string value)
         {
             IBindParameter bindParam;
@@ -183,6 +192,24 @@ namespace Emby.Server.Implementations.Data
         }
 
         public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, bool value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, int value)
+        {
+            IBindParameter bindParam;
+            if (bindParameters.TryGetValue(name, out bindParam))
+            {
+                bindParam.Bind(value);
+            }
+        }
+
+        public static void TryBind(this IReadOnlyDictionary<string, IBindParameter> bindParameters, string name, long value)
         {
             IBindParameter bindParam;
             if (bindParameters.TryGetValue(name, out bindParam))

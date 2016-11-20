@@ -150,29 +150,54 @@
 
 //        private void SaveUserData(IDatabaseConnection db, Guid userId, string key, UserItemData userData)
 //        {
-//            var paramList = new List<object>();
-//            var commandText = "replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (?, ?, ?,?,?,?,?,?,?,?)";
-
-//            paramList.Add(key);
-//            paramList.Add(userId.ToGuidParamValue());
-//            paramList.Add(userData.Rating);
-//            paramList.Add(userData.Played);
-//            paramList.Add(userData.PlayCount);
-//            paramList.Add(userData.IsFavorite);
-//            paramList.Add(userData.PlaybackPositionTicks);
-
-//            if (userData.LastPlayedDate.HasValue)
+//            using (var statement = _connection.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
 //            {
-//                paramList.Add(userData.LastPlayedDate.Value.ToDateTimeParamValue());
-//            }
-//            else
-//            {
-//                paramList.Add(null);
-//            }
-//            paramList.Add(userData.AudioStreamIndex);
-//            paramList.Add(userData.SubtitleStreamIndex);
+//                statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+//                statement.BindParameters.TryBind("@Key", key);
 
-//            db.Execute(commandText, paramList.ToArray());
+//                if (userData.Rating.HasValue)
+//                {
+//                    statement.BindParameters.TryBind("@rating", userData.Rating.Value);
+//                }
+//                else
+//                {
+//                    statement.BindParameters.TryBindNull("@rating");
+//                }
+
+//                statement.BindParameters.TryBind("@played", userData.Played);
+//                statement.BindParameters.TryBind("@playCount", userData.PlayCount);
+//                statement.BindParameters.TryBind("@isFavorite", userData.IsFavorite);
+//                statement.BindParameters.TryBind("@playbackPositionTicks", userData.PlaybackPositionTicks);
+
+//                if (userData.LastPlayedDate.HasValue)
+//                {
+//                    statement.BindParameters.TryBind("@lastPlayedDate", userData.LastPlayedDate.Value.ToDateTimeParamValue());
+//                }
+//                else
+//                {
+//                    statement.BindParameters.TryBindNull("@lastPlayedDate");
+//                }
+
+//                if (userData.AudioStreamIndex.HasValue)
+//                {
+//                    statement.BindParameters.TryBind("@AudioStreamIndex", userData.AudioStreamIndex.Value);
+//                }
+//                else
+//                {
+//                    statement.BindParameters.TryBindNull("@AudioStreamIndex");
+//                }
+
+//                if (userData.SubtitleStreamIndex.HasValue)
+//                {
+//                    statement.BindParameters.TryBind("@SubtitleStreamIndex", userData.SubtitleStreamIndex.Value);
+//                }
+//                else
+//                {
+//                    statement.BindParameters.TryBindNull("@SubtitleStreamIndex");
+//                }
+
+//                statement.MoveNext();
+//            }
 //        }
 
 //        /// <summary>
@@ -216,15 +241,15 @@
 //                throw new ArgumentNullException("key");
 //            }
 
-//            var commandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key = ? and userId=?";
-
-//            var paramList = new List<object>();
-//            paramList.Add(key);
-//            paramList.Add(userId.ToGuidParamValue());
-
-//            foreach (var row in _connection.Query(commandText, paramList.ToArray()))
+//            using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
 //            {
-//                return ReadRow(row);
+//                statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+//                statement.BindParameters.TryBind("@Key", key);
+
+//                foreach (var row in statement.ExecuteQuery())
+//                {
+//                    return ReadRow(row);
+//                }
 //            }
 
 //            return null;
@@ -265,14 +290,14 @@
 
 //            using (WriteLock.Read())
 //            {
-//                var commandText = "select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=?";
-
-//                var paramList = new List<object>();
-//                paramList.Add(userId.ToGuidParamValue());
-
-//                foreach (var row in _connection.Query(commandText, paramList.ToArray()))
+//                using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@UserId"))
 //                {
-//                    list.Add(ReadRow(row));
+//                    statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+
+//                    foreach (var row in statement.ExecuteQuery())
+//                    {
+//                        list.Add(ReadRow(row));
+//                    }
 //                }
 //            }
 
