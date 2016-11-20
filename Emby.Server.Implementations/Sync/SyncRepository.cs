@@ -515,7 +515,7 @@ namespace Emby.Server.Implementations.Sync
                     {
                         if (!string.IsNullOrWhiteSpace(query.TargetId))
                         {
-                            statement.BindParameters.TryBind("@TargetId", query.TargetId);
+                            statement.TryBind("@TargetId", query.TargetId);
                         }
 
                         foreach (var row in statement.ExecuteQuery())
@@ -535,7 +535,7 @@ namespace Emby.Server.Implementations.Sync
                     {
                         if (!string.IsNullOrWhiteSpace(query.TargetId))
                         {
-                            statement.BindParameters.TryBind("@TargetId", query.TargetId);
+                            statement.TryBind("@TargetId", query.TargetId);
                         }
 
                         foreach (var row in statement.ExecuteQuery())

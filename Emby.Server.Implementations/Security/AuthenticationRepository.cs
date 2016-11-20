@@ -71,24 +71,24 @@ namespace Emby.Server.Implementations.Security
                     {
                         using (var statement = db.PrepareStatement("replace into AccessTokens (Id, AccessToken, DeviceId, AppName, AppVersion, DeviceName, UserId, IsActive, DateCreated, DateRevoked) values (@Id, @AccessToken, @DeviceId, @AppName, @AppVersion, @DeviceName, @UserId, @IsActive, @DateCreated, @DateRevoked)"))
                         {
-                            statement.BindParameters.TryBind("@Id", info.Id.ToGuidParamValue());
-                            statement.BindParameters.TryBind("@AccessToken", info.AccessToken);
+                            statement.TryBind("@Id", info.Id.ToGuidParamValue());
+                            statement.TryBind("@AccessToken", info.AccessToken);
 
-                            statement.BindParameters.TryBind("@DeviceId", info.DeviceId);
-                            statement.BindParameters.TryBind("@AppName", info.AppName);
-                            statement.BindParameters.TryBind("@AppVersion", info.AppVersion);
-                            statement.BindParameters.TryBind("@DeviceName", info.DeviceName);
-                            statement.BindParameters.TryBind("@UserId", info.UserId);
-                            statement.BindParameters.TryBind("@IsActive", info.IsActive);
-                            statement.BindParameters.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
+                            statement.TryBind("@DeviceId", info.DeviceId);
+                            statement.TryBind("@AppName", info.AppName);
+                            statement.TryBind("@AppVersion", info.AppVersion);
+                            statement.TryBind("@DeviceName", info.DeviceName);
+                            statement.TryBind("@UserId", info.UserId);
+                            statement.TryBind("@IsActive", info.IsActive);
+                            statement.TryBind("@DateCreated", info.DateCreated.ToDateTimeParamValue());
 
                             if (info.DateRevoked.HasValue)
                             {
-                                statement.BindParameters.TryBind("@DateRevoked", info.DateRevoked.Value.ToDateTimeParamValue());
+                                statement.TryBind("@DateRevoked", info.DateRevoked.Value.ToDateTimeParamValue());
                             }
                             else
                             {
-                                statement.BindParameters.TryBindNull("@DateRevoked");
+                                statement.TryBindNull("@DateRevoked");
                             }
 
                             statement.MoveNext();
@@ -104,22 +104,22 @@ namespace Emby.Server.Implementations.Security
         {
             if (!string.IsNullOrWhiteSpace(query.AccessToken))
             {
-                statement.BindParameters.TryBind("@AccessToken", query.AccessToken);
+                statement.TryBind("@AccessToken", query.AccessToken);
             }
 
             if (!string.IsNullOrWhiteSpace(query.UserId))
             {
-                statement.BindParameters.TryBind("@UserId", query.UserId);
+                statement.TryBind("@UserId", query.UserId);
             }
 
             if (!string.IsNullOrWhiteSpace(query.DeviceId))
             {
-                statement.BindParameters.TryBind("@DeviceId", query.DeviceId);
+                statement.TryBind("@DeviceId", query.DeviceId);
             }
 
             if (query.IsActive.HasValue)
             {
-                statement.BindParameters.TryBind("@IsActive", query.IsActive.Value);
+                statement.TryBind("@IsActive", query.IsActive.Value);
             }
         }
 

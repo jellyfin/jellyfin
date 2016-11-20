@@ -59,16 +59,16 @@ namespace Emby.Server.Implementations.Activity
                     {
                         using (var statement = db.PrepareStatement("replace into ActivityLogEntries (Id, Name, Overview, ShortOverview, Type, ItemId, UserId, DateCreated, LogSeverity) values (@Id, @Name, @Overview, @ShortOverview, @Type, @ItemId, @UserId, @DateCreated, @LogSeverity)"))
                         {
-                            statement.BindParameters.TryBind("@Id", entry.Id.ToGuidParamValue());
-                            statement.BindParameters.TryBind("@Name", entry.Name);
+                            statement.TryBind("@Id", entry.Id.ToGuidParamValue());
+                            statement.TryBind("@Name", entry.Name);
 
-                            statement.BindParameters.TryBind("@Overview", entry.Overview);
-                            statement.BindParameters.TryBind("@ShortOverview", entry.ShortOverview);
-                            statement.BindParameters.TryBind("@Type", entry.Type);
-                            statement.BindParameters.TryBind("@ItemId", entry.ItemId);
-                            statement.BindParameters.TryBind("@UserId", entry.UserId);
-                            statement.BindParameters.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
-                            statement.BindParameters.TryBind("@LogSeverity", entry.Severity.ToString());
+                            statement.TryBind("@Overview", entry.Overview);
+                            statement.TryBind("@ShortOverview", entry.ShortOverview);
+                            statement.TryBind("@Type", entry.Type);
+                            statement.TryBind("@ItemId", entry.ItemId);
+                            statement.TryBind("@UserId", entry.UserId);
+                            statement.TryBind("@DateCreated", entry.Date.ToDateTimeParamValue());
+                            statement.TryBind("@LogSeverity", entry.Severity.ToString());
 
                             statement.MoveNext();
                         }

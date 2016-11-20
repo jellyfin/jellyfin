@@ -109,8 +109,8 @@ namespace Emby.Server.Implementations.Notifications
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
-                        statement.BindParameters.TryBind("@IsRead", false);
-                        statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@IsRead", false);
+                        statement.TryBind("@UserId", userId.ToGuidParamValue());
 
                         foreach (var row in statement.ExecuteQuery())
                         {
@@ -228,16 +228,16 @@ namespace Emby.Server.Implementations.Notifications
                     {
                         using (var statement = conn.PrepareStatement("replace into Notifications (Id, UserId, Date, Name, Description, Url, Level, IsRead, Category, RelatedId) values (@Id, @UserId, @Date, @Name, @Description, @Url, @Level, @IsRead, @Category, @RelatedId)"))
                         {
-                            statement.BindParameters.TryBind("@Id", notification.Id.ToGuidParamValue());
-                            statement.BindParameters.TryBind("@UserId", notification.UserId.ToGuidParamValue());
-                            statement.BindParameters.TryBind("@Date", notification.Date.ToDateTimeParamValue());
-                            statement.BindParameters.TryBind("@Name", notification.Name);
-                            statement.BindParameters.TryBind("@Description", notification.Description);
-                            statement.BindParameters.TryBind("@Url", notification.Url);
-                            statement.BindParameters.TryBind("@Level", notification.Level.ToString());
-                            statement.BindParameters.TryBind("@IsRead", notification.IsRead);
-                            statement.BindParameters.TryBind("@Category", string.Empty);
-                            statement.BindParameters.TryBind("@RelatedId", string.Empty);
+                            statement.TryBind("@Id", notification.Id.ToGuidParamValue());
+                            statement.TryBind("@UserId", notification.UserId.ToGuidParamValue());
+                            statement.TryBind("@Date", notification.Date.ToDateTimeParamValue());
+                            statement.TryBind("@Name", notification.Name);
+                            statement.TryBind("@Description", notification.Description);
+                            statement.TryBind("@Url", notification.Url);
+                            statement.TryBind("@Level", notification.Level.ToString());
+                            statement.TryBind("@IsRead", notification.IsRead);
+                            statement.TryBind("@Category", string.Empty);
+                            statement.TryBind("@RelatedId", string.Empty);
 
                             statement.MoveNext();
                         }
@@ -291,8 +291,8 @@ namespace Emby.Server.Implementations.Notifications
                     {
                         using (var statement = conn.PrepareStatement("update Notifications set IsRead=@IsRead where UserId=@UserId"))
                         {
-                            statement.BindParameters.TryBind("@IsRead", isRead);
-                            statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+                            statement.TryBind("@IsRead", isRead);
+                            statement.TryBind("@UserId", userId.ToGuidParamValue());
 
                             statement.MoveNext();
                         }
@@ -313,14 +313,14 @@ namespace Emby.Server.Implementations.Notifications
                     {
                         using (var statement = conn.PrepareStatement("update Notifications set IsRead=@IsRead where UserId=@UserId and Id=@Id"))
                         {
-                            statement.BindParameters.TryBind("@IsRead", isRead);
-                            statement.BindParameters.TryBind("@UserId", userId.ToGuidParamValue());
+                            statement.TryBind("@IsRead", isRead);
+                            statement.TryBind("@UserId", userId.ToGuidParamValue());
 
                             foreach (var id in notificationIdList)
                             {
                                 statement.Reset();
 
-                                statement.BindParameters.TryBind("@Id", id.ToGuidParamValue());
+                                statement.TryBind("@Id", id.ToGuidParamValue());
 
                                 statement.MoveNext();
                             }

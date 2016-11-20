@@ -104,10 +104,10 @@ namespace Emby.Server.Implementations.Data
             {
                 var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
 
-                statement.BindParameters.TryBind("@id", displayPreferences.Id.ToGuidParamValue());
-                statement.BindParameters.TryBind("@userId", userId.ToGuidParamValue());
-                statement.BindParameters.TryBind("@client", client);
-                statement.BindParameters.TryBind("@data", serialized);
+                statement.TryBind("@id", displayPreferences.Id.ToGuidParamValue());
+                statement.TryBind("@userId", userId.ToGuidParamValue());
+                statement.TryBind("@client", client);
+                statement.TryBind("@data", serialized);
 
                 statement.MoveNext();
             }
@@ -168,9 +168,9 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                     {
-                        statement.BindParameters.TryBind("@id", guidId.ToGuidParamValue());
-                        statement.BindParameters.TryBind("@userId", userId.ToGuidParamValue());
-                        statement.BindParameters.TryBind("@client", client);
+                        statement.TryBind("@id", guidId.ToGuidParamValue());
+                        statement.TryBind("@userId", userId.ToGuidParamValue());
+                        statement.TryBind("@client", client);
 
                         foreach (var row in statement.ExecuteQuery())
                         {
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                     {
-                        statement.BindParameters.TryBind("@userId", userId.ToGuidParamValue());
+                        statement.TryBind("@userId", userId.ToGuidParamValue());
 
                         foreach (var row in statement.ExecuteQuery())
                         {

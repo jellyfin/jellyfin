@@ -91,8 +91,8 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (var statement = db.PrepareStatement("replace into users (guid, data) values (@guid, @data)"))
                         {
-                            statement.BindParameters.TryBind("@guid", user.Id.ToGuidParamValue());
-                            statement.BindParameters.TryBind("@data", serialized);
+                            statement.TryBind("@guid", user.Id.ToGuidParamValue());
+                            statement.TryBind("@data", serialized);
                             statement.MoveNext();
                         }
                     });
@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (var statement = db.PrepareStatement("delete from users where guid=@id"))
                         {
-                            statement.BindParameters.TryBind("@id", user.Id.ToGuidParamValue());
+                            statement.TryBind("@id", user.Id.ToGuidParamValue());
                             statement.MoveNext();
                         }
                     });
