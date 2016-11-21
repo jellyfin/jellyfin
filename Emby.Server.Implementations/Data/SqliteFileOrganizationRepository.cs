@@ -31,6 +31,13 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "PRAGMA page_size=4096",
+                                "pragma default_temp_store = memory",
+                                "pragma temp_store = memory"
+                }));
+
                 string[] queries = {
 
                                 "create table if not exists FileOrganizerResults (ResultId GUID PRIMARY KEY, OriginalPath TEXT, TargetPath TEXT, FileLength INT, OrganizationDate datetime, Status TEXT, OrganizationType TEXT, StatusMessage TEXT, ExtractedName TEXT, ExtractedYear int null, ExtractedSeasonNumber int null, ExtractedEpisodeNumber int null, ExtractedEndingEpisodeNumber, DuplicatePaths TEXT int null)",

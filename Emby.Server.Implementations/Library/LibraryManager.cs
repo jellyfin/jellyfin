@@ -339,11 +339,6 @@ namespace Emby.Server.Implementations.Library
             {
                 throw new ArgumentNullException("item");
             }
-            RegisterItem(item.Id, item);
-        }
-
-        private void RegisterItem(Guid id, BaseItem item)
-        {
             if (item is IItemByName)
             {
                 if (!(item is MusicArtist))
@@ -354,13 +349,13 @@ namespace Emby.Server.Implementations.Library
 
             if (item.IsFolder)
             {
-                if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel) && !(item is AggregateFolder))
-                {
-                    if (item.SourceType != SourceType.Library)
-                    {
-                        return;
-                    }
-                }
+                //if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel) && !(item is AggregateFolder))
+                //{
+                //    if (item.SourceType != SourceType.Library)
+                //    {
+                //        return;
+                //    }
+                //}
             }
             else
             {
@@ -370,7 +365,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
+            LibraryItemsCache.AddOrUpdate(item.Id, item, delegate { return item; });
         }
 
         public async Task DeleteItem(BaseItem item, DeleteOptions options)
@@ -822,7 +817,7 @@ namespace Emby.Server.Implementations.Library
 
             return _userRootFolder;
         }
-
+        
         public BaseItem FindByPath(string path, bool? isFolder)
         {
             // If this returns multiple items it could be tricky figuring out which one is correct. 
@@ -836,7 +831,7 @@ namespace Emby.Server.Implementations.Library
                 SortOrder = SortOrder.Descending,
                 Limit = 1
             };
-
+            
             return GetItemList(query)
                 .FirstOrDefault();
         }
@@ -1273,10 +1268,8 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetItemList(query);
         }
 
-        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds)
+        public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
-            var parents = parentIds.Select(i => GetItemById(new Guid(i))).Where(i => i != null).ToList();
-
             SetTopParentIdsOrAncestors(query, parents);
 
             if (query.AncestorIds.Length == 0 && query.TopParentIds.Length == 0)
@@ -1536,7 +1529,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 // Handle grouping
-                if (user != null && !string.IsNullOrWhiteSpace(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType))
+                if (user != null && !string.IsNullOrWhiteSpace(view.ViewType) && UserView.IsEligibleForGrouping(view.ViewType) && user.Configuration.GroupedFolders.Length > 0)
                 {
                     return user.RootFolder
                         .GetChildren(user, true)

@@ -30,9 +30,16 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "PRAGMA page_size=4096",
+                                "pragma default_temp_store = memory",
+                                "pragma temp_store = memory"
+                }));
+
                 string[] queries = {
 
-                                "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
+                               "create table if not exists AccessTokens (Id GUID PRIMARY KEY, AccessToken TEXT NOT NULL, DeviceId TEXT, AppName TEXT, AppVersion TEXT, DeviceName TEXT, UserId TEXT, IsActive BIT, DateCreated DATETIME NOT NULL, DateRevoked DATETIME)",
                                 "create index if not exists idx_AccessTokens on AccessTokens(Id)"
                                };
 
@@ -63,9 +70,9 @@ namespace Emby.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -200,28 +207,31 @@ namespace Emby.Server.Implementations.Security
 
                 var list = new List<AuthenticationInfo>();
 
-                using (var statement = connection.PrepareStatement(commandText))
+                using (WriteLock.Read())
                 {
-                    BindAuthenticationQueryParams(query, statement);
-
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = connection.PrepareStatement(commandText))
                     {
-                        list.Add(Get(row));
-                    }
+                        BindAuthenticationQueryParams(query, statement);
 
-                    using (var totalCountStatement = connection.PrepareStatement("select count (Id) from AccessTokens" + whereTextWithoutPaging))
-                    {
-                        BindAuthenticationQueryParams(query, totalCountStatement);
-
-                        var count = totalCountStatement.ExecuteQuery()
-                            .SelectScalarInt()
-                            .First();
-
-                        return new QueryResult<AuthenticationInfo>()
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            Items = list.ToArray(),
-                            TotalRecordCount = count
-                        };
+                            list.Add(Get(row));
+                        }
+
+                        using (var totalCountStatement = connection.PrepareStatement("select count (Id) from AccessTokens" + whereTextWithoutPaging))
+                        {
+                            BindAuthenticationQueryParams(query, totalCountStatement);
+
+                            var count = totalCountStatement.ExecuteQuery()
+                                .SelectScalarInt()
+                                .First();
+
+                            return new QueryResult<AuthenticationInfo>()
+                            {
+                                Items = list.ToArray(),
+                                TotalRecordCount = count
+                            };
+                        }
                     }
                 }
             }
@@ -234,9 +244,9 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = BaseSelectText + " where Id=@Id";
 

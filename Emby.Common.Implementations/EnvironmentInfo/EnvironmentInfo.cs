@@ -105,5 +105,10 @@ namespace Emby.Common.Implementations.EnvironmentInfo
         {
             return null;
         }
+
+        public string StackTrace
+        {
+            get { return Environment.StackTrace; }
+        }
     }
 }

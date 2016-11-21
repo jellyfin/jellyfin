@@ -491,7 +491,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var id = _tvDtoService.GetInternalChannelId(serviceName, channelInfo.Id);
 
-            var item = _itemRepo.RetrieveItem(id) as LiveTvChannel;
+            var item = _libraryManager.GetItemById(id) as LiveTvChannel;
 
             if (item == null)
             {
