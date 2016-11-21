@@ -538,10 +538,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the items.
         /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="parentIds">The parent ids.</param>
-        /// <returns>List&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, IEnumerable<string> parentIds);
+        IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
         /// Gets the items result.

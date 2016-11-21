@@ -536,7 +536,7 @@ namespace MediaBrowser.Providers.Manager
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
-                        if (item.IsLocked || IsFullLocalMetadata(localItem.Item))
+                        if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
                         {
                             hasLocalMetadata = true;
                         }
@@ -573,14 +573,16 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
-                    // If no local metadata, take data from item itself
-                    if (!hasLocalMetadata)
+                    if (hasLocalMetadata)
+                    {
+                        MergeData(temp, metadata, item.LockedFields, true, true);
+                    }
+                    else
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new List<MetadataFields>(), false, true);
+                        MergeData(metadata, temp, new List<MetadataFields>(), false, false);
+                        MergeData(temp, metadata, item.LockedFields, true, false);
                     }
-
-                    MergeData(temp, metadata, item.LockedFields, true, true);
                 }
             }
 

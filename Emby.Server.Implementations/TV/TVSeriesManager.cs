@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, IEnumerable<Folder> parentsFolders)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.TV
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit
 
-            }, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
+            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -121,17 +121,15 @@ namespace Emby.Server.Implementations.TV
 
             var allNextUp = series
                 .Select(i => GetNextUp(i, currentUser))
-                .Where(i => i.Item1 != null)
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
-                .OrderByDescending(i => i.Item2)
-                .ThenByDescending(i => i.Item1.PremiereDate ?? DateTime.MinValue)
+                .OrderByDescending(i => i.Item1)
                 .ToList();
 
             // If viewing all next up for all series, remove first episodes
             if (string.IsNullOrWhiteSpace(request.SeriesId))
             {
                 var withoutFirstEpisode = allNextUp
-                    .Where(i => !i.Item3)
+                    .Where(i => i.Item1 != DateTime.MinValue)
                     .ToList();
 
                 // But if that returns empty, keep those first episodes (avoid completely empty view)
@@ -142,7 +140,8 @@ namespace Emby.Server.Implementations.TV
             }
 
             return allNextUp
-                .Select(i => i.Item1)
+                .Select(i => i.Item2())
+                .Where(i => i != null)
                 .Take(request.Limit ?? int.MaxValue);
         }
 
@@ -157,7 +156,7 @@ namespace Emby.Server.Implementations.TV
         /// <param name="series">The series.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<Episode, DateTime, bool> GetNextUp(Series series, User user)
+        private Tuple<DateTime, Func<Episode>> GetNextUp(Series series, User user)
         {
             var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -171,31 +170,34 @@ namespace Emby.Server.Implementations.TV
 
             }).FirstOrDefault();
 
-            var firstUnwatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
+            Func<Episode> getEpisode = () =>
             {
-                AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(series),
-                IncludeItemTypes = new[] { typeof(Episode).Name },
-                SortBy = new[] { ItemSortBy.SortName },
-                SortOrder = SortOrder.Ascending,
-                Limit = 1,
-                IsPlayed = false,
-                IsVirtualItem = false,
-                ParentIndexNumberNotEquals = 0,
-                MinSortName = lastWatchedEpisode == null ? null : lastWatchedEpisode.SortName
+                return _libraryManager.GetItemList(new InternalItemsQuery(user)
+                {
+                    AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(series),
+                    IncludeItemTypes = new[] { typeof(Episode).Name },
+                    SortBy = new[] { ItemSortBy.SortName },
+                    SortOrder = SortOrder.Ascending,
+                    Limit = 1,
+                    IsPlayed = false,
+                    IsVirtualItem = false,
+                    ParentIndexNumberNotEquals = 0,
+                    MinSortName = lastWatchedEpisode == null ? null : lastWatchedEpisode.SortName
 
-            }).Cast<Episode>().FirstOrDefault();
+                }).Cast<Episode>().FirstOrDefault();
+            };
 
-            if (lastWatchedEpisode != null && firstUnwatchedEpisode != null)
+            if (lastWatchedEpisode != null)
             {
                 var userData = _userDataManager.GetUserData(user, lastWatchedEpisode);
 
                 var lastWatchedDate = userData.LastPlayedDate ?? DateTime.MinValue.AddDays(1);
 
-                return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, lastWatchedDate, false);
+                return new Tuple<DateTime, Func<Episode>>(lastWatchedDate, getEpisode);
             }
 
             // Return the first episode
-            return new Tuple<Episode, DateTime, bool>(firstUnwatchedEpisode, DateTime.MinValue, true);
+            return new Tuple<DateTime, Func<Episode>>(DateTime.MinValue, getEpisode);
         }
 
         private QueryResult<BaseItem> GetResult(IEnumerable<BaseItem> items, int? totalRecordLimit, NextUpQuery query)

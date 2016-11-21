@@ -43,6 +43,13 @@ namespace Emby.Server.Implementations.Sync
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "PRAGMA page_size=4096",
+                                "pragma default_temp_store = memory",
+                                "pragma temp_store = memory"
+                }));
+
                 string[] queries = {
 
                                 "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Bitrate INT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
@@ -95,9 +102,9 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = BaseJobSelectText + " where Id=?";
                     var paramList = new List<object>();
@@ -206,9 +213,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     string commandText;
                     var paramList = new List<object>();
@@ -259,9 +266,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -281,9 +288,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = BaseJobSelectText;
                     var paramList = new List<object>();
@@ -379,11 +386,11 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (WriteLock.Read())
-            {
-                var guid = new Guid(id);
+            var guid = new Guid(id);
 
-                using (var connection = CreateConnection(true))
+            using (var connection = CreateConnection(true))
+            {
+                using (WriteLock.Read())
                 {
                     var commandText = BaseJobItemSelectText + " where Id=?";
                     var paramList = new List<object>();
@@ -407,9 +414,9 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("query");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = baseSelectText;
                     var paramList = new List<object>();
@@ -487,30 +494,30 @@ namespace Emby.Server.Implementations.Sync
 
             var now = DateTime.UtcNow;
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                var commandText = "select ItemId,Status,Progress from SyncJobItems";
+                var whereClauses = new List<string>();
+
+                if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
-                    var commandText = "select ItemId,Status,Progress from SyncJobItems";
-                    var whereClauses = new List<string>();
+                    whereClauses.Add("TargetId=@TargetId");
+                }
 
-                    if (!string.IsNullOrWhiteSpace(query.TargetId))
-                    {
-                        whereClauses.Add("TargetId=@TargetId");
-                    }
+                if (query.Statuses.Length > 0)
+                {
+                    var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 
-                    if (query.Statuses.Length > 0)
-                    {
-                        var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+                    whereClauses.Add(string.Format("Status in ({0})", statuses));
+                }
 
-                        whereClauses.Add(string.Format("Status in ({0})", statuses));
-                    }
+                if (whereClauses.Count > 0)
+                {
+                    commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                }
 
-                    if (whereClauses.Count > 0)
-                    {
-                        commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
-                    }
-
+                using (WriteLock.Read())
+                {
                     using (var statement = connection.PrepareStatement(commandText))
                     {
                         if (!string.IsNullOrWhiteSpace(query.TargetId))
@@ -664,9 +671,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     string commandText;
 
