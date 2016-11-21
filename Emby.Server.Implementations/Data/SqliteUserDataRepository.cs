@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using SQLitePCL.pretty;
 
@@ -14,10 +15,15 @@ namespace Emby.Server.Implementations.Data
 {
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
-        public SqliteUserDataRepository(ILogger logger, IApplicationPaths appPaths)
+        private readonly string _importFile;
+        private readonly IFileSystem _fileSystem;
+
+        public SqliteUserDataRepository(ILogger logger, IApplicationPaths appPaths, IFileSystem fileSystem)
             : base(logger)
         {
-            DbFilePath = Path.Combine(appPaths.DataPath, "userdata_v2.db");
+            _fileSystem = fileSystem;
+            DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
+            _importFile = Path.Combine(appPaths.DataPath, "userdata_v2.db");
         }
 
         /// <summary>
@@ -43,31 +49,23 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
-
                 string[] queries = {
 
-                                "PRAGMA locking_mode=NORMAL",
-
-                                "create table if not exists UserDataDb.userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
-
-                                "drop index if exists UserDataDb.idx_userdata",
-                                "drop index if exists UserDataDb.idx_userdata1",
-                                "drop index if exists UserDataDb.idx_userdata2",
-                                "drop index if exists UserDataDb.userdataindex1",
-
-                                "create unique index if not exists UserDataDb.userdataindex on userdata (key, userId)",
-                                "create index if not exists UserDataDb.userdataindex2 on userdata (key, userId, played)",
-                                "create index if not exists UserDataDb.userdataindex3 on userdata (key, userId, playbackPositionTicks)",
-                                "create index if not exists UserDataDb.userdataindex4 on userdata (key, userId, isFavorite)",
-
-                                //pragmas
                                 "pragma temp_store = memory",
+
+                                "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
+
+                                "create table if not exists DataSettings (IsUserDataImported bit)",
+
+                                "drop index if exists idx_userdata",
+                                "drop index if exists idx_userdata1",
+                                "drop index if exists idx_userdata2",
+                                "drop index if exists userdataindex1",
+
+                                "create unique index if not exists userdataindex on userdata (key, userId)",
+                                "create index if not exists userdataindex2 on userdata (key, userId, played)",
+                                "create index if not exists userdataindex3 on userdata (key, userId, playbackPositionTicks)",
+                                "create index if not exists userdataindex4 on userdata (key, userId, isFavorite)",
 
                                 "pragma shrink_memory"
                                };
@@ -81,7 +79,48 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
                     AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
                 });
+
+                ImportUserDataIfNeeded(connection);
             }
+        }
+
+        private void ImportUserDataIfNeeded(IDatabaseConnection connection)
+        {
+            if (!_fileSystem.FileExists(_importFile))
+            {
+                return;
+            }
+
+            var fileToImport = _importFile;
+            var isImported = connection.Query("select IsUserDataImported from DataSettings").SelectScalarBool().FirstOrDefault();
+
+            if (isImported)
+            {
+                return;
+            }
+
+            ImportUserData(connection, fileToImport);
+
+            connection.RunInTransaction(db =>
+            {
+                using (var statement = db.PrepareStatement("replace into DataSettings (IsUserDataImported) values (@IsUserDataImported)"))
+                {
+                    statement.TryBind("@IsUserDataImported", true);
+                    statement.MoveNext();
+                }
+            });
+        }
+
+        private void ImportUserData(IDatabaseConnection connection, string file)
+        {
+            SqliteExtensions.Attach(connection, file, "UserDataBackup");
+
+            var columns = "key, userId, rating, played, playCount, isFavorite, playbackPositionTicks, lastPlayedDate, AudioStreamIndex, SubtitleStreamIndex";
+
+            connection.RunInTransaction(db =>
+            {
+                db.Execute("REPLACE INTO userdata(" + columns + ") SELECT " + columns + " FROM UserDataBackup.userdata;");
+            });
         }
 
         /// <summary>
