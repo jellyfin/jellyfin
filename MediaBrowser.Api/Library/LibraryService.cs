@@ -369,7 +369,7 @@ namespace MediaBrowser.Api.Library
 
             if (item is Movie || (program != null && program.IsMovie) || item is Trailer)
             {
-                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _config, _authContext)
+                return new MoviesService(_userManager, _libraryManager, _dtoService, _config, _authContext)
                 {
                     Request = Request,
 

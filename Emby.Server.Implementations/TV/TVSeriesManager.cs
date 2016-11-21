@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, IEnumerable<Folder> parentsFolders)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -106,7 +106,7 @@ namespace Emby.Server.Implementations.TV
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit
 
-            }, parentsFolders.Select(i => i.Id.ToString("N"))).Cast<Series>();
+            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>();
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);

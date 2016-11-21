@@ -29,6 +29,7 @@ using MediaBrowser.Server.Implementations.Devices;
 using MediaBrowser.Server.Implementations.Playlists;
 using MediaBrowser.Model.Reflection;
 using SQLitePCL.pretty;
+using MediaBrowser.Model.System;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -66,14 +67,14 @@ namespace Emby.Server.Implementations.Data
 
         private readonly string _criticReviewsPath;
 
-        public const int LatestSchemaVersion = 109;
         private readonly IMemoryStreamFactory _memoryStreamProvider;
         private readonly IFileSystem _fileSystem;
+        private readonly IEnvironmentInfo _environmentInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo, IFileSystem fileSystem)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
             : base(logger)
         {
             if (config == null)
@@ -89,6 +90,7 @@ namespace Emby.Server.Implementations.Data
             _jsonSerializer = jsonSerializer;
             _memoryStreamProvider = memoryStreamProvider;
             _fileSystem = fileSystem;
+            _environmentInfo = environmentInfo;
             _typeMapper = new TypeMapper(assemblyInfo);
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
@@ -129,10 +131,9 @@ namespace Emby.Server.Implementations.Data
 
             _connection.ExecuteAll(string.Join(";", new[]
             {
-                                "pragma default_temp_store = memory",
-                                "pragma default_synchronous=Normal",
-                                "pragma temp_store = memory",
-                                "pragma synchronous=Normal",
+                                "PRAGMA page_size=4096",
+                                "PRAGMA default_temp_store=memory",
+                                "PRAGMA temp_store=memory"
              }));
 
             var createMediaStreamsTableCommand
@@ -193,7 +194,6 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
                 AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
                 AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SchemaVersion", "INT", existingColumnNames);
                 AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
                 AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
 
@@ -205,7 +205,6 @@ namespace Emby.Server.Implementations.Data
                 AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
 
                 AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsOffline", "BIT", existingColumnNames);
                 AddColumn(db, "TypedBaseItems", "LocationType", "Text", existingColumnNames);
 
                 AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
@@ -381,7 +380,6 @@ namespace Emby.Server.Implementations.Data
             "data",
             "StartDate",
             "EndDate",
-            "IsOffline",
             "ChannelId",
             "IsMovie",
             "IsSports",
@@ -529,7 +527,6 @@ namespace Emby.Server.Implementations.Data
                 "ParentId",
                 "Genres",
                 "InheritedParentalRatingValue",
-                "SchemaVersion",
                 "SortName",
                 "RunTimeTicks",
                 "OfficialRatingDescription",
@@ -539,7 +536,6 @@ namespace Emby.Server.Implementations.Data
                 "DateCreated",
                 "DateModified",
                 "ForcedSortName",
-                "IsOffline",
                 "LocationType",
                 "PreferredMetadataLanguage",
                 "PreferredMetadataCountryCode",
@@ -790,7 +786,6 @@ namespace Emby.Server.Implementations.Data
             }
 
             saveItemStatement.TryBind("@InheritedParentalRatingValue", item.GetInheritedParentalRatingValue() ?? 0);
-            saveItemStatement.TryBind("@SchemaVersion", LatestSchemaVersion);
 
             saveItemStatement.TryBind("@SortName", item.SortName);
             saveItemStatement.TryBind("@RunTimeTicks", item.RunTimeTicks);
@@ -803,7 +798,6 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@DateModified", item.DateModified);
 
             saveItemStatement.TryBind("@ForcedSortName", item.ForcedSortName);
-            saveItemStatement.TryBind("@IsOffline", item.IsOffline);
             saveItemStatement.TryBind("@LocationType", item.LocationType.ToString());
 
             saveItemStatement.TryBind("@PreferredMetadataLanguage", item.PreferredMetadataLanguage);
@@ -1182,7 +1176,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             CheckDisposed();
-
+            //Logger.Info("Retrieving item {0}", id.ToString("N"));
             using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
@@ -1369,64 +1363,72 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(4))
             {
-                item.IsOffline = reader.GetBoolean(4);
+                item.ChannelId = reader.GetString(4);
             }
 
-            if (!reader.IsDBNull(5))
-            {
-                item.ChannelId = reader.GetString(5);
-            }
+            var index = 5;
 
             var hasProgramAttributes = item as IHasProgramAttributes;
             if (hasProgramAttributes != null)
             {
-                if (!reader.IsDBNull(6))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsMovie = reader.GetBoolean(6);
+                    hasProgramAttributes.IsMovie = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(7))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsSports = reader.GetBoolean(7);
+                    hasProgramAttributes.IsSports = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(8))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsKids = reader.GetBoolean(8);
+                    hasProgramAttributes.IsKids = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(9))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsSeries = reader.GetBoolean(9);
+                    hasProgramAttributes.IsSeries = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(10))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsLive = reader.GetBoolean(10);
+                    hasProgramAttributes.IsLive = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(11))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsNews = reader.GetBoolean(11);
+                    hasProgramAttributes.IsNews = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(12))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsPremiere = reader.GetBoolean(12);
+                    hasProgramAttributes.IsPremiere = reader.GetBoolean(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(13))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.EpisodeTitle = reader.GetString(13);
+                    hasProgramAttributes.EpisodeTitle = reader.GetString(index);
                 }
+                index++;
 
-                if (!reader.IsDBNull(14))
+                if (!reader.IsDBNull(index))
                 {
-                    hasProgramAttributes.IsRepeat = reader.GetBoolean(14);
+                    hasProgramAttributes.IsRepeat = reader.GetBoolean(index);
                 }
+                index++;
             }
-
-            var index = 15;
+            else
+            {
+                index += 9;
+            }
 
             if (!reader.IsDBNull(index))
             {
@@ -2368,6 +2370,8 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
+            //Logger.Info("GetItemList: " + _environmentInfo.StackTrace);
+
             var now = DateTime.UtcNow;
 
             var list = new List<BaseItem>();
@@ -2533,6 +2537,7 @@ namespace Emby.Server.Implementations.Data
                     TotalRecordCount = returnList.Count
                 };
             }
+            //Logger.Info("GetItems: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -2770,6 +2775,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             CheckDisposed();
+            //Logger.Info("GetItemIdsList: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -2928,6 +2934,7 @@ namespace Emby.Server.Implementations.Data
                     TotalRecordCount = returnList.Count
                 };
             }
+            //Logger.Info("GetItemIds: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 
@@ -3051,14 +3058,6 @@ namespace Emby.Server.Implementations.Data
                 if (statement != null)
                 {
                     statement.TryBind("@IsLocked", query.IsLocked);
-                }
-            }
-            if (query.IsOffline.HasValue)
-            {
-                whereClauses.Add("IsOffline=@IsOffline");
-                if (statement != null)
-                {
-                    statement.TryBind("@IsOffline", query.IsOffline);
                 }
             }
 
@@ -4721,7 +4720,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection(true))
             {
-                using (WriteLock.Write())
+                using (WriteLock.Read())
                 {
                     foreach (var row in connection.Query(commandText))
                     {
@@ -4750,6 +4749,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             CheckDisposed();
+            //Logger.Info("GetItemValues: " + _environmentInfo.StackTrace);
 
             var now = DateTime.UtcNow;
 

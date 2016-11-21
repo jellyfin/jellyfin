@@ -40,6 +40,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
         public override Guid? DisplayParentId
         {
             get

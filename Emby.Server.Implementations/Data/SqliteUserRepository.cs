@@ -52,10 +52,9 @@ namespace Emby.Server.Implementations.Data
             {
                 connection.ExecuteAll(string.Join(";", new[]
                 {
+                                "PRAGMA page_size=4096",
                                 "pragma default_temp_store = memory",
-                                "pragma default_synchronous=Normal",
-                                "pragma temp_store = memory",
-                                "pragma synchronous=Normal",
+                                "pragma temp_store = memory"
                 }));
 
                 string[] queries = {

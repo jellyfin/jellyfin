@@ -135,7 +135,6 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this),
                 IncludeItemTypes = new[] { typeof(Season).Name },
-                SortBy = new[] { ItemSortBy.SortName },
                 IsVirtualItem = false,
                 Limit = 0
             });

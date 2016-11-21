@@ -31,10 +31,9 @@ namespace Emby.Server.Implementations.Notifications
             {
                 connection.ExecuteAll(string.Join(";", new[]
                 {
+                                "PRAGMA page_size=4096",
                                 "pragma default_temp_store = memory",
-                                "pragma default_synchronous=Normal",
-                                "pragma temp_store = memory",
-                                "pragma synchronous=Normal",
+                                "pragma temp_store = memory"
                 }));
 
                 string[] queries = {
@@ -57,9 +56,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationResult();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                //using (WriteLock.Read())
                 {
                     var clauses = new List<string>();
                     var paramList = new List<object>();
@@ -114,7 +113,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection(true))
             {
-                using (WriteLock.Read())
+                //using (WriteLock.Read())
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
