@@ -35,9 +35,11 @@ namespace MediaBrowser.Server.Mono
 
         public static void Main(string[] args)
         {
-            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
-
             var applicationPath = Assembly.GetEntryAssembly().Location;
+            var appFolderPath = Path.GetDirectoryName(applicationPath);
+
+            TryCopySqliteConfigFile(appFolderPath);
+            SetSqliteProvider();
 
             var options = new StartupOptions(Environment.GetCommandLineArgs());
 
@@ -66,6 +68,25 @@ namespace MediaBrowser.Server.Mono
 
                 _appHost.Dispose();
             }
+        }
+
+        private static void TryCopySqliteConfigFile(string appFolderPath)
+        {
+            try
+            {
+                File.Copy(Path.Combine(appFolderPath, "System.Data.SQLite.dll.config"),
+                    Path.Combine(appFolderPath, "SQLitePCLRaw.provider.sqlite3.dll.config"),
+                    true);
+            }
+            catch
+            {
+                
+            }
+        }
+
+        private static void SetSqliteProvider()
+        {
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
         }
 
         private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)

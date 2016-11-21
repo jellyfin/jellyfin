@@ -1,1 +1,0 @@
-This is actually the SqlitePclRaw provider renamed as System.Data.Sqlite in order to avoid a breaking change for package maintainers that would require them re-do their DllMaps.
