@@ -59,28 +59,34 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection())
             {
-                connection.RunInTransaction(db =>
+                using (WriteLock.Write())
                 {
-                    var paramList = new List<object>();
-                    var commandText = "replace into FileOrganizerResults (ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    connection.RunInTransaction(db =>
+                    {
+                        var commandText = "replace into FileOrganizerResults (ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths) values (@ResultId, @OriginalPath, @TargetPath, @FileLength, @OrganizationDate, @Status, @OrganizationType, @StatusMessage, @ExtractedName, @ExtractedYear, @ExtractedSeasonNumber, @ExtractedEpisodeNumber, @ExtractedEndingEpisodeNumber, @DuplicatePaths)";
 
-                    paramList.Add(result.Id.ToGuidParamValue());
-                    paramList.Add(result.OriginalPath);
-                    paramList.Add(result.TargetPath);
-                    paramList.Add(result.FileSize);
-                    paramList.Add(result.Date.ToDateTimeParamValue());
-                    paramList.Add(result.Status.ToString());
-                    paramList.Add(result.Type.ToString());
-                    paramList.Add(result.StatusMessage);
-                    paramList.Add(result.ExtractedName);
-                    paramList.Add(result.ExtractedSeasonNumber);
-                    paramList.Add(result.ExtractedEpisodeNumber);
-                    paramList.Add(result.ExtractedEndingEpisodeNumber);
-                    paramList.Add(string.Join("|", result.DuplicatePaths.ToArray()));
+                        using (var statement = db.PrepareStatement(commandText))
+                        {
+                            statement.TryBind("@ResultId", result.Id.ToGuidParamValue());
+                            statement.TryBind("@OriginalPath", result.OriginalPath);
 
+                            statement.TryBind("@TargetPath", result.TargetPath);
+                            statement.TryBind("@FileLength", result.FileSize);
+                            statement.TryBind("@OrganizationDate", result.Date.ToDateTimeParamValue());
+                            statement.TryBind("@Status", result.Status.ToString());
+                            statement.TryBind("@OrganizationType", result.Type.ToString());
+                            statement.TryBind("@StatusMessage", result.StatusMessage);
+                            statement.TryBind("@ExtractedName", result.ExtractedName);
+                            statement.TryBind("@ExtractedYear", result.ExtractedYear);
+                            statement.TryBind("@ExtractedSeasonNumber", result.ExtractedSeasonNumber);
+                            statement.TryBind("@ExtractedEpisodeNumber", result.ExtractedEpisodeNumber);
+                            statement.TryBind("@ExtractedEndingEpisodeNumber", result.ExtractedEndingEpisodeNumber);
+                            statement.TryBind("@DuplicatePaths", string.Join("|", result.DuplicatePaths.ToArray()));
 
-                    db.Execute(commandText, paramList.ToArray());
-                });
+                            statement.MoveNext();
+                        }
+                    });
+                }
             }
         }
 
@@ -93,15 +99,17 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection())
             {
-                connection.RunInTransaction(db =>
+                using (WriteLock.Write())
                 {
-                    var paramList = new List<object>();
-                    var commandText = "delete from FileOrganizerResults where ResultId = ?";
-
-                    paramList.Add(id.ToGuidParamValue());
-
-                    db.Execute(commandText, paramList.ToArray());
-                });
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("delete from FileOrganizerResults where ResultId = @ResultId"))
+                        {
+                            statement.TryBind("@ResultId", id.ToGuidParamValue());
+                            statement.MoveNext();
+                        }
+                    });
+                }
             }
         }
 
@@ -109,12 +117,15 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = CreateConnection())
             {
-                connection.RunInTransaction(db =>
+                using (WriteLock.Write())
                 {
-                    var commandText = "delete from FileOrganizerResults";
+                    connection.RunInTransaction(db =>
+                    {
+                        var commandText = "delete from FileOrganizerResults";
 
-                    db.Execute(commandText);
-                });
+                        db.Execute(commandText);
+                    });
+                }
             }
         }
 
@@ -127,34 +138,45 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection(true))
             {
-                var commandText = "SELECT ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults";
-
-                if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
+                using (WriteLock.Read())
                 {
-                    commandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM FileOrganizerResults ORDER BY OrganizationDate desc LIMIT {0})",
-                        query.StartIndex.Value.ToString(_usCulture));
+                    var commandText = "SELECT ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults";
+
+                    if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
+                    {
+                        commandText += string.Format(" WHERE ResultId NOT IN (SELECT ResultId FROM FileOrganizerResults ORDER BY OrganizationDate desc LIMIT {0})",
+                            query.StartIndex.Value.ToString(_usCulture));
+                    }
+
+                    commandText += " ORDER BY OrganizationDate desc";
+
+                    if (query.Limit.HasValue)
+                    {
+                        commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                    }
+
+                    var list = new List<FileOrganizationResult>();
+
+                    using (var statement = connection.PrepareStatement(commandText))
+                    {
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(GetResult(row));
+                        }
+                    }
+
+                    int count;
+                    using (var statement = connection.PrepareStatement("select count (ResultId) from FileOrganizerResults"))
+                    {
+                        count = statement.ExecuteQuery().SelectScalarInt().First();
+                    }
+
+                    return new QueryResult<FileOrganizationResult>()
+                    {
+                        Items = list.ToArray(),
+                        TotalRecordCount = count
+                    };
                 }
-
-                commandText += " ORDER BY OrganizationDate desc";
-
-                if (query.Limit.HasValue)
-                {
-                    commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
-                }
-
-                var list = new List<FileOrganizationResult>();
-                var count = connection.Query("select count (ResultId) from FileOrganizerResults").SelectScalarInt().First();
-
-                foreach (var row in connection.Query(commandText))
-                {
-                    list.Add(GetResult(row));
-                }
-
-                return new QueryResult<FileOrganizationResult>()
-                {
-                    Items = list.ToArray(),
-                    TotalRecordCount = count
-                };
             }
         }
 
@@ -167,16 +189,21 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = CreateConnection(true))
             {
-                var paramList = new List<object>();
-
-                paramList.Add(id.ToGuidParamValue());
-
-                foreach (var row in connection.Query("select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=?", paramList.ToArray()))
+                using (WriteLock.Read())
                 {
-                    return GetResult(row);
-                }
+                    using (var statement = connection.PrepareStatement("select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@ResultId"))
+                    {
+                        statement.TryBind("@ResultId", id.ToGuidParamValue());
+                        statement.MoveNext();
 
-                return null;
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            return GetResult(row);
+                        }
+                    }
+
+                    return null;
+                }
             }
         }
 
