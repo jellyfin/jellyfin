@@ -1569,6 +1569,12 @@ namespace MediaBrowser.Controller.Entities
             return IsVisibleStandaloneInternal(user, true);
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsInheritedParentImages
+        {
+            get { return false; }
+        }
+
         protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
         {
             if (!IsVisible(user))
@@ -2329,17 +2335,25 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (GetParent() is AggregateFolder || this is BasePluginFolder || this is Channel)
+                if (this is BasePluginFolder || this is Channel)
                 {
                     return true;
                 }
 
                 var view = this as UserView;
-                if (view != null && string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                if (view != null)
                 {
-                    return true;
+                    if (string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                    if (string.Equals(view.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
                 }
-                if (view != null && string.Equals(view.ViewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
+
+                if (GetParent() is AggregateFolder)
                 {
                     return true;
                 }

@@ -40,6 +40,8 @@ namespace Emby.Server.Implementations.Data
 
         private static bool _versionLogged;
 
+        private string _defaultWal;
+
         protected SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false, Action<SQLiteDatabaseConnection> onConnect = null)
         {
             if (!_versionLogged)
@@ -50,6 +52,15 @@ namespace Emby.Server.Implementations.Data
             }
 
             ConnectionFlags connectionFlags;
+
+            if (isReadOnly)
+            {
+                //Logger.Info("Opening read connection");
+            }
+            else
+            {
+                //Logger.Info("Opening write connection");
+            }
 
             isReadOnly = false;
 
@@ -70,12 +81,16 @@ namespace Emby.Server.Implementations.Data
 
             var db = SQLite3.Open(DbFilePath, connectionFlags, null);
 
+            if (string.IsNullOrWhiteSpace(_defaultWal))
+            {
+                _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
+            }
+
             var queries = new List<string>
             {
+                "PRAGMA default_temp_store=memory",
                 "pragma temp_store = memory",
-                "PRAGMA page_size=4096",
-                "PRAGMA journal_mode=WAL",
-                "pragma synchronous=Normal",
+                "PRAGMA journal_mode=WAL"
                 //"PRAGMA cache size=-10000"
             };
 
@@ -90,13 +105,19 @@ namespace Emby.Server.Implementations.Data
             ////    db.Execute(query);
             ////}
 
-            using (WriteLock.Write())
-            {
-                db.ExecuteAll(string.Join(";", queries.ToArray()));
+            //Logger.Info("synchronous: " + db.Query("PRAGMA synchronous").SelectScalarString().First());
+            //Logger.Info("temp_store: " + db.Query("PRAGMA temp_store").SelectScalarString().First());
 
-                if (onConnect != null)
+            //if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase) || onConnect != null)
+            {
+                using (WriteLock.Write())
                 {
-                    onConnect(db);
+                    db.ExecuteAll(string.Join(";", queries.ToArray()));
+
+                    if (onConnect != null)
+                    {
+                        onConnect(db);
+                    }
                 }
             }
 

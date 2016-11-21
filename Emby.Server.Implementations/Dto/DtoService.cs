@@ -482,7 +482,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 if (dtoOptions.EnableUserData)
                 {
-                    dto.UserData = _userDataRepository.GetUserDataDto(item, user).Result;
+                    dto.UserData = await _userDataRepository.GetUserDataDto(item, user).ConfigureAwait(false);
                 }
             }
 
@@ -1450,10 +1450,18 @@ namespace Emby.Server.Implementations.Dto
 
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
         {
+            if (!item.SupportsInheritedParentImages)
+            {
+                return;
+            }
+
             var logoLimit = options.GetImageLimit(ImageType.Logo);
             var artLimit = options.GetImageLimit(ImageType.Art);
             var thumbLimit = options.GetImageLimit(ImageType.Thumb);
             var backdropLimit = options.GetImageLimit(ImageType.Backdrop);
+
+            // For now. Emby apps are not using this
+            artLimit = 0;
 
             if (logoLimit == 0 && artLimit == 0 && thumbLimit == 0 && backdropLimit == 0)
             {
@@ -1515,6 +1523,12 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 isFirst = false;
+
+                if (!parent.SupportsInheritedParentImages)
+                {
+                    break;
+                }
+
                 parent = parent.GetParent();
             }
         }

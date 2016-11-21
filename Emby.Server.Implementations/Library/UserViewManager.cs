@@ -245,20 +245,26 @@ namespace Emby.Server.Implementations.Library
             var includeItemTypes = request.IncludeItemTypes;
             var limit = request.Limit ?? 10;
 
-            var parentIds = string.IsNullOrEmpty(parentId)
-              ? new string[] { }
-              : new[] { parentId };
+            var parents = new List<BaseItem>();
 
-            if (parentIds.Length == 0)
+            if (!string.IsNullOrWhiteSpace(parentId))
             {
-                parentIds = user.RootFolder.GetChildren(user, true)
-                    .OfType<Folder>()
-                    .Select(i => i.Id.ToString("N"))
-                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i))
-                    .ToArray();
+                var parent = _libraryManager.GetItemById(parentId) as Folder;
+                if (parent != null)
+                {
+                    parents.Add(parent);
+                }
             }
 
-            if (parentIds.Length == 0)
+            if (parents.Count == 0)
+            {
+                parents = user.RootFolder.GetChildren(user, true)
+                    .Where(i => i is Folder)
+                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                    .ToList();
+            }
+
+            if (parents.Count == 0)
             {
                 return new List<BaseItem>();
             }
@@ -283,10 +289,10 @@ namespace Emby.Server.Implementations.Library
                 ExcludeItemTypes = excludeItemTypes,
                 ExcludeLocationTypes = new[] { LocationType.Virtual },
                 Limit = limit * 5,
-                SourceTypes = parentIds.Length == 0 ? new[] { SourceType.Library } : new SourceType[] { },
+                SourceTypes = parents.Count == 0 ? new[] { SourceType.Library } : new SourceType[] { },
                 IsPlayed = request.IsPlayed
 
-            }, parentIds);
+            }, parents);
         }
     }
 }

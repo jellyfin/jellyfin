@@ -1383,6 +1383,15 @@ namespace MediaBrowser.Controller.Entities
                 {
                     return false;
                 }
+                var iItemByName = this as IItemByName;
+                if (iItemByName != null)
+                {
+                    var hasDualAccess = this as IHasDualAccess;
+                    if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
+                    {
+                        return false;
+                    }
+                }
 
                 return true;
             }
@@ -1395,17 +1404,6 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            var unplayedQueryResult = await GetItems(new InternalItemsQuery(user)
-            {
-                Recursive = true,
-                IsFolder = false,
-                IsVirtualItem = false,
-                EnableTotalRecordCount = true,
-                Limit = 0,
-                IsPlayed = false
-
-            }).ConfigureAwait(false);
-
             var allItemsQueryResult = await GetItems(new InternalItemsQuery(user)
             {
                 Recursive = true,
@@ -1415,17 +1413,28 @@ namespace MediaBrowser.Controller.Entities
                 Limit = 0
 
             }).ConfigureAwait(false);
+            var recursiveItemCount = allItemsQueryResult.TotalRecordCount;
 
             if (itemDto != null)
             {
                 itemDto.RecursiveItemCount = allItemsQueryResult.TotalRecordCount;
             }
 
-            var recursiveItemCount = allItemsQueryResult.TotalRecordCount;
-            double unplayedCount = unplayedQueryResult.TotalRecordCount;
-
-            if (recursiveItemCount > 0)
+            if (recursiveItemCount > 0 && SupportsPlayedStatus)
             {
+                var unplayedQueryResult = recursiveItemCount > 0 ? await GetItems(new InternalItemsQuery(user)
+                {
+                    Recursive = true,
+                    IsFolder = false,
+                    IsVirtualItem = false,
+                    EnableTotalRecordCount = true,
+                    Limit = 0,
+                    IsPlayed = false
+
+                }).ConfigureAwait(false) : new QueryResult<BaseItem>();
+
+                double unplayedCount = unplayedQueryResult.TotalRecordCount;
+
                 var unplayedPercentage = (unplayedCount / recursiveItemCount) * 100;
                 dto.PlayedPercentage = 100 - unplayedPercentage;
                 dto.Played = dto.PlayedPercentage.Value >= 100;

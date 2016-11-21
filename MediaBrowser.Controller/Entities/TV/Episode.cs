@@ -74,6 +74,12 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
         public int? AiredSeasonNumber
         {
             get
