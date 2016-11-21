@@ -694,7 +694,7 @@ namespace Emby.Server.Core
 
             displayPreferencesRepo.Initialize();
 
-            var userDataRepo = new SqliteUserDataRepository(LogManager.GetLogger("SqliteUserDataRepository"), ApplicationPaths);
+            var userDataRepo = new SqliteUserDataRepository(LogManager.GetLogger("SqliteUserDataRepository"), ApplicationPaths, FileSystemManager);
 
             ((UserDataManager)UserDataManager).Repository = userDataRepo;
             itemRepo.Initialize(userDataRepo);
