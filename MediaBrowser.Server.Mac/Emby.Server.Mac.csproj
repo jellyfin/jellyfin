@@ -147,7 +147,6 @@
     </Compile>
     <Compile Include="Main.cs" />
     <Compile Include="MenuBarIcon.cs" />
-    <Compile Include="Native\DbConnector.cs" />
     <Compile Include="MacAppHost.cs" />
     <Compile Include="Native\MonoFileSystem.cs" />
     <Compile Include="Native\PowerManagement.cs" />

@@ -95,6 +95,14 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
+        protected override bool AllowLockRecursion
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private const string ChaptersTableName = "Chapters2";
 
         protected override int? CacheSize
@@ -856,7 +864,7 @@ namespace Emby.Server.Implementations.Data
             if (topParent != null)
             {
                 //Logger.Debug("Item {0} has top parent {1}", item.Id, topParent.Id);
-                saveItemStatement.TryBind("@IsFolder", topParent.Id.ToString("N"));
+                saveItemStatement.TryBind("@TopParentId", topParent.Id.ToString("N"));
             }
             else
             {
