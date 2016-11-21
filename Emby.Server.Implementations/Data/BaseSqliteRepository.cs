@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Data
 
         private string _defaultWal;
 
-        protected SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false, Action<SQLiteDatabaseConnection> onConnect = null)
+        protected SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
         {
             if (!_versionLogged)
             {
@@ -88,9 +88,8 @@ namespace Emby.Server.Implementations.Data
 
             var queries = new List<string>
             {
-                "PRAGMA default_temp_store=memory",
-                "pragma temp_store = memory",
-                "PRAGMA journal_mode=WAL"
+                "PRAGMA temp_store = memory",
+                //"PRAGMA journal_mode=WAL"
                 //"PRAGMA cache size=-10000"
             };
 
@@ -108,17 +107,18 @@ namespace Emby.Server.Implementations.Data
             //Logger.Info("synchronous: " + db.Query("PRAGMA synchronous").SelectScalarString().First());
             //Logger.Info("temp_store: " + db.Query("PRAGMA temp_store").SelectScalarString().First());
 
-            //if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase) || onConnect != null)
+            if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase))
             {
+                queries.Add("PRAGMA journal_mode=WAL");
+
                 using (WriteLock.Write())
                 {
                     db.ExecuteAll(string.Join(";", queries.ToArray()));
-
-                    if (onConnect != null)
-                    {
-                        onConnect(db);
-                    }
                 }
+            }
+            else
+            {
+                db.ExecuteAll(string.Join(";", queries.ToArray()));
             }
 
             return db;

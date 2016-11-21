@@ -357,23 +357,6 @@ namespace Emby.Server.Implementations.Data
             //await Vacuum(_connection).ConfigureAwait(false);
         }
 
-
-        private SQLiteDatabaseConnection CreateConnection(bool readOnly, bool attachUserdata)
-        {
-            Action<SQLiteDatabaseConnection> onConnect = null;
-
-            if (attachUserdata)
-            {
-                onConnect =
-                    c => SqliteExtensions.Attach(c, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"),
-                            "UserDataDb");
-            }
-
-            var conn = CreateConnection(readOnly, onConnect);
-
-            return conn;
-        }
-
         private readonly string[] _retriveItemColumns =
         {
             "type",
@@ -2265,13 +2248,13 @@ namespace Emby.Server.Implementations.Data
 
             if (EnableJoinUserData(query))
             {
-                list.Add("UserDataDb.UserData.UserId");
-                list.Add("UserDataDb.UserData.lastPlayedDate");
-                list.Add("UserDataDb.UserData.playbackPositionTicks");
-                list.Add("UserDataDb.UserData.playcount");
-                list.Add("UserDataDb.UserData.isFavorite");
-                list.Add("UserDataDb.UserData.played");
-                list.Add("UserDataDb.UserData.rating");
+                list.Add("UserData.UserId");
+                list.Add("UserData.lastPlayedDate");
+                list.Add("UserData.playbackPositionTicks");
+                list.Add("UserData.playcount");
+                list.Add("UserData.isFavorite");
+                list.Add("UserData.played");
+                list.Add("UserData.rating");
             }
 
             if (query.SimilarTo != null)
@@ -2336,7 +2319,7 @@ namespace Emby.Server.Implementations.Data
                 return string.Empty;
             }
 
-            return " left join UserDataDb.UserData on UserDataKey=UserDataDb.UserData.Key And (UserId=@UserId)";
+            return " left join UserData on UserDataKey=UserData.Key And (UserId=@UserId)";
         }
 
         private string GetGroupBy(InternalItemsQuery query)
@@ -2412,7 +2395,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
@@ -2581,7 +2564,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
@@ -2811,7 +2794,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Guid>();
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
@@ -2882,7 +2865,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Tuple<Guid, string>>();
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
@@ -2972,7 +2955,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Guid>();
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
@@ -4880,7 +4863,7 @@ namespace Emby.Server.Implementations.Data
             var list = new List<Tuple<BaseItem, ItemCounts>>();
             var count = 0;
 
-            using (var connection = CreateConnection(true, EnableJoinUserData(query)))
+            using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
