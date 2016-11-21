@@ -864,7 +864,7 @@ namespace Emby.Server.Implementations.Data
             if (topParent != null)
             {
                 //Logger.Debug("Item {0} has top parent {1}", item.Id, topParent.Id);
-                saveItemStatement.TryBind("@IsFolder", topParent.Id.ToString("N"));
+                saveItemStatement.TryBind("@TopParentId", topParent.Id.ToString("N"));
             }
             else
             {
