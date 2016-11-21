@@ -14,17 +14,10 @@ namespace Emby.Server.Implementations.Data
 {
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
-        private SQLiteDatabaseConnection _connection;
-
         public SqliteUserDataRepository(ILogger logger, IApplicationPaths appPaths)
             : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "userdata_v2.db");
-        }
-
-        protected override bool EnableConnectionPooling
-        {
-            get { return false; }
         }
 
         /// <summary>
@@ -43,13 +36,24 @@ namespace Emby.Server.Implementations.Data
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public void Initialize(SQLiteDatabaseConnection connection, ReaderWriterLockSlim writeLock)
+        public void Initialize(ReaderWriterLockSlim writeLock)
         {
             WriteLock.Dispose();
             WriteLock = writeLock;
-            _connection = connection;
 
-            string[] queries = {
+            using (var connection = CreateConnection())
+            {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "pragma default_temp_store = memory",
+                                "pragma default_synchronous=Normal",
+                                "pragma temp_store = memory",
+                                "pragma synchronous=Normal",
+                }));
+
+                string[] queries = {
+
+                                "PRAGMA locking_mode=NORMAL",
 
                                 "create table if not exists UserDataDb.userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
 
@@ -69,15 +73,16 @@ namespace Emby.Server.Implementations.Data
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries);
+                connection.RunQueries(queries);
 
-            connection.RunInTransaction(db =>
-            {
-                var existingColumnNames = GetColumnNames(db, "userdata");
+                connection.RunInTransaction(db =>
+                {
+                    var existingColumnNames = GetColumnNames(db, "userdata");
 
-                AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
-                AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
-            });
+                    AddColumn(db, "userdata", "AudioStreamIndex", "int", existingColumnNames);
+                    AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
+                });
+            }
         }
 
         /// <summary>
@@ -139,18 +144,21 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                _connection.RunInTransaction(db =>
+                using (WriteLock.Write())
                 {
-                    SaveUserData(db, userId, key, userData);
-                });
+                    connection.RunInTransaction(db =>
+                    {
+                        SaveUserData(db, userId, key, userData);
+                    });
+                }
             }
         }
 
         private void SaveUserData(IDatabaseConnection db, Guid userId, string key, UserItemData userData)
         {
-            using (var statement = _connection.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
+            using (var statement = db.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
                 statement.TryBind("@UserId", userId.ToGuidParamValue());
                 statement.TryBind("@Key", key);
@@ -207,15 +215,18 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                _connection.RunInTransaction(db =>
+                using (WriteLock.Write())
                 {
-                    foreach (var userItemData in userDataList)
+                    connection.RunInTransaction(db =>
                     {
-                        SaveUserData(db, userId, userItemData.Key, userItemData);
-                    }
-                });
+                        foreach (var userItemData in userDataList)
+                        {
+                            SaveUserData(db, userId, userItemData.Key, userItemData);
+                        }
+                    });
+                }
             }
         }
 
@@ -241,16 +252,19 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("key");
             }
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection(true))
             {
-                using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
+                using (WriteLock.Read())
                 {
-                    statement.TryBind("@UserId", userId.ToGuidParamValue());
-                    statement.TryBind("@Key", key);
-
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
                     {
-                        return ReadRow(row);
+                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@Key", key);
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            return ReadRow(row);
+                        }
                     }
                 }
             }
@@ -291,15 +305,18 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<UserItemData>();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var statement = _connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@UserId"))
+                using (WriteLock.Read())
                 {
-                    statement.TryBind("@UserId", userId.ToGuidParamValue());
-
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where userId=@UserId"))
                     {
-                        list.Add(ReadRow(row));
+                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(ReadRow(row));
+                        }
                     }
                 }
             }

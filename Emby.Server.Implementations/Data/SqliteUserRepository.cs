@@ -50,6 +50,14 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "pragma default_temp_store = memory",
+                                "pragma default_synchronous=Normal",
+                                "pragma temp_store = memory",
+                                "pragma synchronous=Normal",
+                }));
+
                 string[] queries = {
 
                                 "create table if not exists users (guid GUID primary key, data BLOB)",
@@ -83,9 +91,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -108,9 +116,9 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<User>();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     foreach (var row in connection.Query("select guid,data from users"))
                     {
@@ -146,9 +154,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {

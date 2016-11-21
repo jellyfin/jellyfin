@@ -54,9 +54,17 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+               {
+                                "pragma default_temp_store = memory",
+                                "pragma default_synchronous=Normal",
+                                "pragma temp_store = memory",
+                                "pragma synchronous=Normal",
+                }));
+
                 string[] queries = {
 
-                                "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
+                               "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
                                 "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
                                };
 
@@ -86,9 +94,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -130,9 +138,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -162,9 +170,9 @@ namespace Emby.Server.Implementations.Data
 
             var guidId = displayPreferencesId.GetMD5();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where id = @id and userId=@userId and client=@client"))
                     {
@@ -196,9 +204,9 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<DisplayPreferences>();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     using (var statement = connection.PrepareStatement("select data from userdisplaypreferences where userId=@userId"))
                     {

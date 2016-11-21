@@ -29,7 +29,16 @@ namespace Emby.Server.Implementations.Notifications
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "pragma default_temp_store = memory",
+                                "pragma default_synchronous=Normal",
+                                "pragma temp_store = memory",
+                                "pragma synchronous=Normal",
+                }));
+
                 string[] queries = {
+
                                 "create table if not exists Notifications (Id GUID NOT NULL, UserId GUID NOT NULL, Date DATETIME NOT NULL, Name TEXT NOT NULL, Description TEXT NULL, Url TEXT NULL, Level TEXT NOT NULL, IsRead BOOLEAN NOT NULL, Category TEXT NOT NULL, RelatedId TEXT NULL, PRIMARY KEY (Id, UserId))",
                                 "create index if not exists idx_Notifications1 on Notifications(Id)",
                                 "create index if not exists idx_Notifications2 on Notifications(UserId)"
@@ -103,9 +112,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationsSummary();
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
@@ -220,9 +229,9 @@ namespace Emby.Server.Implementations.Notifications
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -283,9 +292,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -305,9 +314,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(conn =>
                     {
