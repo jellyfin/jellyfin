@@ -126,11 +126,6 @@ namespace MediaBrowser.Server.Mono
             throw new NotImplementedException();
         }
 
-        public override void LaunchUrl(string url)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void EnableLoopbackInternal(string appName)
         {
         }

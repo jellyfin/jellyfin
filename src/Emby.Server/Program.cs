@@ -15,10 +15,11 @@ using Emby.Common.Implementations.Logging;
 using Emby.Common.Implementations.Networking;
 using Emby.Drawing;
 using Emby.Server.Core;
-using Emby.Server.Core.Browser;
+using Emby.Server.Implementations.Browser;
 using Emby.Server.Implementations.IO;
 using MediaBrowser.Common.Net;
 using Emby.Server.IO;
+using Emby.Server.Implementations;
 
 namespace Emby.Server
 {
@@ -38,19 +39,34 @@ namespace Emby.Server
         /// </summary>
         public static void Main(string[] args)
         {
-            var options = new StartupOptions();
+            var options = new StartupOptions(Environment.GetCommandLineArgs());
 
-            var currentProcess = Process.GetCurrentProcess();
-            
+            var environmentInfo = new EnvironmentInfo();
+
             var baseDirectory = System.AppContext.BaseDirectory;
-            //var architecturePath = Path.Combine(Path.GetDirectoryName(applicationPath), Environment.Is64BitProcess ? "x64" : "x86");
+            string archPath = baseDirectory;
+            if (environmentInfo.SystemArchitecture == MediaBrowser.Model.System.Architecture.X64)
+            {
+                archPath = Path.Combine(archPath, "x64");
+            }
+            else if (environmentInfo.SystemArchitecture == MediaBrowser.Model.System.Architecture.X86)
+            {
+                archPath = Path.Combine(archPath, "x86");
+            }
+            else
+            {
+                archPath = Path.Combine(archPath, "arm");
+            }
 
             //Wand.SetMagickCoderModulePath(architecturePath);
 
-            //var success = SetDllDirectory(architecturePath);
+            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                SetDllDirectory(archPath);
+            }
 
             var appPaths = CreateApplicationPaths(baseDirectory);
-            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
+            SetSqliteProvider();
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
             logManager.ReloadLogger(LogSeverity.Debug);
@@ -74,7 +90,12 @@ namespace Emby.Server
                 return;
             }
 
-            RunApplication(appPaths, logManager, options);
+            RunApplication(appPaths, logManager, options, environmentInfo);
+        }
+
+        private static void SetSqliteProvider()
+        {
+            SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_sqlite3());
         }
 
         /// <summary>
@@ -170,7 +191,7 @@ namespace Emby.Server
         /// <param name="appPaths">The app paths.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="options">The options.</param>
-        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
+        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options, EnvironmentInfo environmentInfo)
         {
             var fileSystem = new ManagedFileSystem(logManager.GetLogger("FileSystem"), true, true, true);
 
@@ -184,7 +205,7 @@ namespace Emby.Server
                 fileSystem,
                 new PowerManagement(),
                 "emby.windows.zip",
-                new EnvironmentInfo(),
+                environmentInfo,
                 imageEncoder,
                 new CoreSystemEvents(),
                 new MemoryStreamFactory(),

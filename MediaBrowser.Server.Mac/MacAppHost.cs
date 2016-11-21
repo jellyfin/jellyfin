@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Core;
-using Emby.Server.Core.Data;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.FFMpeg;
 using MediaBrowser.Model.IO;
@@ -34,6 +33,14 @@ namespace MediaBrowser.Server.Mac
                 return false;
             }
         }
+
+		protected override bool SupportsDualModeSockets
+		{
+			get
+			{
+				return true;
+			}
+		}
 
         protected override FFMpegInstallInfo GetFfmpegInstallInfo()
         {
@@ -93,11 +100,6 @@ namespace MediaBrowser.Server.Mac
         protected override void AuthorizeServer()
         {
             throw new NotImplementedException();
-        }
-
-        protected override IDbConnector GetDbConnector()
-        {
-            return new DbConnector(Logger);
         }
 
         protected override void ConfigureAutoRunInternal(bool autorun)
