@@ -159,8 +159,8 @@ namespace Emby.Server.Implementations.Data
         {
             using (var statement = db.PrepareStatement("replace into userdata (key, userId, rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex) values (@key, @userId, @rating,@played,@playCount,@isFavorite,@playbackPositionTicks,@lastPlayedDate,@AudioStreamIndex,@SubtitleStreamIndex)"))
             {
-                statement.TryBind("@UserId", userId.ToGuidParamValue());
-                statement.TryBind("@Key", key);
+                statement.TryBind("@userId", userId.ToGuidParamValue());
+                statement.TryBind("@key", key);
 
                 if (userData.Rating.HasValue)
                 {
