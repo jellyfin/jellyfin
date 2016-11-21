@@ -1,4 +1,4 @@
-define(['visibleinviewport', 'browser', 'dom'], function (visibleinviewport, browser, dom) {
+define([], function () {
     'use strict';
 
     function LazyLoader(options) {
