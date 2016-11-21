@@ -27,6 +27,14 @@ namespace Emby.Server.Implementations.Social
         {
             using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
+                                "pragma default_temp_store = memory",
+                                "pragma default_synchronous=Normal",
+                                "pragma temp_store = memory",
+                                "pragma synchronous=Normal",
+                }));
+
                 string[] queries = {
 
                                 "create table if not exists Shares (Id GUID, ItemId TEXT, UserId TEXT, ExpirationDate DateTime, PRIMARY KEY (Id))",
@@ -50,9 +58,9 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("info.Id");
             }
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -75,9 +83,9 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("id");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = "select Id, ItemId, UserId, ExpirationDate from Shares where id = ?";
 

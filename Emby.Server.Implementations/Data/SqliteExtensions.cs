@@ -131,11 +131,13 @@ namespace Emby.Server.Implementations.Data
 
         public static void Attach(IDatabaseConnection db, string path, string alias)
         {
-            var commandText = string.Format("attach ? as {0};", alias);
-            var paramList = new List<object>();
-            paramList.Add(path);
+            var commandText = string.Format("attach @path as {0};", alias);
 
-            db.Execute(commandText, paramList.ToArray());
+            using (var statement = db.PrepareStatement(commandText))
+            {
+                statement.TryBind("@path", path);
+                statement.MoveNext();
+            }
         }
 
         public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
