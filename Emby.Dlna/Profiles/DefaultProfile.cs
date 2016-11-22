@@ -30,8 +30,8 @@ namespace Emby.Dlna.Profiles
             MaxIconWidth = 48;
             MaxIconHeight = 48;
 
-            MaxStreamingBitrate = 20000000;
-            MaxStaticBitrate = 20000000;
+            MaxStreamingBitrate = 24000000;
+            MaxStaticBitrate = 24000000;
             MusicStreamingTranscodingBitrate = 192000;
 
             EnableAlbumArtInDidl = false;

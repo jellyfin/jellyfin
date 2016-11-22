@@ -26,6 +26,9 @@ namespace MediaBrowser.Model.LiveTv
 
         public string[] MediaLocationsCreated { get; set; }
 
+        public string RecordingPostProcessor { get; set; }
+        public string RecordingPostProcessorArguments { get; set; }
+
         public LiveTvOptions()
         {
             EnableMovieProviders = true;
@@ -34,6 +37,7 @@ namespace MediaBrowser.Model.LiveTv
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };
             RecordingEncodingFormat = "mp4";
+            RecordingPostProcessorArguments = "\"{path}\"";
         }
     }
 
