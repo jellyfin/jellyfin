@@ -57,6 +57,7 @@ namespace MediaBrowser.Model.Configuration
 
             HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
+            DisplayMissingEpisodes = true;
 
             LatestItemsExcludes = new string[] { };
             OrderedViews = new string[] { };

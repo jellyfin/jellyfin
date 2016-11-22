@@ -13,6 +13,7 @@
 
         public bool SaveLocalMetadata { get; set; }
         public bool EnableInternetProviders { get; set; }
+        public bool ImportMissingEpisodes { get; set; }
 
         public LibraryOptions()
         {

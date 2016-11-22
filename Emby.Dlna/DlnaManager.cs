@@ -289,7 +289,9 @@ namespace Emby.Dlna
                 var allFiles = _fileSystem.GetFiles(path)
                     .ToList();
 
-                var xmlFies = allFiles
+                var xmlFies = type == DeviceProfileType.System ? 
+                    new List<FileSystemMetadata>() : 
+                    allFiles
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
@@ -332,7 +334,7 @@ namespace Emby.Dlna
 
                     if (string.Equals(Path.GetExtension(path), ".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        var tempProfile = (Emby.Dlna.ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(Emby.Dlna.ProfileSerialization.DeviceProfile), path);
+                        var tempProfile = (ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(Emby.Dlna.ProfileSerialization.DeviceProfile), path);
 
                         var json = _jsonSerializer.SerializeToString(tempProfile);
                         profile = (DeviceProfile)_jsonSerializer.DeserializeFromString<DeviceProfile>(json);
