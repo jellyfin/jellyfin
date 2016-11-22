@@ -38,8 +38,6 @@ namespace Emby.Server.Implementations.Data
     /// </summary>
     public class SqliteItemRepository : BaseSqliteRepository, IItemRepository
     {
-        private SQLiteDatabaseConnection _connection;
-
         private readonly TypeMapper _typeMapper;
 
         /// <summary>
@@ -97,13 +95,13 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
-        protected override bool AllowLockRecursion
-        {
-            get
-            {
-                return true;
-            }
-        }
+        //protected override bool AllowLockRecursion
+        //{
+        //    get
+        //    {
+        //        return true;
+        //    }
+        //}
 
         private const string ChaptersTableName = "Chapters2";
 
@@ -121,25 +119,37 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        private SQLiteDatabaseConnection _backgroundConnection;
+        protected override void CloseConnection()
+        {
+            base.CloseConnection();
+
+            if (_backgroundConnection != null)
+            {
+                _backgroundConnection.Dispose();
+                _backgroundConnection = null;
+            }
+        }
+
         /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
         public async Task Initialize(SqliteUserDataRepository userDataRepo)
         {
-            _connection = CreateConnection(false);
-
-            _connection.ExecuteAll(string.Join(";", new[]
+            using (var connection = CreateConnection())
             {
+                connection.ExecuteAll(string.Join(";", new[]
+                {
                                 "PRAGMA page_size=4096",
                                 "PRAGMA default_temp_store=memory",
                                 "PRAGMA temp_store=memory"
-             }));
+                }));
 
-            var createMediaStreamsTableCommand
-               = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+                var createMediaStreamsTableCommand
+                   = "create table if not exists mediastreams (ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, CodecTag TEXT NULL, Comment TEXT NULL, NalLengthSize TEXT NULL, IsAvc BIT NULL, Title TEXT NULL, TimeBase TEXT NULL, CodecTimeBase TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
-            string[] queries = {
+                string[] queries = {
                                 "PRAGMA locking_mode=NORMAL",
 
                                 "create table if not exists TypedBaseItems (guid GUID primary key NOT NULL, type TEXT NOT NULL, data BLOB NULL, ParentId GUID NULL, Path TEXT NULL)",
@@ -164,133 +174,133 @@ namespace Emby.Server.Implementations.Data
 
                                };
 
-            _connection.RunQueries(queries);
+                connection.RunQueries(queries);
 
-            _connection.RunInTransaction(db =>
-            {
-                var existingColumnNames = GetColumnNames(db, "AncestorIds");
-                AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
+                connection.RunInTransaction(db =>
+                {
+                    var existingColumnNames = GetColumnNames(db, "AncestorIds");
+                    AddColumn(db, "AncestorIds", "AncestorIdText", "Text", existingColumnNames);
 
-                existingColumnNames = GetColumnNames(db, "TypedBaseItems");
+                    existingColumnNames = GetColumnNames(db, "TypedBaseItems");
 
-                AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsSports", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsKids", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Path", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "StartDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "EndDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ChannelId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsMovie", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsSports", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsKids", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CommunityRating", "Float", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CustomRating", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IndexNumber", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsLocked", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Name", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OfficialRating", "Text", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "MediaType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Overview", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ParentIndexNumber", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PremiereDate", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProductionYear", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ParentId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Genres", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "RunTimeTicks", "BIGINT", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "OfficialRatingDescription", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "VoteCount", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OfficialRatingDescription", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "HomePageUrl", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "VoteCount", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DisplayMediaType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateCreated", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateModified", "DATETIME", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "LocationType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ForcedSortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "LocationType", "Text", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsLive", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsNews", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsPremiere", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsSeries", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsLive", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsNews", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsPremiere", "BIT", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "EpisodeTitle", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsRepeat", "BIT", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsHD", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ExternalEtag", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PreferredMetadataLanguage", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PreferredMetadataCountryCode", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsHD", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalEtag", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastRefreshed", "DATETIME", existingColumnNames);
 
-                AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsItemByName", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SourceType", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "CriticRatingSummary", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SlugName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "SeriesSortName", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ShortOverview", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ThemeSongIds", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ThemeVideoIds", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
-                AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastSaved", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsInMixedFolder", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "LockedFields", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Studios", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Audio", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalServiceId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Tags", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsFolder", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "InheritedParentalRatingValue", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "UnratedType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TopParentId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsItemByName", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SourceType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TrailerTypes", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CriticRating", "Float", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CriticRatingSummary", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "InheritedTags", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "CleanName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PresentationUniqueKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SlugName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "OriginalTitle", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "PrimaryVersionId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "DateLastMediaAdded", "DATETIME", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Album", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "IsVirtualItem", "BIT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "UserDataKey", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeasonName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeasonId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesId", "GUID", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesSortName", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalSeriesId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ShortOverview", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Tagline", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Keywords", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProviderIds", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Images", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ProductionLocations", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ThemeSongIds", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ThemeVideoIds", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "TotalBitrate", "INT", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExtraType", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
 
-                existingColumnNames = GetColumnNames(db, "ItemValues");
-                AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
+                    existingColumnNames = GetColumnNames(db, "ItemValues");
+                    AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
 
-                existingColumnNames = GetColumnNames(db, ChaptersTableName);
-                AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
+                    existingColumnNames = GetColumnNames(db, ChaptersTableName);
+                    AddColumn(db, ChaptersTableName, "ImageDateModified", "DATETIME", existingColumnNames);
 
-                existingColumnNames = GetColumnNames(db, "MediaStreams");
-                AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
-                AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
-            });
+                    existingColumnNames = GetColumnNames(db, "MediaStreams");
+                    AddColumn(db, "MediaStreams", "IsAvc", "BIT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "TimeBase", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "CodecTimeBase", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "Title", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "NalLengthSize", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "Comment", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "CodecTag", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "PixelFormat", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "BitDepth", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
+                    AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
+                });
 
-            string[] postQueries =
+                string[] postQueries =
 
-                                {
+                                    {
                 // obsolete
                 "drop index if exists idx_TypedBaseItems",
                 "drop index if exists idx_mediastreams",
@@ -350,11 +360,15 @@ namespace Emby.Server.Implementations.Data
                 "create index if not exists idx_ItemValues7 on ItemValues(Type,CleanValue,ItemId)"
                 };
 
-            _connection.RunQueries(postQueries);
+                connection.RunQueries(postQueries);
 
-            //SqliteExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
+                //SqliteExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
+                //await Vacuum(_connection).ConfigureAwait(false);
+            }
+
             userDataRepo.Initialize(WriteLock);
-            //await Vacuum(_connection).ConfigureAwait(false);
+
+            _backgroundConnection = CreateConnection(true);
         }
 
         private readonly string[] _retriveItemColumns =
@@ -2124,15 +2138,6 @@ namespace Emby.Server.Implementations.Data
                         }
                     });
                 }
-            }
-        }
-
-        protected override void CloseConnection()
-        {
-            if (_connection != null)
-            {
-                _connection.Dispose();
-                _connection = null;
             }
         }
 
