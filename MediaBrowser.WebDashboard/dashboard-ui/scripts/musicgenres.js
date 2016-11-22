@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -20,7 +20,7 @@
                         Fields: "DateCreated,ItemCounts",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 pageData.query.ParentId = params.topParentId;

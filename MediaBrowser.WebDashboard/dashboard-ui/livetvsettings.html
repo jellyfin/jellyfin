@@ -22,14 +22,10 @@
                     </select>
                     <div class="fieldDescription">${LabelNumberOfGuideDaysHelp}</div>
                 </div>
-                <h3 class="checkboxListLabel">${LabelEnableInternetMetadataForTvPrograms}</h3>
-                <div class="checkboxList">
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkMovies" />
-                        <span>${OptionTVMovies}</span>
-                    </label>
-                </div>
-                <br />
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" id="chkMovies" />
+                    <span>${OptionDownloadInternetMetadataTvPrograms}</span>
+                </label>
                 <div class="inputContainer">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
@@ -39,10 +35,6 @@
                     </div>
                     <div class="fieldDescription">${LabelRecordingPathHelp}</div>
                 </div>
-                <label class="checkboxContainer">
-                    <input type="checkbox" is="emby-checkbox" id="chkEnableRecordingSubfolders" />
-                    <span>${OptionEnableRecordingSubfolders}</span>
-                </label>
                 <div class="inputContainer">
                     <div style="display: flex; align-items: center;">
                         <div style="flex-grow:1;">
@@ -92,12 +84,41 @@
                     <div class="fieldDescription checkboxFieldDescription">${OptionConvertRecordingPreserveAudioHelp}</div>
                 </div>
                 <div>
-                    <h1>${HeaderDefaultPadding}</h1>
+                    <h1>${HeaderRecordingPostProcessing}</h1>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}" />
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow:1;">
+                                <input is="emby-input" type="text" id="txtPostProcessor" label="${LabelPostProcessor}" />
+                            </div>
+                            <button type="button" is="paper-icon-button-light" id="btnSelectPostProcessorPath" class="autoSize"><i class="md-icon">search</i></button>
+                        </div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}" />
+                        <input is="emby-input" type="text" id="txtPostProcessorArguments" label="${LabelPostProcessorArguments}" />
+                        <div class="fieldDescription">${LabelPostProcessorArgumentsHelp}</div>
+                    </div>
+                </div>
+                <div>
+                    <h1>${HeaderDefaultRecordingSettings}</h1>
+                    <div class="inputContainer">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow: 1;">
+                                <input is="emby-input" type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelStartWhenPossible}" />
+                            </div>
+                            <div class="fieldDescription" style="margin-left:.5em;font-size:90%;margin-top:1.3em;">
+                                ${MinutesBefore}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inputContainer">
+                        <div style="display: flex; align-items: center;">
+                            <div style="flex-grow: 1;">
+                                <input is="emby-input" type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelStopWhenPossible}" />
+                            </div>
+                            <div class="fieldDescription" style="margin-left:.5em;font-size:90%;margin-top:1.3em;">
+                                ${MinutesAfter}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <br />

@@ -65,7 +65,7 @@
                 </div>
                 <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
-                        <input type="checkbox" is="emby-checkbox" id="chkThemeSong"/>
+                        <input type="checkbox" is="emby-checkbox" id="chkThemeSong" />
                         <span>${LabelEnableThemeSongs}</span>
                     </label>
                     <div class="fieldDescription checkboxFieldDescription">${LabelEnableThemeSongsHelp}</div>
@@ -76,16 +76,17 @@
                     ${HeaderDisplay}
                 </h1>
                 <br />
-                <div class="checkboxList">
+                <div class="checkboxContainer checkboxContainer-withDescription">
                     <label>
                         <input type="checkbox" is="emby-checkbox" class="chkDisplayMissingEpisodes" />
                         <span>${LabelDisplayMissingEpisodesWithinSeasons}</span>
                     </label>
-                    <label>
-                        <input type="checkbox" is="emby-checkbox" class="chkDisplayUnairedEpisodes" />
-                        <span>${LabelUnairedMissingEpisodesWithinSeasons}</span>
-                    </label>
+                    <div class="fieldDescription checkboxFieldDescription">${LabelDisplayMissingEpisodesWithinSeasonsHelp}</div>
                 </div>
+                <label class="checkboxContainer">
+                    <input type="checkbox" is="emby-checkbox" class="chkDisplayUnairedEpisodes" />
+                    <span>${LabelUnairedMissingEpisodesWithinSeasons}</span>
+                </label>
             </div>
             <button is="emby-button" type="submit" class="raised button-submit block btnSave hide">
                 <span>${ButtonSave}</span>

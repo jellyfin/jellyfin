@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView, cardBuilder, appHost) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -25,7 +25,7 @@
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || 'Poster'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
