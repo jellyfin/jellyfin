@@ -38,6 +38,7 @@ using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Threading;
+using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
@@ -1550,6 +1551,49 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             //        _logger.ErrorException("Error processing new recording", ex);
             //    }
             //}
+            PostProcessRecording(timer, path);
+        }
+
+        private void PostProcessRecording(TimerInfo timer, string path)
+        {
+            var options = GetConfiguration();
+            if (string.IsNullOrWhiteSpace(options.RecordingPostProcessor))
+            {
+                return;
+            }
+
+            try
+            {
+                var process = _processFactory.Create(new ProcessOptions
+                {
+                    Arguments = GetPostProcessArguments(path, options.RecordingPostProcessorArguments),
+                    CreateNoWindow = true,
+                    EnableRaisingEvents = true,
+                    ErrorDialog = false,
+                    FileName = options.RecordingPostProcessor,
+                    IsHidden = true,
+                    UseShellExecute = true
+                });
+
+                _logger.Info("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                process.Exited += Process_Exited;
+                process.Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error running recording post processor", ex);
+            }
+        }
+
+        private string GetPostProcessArguments(string path, string arguments)
+        {
+            return arguments.Replace("{path}", path, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void Process_Exited(object sender, EventArgs e)
+        {
+            ((IProcess)sender).Dispose();
         }
 
         private void SaveNfo(TimerInfo timer, string recordingPath, string seriesPath)

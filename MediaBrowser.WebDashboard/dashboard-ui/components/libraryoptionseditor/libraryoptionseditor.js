@@ -57,6 +57,12 @@
             parent.querySelector('.fldExtractChaptersDuringLibraryScan').classList.add('hide');
             parent.querySelector('.fldExtractChapterImages').classList.add('hide');
         }
+
+        if (contentType == 'tvshows') {
+            parent.querySelector('.chkImportMissingEpisodesContainer').classList.remove('hide');
+        } else {
+            parent.querySelector('.chkImportMissingEpisodesContainer').classList.add('hide');
+        }
     }
 
     function getLibraryOptions(parent) {
@@ -69,6 +75,7 @@
             EnableChapterImageExtraction: parent.querySelector('.chkExtractChapterImages').checked,
             DownloadImagesInAdvance: parent.querySelector('#chkDownloadImagesInAdvance').checked,
             EnableInternetProviders: parent.querySelector('#chkEnableInternetProviders').checked,
+            ImportMissingEpisodes: parent.querySelector('#chkImportMissingEpisodes').checked,
             SaveLocalMetadata: parent.querySelector('#chkSaveLocal').checked
         };
 
@@ -85,6 +92,7 @@
         parent.querySelector('#chkDownloadImagesInAdvance').checked = options.DownloadImagesInAdvance;
         parent.querySelector('#chkEnableInternetProviders').checked = options.EnableInternetProviders;
         parent.querySelector('#chkSaveLocal').checked = options.SaveLocalMetadata;
+        parent.querySelector('#chkImportMissingEpisodes').checked = options.ImportMissingEpisodes;
     }
 
     return {

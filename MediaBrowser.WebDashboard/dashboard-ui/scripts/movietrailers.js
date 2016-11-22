@@ -1,4 +1,4 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder, appHost) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -25,7 +25,7 @@
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || 'Poster'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
@@ -92,7 +92,8 @@
                         context: 'movies',
                         cardLayout: true,
                         showTitle: true,
-                        showYear: true
+                        showYear: true,
+                        vibrant: true
                     });
                 }
                 else if (viewStyle == "Banner") {
@@ -120,7 +121,8 @@
                         context: 'movies',
                         showTitle: true,
                         showYear: true,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: true
                     });
                 }
                 else {
@@ -131,7 +133,9 @@
                         shape: "portrait",
                         context: 'movies',
                         centerText: true,
-                        overlayPlayButton: true
+                        overlayPlayButton: true,
+                        showTitle: true,
+                        showYear: true
                     });
                 }
 
