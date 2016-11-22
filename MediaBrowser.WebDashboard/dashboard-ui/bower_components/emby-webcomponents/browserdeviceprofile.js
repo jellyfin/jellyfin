@@ -209,7 +209,7 @@ define(['browser'], function (browser) {
     function getMaxBitrate() {
 
         if (browser.edgeUwp) {
-            return 32000000;
+            return 40000000;
         }
 
         // 10mbps
@@ -267,7 +267,7 @@ define(['browser'], function (browser) {
         // Only put mp3 first if mkv support is there
         // Otherwise with HLS and mp3 audio we're seeing some browsers
         // safari is lying
-        if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || browser.edgeUwp || browser.tizen) {
+        if ((videoTestElement.canPlayType('audio/mp4; codecs="ac-3"').replace(/no/, '') && !browser.safari) || browser.edgeUwp || browser.tizen || browser.web0s) {
             videoAudioCodecs.push('ac3');
 
             // This works in edge desktop, but not mobile
@@ -275,6 +275,11 @@ define(['browser'], function (browser) {
             if (!browser.edge || !browser.touch) {
                 hlsVideoAudioCodecs.push('ac3');
             }
+        }
+
+        if (browser.tizen) {
+            videoAudioCodecs.push('eac3');
+            hlsVideoAudioCodecs.push('eac3');
         }
 
         var mp3Added = false;

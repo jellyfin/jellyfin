@@ -95,6 +95,7 @@
   "DeviceAccessHelp": "This only applies to devices that can be uniquely identified and will not prevent browser access. Filtering user device access will prevent them from using new devices until they've been approved here.",
   "LabelDisplayMissingEpisodesWithinSeasons": "Display missing episodes within seasons",
   "LabelUnairedMissingEpisodesWithinSeasons": "Display unaired episodes within seasons",
+  "ImportMissingEpisodesHelp": "If enabled, information about missing episodes will be imported into your Emby database and displayed within seasons and series. This may cause significantly longer library scans.",
   "HeaderVideoPlaybackSettings": "Video Playback Settings",
   "HeaderPlaybackSettings": "Playback Settings",
   "LabelAudioLanguagePreference": "Audio language preference:",

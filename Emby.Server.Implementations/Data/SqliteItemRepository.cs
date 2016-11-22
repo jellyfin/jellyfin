@@ -95,13 +95,13 @@ namespace Emby.Server.Implementations.Data
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
 
-        //protected override bool AllowLockRecursion
-        //{
-        //    get
-        //    {
-        //        return true;
-        //    }
-        //}
+        protected override bool AllowLockRecursion
+        {
+            get
+            {
+                return true;
+            }
+        }
 
         private const string ChaptersTableName = "Chapters2";
 
