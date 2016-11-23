@@ -20,40 +20,39 @@ namespace MediaBrowser.Providers.TV
         {
             var updateType = await base.BeforeSave(item, isFullRefresh, currentUpdateType).ConfigureAwait(false);
 
-            if (updateType <= ItemUpdateType.None)
+            var seriesName = item.FindSeriesName();
+            if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
             {
-                if (!string.Equals(item.SeriesName, item.FindSeriesName(), StringComparison.Ordinal))
-                {
-                    updateType |= ItemUpdateType.MetadataImport;
-                }
+                item.SeriesName = seriesName;
+                updateType |= ItemUpdateType.MetadataImport;
             }
-            if (updateType <= ItemUpdateType.None)
+
+            var seriesSortName = item.FindSeriesSortName();
+            if (!string.Equals(item.SeriesSortName, seriesSortName, StringComparison.Ordinal))
             {
-                if (!string.Equals(item.SeriesSortName, item.FindSeriesSortName(), StringComparison.Ordinal))
-                {
-                    updateType |= ItemUpdateType.MetadataImport;
-                }
+                item.SeriesSortName = seriesSortName;
+                updateType |= ItemUpdateType.MetadataImport;
             }
-            if (updateType <= ItemUpdateType.None)
+
+            var seasonName = item.FindSeasonName();
+            if (!string.Equals(item.SeasonName, seasonName, StringComparison.Ordinal))
             {
-                if (!string.Equals(item.SeasonName, item.FindSeasonName(), StringComparison.Ordinal))
-                {
-                    updateType |= ItemUpdateType.MetadataImport;
-                }
+                item.SeasonName = seasonName;
+                updateType |= ItemUpdateType.MetadataImport;
             }
-            if (updateType <= ItemUpdateType.None)
+
+            var seriesId = item.FindSeriesId();
+            if (item.SeriesId != seriesId)
             {
-                if (item.SeriesId != item.FindSeriesId())
-                {
-                    updateType |= ItemUpdateType.MetadataImport;
-                }
+                item.SeriesId = seriesId;
+                updateType |= ItemUpdateType.MetadataImport;
             }
-            if (updateType <= ItemUpdateType.None)
+
+            var seasonId = item.FindSeasonId();
+            if (item.SeasonId != seasonId)
             {
-                if (item.SeasonId != item.FindSeasonId())
-                {
-                    updateType |= ItemUpdateType.MetadataImport;
-                }
+                item.SeasonId = seasonId;
+                updateType |= ItemUpdateType.MetadataImport;
             }
 
             return updateType;

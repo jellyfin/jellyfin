@@ -37,16 +37,24 @@ namespace MediaBrowser.Providers.TV
                 updateType |= SaveIsVirtualItem(item, episodes);
             }
 
-            if (!string.Equals(item.SeriesName, item.FindSeriesName(), StringComparison.Ordinal))
+            var seriesName = item.FindSeriesName();
+            if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
             {
+                item.SeriesName = seriesName;
                 updateType |= ItemUpdateType.MetadataImport;
             }
-            if (!string.Equals(item.SeriesSortName, item.FindSeriesSortName(), StringComparison.Ordinal))
+
+            var seriesSortName = item.FindSeriesSortName();
+            if (!string.Equals(item.SeriesSortName, seriesSortName, StringComparison.Ordinal))
             {
+                item.SeriesSortName = seriesSortName;
                 updateType |= ItemUpdateType.MetadataImport;
             }
-            if (item.SeriesId != item.FindSeriesId())
+
+            var seriesId = item.FindSeriesId();
+            if (item.SeriesId != seriesId)
             {
+                item.SeriesId = seriesId;
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
