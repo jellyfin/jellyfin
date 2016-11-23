@@ -90,17 +90,18 @@ h1, h2, h3 {
     margin-top: 1em;
 }
 
-    h1, h1 a {
-        font-weight: 300 !important;
-        font-size: 24px;
-    }
+h1 {
+    font-weight: normal !important;
+    font-size: 24px;
+    opacity: .7;
+}
 
 h2 {
-    font-weight: 400;
+    font-weight: normal;
 }
 
 h3 {
-    font-weight: 400;
+    font-weight: normal;
 }
 
 a, a:active, a:hover {

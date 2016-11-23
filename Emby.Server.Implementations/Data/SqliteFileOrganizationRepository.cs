@@ -194,7 +194,6 @@ namespace Emby.Server.Implementations.Data
                     using (var statement = connection.PrepareStatement("select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@ResultId"))
                     {
                         statement.TryBind("@ResultId", id.ToGuidParamValue());
-                        statement.MoveNext();
 
                         foreach (var row in statement.ExecuteQuery())
                         {

@@ -260,7 +260,7 @@
 
                 html += '<div class="listItem">';
 
-                var enabledTuners = providerInfo.EnableAllTuners || [];
+                var enabledTuners = providerInfo.EnabledTuners || [];
                 var isChecked = providerInfo.EnableAllTuners || enabledTuners.indexOf(device.Id) != -1;
                 var checkedAttribute = isChecked ? ' checked' : '';
                 html += '<label class="checkboxContainer listItemCheckboxContainer"><input type="checkbox" is="emby-checkbox" data-id="' + device.Id + '" class="chkTuner" ' + checkedAttribute + '/><span></span></label>';
