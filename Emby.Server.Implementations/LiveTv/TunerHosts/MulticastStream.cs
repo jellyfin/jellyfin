@@ -25,10 +25,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             _cancellationToken = cancellationToken;
 
+            byte[] buffer = new byte[BufferSize];
+
             while (!cancellationToken.IsCancellationRequested)
             {
-                byte[] buffer = new byte[BufferSize];
-
                 var bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
 
                 if (bytesRead > 0)

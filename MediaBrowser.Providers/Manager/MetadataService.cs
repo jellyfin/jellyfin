@@ -418,6 +418,11 @@ namespace MediaBrowser.Providers.Manager
                         // If any remote providers changed, run them all so that priorities can be honored
                         if (i is IRemoteMetadataProvider)
                         {
+                            if (options.MetadataRefreshMode == MetadataRefreshMode.ValidationOnly)
+                            {
+                                return false;
+                            }
+
                             return anyRemoteProvidersChanged;
                         }
 
