@@ -638,25 +638,30 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
+            var tuples = new List<Tuple<BaseItem, List<Guid>>>();
+            foreach (var item in items)
+            {
+                var ancestorIds = item.SupportsAncestors ?
+                    item.GetAncestorIds().Distinct().ToList() :
+                    null;
+
+                tuples.Add(new Tuple<BaseItem, List<Guid>>(item, ancestorIds));
+            }
+
             using (var connection = CreateConnection())
             {
                 using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
-                        SaveItemsInTranscation(db, items);
+                        SaveItemsInTranscation(db, tuples);
                     });
                 }
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, List<BaseItem> items)
+        private void SaveItemsInTranscation(IDatabaseConnection db, List<Tuple<BaseItem, List<Guid>>> tuples)
         {
-            if (items == null)
-            {
-                throw new ArgumentNullException("items");
-            }
-
             var requiresReset = false;
 
             using (var saveItemStatement = db.PrepareStatement(GetSaveItemCommandText()))
@@ -665,19 +670,21 @@ namespace Emby.Server.Implementations.Data
                 {
                     using (var updateAncestorsStatement = db.PrepareStatement("insert into AncestorIds (ItemId, AncestorId, AncestorIdText) values (@ItemId, @AncestorId, @AncestorIdText)"))
                     {
-                        foreach (var item in items)
+                        foreach (var tuple in tuples)
                         {
                             if (requiresReset)
                             {
                                 saveItemStatement.Reset();
                             }
 
+                            var item = tuple.Item1;
+
                             SaveItem(item, saveItemStatement);
                             //Logger.Debug(_saveItemCommand.CommandText);
 
                             if (item.SupportsAncestors)
                             {
-                                UpdateAncestors(item.Id, item.GetAncestorIds().Distinct().ToList(), db, deleteAncestorsStatement, updateAncestorsStatement);
+                                UpdateAncestors(item.Id, tuple.Item2, db, deleteAncestorsStatement, updateAncestorsStatement);
                             }
 
                             UpdateItemValues(item.Id, GetItemValuesToSave(item), db);
@@ -802,7 +809,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@IsHD", item.IsHD);
             saveItemStatement.TryBind("@ExternalEtag", item.ExternalEtag);
 
-            if (item.DateLastRefreshed == default(DateTime))
+            if (item.DateLastRefreshed != default(DateTime))
             {
                 saveItemStatement.TryBind("@DateLastRefreshed", item.DateLastRefreshed);
             }
@@ -811,9 +818,9 @@ namespace Emby.Server.Implementations.Data
                 saveItemStatement.TryBindNull("@DateLastRefreshed");
             }
 
-            if (item.DateLastSaved == default(DateTime))
+            if (item.DateLastSaved != default(DateTime))
             {
-                saveItemStatement.TryBind("@DateLastSaved", item.DateLastRefreshed);
+                saveItemStatement.TryBind("@DateLastSaved", item.DateLastSaved);
             }
             else
             {
@@ -948,7 +955,7 @@ namespace Emby.Server.Implementations.Data
             var hasSeries = item as IHasSeries;
             if (hasSeries != null)
             {
-                saveItemStatement.TryBind("@SeriesName", hasSeries.FindSeriesName());
+                saveItemStatement.TryBind("@SeriesName", hasSeries.SeriesName);
             }
             else
             {
@@ -960,8 +967,8 @@ namespace Emby.Server.Implementations.Data
             var episode = item as Episode;
             if (episode != null)
             {
-                saveItemStatement.TryBind("@SeasonName", episode.FindSeasonName());
-                saveItemStatement.TryBind("@SeasonId", episode.FindSeasonId());
+                saveItemStatement.TryBind("@SeasonName", episode.SeasonName);
+                saveItemStatement.TryBind("@SeasonId", episode.SeasonId);
             }
             else
             {
@@ -971,8 +978,8 @@ namespace Emby.Server.Implementations.Data
 
             if (hasSeries != null)
             {
-                saveItemStatement.TryBind("@SeriesId", hasSeries.FindSeriesId());
-                saveItemStatement.TryBind("@SeriesSortName", hasSeries.FindSeriesSortName());
+                saveItemStatement.TryBind("@SeriesId", hasSeries.SeriesId);
+                saveItemStatement.TryBind("@SeriesSortName", hasSeries.SeriesSortName);
             }
             else
             {
