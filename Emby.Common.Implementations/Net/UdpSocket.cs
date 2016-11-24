@@ -33,8 +33,6 @@ namespace Emby.Common.Implementations.Net
             _LocalPort = localPort;
 
             _Socket.Bind(new IPEndPoint(ip, _LocalPort));
-            if (_LocalPort == 0)
-                _LocalPort = (_Socket.LocalEndPoint as IPEndPoint).Port;
         }
 
         #endregion

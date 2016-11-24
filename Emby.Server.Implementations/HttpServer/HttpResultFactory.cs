@@ -100,7 +100,8 @@ namespace Emby.Server.Implementations.HttpServer
                 responseHeaders = new Dictionary<string, string>();
             }
 
-            if (addCachePrevention)
+            string expires;
+            if (addCachePrevention && !responseHeaders.TryGetValue("Expires", out expires))
             {
                 responseHeaders["Expires"] = "-1";
             }
