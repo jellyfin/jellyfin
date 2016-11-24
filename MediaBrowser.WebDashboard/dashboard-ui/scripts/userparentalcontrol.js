@@ -46,7 +46,6 @@
             { name: Globalize.translate('OptionBlockGames'), value: 'Game' },
             { name: Globalize.translate('OptionBlockChannelContent'), value: 'ChannelContent' },
             { name: Globalize.translate('OptionBlockLiveTvChannels'), value: 'LiveTvChannel' },
-            { name: Globalize.translate('OptionBlockLiveTvPrograms'), value: 'LiveTvProgram' },
             { name: Globalize.translate('OptionBlockMovies'), value: 'Movie' },
             { name: Globalize.translate('OptionBlockMusic'), value: 'Music' },
             { name: Globalize.translate('OptionBlockTrailers'), value: 'Trailer' },

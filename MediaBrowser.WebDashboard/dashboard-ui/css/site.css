@@ -36,7 +36,7 @@ html {
     padding: 0;
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
-    font-size: 14px;
+    font-size: 88%;
 }
 
 h1 {
@@ -92,7 +92,6 @@ h1, h2, h3 {
 
 h1 {
     font-weight: normal !important;
-    font-size: 24px;
     opacity: .7;
 }
 

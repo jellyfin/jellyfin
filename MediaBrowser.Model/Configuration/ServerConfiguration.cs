@@ -154,7 +154,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable dashboard response caching]; otherwise, <c>false</c>.</value>
         public bool EnableDashboardResponseCaching { get; set; }
-        public bool EnableDashboardResourceMinification { get; set; }
 
         /// <summary>
         /// Allows the dashboard to be served from a custom path.
@@ -230,7 +229,6 @@ namespace MediaBrowser.Model.Configuration
             HttpsPortNumber = DefaultHttpsPort;
             EnableHttps = false;
             EnableDashboardResponseCaching = true;
-            EnableDashboardResourceMinification = true;
             EnableAnonymousUsageReporting = true;
 
             EnableAutomaticRestart = true;
