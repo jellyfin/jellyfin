@@ -124,12 +124,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private ProgramInfo GetProgramInfo(XmlTvProgram p, ListingsProviderInfo info)
         {
+            var episodeTitle = p.Episode == null ? null : p.Episode.Title;
+
             var programInfo = new ProgramInfo
             {
                 ChannelId = p.ChannelId,
                 EndDate = GetDate(p.EndDate),
                 EpisodeNumber = p.Episode == null ? null : p.Episode.Episode,
-                EpisodeTitle = p.Episode == null ? null : p.Episode.Title,
+                EpisodeTitle = episodeTitle,
                 Genres = p.Categories,
                 Id = String.Format("{0}_{1:O}", p.ChannelId, p.StartDate), // Construct an id from the channel and start date,
                 StartDate = GetDate(p.StartDate),
@@ -149,7 +151,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 HasImage = p.Icon != null && !String.IsNullOrEmpty(p.Icon.Source),
                 OfficialRating = p.Rating != null && !String.IsNullOrEmpty(p.Rating.Value) ? p.Rating.Value : null,
                 CommunityRating = p.StarRating.HasValue ? p.StarRating.Value : (float?)null,
-                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null
+                SeriesId = p.Episode != null ? p.Title.GetMD5().ToString("N") : null,
+                ShowId = ((p.Title ?? string.Empty) + (episodeTitle ?? string.Empty)).GetMD5().ToString("N")
             };
 
             if (programInfo.IsMovie)

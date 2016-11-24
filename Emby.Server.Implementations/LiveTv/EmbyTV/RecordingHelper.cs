@@ -31,6 +31,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             timer.Name = parent.Name;
             timer.Overview = parent.Overview;
             timer.SeriesTimerId = seriesTimer.Id;
+            timer.ShowId = parent.ShowId;
 
             CopyProgramInfoToTimerInfo(parent, timer);
 

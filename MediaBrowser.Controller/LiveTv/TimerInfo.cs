@@ -34,6 +34,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The program identifier.</value>
         public string ProgramId { get; set; }
 
+        public string ShowId { get; set; }
+
         /// <summary>
         /// Name of the recording.
         /// </summary>
