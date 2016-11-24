@@ -16,32 +16,28 @@ namespace MediaBrowser.WebDashboard.Api
     public class PackageCreator
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILocalizationManager _localization;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IMemoryStreamFactory _memoryStreamFactory;
 
-        public PackageCreator(IFileSystem fileSystem, ILocalizationManager localization, ILogger logger, IServerConfigurationManager config, IJsonSerializer jsonSerializer)
+        public PackageCreator(IFileSystem fileSystem, ILogger logger, IServerConfigurationManager config, IMemoryStreamFactory memoryStreamFactory)
         {
             _fileSystem = fileSystem;
-            _localization = localization;
             _logger = logger;
             _config = config;
-            _jsonSerializer = jsonSerializer;
+            _memoryStreamFactory = memoryStreamFactory;
         }
 
         public async Task<Stream> GetResource(string path,
             string mode,
             string localizationCulture,
-            string appVersion,
-            bool enableMinification)
+            string appVersion)
         {
             Stream resourceStream;
 
             if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
             {
-                resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
-                enableMinification = false;
+                resourceStream = await GetAllCss().ConfigureAwait(false);
             }
             else
             {
@@ -56,7 +52,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     if (IsCoreHtml(path))
                     {
-                        resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
+                        resourceStream = await ModifyHtml(path, resourceStream, mode, appVersion, localizationCulture).ConfigureAwait(false);
                     }
                 }
             }
@@ -140,20 +136,14 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="sourceStream">The source stream.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="appVersion">The application version.</param>
-        /// <param name="localizationCulture">The localization culture.</param>
-        /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
         /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(string path, Stream sourceStream, string mode, string appVersion, string localizationCulture, bool enableMinification)
+        public async Task<Stream> ModifyHtml(string path, Stream sourceStream, string mode, string appVersion, string localizationCulture)
         {
             using (sourceStream)
             {
                 string html;
 
-                using (var memoryStream = new MemoryStream())
+                using (var memoryStream = _memoryStreamFactory.CreateNew())
                 {
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
@@ -202,7 +192,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
-                return new MemoryStream(bytes);
+                return _memoryStreamFactory.CreateNew(bytes);
             }
         }
 
@@ -332,9 +322,9 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets all CSS.
         /// </summary>
         /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllCss(bool enableMinification)
+        private async Task<Stream> GetAllCss()
         {
-            var memoryStream = new MemoryStream();
+            var memoryStream = _memoryStreamFactory.CreateNew();
 
             var files = new[]
                                   {

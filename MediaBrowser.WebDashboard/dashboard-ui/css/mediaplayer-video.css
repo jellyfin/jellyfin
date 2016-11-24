@@ -143,7 +143,6 @@
 
 .nowPlayingTabButton {
     display: inline-block;
-    font-size: 18px;
     text-transform: uppercase;
     color: #ddd !important;
     font-weight: 400 !important;
@@ -182,10 +181,6 @@
     vertical-align: top;
     position: static;
     color: #eee;
-}
-
-.videoNowPlayingName {
-    font-size: 18px;
 }
 
 .videoNowPlayingOverview, .videoNowPlayingRating {

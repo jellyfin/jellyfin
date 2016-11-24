@@ -45,6 +45,8 @@
         /// </summary>
         Chapters,
 
+        ChildCount,
+
         /// <summary>
         /// The critic rating summary
         /// </summary>

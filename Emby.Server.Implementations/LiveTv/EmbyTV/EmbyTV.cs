@@ -645,6 +645,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             existingTimer.SeasonNumber = updatedTimer.SeasonNumber;
             existingTimer.ShortOverview = updatedTimer.ShortOverview;
             existingTimer.StartDate = updatedTimer.StartDate;
+            existingTimer.ShowId = updatedTimer.ShowId;
         }
 
         public Task<ImageStream> GetChannelImageAsync(string channelId, CancellationToken cancellationToken)
@@ -1836,12 +1837,47 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return seriesTimer.SkipEpisodesInLibrary && IsProgramAlreadyInLibrary(timer);
         }
 
+        private void HandleDuplicateShowIds(List<TimerInfo> timers)
+        {
+            foreach (var timer in timers.Skip(1))
+            {
+                // TODO: Get smarter, prefer HD, etc
+
+                timer.Status = RecordingStatus.Cancelled;
+                _timerProvider.Update(timer);
+            }
+        }
+
+        private void SearchForDuplicateShowIds(List<TimerInfo> timers)
+        {
+            var groups = timers.ToLookup(i => i.ShowId ?? string.Empty).ToList();
+
+            foreach (var group in groups)
+            {
+                if (string.IsNullOrWhiteSpace(group.Key))
+                {
+                    continue;
+                }
+
+                var groupTimers = group.ToList();
+
+                if (groupTimers.Count < 2)
+                {
+                    continue;
+                }
+
+                HandleDuplicateShowIds(groupTimers);
+            }
+        }
+
         private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool deleteInvalidTimers)
         {
             var allTimers = GetTimersForSeries(seriesTimer, epgData)
                 .ToList();
 
             var registration = await _liveTvManager.GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
+
+            var enabledTimersForSeries = new List<TimerInfo>();
 
             if (registration.IsValid)
             {
@@ -1854,6 +1890,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         if (ShouldCancelTimerForSeriesTimer(seriesTimer, timer))
                         {
                             timer.Status = RecordingStatus.Cancelled;
+                        }
+                        else
+                        {
+                            enabledTimersForSeries.Add(timer);
                         }
                         _timerProvider.Add(timer);
                     }
@@ -1870,12 +1910,19 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 existingTimer.Status = RecordingStatus.Cancelled;
                             }
 
+                            if (existingTimer.Status != RecordingStatus.Cancelled)
+                            {
+                                enabledTimersForSeries.Add(existingTimer);
+                            }
+
                             existingTimer.SeriesTimerId = seriesTimer.Id;
                             _timerProvider.Update(existingTimer);
                         }
                     }
                 }
             }
+
+            SearchForDuplicateShowIds(enabledTimersForSeries);
 
             if (deleteInvalidTimers)
             {
@@ -1901,8 +1948,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer,
-            IEnumerable<ProgramInfo> allPrograms)
+        private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms)
         {
             if (seriesTimer == null)
             {

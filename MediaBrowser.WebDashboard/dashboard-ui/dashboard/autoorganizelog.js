@@ -376,6 +376,7 @@
         clearButton.addEventListener('click', function () {
 
             ApiClient.clearOrganizationLog().then(function () {
+                query.StartIndex = 0;
                 reloadItems(view, true);
             }, Dashboard.processErrorResponse);
         });

@@ -250,48 +250,6 @@ div[data-role="controlgroup"] a.ui-btn-active {
     color: #fff !important;
 }
 
-a[data-role='button'], .type-interior button:not([data-role='none']):not(.clearButton):not([is]) {
-    -webkit-font-smoothing: antialiased;
-    -webkit-user-select: none;
-    background-clip: padding-box;
-    border-radius: .3125em;
-    border: 1px solid #ddd !important;
-    color: rgb(51, 51, 51) !important;
-    cursor: pointer !important;
-    font-family: inherit !important;
-    font-size: inherit !important;
-    font-weight: 500 !important;
-    margin: 0 .25em !important;
-    display: inline-block;
-    padding: .8em 1em;
-    text-align: center;
-    text-decoration: none !important;
-    background: #f6f6f6 !important;
-    font-size: 16px;
-    -webkit-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-    -moz-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-    box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
-}
-
-    a[data-role='button'][data-iconpos='notext'], .type-interior button[data-iconpos='notext']:not([data-role='none']):not(.clearButton):not([is]) {
-        padding: 4px;
-        border-radius: 50px;
-        outline: 0;
-    }
-
-    a[data-role='button']:not([data-inline='true']), .type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
-        display: block;
-        margin: .5em 0 !important;
-    }
-
-.type-interior button:not([data-role='none']):not([data-inline='true']):not(.clearButton):not([is]) {
-    width: 100%;
-}
-
-.type-interior h2 {
-    color: #1B58B8;
-}
-
 .header .imageLink {
     display: inline-block;
 }

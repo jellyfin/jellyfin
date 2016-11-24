@@ -119,6 +119,8 @@
         var serverId = el.getAttribute('data-serverid');
         var apiClient = connectionManager.getApiClient(serverId);
 
+        newIndex = Math.max(0, newIndex - 1);
+
         apiClient.ajax({
 
             url: apiClient.getUrl('Playlists/' + playlistId + '/Items/' + itemId + '/Move/' + newIndex),
