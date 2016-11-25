@@ -681,6 +681,19 @@ namespace MediaBrowser.Controller.Entities
             return result.TotalRecordCount;
         }
 
+        public virtual int GetRecursiveChildCount(User user)
+        {
+            return GetItems(new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                IsFolder = false,
+                IsVirtualItem = false,
+                EnableTotalRecordCount = true,
+                Limit = 0
+
+            }).Result.TotalRecordCount;
+        }
+
         public QueryResult<BaseItem> QueryRecursive(InternalItemsQuery query)
         {
             var user = query.User;
@@ -1404,20 +1417,11 @@ namespace MediaBrowser.Controller.Entities
                 return;
             }
 
-            var allItemsQueryResult = await GetItems(new InternalItemsQuery(user)
-            {
-                Recursive = true,
-                IsFolder = false,
-                IsVirtualItem = false,
-                EnableTotalRecordCount = true,
-                Limit = 0
-
-            }).ConfigureAwait(false);
-            var recursiveItemCount = allItemsQueryResult.TotalRecordCount;
+            var recursiveItemCount = GetRecursiveChildCount(user);
 
             if (itemDto != null)
             {
-                itemDto.RecursiveItemCount = allItemsQueryResult.TotalRecordCount;
+                itemDto.RecursiveItemCount = recursiveItemCount;
             }
 
             if (recursiveItemCount > 0 && SupportsPlayedStatus)

@@ -516,9 +516,23 @@ namespace Emby.Server.Implementations.Sync
                     commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
                 }
 
+                var statementTexts = new List<string>
+                {
+                    commandText
+                };
+
+                commandText = commandText
+                    .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
+                    .Replace("'Synced'", "'Completed','CompletedWithError'");
+
+                statementTexts.Add(commandText);
+
                 using (WriteLock.Read())
                 {
-                    using (var statement = connection.PrepareStatement(commandText))
+                    var statements = connection.PrepareAll(string.Join(";", statementTexts.ToArray()))
+                        .ToList();
+
+                    using (var statement = statements[0])
                     {
                         if (!string.IsNullOrWhiteSpace(query.TargetId))
                         {
@@ -532,13 +546,9 @@ namespace Emby.Server.Implementations.Sync
                         LogQueryTime("GetSyncedItemProgresses", commandText, now);
                     }
 
-                    commandText = commandText
-                        .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
-                        .Replace("'Synced'", "'Completed','CompletedWithError'");
-
                     now = DateTime.UtcNow;
 
-                    using (var statement = connection.PrepareStatement(commandText))
+                    using (var statement = statements[1])
                     {
                         if (!string.IsNullOrWhiteSpace(query.TargetId))
                         {
