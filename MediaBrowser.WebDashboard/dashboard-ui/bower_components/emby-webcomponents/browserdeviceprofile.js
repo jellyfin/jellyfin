@@ -337,6 +337,7 @@ define(['browser'], function (browser) {
         
         if (browser.tizen) {
             mp4VideoCodecs.push('mpeg2video')
+            mp4VideoCodecs.push('vc1')
         }
         
         if (canPlayMkv && mp4VideoCodecs.length) {

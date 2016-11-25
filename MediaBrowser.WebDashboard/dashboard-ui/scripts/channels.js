@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'emby-itemscontainer', 'emby-tabs', 'emby-button', 'scripts/channelslatest', 'scripts/sections'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'imageLoader', 'emby-itemscontainer', 'emby-tabs', 'emby-button', 'scripts/channelslatest', 'scripts/sections'], function (libraryBrowser, cardBuilder, imageLoader) {
     'use strict';
 
     // The base query options
@@ -50,7 +50,7 @@
 
             var elem = page.querySelector('#items');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             libraryBrowser.saveQueryValues('channels', query);
 

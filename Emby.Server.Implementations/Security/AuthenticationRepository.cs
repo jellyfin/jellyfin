@@ -70,9 +70,9 @@ namespace Emby.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -137,78 +137,78 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("query");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                var commandText = BaseSelectText;
-
-                var whereClauses = new List<string>();
-
-                var startIndex = query.StartIndex ?? 0;
-
-                if (!string.IsNullOrWhiteSpace(query.AccessToken))
+                using (var connection = CreateConnection(true))
                 {
-                    whereClauses.Add("AccessToken=@AccessToken");
-                }
+                    var commandText = BaseSelectText;
 
-                if (!string.IsNullOrWhiteSpace(query.UserId))
-                {
-                    whereClauses.Add("UserId=@UserId");
-                }
+                    var whereClauses = new List<string>();
 
-                if (!string.IsNullOrWhiteSpace(query.DeviceId))
-                {
-                    whereClauses.Add("DeviceId=@DeviceId");
-                }
+                    var startIndex = query.StartIndex ?? 0;
 
-                if (query.IsActive.HasValue)
-                {
-                    whereClauses.Add("IsActive=@IsActive");
-                }
-
-                if (query.HasUser.HasValue)
-                {
-                    if (query.HasUser.Value)
+                    if (!string.IsNullOrWhiteSpace(query.AccessToken))
                     {
-                        whereClauses.Add("UserId not null");
+                        whereClauses.Add("AccessToken=@AccessToken");
                     }
-                    else
+
+                    if (!string.IsNullOrWhiteSpace(query.UserId))
                     {
-                        whereClauses.Add("UserId is null");
+                        whereClauses.Add("UserId=@UserId");
                     }
-                }
 
-                var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray());
+                    if (!string.IsNullOrWhiteSpace(query.DeviceId))
+                    {
+                        whereClauses.Add("DeviceId=@DeviceId");
+                    }
 
-                if (startIndex > 0)
-                {
-                    var pagingWhereText = whereClauses.Count == 0 ?
+                    if (query.IsActive.HasValue)
+                    {
+                        whereClauses.Add("IsActive=@IsActive");
+                    }
+
+                    if (query.HasUser.HasValue)
+                    {
+                        if (query.HasUser.Value)
+                        {
+                            whereClauses.Add("UserId not null");
+                        }
+                        else
+                        {
+                            whereClauses.Add("UserId is null");
+                        }
+                    }
+
+                    var whereTextWithoutPaging = whereClauses.Count == 0 ?
                         string.Empty :
                         " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
-                        pagingWhereText,
-                        startIndex.ToString(_usCulture)));
-                }
+                    if (startIndex > 0)
+                    {
+                        var pagingWhereText = whereClauses.Count == 0 ?
+                            string.Empty :
+                            " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                var whereText = whereClauses.Count == 0 ?
-                    string.Empty :
-                    " where " + string.Join(" AND ", whereClauses.ToArray());
+                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
+                            pagingWhereText,
+                            startIndex.ToString(_usCulture)));
+                    }
 
-                commandText += whereText;
+                    var whereText = whereClauses.Count == 0 ?
+                        string.Empty :
+                        " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                commandText += " ORDER BY DateCreated";
+                    commandText += whereText;
 
-                if (query.Limit.HasValue)
-                {
-                    commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
-                }
+                    commandText += " ORDER BY DateCreated";
 
-                var list = new List<AuthenticationInfo>();
+                    if (query.Limit.HasValue)
+                    {
+                        commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+                    }
 
-                using (WriteLock.Read())
-                {
+                    var list = new List<AuthenticationInfo>();
+
                     using (var statement = connection.PrepareStatement(commandText))
                     {
                         BindAuthenticationQueryParams(query, statement);
@@ -244,9 +244,9 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = BaseSelectText + " where Id=@Id";
 

@@ -1235,6 +1235,8 @@ var AppInfo = {};
         define("metadataEditor", [embyWebComponentsBowerPath + "/metadataeditor/metadataeditor"], returnFirstDependency);
         define("personEditor", [embyWebComponentsBowerPath + "/metadataeditor/personeditor"], returnFirstDependency);
 
+        define("libraryMenu", ["scripts/librarymenu"], returnFirstDependency);
+
         define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
         define("emby-itemscontainer", [embyWebComponentsBowerPath + "/emby-itemscontainer/emby-itemscontainer"], returnFirstDependency);
@@ -2652,7 +2654,6 @@ var AppInfo = {};
 
         var deps = [];
 
-        deps.push('imageLoader');
         deps.push('embyRouter');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
@@ -2676,15 +2677,13 @@ var AppInfo = {};
             }
         }
 
-        deps.push('scripts/librarymenu');
+        deps.push('libraryMenu');
 
         console.log('onAppReady - loading dependencies');
 
-        require(deps, function (imageLoader, pageObjects) {
+        require(deps, function (pageObjects) {
 
             console.log('Loaded dependencies in onAppReady');
-
-            window.ImageLoader = imageLoader;
 
             window.Emby = {};
             window.Emby.Page = pageObjects;

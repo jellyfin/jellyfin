@@ -1,4 +1,4 @@
-﻿define(['listView', 'cardBuilder', 'libraryBrowser', 'apphost', 'emby-itemscontainer'], function (listView, cardBuilder, libraryBrowser, appHost) {
+﻿define(['listView', 'cardBuilder', 'libraryBrowser', 'apphost', 'imageLoader', 'emby-itemscontainer'], function (listView, cardBuilder, libraryBrowser, appHost, imageLoader) {
     'use strict';
 
     return function (view, params) {
@@ -168,7 +168,7 @@
 
                 var elem = view.querySelector('.itemsContainer');
                 elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
+                imageLoader.lazyChildren(elem);
 
                 var btnNextPage = view.querySelector('.btnNextPage');
                 if (btnNextPage) {

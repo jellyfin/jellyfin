@@ -1,4 +1,4 @@
-define(['appSettings', 'userSettings', 'appStorage', 'datetime', 'browser'], function (appSettings, userSettings, appStorage, datetime, browser) {
+define(['appSettings', 'userSettings', 'datetime', 'browser'], function (appSettings, userSettings, datetime, browser) {
     'use strict';
 
     function mediaPlayer() {
@@ -1095,13 +1095,13 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime', 'browser'], fun
         self.saveVolume = function (val) {
 
             if (val) {
-                appStorage.setItem("volume", val);
+                appSettings.set("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return appStorage.getItem("volume") || 0.5;
+            return appSettings.get("volume") || 0.5;
         };
 
         self.shuffle = function (id) {

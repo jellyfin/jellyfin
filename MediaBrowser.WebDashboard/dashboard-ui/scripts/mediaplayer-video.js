@@ -1,4 +1,4 @@
-﻿define(['appSettings', 'datetime', 'mediaInfo', 'browser', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo, browser) {
+﻿define(['appSettings', 'datetime', 'mediaInfo', 'browser', 'imageLoader', 'scrollStyles', 'paper-icon-button-light'], function (appSettings, datetime, mediaInfo, browser, imageLoader) {
     'use strict';
 
     function createVideoPlayer(self) {
@@ -426,11 +426,11 @@
                         width: 160,
                         shape: 'portrait'
                     });
-                    ImageLoader.lazyChildren(elem);
+                    imageLoader.lazyChildren(elem);
                 });
             }
             else {
-                ImageLoader.lazyChildren(elem);
+                imageLoader.lazyChildren(elem);
             }
 
             function onTabButtonClick() {

@@ -202,13 +202,6 @@ div[data-role='page'] {
     white-space: normal !important;
 }
 
-.warningFieldDescription {
-    padding: 5px;
-    border: 1px solid #f4c63f;
-    background: #fff3a5;
-    border-radius: 5px;
-}
-
 .fieldDescription + .fieldDescription {
     margin-top: 5px;
 }

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, appHost, imageLoader) {
     'use strict';
 
     function enableScrollX() {
@@ -37,7 +37,7 @@
 
         }, cardOptions || {}));
 
-        ImageLoader.lazyChildren(recordingItems);
+        imageLoader.lazyChildren(recordingItems);
     }
 
     function getBackdropShape() {
@@ -225,7 +225,7 @@
         var elem = page.querySelector('.' + sectionClass);
 
         elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+        imageLoader.lazyChildren(elem);
     }
 
     return function (view, params) {

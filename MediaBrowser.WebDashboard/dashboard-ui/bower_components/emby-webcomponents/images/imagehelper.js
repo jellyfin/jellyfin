@@ -7,7 +7,6 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
 
     //var imagesWorker = new Worker(require.toUrl('.').split('?')[0] + '/imagesworker.js');
 
-    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
 
     var enableFade = browser.animate && !browser.slow;

@@ -1,4 +1,4 @@
-define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, dom, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
+define(['loading', 'viewManager', 'skinManager', 'pluginManager', 'backdrop', 'browser', 'pageJs', 'appSettings', 'apphost'], function (loading, viewManager, skinManager, pluginManager, backdrop, browser, page, appSettings, appHost) {
     'use strict';
 
     var embyRouter = {
@@ -491,15 +491,12 @@ define(['loading', 'dom', 'viewManager', 'skinManager', 'pluginManager', 'backdr
     }
 
     var resolveOnNextShow;
-    dom.addEventListener(document, 'viewshow', function () {
-
+    document.addEventListener('viewshow', function () {
         var resolve = resolveOnNextShow;
         if (resolve) {
             resolveOnNextShow = null;
             resolve();
         }
-    }, {
-        passive: true
     });
 
     var currentRouteInfo;

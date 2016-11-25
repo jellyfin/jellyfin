@@ -79,14 +79,6 @@ button.emby-button.mini:not(.fab) {
     background-color: #2b2b2b;
 }
 
-div.dialogHeader {
-    padding: .35em .5em;
-    display: flex;
-    align-items: center;
-    line-height: normal;
-    font-size: 110%;
-}
-
 .ui-body-a div.formDialogHeader {
     background-color: #52B54B;
     color: #fff;

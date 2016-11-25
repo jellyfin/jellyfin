@@ -1,4 +1,4 @@
-﻿define(['cardBuilder', 'emby-itemscontainer'], function (cardBuilder) {
+﻿define(['cardBuilder', 'imageLoader', 'emby-itemscontainer'], function (cardBuilder, imageLoader) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -68,7 +68,7 @@
 
             var elem = context.querySelector('#items');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             var i, length;
             var elems;

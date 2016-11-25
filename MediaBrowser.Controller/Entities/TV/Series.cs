@@ -142,6 +142,24 @@ namespace MediaBrowser.Controller.Entities.TV
             return result.TotalRecordCount;
         }
 
+        public override int GetRecursiveChildCount(User user)
+        {
+            var query = new InternalItemsQuery(user);
+
+            query.AncestorWithPresentationUniqueKey = GetUniqueSeriesKey(this);
+            if (query.SortBy.Length == 0)
+            {
+                query.SortBy = new[] { ItemSortBy.SortName };
+            }
+            if (query.IncludeItemTypes.Length == 0)
+            {
+                query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
+            }
+            query.IsVirtualItem = false;
+            query.Limit = 0;
+            return LibraryManager.GetItemsResult(query).TotalRecordCount;
+        }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>
@@ -369,7 +387,10 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Episode> GetSeasonEpisodes(Season parentSeason, User user)
         {
-            var seriesKey = GetUniqueSeriesKey(this);
+            // add optimization when this setting is not enabled
+            var seriesKey = ConfigurationManager.Configuration.DisplaySpecialsWithinSeasons ?
+                GetUniqueSeriesKey(this) :
+                GetUniqueSeriesKey(parentSeason);
 
             var query = new InternalItemsQuery(user)
             {

@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder) {
+﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'imageLoader', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder, imageLoader) {
     'use strict';
 
     return function (view, params) {
@@ -6,6 +6,10 @@
         var data = {};
 
         function addCurrentItemToQuery(query, item) {
+
+            if (params.parentId) {
+                query.ParentId = params.parentId;
+            }
 
             if (item.Type == "Person") {
                 query.PersonIds = item.Id;
@@ -186,7 +190,7 @@
                 }
 
                 itemsContainer.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(itemsContainer);
+                imageLoader.lazyChildren(itemsContainer);
 
                 var i, length;
                 var elems;
@@ -218,8 +222,11 @@
         view.addEventListener('click', onListItemClick);
 
         view.addEventListener('viewbeforeshow', function (e) {
-            if (params.parentId) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), params.parentId).then(function (parent) {
+
+            var parentId = params.genreId || params.parentId;
+
+            if (parentId) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
                     onViewStyleChange(parent);
