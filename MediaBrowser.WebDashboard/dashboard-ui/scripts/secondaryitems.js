@@ -7,6 +7,10 @@
 
         function addCurrentItemToQuery(query, item) {
 
+            if (params.parentId) {
+                query.ParentId = params.parentId;
+            }
+
             if (item.Type == "Person") {
                 query.PersonIds = item.Id;
             }
@@ -218,8 +222,11 @@
         view.addEventListener('click', onListItemClick);
 
         view.addEventListener('viewbeforeshow', function (e) {
-            if (params.parentId) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), params.parentId).then(function (parent) {
+
+            var parentId = params.genreId || params.parentId;
+
+            if (parentId) {
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
                     onViewStyleChange(parent);

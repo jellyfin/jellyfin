@@ -60,7 +60,7 @@
 
         function getMoreItemsHref(itemId, type) {
 
-            return 'secondaryitems.html?type=' + type + '&parentId=' + itemId;
+            return 'secondaryitems.html?type=' + type + '&genreId=' + itemId + '&parentId=' + params.topParentId;
         }
 
         dom.addEventListener(tabContent, 'click', function (e) {
