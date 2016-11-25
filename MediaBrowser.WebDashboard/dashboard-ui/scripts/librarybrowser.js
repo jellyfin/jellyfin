@@ -1,4 +1,4 @@
-﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'browser', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom, browser) {
+﻿define(['appSettings', 'dom', 'browser', 'scrollStyles'], function (appSettings, dom, browser) {
     'use strict';
 
     function fadeInRight(elem) {
@@ -33,7 +33,7 @@
 
             loadSavedQueryValues: function (key, query) {
 
-                var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
+                var values = appSettings.get(key + '_' + Dashboard.getCurrentUserId());
 
                 if (values) {
 
@@ -57,7 +57,7 @@
                 }
 
                 try {
-                    appStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+                    appSettings.set(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
                 } catch (e) {
 
                 }
@@ -66,7 +66,7 @@
             saveViewSetting: function (key, value) {
 
                 try {
-                    appStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+                    appSettings.set(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
                 } catch (e) {
 
                 }
@@ -74,7 +74,7 @@
 
             getSavedView: function (key) {
 
-                var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+                var val = appSettings.get(key + '_' + Dashboard.getCurrentUserId() + '_view');
 
                 return val;
             },
@@ -202,7 +202,9 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call(viewManager.currentView());
+                    require(['viewManager'], function (viewManager) {
+                        afterNavigate.call(viewManager.currentView());
+                    });
                 } else {
 
                     pageClassOn('pageinit', 'page', afterNavigate);
@@ -424,17 +426,19 @@
 
             renderName: function (item, nameElem, linkToElement, context) {
 
-                var name = itemHelper.getDisplayName(item, {
-                    includeParentInfo: false
+                require(['itemHelper'], function (itemHelper) {
+                    var name = itemHelper.getDisplayName(item, {
+                        includeParentInfo: false
+                    });
+
+                    LibraryMenu.setTitle(name);
+
+                    if (linkToElement) {
+                        nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
+                    } else {
+                        nameElem.innerHTML = name;
+                    }
                 });
-
-                LibraryMenu.setTitle(name);
-
-                if (linkToElement) {
-                    nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
-                } else {
-                    nameElem.innerHTML = name;
-                }
             },
 
             renderParentName: function (item, parentNameElem, context) {
@@ -536,7 +540,7 @@
 
                 if (limit && options.updatePageSizeSetting !== false) {
                     try {
-                        appStorage.setItem(options.pageSizeKey || pageSizeKey, limit);
+                        appSettings.set(options.pageSizeKey || pageSizeKey, limit);
                     } catch (e) {
 
                     }
@@ -706,7 +710,7 @@
                 });
             },
 
-            renderDetailImage: function (elem, item, editable, preferThumb) {
+            renderDetailImage: function (elem, item, editable, preferThumb, imageLoader, indicators) {
 
                 var imageTags = item.ImageTags || {};
 
@@ -855,10 +859,10 @@
                         img.classList.add('loaded');
                     }
                 };
-                ImageLoader.lazyImage(img, url);
+                imageLoader.lazyImage(img, url);
             },
 
-            renderDetailPageBackdrop: function (page, item) {
+            renderDetailPageBackdrop: function (page, item, imageLoader) {
 
                 var screenWidth = screen.availWidth;
 
@@ -877,7 +881,7 @@
                     });
 
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
+                    imageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -890,7 +894,7 @@
                     });
 
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
+                    imageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else {

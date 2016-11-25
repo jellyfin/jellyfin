@@ -1,4 +1,4 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'libraryBrowser', 'apphost', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, libraryBrowser, appHost, embyRouter) {
+﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (layoutManager, viewManager, libraryBrowser, embyRouter) {
     'use strict';
 
     var enableBottomTabs = AppInfo.isNativeApp;
@@ -53,10 +53,16 @@
 
         document.querySelector('.skinHeader').appendChild(viewMenuBar);
 
-        imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        lazyLoadViewMenuBarImages();
 
         document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
+    }
+
+    function lazyLoadViewMenuBarImages() {
+        require(['imageLoader'], function (imageLoader) {
+            imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        });
     }
 
     function onBackClick() {
@@ -140,13 +146,11 @@
             }
 
             require(['apphost'], function (apphost) {
-
                 if (apphost.supports('voiceinput')) {
                     header.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
                 }
-
             });
 
         } else {
@@ -460,11 +464,13 @@
             showBySelector('.lnkSyncToOtherDevices', false);
         }
 
-        if (user.Policy.EnableSync && appHost.supports('sync')) {
-            showBySelector('.lnkManageOffline', true);
-        } else {
-            showBySelector('.lnkManageOffline', false);
-        }
+        require(['apphost'], function (appHost) {
+            if (user.Policy.EnableSync && appHost.supports('sync')) {
+                showBySelector('.lnkManageOffline', true);
+            } else {
+                showBySelector('.lnkManageOffline', false);
+            }
+        });
 
         var userId = Dashboard.getCurrentUserId();
 

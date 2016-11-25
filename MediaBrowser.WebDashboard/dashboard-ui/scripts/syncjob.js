@@ -1,4 +1,4 @@
-﻿define(['datetime', 'dom', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (datetime, dom) {
+﻿define(['datetime', 'dom', 'imageLoader', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (datetime, dom, imageLoader) {
     'use strict';
 
     function renderJob(page, job, dialogOptions) {
@@ -119,7 +119,7 @@
 
         var elem = page.querySelector('.jobItems');
         elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+        imageLoader.lazyChildren(elem);
     }
 
     function parentWithClass(elem, className) {

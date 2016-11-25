@@ -1,4 +1,4 @@
-﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser) {
+﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'imageLoader', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser, imageLoader) {
     'use strict';
 
     var currentPlayer;
@@ -593,7 +593,7 @@
 
         currentImgUrl = url;
 
-        ImageLoader.lazyImage(nowPlayingImageElement, url);
+        imageLoader.lazyImage(nowPlayingImageElement, url);
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).then(function (item) {

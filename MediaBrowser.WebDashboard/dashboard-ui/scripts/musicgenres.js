@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'imageLoader'], function (libraryBrowser, cardBuilder, appHost, imageLoader) {
     'use strict';
 
     return function (view, params, tabContent) {
@@ -111,7 +111,7 @@
 
                 var elem = context.querySelector('#items');
                 elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
+                imageLoader.lazyChildren(elem);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 

@@ -1,4 +1,4 @@
-﻿define(['datetime', 'cardBuilder', 'apphost', 'emby-itemscontainer', 'scrollStyles'], function (datetime, cardBuilder, appHost) {
+﻿define(['datetime', 'cardBuilder', 'apphost', 'imageLoader', 'emby-itemscontainer', 'scrollStyles'], function (datetime, cardBuilder, appHost, imageLoader) {
     'use strict';
 
     function getUpcomingPromise() {
@@ -134,7 +134,7 @@
         }
 
         elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+        imageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {
 

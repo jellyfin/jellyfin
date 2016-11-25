@@ -1,5 +1,5 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'layoutManager', 'apphost', 'dom', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
-    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, layoutManager, appHost, dom) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusManager', 'indicators', 'globalize', 'layoutManager', 'apphost', 'dom', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
+    function (datetime, imageLoader, connectionManager, itemHelper, focusManager, indicators, globalize, layoutManager, appHost, dom) {
         'use strict';
 
         var devicePixelRatio = window.devicePixelRatio || 1;

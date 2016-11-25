@@ -1,4 +1,4 @@
-﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons) {
+﻿define(['browser', 'datetime', 'libraryBrowser', 'listView', 'userdataButtons', 'imageLoader', 'cardStyle'], function (browser, datetime, libraryBrowser, listView, userdataButtons, imageLoader) {
     'use strict';
 
     function showSlideshowMenu(context) {
@@ -221,7 +221,7 @@
         currentImgUrl = url;
 
         if (url) {
-            ImageLoader.lazyImage(context.querySelector('.nowPlayingPageImage'), url);
+            imageLoader.lazyImage(context.querySelector('.nowPlayingPageImage'), url);
         } else {
             context.querySelector('.nowPlayingPageImage').style.backgroundImage = '';
         }
@@ -448,7 +448,7 @@
                     }
                 }
 
-                ImageLoader.lazyChildren(itemsContainer);
+                imageLoader.lazyChildren(itemsContainer);
             });
         }
 

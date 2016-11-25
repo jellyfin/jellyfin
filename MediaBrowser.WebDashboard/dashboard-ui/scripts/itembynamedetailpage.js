@@ -1,4 +1,4 @@
-﻿define(['listView', 'cardBuilder', 'emby-itemscontainer'], function (listView, cardBuilder) {
+﻿define(['listView', 'cardBuilder', 'imageLoader', 'emby-itemscontainer'], function (listView, cardBuilder, imageLoader) {
     'use strict';
 
     function renderItems(page, item) {
@@ -314,7 +314,7 @@
 
             itemsContainer.innerHTML = html;
 
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
         });
     }
 

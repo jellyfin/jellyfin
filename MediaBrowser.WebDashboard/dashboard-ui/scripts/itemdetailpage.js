@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader) {
     'use strict';
 
     var currentItem;
@@ -125,7 +125,7 @@
                 backdrop.setBackdrops([item]);
             }
             else {
-                hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+                hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
                 backdrop.clear();
             }
 
@@ -351,7 +351,7 @@
 
     function renderImage(page, item, user) {
 
-        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, user.Policy.IsAdministrator && item.MediaType != 'Photo');
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, user.Policy.IsAdministrator && item.MediaType != 'Photo', null, imageLoader, indicators);
     }
 
     function refreshDetailImageUserData(elem, item) {
@@ -411,7 +411,7 @@
             var itemsContainer = section.querySelector('.nextUpItems');
 
             itemsContainer.innerHTML = html;
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
         });
     }
 
@@ -885,7 +885,7 @@
 
             var similarContent = page.querySelector('#moreFromItems');
             similarContent.innerHTML = html;
-            ImageLoader.lazyChildren(similarContent);
+            imageLoader.lazyChildren(similarContent);
         });
     }
 
@@ -960,7 +960,7 @@
 
             var similarContent = similarCollapsible.querySelector('.similarContent');
             similarContent.innerHTML = html;
-            ImageLoader.lazyChildren(similarContent);
+            imageLoader.lazyChildren(similarContent);
         });
     }
 
@@ -1190,7 +1190,7 @@
             }
 
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             if (item.Type == "BoxSet") {
 
@@ -1445,7 +1445,7 @@
 
         var collectionItems = page.querySelector('.collectionItems');
         collectionItems.insertAdjacentHTML('beforeend', html);
-        ImageLoader.lazyChildren(collectionItems);
+        imageLoader.lazyChildren(collectionItems);
 
         collectionItems.querySelector('.btnAddToCollection').addEventListener('click', function () {
             require(['alert'], function (alert) {
@@ -1613,7 +1613,7 @@
 
             var themeVideosContent = page.querySelector('#themeVideosContent');
             themeVideosContent.innerHTML = getVideosHtml(items, user);
-            ImageLoader.lazyChildren(themeVideosContent);
+            imageLoader.lazyChildren(themeVideosContent);
         } else {
             page.querySelector('#themeVideosCollapsible').classList.add('hide');
         }
@@ -1637,7 +1637,7 @@
 
                 var musicVideosContent = page.querySelector('.musicVideosContent');
                 musicVideosContent.innerHTML = getVideosHtml(result.Items, user);
-                ImageLoader.lazyChildren(musicVideosContent);
+                imageLoader.lazyChildren(musicVideosContent);
 
             } else {
                 page.querySelector('#musicVideosCollapsible').classList.add('hide');
@@ -1656,7 +1656,7 @@
 
                 var additionalPartsContent = page.querySelector('#additionalPartsContent');
                 additionalPartsContent.innerHTML = getVideosHtml(result.Items, user);
-                ImageLoader.lazyChildren(additionalPartsContent);
+                imageLoader.lazyChildren(additionalPartsContent);
 
             } else {
                 page.querySelector('#additionalPartsCollapsible').classList.add('hide');
@@ -1890,7 +1890,7 @@
 
             var specialsContent = page.querySelector('#specialsContent');
             specialsContent.innerHTML = getVideosHtml(specials, user, limit, "moreSpecials");
-            ImageLoader.lazyChildren(specialsContent);
+            imageLoader.lazyChildren(specialsContent);
 
         });
     }

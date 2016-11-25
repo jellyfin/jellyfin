@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder) {
+﻿define(['libraryBrowser', 'listView', 'cardBuilder', 'imageLoader', 'emby-itemscontainer'], function (libraryBrowser, listView, cardBuilder, imageLoader) {
     'use strict';
 
     return function (view, params) {
@@ -186,7 +186,7 @@
                 }
 
                 itemsContainer.innerHTML = html + pagingHtml;
-                ImageLoader.lazyChildren(itemsContainer);
+                imageLoader.lazyChildren(itemsContainer);
 
                 var i, length;
                 var elems;

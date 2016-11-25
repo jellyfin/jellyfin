@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'dom', 'apphost', 'imageLoader', 'libraryMenu', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, cardBuilder, dom, appHost, imageLoader, libraryMenu) {
     'use strict';
 
     function itemsPerRow() {
@@ -53,7 +53,7 @@
                 vibrant: supportsImageAnalysis
 
             });
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
         });
@@ -105,7 +105,7 @@
                 vibrant: supportsImageAnalysis
 
             });
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
 
         });
 
@@ -157,7 +157,7 @@
                 vibrant: supportsImageAnalysis
 
             });
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
 
         });
 
@@ -205,14 +205,12 @@
                 vibrant: supportsImageAnalysis
 
             });
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
 
         });
     }
 
-    function loadSuggestionsTab(page, tabContent) {
-
-        var parentId = LibraryMenu.getTopParentId();
+    function loadSuggestionsTab(page, tabContent, parentId) {
 
         console.log('loadSuggestionsTab');
         loadLatest(tabContent, parentId);
@@ -227,31 +225,6 @@
         });
     }
 
-    pageIdOn('pagebeforeshow', "musicRecommendedPage", function () {
-
-        var page = this;
-
-        if (!page.getAttribute('data-title')) {
-
-            var parentId = LibraryMenu.getTopParentId();
-
-            if (parentId) {
-
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
-
-                    page.setAttribute('data-title', item.Name);
-                    LibraryMenu.setTitle(item.Name);
-                });
-
-
-            } else {
-                page.setAttribute('data-title', Globalize.translate('TabMusic'));
-                LibraryMenu.setTitle(Globalize.translate('TabMusic'));
-            }
-        }
-
-    });
-
     return function (view, params) {
 
         var self = this;
@@ -261,7 +234,7 @@
             Dashboard.showLoadingMsg();
 
             var tabContent = view.querySelector('.pageTabContent[data-index=\'' + 0 + '\']');
-            loadSuggestionsTab(view, tabContent);
+            loadSuggestionsTab(view, tabContent, params.topParentId);
         }
 
         function enableScrollX() {
@@ -379,6 +352,28 @@
         });
         viewTabs.addEventListener('tabchange', function (e) {
             loadTab(view, parseInt(e.detail.selectedTabIndex));
+        });
+
+        view.addEventListener('viewbeforeshow', function (e) {
+
+            if (!view.getAttribute('data-title')) {
+
+                var parentId = params.topParentId;
+
+                if (parentId) {
+
+                    ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (item) {
+
+                        view.setAttribute('data-title', item.Name);
+                        libraryMenu.setTitle(item.Name);
+                    });
+
+
+                } else {
+                    view.setAttribute('data-title', Globalize.translate('TabMusic'));
+                    libraryMenu.setTitle(Globalize.translate('TabMusic'));
+                }
+            }
         });
 
         require(["headroom-window"], function (headroom) {

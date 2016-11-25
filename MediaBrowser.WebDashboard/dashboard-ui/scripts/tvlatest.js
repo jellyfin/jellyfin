@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder', 'apphost'], function (categorysyncbuttons, groupedcards, cardBuilder, appHost) {
+﻿define(['components/categorysyncbuttons', 'components/groupedcards', 'cardBuilder', 'apphost', 'imageLoader'], function (categorysyncbuttons, groupedcards, cardBuilder, appHost, imageLoader) {
     'use strict';
 
     function getView() {
@@ -56,7 +56,7 @@
 
             var elem = context.querySelector('#latestEpisodes');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
         });

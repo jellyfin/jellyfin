@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom, appHost) {
+﻿define(['libraryBrowser', 'components/categorysyncbuttons', 'cardBuilder', 'dom', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, categorysyncbuttons, cardBuilder, dom, appHost, imageLoader) {
     'use strict';
 
     function enableScrollX() {
@@ -170,7 +170,7 @@
 
             var recs = page.querySelector('.recommendations');
             recs.innerHTML = html;
-            ImageLoader.lazyChildren(recs);
+            imageLoader.lazyChildren(recs);
         });
     }
 

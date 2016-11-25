@@ -1,4 +1,4 @@
-﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'imageLoader', 'scripts/livetvcomponents', 'emby-button', 'listViewStyle', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost, imageLoader) {
     'use strict';
 
     function getRecordingGroupHtml(group) {
@@ -96,7 +96,7 @@
 
         }, cardOptions || {}));
 
-        ImageLoader.lazyChildren(recordingItems);
+        imageLoader.lazyChildren(recordingItems);
     }
 
     function getBackdropShape() {

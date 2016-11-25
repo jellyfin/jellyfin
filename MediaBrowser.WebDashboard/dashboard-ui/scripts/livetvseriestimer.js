@@ -1,4 +1,4 @@
-﻿define(['datetime', 'dom', 'seriesRecordingEditor', 'listView', 'emby-itemscontainer'], function (datetime, dom, seriesRecordingEditor, listView) {
+﻿define(['datetime', 'dom', 'seriesRecordingEditor', 'listView', 'imageLoader', 'emby-itemscontainer'], function (datetime, dom, seriesRecordingEditor, listView, imageLoader) {
     'use strict';
 
     return function (view, params) {
@@ -55,7 +55,7 @@
                 var scheduleTab = page.querySelector('.scheduleTab');
                 scheduleTab.innerHTML = html;
 
-                ImageLoader.lazyChildren(scheduleTab);
+                imageLoader.lazyChildren(scheduleTab);
             });
         }
 
