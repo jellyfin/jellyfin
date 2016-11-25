@@ -1122,7 +1122,9 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            return string.Join("|", images.Select(ToValueString).ToArray());
+            var imageStrings = images.Where(i => !string.IsNullOrWhiteSpace(i.Path)).Select(ToValueString).ToArray();
+
+            return string.Join("|", imageStrings);
         }
 
         private void DeserializeImages(string value, BaseItem item)
@@ -1141,7 +1143,12 @@ namespace Emby.Server.Implementations.Data
 
             foreach (var part in parts)
             {
-                item.ImageInfos.Add(ItemImageInfoFromValueString(part));
+                var image = ItemImageInfoFromValueString(part);
+
+                if (image != null)
+                {
+                    item.ImageInfos.Add(image);
+                }
             }
         }
 
@@ -1149,7 +1156,14 @@ namespace Emby.Server.Implementations.Data
         {
             var delimeter = "*";
 
-            return (image.Path ?? string.Empty) +
+            var path = image.Path;
+
+            if (path == null)
+            {
+                path = string.Empty;
+            }
+
+            return path +
                 delimeter +
                 image.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) +
                 delimeter +
@@ -1161,6 +1175,11 @@ namespace Emby.Server.Implementations.Data
         public ItemImageInfo ItemImageInfoFromValueString(string value)
         {
             var parts = value.Split(new[] { '*' }, StringSplitOptions.None);
+
+            if (parts.Length != 4)
+            {
+                return null;
+            }
 
             var image = new ItemImageInfo();
 
