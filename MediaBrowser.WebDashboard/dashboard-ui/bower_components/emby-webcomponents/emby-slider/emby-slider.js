@@ -23,6 +23,13 @@
             if (backgroundLower) {
                 var fraction = (value - range.min) / (range.max - range.min);
 
+                if (browser.noFlex) {
+                    backgroundLower.style['-webkit-flex'] = fraction;
+                    backgroundUpper.style['-webkit-flex'] = 1 - fraction;
+                    backgroundLower.style['-webkit-box-flex'] = fraction;
+                    backgroundUpper.style['-webkit-box-flex'] = 1 - fraction;
+                }
+
                 backgroundLower.style.flex = fraction;
                 backgroundUpper.style.flex = 1 - fraction;
             }

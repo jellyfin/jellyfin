@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu) {
     'use strict';
 
     var currentItem;
@@ -104,7 +104,7 @@
 
         LibraryBrowser.renderName(item, page.querySelector('.itemName'), false, context);
         LibraryBrowser.renderParentName(item, page.querySelector('.parentName'), context);
-        LibraryMenu.setTitle('');
+        libraryMenu.setTitle('');
 
         Dashboard.getCurrentUser().then(function (user) {
 
@@ -131,7 +131,7 @@
 
             var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');
 
-            LibraryMenu.setTransparentMenu(transparentHeader);
+            libraryMenu.setTransparentMenu(transparentHeader);
 
             var canPlay = false;
 
@@ -1300,7 +1300,7 @@
     }
 
     function inferContext(item) {
-        
+
         if (item.Type == 'Movie' || item.Type == 'BoxSet') {
             return 'movies';
         }
@@ -2282,7 +2282,7 @@
             currentRecordingFields = null;
 
             Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
-            LibraryMenu.setTransparentMenu(false);
+            libraryMenu.setTransparentMenu(false);
         });
     };
 });

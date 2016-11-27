@@ -1055,4 +1055,6 @@
             });
         });
     }
+
+    return LibraryMenu;
 });

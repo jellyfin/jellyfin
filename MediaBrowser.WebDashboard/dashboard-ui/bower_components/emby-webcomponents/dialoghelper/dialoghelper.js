@@ -246,12 +246,12 @@
         if (enableAnimation()) {
 
             var onFinish = function () {
-                dom.removeEventListener(dlg, 'animationend', onFinish, {
+                dom.removeEventListener(dlg, dom.whichAnimationEvent(), onFinish, {
                     once: true
                 });
                 onAnimationFinish();
             };
-            dom.addEventListener(dlg, 'animationend', onFinish, {
+            dom.addEventListener(dlg, dom.whichAnimationEvent(), onFinish, {
                 once: true
             });
             return;
@@ -281,12 +281,12 @@
                     break;
             }
             var onFinish = function () {
-                dom.removeEventListener(dlg, 'animationend', onFinish, {
+                dom.removeEventListener(dlg, dom.whichAnimationEvent(), onFinish, {
                     once: true
                 });
                 onAnimationFinish();
             };
-            dom.addEventListener(dlg, 'animationend', onFinish, {
+            dom.addEventListener(dlg, dom.whichAnimationEvent(), onFinish, {
                 once: true
             });
 

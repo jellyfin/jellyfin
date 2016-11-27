@@ -141,13 +141,13 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
             currentAnimations = animations;
 
             var onAnimationComplete = function () {
-                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                dom.removeEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
                 resolve();
             };
 
-            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+            dom.addEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                 once: true
             });
         });
@@ -171,13 +171,13 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
             currentAnimations = animations;
 
             var onAnimationComplete = function () {
-                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                dom.removeEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
                 resolve();
             };
 
-            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+            dom.addEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                 once: true
             });
         });
