@@ -53,7 +53,8 @@
                 scalable: true,
                 showItemCounts: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                context: 'tvshows'
             });
 
             Dashboard.hideLoadingMsg();
