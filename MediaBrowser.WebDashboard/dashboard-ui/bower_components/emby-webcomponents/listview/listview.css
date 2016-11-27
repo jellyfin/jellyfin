@@ -166,12 +166,9 @@
     align-items: center;
 }
 
-@supports (display: flex) {
-
-    .listItem, .listItemBody, .listItemMediaInfo {
-        display: flex;
-        contain: layout style;
-    }
+.listItem, .listItemBody, .listItemMediaInfo {
+    display: flex;
+    contain: layout style;
 }
 
 @media all and (max-width: 800px) {

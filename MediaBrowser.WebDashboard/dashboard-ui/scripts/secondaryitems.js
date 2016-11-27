@@ -221,12 +221,41 @@
 
         view.addEventListener('click', onListItemClick);
 
+        function getItemPromise() {
+
+            var id = params.genreId || params.studioId || params.parentId;
+
+            if (id) {
+                return ApiClient.getItem(Dashboard.getCurrentUserId(), id);
+            }
+
+            var name = params.genre;
+
+            if (name) {
+                return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
+            }
+
+            name = params.musicgenre;
+
+            if (name) {
+                return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
+            }
+
+            name = params.gamegenre;
+
+            if (name) {
+                return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
+            }
+
+            return null;
+        }
+
         view.addEventListener('viewbeforeshow', function (e) {
 
-            var parentId = params.genreId || params.parentId;
+            var parentPromise = getItemPromise();
 
-            if (parentId) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).then(function (parent) {
+            if (parentPromise) {
+                parentPromise.then(function (parent) {
                     LibraryMenu.setTitle(parent.Name);
 
                     onViewStyleChange(parent);

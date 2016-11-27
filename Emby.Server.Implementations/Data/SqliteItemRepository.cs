@@ -170,7 +170,9 @@ namespace Emby.Server.Implementations.Data
 
                                 createMediaStreamsTableCommand,
 
-                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)"
+                                "create index if not exists idx_mediastreams1 on mediastreams(ItemId)",
+
+                                "pragma shrink_memory"
 
                                };
 
@@ -3588,6 +3590,15 @@ namespace Emby.Server.Implementations.Data
                 if (statement != null)
                 {
                     statement.TryBind("@ExternalSeriesId", query.ExternalSeriesId);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.ExternalId))
+            {
+                whereClauses.Add("ExternalId=@ExternalId");
+                if (statement != null)
+                {
+                    statement.TryBind("@ExternalId", query.ExternalId);
                 }
             }
 

@@ -991,7 +991,11 @@
             if (isStatic) {
                 html += ' on ' + item.Studios[0].Name;
             } else {
-                html += ' on <a class="textlink" href="itemdetails.html?id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
+
+                var context = inferContext(item);
+
+                var href = LibraryBrowser.getHref(item.Studios[i], context);
+                html += ' on <a class="textlink" href="' + href + '">' + item.Studios[0].Name + '</a>';
             }
         }
 
@@ -1295,7 +1299,30 @@
         });
     }
 
+    function inferContext(item) {
+        
+        if (item.Type == 'Movie' || item.Type == 'BoxSet') {
+            return 'movies';
+        }
+        if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'Episode') {
+            return 'tvshows';
+        }
+        if (item.Type == 'Game' || item.Type == 'GameSystem') {
+            return 'games';
+        }
+        if (item.Type == 'Game' || item.Type == 'GameSystem') {
+            return 'games';
+        }
+        if (item.Type == 'MusicArtist' || item.Type == 'MusicAlbum') {
+            return 'music';
+        }
+
+        return null;
+    }
+
     function renderStudios(elem, item, isStatic) {
+
+        var context = inferContext(item);
 
         if (item.Studios && item.Studios.length && item.Type != "Series") {
 
@@ -1310,7 +1337,10 @@
                 if (isStatic) {
                     html += item.Studios[i].Name;
                 } else {
-                    html += '<a class="textlink" href="itemdetails.html?id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+
+                    item.Studios[i].Type = 'Studio';
+                    var href = LibraryBrowser.getHref(item.Studios[i], context);
+                    html += '<a class="textlink" href="' + href + '">' + item.Studios[i].Name + '</a>';
                 }
             }
 
@@ -1327,6 +1357,8 @@
     }
 
     function renderGenres(elem, item, limit, isStatic) {
+
+        var context = inferContext(item);
 
         var html = '';
 
@@ -1351,7 +1383,23 @@
             if (isStatic) {
                 html += genres[i];
             } else {
-                html += '<a class="textlink" href="itemdetails.html?' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+
+                var type;
+                switch (context) {
+                    case 'tvshows':
+                        type = 'Series';
+                        break;
+                    case 'games':
+                        type = 'Game';
+                        break;
+                    default:
+                        type = 'Movie';
+                        break;
+                }
+
+                var url = "secondaryitems.html?type=" + type + "&" + param + "=" + ApiClient.encodeName(genres[i]);
+
+                html += '<a class="textlink" href="' + url + '">' + genres[i] + '</a>';
             }
         }
 

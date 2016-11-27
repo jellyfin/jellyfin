@@ -140,7 +140,7 @@
                 };
 
                 require(['hammer-main'], function (hammertime) {
-                    
+
                     hammertime.on('swipeleft', onSwipeLeft);
                     hammertime.on('swiperight', onSwipeRight);
 
@@ -239,24 +239,6 @@
 
             getHref: function (item, context, topParentId) {
 
-                var href = LibraryBrowser.getHrefInternal(item, context);
-
-                if (context == 'tv') {
-                    if (!topParentId) {
-                        topParentId = LibraryMenu.getTopParentId();
-                    }
-
-                    if (topParentId) {
-                        href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
-                        href += topParentId;
-                    }
-                }
-
-                return href;
-            },
-
-            getHrefInternal: function (item, context) {
-
                 if (!item) {
                     throw new Error('item cannot be null');
                 }
@@ -265,6 +247,7 @@
                     return item.url;
                 }
 
+                var url;
                 // Handle search hints
                 var id = item.Id || item.ItemId;
 
@@ -348,16 +331,56 @@
                     return "itemdetails.html?id=" + id;
                 }
                 if (item.Type == "Genre") {
-                    return "itemdetails.html?id=" + id;
+                    var type;
+                    switch (context) {
+                        case 'tvshows':
+                            type = 'Series';
+                            break;
+                        case 'games':
+                            type = 'Game';
+                            break;
+                        default:
+                            type = 'Movie';
+                            break;
+                    }
+
+                    url = "secondaryitems.html?type=" + type + "&genreId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "MusicGenre") {
                     return "itemdetails.html?id=" + id;
                 }
                 if (item.Type == "GameGenre") {
-                    return "itemdetails.html?id=" + id;
+
+                    url = "secondaryitems.html?type=Game&genreId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "Studio") {
-                    return "itemdetails.html?id=" + id;
+
+                    var type;
+                    switch (context) {
+                        case 'tvshows':
+                            type = 'Series';
+                            break;
+                        case 'games':
+                            type = 'Game';
+                            break;
+                        default:
+                            type = 'Movie';
+                            break;
+                    }
+
+                    url = "secondaryitems.html?type=" + type + "&studioId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "Person") {
                     return "itemdetails.html?id=" + id;

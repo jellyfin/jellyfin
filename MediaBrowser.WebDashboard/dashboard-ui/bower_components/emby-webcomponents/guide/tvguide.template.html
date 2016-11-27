@@ -14,12 +14,12 @@
     <div class="timeslotHeaders smoothScrollX guideScroller" style="scroll-behavior: auto;"></div>
 </div>
 
-<div style="display: flex;flex-grow:1;overflow:hidden;">
+<div class="guideContent">
 
     <button is="emby-button" type="button" class="btnCategories">
         <div class="btnCategoriesText">${Categories}</div>
     </button>
-    <div class="smoothScrollY guideVerticalScroller programContainer guideScroller" style="flex-grow: 1;">
+    <div class="smoothScrollY guideVerticalScroller programContainer guideScroller">
 
         <div class="channelsContainer">
             <div class="channelList"></div>
@@ -30,7 +30,7 @@
     </div>
 </div>
 
-<div class="guideRequiresUnlock readOnlyContent hide" style="margin: 1em auto; text-align: center; padding: 1em; flex-shrink: 0;">
+<div class="guideRequiresUnlock hide">
     <p class="unlockText"></p>
     <button is="emby-button" type="button" class="raised button-submit block btnUnlockGuide">
         <span>${UnlockGuide}</span>

@@ -229,7 +229,6 @@ namespace Emby.Server.Implementations.Sync
                         commandText = "update SyncJobs set TargetId=?,Name=?,Profile=?,Quality=?,Bitrate=?,Status=?,Progress=?,UserId=?,ItemIds=?,Category=?,ParentId=?,UnwatchedOnly=?,ItemLimit=?,SyncNewContent=?,DateCreated=?,DateLastModified=?,ItemCount=? where Id=?";
                     }
 
-                    paramList.Add(job.Id.ToGuidParamValue());
                     paramList.Add(job.TargetId);
                     paramList.Add(job.Name);
                     paramList.Add(job.Profile);
@@ -248,6 +247,15 @@ namespace Emby.Server.Implementations.Sync
                     paramList.Add(job.DateCreated.ToDateTimeParamValue());
                     paramList.Add(job.DateLastModified.ToDateTimeParamValue());
                     paramList.Add(job.ItemCount);
+
+                    if (insert)
+                    {
+                        paramList.Insert(0, job.Id.ToGuidParamValue());
+                    }
+                    else
+                    {
+                        paramList.Add(job.Id.ToGuidParamValue());
+                    }
 
                     connection.RunInTransaction(conn =>
                     {
@@ -698,7 +706,6 @@ namespace Emby.Server.Implementations.Sync
                     }
 
                     var paramList = new List<object>();
-                    paramList.Add(jobItem.Id.ToGuidParamValue());
                     paramList.Add(jobItem.ItemId);
                     paramList.Add(jobItem.ItemName);
                     paramList.Add(jobItem.MediaSourceId);
@@ -715,6 +722,15 @@ namespace Emby.Server.Implementations.Sync
                     paramList.Add(jobItem.IsMarkedForRemoval);
                     paramList.Add(jobItem.JobItemIndex);
                     paramList.Add(jobItem.ItemDateModifiedTicks);
+
+                    if (insert)
+                    {
+                        paramList.Insert(0, jobItem.Id.ToGuidParamValue());
+                    }
+                    else
+                    {
+                        paramList.Add(jobItem.Id.ToGuidParamValue());
+                    }
 
                     connection.RunInTransaction(conn =>
                     {

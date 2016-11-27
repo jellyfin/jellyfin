@@ -1,3 +1,6 @@
 ﻿.originalSubtitleFileLabel {
     margin-right: 1em;
 }
+.btnSearchSubtitles {
+    flex-shrink: 0;
+}
