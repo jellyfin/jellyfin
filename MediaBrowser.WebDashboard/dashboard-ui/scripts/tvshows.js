@@ -101,7 +101,7 @@
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true,
                         overlayMoreButton: true
                     });
@@ -112,7 +112,7 @@
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
@@ -126,7 +126,7 @@
                         items: result.Items,
                         shape: "banner",
                         preferBanner: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true
                     });
                 }
@@ -134,7 +134,7 @@
 
                     html = listView.getListViewHtml({
                         items: result.Items,
-                        context: 'tv',
+                        context: 'tvshows',
                         sortBy: query.SortBy
                     });
                 }
@@ -143,7 +143,7 @@
                     html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
-                        context: 'tv',
+                        context: 'tvshows',
                         showTitle: true,
                         showSeriesYear: true,
                         lazy: true,
@@ -157,7 +157,7 @@
                     html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
-                        context: 'tv',
+                        context: 'tvshows',
                         centerText: true,
                         lazy: true,
                         overlayMoreButton: true
