@@ -340,7 +340,7 @@ namespace MediaBrowser.ServerApplication
                 imageEncoder,
                 new Server.Startup.Common.SystemEvents(logManager.GetLogger("SystemEvents")),
                 new RecyclableMemoryStreamProvider(),
-                new NetworkManager(logManager.GetLogger("NetworkManager")),
+                new Networking.NetworkManager(logManager.GetLogger("NetworkManager")),
                 GenerateCertificate,
                 () => Environment.UserDomainName);
 
