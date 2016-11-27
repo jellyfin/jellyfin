@@ -994,7 +994,7 @@
 
                 var context = inferContext(item);
 
-                var href = LibraryBrowser.getHref(item.Studios[i], context);
+                var href = LibraryBrowser.getHref(item.Studios[0], context);
                 html += ' on <a class="textlink" href="' + href + '">' + item.Studios[0].Name + '</a>';
             }
         }

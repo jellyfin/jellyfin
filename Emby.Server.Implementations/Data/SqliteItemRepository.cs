@@ -30,6 +30,7 @@ using MediaBrowser.Server.Implementations.Playlists;
 using MediaBrowser.Model.Reflection;
 using SQLitePCL.pretty;
 using MediaBrowser.Model.System;
+using MediaBrowser.Model.Threading;
 
 namespace Emby.Server.Implementations.Data
 {
@@ -68,11 +69,13 @@ namespace Emby.Server.Implementations.Data
         private readonly IMemoryStreamFactory _memoryStreamProvider;
         private readonly IFileSystem _fileSystem;
         private readonly IEnvironmentInfo _environmentInfo;
+        private readonly ITimerFactory _timerFactory;
+        private ITimer _shrinkMemoryTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
-        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo, IFileSystem fileSystem, IEnvironmentInfo environmentInfo)
+        public SqliteItemRepository(IServerConfigurationManager config, IJsonSerializer jsonSerializer, ILogger logger, IMemoryStreamFactory memoryStreamProvider, IAssemblyInfo assemblyInfo, IFileSystem fileSystem, IEnvironmentInfo environmentInfo, ITimerFactory timerFactory)
             : base(logger)
         {
             if (config == null)
@@ -89,6 +92,7 @@ namespace Emby.Server.Implementations.Data
             _memoryStreamProvider = memoryStreamProvider;
             _fileSystem = fileSystem;
             _environmentInfo = environmentInfo;
+            _timerFactory = timerFactory;
             _typeMapper = new TypeMapper(assemblyInfo);
 
             _criticReviewsPath = Path.Combine(_config.ApplicationPaths.DataPath, "critic-reviews");
@@ -119,6 +123,14 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        protected override bool EnableTempStoreMemory
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private SQLiteDatabaseConnection _backgroundConnection;
         protected override void CloseConnection()
         {
@@ -128,6 +140,12 @@ namespace Emby.Server.Implementations.Data
             {
                 _backgroundConnection.Dispose();
                 _backgroundConnection = null;
+            }
+
+            if (_shrinkMemoryTimer != null)
+            {
+                _shrinkMemoryTimer.Dispose();
+                _shrinkMemoryTimer = null;
             }
         }
 
@@ -364,13 +382,35 @@ namespace Emby.Server.Implementations.Data
 
                 connection.RunQueries(postQueries);
 
-                //SqliteExtensions.Attach(_connection, Path.Combine(_config.ApplicationPaths.DataPath, "userdata_v2.db"), "UserDataDb");
                 //await Vacuum(_connection).ConfigureAwait(false);
             }
 
             userDataRepo.Initialize(WriteLock);
 
             _backgroundConnection = CreateConnection(true);
+
+            _shrinkMemoryTimer = _timerFactory.Create(OnShrinkMemoryTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(30));
+        }
+
+        private void OnShrinkMemoryTimerCallback(object state)
+        {
+            try
+            {
+                using (WriteLock.Write())
+                {
+                    using (var connection = CreateConnection())
+                    {
+                        connection.RunQueries(new string[]
+                        {
+                            "pragma shrink_memory"
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error running shrink memory", ex);
+            }
         }
 
         private readonly string[] _retriveItemColumns =
@@ -666,7 +706,7 @@ namespace Emby.Server.Implementations.Data
         {
             var requiresReset = false;
 
-            var statements = db.PrepareAll(string.Join(";",  new string[]
+            var statements = db.PrepareAll(string.Join(";", new string[]
             {
                 GetSaveItemCommandText(),
                 "delete from AncestorIds where ItemId=@ItemId",

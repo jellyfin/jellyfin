@@ -57,6 +57,10 @@
         this.classList.add('mdl-slider');
         this.classList.add('mdl-js-slider');
 
+        if (browser.noFlex) {
+            this.classList.add('slider-no-webkit-thumb')
+        }
+
         var containerElement = this.parentNode;
         containerElement.classList.add('mdl-slider__container');
 

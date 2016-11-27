@@ -9,10 +9,6 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
     function enableAnimation() {
 
-        if (browser.animate) {
-            return true;
-        }
-
         if (browser.tv) {
             return false;
         }
@@ -21,7 +17,7 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
             return false;
         }
 
-        return browser.edge && !browser.mobile;
+        return browser.supportsCssAnimation();
     }
 
     function loadView(options) {
@@ -102,7 +98,7 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
-        if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
+        if (enableAnimation() && oldAnimatedPage) {
             if (transition === 'slide') {
                 return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
             } else if (transition === 'fade') {
@@ -260,10 +256,6 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
         currentUrls = [];
         mainAnimatedPages.innerHTML = '';
         selectedPageIndex = -1;
-    }
-
-    if (enableAnimation()) {
-        require(['webAnimations']);
     }
 
     return {

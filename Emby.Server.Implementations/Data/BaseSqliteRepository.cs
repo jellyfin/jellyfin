@@ -88,10 +88,13 @@ namespace Emby.Server.Implementations.Data
 
             var queries = new List<string>
             {
-                "PRAGMA temp_store = memory",
-                //"PRAGMA journal_mode=WAL"
                 //"PRAGMA cache size=-10000"
             };
+
+            if (EnableTempStoreMemory)
+            {
+                queries.Add("PRAGMA temp_store = memory");
+            }
 
             //var cacheSize = CacheSize;
             //if (cacheSize.HasValue)
@@ -116,12 +119,20 @@ namespace Emby.Server.Implementations.Data
                     db.ExecuteAll(string.Join(";", queries.ToArray()));
                 }
             }
-            else
+            else if (queries.Count > 0)
             {
                 db.ExecuteAll(string.Join(";", queries.ToArray()));
             }
 
             return db;
+        }
+
+        protected virtual bool EnableTempStoreMemory
+        {
+            get
+            {
+                return false;
+            }
         }
 
         protected virtual int? CacheSize

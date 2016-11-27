@@ -73,7 +73,7 @@
 
         this.classList.add('emby-button');
 
-        if (browser.safari || browser.firefox || browser.noFlex) {
+        if (browser.safari || browser.firefox) {
             this.classList.add('emby-button-noflex');
         }
 
