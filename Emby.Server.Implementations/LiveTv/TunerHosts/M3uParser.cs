@@ -57,12 +57,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(_fileSystem.OpenRead(url));
         }
 
+        const string ExtInfPrefix = "#EXTINF:";
         private List<M3UChannel> GetChannels(StreamReader reader, string urlHash, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<M3UChannel>();
             string line;
             string extInf = "";
-             while ((line = reader.ReadLine()) != null)
+            while ((line = reader.ReadLine()) != null)
             {
                 line = line.Trim();
                 if (string.IsNullOrWhiteSpace(line))
@@ -75,9 +76,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     continue;
                 }
 
-                if (line.StartsWith("#EXTINF:", StringComparison.OrdinalIgnoreCase))
+                if (line.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    extInf = line.Substring(8).Trim();
+                    extInf = line.Substring(ExtInfPrefix.Length).Trim();
                     _logger.Info("Found m3u channel: {0}", extInf);
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
@@ -91,61 +92,131 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             }
             return channels;
         }
+
         private M3UChannel GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
         {
-            var titleIndex = extInf.LastIndexOf(',');
             var channel = new M3UChannel();
             channel.TunerHostId = tunerHostId;
 
-            channel.Number = extInf.Trim().Split(' ')[0] ?? "0";
-            channel.Name = extInf.Substring(titleIndex + 1);
+            extInf = extInf.Trim();
 
             //Check for channel number with the format from SatIp            
-            int number;                   
-            var numberIndex = channel.Name.IndexOf('.');
-            if (numberIndex > 0)
-            {
-                if (int.TryParse(channel.Name.Substring(0, numberIndex), out number))
-                {
-                    channel.Number = number.ToString();
-                    channel.Name = channel.Name.Substring(numberIndex + 1);
-                }
-            }
-
-            if (string.Equals(channel.Number, "-1", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(mediaUrl))
-            {
-                channel.Number = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
-            }
-
-            if (string.Equals(channel.Number, "-1", StringComparison.OrdinalIgnoreCase))
-            {
-                channel.Number = "0";
-            }
+            //int number;
+            //var numberIndex = channel.Name.IndexOf('.');
+            //if (numberIndex > 0)
+            //{
+            //    if (int.TryParse(channel.Name.Substring(0, numberIndex), out number))
+            //    {
+            //        channel.Number = number.ToString();
+            //        channel.Name = channel.Name.Substring(numberIndex + 1);
+            //    }
+            //}
 
             channel.ImageUrl = FindProperty("tvg-logo", extInf);
 
-            var name = FindProperty("tvg-name", extInf);
-            if (string.IsNullOrWhiteSpace(name))
+            channel.Name = GetChannelName(extInf);
+
+            channel.Number = GetChannelNumber(extInf, mediaUrl);
+
+            return channel;
+        }
+
+        private string GetChannelNumber(string extInf, string mediaUrl)
+        {
+            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+
+            var numberString = nameParts[0];
+
+            //Check for channel number with the format from SatIp
+            int number;
+            if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
-                 name = FindProperty("tvg-id", extInf);
+                var numberIndex = nameInExtInf.IndexOf('.');
+                if (numberIndex > 0)
+                {
+                    if (int.TryParse(nameInExtInf.Substring(0, numberIndex), out number))
+                    {
+                        numberString = number.ToString();
+                    }
+                }
             }
 
-            channel.Name = name;
+            if (string.IsNullOrWhiteSpace(numberString) || 
+                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                numberString = FindProperty("tvg-id", extInf);
+            }
 
-            var numberString = FindProperty("tvg-id", extInf);
-            if (string.IsNullOrWhiteSpace(numberString))
+            if (string.IsNullOrWhiteSpace(numberString) ||
+                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
             {
                 numberString = FindProperty("channel-id", extInf);
             }
 
-            if (!string.IsNullOrWhiteSpace(numberString))
+            if (string.IsNullOrWhiteSpace(numberString) ||
+                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
             {
-                channel.Number = numberString;
+                numberString = null;
             }
 
-            return channel;
+            if (string.IsNullOrWhiteSpace(numberString))
+            {
+                if (string.IsNullOrWhiteSpace(mediaUrl))
+                {
+                    numberString = null;
+                }
+                else
+                {
+                    numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+                }
+            }
 
+            return numberString;
         }
+
+        private string GetChannelName(string extInf)
+        {
+            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+
+            //Check for channel number with the format from SatIp
+            int number;
+            if (!string.IsNullOrWhiteSpace(nameInExtInf))
+            {
+                var numberIndex = nameInExtInf.IndexOf('.');
+                if (numberIndex > 0)
+                {
+                    if (int.TryParse(nameInExtInf.Substring(0, numberIndex), out number))
+                    {
+                        //channel.Number = number.ToString();
+                        nameInExtInf = nameInExtInf.Substring(numberIndex + 1);
+                    }
+                }
+            }
+
+            var name = FindProperty("tvg-name", extInf);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = nameInExtInf;
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = FindProperty("tvg-id", extInf);
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = null;
+            }
+
+            return name;
+        }
+
         private string FindProperty(string property, string properties)
         {
             var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
