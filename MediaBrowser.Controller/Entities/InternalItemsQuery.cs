@@ -141,6 +141,7 @@ namespace MediaBrowser.Controller.Entities
         public SeriesStatus[] SeriesStatuses { get; set; }
         public string AlbumArtistStartsWithOrGreater { get; set; }
         public string ExternalSeriesId { get; set; }
+        public string ExternalId { get; set; }
 
         public string[] AlbumNames { get; set; }
         public string[] ArtistNames { get; set; }

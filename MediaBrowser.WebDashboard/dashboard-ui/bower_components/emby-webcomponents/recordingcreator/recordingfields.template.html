@@ -1,47 +1,4 @@
-﻿<style>
-    .visibilityHide {
-        visibility: hidden;
-    }
-
-    .recordingButton {
-        margin-left: 0;
-        min-width: 10em;
-        font-size: 92%;
-    }
-
-    .recordingIcon {
-        font-size: 1.3em !important;
-    }
-
-    .recordingIcon-active {
-        color: #cc3333;
-    }
-
-    .manageButtonText {
-        text-transform: none;
-    }
-
-    @media all and (max-width: 440px) {
-
-        .manageButtonText {
-            display: none !important;
-        }
-
-        .recordingButton {
-            width: auto;
-            margin-right: 1.5em !important;
-        }
-    }
-
-    @media all and (min-width: 440px) {
-
-        .manageButtonIcon {
-            font-size: 90% !important;
-        }
-    }
-</style>
-
-<div class="convertRecordingsContainer hide" style="padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
+﻿<div class="convertRecordingsContainer hide" style="padding: 1.25em 1.5em; background: #242424; border-radius: 3px; margin: 1em 0 2em;">
     <h1 style="margin: .25em 0 .5em;">${HeaderConvertYourRecordings}</h1>
     <div class="fieldDescription">${PromoConvertRecordingsToStreamingFormat}</div>
     <br />
@@ -58,7 +15,7 @@
 </div>
 <div class="recordingFields hide">
 
-    <div class="recordSeriesContainer hide" style="display: flex; align-items: center;margin-bottom:.8em;">
+    <div class="recordSeriesContainer recordingFields-buttons hide">
         <div>
             <button is="emby-button" type="button" class="raised button-cancel recordingButton seriesRecordingButton">
                 <i class="md-icon recordingIcon">&#xE062;</i>
@@ -71,7 +28,7 @@
         </button>
     </div>
 
-    <div style="display: flex; align-items: center;">
+    <div class="recordingFields-buttons">
         <div>
             <button is="emby-button" type="button" class="raised button-cancel recordingButton singleRecordingButton">
                 <i class="md-icon recordingIcon">&#xE061;</i>

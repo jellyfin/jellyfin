@@ -12,6 +12,12 @@
     padding-left: 3.4em;
 }
 
+.guideContent {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
 .tvProgramSectionHeader {
     margin: 0;
 }
@@ -49,6 +55,7 @@
     position: relative;
     display: flex;
     align-items: flex-start;
+    flex-grow: 1;
 }
 
 .channelPrograms {
@@ -468,4 +475,11 @@
     .btnCategories {
         display: none;
     }
+}
+
+.guideRequiresUnlock {
+    margin: 1em auto;
+    text-align: center;
+    padding: 1em;
+    flex-shrink: 0;
 }

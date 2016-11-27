@@ -1,14 +1,4 @@
-﻿<style>
-    @media all and (min-width: 1200px) {
-
-        .imageEditorCard {
-            width: 20%;
-        }
-    }
-</style>
-
-
-<div class="formDialogHeader">
+﻿<div class="formDialogHeader">
     <button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>
     <h3 class="formDialogHeaderTitle">
         ${HeaderEditImages}
@@ -19,7 +9,7 @@
     <div class="dialogContentInner">
 
         <div id="imagesContainer">
-            <div style="display: flex; align-items: center;margin:2em 0 1em;">
+            <div class="imageEditor-buttons first-imageEditor-buttons">
                 <h1 style="margin:0;">${Images}</h1>
                 <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;">
                     <i class="md-icon">search</i>
@@ -34,7 +24,7 @@
         </div>
 
         <div id="backdropsContainer" class="hide">
-            <div style="display: flex; align-items: center;margin:1em 0 1em;">
+            <div class="imageEditor-buttons">
                 <h1 style="margin:0;">${Backdrops}</h1>
                 <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;" data-imagetype="Backdrop">
                     <i class="md-icon">search</i>
@@ -49,7 +39,7 @@
         </div>
 
         <div id="screenshotsContainer" class="hide">
-            <div style="display: flex; align-items: center; margin: 1em 0 1em;">
+            <div class="imageEditor-buttons">
                 <h1 style="margin: 0;">${Screenshots}</h1>
                 <button type="button" is="emby-button" class="btnBrowseAllImages fab mini autoSize" style="margin-left: 1em;" data-imagetype="Screenshot">
                     <i class="md-icon">search</i>

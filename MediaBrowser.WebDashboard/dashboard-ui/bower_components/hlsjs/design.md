@@ -3,34 +3,42 @@
 design idea is pretty simple :
 
    - main functionalities are splitted into several subsystems
+   - all subsytems are instantiated by Hls instance.
    - each subsystem heavily relies on events for internal/external communications.
+   - Events are handled using [browserified](http://browserify.org/) [EventEmitter](https://nodejs.org/api/events.html)
 
 ##code structure
 
-  - [src/hls.js][]
-    - definition of Hls Class. instantiate all subcomponents.
-  - [src/events.js][]
-    - definition of Hls.Events
   - [src/errors.js][]
     - definition of Hls.ErrorTypes and Hls.ErrorDetails
-  - [src/controller/stream-controller.js][]
-    - stream controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.  
-    - stream controller is in charge of:
-      - **ensuring that buffer is filled as per defined quality selection logic**.
-    - if buffer is not filled up appropriately (i.e. as per defined maximum buffer size, or as per defined quality level), buffer controller will trigger the following actions:
-        - retrieve "not buffered" media position greater then current playback position. this is performed by comparing video.buffered and video.currentTime.
-          - if there are holes in video.buffered, smaller than config.maxBufferHole, they will be ignored.
-        - retrieve URL of fragment matching with this media position, and appropriate quality level
+  - [src/event-handler.js][]
+    - helper class simplifying Hls event handling, event error catching
+  - [src/events.js][]
+    - definition of Hls.Events
+  - [src/hls.js][]
+    - definition of Hls Class. instantiate all subcomponents.
+  - [src/index.js][]
+    - needed for ES6 export
+  - [src/controller/abr-controller.js][]
+    - in charge of determining auto quality level.
+    - auto quality switch algorithm is bitrate based : fragment loading bitrate is monitored and smoothed using 2 exponential weighted moving average (a fast one, to adapt quickly on bandwidth drop and a slow one, to avoid ramping up too quickly on bandwidth increase)
+    - in charge of **monitoring fragment loading speed** (by monitoring data received from FRAG_LOAD_PROGRESS event)
+     - "expected time of fragment load completion" is computed using "fragment loading instant bandwidth".
+     - this time is compared to the "expected time of buffer starvation".
+     - if we have less than 2 fragments buffered and if "expected time of fragment load completion" is bigger than "expected time of buffer starvation" and also bigger than duration needed to load fragment at next quality level (determined by auto quality switch algorithm), current fragment loading is aborted, stream-controller will **trigger an emergency switch down**.
+  - [src/controller/audio-stream-controller.js][]
+    - audio stream controller is in charge of filling audio buffer in case alternate audio tracks are used
+    - if buffer is not filled up appropriately (i.e. as per defined maximum buffer size, it will trigger the following actions:
+        - retrieve "not buffered" media position greater then current playback position. this is performed by comparing audio sourcebuffer.buffered and media.currentTime.
+        - retrieve URL of fragment matching with this media position, and appropriate audio track
+        - trigger KEY_LOADING event (only if fragment is encrypted)
         - trigger FRAG_LOADING event
         - **trigger fragment demuxing** on FRAG_LOADED
-        - trigger BUFFER_RESET on MANIFEST_PARSED or startLoad()        
         - trigger BUFFER_CODECS on FRAG_PARSING_INIT_SEGMENT
         - trigger BUFFER_APPENDING on FRAG_PARSING_DATA
-        - once FRAG_PARSED is received an all segments have been appended (BUFFER_APPENDED) then buffer controller will recheck whether it needs to buffer more data.
-      - **monitor current playback quality level** (buffer controller maintains a map between media position and quality level)
-      - **monitor playback progress** : if playhead is not moving anymore although it should (video metadata is known and video is not ended, nor paused, nor in seeking state) and if we have less than 400ms buffered upfront, and if there is a new buffer range available upfront, less than config.maxSeekHole from currentTime, then hls.js will **jump over the buffer hole** and seek to the beginning of this new buffered range, to "unstuck" the playback.
-      400 ms is a "magic number" that has been set to overcome browsers not always stopping playback at the exact end of a buffered range.
-      these holes in media buffered are often encountered on stream discontinuity or on quality level switch. holes could be "large" especially if fragments are not starting with a keyframe.
+        - once FRAG_PARSED is received an all segments have been appended (BUFFER_APPENDED) then audio stream controller will recheck whether it needs to buffer more data.
+  - [src/controller/audio-track-controller.js][]
+    - audio track controller is handling alternate audio track set/get ((re)loading tracks/switching)
   - [src/controller/buffer-controller.js][]
     - in charge of:
         - resetting media buffer upon BUFFER_RESET event reception
@@ -39,22 +47,42 @@ design idea is pretty simple :
         - trigger BUFFER_APPENDED event upon successful buffer appending
         - flushing specified buffer range upon reception of BUFFER_FLUSHING event
         - trigger BUFFER_FLUSHED event upon successful buffer flushing
-
+  - [src/controller/cap-level-controller.js][]
+    - in charge of determining best quality level to actual size (dimensions: width and height) of the player
+  - [src/controller/ewma-bandwidth-estimator.js][]
+    - Exponential Weighted Moving Average bandwidth estimator, heavily inspired from shaka-player
+      - Tracks bandwidth samples and estimates available bandwidth, based on the minimum of two exponentially-weighted moving averages with different half-lives.
+      - one fast average with a short half-life: useful to quickly react to bandwidth drop and switch rendition down quickly
+      - one slow average with a long half-life: useful to slowly react to bandwidth increase and avoid switching up rendition to quickly
+      - bandwidth estimate is Math.min(fast average,slow average)
+      - average half-life are configurable , refer to abrEwma* config params
   - [src/controller/fps-controller.js][]
     - in charge of monitoring frame rate, and fire FPS_DROP event in case FPS drop exceeds configured threshold. disabled for now.
   - [src/controller/level-controller.js][]
+    - level controller is handling quality level set/get ((re)loading stream manifest/switching levels)  
     - in charge of scheduling playlist (re)loading and monitoring of fragment loading bitrate
     - a timer is armed to periodically refresh active live playlist.
-
-  - [src/controller/abr-controller.js][]
-    - in charge of determining auto quality level.
-    - auto quality switch algorithm is bitrate based : fragment loading bitrate is monitored and smoothed using 2 exponential weighted moving average (a fast one, to adapt quickly on bandwidth drop and a slow one, to avoid ramping up too quickly on bandwidth increase)
-    - in charge of **monitoring fragment loading speed** (by monitoring data received from FRAG_LOAD_PROGRESS event)
-     - "expected time of fragment load completion" is computed using "fragment loading instant bandwidth".
-     - this time is compared to the "expected time of buffer starvation".
-     - if we have less than 2 fragments buffered and if "expected time of fragment load completion" is bigger than "expected time of buffer starvation" and also bigger than duration needed to load fragment at next quality level (determined by auto quality switch algorithm), current fragment loading is aborted, stream-controller will **trigger an emergency switch down**.    
-  - [src/controller/cap-level-controller.js][]
-    - in charge of determining best quality level to actual size (dimensions: width and height) of the player 
+  - [src/controller/stream-controller.js][]
+    - stream controller is in charge of:
+      - **ensuring that media buffer is filled as per defined quality selection logic**.
+    - if buffer is not filled up appropriately (i.e. as per defined maximum buffer size, or as per defined quality level), stream controller will trigger the following actions:
+        - retrieve "not buffered" media position greater then current playback position. this is performed by comparing video.buffered and video.currentTime.
+          - if there are holes in video.buffered, smaller than config.maxBufferHole, they will be ignored.
+        - retrieve URL of fragment matching with this media position, and appropriate quality level
+        - trigger KEY_LOADING event (only if fragment is encrypted)
+        - trigger FRAG_LOADING event
+        - **trigger fragment demuxing** on FRAG_LOADED
+        - trigger BUFFER_RESET on MANIFEST_PARSED or startLoad()
+        - trigger BUFFER_CODECS on FRAG_PARSING_INIT_SEGMENT
+        - trigger BUFFER_APPENDING on FRAG_PARSING_DATA
+        - once FRAG_PARSED is received an all segments have been appended (BUFFER_APPENDED) then buffer controller will recheck whether it needs to buffer more data.
+      - **monitor current playback quality level** (buffer controller maintains a map between media position and quality level)
+      - **monitor playback progress** : if playhead is not moving anymore although it should (video metadata is known and video is not ended, nor paused, nor in seeking state) and if we have less than 400ms buffered upfront, and if there is a new buffer range available upfront, less than config.maxSeekHole from currentTime, then hls.js will **jump over the buffer hole** and seek to the beginning of this new buffered range, to "unstuck" the playback.
+      400 ms is a "magic number" that has been set to overcome browsers not always stopping playback at the exact end of a buffered range.
+      these holes in media buffered are often encountered on stream discontinuity or on quality level switch. holes could be "large" especially if fragments are not starting with a keyframe.
+    - stream controller actions are scheduled by a tick timer (invoked every 100ms) and actions are controlled by a state machine.        
+  - [src/controller/timeline-controller.js][]
+    - Manages pulling CEA-708 caption data from the fragments, running them through the cea-608-parser, and handing them off to a display class, which defaults to src/utils/cues.js
   - [src/crypt/aes.js][]
     - AES 128 software decryption routine, low level class handling decryption of 128 bit of data.
   - [src/crypt/aes128-decrypter.js][]  
@@ -95,14 +123,18 @@ design idea is pretty simple :
      - it also tries to workaround as best as it can audio codec switch (HE-AAC to AAC and vice versa), without having to restart the MediaSource.
      - it also controls the remuxing process :
       - upon discontinuity or level switch detection, it will also notifies the remuxer so that it can reset its state.
+  - [src/helper/aac.js][]
+    - helper class to create silent AAC frames (useful to handle streams with audio holes)
+  - [src/helper/buffer-helper.js][]
+    - helper class, providing methods dealing buffer length retrieval (given a media position, it will return the upfront buffer length, next buffer position ...)
   - [src/helper/level-helper.js][]
     - helper class providing methods dealing with playlist sliding and fragment duration drift computation : after fragment parsing, start/end fragment timestamp will be used to adjust potential playlist drifts and live playlist sliding.
   - [src/loader/fragment-loader.js][]
     - in charge of loading fragments, use xhr-loader if not overrided by user config
+  - [src/loader/key-loader.js][]
+   - in charge of loading decryption key    
   - [src/loader/playlist-loader.js][]
    - in charge of loading manifest, and level playlists, use xhr-loader if not overrided by user config.
-  - [src/loader/key-loader.js][]
-   - in charge of loading decryption key
   - [src/remux/dummy-remuxer.js][]
    - example dummy remuxer
   - [src/remux/mp4-generator.js][]
@@ -117,10 +149,18 @@ design idea is pretty simple :
     - Attribute List parsing helper class, used by playlist-loader
   - [src/utils/binary-search.js][]
     - binary search helper class
+  - [src/utils/cea-608-parser.js][]
+    - Port of dash.js class of the same name to ECMAScript. This class outputs "Screen" objects which contain rows of characters that can be rendered by a separate class.
+  - [src/utils/cues.js][]
+    - Default CC renderer. Translates Screen objects from cea-608-parser into HTML5 VTTCue objects, rendered by the video tag
+  - [src/utils/ewma.js][]
+    - compute [exponential weighted moving average](https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average)
   - [src/utils/hex.js][]
     - Hex dump utils, useful for debug
   - [src/utils/logger.js][]
     - logging utils, useful for debug
+  - [src/utils/polyfill.js][]
+    - ArrayBuffer.slice polyfill
   - [src/utils/url.js][]
     - convert base+relative URL into absolute URL
   - [src/utils/xhr-loader.js][]
@@ -128,16 +168,22 @@ design idea is pretty simple :
     - retries : if xhr fails, HTTP GET will be retried after a predetermined delay. this delay is increasing following an exponential backoff. after a predetemined max number of retries, an error callback will be triggered.
     - timeout: if load exceeds max allowed duration, a timeout callback will be triggered. it is up to the callback to decides whether the connection should be cancelled or not.
 
-[src/hls.js]: src/hls.js
-[src/events.js]: src/events.js
+
 [src/errors.js]: src/errors.js
-[src/stats.js]: src/stats.js
+[src/event-handler.js]: src/event-handler.js
+[src/events.js]: src/events.js
+[src/hls.js]: src/hls.js
+[src/index.js]: src/index.js
 [src/controller/abr-controller.js]: src/controller/abr-controller.js
+[src/controller/audio-stream-controller.js]: src/controller/audio-stream-controller.js
+[src/controller/audio-track-controller.js]: src/controller/audio-track-controller.js
 [src/controller/buffer-controller.js]: src/controller/buffer-controller.js
 [src/controller/cap-level-controller.js]: src/controller/cap-level-controller.js
+[src/controller/ewma-bandwidth-estimator.js]: src/controller/ewma-bandwidth-estimator.js
 [src/controller/fps-controller.js]: src/controller/fps-controller.js
 [src/controller/level-controller.js]: src/controller/level-controller.js
 [src/controller/stream-controller.js]: src/controller/stream-controller.js
+[src/controller/timeline-controller.js]: src/controller/timeline-controller.js
 [src/crypt/aes.js]: src/crypt/aes.js
 [src/crypt/aes128-decrypter.js]: src/crypt/aes128-decrypter.js
 [src/crypt/decrypter.js]: src/crypt/decrypter.js
@@ -149,17 +195,24 @@ design idea is pretty simple :
 [src/demux/exp-golomb.js]: src/demux/exp-golomb.js
 [src/demux/id3.js]: src/demux/id3.js
 [src/demux/tsdemuxer.js]: src/demux/tsdemuxer.js
+[src/helper/aac.js]: src/helper/aac.js
+[src/helper/buffer-helper.js]: src/helper/buffer-helper.js
 [src/helper/level-helper.js]: src/helper/level-helper.js
 [src/loader/fragment-loader.js]: src/loader/fragment-loader.js
-[src/loader/playlist-loader.js]: src/loader/playlist-loader.js
 [src/loader/key-loader.js]: src/loader/key-loader.js
+[src/loader/playlist-loader.js]: src/loader/playlist-loader.js
 [src/remux/dummy-remuxer.js]: src/remux/dummy-remuxer.js
 [src/remux/mp4-generator.js]: src/remux/mp4-generator.js
+[src/remux/passthrough-remuxer.js]: src/remux/passthrough-remuxer.js
 [src/remux/mp4-remuxer.js]: src/remux/mp4-remuxer.js
 [src/utils/attr-list.js]: src/utils/attr-list.js
 [src/utils/binary-search.js]: src/utils/binary-search.js
+[src/utils/cea-608-parser.js]: src/utils/cea-608-parser.js
+[src/utils/cues.js]: src/utils/cues.js
+[src/utils/ewma.js]: src/utils/ewma.js
 [src/utils/hex.js]: src/utils/hex.js
 [src/utils/logger.js]: src/utils/logger.js
+[src/utils/polyfill.js]: src/utils/polyfill.js
 [src/utils/url.js]: src/utils/url.js
 [src/utils/xhr-loader.js]: src/utils/xhr-loader.js
 
@@ -172,6 +225,8 @@ design idea is pretty simple :
   - ```LEVEL_LOAD_ERROR``` is raised by [src/loader/playlist-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][]. this error is marked as fatal and will not be recovered automatically. a call to ```hls.startLoad()``` could help recover it.
   - ```LEVEL_LOAD_TIMEOUT``` is raised by [src/loader/playlist-loader.js][] upon xhr timeout detected by [src/utils/xhr-loader.js][]. this error is marked as fatal and will not be recovered automatically. a call to ```hls.startLoad()``` could help recover it.
   - ```LEVEL_SWITCH_ERROR``` is raised by [src/controller/level-controller.js][] if user tries to switch to an invalid level (invalid/out of range level id)
+  - ```AUDIO_TRACK_LOAD_ERROR``` is raised by [src/loader/playlist-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][]. this error is marked as fatal and will not be recovered automatically. a call to ```hls.startLoad()``` could help recover it.
+  - ```AUDIO_TRACK_LOAD_TIMEOUT``` is raised by [src/loader/playlist-loader.js][] upon xhr timeout detected by [src/utils/xhr-loader.js][]. this error is marked as fatal and will not be recovered automatically. a call to ```hls.startLoad()``` could help recover it.
   - ```FRAG_LOAD_ERROR``` is raised by [src/loader/fragment-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][].
     - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
@@ -181,9 +236,18 @@ design idea is pretty simple :
   - ```FRAG_LOAD_TIMEOUT``` is raised by [src/loader/fragment-loader.js][] upon xhr timeout detected by [src/utils/xhr-loader.js][].
     - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
+  - ```FRAG_DECRYPT_ERROR``` is raised by [src/demux/demuxer.js][] upon fragment decrypting error. this error is fatal. 
   - ```FRAG_PARSING_ERROR``` is raised by [src/demux/tsdemuxer.js][] upon TS parsing error. this error is not fatal.
-  - ```FRAG_DECRYPT_ERROR``` is raised by [src/demux/demuxer.js][] upon fragment decrypting error. this error is fatal.
+  - ```KEY_LOAD_ERROR``` is raised by [src/loader/key-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][].
+    - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
+    - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
+  - ```KEY_LOAD_TIMEOUT``` is raised by [src/loader/key-loader.js][] upon xhr timeout detected by [src/utils/xhr-loader.js][].
+    - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
+    - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.  
+  - ```BUFFER_ADD_CODEC_ERROR``` is raised by [src/controller/buffer-controller.js][] when an exception is raised when calling mediaSource.addSourceBuffer(). this error is non fatal.
   - ```BUFFER_APPEND_ERROR``` is raised by [src/controller/buffer-controller.js][] when an exception is raised when calling sourceBuffer.appendBuffer(). this error is non fatal and become fatal after config.appendErrorMaxRetry retries. when fatal, a call to ```hls.recoverMediaError()``` could help recover it.
   - ```BUFFER_APPENDING_ERROR``` is raised by [src/controller/buffer-controller.js][] after SourceBuffer appending error. this error is fatal and a call to ```hls.recoverMediaError()``` could help recover it.
   - ```BUFFER_STALLED_ERROR``` is raised by [src/controller/stream-controller.js][] if playback is stalling because of buffer underrun
   - ```BUFFER_FULL_ERROR``` is raised by [src/controller/buffer-controller.js][] if sourcebuffer is full
+  - ```BUFFER_SEEK_OVER_HOLE``` is raised by [src/controller/stream-controller.js][] when hls.js seeks over a buffer hole after playback stalls
+  - ```INTERNAL_EXCEPTION``` is raised by [src/event-handler.js][] when a runtime exception is triggered by an internal Hls event handler. this error is non-fatal.

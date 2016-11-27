@@ -1,0 +1,49 @@
+.visibilityHide {
+    visibility: hidden;
+}
+
+.recordingButton {
+    margin-left: 0;
+    min-width: 10em;
+    font-size: 92%;
+}
+
+.recordingIcon {
+    font-size: 1.3em !important;
+}
+
+.recordingIcon-active {
+    color: #cc3333;
+}
+
+.manageButtonText {
+    text-transform: none;
+}
+
+.recordSeriesContainer {
+    margin-bottom: .8em;
+}
+
+.recordingFields-buttons {
+    display: flex;
+    align-items: center;
+}
+
+@media all and (max-width: 440px) {
+
+    .manageButtonText {
+        display: none !important;
+    }
+
+    .recordingButton {
+        width: auto;
+        margin-right: 1.5em !important;
+    }
+}
+
+@media all and (min-width: 440px) {
+
+    .manageButtonIcon {
+        font-size: 90% !important;
+    }
+}
