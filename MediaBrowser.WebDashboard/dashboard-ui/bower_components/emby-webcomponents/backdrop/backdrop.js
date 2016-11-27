@@ -52,7 +52,7 @@
                 }
 
                 var onAnimationComplete = function () {
-                    dom.removeEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                    dom.removeEventListener(backdropImage, dom.whichAnimationEvent(), onAnimationComplete, {
                         once: true
                     });
                     if (backdropImage === currentAnimatingElement) {
@@ -63,7 +63,7 @@
                     }
                 };
 
-                dom.addEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                dom.addEventListener(backdropImage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
 

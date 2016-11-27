@@ -116,6 +116,38 @@
         return false;
     }
 
+    var _supportsCssAnimation;
+    function supportsCssAnimation() {
+
+        if (_supportsCssAnimation === true || _supportsCssAnimation === false) {
+            return _supportsCssAnimation;
+        }
+
+        var animation = false,
+            animationstring = 'animation',
+            keyframeprefix = '',
+            domPrefixes = 'Webkit Moz O ms Khtml'.split(' '),
+            pfx = '',
+            elm = document.createElement('div');
+
+        if (elm.style.animationName !== undefined) { animation = true; }
+
+        if (animation === false) {
+            for (var i = 0; i < domPrefixes.length; i++) {
+                if (elm.style[domPrefixes[i] + 'AnimationName'] !== undefined) {
+                    pfx = domPrefixes[i];
+                    animationstring = pfx + 'Animation';
+                    keyframeprefix = '-' + pfx.toLowerCase() + '-';
+                    animation = true;
+                    break;
+                }
+            }
+        }
+
+        _supportsCssAnimation = animation;
+        return _supportsCssAnimation;
+    }
+
     var uaMatch = function (ua) {
         ua = ua.toLowerCase();
 
@@ -196,7 +228,6 @@
 
     if (userAgent.toLowerCase().indexOf("playstation 4") !== -1) {
         browser.ps4 = true;
-        browser.tv = true;
     }
 
     if (isMobile(userAgent)) {
@@ -225,6 +256,7 @@
     }
 
     browser.keyboard = hasKeyboard(browser);
+    browser.supportsCssAnimation = supportsCssAnimation;
 
     return browser;
 });

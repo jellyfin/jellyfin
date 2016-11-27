@@ -270,6 +270,7 @@
 
 .programGrid {
     padding-bottom: 4px;
+    flex-grow: 1;
 }
 
 .timeslotHeader {

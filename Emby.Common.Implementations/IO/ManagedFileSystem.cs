@@ -397,16 +397,34 @@ namespace Emby.Common.Implementations.IO
 
         private FileAccess GetFileAccess(FileAccessMode mode)
         {
-            var val = (int)mode;
-
-            return (FileAccess)val;
+            switch (mode)
+            {
+                case FileAccessMode.ReadWrite:
+                    return FileAccess.ReadWrite;
+                case FileAccessMode.Write:
+                    return FileAccess.Write;
+                case FileAccessMode.Read:
+                    return FileAccess.Read;
+                default:
+                    throw new Exception("Unrecognized FileAccessMode");
+            }
         }
 
         private FileShare GetFileShare(FileShareMode mode)
         {
-            var val = (int)mode;
-
-            return (FileShare)val;
+            switch (mode)
+            {
+                case FileShareMode.ReadWrite:
+                    return FileShare.ReadWrite;
+                case FileShareMode.Write:
+                    return FileShare.Write;
+                case FileShareMode.Read:
+                    return FileShare.Read;
+                case FileShareMode.None:
+                    return FileShare.None;
+                default:
+                    throw new Exception("Unrecognized FileShareMode");
+            }
         }
 
         public void SetHidden(string path, bool isHidden)

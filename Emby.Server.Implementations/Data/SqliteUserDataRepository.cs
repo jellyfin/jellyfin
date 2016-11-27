@@ -84,6 +84,14 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        protected override bool EnableTempStoreMemory
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         private void ImportUserDataIfNeeded(IDatabaseConnection connection)
         {
             if (!_fileSystem.FileExists(_importFile))

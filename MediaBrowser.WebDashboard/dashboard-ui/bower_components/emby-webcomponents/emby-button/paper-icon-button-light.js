@@ -29,7 +29,7 @@
 
         btn.appendChild(div);
 
-        div.addEventListener("animationend", function () {
+        div.addEventListener(dom.whichAnimationEvent(), function () {
             div.parentNode.removeChild(div);
         }, false);
     }
