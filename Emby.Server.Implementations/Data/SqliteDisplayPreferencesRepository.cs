@@ -63,8 +63,8 @@ namespace Emby.Server.Implementations.Data
 
                 string[] queries = {
 
-                               "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
-                                "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
+                    "create table if not exists userdisplaypreferences (id GUID, userId GUID, client text, data BLOB)",
+                    "create unique index if not exists userdisplaypreferencesindex on userdisplaypreferences (id, userId, client)"
                                };
 
                 connection.RunQueries(queries);
@@ -107,10 +107,10 @@ namespace Emby.Server.Implementations.Data
 
         private void SaveDisplayPreferences(DisplayPreferences displayPreferences, Guid userId, string client, IDatabaseConnection connection)
         {
-            using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userid, @client, @data)"))
-            {
-                var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
+            var serialized = _jsonSerializer.SerializeToBytes(displayPreferences, _memoryStreamProvider);
 
+            using (var statement = connection.PrepareStatement("replace into userdisplaypreferences (id, userid, client, data) values (@id, @userId, @client, @data)"))
+            {
                 statement.TryBind("@id", displayPreferences.Id.ToGuidParamValue());
                 statement.TryBind("@userId", userId.ToGuidParamValue());
                 statement.TryBind("@client", client);

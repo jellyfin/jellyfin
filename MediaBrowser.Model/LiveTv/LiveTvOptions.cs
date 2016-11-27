@@ -32,7 +32,6 @@ namespace MediaBrowser.Model.LiveTv
         public LiveTvOptions()
         {
             EnableMovieProviders = true;
-            EnableRecordingSubfolders = true;
             TunerHosts = new List<TunerHostInfo>();
             ListingProviders = new List<ListingsProviderInfo>();
             MediaLocationsCreated = new string[] { };
