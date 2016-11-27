@@ -680,14 +680,17 @@ namespace MediaBrowser.Api.Library
         /// <param name="request">The request.</param>
         public void Post(RefreshLibrary request)
         {
-            try
+            Task.Run(() =>
             {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Error refreshing library", ex);
-            }
+                try
+                {
+                    _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error refreshing library", ex);
+                }
+            });
         }
 
         /// <summary>
