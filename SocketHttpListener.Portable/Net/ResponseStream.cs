@@ -14,7 +14,7 @@ namespace SocketHttpListener.Net
     // Update: we send a single packet for the first non-chunked Write
     // What happens when we set content-length to X and write X-1 bytes then close?
     // what if we don't set content-length at all?
-    class ResponseStream : Stream
+    public class ResponseStream : Stream
     {
         HttpListenerResponse response;
         bool disposed;

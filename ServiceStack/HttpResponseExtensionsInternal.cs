@@ -130,7 +130,7 @@ namespace ServiceStack
             {
                 foreach (var responseHeaders in responseOptions.Headers)
                 {
-                    if (responseHeaders.Key == "Content-Length")
+                    if (string.Equals(responseHeaders.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
                     {
                         response.SetContentLength(long.Parse(responseHeaders.Value));
                         continue;

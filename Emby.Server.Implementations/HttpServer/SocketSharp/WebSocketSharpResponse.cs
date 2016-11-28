@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using MediaBrowser.Model.Logging;
+using SocketHttpListener.Net;
 using HttpListenerResponse = SocketHttpListener.Net.HttpListenerResponse;
 using IHttpResponse = MediaBrowser.Model.Services.IHttpResponse;
 using IRequest = MediaBrowser.Model.Services.IRequest;
@@ -101,12 +102,15 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
                 var outputStream = response.OutputStream;
 
                 // This is needed with compression
-                //if (!string.IsNullOrWhiteSpace(GetHeader("Content-Encoding")))
+                if (outputStream is ResponseStream)
                 {
-                    outputStream.Flush();
-                }
+                    //if (!string.IsNullOrWhiteSpace(GetHeader("Content-Encoding")))
+                    {
+                        outputStream.Flush();
+                    }
 
-                outputStream.Dispose();
+                    outputStream.Dispose();
+                }
                 response.Close();
             }
             catch (Exception ex)

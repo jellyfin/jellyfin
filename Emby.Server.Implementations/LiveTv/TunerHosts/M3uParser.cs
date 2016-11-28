@@ -100,18 +100,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             extInf = extInf.Trim();
 
-            //Check for channel number with the format from SatIp            
-            //int number;
-            //var numberIndex = channel.Name.IndexOf('.');
-            //if (numberIndex > 0)
-            //{
-            //    if (int.TryParse(channel.Name.Substring(0, numberIndex), out number))
-            //    {
-            //        channel.Number = number.ToString();
-            //        channel.Name = channel.Name.Substring(numberIndex + 1);
-            //    }
-            //}
-
             channel.ImageUrl = FindProperty("tvg-logo", extInf);
 
             channel.Name = GetChannelName(extInf);

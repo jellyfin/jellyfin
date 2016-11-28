@@ -362,6 +362,22 @@ namespace SocketHttpListener.Net
             return false;
         }
 
+        public void DetermineIfChunked()
+        {
+            if (chunked)
+            {
+                return ;
+            }
+
+            Version v = context.Request.ProtocolVersion;
+            if (!cl_set && !chunked && v >= HttpVersion.Version11)
+                chunked = true;
+            if (!chunked && string.Equals(headers["Transfer-Encoding"], "chunked"))
+            {
+                chunked = true;
+            }
+        }
+
         internal void SendHeaders(bool closing, MemoryStream ms)
         {
             Encoding encoding = content_encoding;
