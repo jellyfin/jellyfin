@@ -22,7 +22,7 @@ namespace MediaBrowser.Server.Mac
         {
             get
             {
-                return false;
+                return true;
             }
         }
 
