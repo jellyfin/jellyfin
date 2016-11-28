@@ -982,18 +982,27 @@
                         var hlsPlaylistUrl = streamInfo.url.replace('master.m3u8', 'live.m3u8');
 
                         Dashboard.showLoadingMsg();
+
+                        console.log('prefetching hls playlist: ' + hlsPlaylistUrl);
+
                         ApiClient.ajax({
 
                             type: 'GET',
                             url: hlsPlaylistUrl
 
                         }).then(function () {
+
+                            console.log('completed prefetching hls playlist: ' + hlsPlaylistUrl);
+
                             Dashboard.hideLoadingMsg();
                             streamInfo.url = hlsPlaylistUrl;
 
                             setTimeout(onReadyToPlay, 0);
 
                         }, function () {
+
+                            console.log('error prefetching hls playlist: ' + hlsPlaylistUrl);
+
                             Dashboard.hideLoadingMsg();
                         });
 
