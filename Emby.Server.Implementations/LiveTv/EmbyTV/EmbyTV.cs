@@ -2064,6 +2064,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 enabledTimersForSeries.Add(existingTimer);
                             }
 
+                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                            existingTimer.Priority = seriesTimer.Priority;
+
                             existingTimer.SeriesTimerId = seriesTimer.Id;
                             _timerProvider.Update(existingTimer);
                         }
