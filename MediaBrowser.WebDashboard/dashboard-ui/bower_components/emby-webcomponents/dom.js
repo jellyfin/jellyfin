@@ -102,7 +102,7 @@ define([], function () {
         }
 
         var t,
-            el = document.createElement("fakeelement");
+            el = document.createElement("div");
         var animations = {
             "animation": "animationend",
             "OAnimation": "oAnimationEnd",
@@ -127,7 +127,7 @@ define([], function () {
         }
 
         var t,
-            el = document.createElement("fakeelement");
+            el = document.createElement("div");
         var transitions = {
             "transition": "transitionend",
             "OTransition": "oTransitionEnd",

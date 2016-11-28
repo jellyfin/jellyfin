@@ -9,11 +9,8 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
     function enableAnimation() {
 
+        // too slow
         if (browser.tv) {
-            return false;
-        }
-
-        if (browser.operaTv) {
             return false;
         }
 
@@ -119,7 +116,6 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
             if (oldAnimatedPage) {
                 if (isBack) {
-                    oldAnimatedPage.style.animation = 'view-slideright-r ' + duration + 'ms ease-out normal both';
                     setAnimation(oldAnimatedPage, 'view-slideright-r ' + duration + 'ms ease-out normal both');
                 } else {
                     setAnimation(oldAnimatedPage, 'view-slideleft-r ' + duration + 'ms ease-out normal both');

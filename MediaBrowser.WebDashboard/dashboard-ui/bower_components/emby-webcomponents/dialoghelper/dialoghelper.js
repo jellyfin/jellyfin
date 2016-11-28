@@ -5,24 +5,12 @@
 
     function enableAnimation() {
 
-        if (browser.animate) {
-            return true;
-        }
-
-        if (browser.edge) {
-            return true;
-        }
-
-        if (!browser.supportsCssAnimation()) {
+        // too slow
+        if (browser.tv) {
             return false;
         }
 
-        // An indication of an older browser
-        if (browser.noFlex) {
-            return false;
-        }
-
-        return true;
+        return browser.supportsCssAnimation();
     }
 
     function removeCenterFocus(dlg) {
@@ -269,6 +257,7 @@
         if (enableAnimation()) {
 
             var animated = true;
+
             switch (dlg.animationConfig.exit.name) {
 
                 case 'fadeout':
@@ -440,6 +429,7 @@
         }
 
         if (enableAnimation()) {
+
             switch (dlg.animationConfig.entry.name) {
 
                 case 'fadein':

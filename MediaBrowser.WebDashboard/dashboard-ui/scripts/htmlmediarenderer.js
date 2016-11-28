@@ -419,7 +419,9 @@
                     setTracks(elem, tracks);
 
                     requireHlsPlayer(function () {
-                        var hls = new Hls();
+                        var hls = new Hls({
+                            manifestLoadingTimeOut: 20000
+                        });
                         hls.loadSource(val);
                         hls.attachMedia(elem);
                         hls.on(Hls.Events.MANIFEST_PARSED, function () {
