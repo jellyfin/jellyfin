@@ -209,7 +209,9 @@ namespace SocketHttpListener.Net
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                if (context.Response.SendChunked || isExpect100Continue || context.Response.ContentLength64 <= 0)
+                context.Response.DetermineIfChunked();
+
+                if (context.Response.SendChunked || isExpect100Continue || context.Request.IsWebSocketRequest)
                 {
                     o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
                 }
