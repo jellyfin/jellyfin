@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.Notifications
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -304,7 +304,7 @@ namespace Emby.Server.Implementations.Notifications
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -334,7 +334,7 @@ namespace Emby.Server.Implementations.Notifications
                             }
                         }
 
-                    });
+                    }, TransactionMode);
                 }
             }
         }

@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Activity
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }

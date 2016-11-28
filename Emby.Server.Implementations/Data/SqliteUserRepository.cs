@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Data
                             statement.TryBind("@data", serialized);
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Data
                             statement.TryBind("@id", user.Id.ToGuidParamValue());
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }

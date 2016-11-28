@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.Data
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Data
                             statement.TryBind("@ResultId", id.ToGuidParamValue());
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -124,7 +124,7 @@ namespace Emby.Server.Implementations.Data
                         var commandText = "delete from FileOrganizerResults";
 
                         db.Execute(commandText);
-                    });
+                    }, TransactionMode);
                 }
             }
         }

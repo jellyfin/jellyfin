@@ -316,7 +316,7 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "MediaStreams", "RefFrames", "INT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "KeyFrames", "TEXT", existingColumnNames);
                     AddColumn(db, "MediaStreams", "IsAnamorphic", "BIT", existingColumnNames);
-                });
+                }, TransactionMode);
 
                 string[] postQueries =
 
@@ -697,7 +697,7 @@ namespace Emby.Server.Implementations.Data
                     connection.RunInTransaction(db =>
                     {
                         SaveItemsInTranscation(db, tuples);
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -2211,7 +2211,7 @@ namespace Emby.Server.Implementations.Data
                                 index++;
                             }
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -4531,7 +4531,7 @@ namespace Emby.Server.Implementations.Data
 
                         // Delete the item
                         ExecuteWithSingleParam(db, "delete from TypedBaseItems where guid=@Id", id.ToGuidParamValue());
-                    });
+                    }, TransactionMode);
                 }
             }
         }

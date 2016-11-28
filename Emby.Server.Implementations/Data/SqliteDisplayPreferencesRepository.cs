@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Data
                     connection.RunInTransaction(db =>
                     {
                         SaveDisplayPreferences(displayPreferences, userId, client, db);
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Data
                         {
                             SaveDisplayPreferences(displayPreference, userId, displayPreference.Client, db);
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
