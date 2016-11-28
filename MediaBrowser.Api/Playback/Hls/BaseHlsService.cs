@@ -153,7 +153,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
                     var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture);
 
-                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength - 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                    //text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
 
                     return text;
                 }
