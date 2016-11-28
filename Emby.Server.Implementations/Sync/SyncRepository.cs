@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Sync
 
                     existingColumnNames = GetColumnNames(db, "SyncJobItems");
                     AddColumn(db, "SyncJobItems", "ItemDateModifiedTicks", "BIGINT", existingColumnNames);
-                });
+                }, TransactionMode);
             }
         }
 
@@ -268,7 +268,7 @@ namespace Emby.Server.Implementations.Sync
                     connection.RunInTransaction(conn =>
                     {
                         conn.Execute(commandText, paramList.ToArray());
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -290,7 +290,7 @@ namespace Emby.Server.Implementations.Sync
                     {
                         conn.Execute("delete from SyncJobs where Id=?", id.ToGuidParamValue());
                         conn.Execute("delete from SyncJobItems where JobId=?", id);
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -743,7 +743,7 @@ namespace Emby.Server.Implementations.Sync
                     connection.RunInTransaction(conn =>
                     {
                         conn.Execute(commandText, paramList.ToArray());
-                    });
+                    }, TransactionMode);
                 }
             }
         }

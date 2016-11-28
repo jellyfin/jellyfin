@@ -50,7 +50,8 @@ namespace Emby.Server.Implementations.Security
                     var existingColumnNames = GetColumnNames(db, "AccessTokens");
 
                     AddColumn(db, "AccessTokens", "AppVersion", "TEXT", existingColumnNames);
-                });
+
+                }, TransactionMode);
             }
         }
 
@@ -70,9 +71,9 @@ namespace Emby.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = CreateConnection())
             {
-                using (var connection = CreateConnection())
+                using (WriteLock.Write())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -100,7 +101,8 @@ namespace Emby.Server.Implementations.Security
 
                             statement.MoveNext();
                         }
-                    });
+
+                    }, TransactionMode);
                 }
             }
         }
@@ -137,9 +139,9 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("query");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = BaseSelectText;
 
@@ -244,9 +246,9 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            using (WriteLock.Read())
+            using (var connection = CreateConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (WriteLock.Read())
                 {
                     var commandText = BaseSelectText + " where Id=@Id";
 

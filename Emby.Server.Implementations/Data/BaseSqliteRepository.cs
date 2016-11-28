@@ -30,6 +30,11 @@ namespace Emby.Server.Implementations.Data
             get { return false; }
         }
 
+        protected TransactionMode TransactionMode
+        {
+            get { return TransactionMode.Immediate; }
+        }
+
         static BaseSqliteRepository()
         {
             SQLite3.EnableSharedCache = false;

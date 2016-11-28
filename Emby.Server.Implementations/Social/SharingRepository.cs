@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Social
                             info.ItemId,
                             info.UserId,
                             info.ExpirationDate.ToDateTimeParamValue());
-                    });
+                    }, TransactionMode);
                 }
             }
         }
