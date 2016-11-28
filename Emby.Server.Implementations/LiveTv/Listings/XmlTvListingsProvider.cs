@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 ProductionYear = !p.CopyrightDate.HasValue ? (int?)null : p.CopyrightDate.Value.Year,
                 SeasonNumber = p.Episode == null ? null : p.Episode.Series,
                 IsSeries = p.Episode != null,
-                IsRepeat = p.IsRepeat,
+                IsRepeat = p.IsPreviouslyShown && !p.IsNew,
                 IsPremiere = p.Premiere != null,
                 IsKids = p.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
                 IsMovie = p.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
