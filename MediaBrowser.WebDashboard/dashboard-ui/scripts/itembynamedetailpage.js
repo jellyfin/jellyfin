@@ -321,11 +321,15 @@
     function getMoreItemsHref(item, type) {
 
         if (item.Type == 'Genre' || item.Type == 'MusicGenre' || item.Type == 'GameGenre') {
-            return 'secondaryitems.html?type=' + type + '&genreId=' + item.Id + '&parentId=' + params.topParentId;
+            return 'secondaryitems.html?type=' + type + '&genreId=' + item.Id;
         }
 
         if (item.Type == 'Studio') {
-            return 'secondaryitems.html?type=' + type + '&studioId=' + item.Id + '&parentId=' + params.topParentId;
+            return 'secondaryitems.html?type=' + type + '&studioId=' + item.Id;
+        }
+
+        if (item.Type == 'MusicArtist') {
+            return 'secondaryitems.html?type=' + type + '&artistId=' + item.Id;
         }
 
         return 'secondaryitems.html?type=' + type + '&parentId=' + item.Id;
