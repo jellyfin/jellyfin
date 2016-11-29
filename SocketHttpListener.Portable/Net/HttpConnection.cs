@@ -211,7 +211,7 @@ namespace SocketHttpListener.Net
             {
                 context.Response.DetermineIfChunked();
 
-                if (context.Response.SendChunked || isExpect100Continue || context.Request.IsWebSocketRequest)
+                if (context.Response.SendChunked || isExpect100Continue || context.Request.IsWebSocketRequest || true)
                 {
                     o_stream = new ResponseStream(stream, context.Response, _memoryStreamFactory, _textEncoding);
                 }
