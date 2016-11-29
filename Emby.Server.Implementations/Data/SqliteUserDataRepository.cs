@@ -51,8 +51,6 @@ namespace Emby.Server.Implementations.Data
             {
                 string[] queries = {
 
-                                "pragma temp_store = memory",
-
                                 "create table if not exists userdata (key nvarchar, userId GUID, rating float null, played bit, playCount int, isFavorite bit, playbackPositionTicks bigint, lastPlayedDate datetime null)",
 
                                 "create table if not exists DataSettings (IsUserDataImported bit)",

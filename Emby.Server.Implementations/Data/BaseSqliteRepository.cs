@@ -67,20 +67,8 @@ namespace Emby.Server.Implementations.Data
                 //Logger.Info("Opening write connection");
             }
 
-            isReadOnly = false;
-
-            if (isReadOnly)
-            {
-                connectionFlags = ConnectionFlags.ReadOnly;
-                //connectionFlags = ConnectionFlags.Create;
-                //connectionFlags |= ConnectionFlags.ReadWrite;
-            }
-            else
-            {
-                connectionFlags = ConnectionFlags.Create;
-                connectionFlags |= ConnectionFlags.ReadWrite;
-            }
-
+            connectionFlags = ConnectionFlags.Create;
+            connectionFlags |= ConnectionFlags.ReadWrite;
             connectionFlags |= ConnectionFlags.SharedCached;
             connectionFlags |= ConnectionFlags.NoMutex;
 
@@ -89,6 +77,8 @@ namespace Emby.Server.Implementations.Data
             if (string.IsNullOrWhiteSpace(_defaultWal))
             {
                 _defaultWal = db.Query("PRAGMA journal_mode").SelectScalarString().First();
+
+                Logger.Info("Default journal_mode for {0} is {1}", DbFilePath, _defaultWal);
             }
 
             var queries = new List<string>
@@ -115,7 +105,7 @@ namespace Emby.Server.Implementations.Data
             //Logger.Info("synchronous: " + db.Query("PRAGMA synchronous").SelectScalarString().First());
             //Logger.Info("temp_store: " + db.Query("PRAGMA temp_store").SelectScalarString().First());
 
-            if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase))
+            /*if (!string.Equals(_defaultWal, "wal", StringComparison.OrdinalIgnoreCase))
             {
                 queries.Add("PRAGMA journal_mode=WAL");
 
@@ -124,12 +114,32 @@ namespace Emby.Server.Implementations.Data
                     db.ExecuteAll(string.Join(";", queries.ToArray()));
                 }
             }
-            else if (queries.Count > 0)
+            else*/ if (queries.Count > 0)
             {
                 db.ExecuteAll(string.Join(";", queries.ToArray()));
             }
 
             return db;
+        }
+
+        protected void RunDefaultInitialization(IDatabaseConnection db)
+        {
+            var queries = new List<string>
+            {
+                "PRAGMA journal_mode=WAL",
+                "PRAGMA page_size=4096",
+            };
+
+            if (EnableTempStoreMemory)
+            {
+                queries.AddRange(new List<string>
+                {
+                    "pragma default_temp_store = memory",
+                    "pragma temp_store = memory"
+                });
+            }
+
+            db.ExecuteAll(string.Join(";", queries.ToArray()));
         }
 
         protected virtual bool EnableTempStoreMemory

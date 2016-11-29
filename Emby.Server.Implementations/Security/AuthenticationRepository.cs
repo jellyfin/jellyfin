@@ -30,12 +30,7 @@ namespace Emby.Server.Implementations.Security
         {
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
+                RunDefaultInitialization(connection);
 
                 string[] queries = {
 
@@ -139,78 +134,78 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("query");
             }
 
+            var commandText = BaseSelectText;
+
+            var whereClauses = new List<string>();
+
+            var startIndex = query.StartIndex ?? 0;
+
+            if (!string.IsNullOrWhiteSpace(query.AccessToken))
+            {
+                whereClauses.Add("AccessToken=@AccessToken");
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.UserId))
+            {
+                whereClauses.Add("UserId=@UserId");
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.DeviceId))
+            {
+                whereClauses.Add("DeviceId=@DeviceId");
+            }
+
+            if (query.IsActive.HasValue)
+            {
+                whereClauses.Add("IsActive=@IsActive");
+            }
+
+            if (query.HasUser.HasValue)
+            {
+                if (query.HasUser.Value)
+                {
+                    whereClauses.Add("UserId not null");
+                }
+                else
+                {
+                    whereClauses.Add("UserId is null");
+                }
+            }
+
+            var whereTextWithoutPaging = whereClauses.Count == 0 ?
+              string.Empty :
+              " where " + string.Join(" AND ", whereClauses.ToArray());
+
+            if (startIndex > 0)
+            {
+                var pagingWhereText = whereClauses.Count == 0 ?
+                    string.Empty :
+                    " where " + string.Join(" AND ", whereClauses.ToArray());
+
+                whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
+                    pagingWhereText,
+                    startIndex.ToString(_usCulture)));
+            }
+
+            var whereText = whereClauses.Count == 0 ?
+                string.Empty :
+                " where " + string.Join(" AND ", whereClauses.ToArray());
+
+            commandText += whereText;
+
+            commandText += " ORDER BY DateCreated";
+
+            if (query.Limit.HasValue)
+            {
+                commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
+            }
+
+            var list = new List<AuthenticationInfo>();
+
             using (var connection = CreateConnection(true))
             {
                 using (WriteLock.Read())
                 {
-                    var commandText = BaseSelectText;
-
-                    var whereClauses = new List<string>();
-
-                    var startIndex = query.StartIndex ?? 0;
-
-                    if (!string.IsNullOrWhiteSpace(query.AccessToken))
-                    {
-                        whereClauses.Add("AccessToken=@AccessToken");
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(query.UserId))
-                    {
-                        whereClauses.Add("UserId=@UserId");
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(query.DeviceId))
-                    {
-                        whereClauses.Add("DeviceId=@DeviceId");
-                    }
-
-                    if (query.IsActive.HasValue)
-                    {
-                        whereClauses.Add("IsActive=@IsActive");
-                    }
-
-                    if (query.HasUser.HasValue)
-                    {
-                        if (query.HasUser.Value)
-                        {
-                            whereClauses.Add("UserId not null");
-                        }
-                        else
-                        {
-                            whereClauses.Add("UserId is null");
-                        }
-                    }
-
-                    var whereTextWithoutPaging = whereClauses.Count == 0 ?
-                        string.Empty :
-                        " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                    if (startIndex > 0)
-                    {
-                        var pagingWhereText = whereClauses.Count == 0 ?
-                            string.Empty :
-                            " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                        whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM AccessTokens {0} ORDER BY DateCreated LIMIT {1})",
-                            pagingWhereText,
-                            startIndex.ToString(_usCulture)));
-                    }
-
-                    var whereText = whereClauses.Count == 0 ?
-                        string.Empty :
-                        " where " + string.Join(" AND ", whereClauses.ToArray());
-
-                    commandText += whereText;
-
-                    commandText += " ORDER BY DateCreated";
-
-                    if (query.Limit.HasValue)
-                    {
-                        commandText += " LIMIT " + query.Limit.Value.ToString(_usCulture);
-                    }
-
-                    var list = new List<AuthenticationInfo>();
-
                     using (var statement = connection.PrepareStatement(commandText))
                     {
                         BindAuthenticationQueryParams(query, statement);

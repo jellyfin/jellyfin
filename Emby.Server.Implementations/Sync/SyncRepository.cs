@@ -43,12 +43,7 @@ namespace Emby.Server.Implementations.Sync
         {
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
+                RunDefaultInitialization(connection);
 
                 string[] queries = {
 
