@@ -110,5 +110,10 @@ namespace Emby.Common.Implementations.EnvironmentInfo
         {
             get { return Environment.StackTrace; }
         }
+
+        public void SetProcessEnvironmentVariable(string name, string value)
+        {
+            Environment.SetEnvironmentVariable(name, value);
+        }
     }
 }

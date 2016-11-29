@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Emby.Server.Implementations.Localization;
 
 namespace Emby.Server.Core.Localization
@@ -10,11 +11,41 @@ namespace Emby.Server.Core.Localization
     {
         public string RemoveDiacritics(string text)
         {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
+            if (text == null)
+            {
+                throw new ArgumentNullException("text");
+            }
+
+            var chars = Normalize(text, NormalizationForm.FormD)
+                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark);
+
+            return Normalize(String.Concat(chars), NormalizationForm.FormC);
+        }
+
+        private static string Normalize(string text, NormalizationForm form, bool stripStringOnFailure = true)
+        {
+            if (stripStringOnFailure)
+            {
+                try
+                {
+                    return text.Normalize(form);
+                }
+                catch (ArgumentException)
+                {
+                    // will throw if input contains invalid unicode chars
+                    // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/   
+                    text = StripInvalidUnicodeCharacters(text);
+                    return Normalize(text, form, false);
+                }
+            }
+
+            return text.Normalize(form);
+        }
+
+        private static string StripInvalidUnicodeCharacters(string str)
+        {
+            var invalidCharactersRegex = new Regex("([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])");
+            return invalidCharactersRegex.Replace(str, "");
         }
 
         public string NormalizeFormKD(string text)

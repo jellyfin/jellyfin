@@ -50,12 +50,7 @@ namespace Emby.Server.Implementations.Data
         {
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
+                RunDefaultInitialization(connection);
 
                 string[] queries = {
 
@@ -102,7 +97,7 @@ namespace Emby.Server.Implementations.Data
                             statement.TryBind("@data", serialized);
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -164,7 +159,7 @@ namespace Emby.Server.Implementations.Data
                             statement.TryBind("@id", user.Id.ToGuidParamValue());
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }

@@ -27,12 +27,7 @@ namespace Emby.Server.Implementations.Social
         {
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
+                RunDefaultInitialization(connection);
 
                 string[] queries = {
 
@@ -70,7 +65,7 @@ namespace Emby.Server.Implementations.Social
                             info.ItemId,
                             info.UserId,
                             info.ExpirationDate.ToDateTimeParamValue());
-                    });
+                    }, TransactionMode);
                 }
             }
         }

@@ -29,12 +29,7 @@ namespace Emby.Server.Implementations.Notifications
         {
             using (var connection = CreateConnection())
             {
-                connection.ExecuteAll(string.Join(";", new[]
-                {
-                                "PRAGMA page_size=4096",
-                                "pragma default_temp_store = memory",
-                                "pragma temp_store = memory"
-                }));
+                RunDefaultInitialization(connection);
 
                 string[] queries = {
 
@@ -58,7 +53,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection(true))
             {
-                //using (WriteLock.Read())
+                using (WriteLock.Read())
                 {
                     var clauses = new List<string>();
                     var paramList = new List<object>();
@@ -113,7 +108,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection(true))
             {
-                //using (WriteLock.Read())
+                using (WriteLock.Read())
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
@@ -249,7 +244,7 @@ namespace Emby.Server.Implementations.Notifications
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -304,7 +299,7 @@ namespace Emby.Server.Implementations.Notifications
 
                             statement.MoveNext();
                         }
-                    });
+                    }, TransactionMode);
                 }
             }
         }
@@ -334,7 +329,7 @@ namespace Emby.Server.Implementations.Notifications
                             }
                         }
 
-                    });
+                    }, TransactionMode);
                 }
             }
         }
