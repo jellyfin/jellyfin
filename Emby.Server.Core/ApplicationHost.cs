@@ -789,7 +789,8 @@ namespace Emby.Server.Core
                 MemoryStreamFactory,
                 ProcessFactory,
                 (Environment.ProcessorCount > 2 ? 14000 : 40000),
-                EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
+                EnvironmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows,
+                EnvironmentInfo);
 
             MediaEncoder = mediaEncoder;
             RegisterSingleInstance(MediaEncoder);

@@ -24,6 +24,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.System;
 
 namespace MediaBrowser.MediaEncoding.Encoder
 {
@@ -88,9 +89,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly int DefaultImageExtractionTimeoutMs;
         private readonly bool EnableEncoderFontFile;
 
+        private readonly IEnvironmentInfo _environmentInfo;
+
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, bool hasExternalEncoder, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager, IHttpClient httpClient, IZipClient zipClient, IMemoryStreamFactory memoryStreamProvider, IProcessFactory processFactory,
             int defaultImageExtractionTimeoutMs,
-            bool enableEncoderFontFile)
+            bool enableEncoderFontFile, IEnvironmentInfo environmentInfo)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -109,12 +112,66 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _processFactory = processFactory;
             DefaultImageExtractionTimeoutMs = defaultImageExtractionTimeoutMs;
             EnableEncoderFontFile = enableEncoderFontFile;
+            _environmentInfo = environmentInfo;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
             _originalFFProbePath = ffProbePath;
             _originalFFMpegPath = ffMpegPath;
 
             _hasExternalEncoder = hasExternalEncoder;
+
+            SetEnvironmentVariable();
+        }
+
+        private readonly object _logLock = new object();
+        public void SetLogFilename(string name)
+        {
+            lock (_logLock)
+            {
+                try
+                {
+                    _environmentInfo.SetProcessEnvironmentVariable("FFREPORT", "file=" + name + ":level=32");
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                }
+            }
+        }
+
+        public void ClearLogFilename()
+        {
+            lock (_logLock)
+            {
+                try
+                {
+                    _environmentInfo.SetProcessEnvironmentVariable("FFREPORT", null);
+                }
+                catch (Exception ex)
+                {
+                    //_logger.ErrorException("Error setting FFREPORT environment variable", ex);
+                }
+            }
+        }
+
+        private void SetEnvironmentVariable()
+        {
+            try
+            {
+                //_environmentInfo.SetProcessEnvironmentVariable("FFREPORT", "file=program-YYYYMMDD-HHMMSS.txt:level=32");
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+            }
+            try
+            {
+                //_environmentInfo.SetUserEnvironmentVariable("FFREPORT", "file=program-YYYYMMDD-HHMMSS.txt:level=32");
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error setting FFREPORT environment variable", ex);
+            }
         }
 
         public string EncoderLocationType
