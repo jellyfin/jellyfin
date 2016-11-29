@@ -117,22 +117,29 @@
     }
 
     var _supportsCssAnimation;
-    function supportsCssAnimation() {
+    var _supportsCssAnimationWithPrefix;
+    function supportsCssAnimation(allowPrefix) {
 
-        if (_supportsCssAnimation === true || _supportsCssAnimation === false) {
-            return _supportsCssAnimation;
+        if (allowPrefix) {
+            if (_supportsCssAnimationWithPrefix === true || _supportsCssAnimationWithPrefix === false) {
+                return _supportsCssAnimationWithPrefix;
+            }
+        } else {
+            if (_supportsCssAnimation === true || _supportsCssAnimation === false) {
+                return _supportsCssAnimation;
+            }
         }
 
         var animation = false,
             animationstring = 'animation',
             keyframeprefix = '',
-            domPrefixes = 'Webkit Moz O ms Khtml'.split(' '),
+            domPrefixes = ['Webkit', 'O', 'Moz'],
             pfx = '',
             elm = document.createElement('div');
 
         if (elm.style.animationName !== undefined) { animation = true; }
 
-        if (animation === false) {
+        if (animation === false && allowPrefix) {
             for (var i = 0; i < domPrefixes.length; i++) {
                 if (elm.style[domPrefixes[i] + 'AnimationName'] !== undefined) {
                     pfx = domPrefixes[i];
@@ -144,8 +151,13 @@
             }
         }
 
-        _supportsCssAnimation = animation;
-        return _supportsCssAnimation;
+        if (allowPrefix) {
+            _supportsCssAnimationWithPrefix = animation;
+            return _supportsCssAnimationWithPrefix;
+        } else {
+            _supportsCssAnimation = animation;
+            return _supportsCssAnimation;
+        }
     }
 
     var uaMatch = function (ua) {
@@ -228,6 +240,7 @@
 
     if (userAgent.toLowerCase().indexOf("playstation 4") !== -1) {
         browser.ps4 = true;
+        browser.tv = true;
     }
 
     if (isMobile(userAgent)) {
@@ -257,6 +270,9 @@
 
     browser.keyboard = hasKeyboard(browser);
     browser.supportsCssAnimation = supportsCssAnimation;
+
+    browser.osx = userAgent.toLowerCase().indexOf('os x') !== -1;
+    browser.iOS = browser.ipad || browser.iphone || browser.ipod;
 
     return browser;
 });

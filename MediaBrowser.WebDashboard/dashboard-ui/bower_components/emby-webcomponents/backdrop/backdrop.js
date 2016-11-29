@@ -40,7 +40,7 @@
                 backdropImage.style.backgroundImage = "url('" + url + "')";
                 backdropImage.setAttribute('data-url', url);
 
-                backdropImage.style.animation = 'backdrop-fadein ' + 800 + 'ms ease-in normal both';
+                backdropImage.classList.add('backdropImageFadeIn');
                 parent.appendChild(backdropImage);
 
                 if (!enableAnimation(backdropImage)) {
@@ -75,7 +75,7 @@
         function cancelAnimation() {
             var elem = currentAnimatingElement;
             if (elem) {
-                elem.style.animation = '';
+                elem.classList.remove('backdropImageFadeIn');
                 currentAnimatingElement = null;
             }
         }

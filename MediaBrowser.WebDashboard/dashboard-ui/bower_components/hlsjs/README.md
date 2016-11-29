@@ -112,8 +112,11 @@ All HLS resources must be delivered with [CORS headers](https://developer.mozill
   - VoD & Live playlists
     - DVR support on Live playlists
   - MPEG-2 TS container
+    - ITU-T Rec. H.264 and ISO/IEC 14496-10 Elementary Stream
+    - ISO/IEC 13818-7 ADTS AAC Elementary Stream
+    - ISO/IEC 11172-3 / ISO/IEC 13818-3 (MPEG-1/2 Audio Layer III) Elementary Stream
+    - Packetized metadata (ID3) Elementary Stream
   - AAC container (audio only streams)
-  - MP3 container (audio only streams)
   - Adaptive streaming
     - Manual & Auto Quality Switching
       - 3 Quality Switching modes are available (controllable through API means)
@@ -138,7 +141,8 @@ All HLS resources must be delivered with [CORS headers](https://developer.mozill
 ## Not Supported (Yet)
 
   - WebVTT container
-  - MP3 container in Edge for Windows 10+
+  - MP3 Elementary Stream in Edge for Windows 10+
+  - MP3 container
   - Alternate Audio Track Rendition for live playlists
 
 ### Supported M3U8 tags

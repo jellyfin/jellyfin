@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace MediaBrowser.Model.System
 {
     public interface IEnvironmentInfo
@@ -13,6 +8,7 @@ namespace MediaBrowser.Model.System
         string OperatingSystemVersion { get; }
         Architecture SystemArchitecture { get; }
         string GetEnvironmentVariable(string name);
+        void SetProcessEnvironmentVariable(string name, string value);
         string GetUserId();
         string StackTrace { get; }
     }

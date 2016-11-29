@@ -1001,9 +1001,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\README.md">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\README.md</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\animations.css">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\animations.css</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\appsettings.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\appsettings.js</Link>
     </BundleResource>
@@ -1433,6 +1430,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js</Link>
     </BundleResource>
@@ -1588,6 +1588,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingeditor.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.js</Link>
@@ -1972,6 +1975,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\API.md">
       <Link>Resources\dashboard-ui\bower_components\hlsjs\API.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\hlsjs\CONTRIBUTING.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\hlsjs\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\LICENSE">
       <Link>Resources\dashboard-ui\bower_components\hlsjs\LICENSE</Link>
@@ -3428,6 +3437,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\da.json">
       <Link>Resources\dashboard-ui\strings\da.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\de-DE.json">
+      <Link>Resources\dashboard-ui\strings\de-DE.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\de.json">
       <Link>Resources\dashboard-ui\strings\de.json</Link>
     </BundleResource>
@@ -3442,6 +3454,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-AR.json">
       <Link>Resources\dashboard-ui\strings\es-AR.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-ES.json">
+      <Link>Resources\dashboard-ui\strings\es-ES.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-MX.json">
       <Link>Resources\dashboard-ui\strings\es-MX.json</Link>
@@ -3484,6 +3499,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\ko.json">
       <Link>Resources\dashboard-ui\strings\ko.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\lt-LT.json">
+      <Link>Resources\dashboard-ui\strings\lt-LT.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\ms.json">
       <Link>Resources\dashboard-ui\strings\ms.json</Link>

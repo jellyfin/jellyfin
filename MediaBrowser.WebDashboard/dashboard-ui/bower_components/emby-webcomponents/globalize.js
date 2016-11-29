@@ -185,7 +185,13 @@ define(['connectionManager', 'userSettings', 'events'], function (connectionMana
 
     function translateKeyFromModule(key, module) {
 
-        return getDictionary(module)[key] || key;
+        var dictionary = getDictionary(module);
+
+        if (!dictionary) {
+            return key;
+        }
+
+        return dictionary[key] || key;
     }
 
     function replaceAll(str, find, replace) {
