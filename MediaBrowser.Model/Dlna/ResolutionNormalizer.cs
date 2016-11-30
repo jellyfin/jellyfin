@@ -61,7 +61,8 @@ namespace MediaBrowser.Model.Dlna
         private static double GetVideoBitrateScaleFactor(string codec)
         {
             if (StringHelper.EqualsIgnoreCase(codec, "h265") ||
-                StringHelper.EqualsIgnoreCase(codec, "hevc"))
+                StringHelper.EqualsIgnoreCase(codec, "hevc") ||
+                StringHelper.EqualsIgnoreCase(codec, "vp9"))
             {
                 return .5;
             }

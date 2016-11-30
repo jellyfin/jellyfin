@@ -111,7 +111,7 @@
                 id: 'manageserver'
             });
 
-            if (dom.getWindowSize().innerWidth >= 800) {
+            if (dom.getWindowSize().innerWidth >= 1000) {
                 commands.push({
                     name: globalize.translate('MetadataManager'),
                     id: 'metadatamanager'
