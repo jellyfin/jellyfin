@@ -29,6 +29,8 @@
     "ButtonCancel": "\u0410\u0434\u043c\u044f\u043d\u0456\u0446\u044c",
     "ButtonExit": "\u0412\u044b\u0439\u0441\u0446\u0456",
     "ButtonNew": "\u041d\u043e\u0432\u0430\u0435",
+    "OptionDev": "Dev",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "\u0422\u0440\u044b\u0433\u0435\u0440\u044b \u0437\u0430\u0434\u0430\u0447\u044b",
     "HeaderTV": "\u0422\u0411",
     "HeaderAudio": "\u0410\u045e\u0434\u044b\u0451",

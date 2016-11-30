@@ -29,6 +29,8 @@
     "ButtonCancel": "Anuleaza",
     "ButtonExit": "Iesire",
     "ButtonNew": "Nou",
+    "OptionDev": "Dev",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
     "HeaderTV": "Seriale TV",
     "HeaderAudio": "Muzica",

@@ -29,6 +29,8 @@
     "ButtonCancel": "\u0391\u03ba\u03cd\u03c1\u03c9\u03c3\u03b7 ",
     "ButtonExit": "\u0388\u03be\u03bf\u03b4\u03bf\u03c2",
     "ButtonNew": "\u039d\u03ad\u03bf",
+    "OptionDev": "\u03a5\u03c0\u03cc \u03b1\u03bd\u03ac\u03c0\u03c4\u03c5\u03be\u03b7",
+    "OptionBeta": "\u0394\u03bf\u03ba\u03b9\u03bc\u03b1\u03c3\u03c4\u03b9\u03ba\u03ae",
     "HeaderTaskTriggers": "Task Triggers",
     "HeaderTV": "\u03a4\u03b7\u03bb\u03b5\u03cc\u03c1\u03b1\u03c3\u03b7",
     "HeaderAudio": "\u0389\u03c7\u03bf\u03c2",

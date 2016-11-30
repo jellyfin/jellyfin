@@ -29,6 +29,8 @@
     "ButtonCancel": "Odustani",
     "ButtonExit": "Izlaz",
     "ButtonNew": "Novo",
+    "OptionDev": "Dev",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Okida\u010di zadataka",
     "HeaderTV": "TV",
     "HeaderAudio": "Audio",
