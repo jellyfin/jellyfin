@@ -1311,7 +1311,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     timer.Status = RecordingStatus.InProgress;
                     _timerProvider.AddOrUpdate(timer, false);
 
-                    SaveNfo(timer, recordPath, seriesPath);
+                    SaveRecordingMetadata(timer, recordPath, seriesPath);
                     EnforceKeepUpTo(timer);
                 };
 
@@ -1597,7 +1597,115 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             ((IProcess)sender).Dispose();
         }
 
-        private void SaveNfo(TimerInfo timer, string recordingPath, string seriesPath)
+        private async Task SaveRecordingImage(string recordingPath, LiveTvProgram program, ItemImageInfo image)
+        {
+            if (!image.IsLocalFile)
+            {
+                image = await _libraryManager.ConvertImageToLocal(program, image, 0).ConfigureAwait(false);
+            }
+
+            string imageSaveFilenameWithoutExtension = null;
+
+            switch (image.Type)
+            {
+                case ImageType.Primary:
+
+                    if (program.IsSeries)
+                    {
+                        imageSaveFilenameWithoutExtension = Path.GetFileNameWithoutExtension(recordingPath) + "-thumb";
+                    }
+                    else
+                    {
+                        imageSaveFilenameWithoutExtension = "poster";
+                    }
+
+                    break;
+                case ImageType.Logo:
+                    imageSaveFilenameWithoutExtension = "logo";
+                    break;
+                case ImageType.Thumb:
+                    imageSaveFilenameWithoutExtension = "landscape";
+                    break;
+                case ImageType.Backdrop:
+                    imageSaveFilenameWithoutExtension = "fanart";
+                    break;
+                default:
+                    break;
+            }
+
+            if (string.IsNullOrWhiteSpace(imageSaveFilenameWithoutExtension))
+            {
+                return;
+            }
+
+            var imageSavePath = Path.Combine(Path.GetDirectoryName(recordingPath), imageSaveFilenameWithoutExtension);
+
+            // preserve original image extension
+            imageSavePath = Path.ChangeExtension(imageSavePath, Path.GetExtension(image.Path));
+
+            _fileSystem.CopyFile(image.Path, imageSavePath, true);
+        }
+
+        private async Task SaveRecordingImages(string recordingPath, LiveTvProgram program)
+        {
+            var image = program.GetImageInfo(ImageType.Primary, 0);
+
+            if (image != null)
+            {
+                try
+                {
+                    await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error saving recording image", ex);
+                }
+            }
+
+            if (!program.IsSeries)
+            {
+                image = program.GetImageInfo(ImageType.Backdrop, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error saving recording image", ex);
+                    }
+                }
+
+                image = program.GetImageInfo(ImageType.Thumb, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error saving recording image", ex);
+                    }
+                }
+
+                image = program.GetImageInfo(ImageType.Logo, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        await SaveRecordingImage(recordingPath, program, image).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error saving recording image", ex);
+                    }
+                }
+            }
+        }
+
+        private async void SaveRecordingMetadata(TimerInfo timer, string recordingPath, string seriesPath)
         {
             try
             {
@@ -1607,21 +1715,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     Limit = 1,
                     ExternalId = timer.ProgramId
 
-                }).FirstOrDefault();
-
-                if (timer.IsSports)
-                {
-                    AddGenre(timer.Genres, "Sports");
-                }
-                if (timer.IsKids)
-                {
-                    AddGenre(timer.Genres, "Kids");
-                    AddGenre(timer.Genres, "Children");
-                }
-                if (timer.IsNews)
-                {
-                    AddGenre(timer.Genres, "News");
-                }
+                }).FirstOrDefault() as LiveTvProgram;
 
                 // dummy this up
                 if (program == null)
@@ -1642,6 +1736,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     };
                 }
 
+                if (timer.IsSports)
+                {
+                    AddGenre(program.Genres, "Sports");
+                }
+                if (timer.IsKids)
+                {
+                    AddGenre(program.Genres, "Kids");
+                    AddGenre(program.Genres, "Children");
+                }
+                if (timer.IsNews)
+                {
+                    AddGenre(program.Genres, "News");
+                }
+
                 if (timer.IsProgramSeries)
                 {
                     SaveSeriesNfo(timer, seriesPath);
@@ -1655,6 +1763,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     SaveVideoNfo(timer, recordingPath, program, false);
                 }
+
+                await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
