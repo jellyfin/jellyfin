@@ -29,6 +29,8 @@
     "ButtonCancel": "Avbryt",
     "ButtonExit": "Avsluta",
     "ButtonNew": "Nytillkommet",
+    "OptionDev": "Utvecklarversion",
+    "OptionBeta": "Betaversion",
     "HeaderTaskTriggers": "Aktivitetsutl\u00f6sare",
     "HeaderTV": "TV",
     "HeaderAudio": "Ljud",

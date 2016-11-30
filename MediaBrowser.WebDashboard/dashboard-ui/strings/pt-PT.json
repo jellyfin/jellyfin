@@ -29,6 +29,8 @@
     "ButtonCancel": "Cancelar",
     "ButtonExit": "Sair",
     "ButtonNew": "Novo",
+    "OptionDev": "Dev (Inst\u00e1vel)",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Disparadores de Tarefa",
     "HeaderTV": "TV",
     "HeaderAudio": "\u00c1udio",

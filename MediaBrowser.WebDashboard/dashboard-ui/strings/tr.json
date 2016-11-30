@@ -29,6 +29,8 @@
     "ButtonCancel": "\u0130ptal",
     "ButtonExit": "Exit",
     "ButtonNew": "Yeni",
+    "OptionDev": "Gelistirici",
+    "OptionBeta": "Deneme",
     "HeaderTaskTriggers": "Task Triggers",
     "HeaderTV": "TV",
     "HeaderAudio": "Audio",

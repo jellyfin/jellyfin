@@ -29,6 +29,8 @@
     "ButtonCancel": "Lopeta",
     "ButtonExit": "Exit",
     "ButtonNew": "New",
+    "OptionDev": "Kehittely (Ei vakaa)",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Task Triggers",
     "HeaderTV": "TV",
     "HeaderAudio": "Audio",

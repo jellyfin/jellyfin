@@ -29,6 +29,8 @@
     "ButtonCancel": "Annuleren",
     "ButtonExit": "Afsluiten",
     "ButtonNew": "Nieuw",
+    "OptionDev": "Dev (Instabiel)",
+    "OptionBeta": "Beta",
     "HeaderTaskTriggers": "Taak Triggers",
     "HeaderTV": "TV",
     "HeaderAudio": "Geluid",
