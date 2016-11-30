@@ -225,6 +225,8 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         var serverId = item.ServerId;
         var type = item.Type;
 
+        var playableItemId = type === 'Program' ? item.ChannelId : item.Id;
+
         if (action === 'link') {
 
             showItem(item, {
@@ -238,7 +240,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action === 'instantmix') {
-            playbackManager.instantMix(id, serverId);
+            playbackManager.instantMix(playableItemId, serverId);
         }
 
         else if (action === 'play') {
@@ -246,7 +248,7 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
             var startPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
 
             playbackManager.play({
-                ids: [id],
+                ids: [playableItemId],
                 startPositionTicks: startPositionTicks,
                 serverId: serverId
             });
