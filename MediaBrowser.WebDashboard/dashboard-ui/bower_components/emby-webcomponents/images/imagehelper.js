@@ -27,7 +27,7 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
     function fillImageElement(elem, source, enableEffects) {
         imageFetcher.loadImage(elem, source).then(function () {
 
-            var fillingVibrant = elem.tagName !== 'IMG' ? false : fillVibrant(elem, source);
+            var fillingVibrant = fillVibrant(elem, source);
 
             if (enableFade && !layoutManager.tv && enableEffects !== false && !fillingVibrant) {
                 fadeIn(elem);
@@ -110,14 +110,17 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
         requestIdleCallback(function () {
 
             //var now = new Date().getTime();
-            var swatch = getVibrantInfo(img, url).split('|');
-            //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
-            if (swatch.length) {
+            getVibrantInfoFromElement(img, url).then(function (vibrantInfo) {
+                
+                var swatch = vibrantInfo.split('|');
+                //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
+                if (swatch.length) {
 
-                var index = 0;
-                vibrantElement.style.backgroundColor = swatch[index];
-                vibrantElement.style.color = swatch[index + 1];
-            }
+                    var index = 0;
+                    vibrantElement.style.backgroundColor = swatch[index];
+                    vibrantElement.style.color = swatch[index + 1];
+                }
+            });
         });
         /*
          * Results into:
@@ -127,6 +130,22 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
          * DarkMuted #141414
          * LightVibrant #f3ccb4
          */
+    }
+
+    function getVibrantInfoFromElement(elem, url) {
+        
+        if (elem.tagName === 'IMG') {
+            return Promise.resolve(getVibrantInfo(elem, url));
+        }
+
+        return new Promise(function (resolve, reject) {
+
+            var img = new Image();
+            img.onload = function () {
+                resolve(getVibrantInfo(img, url));
+            };
+            img.src = url;
+        });
     }
 
     function getSettingsKey(url) {

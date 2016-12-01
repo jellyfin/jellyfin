@@ -46,7 +46,7 @@
 }
 
 .pageWithAbsoluteTabs .pageTabContent {
-    padding-top: 2.2em;
+    padding-top: 2.6em;
 }
 
 /*.pageWithAbsoluteTabs .pageTabContent {
@@ -101,13 +101,6 @@
 
 .viewPanelTabs {
     margin-bottom: 2em;
-}
-
-@media all and (max-width: 800px) {
-
-    .hiddenSectionOnMobile {
-        display: none;
-    }
 }
 
 @media all and (min-width: 800px) {

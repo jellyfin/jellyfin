@@ -53,7 +53,7 @@ button {
     position: relative;
 }
 
-.cardPadder-backdrop, .cardPadder-smallBackdrop, .cardPadder-overflowBackdrop {
+.cardPadder-backdrop, .cardPadder-smallBackdrop, .cardPadder-overflowBackdrop, .cardPadder-overflowSmallBackdrop {
     padding-bottom: 56.25%;
 }
 
@@ -402,6 +402,10 @@ button {
     max-width: 400px;
 }
 
+.overflowSmallBackdropCard-scalable {
+    width: 60%;
+}
+
 .overflowSquareCard-scalable {
     width: 42%;
     max-width: 200px;
@@ -438,6 +442,10 @@ button {
     .overflowSquareCard-scalable {
         width: 30%;
     }
+
+    .overflowSmallBackdropCard-scalable {
+        width: 40%
+    }
 }
 
 @media all and (min-width: 640px) {
@@ -448,6 +456,10 @@ button {
 
     .overflowBackdropCard-scalable {
         width: 56%;
+    }
+
+    .overflowSmallBackdropCard-scalable {
+        width: 40%
     }
 }
 
@@ -460,6 +472,10 @@ button {
 @media all and (min-width: 770px) {
     .backdropCard-scalable {
         width: 33.333333333333333333333333333333%;
+    }
+
+    .overflowSmallBackdropCard-scalable {
+        width: 30%
     }
 }
 
@@ -501,6 +517,10 @@ button {
         width: 40%;
     }
 
+    .overflowSmallBackdropCard-scalable {
+        width: 24%
+    }
+
     .overflowSquareCard-scalable {
         width: 22%;
     }
@@ -526,6 +546,10 @@ button {
 
     .smallBackdropCard-scalable {
         width: 16.666666666666666666666666666667%;
+    }
+
+    .overflowSmallBackdropCard-scalable {
+        width: 18%
     }
 }
 

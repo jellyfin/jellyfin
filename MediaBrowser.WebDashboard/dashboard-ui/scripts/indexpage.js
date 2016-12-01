@@ -38,16 +38,16 @@
             return Sections.loadRecentlyAdded(elem, user);
         }
         else if (section == 'librarytiles') {
-            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
-            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, false);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, true);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index);
         }
         else if (section == 'librarytiles-automobile') {
-            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, true);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index);
         }
         else if (section == 'librarybuttons') {
             return Sections.loadlibraryButtons(elem, userId, index);

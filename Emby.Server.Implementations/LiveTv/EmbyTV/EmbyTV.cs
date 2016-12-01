@@ -1650,7 +1650,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             var image = program.GetImageInfo(ImageType.Primary, 0);
 
-            if (image != null)
+            if (image != null && program.IsMovie)
             {
                 try
                 {
