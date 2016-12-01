@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "1:1 Omjer, preporu\u010damo. Samo JPG\/PNG.",
     "MessageNothingHere": "Ni\u0161ta ovdje.",
     "MessagePleaseEnsureInternetMetadata": "Molimo provjerite da je preuzimanje metadata sa interneta omogu\u0107eno.",
+    "AlreadyPaidHelp1": "Ako ste ve\u0107 platili instalaciju starije verzije Media Browser-a za Android, ne morate ponovno platiti kako bi se aktivirali ove aplikacije. Kliknite U redu da nam po\u0161aljete e-mail na {0}, a mi \u0107emo ga aktivirati.",
+    "AlreadyPaidHelp2": "Ima\u0161 Emby Premijeru? Otka\u017eite ovaj dijalog, postavite Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a pod Pomo\u0107 -> Emby Premijera i biti \u0107e automatski otklju\u010dana.",
     "TabSuggestions": "Prijedlozi",
     "TabLatest": "Zadnje",
     "TabUpcoming": "Uskoro",

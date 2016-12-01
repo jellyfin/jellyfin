@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "Rapport d'aspect 1:1 recommand\u00e9. Seulement JPG\/PNG.",
     "MessageNothingHere": "Il n'y a rien ici.",
     "MessagePleaseEnsureInternetMetadata": "Veuillez vous assurer que le t\u00e9l\u00e9chargement des m\u00e9tadonn\u00e9es depuis Internet est activ\u00e9.",
+    "AlreadyPaidHelp1": "Si vous avez d\u00e9j\u00e0 payer pour l'installation d'une ancienne version de Media Browser for Android, vous n'avez pas besoin de payer \u00e0 nouveau pour activer l'application. Cliquez sur OK pour nous envoyer un courriel \u00e0 {0} et nous l'activerons pour vous.",
+    "AlreadyPaidHelp2": "Vous avez Emby Premiere? annuler cette bo\u00eete de dialogue, la configuration d\u2019Emby Premiere dans votre Dashboard Emby Server sous Aide -> Emby Premiere, et il se d\u00e9verrouille automatiquement.",
     "TabSuggestions": "Suggestions",
     "TabLatest": "Derniers",
     "TabUpcoming": "\u00c0 venir",

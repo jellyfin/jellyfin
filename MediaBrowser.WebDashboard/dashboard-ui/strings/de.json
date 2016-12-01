@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "1:1 Seitenverh\u00e4ltnis empfohlen. Nur JPG\/PNG.",
     "MessageNothingHere": "Nichts hier.",
     "MessagePleaseEnsureInternetMetadata": "Bitte sicherstellen, dass das Herunterladen von Internet Metadaten aktiviert ist.",
+    "AlreadyPaidHelp1": "Wenn Sie bereits f\u00fcr die Installation einer \u00e4lteren Version von Media Browser f\u00fcr Android gezahlt haben, m\u00fcssen Sie f\u00fcr eine Freischaltung nicht erneut zahlen. Bet\u00e4tigen Sie OK um uns eine Email an {0} zu senden. Wir werden die App dann f\u00fcr Sie freischalten.",
+    "AlreadyPaidHelp2": "Sie haben Emby Premiere? Dann beenden Sie diesen Dialog, richten Sie Emby Premiere in Ihrem Emby Server Dashboard unter Hilfe -> Emby Premiere ein und eine Freischaltung erfolgt automatisch.",
     "TabSuggestions": "Empfehlungen",
     "TabLatest": "Neueste",
     "TabUpcoming": "Bevorstehend",
