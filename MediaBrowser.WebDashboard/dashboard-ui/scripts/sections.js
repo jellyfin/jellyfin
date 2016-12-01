@@ -408,7 +408,6 @@
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
-
                 html += '</div>';
 
                 var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 500;

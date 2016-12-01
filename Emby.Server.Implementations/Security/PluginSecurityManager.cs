@@ -245,13 +245,24 @@ namespace Emby.Server.Implementations.Security
             string mb2Equivalent = null,
             string version = null)
         {
-            var lastChecked = LicenseFile.LastChecked(feature);
+            var regInfo = LicenseFile.GetRegInfo(feature);
+            var lastChecked = regInfo == null ? DateTime.MinValue : regInfo.LastChecked;
+            var expDate = regInfo == null ? DateTime.MinValue : regInfo.ExpirationDate;
+
+            var maxCacheDays = 14;
+            var nextCheckDate = new [] { expDate, lastChecked.AddDays(maxCacheDays) }.Min();
+
+            if (nextCheckDate > DateTime.UtcNow.AddDays(maxCacheDays))
+            {
+                nextCheckDate = DateTime.MinValue;
+            }
 
             //check the reg file first to alleviate strain on the MB admin server - must actually check in every 30 days tho
             var reg = new RegRecord
             {
                 // Cache the result for up to a week
-                registered = lastChecked > DateTime.UtcNow.AddDays(-7)
+                registered = regInfo != null && nextCheckDate >= DateTime.UtcNow,
+                expDate = expDate
             };
 
             var success = reg.registered;
@@ -291,7 +302,7 @@ namespace Emby.Server.Implementations.Security
 
                     if (reg.registered)
                     {
-                        LicenseFile.AddRegCheck(feature);
+                        LicenseFile.AddRegCheck(feature, reg.expDate);
                     }
                     else
                     {
