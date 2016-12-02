@@ -170,6 +170,7 @@
     "OptionPlayCount": "\uc7ac\uc0dd \ud69f\uc218",
     "OptionDatePlayed": "Date Played",
     "OptionDateAdded": "\ucd94\uac00\ud55c \ub0a0\uc9dc",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "\uc568\ubc94 \uc544\ud2f0\uc2a4\ud2b8",
     "OptionArtist": "\uc544\ud2f0\uc2a4\ud2b8",
     "OptionAlbum": "\uc568\ubc94",

@@ -170,6 +170,7 @@
     "OptionPlayCount": "Z\u00e4hler",
     "OptionDatePlayed": "Abgspellt am",
     "OptionDateAdded": "Dezue gf\u00fcegt am",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album-Artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",

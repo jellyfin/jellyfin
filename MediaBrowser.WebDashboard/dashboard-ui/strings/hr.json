@@ -170,6 +170,7 @@
     "OptionPlayCount": "Broju izvo\u0111enja",
     "OptionDatePlayed": "Datumu izvo\u0111enja",
     "OptionDateAdded": "Datumu dodavanja",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumu izvo\u0111a\u010da",
     "OptionArtist": "Izvo\u0111a\u010du",
     "OptionAlbum": "Albumu",

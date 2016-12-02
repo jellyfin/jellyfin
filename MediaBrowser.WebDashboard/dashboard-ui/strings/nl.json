@@ -170,6 +170,7 @@
     "OptionPlayCount": "Afspeel telling",
     "OptionDatePlayed": "Datum afgespeeld",
     "OptionDateAdded": "Datum toegevoegd",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumartiest",
     "OptionArtist": "Artiest",
     "OptionAlbum": "Album",

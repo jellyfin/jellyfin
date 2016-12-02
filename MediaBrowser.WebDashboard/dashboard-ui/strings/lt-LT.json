@@ -170,6 +170,7 @@
     "OptionPlayCount": "Rodym\u0173 kiekis",
     "OptionDatePlayed": "Rodymo data",
     "OptionDateAdded": "Prid\u0117jimo data",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumo atlik\u0117jas",
     "OptionArtist": "Atlik\u0117jas",
     "OptionAlbum": "Albumas",
