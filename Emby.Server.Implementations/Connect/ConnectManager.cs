@@ -817,7 +817,6 @@ namespace Emby.Server.Implementations.Connect
             }
         }
 
-        private readonly SemaphoreSlim _connectImageSemaphore = new SemaphoreSlim(5, 5);
         private async Task RefreshAuthorizations(List<ServerUserAuthorizationResponse> list, bool refreshImages)
         {
             var users = _userManager.Users.ToList();
@@ -992,7 +991,7 @@ namespace Emby.Server.Implementations.Connect
 
                         if (changed)
                         {
-                            await _providerManager.SaveImage(user, imageUrl, _connectImageSemaphore, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
+                            await _providerManager.SaveImage(user, imageUrl, null, ImageType.Primary, null, CancellationToken.None).ConfigureAwait(false);
 
                             await user.RefreshMetadata(new MetadataRefreshOptions(_fileSystem)
                             {
