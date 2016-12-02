@@ -340,9 +340,10 @@ namespace MediaBrowser.Providers.TV
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {
                         reader.MoveToContent();
+                        reader.Read();
 
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -368,6 +369,10 @@ namespace MediaBrowser.Providers.TV
                                         break;
                                 }
                             }
+                            else
+                            {
+                                reader.Read();
+                            }
                         }
                     }
                 }
@@ -390,16 +395,15 @@ namespace MediaBrowser.Providers.TV
                 using (var reader = XmlReader.Create(streamReader, settings))
                 {
                     reader.MoveToContent();
+                    reader.Read();
 
                     // Loop through each element
-                    while (reader.Read())
+                    while (!reader.EOF)
                     {
-
                         if (reader.NodeType == XmlNodeType.Element)
                         {
                             switch (reader.Name)
                             {
-
                                 case "FirstAired":
                                     {
                                         var val = reader.ReadElementContentAsString();
@@ -423,6 +427,10 @@ namespace MediaBrowser.Providers.TV
                                     break;
                             }
                         }
+                        else
+                        {
+                            reader.Read();
+                        }
                     }
                 }
             }
@@ -438,12 +446,13 @@ namespace MediaBrowser.Providers.TV
             // Use XmlReader for best performance
             using (reader)
             {
-                reader.MoveToContent();
-
                 result.ResetPeople();
 
+                reader.MoveToContent();
+                reader.Read();
+
                 // Loop through each element
-                while (reader.Read())
+                while (!reader.EOF)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -507,10 +516,10 @@ namespace MediaBrowser.Providers.TV
 
                             case "EpisodeNumber":
                                 {
+                                    var val = reader.ReadElementContentAsString();
+
                                     if (!item.IndexNumber.HasValue)
                                     {
-                                        var val = reader.ReadElementContentAsString();
-
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             int rval;
@@ -528,10 +537,10 @@ namespace MediaBrowser.Providers.TV
 
                             case "SeasonNumber":
                                 {
+                                    var val = reader.ReadElementContentAsString();
+
                                     if (!item.ParentIndexNumber.HasValue)
                                     {
-                                        var val = reader.ReadElementContentAsString();
-
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             int rval;
@@ -621,9 +630,9 @@ namespace MediaBrowser.Providers.TV
 
                             case "EpisodeName":
                                 {
+                                    var val = reader.ReadElementContentAsString();
                                     if (!item.LockedFields.Contains(MetadataFields.Name))
                                     {
-                                        var val = reader.ReadElementContentAsString();
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             item.Name = val;
@@ -634,9 +643,9 @@ namespace MediaBrowser.Providers.TV
 
                             case "Overview":
                                 {
+                                    var val = reader.ReadElementContentAsString();
                                     if (!item.LockedFields.Contains(MetadataFields.Overview))
                                     {
-                                        var val = reader.ReadElementContentAsString();
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             item.Overview = val;
@@ -756,6 +765,10 @@ namespace MediaBrowser.Providers.TV
                                 break;
                         }
                     }
+                    else
+                    {
+                        reader.Read();
+                    }
                 }
             }
         }
@@ -809,9 +822,10 @@ namespace MediaBrowser.Providers.TV
             using (reader)
             {
                 reader.MoveToContent();
+                reader.Read();
 
                 // Loop through each element
-                while (reader.Read())
+                while (!reader.EOF)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -821,9 +835,9 @@ namespace MediaBrowser.Providers.TV
                         {
                             case "EpisodeName":
                                 {
+                                    var val = reader.ReadElementContentAsString();
                                     if (!item.LockedFields.Contains(MetadataFields.Name))
                                     {
-                                        var val = reader.ReadElementContentAsString();
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             item.Name += ", " + val;
@@ -834,9 +848,9 @@ namespace MediaBrowser.Providers.TV
 
                             case "Overview":
                                 {
+                                    var val = reader.ReadElementContentAsString();
                                     if (!item.LockedFields.Contains(MetadataFields.Overview))
                                     {
-                                        var val = reader.ReadElementContentAsString();
                                         if (!string.IsNullOrWhiteSpace(val))
                                         {
                                             item.Overview += Environment.NewLine + Environment.NewLine + val;
@@ -891,6 +905,10 @@ namespace MediaBrowser.Providers.TV
                                 reader.Skip();
                                 break;
                         }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                 }
             }

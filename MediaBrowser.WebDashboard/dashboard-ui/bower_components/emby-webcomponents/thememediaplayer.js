@@ -14,19 +14,19 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
                 return;
             }
 
-            if (enabled(items[0].MediaType)) {
-                currentThemeIds = items.map(function (i) {
-                    return i.Id;
-                });
+            currentThemeIds = items.filter(function (i) {
+                return enabled(i.MediaType);
+            }).map(function (i) {
+                return i.Id;
+            });
 
-                playbackManager.play({
-                    items: items,
-                    fullscreen: false,
-                    enableRemotePlayers: false
-                }).then(function () {
-                    currentOwnerId = ownerId;
-                });
-            }
+            playbackManager.play({
+                items: items,
+                fullscreen: false,
+                enableRemotePlayers: false
+            }).then(function () {
+                currentOwnerId = ownerId;
+            });
 
         } else {
 

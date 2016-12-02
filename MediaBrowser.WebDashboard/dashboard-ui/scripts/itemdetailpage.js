@@ -74,7 +74,8 @@
             queueAllFromHere: false,
             positionTo: button,
             cancelTimer: false,
-            record: false
+            record: false,
+            editImages: false
         };
 
         if (appHost.supports('sync')) {
@@ -114,10 +115,7 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            var itemBackdropElement = page.querySelector('#itemBackdrop');
-            itemBackdropElement.classList.add('noBackdrop');
-            itemBackdropElement.style.backgroundImage = 'none';
-            backdrop.setBackdrops([item]);
+            backdrop.setBackdrops([item], false);
 
             LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
 
@@ -433,7 +431,7 @@
             page.querySelector('#childrenCollapsible').classList.remove('hide');
             renderItemsByName(page, item, user);
         }
-        else if (item.IsFolder) {
+        else if (item.IsFolder || item.Type == 'Episode') {
 
             if (item.Type == "BoxSet") {
                 page.querySelector('#childrenCollapsible').classList.add('hide');
@@ -462,14 +460,7 @@
             renderMediaSources(page, user, item);
         }
 
-        var chapters = item.Chapters || [];
-
-        if (!chapters.length) {
-            page.querySelector('#scenesCollapsible').classList.add('hide');
-        } else {
-            page.querySelector('#scenesCollapsible').classList.remove('hide');
-            renderScenes(page, item, user, 3);
-        }
+        renderScenes(page, item);
 
         if (!item.SpecialFeatureCount || item.SpecialFeatureCount == 0 || item.Type == "Series") {
             page.querySelector('#specialsCollapsible').classList.add('hide');
@@ -602,7 +593,7 @@
 
         var dateAddedElement = page.querySelector('#dateAdded');
 
-        if (!item.IsFolder) {
+        if (!item.IsFolder && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer') {
             dateAddedElement.classList.remove('hide');
             dateAddedElement.innerHTML = globalize.translate('DateAddedValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)));
         } else {
@@ -933,7 +924,6 @@
         if (item.Tags && item.Tags.length) {
 
             var html = '';
-            html += '<p>' + globalize.translate('HeaderTags') + '</p>';
             for (var i = 0, length = item.Tags.length; i < length; i++) {
 
                 html += '<div class="itemTag">' + item.Tags[i] + '</div>';
@@ -1025,6 +1015,23 @@
                 Fields: fields
             });
         }
+        else if (item.Type == "Episode" && item.SeriesId && item.SeasonId) {
+
+            // Use dedicated episodes endpoint
+            promise = ApiClient.getEpisodes(item.SeriesId, {
+
+                seasonId: item.SeasonId,
+                userId: userId,
+                Fields: fields
+            });
+
+            _childrenItemsFunction = getEpisodesFunction(item.SeriesId, {
+
+                seasonId: item.SeasonId,
+                userId: userId,
+                Fields: fields
+            });
+        }
         else if (item.Type == "MusicAlbum") {
 
             _childrenItemsFunction = getAlbumSongsFunction(query);
@@ -1068,7 +1075,7 @@
                     allowBottomPadding: !scrollX
                 });
             }
-            else if (item.Type == "Season") {
+            else if (item.Type == "Season" || item.Type == "Episode") {
 
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
@@ -1129,6 +1136,9 @@
 
         if (item.Type == "Season") {
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderEpisodes');
+        }
+        else if (item.Type == "Episode") {
+            page.querySelector('#childrenTitle').innerHTML = item.SeriesName + ' - ' + item.SeasonName;
         }
         else if (item.Type == "Series") {
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderSeasons');
@@ -1428,6 +1438,12 @@
 
         for (var i = 0, length = userDataIcons.length; i < length; i++) {
 
+            if (item.Type == 'Program') {
+                userDataIcons[i].classList.add('hide');
+            } else {
+                userDataIcons[i].classList.remove('hide');
+            }
+
             userdataButtons.fill({
                 item: item,
                 style: 'fab-mini',
@@ -1629,27 +1645,39 @@
         });
     }
 
-    function renderScenes(page, item, user) {
+    function renderScenes(page, item) {
 
         var chapters = item.Chapters || [];
-        var scenesContent = page.querySelector('#scenesContent');
 
-        if (enableScrollX()) {
-            scenesContent.classList.add('smoothScrollX');
-        } else {
-            scenesContent.classList.add('vertical-wrap');
+        // If there are no chapter images, don't show a bunch of empty tiles
+        if (chapters.length && !chapters[0].ImageTag) {
+            chapters = [];
         }
 
-        require(['chaptercardbuilder'], function (chaptercardbuilder) {
+        if (!chapters.length) {
+            page.querySelector('#scenesCollapsible').classList.add('hide');
+        } else {
+            page.querySelector('#scenesCollapsible').classList.remove('hide');
 
-            chaptercardbuilder.buildChapterCards(item, chapters, {
-                itemsContainer: scenesContent,
-                coverImage: true,
-                width: 400,
-                backdropShape: getThumbShape(),
-                squareShape: getSquareShape()
+            var scenesContent = page.querySelector('#scenesContent');
+
+            if (enableScrollX()) {
+                scenesContent.classList.add('smoothScrollX');
+            } else {
+                scenesContent.classList.add('vertical-wrap');
+            }
+
+            require(['chaptercardbuilder'], function (chaptercardbuilder) {
+
+                chaptercardbuilder.buildChapterCards(item, chapters, {
+                    itemsContainer: scenesContent,
+                    coverImage: true,
+                    width: 400,
+                    backdropShape: getThumbShape(),
+                    squareShape: getSquareShape()
+                });
             });
-        });
+        }
     }
 
     function renderMediaSources(page, user, item) {
