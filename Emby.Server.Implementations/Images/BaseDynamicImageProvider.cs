@@ -149,6 +149,11 @@ namespace Emby.Server.Implementations.Images
 
             var mimeType = MimeTypes.GetMimeType(outputPath);
 
+            if (string.Equals(mimeType, "application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            {
+                mimeType = "image/png";
+            }
+
             await ProviderManager.SaveImage(item, outputPath, mimeType, imageType, null, false, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.ImageUpdate;
