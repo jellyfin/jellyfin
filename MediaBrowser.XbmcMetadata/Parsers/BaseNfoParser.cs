@@ -120,15 +120,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             item.ResetPeople();
 
                             reader.MoveToContent();
+                            reader.Read();
 
                             // Loop through each element
-                            while (reader.Read())
+                            while (!reader.EOF)
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 if (reader.NodeType == XmlNodeType.Element)
                                 {
                                     FetchDataFromXmlNode(reader, item);
+                                }
+                                else
+                                {
+                                    reader.Read();
                                 }
                             }
                         }
@@ -195,15 +200,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             using (var reader = XmlReader.Create(ms, settings))
                             {
                                 reader.MoveToContent();
+                                reader.Read();
 
                                 // Loop through each element
-                                while (reader.Read())
+                                while (!reader.EOF)
                                 {
                                     cancellationToken.ThrowIfCancellationRequested();
 
                                     if (reader.NodeType == XmlNodeType.Element)
                                     {
                                         FetchDataFromXmlNode(reader, item);
+                                    }
+                                    else
+                                    {
+                                        reader.Read();
                                     }
                                 }
                             }
@@ -944,8 +954,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private void FetchFromResumeNode(XmlReader reader, T item, UserItemData userData)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -971,14 +983,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchFromFileInfoNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -998,14 +1016,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchFromStreamDetailsNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1025,14 +1049,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchFromVideoNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1040,12 +1070,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         case "format3d":
                             {
+                                var val = reader.ReadElementContentAsString();
+
                                 var video = item as Video;
 
                                 if (video != null)
                                 {
-                                    var val = reader.ReadElementContentAsString();
-
                                     if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                                     {
                                         video.Video3DFormat = Video3DFormat.HalfSideBySide;
@@ -1075,6 +1105,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
@@ -1091,8 +1125,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             int? sortOrder = null;
 
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1142,6 +1178,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 

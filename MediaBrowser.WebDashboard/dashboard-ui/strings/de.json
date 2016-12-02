@@ -170,6 +170,7 @@
     "OptionPlayCount": "Z\u00e4hler",
     "OptionDatePlayed": "Abgespielt am",
     "OptionDateAdded": "Hinzugef\u00fcgt am",
+    "DateAddedValue": "Hinzugef\u00fcgt am: {0}",
     "OptionAlbumArtist": "Album-Interpret",
     "OptionArtist": "Interpret",
     "OptionAlbum": "Album",

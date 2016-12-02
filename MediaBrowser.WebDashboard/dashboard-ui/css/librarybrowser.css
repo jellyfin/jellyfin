@@ -196,7 +196,7 @@
 
 .itemTag {
     display: inline-block;
-    background-color: #181818;
+    background-color: #333;
     border-radius: 4px;
     padding: 5px 7px;
     margin: 0 5px 5px 0;
@@ -257,9 +257,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .noBackdrop {
-    height: 170px;
     background: #181818;
-    margin-top: 0 !important;
 }
 
 .withBackdrop + .mainDrawerPanel .noBackdrop {
@@ -460,8 +458,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
     .mainDetailButtons button, .recordingFields button {
-        background: rgba(170,170, 170, 1);
-        color: #222;
         margin-left: 0;
         margin-right: .5em;
     }
@@ -537,10 +533,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .editorMenuLink {
         display: none;
-    }
-
-    .noBackdrop {
-        height: 80px;
     }
 }
 

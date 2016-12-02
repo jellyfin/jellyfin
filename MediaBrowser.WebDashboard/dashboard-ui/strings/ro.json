@@ -170,6 +170,7 @@
     "OptionPlayCount": "Contorizari rulari",
     "OptionDatePlayed": "Data Rulare",
     "OptionDateAdded": "Data Adaugare",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album Artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",

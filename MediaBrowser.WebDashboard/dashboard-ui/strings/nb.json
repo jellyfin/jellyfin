@@ -170,6 +170,7 @@
     "OptionPlayCount": "Antall avspillinger",
     "OptionDatePlayed": "Dato spilt",
     "OptionDateAdded": "Dato lagt til",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album Artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",

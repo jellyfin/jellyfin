@@ -170,6 +170,7 @@
     "OptionPlayCount": "Nombre de lectures",
     "OptionDatePlayed": "Date de lecture",
     "OptionDateAdded": "Date d'ajout",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Artiste de l'album",
     "OptionArtist": "Artiste",
     "OptionAlbum": "Album",

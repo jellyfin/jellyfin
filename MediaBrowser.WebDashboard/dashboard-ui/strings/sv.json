@@ -170,6 +170,7 @@
     "OptionPlayCount": "Antal visningar",
     "OptionDatePlayed": "Senast visad",
     "OptionDateAdded": "Inlagd den",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumartist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",

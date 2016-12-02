@@ -170,6 +170,7 @@
     "OptionPlayCount": "Nombre de Reproduccions",
     "OptionDatePlayed": "Data de Reproducci\u00f3",
     "OptionDateAdded": "Data afegida",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album Artist",
     "OptionArtist": "Artista",
     "OptionAlbum": "\u00c0lbum",

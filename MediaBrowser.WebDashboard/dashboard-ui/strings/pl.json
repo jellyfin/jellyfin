@@ -170,6 +170,7 @@
     "OptionPlayCount": "Ilo\u015b\u0107 odtworze\u0144",
     "OptionDatePlayed": "Data odtworzenia",
     "OptionDateAdded": "Data dodania",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Artysta albumu",
     "OptionArtist": "Artysta",
     "OptionAlbum": "Album",

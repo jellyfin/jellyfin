@@ -170,6 +170,7 @@
     "OptionPlayCount": "Gange afspillet",
     "OptionDatePlayed": "Dato for afspilning",
     "OptionDateAdded": "Dato for tilf\u00f8jelse",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album-artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",

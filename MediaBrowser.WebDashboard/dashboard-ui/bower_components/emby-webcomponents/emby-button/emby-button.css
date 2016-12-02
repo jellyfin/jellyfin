@@ -50,13 +50,13 @@
 .fab {
     display: inline-flex;
     border-radius: 50%;
-    background-color: #444;
+    background-color: rgb(170,170, 170);
     padding: .6em;
     box-sizing: border-box;
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #fff;
+    color: #222;
     margin: 0;
 }
 

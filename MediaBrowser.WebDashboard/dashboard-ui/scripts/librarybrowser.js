@@ -493,7 +493,7 @@
 
                 } else if (item.Album) {
                     html.push(item.Album);
-                } else if (item.Type == 'Program' && item.EpisodeTitle) {
+                } else if (item.Type == 'Program' && item.IsSeries) {
                     html.push(item.Name);
                 }
 

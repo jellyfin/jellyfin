@@ -170,6 +170,7 @@
     "OptionPlayCount": "Oynatma sayac\u0131",
     "OptionDatePlayed": "Oynatma Tarihi",
     "OptionDateAdded": "Eklenme Tarihi",
+    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Sanat\u00e7\u0131 Alb\u00fcm\u00fc",
     "OptionArtist": "Sanat\u00e7\u0131",
     "OptionAlbum": "Alb\u00fcm",

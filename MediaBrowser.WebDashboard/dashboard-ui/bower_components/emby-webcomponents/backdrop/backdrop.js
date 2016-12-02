@@ -252,21 +252,20 @@
     var rotationInterval;
     var currentRotatingImages = [];
     var currentRotationIndex = -1;
-    function setBackdrops(items, imageSetId) {
+    function setBackdrops(items, enableImageRotation) {
 
         var images = getImageUrls(items);
 
-        imageSetId = imageSetId || new Date().getTime();
         if (images.length) {
 
-            startRotation(images, imageSetId);
+            startRotation(images, enableImageRotation);
 
         } else {
             clearBackdrop();
         }
     }
 
-    function startRotation(images) {
+    function startRotation(images, enableImageRotation) {
 
         if (arraysEqual(images, currentRotatingImages)) {
             return;
@@ -277,7 +276,7 @@
         currentRotatingImages = images;
         currentRotationIndex = -1;
 
-        if (images.length > 1 && enableRotation()) {
+        if (images.length > 1 && enableImageRotation !== false && enableRotation()) {
             rotationInterval = setInterval(onRotationInterval, 20000);
         }
         onRotationInterval();

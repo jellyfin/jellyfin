@@ -1069,6 +1069,11 @@ namespace Emby.Server.Implementations.Library
         {
             _logger.Info("Validating media library");
 
+            // Ensure these objects are lazy loaded.
+            // Without this there is a deadlock that will need to be investigated
+            var rootChildren = RootFolder.Children.ToList();
+            rootChildren = GetUserRootFolder().Children.ToList();
+
             await RootFolder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             progress.Report(.5);
