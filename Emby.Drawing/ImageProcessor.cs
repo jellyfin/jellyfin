@@ -432,16 +432,11 @@ namespace Emby.Drawing
                 return GetResult(croppedImagePath);
             }
 
-            var imageProcessingLockTaken = false;
-
             try
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
                 var tmpPath = Path.ChangeExtension(Path.Combine(_appPaths.TempDirectory, Guid.NewGuid().ToString("N")), Path.GetExtension(croppedImagePath));
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(tmpPath));
-
-                await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
-                imageProcessingLockTaken = true;
 
                 _imageEncoder.CropWhiteSpace(originalImagePath, tmpPath);
                 CopyFile(tmpPath, croppedImagePath);
@@ -458,13 +453,6 @@ namespace Emby.Drawing
                 _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
 
                 return new Tuple<string, DateTime>(originalImagePath, dateModified);
-            }
-            finally
-            {
-                if (imageProcessingLockTaken)
-                {
-                    _imageProcessingSemaphore.Release();
-                }
             }
         }
 
@@ -904,20 +892,11 @@ namespace Emby.Drawing
 
         public async Task CreateImageCollage(ImageCollageOptions options)
         {
-            await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+            _logger.Info("Creating image collage and saving to {0}", options.OutputPath);
 
-            try
-            {
-                _logger.Info("Creating image collage and saving to {0}", options.OutputPath);
+            _imageEncoder.CreateImageCollage(options);
 
-                _imageEncoder.CreateImageCollage(options);
-
-                _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
-            }
-            finally
-            {
-                _imageProcessingSemaphore.Release();
-            }
+            _logger.Info("Completed creation of image collage and saved to {0}", options.OutputPath);
         }
 
         public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType)

@@ -126,9 +126,10 @@ namespace MediaBrowser.Providers.TV
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {
                         reader.MoveToContent();
+                        reader.Read();
 
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -148,6 +149,10 @@ namespace MediaBrowser.Providers.TV
                                         reader.Skip();
                                         break;
                                 }
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }
@@ -195,7 +200,11 @@ namespace MediaBrowser.Providers.TV
             int? voteCount = null;
             string thumbnailUrl = null;
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -295,6 +304,10 @@ namespace MediaBrowser.Providers.TV
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
