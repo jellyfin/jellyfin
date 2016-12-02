@@ -261,13 +261,13 @@ namespace Emby.Server.Implementations.Security
             var reg = new RegRecord
             {
                 // Cache the result for up to a week
-                registered = regInfo != null && nextCheckDate >= DateTime.UtcNow,
+                registered = regInfo != null && nextCheckDate >= DateTime.UtcNow && expDate >= DateTime.UtcNow,
                 expDate = expDate
             };
 
             var success = reg.registered;
 
-            if (!(lastChecked > DateTime.UtcNow.AddDays(-1)))
+            if (!(lastChecked > DateTime.UtcNow.AddDays(-1)) || !reg.registered)
             {
                 var data = new Dictionary<string, string>
                 {

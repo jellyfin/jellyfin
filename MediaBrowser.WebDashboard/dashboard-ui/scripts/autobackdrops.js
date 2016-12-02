@@ -1,16 +1,6 @@
 ﻿define(['backdrop', 'appStorage'], function (backdrop, appStorage) {
     'use strict';
 
-    function isEnabledByDefault() {
-
-        if (AppInfo.hasLowImageBandwidth) {
-
-            return false;
-        }
-
-        return false;
-    }
-
     function enabled() {
 
         var apiClient = window.ApiClient;
@@ -24,7 +14,7 @@
         var val = appStorage.getItem('enableBackdrops-' + userId);
 
         // For bandwidth
-        return val == '1' || (val != '0' && isEnabledByDefault());
+        return val == '1';
     }
 
     var cache = {};

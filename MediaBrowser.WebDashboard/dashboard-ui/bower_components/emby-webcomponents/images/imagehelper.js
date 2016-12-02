@@ -111,7 +111,7 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
 
             //var now = new Date().getTime();
             getVibrantInfoFromElement(img, url).then(function (vibrantInfo) {
-                
+
                 var swatch = vibrantInfo.split('|');
                 //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
                 if (swatch.length) {
@@ -133,18 +133,22 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
     }
 
     function getVibrantInfoFromElement(elem, url) {
-        
-        if (elem.tagName === 'IMG') {
-            return Promise.resolve(getVibrantInfo(elem, url));
-        }
 
         return new Promise(function (resolve, reject) {
 
-            var img = new Image();
-            img.onload = function () {
-                resolve(getVibrantInfo(img, url));
-            };
-            img.src = url;
+            require(['vibrant'], function () {
+
+                if (elem.tagName === 'IMG') {
+                    resolve(getVibrantInfo(elem, url));
+                    return;
+                }
+
+                var img = new Image();
+                img.onload = function () {
+                    resolve(getVibrantInfo(img, url));
+                };
+                img.src = url;
+            });
         });
     }
 
@@ -157,7 +161,7 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
 
         url = url.split('?')[0];
 
-        var cacheKey = 'vibrant25';
+        var cacheKey = 'vibrant31';
         //cacheKey = 'vibrant' + new Date().getTime();
         return cacheKey + url;
     }
@@ -179,31 +183,19 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
 
         value = '';
         var swatch = swatches.DarkVibrant;
-        if (swatch) {
-            value += swatch.getHex() + '|' + swatch.getBodyTextColor();
-        }
-        //swatch = swatches.DarkMuted;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
-        //swatch = swatches.Vibrant;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
-        //swatch = swatches.Muted;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
+        value += getSwatchString(swatch);
 
         appSettings.set(getSettingsKey(url), value);
 
         return value;
+    }
+
+    function getSwatchString(swatch) {
+
+        if (swatch) {
+            return swatch.getHex() + '|' + swatch.getBodyTextColor() + '|' + swatch.getTitleTextColor();
+        }
+        return '||';
     }
 
     function fadeIn(elem) {
@@ -294,6 +286,7 @@ define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings',
     self.lazyChildren = lazyChildren;
     self.getPrimaryImageAspectRatio = getPrimaryImageAspectRatio;
     self.getCachedVibrantInfo = getCachedVibrantInfo;
+    self.getVibrantInfoFromElement = getVibrantInfoFromElement;
 
     return self;
 });

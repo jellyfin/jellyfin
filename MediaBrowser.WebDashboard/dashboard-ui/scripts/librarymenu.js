@@ -147,7 +147,7 @@
 
             require(['apphost'], function (apphost) {
                 if (apphost.supports('voiceinput')) {
-                    header.querySelector('.headerVoiceButton').classList.remove('hide');
+                    header.querySelector('.headerVoiceButton').classList.add('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
                 }
