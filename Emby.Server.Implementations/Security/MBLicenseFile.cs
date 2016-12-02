@@ -39,7 +39,7 @@ namespace Emby.Server.Implementations.Security
             }
         }
 
-        private readonly ConcurrentDictionary<Guid, DateTime> _updateRecords = new ConcurrentDictionary<Guid, DateTime>();
+        private readonly ConcurrentDictionary<Guid, FeatureRegInfo> _updateRecords = new ConcurrentDictionary<Guid, FeatureRegInfo>();
         private readonly object _fileLock = new object();
         private string _regKey;
 
@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Security
             Load();
         }
 
-        private void SetUpdateRecord(Guid key, DateTime value)
+        private void SetUpdateRecord(Guid key, FeatureRegInfo value)
         {
             _updateRecords.AddOrUpdate(key, value, (k, v) => value);
         }
@@ -62,10 +62,14 @@ namespace Emby.Server.Implementations.Security
             return new Guid(_cryptographyProvider.ComputeMD5(Encoding.Unicode.GetBytes(featureId)));
         }
 
-        public void AddRegCheck(string featureId)
+        public void AddRegCheck(string featureId, DateTime expirationDate)
         {
             var key = GetKey(featureId);
-            var value = DateTime.UtcNow;
+            var value = new FeatureRegInfo
+            {
+                ExpirationDate = expirationDate,
+                LastChecked = DateTime.UtcNow
+            };
 
             SetUpdateRecord(key, value);
             Save();
@@ -74,21 +78,26 @@ namespace Emby.Server.Implementations.Security
         public void RemoveRegCheck(string featureId)
         {
             var key = GetKey(featureId);
-            DateTime val;
+            FeatureRegInfo val;
 
             _updateRecords.TryRemove(key, out val);
 
             Save();
         }
 
-        public DateTime LastChecked(string featureId)
+        public FeatureRegInfo GetRegInfo(string featureId)
         {
             var key = GetKey(featureId);
-            DateTime last;
-            _updateRecords.TryGetValue(key, out last);
+            FeatureRegInfo info = null;
+            _updateRecords.TryGetValue(key, out info);
+
+            if (info == null)
+            {
+                return null;
+            }
 
             // guard agains people just putting a large number in the file
-            return last < DateTime.UtcNow ? last : DateTime.MinValue;
+            return info.LastChecked < DateTime.UtcNow ? info : null;
         }
 
         private void Load()
@@ -105,7 +114,7 @@ namespace Emby.Server.Implementations.Security
                 {
                     lock (_fileLock)
                     {
-                        _fileSystem.WriteAllBytes(licenseFile, new byte[] {});
+                        _fileSystem.WriteAllBytes(licenseFile, new byte[] { });
                     }
                 }
                 catch (IOException)
@@ -139,7 +148,23 @@ namespace Emby.Server.Implementations.Security
                     Guid feat;
                     if (Guid.TryParse(line, out feat))
                     {
-                        SetUpdateRecord(feat, new DateTime(Convert.ToInt64(contents[i + 1])));
+                        var lineParts = contents[i + 1].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        long ticks;
+                        if (long.TryParse(lineParts[0], out ticks))
+                        {
+                            var info = new FeatureRegInfo
+                            {
+                                LastChecked = new DateTime(ticks)
+                            };
+
+                            if (lineParts.Length > 1 && long.TryParse(lineParts[1], out ticks))
+                            {
+                                info.ExpirationDate = new DateTime(ticks);
+                            }
+
+                            SetUpdateRecord(feat, info);
+                        }
                     }
                 }
             }
@@ -160,7 +185,11 @@ namespace Emby.Server.Implementations.Security
                 .ToList())
             {
                 lines.Add(pair.Key.ToString());
-                lines.Add(pair.Value.Ticks.ToString(CultureInfo.InvariantCulture));
+
+                var dateLine = pair.Value.LastChecked.Ticks.ToString(CultureInfo.InvariantCulture) + "|" +
+                               pair.Value.ExpirationDate.Ticks.ToString(CultureInfo.InvariantCulture);
+
+                lines.Add(dateLine);
             }
 
             var licenseFile = Filename;
@@ -169,6 +198,17 @@ namespace Emby.Server.Implementations.Security
             {
                 _fileSystem.WriteAllLines(licenseFile, lines);
             }
+        }
+    }
+
+    internal class FeatureRegInfo
+    {
+        public DateTime ExpirationDate { get; set; }
+        public DateTime LastChecked { get; set; }
+
+        public FeatureRegInfo()
+        {
+            ExpirationDate = DateTime.MinValue;
         }
     }
 }

@@ -1,4 +1,6 @@
 {
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Ontgrendel deze functie met een kleine eenmalige aankoop, of met een actief Emby Premiere abonnement.",
     "MessageUnlockAppWithSupporter": "Ontgrendel deze functie met een actief Emby Premiere abonnement.",
     "MessageToValidateSupporter": "Als u een actieve Emby Premiere abonnement heeft , zorg er dan voor dat u deze activeert in uw Emby Server Dashboard door te klikken op Emby Premiere in het hoofdmenu.",
@@ -188,7 +190,7 @@
     "LabelDisplayOrder": "Weergave volgorde:",
     "Countries": "Landen",
     "Genres": "Genres",
-    "HeaderPlotKeywords": "Trefwoorden plot",
+    "HeaderPlotKeywords": "Trefwoorden verhaallijn",
     "Studios": "Studio's",
     "Tags": "Labels",
     "HeaderMetadataSettings": "Metagegevens instellingen",

@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "\u63a8\u8350\u4f7f\u7528\u957f\u5bbd\u6bd41:1\u7684\u56fe\u7247\u3002 \u683c\u5f0f\u4ec5\u9650JPG \/ PNG\u3002",
     "MessageNothingHere": "\u8fd9\u513f\u4ec0\u4e48\u90fd\u6ca1\u6709\u3002",
     "MessagePleaseEnsureInternetMetadata": "\u8bf7\u786e\u4fdd\u5df2\u542f\u7528\u4ece\u4e92\u8054\u7f51\u4e0b\u8f7d\u5a92\u4f53\u8d44\u6599\u3002",
+    "AlreadyPaidHelp1": "If you already paid to install an older version of Media Browser for Android, you don't need to pay again in order to activate this app. Click OK to send us an email at {0} and we'll get it activated for you.",
+    "AlreadyPaidHelp2": "Got Emby Premiere? Just cancel this dialog, setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere, and it will be unlocked automatically.",
     "TabSuggestions": "\u5efa\u8bae",
     "TabLatest": "\u6700\u65b0",
     "TabUpcoming": "\u5373\u5c06\u53d1\u5e03",

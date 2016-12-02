@@ -99,7 +99,7 @@
                 var container = view.querySelector('#resumableItems');
 
                 var supportsImageAnalysis = appHost.supports('imageanalysis');
-                var cardLayout = appHost.preferVisualCards;
+                var cardLayout = supportsImageAnalysis;
 
                 cardBuilder.buildCards(result.Items, {
                     itemsContainer: container,

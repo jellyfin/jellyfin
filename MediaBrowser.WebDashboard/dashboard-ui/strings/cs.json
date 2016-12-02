@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "Doporu\u010den pom\u011br 1:1. Pouze JPG\/PNG.",
     "MessageNothingHere": "Tady nic nen\u00ed.",
     "MessagePleaseEnsureInternetMetadata": "Pros\u00edm zkontrolujte, zda m\u00e1te povoleno stahov\u00e1n\u00ed metadat z internetu.",
+    "AlreadyPaidHelp1": "Pokud jste ji\u017e zaplatili star\u0161\u00ed verzi Media Browser pro Android, nemus\u00edte platit znovu, aby jste aktivovali tuto aplikaci. Kliknut\u00edm na tla\u010d\u00edtko OK n\u00e1m po\u0161lete e-mail na {0} a my aktivujeme Va\u0161e p\u0159edplatn\u00e9.",
+    "AlreadyPaidHelp2": "Vlastn\u00edte Emby Premiere? Jen stornujte toto dialogov\u00e9 okno, nastavte Emby Premiere v ovl\u00e1dac\u00edm panelu Emby Server N\u00e1pov\u011bda -> Emby Premiere, a funkce bude automaticky odblokov\u00e1na.",
     "TabSuggestions": "N\u00e1vrhy",
     "TabLatest": "Posledn\u00ed",
     "TabUpcoming": "Nov\u00e9",

@@ -3,82 +3,77 @@
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
-        <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">&#xE5C4;</i></button></a>
-        <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><button is="emby-button" type="button" class="raised subdued notext"><i class="md-icon">arrow_forward</i></button></a>
+        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}"><i class="md-icon">play_arrow</i></button>
     </div>
 
-    <div class="detailPageContent" style="position:relative;">
+    <div class="detailPageContent">
 
-        <button is="emby-button" type="button" class="btnPlay detailFloatingButton hide fab autoSize" title="${ButtonPlay}"><i class="md-icon">play_arrow</i></button>
-
-        <div class="detailImageContainer">
-        </div>
-        <div class="primaryDetailsContainer">
-            <div class="detailNameContainer">
-                <div class="parentName"></div>
-                <h1 class="itemName"></h1>
-                <div class="desktopDetails itemMiscInfo" style="margin-top:.5em;">
-
-                </div>
+        <div class="detailPagePrimaryContainer">
+            <div class="detailImageContainer">
             </div>
-            <div class="desktopDetails" style="padding-top:5px;">
-
-                <p class="artist"></p>
-                <p class="itemGenres"></p>
-                <div class="detailButtonsContainer">
-                    <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
-                    <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
-                    <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
-                    <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
-                    <div class="detailUserDataIcons userDataIcons"></div>
-                </div>
-                <div class="syncLocalContainer hide" style="margin-top:1em; display: inline-flex; padding: 0 .5em;">
-                    <label class="checkboxContainer" style="margin:0;">
+            <div class="detailPagePrimaryContent">
+                <div class="syncLocalContainer hide" style="margin-top: 1em; display: inline-flex; padding: 0 .5em;">
+                    <label class="checkboxContainer" style="margin: 0;">
                         <input type="checkbox" is="emby-checkbox" class="chkOffline" />
                         <span>${MakeAvailableOffline}</span>
                     </label>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="mobileDetails" style="text-align:center;clear:both;">
-        <div style="height:10px;"></div>
-        <div class="itemMiscInfo">
-        </div>
-        <div class="detailButtonsContainer">
-            <br />
-            <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button>
-            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><button is="emby-button" type="button" class="raised subdued"><i class="md-icon">play_arrow</i><span>${ButtonTrailer}</span></button></a>
-            <button is="emby-button" type="button" class="raised subdued btnSync hide"><i class="md-icon">sync</i><span>${ButtonSync}</span></button>
-            <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext"><i class="md-icon">more_vert</i></button>
-            <div class="detailUserDataIcons userDataIcons"></div>
-        </div>
-        <div class="syncLocalContainer hide" style="margin-top:1em; display: inline-flex; padding: 0 .5em;">
-            <label class="checkboxContainer" style="margin:0;">
-                <input type="checkbox" is="emby-checkbox" class="chkOffline" />
-                <span>${MakeAvailableOffline}</span>
-            </label>
-        </div>
-    </div>
-    <div data-role="content" style="padding-top:0;clear:both;">
-        <div class="detailPageContent">
-            <div class="recordingFields hide" style="margin: 1em 0;">
+                <div class="detailSection" style="margin-bottom: 0;">
 
-            </div>
-            <div class="detailSection">
-                <div class="mobileDetails">
-                    <p class="artist"></p>
-                    <p class="itemGenres"></p>
+                    <div>
+                        <h1 class="parentName" style="margin: .25em 0;"></h1>
+                        <h1 class="itemName" style="margin: .5em 0;"></h1>
+
+                        <div class="itemMiscInfo itemMiscInfo-primary" style="margin: 1em 0;">
+
+                        </div>
+
+                        <div class="itemMiscInfo itemMiscInfo-secondary" style="margin: 1em 0;">
+
+                        </div>
+                    </div>
+
+                    <div class="mainDetailButtons">
+                        <button is="emby-button" type="button" class="raised subdued btnPlay btnPlaySimple hide">
+                            <i class="md-icon">play_arrow</i>
+                            <span>${ButtonPlay}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide">
+                            <i class="md-icon">videocam</i>
+                            <span>${ButtonTrailer}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext">
+                            &nbsp;
+                            <i class="md-icon">more_vert</i>
+                            &nbsp;
+                        </button>
+                        <div class="detailUserDataIcons userDataIcons"></div>
+                    </div>
+
+                    <div class="recordingFields hide" style="margin: .5em 0 1.5em;">
+
+                    </div>
+
+                    <div class="detailSectionContent">
+
+                        <p class="itemGenres textLinkList"></p>
+                        <h1 class="tagline" style="margin-bottom: .7em;"></h1>
+                        <p class="artist"></p>
+                        <p class="overview"></p>
+                        <p id="dateAdded"></p>
+                        <p id="itemBirthday"></p>
+                        <p id="itemBirthLocation"></p>
+                        <p id="itemDeathDate"></p>
+                        <p id="seriesAirTime"></p>
+                        <p class="itemExternalLinks textLinkList"></p>
+                        <p class="itemStudios"></p>
+                        <p class="itemTags"></p>
+                    </div>
                 </div>
-                <div class="desktopDetails" style="height: 10px;"></div>
-                <h2 class="tagline"></h2>
-                <p id="itemBirthday"></p>
-                <p id="itemBirthLocation"></p>
-                <p id="itemDeathDate"></p>
-                <p id="seriesAirTime"></p>
-                <p class="itemOverview topOverview"></p>
             </div>
+        </div>
+        <div>
             <div class="collectionItems"></div>
             <div class="nextUpSection detailSection hide">
                 <h1>
@@ -168,27 +163,12 @@
                     ${HeaderScenes}
                 </h1>
                 <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer"></div>
-                <button is="emby-button" type="button" class="raised more moreScenes hide">${ButtonMore}</button>
             </div>
             <div id="themeSongsCollapsible" class="detailSection hide">
                 <h1>
                     ${HeaderThemeSongs}
                 </h1>
                 <div id="themeSongsContent" is="emby-itemscontainer"></div>
-            </div>
-            <div class="detailSection detailsSection">
-                <h1>
-                    ${HeaderDetails}
-                </h1>
-                <div>
-                    <div class="tabDetails">
-                        <p class="itemOverview bottomOverview"></p>
-                        <p id="players"></p>
-                        <p class="itemExternalLinks"></p>
-                        <p class="itemStudios"></p>
-                        <p class="itemTags"></p>
-                    </div>
-                </div>
             </div>
 
             <div id="themeVideosCollapsible" class="detailSection hide">
@@ -210,4 +190,6 @@
         </div>
     </div>
 
+    <div data-role="content" style="padding-top: 0; clear: both;">
+    </div>
 </div>

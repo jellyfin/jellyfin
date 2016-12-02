@@ -396,26 +396,21 @@
         });
     }
 
-    function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile) {
+    function loadLibraryTiles(elem, user, shape) {
 
         return getUserViews(user.Id).then(function (items) {
 
             var html = '';
 
-            if (autoHideOnMobile) {
-                html += '<div class="hiddenSectionOnMobile">';
-            } else {
-                html += '<div>';
-            }
+            html += '<div>';
 
             if (items.length) {
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
-
                 html += '</div>';
 
-                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 600;
+                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 500;
 
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
@@ -425,7 +420,7 @@
 
                 html += cardBuilder.getCardsHtml({
                     items: items,
-                    shape: scrollX ? 'overflowBackdrop' : shape,
+                    shape: scrollX ? 'overflowSmallBackdrop' : shape,
                     showTitle: true,
                     centerText: true,
                     overlayText: false,
@@ -437,12 +432,6 @@
             }
 
             html += '</div>';
-
-            if (autoHideOnMobile) {
-                html += '<div class="hiddenSectionOnNonMobile" style="margin-top:1em;">';
-                html += getLibraryButtonsHtml(items);
-                html += '</div>';
-            }
 
             return getAppInfo().then(function (infoHtml) {
 
@@ -497,7 +486,7 @@
                 }
 
                 var supportsImageAnalysis = appHost.supports('imageanalysis');
-                var cardLayout = appHost.preferVisualCards;
+                var cardLayout = supportsImageAnalysis;
 
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,

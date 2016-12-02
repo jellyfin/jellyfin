@@ -1,4 +1,6 @@
 {
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -182,7 +184,7 @@
     "LabelAirsBeforeSeason": "Airs before season:",
     "LabelAirsAfterSeason": "Airs after season:",
     "LabelAirsBeforeEpisode": "Airs before episode:",
-    "HeaderExternalIds": "External Id's:",
+    "HeaderExternalIds": "External Ids:",
     "HeaderDisplaySettings": "Display Settings",
     "LabelTreatImageAs": "Treat image as:",
     "LabelDisplayOrder": "Display order:",

@@ -6,7 +6,10 @@
     var localData;
 
     function updateCache() {
-        cache.put('data', new Response(JSON.stringify(localData)));
+
+        if (cache) {
+            cache.put('data', new Response(JSON.stringify(localData)));
+        }
     }
 
     myStore.setItem = function (name, value) {
@@ -38,10 +41,13 @@
 
     try {
 
-        caches.open('embydata').then(function (result) {
-            cache = result;
-            localData = {};
-        });
+        if (self.caches) {
+
+            caches.open('embydata').then(function (result) {
+                cache = result;
+                localData = {};
+            });
+        }
 
     } catch (err) {
         console.log('Error opening cache: ' + err);

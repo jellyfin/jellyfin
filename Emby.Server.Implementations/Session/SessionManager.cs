@@ -820,6 +820,17 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
+            if (info.Item != null)
+            {
+                var msString = info.PositionTicks.HasValue ? (info.PositionTicks.Value / 10000).ToString(CultureInfo.InvariantCulture) : "unknown";
+
+                _logger.Info("Playback stopped reported by app {0} {1} playing {2}. Stopped at {3} ms",
+                    session.Client,
+                    session.ApplicationVersion,
+                    info.Item.Name,
+                    msString);
+            }
+
             RemoveNowPlayingItem(session);
 
             var users = GetUsers(session);
@@ -874,7 +885,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     playedToCompletion = _userDataManager.UpdatePlayState(item, data, positionTicks.Value);
                 }
-                else 
+                else
                 {
                     // If the client isn't able to report this, then we'll just have to make an assumption
                     data.PlayCount++;
@@ -973,7 +984,7 @@ namespace Emby.Server.Implementations.Session
                     var subItems = await TranslateItemForPlayback(itemId, user).ConfigureAwait(false);
                     list.AddRange(subItems);
                 }
-                
+
                 items = list
                    .Where(i => i.LocationType != LocationType.Virtual)
                    .ToList();

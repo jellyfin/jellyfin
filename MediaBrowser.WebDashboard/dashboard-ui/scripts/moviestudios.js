@@ -48,7 +48,7 @@
                 itemsContainer: elem,
                 shape: "backdrop",
                 preferThumb: true,
-                showTitle: false,
+                showTitle: true,
                 scalable: true,
                 showItemCounts: true,
                 centerText: true,

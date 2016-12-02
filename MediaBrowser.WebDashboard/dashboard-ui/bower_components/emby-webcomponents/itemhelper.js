@@ -71,6 +71,9 @@ define(['apphost'], function (appHost) {
         if (item.Type === 'Program') {
             return false;
         }
+        if (item.Type === 'TvChannel') {
+            return false;
+        }
         if (item.Type === 'Timer') {
             return false;
         }
@@ -169,6 +172,12 @@ define(['apphost'], function (appHost) {
 
         canShare: function (user, item) {
 
+            if (item.Type === 'Program') {
+                return false;
+            }
+            if (item.Type === 'TvChannel') {
+                return false;
+            }
             if (item.Type === 'Timer') {
                 return false;
             }

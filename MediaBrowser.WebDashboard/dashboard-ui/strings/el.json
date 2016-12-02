@@ -129,6 +129,8 @@
     "ImageUploadAspectRatioHelp": "\u03a0\u03c1\u03bf\u03c4\u03b5\u03b9\u03bd\u03cc\u03bc\u03b5\u03bd\u03bf 1:1 Aspect Ratio. JPG\/PNG \u03bc\u03cc\u03bd\u03bf",
     "MessageNothingHere": "\u03a4\u03af\u03c0\u03bf\u03c4\u03b1 \u03b5\u03b4\u03ce ",
     "MessagePleaseEnsureInternetMetadata": "\u03a0\u03b1\u03c1\u03b1\u03ba\u03b1\u03bb\u03ce \u03b5\u03be\u03b1\u03c3\u03c6\u03b1\u03bb\u03af\u03c3\u03c4\u03b5 \u03c4\u03b7 \u03bb\u03ae\u03c8\u03b7 \u03bc\u03b5\u03c4\u03b1\u03b4\u03b5\u03b4\u03bf\u03bc\u03ad\u03bd\u03c9\u03bd \u03c3\u03c4\u03bf internet \u03b5\u03af\u03bd\u03b1\u03b9 \u03b5\u03bd\u03b5\u03c1\u03b3\u03bf\u03c0\u03bf\u03b9\u03b7\u03bc\u03ad\u03bd\u03b7.\n",
+    "AlreadyPaidHelp1": "If you already paid to install an older version of Media Browser for Android, you don't need to pay again in order to activate this app. Click OK to send us an email at {0} and we'll get it activated for you.",
+    "AlreadyPaidHelp2": "Got Emby Premiere? Just cancel this dialog, setup Emby Premiere in your Emby Server Dashboard under Help -> Emby Premiere, and it will be unlocked automatically.",
     "TabSuggestions": "Suggestions",
     "TabLatest": "\u03a4\u03b5\u03bb\u03b5\u03c5\u03c4\u03b1\u03af\u03bf\u03c2",
     "TabUpcoming": "\u0395\u03c0\u03b5\u03c1\u03c7\u03cc\u03bc\u03b5\u03bd\u03b7",

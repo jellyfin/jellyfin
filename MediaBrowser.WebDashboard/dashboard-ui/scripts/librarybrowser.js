@@ -454,8 +454,6 @@
                         includeParentInfo: false
                     });
 
-                    LibraryMenu.setTitle(name);
-
                     if (linkToElement) {
                         nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
                     } else {
@@ -803,30 +801,6 @@
                     });
                     shape = 'square';
                 }
-                else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
-                    url = "css/images/items/detail/audio.png";
-                    shape = 'square';
-                }
-                else if (item.MediaType == "Game" || item.Type == "GameGenre") {
-                    url = "css/images/items/detail/game.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "Person") {
-                    url = "css/images/items/detail/person.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "Genre" || item.Type == "Studio") {
-                    url = "css/images/items/detail/video.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "TvChannel") {
-                    url = "css/images/items/detail/tv.png";
-                    shape = 'square';
-                }
-                else {
-                    url = "css/images/items/detail/video.png";
-                    shape = 'square';
-                }
 
                 html += '<div style="position:relative;">';
 
@@ -876,13 +850,15 @@
                     elem.classList.remove('squareDetailImageContainer');
                 }
 
-                var img = elem.querySelector('img');
-                img.onload = function () {
-                    if (img.src.indexOf('empty.png') == -1) {
-                        img.classList.add('loaded');
-                    }
-                };
-                imageLoader.lazyImage(img, url);
+                if (url) {
+                    var img = elem.querySelector('img');
+                    img.onload = function () {
+                        if (img.src.indexOf('empty.png') == -1) {
+                            img.classList.add('loaded');
+                        }
+                    };
+                    imageLoader.lazyImage(img, url);
+                }
             },
 
             renderDetailPageBackdrop: function (page, item, imageLoader) {
