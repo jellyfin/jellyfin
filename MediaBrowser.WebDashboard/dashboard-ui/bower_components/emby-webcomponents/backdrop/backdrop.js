@@ -252,13 +252,13 @@
     var rotationInterval;
     var currentRotatingImages = [];
     var currentRotationIndex = -1;
-    function setBackdrops(items, enableRotation) {
+    function setBackdrops(items, enableImageRotation) {
 
         var images = getImageUrls(items);
 
         if (images.length) {
 
-            startRotation(images, enableRotation);
+            startRotation(images, enableImageRotation);
 
         } else {
             clearBackdrop();
@@ -276,7 +276,7 @@
         currentRotatingImages = images;
         currentRotationIndex = -1;
 
-        if (images.length > 1 && enableRotation() && enableImageRotation !== false) {
+        if (images.length > 1 && enableImageRotation !== false && enableRotation()) {
             rotationInterval = setInterval(onRotationInterval, 20000);
         }
         onRotationInterval();
