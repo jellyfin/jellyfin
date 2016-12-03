@@ -301,7 +301,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailLogo {
     width: 300px;
-    height: 80px;
+    height: 70px;
     position: absolute;
     top: 10%;
     right: 20%;
@@ -372,7 +372,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .detailPagePrimaryContainer {
         display: flex;
-        margin-bottom: 3em;
+        margin-bottom: 3.6em;
     }
 }
 

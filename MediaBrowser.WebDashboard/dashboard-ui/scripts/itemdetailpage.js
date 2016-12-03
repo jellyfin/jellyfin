@@ -117,7 +117,7 @@
             renderDetails(page, item, context);
 
             backdrop.setBackdrops([item], {
-                blur: 48
+                blur: 40
             }, false);
 
             LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
@@ -288,6 +288,18 @@
         return null;
     }
 
+    function bounceIn(elem) {
+        var keyframes = [
+          { transform: 'scale3d(.3, .3, .3)', opacity: '0', offset: 0 },
+          { transform: 'scale3d(1.1, 1.1, 1.1)', offset: 0.2 },
+          { transform: 'scale3d(.9, .9, .9)', offset: 0.4 },
+          { transform: 'scale3d(1.03, 1.03, 1.03)', opacity: '1', offset: 0.6 },
+          { transform: 'scale3d(.97, .97, .97)', offset: 0.8 },
+          { transform: 'scale3d(1, 1, 1)', opacity: '1', offset: 1 }];
+        var timing = { duration: 900, iterations: 1, easing: 'cubic-bezier(0.215, 0.610, 0.355, 1.000)' };
+        return elem.animate(keyframes, timing);
+    }
+
     function renderLogo(page, item, apiClient) {
         var url = logoImageUrl(item, apiClient, {
             maxWidth: 300
@@ -300,6 +312,13 @@
             detailLogo.classList.add('lazy');
             detailLogo.setAttribute('data-src', url);
             imageLoader.lazyImage(detailLogo);
+
+            //if (detailLogo.animate) {
+            //    setTimeout(function() {
+            //        bounceIn(detailLogo);
+            //    }, 100);
+            //}
+
         } else {
             detailLogo.classList.add('hide');
         }
