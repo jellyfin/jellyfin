@@ -16,7 +16,7 @@ namespace Emby.Dlna.Service
     public abstract class BaseControlHandler
     {
         private const string NS_SOAPENV = "http://schemas.xmlsoap.org/soap/envelope/";
-        
+
         protected readonly IServerConfigurationManager Config;
         protected readonly ILogger Logger;
         protected readonly IXmlReaderSettingsFactory XmlReaderSettingsFactory;
@@ -109,7 +109,7 @@ namespace Emby.Dlna.Service
             }
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=");
-            
+
             var controlResponse = new ControlResponse
             {
                 Xml = xml,
@@ -136,12 +136,20 @@ namespace Emby.Dlna.Service
                     switch (reader.LocalName)
                     {
                         case "Body":
-                        {
-                            using (var subReader = reader.ReadSubtree())
                             {
-                                return ParseBodyTag(subReader);
+                                if (!reader.IsEmptyElement)
+                                {
+                                    using (var subReader = reader.ReadSubtree())
+                                    {
+                                        return ParseBodyTag(subReader);
+                                    }
+                                }
+                                else
+                                {
+                                    reader.Read();
+                                }
+                                break;
                             }
-                        }
                         default:
                             {
                                 reader.Skip();
@@ -173,11 +181,18 @@ namespace Emby.Dlna.Service
                     result.LocalName = reader.LocalName;
                     result.NamespaceURI = reader.NamespaceURI;
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        result.Headers = ParseFirstBodyChild(subReader);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            result.Headers = ParseFirstBodyChild(subReader);
 
-                        return result;
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                 }
                 else

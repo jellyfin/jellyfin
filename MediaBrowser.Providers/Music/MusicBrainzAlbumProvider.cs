@@ -274,6 +274,11 @@ namespace MediaBrowser.Providers.Music
                         {
                             case "release-list":
                                 {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
                                     using (var subReader = reader.ReadSubtree())
                                     {
                                         return ParseReleaseList(subReader);
@@ -311,6 +316,11 @@ namespace MediaBrowser.Providers.Music
                         {
                             case "release":
                                 {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
                                     var releaseId = reader.GetAttribute("id");
 
                                     using (var subReader = reader.ReadSubtree())
@@ -435,6 +445,11 @@ namespace MediaBrowser.Providers.Music
                                 {
                                     case "release-group-list":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subReader = reader.ReadSubtree())
                                             {
                                                 return GetFirstReleaseGroupId(subReader);

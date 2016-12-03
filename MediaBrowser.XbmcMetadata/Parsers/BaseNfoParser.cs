@@ -655,14 +655,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "actor":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            var person = GetPersonFromXmlNode(subtree);
-
-                            if (!string.IsNullOrWhiteSpace(person.Name))
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                itemResult.AddPerson(person);
+                                var person = GetPersonFromXmlNode(subtree);
+
+                                if (!string.IsNullOrWhiteSpace(person.Name))
+                                {
+                                    itemResult.AddPerson(person);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -831,9 +838,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "fileinfo":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromFileInfoNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromFileInfoNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -896,14 +910,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "resume":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            if (!string.IsNullOrWhiteSpace(userDataUserId))
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                var userData = GetOrAdd(itemResult, userDataUserId);
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                FetchFromResumeNode(subtree, item, userData);
+                                    FetchFromResumeNode(subtree, item, userData);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -1006,6 +1027,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         case "streamdetails":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     FetchFromStreamDetailsNode(subtree, item);
@@ -1039,6 +1065,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         case "video":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     FetchFromVideoNode(subtree, item);

@@ -43,17 +43,31 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "PlaylistItems":
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        FetchFromCollectionItemsNode(subReader, item);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            FetchFromCollectionItemsNode(subReader, item);
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                     break;
 
                 case "Shares":
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        FetchFromSharesNode(subReader, item);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            FetchFromSharesNode(subReader, item);
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                     break;
 
@@ -79,6 +93,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "PlaylistItem":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
                                 using (var subReader = reader.ReadSubtree())
                                 {
                                     var child = GetLinkedChild(subReader);
@@ -123,6 +143,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "Share":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
                                 using (var subReader = reader.ReadSubtree())
                                 {
                                     var child = GetShare(subReader);

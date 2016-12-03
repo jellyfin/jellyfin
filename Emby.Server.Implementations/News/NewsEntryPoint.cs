@@ -134,10 +134,18 @@ namespace Emby.Server.Implementations.News
                     {
                         case "channel":
                             {
-                                using (var subReader = reader.ReadSubtree())
+                                if (!reader.IsEmptyElement)
                                 {
-                                    return ParseFromChannelNode(subReader);
+                                    using (var subReader = reader.ReadSubtree())
+                                    {
+                                        return ParseFromChannelNode(subReader);
+                                    }
                                 }
+                                else
+                                {
+                                    reader.Read();
+                                }
+                                break;
                             }
                         default:
                             {
@@ -170,9 +178,16 @@ namespace Emby.Server.Implementations.News
                     {
                         case "item":
                             {
-                                using (var subReader = reader.ReadSubtree())
+                                if (!reader.IsEmptyElement)
                                 {
-                                    list.Add(ParseItem(subReader));
+                                    using (var subReader = reader.ReadSubtree())
+                                    {
+                                        list.Add(ParseItem(subReader));
+                                    }
+                                }
+                                else
+                                {
+                                    reader.Read();
                                 }
                                 break;
                             }
