@@ -139,7 +139,8 @@ define(['serverNotifications', 'playbackManager', 'events', 'globalize', 'requir
             Filters: "IsNotFolder",
             SortBy: "DateCreated",
             SortOrder: "Descending",
-            Ids: newItems.join(',')
+            Ids: newItems.join(','),
+            MediaTypes: "Audio,Video"
 
         }).then(function (result) {
 

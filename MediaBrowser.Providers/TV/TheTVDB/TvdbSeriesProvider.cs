@@ -377,7 +377,7 @@ namespace MediaBrowser.Providers.TV
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
             string id;
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -386,7 +386,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -405,7 +405,7 @@ namespace MediaBrowser.Providers.TV
             try
             {
                 string seriesId;
-                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Tvdb.ToString(), out seriesId) && !string.IsNullOrWhiteSpace(seriesId))
                 {
                     var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
@@ -419,7 +419,7 @@ namespace MediaBrowser.Providers.TV
                     return seriesDataPath;
                 }
 
-                if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrEmpty(seriesId))
+                if (seriesProviderIds.TryGetValue(MetadataProviders.Imdb.ToString(), out seriesId) && !string.IsNullOrWhiteSpace(seriesId))
                 {
                     var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 

@@ -148,7 +148,7 @@ namespace Emby.Drawing.ImageMagick
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {
-                    ScaleImage(originalImage, width, height);
+                    ScaleImage(originalImage, width, height, options.Blur ?? 0);
 
                     if (autoOrient)
                     {
@@ -170,7 +170,7 @@ namespace Emby.Drawing.ImageMagick
                 {
                     using (var originalImage = new MagickWand(inputPath))
                     {
-                        ScaleImage(originalImage, width, height);
+                        ScaleImage(originalImage, width, height, options.Blur ?? 0);
 
                         if (autoOrient)
                         {
@@ -221,13 +221,13 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private void ScaleImage(MagickWand wand, int width, int height)
+        private void ScaleImage(MagickWand wand, int width, int height, int blur)
         {
-            var highQuality = false;
+            var useResize = blur > 1;
 
-            if (highQuality)
+            if (useResize)
             {
-                wand.CurrentImage.ResizeImage(width, height);
+                wand.CurrentImage.ResizeImage(width, height, FilterTypes.GaussianFilter, blur);
             }
             else
             {

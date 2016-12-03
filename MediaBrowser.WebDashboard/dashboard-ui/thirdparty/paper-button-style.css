@@ -1,6 +1,6 @@
 ﻿.ui-body-b .raised {
-    background: rgba(170,170, 170, 1);
-    color: #222;
+    background: rgba(170,170,190, .4);
+    color: #fff;
 }
 
 .ui-body-a .raised {

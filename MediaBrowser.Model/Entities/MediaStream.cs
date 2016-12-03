@@ -118,12 +118,24 @@ namespace MediaBrowser.Model.Entities
 
         private string AddLanguageIfNeeded(string title)
         {
-            if (!string.IsNullOrEmpty(Language) && !string.Equals(Language, "und", StringComparison.OrdinalIgnoreCase) && title.IndexOf(Language, StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrEmpty(Language) && 
+                !string.Equals(Language, "und", StringComparison.OrdinalIgnoreCase) &&
+                !IsLanguageInTitle(title, Language))
             {
                 title = StringHelper.FirstToUpper(Language) + " " + title;
             }
 
             return title;
+        }
+
+        private bool IsLanguageInTitle(string title, string language)
+        {
+            if (title.IndexOf(Language, StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public string NalLengthSize { get; set; }

@@ -15,7 +15,7 @@
     user-select: none;
     cursor: pointer;
     z-index: 0;
-    padding: 0.85em 0.57em;
+    padding: 1em .7em;
     font-weight: normal;
     vertical-align: middle;
     border: 0;
@@ -50,13 +50,13 @@
 .fab {
     display: inline-flex;
     border-radius: 50%;
-    background-color: rgb(170,170, 170);
+    background-color: rgba(170,170,190, .4);
     padding: .6em;
     box-sizing: border-box;
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #222;
+    color: #fff;
     margin: 0;
 }
 

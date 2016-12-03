@@ -300,7 +300,7 @@ define(['browser'], function (browser) {
             hlsVideoAudioCodecs.push('mp3');
         }
 
-        if (browser.tizen) {
+        if (browser.tizen || options.supportsDts) {
             videoAudioCodecs.push('dca');
             videoAudioCodecs.push('dts');
         }

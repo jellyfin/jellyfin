@@ -31,11 +31,14 @@
     right: 0;
     bottom: 0;
     z-index: -1;
-    -webkit-filter: blur(20px);
+}
+
+.backdropImage {
+    /*-webkit-filter: blur(20px);
     -moz-filter: blur(20px);
     -o-filter: blur(20px);
     -ms-filter: blur(20px);
-    filter: blur(20px);
+    filter: blur(20px);*/
 }
 
 .libraryPage .header {
@@ -291,6 +294,36 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-right: 2em;
 }
 
+.detailPagePrimaryContent {
+    position: relative;
+    flex-grow: 1;
+}
+
+.detailLogo {
+    width: 300px;
+    height: 70px;
+    position: absolute;
+    top: 10%;
+    right: 20%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+}
+
+@media all and (max-width: 1400px) {
+
+    .detailLogo {
+        right: 10%;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .detailLogo {
+        display: none;
+    }
+}
+
 .itemDetailImage {
     border: solid 1px transparent;
     width: 280px;
@@ -323,7 +356,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .itemDetailImage {
         height: 120px;
-        width: auto!important;
+        width: auto !important;
     }
 
     .btnPlaySimple {
@@ -339,7 +372,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .detailPagePrimaryContainer {
         display: flex;
-        margin-bottom: 3em;
+        margin-bottom: 3.6em;
     }
 }
 
