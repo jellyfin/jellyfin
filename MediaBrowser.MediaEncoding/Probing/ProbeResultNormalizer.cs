@@ -202,35 +202,43 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 using (var streamReader = new StreamReader(stream))
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader))
+                    try
                     {
-                        reader.MoveToContent();
-                        reader.Read();
-
-                        // Loop through each element
-                        while (!reader.EOF)
+                        // Use XmlReader for best performance
+                        using (var reader = XmlReader.Create(streamReader))
                         {
-                            if (reader.NodeType == XmlNodeType.Element)
+                            reader.MoveToContent();
+                            reader.Read();
+
+                            // Loop through each element
+                            while (!reader.EOF)
                             {
-                                switch (reader.Name)
+                                if (reader.NodeType == XmlNodeType.Element)
                                 {
-                                    case "dict":
-                                        using (var subtree = reader.ReadSubtree())
-                                        {
-                                            ReadFromDictNode(subtree, info);
-                                        }
-                                        break;
-                                    default:
-                                        reader.Skip();
-                                        break;
+                                    switch (reader.Name)
+                                    {
+                                        case "dict":
+                                            using (var subtree = reader.ReadSubtree())
+                                            {
+                                                ReadFromDictNode(subtree, info);
+                                            }
+                                            break;
+                                        default:
+                                            reader.Skip();
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    reader.Read();
                                 }
                             }
-                            else
-                            {
-                                reader.Read();
-                            }
                         }
+                    }
+                    catch (XmlException)
+                    {
+                        // I've seen probe examples where the iTunMOVI value is just "<"
+                        // So we should not allow this to fail the entire probing operation
                     }
                 }
             }
