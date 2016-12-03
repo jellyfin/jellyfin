@@ -110,15 +110,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     using (var reader = XmlReader.Create(streamReader, settings))
                     {
                         reader.MoveToContent();
+                        reader.Read();
 
                         // Loop through each element
-                        while (reader.Read())
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
                             if (reader.NodeType == XmlNodeType.Element)
                             {
                                 FetchDataFromXmlNode(reader, item);
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }
@@ -752,12 +757,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Format3D":
                     {
+                        var val = reader.ReadElementContentAsString();
+
                         var video = item as Video;
 
                         if (video != null)
                         {
-                            var val = reader.ReadElementContentAsString();
-
                             if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                             {
                                 video.Video3DFormat = Video3DFormat.HalfSideBySide;
@@ -808,8 +813,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchFromSharesNode(XmlReader reader, IHasShares item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -833,6 +840,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
@@ -841,8 +852,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
             var share = new Share();
 
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -865,6 +878,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
 
             return share;
@@ -873,8 +890,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchFromCountriesNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -895,6 +914,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
@@ -909,7 +932,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -945,8 +968,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchFromGenresNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -968,14 +993,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchFromTagsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -997,14 +1028,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchFromKeywordsNode(XmlReader reader, BaseItem item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1026,6 +1063,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
@@ -1037,8 +1078,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchDataFromPersonsNode(XmlReader reader, MetadataResult<T> item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1066,14 +1109,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private void FetchDataFromTrailersNode(XmlReader reader, IHasTrailers item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1095,87 +1144,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
-            }
-        }
-
-        protected List<ChapterInfo> FetchChaptersFromXmlNode(BaseItem item, XmlReader reader)
-        {
-            using (reader)
-            {
-                return GetChaptersFromXmlNode(reader)
-                    .Where(i => i.StartPositionTicks >= 0)
-                    .ToList();
-            }
-        }
-
-        private IEnumerable<ChapterInfo> GetChaptersFromXmlNode(XmlReader reader)
-        {
-            var chapters = new List<ChapterInfo>();
-
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
+                else
                 {
-                    switch (reader.Name)
-                    {
-                        case "Chapter":
-                            {
-                                using (var subtree = reader.ReadSubtree())
-                                {
-                                    chapters.Add(GetChapterInfoFromXmlNode(subtree));
-                                }
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
+                    reader.Read();
                 }
             }
-
-            return chapters;
-        }
-
-        private ChapterInfo GetChapterInfoFromXmlNode(XmlReader reader)
-        {
-            var chapter = new ChapterInfo();
-
-            reader.MoveToContent();
-
-            while (reader.Read())
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "StartPositionMs":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                var ms = long.Parse(val, _usCulture);
-
-                                chapter.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
-
-                                break;
-                            }
-
-                        case "Name":
-                            {
-                                chapter.Name = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-            }
-
-            return chapter;
         }
 
         /// <summary>
@@ -1186,8 +1159,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         private void FetchFromStudiosNode(XmlReader reader, T item)
         {
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1209,6 +1184,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
@@ -1225,8 +1204,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
             int? sortOrder = null;
 
             reader.MoveToContent();
+            reader.Read();
 
-            while (reader.Read())
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1277,6 +1258,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
 
             var personInfo = new PersonInfo
@@ -1292,14 +1277,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         protected LinkedChild GetLinkedChild(XmlReader reader)
         {
-            reader.MoveToContent();
-
             var linkedItem = new LinkedChild
             {
                 Type = LinkedChildType.Manual
             };
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1315,6 +1302,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -1335,7 +1326,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

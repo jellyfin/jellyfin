@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.Music
                 reader.Read();
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -303,7 +303,7 @@ namespace MediaBrowser.Providers.Music
                 reader.Read();
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -352,7 +352,7 @@ namespace MediaBrowser.Providers.Music
                 // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -427,7 +427,7 @@ namespace MediaBrowser.Providers.Music
                         reader.Read();
 
                         // Loop through each element
-                        while (!reader.EOF)
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -464,7 +464,7 @@ namespace MediaBrowser.Providers.Music
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

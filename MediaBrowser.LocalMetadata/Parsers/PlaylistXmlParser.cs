@@ -71,7 +71,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -115,7 +115,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

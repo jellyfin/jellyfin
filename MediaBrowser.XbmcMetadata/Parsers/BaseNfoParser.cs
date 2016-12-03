@@ -123,7 +123,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             reader.Read();
 
                             // Loop through each element
-                            while (!reader.EOF)
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -203,7 +203,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 reader.Read();
 
                                 // Loop through each element
-                                while (!reader.EOF)
+                                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                                 {
                                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -607,7 +607,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        var val = reader.ReadElementContentAsString();
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -640,7 +641,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        var val = reader.ReadElementContentAsString();
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -957,7 +959,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -996,7 +998,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1029,7 +1031,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1062,7 +1064,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1128,7 +1130,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
