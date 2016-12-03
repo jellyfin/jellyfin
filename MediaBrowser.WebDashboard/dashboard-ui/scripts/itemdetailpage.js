@@ -111,11 +111,14 @@
             window.scrollTo(0, 0);
 
             renderImage(page, item, user);
+            renderLogo(page, item, ApiClient);
 
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            backdrop.setBackdrops([item], false);
+            backdrop.setBackdrops([item], {
+                blur: 48
+            }, false);
 
             LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
 
@@ -264,6 +267,42 @@
         }));
 
         Dashboard.hideLoadingMsg();
+    }
+
+    function logoImageUrl(item, apiClient, options) {
+
+        options = options || {};
+        options.type = "Logo";
+
+        if (item.ImageTags && item.ImageTags.Logo) {
+
+            options.tag = item.ImageTags.Logo;
+            return apiClient.getScaledImageUrl(item.Id, options);
+        }
+
+        if (item.ParentLogoImageTag) {
+            options.tag = item.ParentLogoImageTag;
+            return apiClient.getScaledImageUrl(item.ParentLogoItemId, options);
+        }
+
+        return null;
+    }
+
+    function renderLogo(page, item, apiClient) {
+        var url = logoImageUrl(item, apiClient, {
+            maxWidth: 300
+        });
+
+        var detailLogo = page.querySelector('.detailLogo');
+
+        if (url) {
+            detailLogo.classList.remove('hide');
+            detailLogo.classList.add('lazy');
+            detailLogo.setAttribute('data-src', url);
+            imageLoader.lazyImage(detailLogo);
+        } else {
+            detailLogo.classList.add('hide');
+        }
     }
 
     function showRecordingFields(page, item, user) {
@@ -593,7 +632,7 @@
 
         var dateAddedElement = page.querySelector('#dateAdded');
 
-        if (!item.IsFolder && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer') {
+        if (!item.IsFolder && item.MediaType && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer') {
             dateAddedElement.classList.remove('hide');
             dateAddedElement.innerHTML = globalize.translate('DateAddedValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)));
         } else {
@@ -1046,6 +1085,8 @@
             var scrollX = false;
             var isList = false;
 
+            var scrollClass = 'hiddenScrollX';
+
             if (item.Type == "MusicAlbum") {
 
                 html = listView.getListViewHtml({
@@ -1077,16 +1118,20 @@
             }
             else if (item.Type == "Season" || item.Type == "Episode") {
 
+                scrollX = item.Type == "Episode";
+                scrollClass = 'smoothScrollX';
+
                 html = cardBuilder.getCardsHtml({
                     items: result.Items,
-                    shape: getThumbShape(false),
+                    shape: getThumbShape(scrollX),
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
                     playFromHere: true,
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    allowBottomPadding: !scrollX
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -1102,11 +1147,12 @@
 
             var elem = page.querySelector('.childrenItemsContainer');
             if (scrollX) {
-                elem.classList.add('hiddenScrollX');
+                elem.classList.add(scrollClass);
                 elem.classList.remove('vertical-wrap');
                 elem.classList.remove('vertical-list');
             } else {
                 elem.classList.remove('hiddenScrollX');
+                elem.classList.remove('smoothScrollX');
 
                 if (isList) {
                     elem.classList.add('vertical-list');

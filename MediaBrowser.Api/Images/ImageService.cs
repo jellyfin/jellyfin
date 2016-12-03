@@ -624,6 +624,7 @@ namespace MediaBrowser.Api.Images
                 AddPlayedIndicator = request.AddPlayedIndicator,
                 PercentPlayed = request.PercentPlayed ?? 0,
                 UnplayedCount = request.UnplayedCount,
+                Blur = request.Blur,
                 BackgroundColor = request.BackgroundColor,
                 ForegroundLayer = request.ForegroundLayer,
                 SupportedOutputFormats = supportedFormats
