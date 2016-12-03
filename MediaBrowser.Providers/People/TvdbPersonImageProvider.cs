@@ -127,6 +127,11 @@ namespace MediaBrowser.Providers.People
                                 {
                                     case "Actor":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 var info = FetchImageInfoFromActorNode(personName, subtree);

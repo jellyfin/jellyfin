@@ -97,6 +97,11 @@ namespace MediaBrowser.Providers.Music
                             {
                                 case "artist-list":
                                     {
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return ParseArtistList(subReader);
@@ -136,6 +141,11 @@ namespace MediaBrowser.Providers.Music
                     {
                         case "artist":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 var mbzId = reader.GetAttribute("id");
 
                                 using (var subReader = reader.ReadSubtree())

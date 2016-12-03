@@ -395,18 +395,32 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "TagLines":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromTaglinesNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromTaglinesNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "Countries":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromCountriesNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromCountriesNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -592,13 +606,20 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Trailers":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            var hasTrailers = item as IHasTrailers;
-                            if (hasTrailers != null)
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                FetchDataFromTrailersNode(subtree, hasTrailers);
+                                var hasTrailers = item as IHasTrailers;
+                                if (hasTrailers != null)
+                                {
+                                    FetchDataFromTrailersNode(subtree, hasTrailers);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -699,58 +720,100 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "Genres":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromGenresNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromGenresNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "Tags":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromTagsNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromTagsNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "PlotKeywords":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromKeywordsNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromKeywordsNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "Persons":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchDataFromPersonsNode(subtree, itemResult);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchDataFromPersonsNode(subtree, itemResult);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "Studios":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromStudiosNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromStudiosNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
 
                 case "Shares":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            var hasShares = item as IHasShares;
-                            if (hasShares != null)
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                FetchFromSharesNode(subtree, hasShares);
+                                var hasShares = item as IHasShares;
+                                if (hasShares != null)
+                                {
+                                    FetchFromSharesNode(subtree, hasShares);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -824,6 +887,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "Share":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     var share = GetShareFromNode(subtree);
@@ -1090,6 +1158,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         case "Person":
                         case "Actor":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     foreach (var person in GetPersonsFromXmlNode(subtree))

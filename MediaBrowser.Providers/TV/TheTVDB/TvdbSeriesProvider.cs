@@ -314,6 +314,11 @@ namespace MediaBrowser.Providers.TV
                             {
                                 case "Series":
                                     {
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
                                         using (var subtree = reader.ReadSubtree())
                                         {
                                             return FindSeriesId(subtree);
@@ -559,6 +564,11 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     case "Series":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 var searchResult = GetSeriesSearchResultFromSubTree(subtree, comparableName);
@@ -799,6 +809,11 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     case "Series":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 FetchDataFromSeriesNode(result, subtree, cancellationToken);
@@ -808,6 +823,11 @@ namespace MediaBrowser.Providers.TV
 
                                     case "Episode":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 var date = GetFirstAiredDateFromEpisodeNode(subtree, cancellationToken);
@@ -942,6 +962,11 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     case "Actor":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 FetchDataFromActorNode(result, subtree);

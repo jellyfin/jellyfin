@@ -126,6 +126,11 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     case "Banner":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 AddImage(subtree, list);
