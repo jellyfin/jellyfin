@@ -181,8 +181,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string UICulture { get; set; }
 
-        public PeopleMetadataOptions PeopleMetadataOptions { get; set; }
-
         public bool SaveMetadataHidden { get; set; }
 
         public NameValuePair[] ContentTypes { get; set; }
@@ -259,8 +257,6 @@ namespace MediaBrowser.Model.Configuration
             SeasonZeroDisplayName = "Specials";
 
             UICulture = "en-us";
-
-            PeopleMetadataOptions = new PeopleMetadataOptions();
 
             MetadataOptions = new[]
             {

@@ -47,36 +47,6 @@ namespace Emby.Server.Implementations.Library.Validators
             _fileSystem = fileSystem;
         }
 
-        private bool DownloadMetadata(PersonInfo i, PeopleMetadataOptions options)
-        {
-            if (i.IsType(PersonType.Actor))
-            {
-                return options.DownloadActorMetadata;
-            }
-            if (i.IsType(PersonType.Director))
-            {
-                return options.DownloadDirectorMetadata;
-            }
-            if (i.IsType(PersonType.Composer))
-            {
-                return options.DownloadComposerMetadata;
-            }
-            if (i.IsType(PersonType.Writer))
-            {
-                return options.DownloadWriterMetadata;
-            }
-            if (i.IsType(PersonType.Producer))
-            {
-                return options.DownloadProducerMetadata;
-            }
-            if (i.IsType(PersonType.GuestStar))
-            {
-                return options.DownloadGuestStarMetadata;
-            }
-
-            return options.DownloadOtherPeopleMetadata;
-        }
-
         /// <summary>
         /// Validates the people.
         /// </summary>
@@ -89,28 +59,13 @@ namespace Emby.Server.Implementations.Library.Validators
 
             innerProgress.RegisterAction(pct => progress.Report(pct * .15));
 
-            var peopleOptions = _config.Configuration.PeopleMetadataOptions;
-
             var people = _libraryManager.GetPeople(new InternalPeopleQuery());
 
             var dict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var person in people)
             {
-                var isMetadataEnabled = DownloadMetadata(person, peopleOptions);
-
-                bool currentValue;
-                if (dict.TryGetValue(person.Name, out currentValue))
-                {
-                    if (!currentValue && isMetadataEnabled)
-                    {
-                        dict[person.Name] = true;
-                    }
-                }
-                else
-                {
-                    dict[person.Name] = isMetadataEnabled;
-                }
+                dict[person.Name] = true;
             }
 
             var numComplete = 0;

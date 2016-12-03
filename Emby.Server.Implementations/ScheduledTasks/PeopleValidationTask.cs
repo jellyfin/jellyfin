@@ -35,13 +35,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            // Randomize the default start hour because this operation can really hammer internet metadata providers
-            var startHour = new Random(_appHost.SystemId.GetHashCode()).Next(0, 8);
-
-            return new[] { 
-            
+            return new[] 
+            { 
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerDaily, TimeOfDayTicks = TimeSpan.FromHours(startHour).Ticks}
+                new TaskTriggerInfo
+                {
+                    Type = TaskTriggerInfo.TriggerInterval,
+                    IntervalTicks = TimeSpan.FromDays(7).Ticks
+                }
             };
         }
 

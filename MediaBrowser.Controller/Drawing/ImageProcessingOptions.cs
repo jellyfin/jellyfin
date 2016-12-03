@@ -35,6 +35,7 @@ namespace MediaBrowser.Controller.Drawing
         public bool AddPlayedIndicator { get; set; }
 
         public int? UnplayedCount { get; set; }
+        public int? Blur { get; set; }
 
         public double PercentPlayed { get; set; }
 
@@ -84,6 +85,7 @@ namespace MediaBrowser.Controller.Drawing
                 !AddPlayedIndicator &&
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
+                !Blur.HasValue &&
                 string.IsNullOrEmpty(BackgroundColor) &&
                 string.IsNullOrEmpty(ForegroundLayer);
         }
