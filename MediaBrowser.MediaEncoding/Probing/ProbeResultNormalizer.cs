@@ -211,7 +211,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Read();
 
                             // Loop through each element
-                            while (!reader.EOF)
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
                                 if (reader.NodeType == XmlNodeType.Element)
                                 {
@@ -253,7 +253,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -308,7 +308,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -397,7 +397,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
