@@ -152,7 +152,6 @@
     <Compile Include="Profiles\XboxOneProfile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\DescriptionXmlBuilder.cs" />
-    <Compile Include="Server\Headers.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
     <Compile Include="Service\BaseControlHandler.cs" />
     <Compile Include="Service\BaseService.cs" />
