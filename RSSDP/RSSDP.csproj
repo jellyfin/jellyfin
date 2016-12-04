@@ -50,7 +50,6 @@
     <Compile Include="ISsdpDevicePublisher.cs" />
     <Compile Include="IUPnPDeviceValidator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOnlyEnumerable.cs" />
     <Compile Include="RequestReceivedEventArgs.cs" />
     <Compile Include="ResponseReceivedEventArgs.cs" />
     <Compile Include="SsdpCommunicationsServer.cs" />
@@ -70,6 +69,10 @@
     <Compile Include="UPnP10DeviceValidator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
+      <Project>{9142eefa-7570-41e1-bfcc-468bb571af2f}</Project>
+      <Name>MediaBrowser.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>

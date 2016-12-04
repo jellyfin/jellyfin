@@ -14,7 +14,7 @@ namespace Emby.Dlna.ConnectionManager
     {
         private readonly DeviceProfile _profile;
 
-        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
+        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
         {
             if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
             {
@@ -26,7 +26,7 @@ namespace Emby.Dlna.ConnectionManager
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetProtocolInfo()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Source", _profile.ProtocolInfo },
                 { "Sink", "" }

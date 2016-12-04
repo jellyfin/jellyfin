@@ -299,7 +299,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return directoryService.GetFiles(fullPath).Any(i => string.Equals(i.Extension, ".m2ts", StringComparison.OrdinalIgnoreCase));
+            return directoryService.GetFiles(fullPath).Any(i => string.Equals(i.Extension, ".m2ts", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(i.Extension, ".mts", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

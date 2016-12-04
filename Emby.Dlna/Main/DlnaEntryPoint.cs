@@ -54,6 +54,7 @@ namespace Emby.Dlna.Main
         private readonly ITimerFactory _timerFactory;
         private readonly ISocketFactory _socketFactory;
         private readonly IEnvironmentInfo _environmentInfo;
+        private readonly INetworkManager _networkManager;
 
         private ISsdpCommunicationsServer _communicationsServer;
 
@@ -69,7 +70,7 @@ namespace Emby.Dlna.Main
             IUserDataManager userDataManager,
             ILocalizationManager localization,
             IMediaSourceManager mediaSourceManager,
-            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder, ISocketFactory socketFactory, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo)
+            IDeviceDiscovery deviceDiscovery, IMediaEncoder mediaEncoder, ISocketFactory socketFactory, ITimerFactory timerFactory, IEnvironmentInfo environmentInfo, INetworkManager networkManager)
         {
             _config = config;
             _appHost = appHost;
@@ -87,6 +88,7 @@ namespace Emby.Dlna.Main
             _socketFactory = socketFactory;
             _timerFactory = timerFactory;
             _environmentInfo = environmentInfo;
+            _networkManager = networkManager;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -156,7 +158,7 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory)
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger)
                     {
                         IsShared = true
                     };

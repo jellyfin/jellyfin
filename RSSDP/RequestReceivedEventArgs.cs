@@ -22,17 +22,18 @@ namespace Rssdp.Infrastructure
 
 		#endregion
 
-		#region Constructors
+	    public IpAddressInfo LocalIpAddress { get; private set; }
+
+	    #region Constructors
 
 		/// <summary>
 		/// Full constructor.
 		/// </summary>
-		/// <param name="message">The <see cref="HttpRequestMessage"/> that was received.</param>
-		/// <param name="receivedFrom">A <see cref="UdpEndPoint"/> representing the sender's address (sometimes used for replies).</param>
-		public RequestReceivedEventArgs(HttpRequestMessage message, IpEndPointInfo receivedFrom)
+		public RequestReceivedEventArgs(HttpRequestMessage message, IpEndPointInfo receivedFrom, IpAddressInfo localIpAddress)
 		{
 			_Message = message;
 			_ReceivedFrom = receivedFrom;
+		    LocalIpAddress = localIpAddress;
 		}
 
 		#endregion

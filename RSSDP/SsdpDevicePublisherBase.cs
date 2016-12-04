@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -25,7 +26,7 @@ namespace Rssdp.Infrastructure
         private bool _SupportPnpRootDevice;
 
         private IList<SsdpRootDevice> _Devices;
-        private ReadOnlyEnumerable<SsdpRootDevice> _ReadOnlyDevices;
+        private IReadOnlyList<SsdpRootDevice> _ReadOnlyDevices;
 
         private ITimer _RebroadcastAliveNotificationsTimer;
         private ITimerFactory _timerFactory;
@@ -62,7 +63,7 @@ namespace Rssdp.Infrastructure
             _SupportPnpRootDevice = true;
             _timerFactory = timerFactory;
             _Devices = new List<SsdpRootDevice>();
-            _ReadOnlyDevices = new ReadOnlyEnumerable<SsdpRootDevice>(_Devices);
+            _ReadOnlyDevices = new ReadOnlyCollection<SsdpRootDevice>(_Devices);
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
             _DeviceValidator = new Upnp10DeviceValidator(); //Should probably inject this later, but for now we only support 1.0.
@@ -236,17 +237,17 @@ namespace Rssdp.Infrastructure
 
         #region Search Related Methods
 
-        private void ProcessSearchRequest(string mx, string searchTarget, IpEndPointInfo endPoint)
+        private void ProcessSearchRequest(string mx, string searchTarget, IpEndPointInfo remoteEndPoint, IpAddressInfo receivedOnlocalIpAddress)
         {
             if (String.IsNullOrEmpty(searchTarget))
             {
-                WriteTrace(String.Format("Invalid search request received From {0}, Target is null/empty.", endPoint.ToString()));
+                WriteTrace(String.Format("Invalid search request received From {0}, Target is null/empty.", remoteEndPoint.ToString()));
                 return;
             }
 
-            WriteTrace(String.Format("Search Request Received From {0}, Target = {1}", endPoint.ToString(), searchTarget));
+            WriteTrace(String.Format("Search Request Received From {0}, Target = {1}", remoteEndPoint.ToString(), searchTarget));
 
-            if (IsDuplicateSearchRequest(searchTarget, endPoint))
+            if (IsDuplicateSearchRequest(searchTarget, remoteEndPoint))
             {
                 WriteTrace("Search Request is Duplicate, ignoring.");
                 return;
@@ -294,7 +295,7 @@ namespace Rssdp.Infrastructure
 
                     foreach (var device in deviceList)
                     {
-                        SendDeviceSearchResponses(device, endPoint);
+                        SendDeviceSearchResponses(device, remoteEndPoint, receivedOnlocalIpAddress);
                     }
                 }
                 else
@@ -307,19 +308,19 @@ namespace Rssdp.Infrastructure
             return _Devices.Union(_Devices.SelectManyRecursive<SsdpDevice>((d) => d.Devices));
         }
 
-        private void SendDeviceSearchResponses(SsdpDevice device, IpEndPointInfo endPoint)
+        private void SendDeviceSearchResponses(SsdpDevice device, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress)
         {
             bool isRootDevice = (device as SsdpRootDevice) != null;
             if (isRootDevice)
             {
-                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint);
+                SendSearchResponse(SsdpConstants.UpnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.UpnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress);
                 if (this.SupportPnpRootDevice)
-                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint);
+                    SendSearchResponse(SsdpConstants.PnpDeviceTypeRootDevice, device, GetUsn(device.Udn, SsdpConstants.PnpDeviceTypeRootDevice), endPoint, receivedOnlocalIpAddress);
             }
 
-            SendSearchResponse(device.Udn, device, device.Udn, endPoint);
+            SendSearchResponse(device.Udn, device, device.Udn, endPoint, receivedOnlocalIpAddress);
 
-            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint);
+            SendSearchResponse(device.FullDeviceType, device, GetUsn(device.Udn, device.FullDeviceType), endPoint, receivedOnlocalIpAddress);
         }
 
         private static string GetUsn(string udn, string fullDeviceType)
@@ -327,7 +328,7 @@ namespace Rssdp.Infrastructure
             return String.Format("{0}::{1}", udn, fullDeviceType);
         }
 
-        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, IpEndPointInfo endPoint)
+        private async void SendSearchResponse(string searchTarget, SsdpDevice device, string uniqueServiceName, IpEndPointInfo endPoint, IpAddressInfo receivedOnlocalIpAddress)
         {
             var rootDevice = device.ToRootDevice();
 
@@ -349,7 +350,7 @@ namespace Rssdp.Infrastructure
 
             try
             {
-                await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint).ConfigureAwait(false);
+                await _CommsServer.SendMessage(System.Text.Encoding.UTF8.GetBytes(message), endPoint, receivedOnlocalIpAddress).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -674,7 +675,7 @@ namespace Rssdp.Infrastructure
                 //else if (!e.Message.Headers.Contains("MAN"))
                 //	WriteTrace("Ignoring search request - missing MAN header.");
                 //else
-                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom);
+                ProcessSearchRequest(GetFirstHeaderValue(e.Message.Headers, "MX"), GetFirstHeaderValue(e.Message.Headers, "ST"), e.ReceivedFrom, e.LocalIpAddress);
             }
         }
 
