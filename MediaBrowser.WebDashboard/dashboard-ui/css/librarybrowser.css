@@ -261,6 +261,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .noBackdrop {
     background: #181818;
+    height: 170px !important;
 }
 
 .withBackdrop + .mainDrawerPanel .noBackdrop {
@@ -348,9 +349,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-width: 800px) {
 
+    .detailPageContent {
+        position: relative;
+    }
+
     .detailImageContainer {
         position: absolute;
-        top: 210px;
+        top: -130px;
         left: 3%;
     }
 
@@ -512,20 +517,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop {
         height: 290px;
     }
-
-    .detailImageContainer {
-        top: 200px;
-    }
 }
 
 @media all and (max-height: 500px) {
 
     .itemBackdrop {
         height: 240px;
-    }
-
-    .detailImageContainer {
-        top: 150px;
     }
 }
 
@@ -534,10 +531,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop {
         height: 200px;
     }
-
-    .detailImageContainer {
-        top: 110px;
-    }
 }
 
 @media all and (max-height: 300px) {
@@ -545,20 +538,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop {
         height: 150px;
     }
-
-    .detailImageContainer {
-        top: 60px;
-    }
 }
 
 @media all and (max-height: 250px) {
 
     .itemBackdrop {
         height: 120px;
-    }
-
-    .detailImageContainer {
-        top: 30px;
     }
 }
 

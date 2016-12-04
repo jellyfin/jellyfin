@@ -117,7 +117,7 @@
             renderDetails(page, item, context);
 
             backdrop.setBackdrops([item], {
-                blur: 40
+                blur: 32
             }, false);
 
             LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
