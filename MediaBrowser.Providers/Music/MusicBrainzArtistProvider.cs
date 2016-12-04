@@ -89,7 +89,7 @@ namespace MediaBrowser.Providers.Music
                     reader.Read();
 
                     // Loop through each element
-                    while (!reader.EOF)
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
                         if (reader.NodeType == XmlNodeType.Element)
                         {
@@ -97,6 +97,11 @@ namespace MediaBrowser.Providers.Music
                             {
                                 case "artist-list":
                                     {
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            reader.Read();
+                                            continue;
+                                        }
                                         using (var subReader = reader.ReadSubtree())
                                         {
                                             return ParseArtistList(subReader);
@@ -128,7 +133,7 @@ namespace MediaBrowser.Providers.Music
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -136,6 +141,11 @@ namespace MediaBrowser.Providers.Music
                     {
                         case "artist":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 var mbzId = reader.GetAttribute("id");
 
                                 using (var subReader = reader.ReadSubtree())
@@ -174,7 +184,7 @@ namespace MediaBrowser.Providers.Music
             // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

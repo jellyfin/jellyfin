@@ -123,7 +123,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             reader.Read();
 
                             // Loop through each element
-                            while (!reader.EOF)
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
                                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -203,7 +203,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 reader.Read();
 
                                 // Loop through each element
-                                while (!reader.EOF)
+                                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                                 {
                                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -607,7 +607,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "director":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
+                        var val = reader.ReadElementContentAsString();
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -640,7 +641,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "writer":
                     {
-                        foreach (var p in SplitNames(reader.ReadElementContentAsString()).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
+                        var val = reader.ReadElementContentAsString();
+                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
                         {
                             if (string.IsNullOrWhiteSpace(p.Name))
                             {
@@ -653,14 +655,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "actor":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            var person = GetPersonFromXmlNode(subtree);
-
-                            if (!string.IsNullOrWhiteSpace(person.Name))
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                itemResult.AddPerson(person);
+                                var person = GetPersonFromXmlNode(subtree);
+
+                                if (!string.IsNullOrWhiteSpace(person.Name))
+                                {
+                                    itemResult.AddPerson(person);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -829,9 +838,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "fileinfo":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            FetchFromFileInfoNode(subtree, item);
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromFileInfoNode(subtree, item);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -894,14 +910,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "resume":
                     {
-                        using (var subtree = reader.ReadSubtree())
+                        if (!reader.IsEmptyElement)
                         {
-                            if (!string.IsNullOrWhiteSpace(userDataUserId))
+                            using (var subtree = reader.ReadSubtree())
                             {
-                                var userData = GetOrAdd(itemResult, userDataUserId);
+                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                {
+                                    var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                FetchFromResumeNode(subtree, item, userData);
+                                    FetchFromResumeNode(subtree, item, userData);
+                                }
                             }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                         break;
                     }
@@ -957,7 +980,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -996,7 +1019,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1004,6 +1027,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         case "streamdetails":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     FetchFromStreamDetailsNode(subtree, item);
@@ -1029,7 +1057,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1037,6 +1065,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         case "video":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
                                 using (var subtree = reader.ReadSubtree())
                                 {
                                     FetchFromVideoNode(subtree, item);
@@ -1062,7 +1095,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -1128,7 +1161,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
