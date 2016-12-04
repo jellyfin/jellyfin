@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 
 namespace Rssdp.Infrastructure
@@ -38,12 +40,13 @@ namespace Rssdp.Infrastructure
         private IUdpSocket _BroadcastListenSocket;
 
         private object _SendSocketSynchroniser = new object();
-        private IUdpSocket _SendSocket;
+        private List<IUdpSocket> _sendSockets;
 
         private HttpRequestParser _RequestParser;
         private HttpResponseParser _ResponseParser;
-
+        private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
+        private readonly INetworkManager _networkManager;
 
         private int _LocalPort;
         private int _MulticastTtl;
@@ -71,22 +74,18 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Minimum constructor.
         /// </summary>
-        /// <param name="socketFactory">An implementation of the <see cref="ISocketFactory"/> interface that can be used to make new unicast and multicast sockets. Cannot be null.</param>
         /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory)
-            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive)
+        public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger)
+            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger)
         {
         }
 
         /// <summary>
         /// Full constructor.
         /// </summary>
-        /// <param name="socketFactory">An implementation of the <see cref="ISocketFactory"/> interface that can be used to make new unicast and multicast sockets. Cannot be null.</param>
-        /// <param name="localPort">The specific local port to use for all sockets created by this instance. Specify zero to indicate the system should choose a free port itself.</param>
-        /// <param name="multicastTimeToLive">The multicast time to live value for multicast sockets. Technically this is a number of router hops, not a 'Time'. Must be greater than zero.</param>
         /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         /// <exception cref="System.ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive)
+        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger)
         {
             if (socketFactory == null) throw new ArgumentNullException("socketFactory");
             if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException("multicastTimeToLive", "multicastTimeToLive must be greater than zero.");
@@ -101,6 +100,8 @@ namespace Rssdp.Infrastructure
             _ResponseParser = new HttpResponseParser();
 
             _MulticastTtl = multicastTimeToLive;
+            _networkManager = networkManager;
+            _logger = logger;
         }
 
         #endregion
@@ -148,22 +149,69 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="messageData">A byte array containing the data to send.</param>
         /// <param name="destination">A <see cref="IpEndPointInfo"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
+        /// <param name="fromLocalIpAddress">A <see cref="IpEndPointInfo"/> The local ip address to send from, or .Any if sending from all available</param>
         /// <exception cref="System.ArgumentNullException">Thrown if the <paramref name="messageData"/> argument is null.</exception>
         /// <exception cref="System.ObjectDisposedException">Thrown if the <see cref="DisposableManagedObjectBase.IsDisposed"/> property is true (because <seealso cref="DisposableManagedObjectBase.Dispose()" /> has been called previously).</exception>
-        public async Task SendMessage(byte[] messageData, IpEndPointInfo destination)
+        public async Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress)
         {
             if (messageData == null) throw new ArgumentNullException("messageData");
 
             ThrowIfDisposed();
 
-            EnsureSendSocketCreated();
+            var sockets = GetSendSockets(fromLocalIpAddress, destination);
+
+            if (sockets.Count == 0)
+            {
+                return;
+            }
 
             // SSDP spec recommends sending messages multiple times (not more than 3) to account for possible packet loss over UDP.
             for (var i = 0; i < SsdpConstants.UdpResendCount; i++)
             {
-                await SendMessageIfSocketNotDisposed(messageData, destination).ConfigureAwait(false);
+                var tasks = sockets.Select(s => SendFromSocket(s, messageData, destination)).ToArray();
+                await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 await Task.Delay(100).ConfigureAwait(false);
+            }
+        }
+
+        private async Task SendFromSocket(IUdpSocket socket, byte[] messageData, IpEndPointInfo destination)
+        {
+            try
+            {
+                await socket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error sending socket message from {0} to {1}", ex, socket.LocalIPAddress.ToString(), destination.ToString());
+            }
+        }
+
+        private List<IUdpSocket> GetSendSockets(IpAddressInfo fromLocalIpAddress, IpEndPointInfo destination)
+        {
+            EnsureSendSocketCreated();
+
+            lock (_SendSocketSynchroniser)
+            {
+                var sockets = _sendSockets.Where(i => i.LocalIPAddress.AddressFamily == fromLocalIpAddress.AddressFamily);
+
+                // Send from the Any socket and the socket with the matching address
+                if (fromLocalIpAddress.AddressFamily == IpAddressFamily.InterNetwork)
+                {
+                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+                }
+                else if (fromLocalIpAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
+                {
+                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.IPv6Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+                }
+
+                // If sending to the loopback address, filter the socket list as well
+                if (destination.IpAddress.Equals(IpAddressInfo.Loopback))
+                {
+                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.Any) || i.LocalIPAddress.Equals(IpAddressInfo.Loopback));
+                }
+
+                return sockets.ToList();
             }
         }
 
@@ -185,7 +233,10 @@ namespace Rssdp.Infrastructure
             {
                 await SendMessageIfSocketNotDisposed(messageData, new IpEndPointInfo
                 {
-                    IpAddress = new IpAddressInfo { Address = SsdpConstants.MulticastLocalAdminAddress },
+                    IpAddress = new IpAddressInfo
+                    {
+                        Address = SsdpConstants.MulticastLocalAdminAddress
+                    },
                     Port = SsdpConstants.MulticastPort
 
                 }).ConfigureAwait(false);
@@ -204,10 +255,16 @@ namespace Rssdp.Infrastructure
 
             lock (_SendSocketSynchroniser)
             {
-                var socket = _SendSocket;
-                _SendSocket = null;
-                if (socket != null)
-                    socket.Dispose();
+                if (_sendSockets != null)
+                {
+                    var sockets = _sendSockets.ToList();
+                    _sendSockets = null;
+
+                    foreach (var socket in sockets)
+                    {
+                        socket.Dispose();
+                    }
+                }
             }
         }
 
@@ -247,8 +304,16 @@ namespace Rssdp.Infrastructure
 
                 lock (_SendSocketSynchroniser)
                 {
-                    if (_SendSocket != null)
-                        _SendSocket.Dispose();
+                    if (_sendSockets != null)
+                    {
+                        var sockets = _sendSockets.ToList();
+                        _sendSockets = null;
+
+                        foreach (var socket in sockets)
+                        {
+                            socket.Dispose();
+                        }
+                    }
                 }
             }
         }
@@ -257,16 +322,20 @@ namespace Rssdp.Infrastructure
 
         #region Private Methods
 
-        private Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination)
+        private async Task SendMessageIfSocketNotDisposed(byte[] messageData, IpEndPointInfo destination)
         {
-            var socket = _SendSocket;
-            if (socket != null)
+            var sockets = _sendSockets;
+            if (sockets != null)
             {
-                return _SendSocket.SendAsync(messageData, messageData.Length, destination);
+                sockets = sockets.ToList();
+
+                foreach (var socket in sockets)
+                {
+                    await socket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
+                }
             }
 
             ThrowIfDisposed();
-            return Task.FromResult(true);
         }
 
         private IUdpSocket ListenForBroadcastsAsync()
@@ -278,13 +347,30 @@ namespace Rssdp.Infrastructure
             return socket;
         }
 
-        private IUdpSocket CreateSocketAndListenForResponsesAsync()
+        private List<IUdpSocket> CreateSocketAndListenForResponsesAsync()
         {
-            _SendSocket = _SocketFactory.CreateSsdpUdpSocket(_LocalPort);
+            var sockets = new List<IUdpSocket>();
 
-            ListenToSocket(_SendSocket);
+            sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IpAddressInfo.Any, _LocalPort));
 
-            return _SendSocket;
+            foreach (var address in _networkManager.GetLocalIpAddresses().ToList())
+            {
+                try
+                {
+                    sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error in CreateSsdpUdpSocket. IPAddress: {0}", ex, address);
+                }
+            }
+
+            foreach (var socket in sockets)
+            {
+                ListenToSocket(socket);
+            }
+
+            return sockets;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "t", Justification = "Capturing task to local variable removes compiler warning, task is not otherwise required.")]
@@ -305,7 +391,7 @@ namespace Rssdp.Infrastructure
                             // Strange cannot convert compiler error here if I don't explicitly
                             // assign or cast to Action first. Assignment is easier to read,
                             // so went with that.
-                            ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint);
+                            ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
                         }
                     }
                     catch (ObjectDisposedException)
@@ -322,19 +408,19 @@ namespace Rssdp.Infrastructure
 
         private void EnsureSendSocketCreated()
         {
-            if (_SendSocket == null)
+            if (_sendSockets == null)
             {
                 lock (_SendSocketSynchroniser)
                 {
-                    if (_SendSocket == null)
+                    if (_sendSockets == null)
                     {
-                        _SendSocket = CreateSocketAndListenForResponsesAsync();
+                        _sendSockets = CreateSocketAndListenForResponsesAsync();
                     }
                 }
             }
         }
 
-        private void ProcessMessage(string data, IpEndPointInfo endPoint)
+        private void ProcessMessage(string data, IpEndPointInfo endPoint, IpAddressInfo receivedOnLocalIpAddress)
         {
             //Responses start with the HTTP version, prefixed with HTTP/ while
             //requests start with a method which can vary and might be one we haven't 
@@ -347,7 +433,10 @@ namespace Rssdp.Infrastructure
                 {
                     responseMessage = _ResponseParser.Parse(data);
                 }
-                catch (ArgumentException) { } // Ignore invalid packets.
+                catch (ArgumentException ex)
+                {
+                    // Ignore invalid packets.
+                }
 
                 if (responseMessage != null)
                     OnResponseReceived(responseMessage, endPoint);
@@ -359,23 +448,31 @@ namespace Rssdp.Infrastructure
                 {
                     requestMessage = _RequestParser.Parse(data);
                 }
-                catch (ArgumentException) { } // Ignore invalid packets.
+                catch (ArgumentException ex)
+                {
+                    // Ignore invalid packets.
+                }
 
                 if (requestMessage != null)
-                    OnRequestReceived(requestMessage, endPoint);
+                {
+                    OnRequestReceived(requestMessage, endPoint, receivedOnLocalIpAddress);
+                }
             }
         }
 
-        private void OnRequestReceived(HttpRequestMessage data, IpEndPointInfo endPoint)
+        private void OnRequestReceived(HttpRequestMessage data, IpEndPointInfo remoteEndPoint, IpAddressInfo receivedOnLocalIpAddress)
         {
             //SSDP specification says only * is currently used but other uri's might
             //be implemented in the future and should be ignored unless understood.
             //Section 4.2 - http://tools.ietf.org/html/draft-cai-ssdp-v1-03#page-11
-            if (data.RequestUri.ToString() != "*") return;
+            if (data.RequestUri.ToString() != "*")
+            {
+                return;
+            }
 
             var handlers = this.RequestReceived;
             if (handlers != null)
-                handlers(this, new RequestReceivedEventArgs(data, endPoint));
+                handlers(this, new RequestReceivedEventArgs(data, remoteEndPoint, receivedOnLocalIpAddress));
         }
 
         private void OnResponseReceived(HttpResponseMessage data, IpEndPointInfo endPoint)

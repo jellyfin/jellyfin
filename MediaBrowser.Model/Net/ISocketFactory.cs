@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Createa a new unicast socket using the specified local port number.
         /// </summary>
-        IUdpSocket CreateSsdpUdpSocket(int localPort);
+        IUdpSocket CreateSsdpUdpSocket(IpAddressInfo localIp, int localPort);
 
         /// <summary>
         /// Createa a new multicast socket using the specified multicast IP address, multicast time to live and local port.
