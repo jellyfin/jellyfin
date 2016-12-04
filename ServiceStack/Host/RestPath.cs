@@ -109,7 +109,7 @@ namespace ServiceStack.Host
             this.Notes = notes;
             this.restPath = path;
 
-            this.allowsAllVerbs = verbs == null || verbs == WildCard;
+            this.allowsAllVerbs = verbs == null || string.Equals(verbs, WildCard, StringComparison.OrdinalIgnoreCase);
             if (!this.allowsAllVerbs)
             {
                 this.allowedVerbs = verbs.ToUpper();
@@ -123,7 +123,7 @@ namespace ServiceStack.Host
             {
                 if (string.IsNullOrEmpty(component)) continue;
 
-                if (component.Contains(VariablePrefix)
+                if (StringContains(component, VariablePrefix)
                     && component.IndexOf(ComponentSeperator) != -1)
                 {
                     hasSeparators.Add(true);
@@ -240,10 +240,15 @@ namespace ServiceStack.Host
             score += Math.Max((10 - VariableArgsCount), 1) * 100;
 
             //Exact verb match is better than ANY
-            var exactVerb = httpMethod == AllowedVerbs;
+            var exactVerb = string.Equals(httpMethod, AllowedVerbs, StringComparison.OrdinalIgnoreCase);
             score += exactVerb ? 10 : 1;
 
             return score;
+        }
+
+        private bool StringContains(string str1, string str2)
+        {
+            return str1.IndexOf(str2, StringComparison.OrdinalIgnoreCase) != -1;
         }
 
         /// <summary>
@@ -259,7 +264,7 @@ namespace ServiceStack.Host
             wildcardMatchCount = 0;
 
             if (withPathInfoParts.Length != this.PathComponentsCount && !this.IsWildCardPath) return false;
-            if (!this.allowsAllVerbs && !this.allowedVerbs.Contains(httpMethod.ToUpper())) return false;
+            if (!this.allowsAllVerbs && !StringContains(this.allowedVerbs, httpMethod)) return false;
 
             if (!ExplodeComponents(ref withPathInfoParts)) return false;
             if (this.TotalComponentsCount != withPathInfoParts.Length && !this.IsWildCardPath) return false;
