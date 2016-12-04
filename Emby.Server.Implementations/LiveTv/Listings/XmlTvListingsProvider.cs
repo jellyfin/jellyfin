@@ -77,7 +77,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                 // It's going to come back gzipped regardless of this value
                 // So we need to make sure the decompression method is set to gzip
-                EnableHttpCompression = true
+                EnableHttpCompression = true,
+
+                UserAgent = "Emby/3.0"
 
             }).ConfigureAwait(false);
 
