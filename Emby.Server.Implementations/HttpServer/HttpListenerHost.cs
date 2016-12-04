@@ -518,7 +518,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                var handler = HttpHandlerFactory.GetHandler(httpReq);
+                var handler = HttpHandlerFactory.GetHandler(httpReq, _logger);
 
                 if (handler != null)
                 {

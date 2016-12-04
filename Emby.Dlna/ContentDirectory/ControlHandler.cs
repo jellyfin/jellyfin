@@ -65,7 +65,7 @@ namespace Emby.Dlna.ContentDirectory
             _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager, mediaEncoder);
         }
 
-        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
+        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
         {
             var deviceId = "test";
 
@@ -118,17 +118,20 @@ namespace Emby.Dlna.ContentDirectory
             _userDataManager.SaveUserData(user.Id, item, userdata, UserDataSaveReason.TogglePlayed,
                 CancellationToken.None);
 
-            return new Headers();
+            return new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSearchCapabilities()
         {
-            return new Headers(true) { { "SearchCaps", "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords" } };
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "SearchCaps", "res@resolution,res@size,res@duration,dc:title,dc:creator,upnp:actor,upnp:artist,upnp:genre,upnp:album,dc:date,upnp:class,@id,@refID,@protocolInfo,upnp:author,dc:description,pv:avKeywords" }
+            };
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortCapabilities()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "SortCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" }
             };
@@ -136,7 +139,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSortExtensionCapabilities()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "SortExtensionCaps", "res@duration,res@size,res@bitrate,dc:date,dc:title,dc:size,upnp:album,upnp:artist,upnp:albumArtist,upnp:episodeNumber,upnp:genre,upnp:originalTrackNumber,upnp:rating" }
             };
@@ -144,14 +147,14 @@ namespace Emby.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
         {
-            var headers = new Headers(true);
+            var headers = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
             headers.Add("Id", _systemUpdateId.ToString(_usCulture));
             return headers;
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetFeatureList()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "FeatureList", GetFeatureListXml() }
             };
@@ -159,7 +162,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleXGetFeatureList()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "FeatureList", GetFeatureListXml() }
             };
@@ -183,12 +186,24 @@ namespace Emby.Dlna.ContentDirectory
             return builder.ToString();
         }
 
-        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleBrowse(Headers sparams, User user, string deviceId)
+        public string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
+        {
+            string val;
+
+            if (sparams.TryGetValue(key, out val))
+            {
+                return val;
+            }
+
+            return defaultValue;
+        }
+
+        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleBrowse(IDictionary<string, string> sparams, User user, string deviceId)
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
-            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
-            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
+            var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
 
             var provided = 0;
 
@@ -294,11 +309,11 @@ namespace Emby.Dlna.ContentDirectory
                 };
         }
 
-        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(Headers sparams, User user, string deviceId)
+        private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(IDictionary<string, string> sparams, User user, string deviceId)
         {
-            var searchCriteria = new SearchCriteria(sparams.GetValueOrDefault("SearchCriteria", ""));
-            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", ""));
-            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
+            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", ""));
+            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", ""));
+            var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
 
             // sort example: dc:title, dc:date
 

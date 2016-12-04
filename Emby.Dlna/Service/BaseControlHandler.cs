@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Emby.Dlna.Didl;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Xml;
 
 namespace Emby.Dlna.Service
@@ -185,8 +186,7 @@ namespace Emby.Dlna.Service
                     {
                         using (var subReader = reader.ReadSubtree())
                         {
-                            result.Headers = ParseFirstBodyChild(subReader);
-
+                            ParseFirstBodyChild(subReader, result.Headers);
                             return result;
                         }
                     }
@@ -204,10 +204,8 @@ namespace Emby.Dlna.Service
             return result;
         }
 
-        private Headers ParseFirstBodyChild(XmlReader reader)
+        private void ParseFirstBodyChild(XmlReader reader, IDictionary<string,string> headers)
         {
-            var result = new Headers();
-
             reader.MoveToContent();
             reader.Read();
 
@@ -216,25 +214,24 @@ namespace Emby.Dlna.Service
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    result.Add(reader.LocalName, reader.ReadElementContentAsString());
+                    // TODO: Should we be doing this here, or should it be handled earlier when decoding the request?
+                    headers[reader.LocalName.RemoveDiacritics()] = reader.ReadElementContentAsString();
                 }
                 else
                 {
                     reader.Read();
                 }
             }
-
-            return result;
         }
 
         private class ControlRequestInfo
         {
             public string LocalName;
             public string NamespaceURI;
-            public Headers Headers = new Headers();
+            public IDictionary<string, string> Headers = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        protected abstract IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams);
+        protected abstract IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams);
 
         private void LogRequest(ControlRequest request)
         {

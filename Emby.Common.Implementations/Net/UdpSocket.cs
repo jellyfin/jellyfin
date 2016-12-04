@@ -20,7 +20,6 @@ namespace Emby.Common.Implementations.Net
 
         private Socket _Socket;
         private int _LocalPort;
-
         #endregion
 
         #region Constructors
@@ -31,11 +30,18 @@ namespace Emby.Common.Implementations.Net
 
             _Socket = socket;
             _LocalPort = localPort;
+            LocalIPAddress = NetworkManager.ToIpAddressInfo(ip);
 
             _Socket.Bind(new IPEndPoint(ip, _LocalPort));
         }
 
         #endregion
+
+        public IpAddressInfo LocalIPAddress
+        {
+            get;
+            private set;
+        }
 
         #region IUdpSocket Members
 
@@ -50,18 +56,18 @@ namespace Emby.Common.Implementations.Net
             state.TaskCompletionSource = tcs;
 
 #if NETSTANDARD1_6
-            _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer),SocketFlags.None, state.EndPoint)
+            _Socket.ReceiveFromAsync(new ArraySegment<Byte>(state.Buffer),SocketFlags.None, state.RemoteEndPoint)
                 .ContinueWith((task, asyncState) =>
                 {
                     if (task.Status != TaskStatus.Faulted)
                     {
                         var receiveState = asyncState as AsyncReceiveState;
-                        receiveState.EndPoint = task.Result.RemoteEndPoint;
-                        ProcessResponse(receiveState, () => task.Result.ReceivedBytes);
+                        receiveState.RemoteEndPoint = task.Result.RemoteEndPoint;
+                        ProcessResponse(receiveState, () => task.Result.ReceivedBytes, LocalIPAddress);
                     }
                 }, state);
 #else
-            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.EndPoint, ProcessResponse, state);
+            _Socket.BeginReceiveFrom(state.Buffer, 0, state.Buffer.Length, SocketFlags.None, ref state.RemoteEndPoint, ProcessResponse, state);
 #endif
 
             return tcs.Task;
@@ -74,6 +80,8 @@ namespace Emby.Common.Implementations.Net
             if (buffer == null) throw new ArgumentNullException("messageData");
             if (endPoint == null) throw new ArgumentNullException("endPoint");
 
+            var ipEndPoint = NetworkManager.ToIPEndPoint(endPoint);
+
 #if NETSTANDARD1_6
 
             if (size != buffer.Length)
@@ -83,14 +91,14 @@ namespace Emby.Common.Implementations.Net
                 buffer = copy;
             }
 
-            _Socket.SendTo(buffer, new IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port));
+            _Socket.SendTo(buffer, ipEndPoint);
             return Task.FromResult(true);
 #else
             var taskSource = new TaskCompletionSource<bool>();
 
             try
             {
-                _Socket.BeginSendTo(buffer, 0, size, SocketFlags.None, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IpAddress.ToString()), endPoint.Port), result =>
+                _Socket.BeginSendTo(buffer, 0, size, SocketFlags.None, ipEndPoint, result =>
                 {
                     try
                     {
@@ -109,7 +117,7 @@ namespace Emby.Common.Implementations.Net
                 taskSource.TrySetException(ex);
             }
 
-            //_Socket.SendTo(messageData, new System.Net.IPEndPoint(IPAddress.Parse(endPoint.IPAddress), endPoint.Port));
+            //_Socket.SendTo(messageData, new System.Net.IPEndPoint(IPAddress.Parse(RemoteEndPoint.IPAddress), RemoteEndPoint.Port));
 
             return taskSource.Task;
 #endif
@@ -133,19 +141,20 @@ namespace Emby.Common.Implementations.Net
 
         #region Private Methods
 
-        private static void ProcessResponse(AsyncReceiveState state, Func<int> receiveData)
+        private static void ProcessResponse(AsyncReceiveState state, Func<int> receiveData, IpAddressInfo localIpAddress)
         {
             try
             {
                 var bytesRead = receiveData();
 
-                var ipEndPoint = state.EndPoint as IPEndPoint;
+                var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
                 state.TaskCompletionSource.SetResult(
-                    new SocketReceiveResult()
+                    new SocketReceiveResult
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint)
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint),
+                        LocalIPAddress = localIpAddress
                     }
                 );
             }
@@ -182,15 +191,16 @@ namespace Emby.Common.Implementations.Net
             var state = asyncResult.AsyncState as AsyncReceiveState;
             try
             {
-                var bytesRead = state.Socket.EndReceiveFrom(asyncResult, ref state.EndPoint);
+                var bytesRead = state.Socket.EndReceiveFrom(asyncResult, ref state.RemoteEndPoint);
 
-                var ipEndPoint = state.EndPoint as IPEndPoint;
+                var ipEndPoint = state.RemoteEndPoint as IPEndPoint;
                 state.TaskCompletionSource.SetResult(
                     new SocketReceiveResult
                     {
                         Buffer = state.Buffer,
                         ReceivedBytes = bytesRead,
-                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint)
+                        RemoteEndPoint = ToIpEndPointInfo(ipEndPoint),
+                        LocalIPAddress = LocalIPAddress
                     }
                 );
             }
@@ -211,13 +221,13 @@ namespace Emby.Common.Implementations.Net
 
         private class AsyncReceiveState
         {
-            public AsyncReceiveState(Socket socket, EndPoint endPoint)
+            public AsyncReceiveState(Socket socket, EndPoint remoteEndPoint)
             {
                 this.Socket = socket;
-                this.EndPoint = endPoint;
+                this.RemoteEndPoint = remoteEndPoint;
             }
 
-            public EndPoint EndPoint;
+            public EndPoint RemoteEndPoint;
             public byte[] Buffer = new byte[8192];
 
             public Socket Socket { get; private set; }
