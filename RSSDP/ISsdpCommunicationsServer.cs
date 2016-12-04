@@ -46,7 +46,8 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <param name="messageData">A byte array containing the data to send.</param>
         /// <param name="destination">A <see cref="IpEndPointInfo"/> representing the destination address for the data. Can be either a multicast or unicast destination.</param>
-        Task SendMessage(byte[] messageData, IpEndPointInfo destination);
+        /// <param name="fromLocalIpAddress">A <see cref="IpEndPointInfo"/> The local ip address to send from, or .Any if sending from all available</param>
+        Task SendMessage(byte[] messageData, IpEndPointInfo destination, IpAddressInfo fromLocalIpAddress);
 
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
