@@ -4,6 +4,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Naming.Video;
 using System;
 using System.IO;
+using System.Linq;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
@@ -59,7 +61,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                     if (child.IsDirectory)
                     {
-                        if (IsDvdDirectory(filename))
+                        if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
                         {
                             videoInfo = parser.ResolveDirectory(args.Path);
 
@@ -76,7 +78,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                             };
                             break;
                         }
-                        if (IsBluRayDirectory(filename))
+                        if (IsBluRayDirectory(child.FullName, filename, args.DirectoryService))
                         {
                             videoInfo = parser.ResolveDirectory(args.Path);
 
@@ -267,11 +269,14 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <summary>
         /// Determines whether [is DVD directory] [the specified directory name].
         /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        /// <returns><c>true</c> if [is DVD directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
-        protected bool IsDvdDirectory(string directoryName)
+        protected bool IsDvdDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
         {
-            return string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase);
+            if (!string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return directoryService.GetFiles(fullPath).Any(i => string.Equals(i.Extension, ".vob", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -287,11 +292,14 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <summary>
         /// Determines whether [is blu ray directory] [the specified directory name].
         /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        /// <returns><c>true</c> if [is blu ray directory] [the specified directory name]; otherwise, <c>false</c>.</returns>
-        protected bool IsBluRayDirectory(string directoryName)
+        protected bool IsBluRayDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
         {
-            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
+            if (!string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return directoryService.GetFiles(fullPath).Any(i => string.Equals(i.Extension, ".m2ts", StringComparison.OrdinalIgnoreCase));
         }
     }
 }

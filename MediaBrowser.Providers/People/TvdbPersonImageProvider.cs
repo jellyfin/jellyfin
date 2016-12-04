@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.People
                         reader.Read();
 
                         // Loop through each element
-                        while (!reader.EOF)
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -127,6 +127,11 @@ namespace MediaBrowser.Providers.People
                                 {
                                     case "Actor":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 var info = FetchImageInfoFromActorNode(personName, subtree);
@@ -170,7 +175,7 @@ namespace MediaBrowser.Providers.People
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

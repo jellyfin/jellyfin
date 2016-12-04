@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.Music
                 reader.Read();
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -274,6 +274,11 @@ namespace MediaBrowser.Providers.Music
                         {
                             case "release-list":
                                 {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
                                     using (var subReader = reader.ReadSubtree())
                                     {
                                         return ParseReleaseList(subReader);
@@ -303,7 +308,7 @@ namespace MediaBrowser.Providers.Music
                 reader.Read();
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -311,6 +316,11 @@ namespace MediaBrowser.Providers.Music
                         {
                             case "release":
                                 {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        continue;
+                                    }
                                     var releaseId = reader.GetAttribute("id");
 
                                     using (var subReader = reader.ReadSubtree())
@@ -352,7 +362,7 @@ namespace MediaBrowser.Providers.Music
                 // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
                 // Loop through each element
-                while (!reader.EOF)
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
@@ -427,7 +437,7 @@ namespace MediaBrowser.Providers.Music
                         reader.Read();
 
                         // Loop through each element
-                        while (!reader.EOF)
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
                             if (reader.NodeType == XmlNodeType.Element)
                             {
@@ -435,6 +445,11 @@ namespace MediaBrowser.Providers.Music
                                 {
                                     case "release-group-list":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subReader = reader.ReadSubtree())
                                             {
                                                 return GetFirstReleaseGroupId(subReader);
@@ -464,7 +479,7 @@ namespace MediaBrowser.Providers.Music
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

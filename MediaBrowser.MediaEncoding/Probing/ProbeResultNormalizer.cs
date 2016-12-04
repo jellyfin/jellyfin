@@ -211,13 +211,18 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Read();
 
                             // Loop through each element
-                            while (!reader.EOF)
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
                                 if (reader.NodeType == XmlNodeType.Element)
                                 {
                                     switch (reader.Name)
                                     {
                                         case "dict":
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 ReadFromDictNode(subtree, info);
@@ -253,7 +258,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -279,9 +284,14 @@ namespace MediaBrowser.MediaEncoding.Probing
                             }
                             break;
                         case "array":
-                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            if (reader.IsEmptyElement)
                             {
-                                using (var subtree = reader.ReadSubtree())
+                                reader.Read();
+                                continue;
+                            }
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                if (!string.IsNullOrWhiteSpace(currentKey))
                                 {
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
@@ -308,13 +318,19 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "dict":
+
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                continue;
+                            }
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -397,7 +413,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {

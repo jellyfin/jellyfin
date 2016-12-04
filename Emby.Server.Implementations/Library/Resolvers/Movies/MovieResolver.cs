@@ -366,7 +366,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (child.IsDirectory)
                 {
-                    if (IsDvdDirectory(filename))
+                    if (IsDvdDirectory(child.FullName, filename, directoryService))
                     {
                         var movie = new T
                         {
@@ -376,7 +376,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                         Set3DFormat(movie);
                         return movie;
                     }
-                    if (IsBluRayDirectory(filename))
+                    if (IsBluRayDirectory(child.FullName, filename, directoryService))
                     {
                         var movie = new T
                         {
@@ -446,15 +446,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 var subfolders = subFileEntries
                  .Where(e => e.IsDirectory)
-                    .Select(d => d.Name)
                     .ToList();
 
-                if (subfolders.Any(IsDvdDirectory))
+                if (subfolders.Any(s => IsDvdDirectory(s.FullName, s.Name, directoryService)))
                 {
                     videoTypes.Add(VideoType.Dvd);
                     return true;
                 }
-                if (subfolders.Any(IsBluRayDirectory))
+                if (subfolders.Any(s => IsBluRayDirectory(s.FullName, s.Name, directoryService)))
                 {
                     videoTypes.Add(VideoType.BluRay);
                     return true;

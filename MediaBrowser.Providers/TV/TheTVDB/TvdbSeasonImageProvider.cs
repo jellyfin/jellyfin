@@ -129,7 +129,7 @@ namespace MediaBrowser.Providers.TV
                         reader.Read();
 
                         // Loop through each element
-                        while (!reader.EOF)
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -139,6 +139,11 @@ namespace MediaBrowser.Providers.TV
                                 {
                                     case "Banner":
                                         {
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
                                             using (var subtree = reader.ReadSubtree())
                                             {
                                                 AddImage(subtree, list, seasonNumber);
@@ -204,7 +209,7 @@ namespace MediaBrowser.Providers.TV
             reader.Read();
 
             // Loop through each element
-            while (!reader.EOF)
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
