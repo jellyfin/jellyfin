@@ -20,5 +20,6 @@ namespace MediaBrowser.Model.Net
         /// The <see cref="IpEndPointInfo"/> the data was received from.
         /// </summary>
         public IpEndPointInfo RemoteEndPoint { get; set; }
-	}
+        public IpAddressInfo LocalIPAddress { get; set; }
+    }
 }

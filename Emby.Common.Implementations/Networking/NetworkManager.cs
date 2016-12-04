@@ -27,7 +27,7 @@ namespace Emby.Common.Implementations.Networking
         private List<IpAddressInfo> _localIpAddresses;
         private readonly object _localIpAddressSyncLock = new object();
 
-        public IEnumerable<IpAddressInfo> GetLocalIpAddresses()
+        public List<IpAddressInfo> GetLocalIpAddresses()
         {
             const int cacheMinutes = 5;
 

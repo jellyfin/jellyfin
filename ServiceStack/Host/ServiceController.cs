@@ -83,7 +83,7 @@ namespace ServiceStack.Host
             }
         }
 
-        public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
+        public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>(StringComparer.OrdinalIgnoreCase);
 
         public void RegisterRestPaths(Type requestType)
         {

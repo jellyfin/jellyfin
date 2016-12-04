@@ -64,7 +64,7 @@ namespace Rssdp
 
             this.Icons = new List<SsdpDeviceIcon>();
             _Devices = new List<SsdpDevice>();
-            this.Devices = new ReadOnlyEnumerable<SsdpDevice>(_Devices);
+            this.Devices = new ReadOnlyCollection<SsdpDevice>(_Devices);
             _CustomResponseHeaders = new CustomHttpHeadersCollection();
             _CustomProperties = new SsdpDevicePropertiesCollection();
         }

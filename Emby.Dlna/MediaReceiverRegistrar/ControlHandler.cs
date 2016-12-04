@@ -11,7 +11,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
 {
     public class ControlHandler : BaseControlHandler
     {
-        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
+        protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, IDictionary<string, string> methodParams)
         {
             if (string.Equals(methodName, "IsAuthorized", StringComparison.OrdinalIgnoreCase))
                 return HandleIsAuthorized();
@@ -23,7 +23,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
 
         private IEnumerable<KeyValuePair<string, string>> HandleIsAuthorized()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Result", "1" }
             };
@@ -31,7 +31,7 @@ namespace Emby.Dlna.MediaReceiverRegistrar
 
         private IEnumerable<KeyValuePair<string, string>> HandleIsValidated()
         {
-            return new Headers(true)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Result", "1" }
             };
