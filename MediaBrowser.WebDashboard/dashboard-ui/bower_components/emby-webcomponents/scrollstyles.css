@@ -33,3 +33,22 @@
         width: 0 !important;
         display: none;
     }
+
+.darkScroller::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.darkScroller::-webkit-scrollbar-button:start:decrement,
+.darkScroller::-webkit-scrollbar-button:end:increment {
+    display: none;
+}
+
+.darkScroller::-webkit-scrollbar-track-piece {
+    background-color: #3b3b3b;
+}
+
+.darkScroller::-webkit-scrollbar-thumb:vertical, .darkScroller::-webkit-scrollbar-thumb:horizontal {
+    -webkit-border-radius: 2px;
+    background: #888 no-repeat center;
+}

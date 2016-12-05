@@ -616,3 +616,26 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .supporterMembershipDisabled .tabSupporterMembership {
     display: none;
 }
+
+a[data-role='button'] {
+    -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none;
+    background-clip: padding-box;
+    border-radius: .3125em;
+    border: 1px solid #ddd !important;
+    color: rgb(51, 51, 51) !important;
+    cursor: pointer !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: 500 !important;
+    margin: 0 .25em !important;
+    display: inline-block;
+    padding: .8em 1em;
+    text-align: center;
+    text-decoration: none !important;
+    background: #f6f6f6 !important;
+    font-size: 16px;
+    -webkit-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+    -moz-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+    box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+}

@@ -75,7 +75,8 @@
             positionTo: button,
             cancelTimer: false,
             record: false,
-            editImages: false
+            editImages: false,
+            deleteItem: item.IsFolder === true
         };
 
         if (appHost.supports('sync')) {
@@ -116,9 +117,13 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            backdrop.setBackdrops([item], {
-                blur: 32
-            }, false);
+            if (dom.getWindowSize().innerWidth >= 800) {
+                backdrop.setBackdrops([item], {
+                    blur: 30
+                }, false);
+            } else {
+                backdrop.clear();
+            }
 
             LibraryBrowser.renderDetailPageBackdrop(page, item, imageLoader);
 
@@ -145,10 +150,20 @@
                 hideAll(page, 'btnPlay');
             }
 
+            var hasAnyButton = canPlay;
+
             if ((item.LocalTrailerCount || (item.RemoteTrailers && item.RemoteTrailers.length)) && item.PlayAccess == 'Full') {
                 hideAll(page, 'btnPlayTrailer', true);
+                hasAnyButton = true;
             } else {
                 hideAll(page, 'btnPlayTrailer');
+            }
+
+            if (item.CanDelete && !item.IsFolder) {
+                hideAll(page, 'btnDeleteItem', true);
+                hasAnyButton = true;
+            } else {
+                hideAll(page, 'btnDeleteItem');
             }
 
             if (itemHelper.canSync(user, item)) {
@@ -163,6 +178,12 @@
             } else {
                 hideAll(page, 'btnSync');
                 hideAll(page, 'syncLocalContainer');
+            }
+
+            if (hasAnyButton || item.Type !== 'Program') {
+                hideAll(page, 'mainDetailButtons', true);
+            } else {
+                hideAll(page, 'mainDetailButtons');
             }
 
             showRecordingFields(page, item, user);
@@ -227,34 +248,6 @@
                 itemBirthLocation.classList.add('hide');
             }
         });
-
-        //if (item.LocationType == "Offline") {
-
-        //    page.querySelector('.offlineIndicator').classList.remove('hide');
-        //}
-        //else {
-        //    page.querySelector('.offlineIndicator').classList.add('hide');
-        //}
-
-        var isMissingEpisode = false;
-
-        if (item.LocationType == "Virtual" && item.Type == "Episode") {
-            try {
-                if (item.PremiereDate && (new Date().getTime() >= datetime.parseISO8601Date(item.PremiereDate, true).getTime())) {
-                    isMissingEpisode = true;
-                }
-            } catch (err) {
-
-            }
-        }
-
-        //if (isMissingEpisode) {
-
-        //    page.querySelector('.missingIndicator').classList.remove('hide');
-        //}
-        //else {
-        //    page.querySelector('.missingIndicator').classList.add('hide');
-        //}
 
         setPeopleHeader(page, item);
 
@@ -402,11 +395,64 @@
         else return "#" + (0x100000000 + (f[3] > -1 && t[3] > -1 ? r(((t[3] - f[3]) * p + f[3]) * 255) : t[3] > -1 ? r(t[3] * 255) : f[3] > -1 ? r(f[3] * 255) : 255) * 0x1000000 + r((t[0] - f[0]) * p + f[0]) * 0x10000 + r((t[1] - f[1]) * p + f[1]) * 0x100 + r((t[2] - f[2]) * p + f[2])).toString(16).slice(f[3] > -1 || t[3] > -1 ? 1 : 3);
     }
 
+    function loadSwatch(page, item) {
+
+        var imageTags = item.ImageTags || {};
+
+        if (item.PrimaryImageTag) {
+            imageTags.Primary = item.PrimaryImageTag;
+        }
+
+        var url;
+        var imageHeight = 300;
+
+        if (item.SeriesId && item.SeriesPrimaryImageTag) {
+
+            url = ApiClient.getScaledImageUrl(item.SeriesId, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.SeriesPrimaryImageTag
+            });
+        }
+        else if (imageTags.Primary) {
+
+            url = ApiClient.getScaledImageUrl(item.Id, {
+                type: "Primary",
+                maxHeight: imageHeight,
+                tag: item.ImageTags.Primary
+            });
+        }
+
+        if (!url) {
+            return;
+        }
+
+        var img = new Image();
+        img.onload = function () {
+
+            imageLoader.getVibrantInfoFromElement(img, url).then(function (vibrantInfo) {
+
+                vibrantInfo = vibrantInfo.split('|');
+                var detailPageContent = page.querySelector('.detailPageContent');
+                var detailPagePrimaryContainer = page.querySelector('.detailPagePrimaryContainer');
+
+                detailPageContent.style.color = vibrantInfo[1];
+
+                detailPagePrimaryContainer.style.backgroundColor = vibrantInfo[0];
+
+            });
+        };
+
+        img.src = url;
+    }
+
     function renderImage(page, item, user) {
 
         var container = page.querySelector('.detailImageContainer');
 
         LibraryBrowser.renderDetailImage(container, item, user.Policy.IsAdministrator && item.MediaType != 'Photo', null, imageLoader, indicators);
+
+        //loadSwatch(page, item);
     }
 
     function refreshDetailImageUserData(elem, item) {
@@ -1105,6 +1151,7 @@
             var isList = false;
 
             var scrollClass = 'hiddenScrollX';
+            var childrenItemsContainer = page.querySelector('.childrenItemsContainer');
 
             if (item.Type == "MusicAlbum") {
 
@@ -1137,6 +1184,10 @@
             }
             else if (item.Type == "Season" || item.Type == "Episode") {
 
+                if (item.Type === 'Episode') {
+                    childrenItemsContainer.classList.add('darkScroller');
+                }
+
                 scrollX = item.Type == "Episode";
                 scrollClass = 'smoothScrollX';
 
@@ -1164,26 +1215,25 @@
                 });
             }
 
-            var elem = page.querySelector('.childrenItemsContainer');
             if (scrollX) {
-                elem.classList.add(scrollClass);
-                elem.classList.remove('vertical-wrap');
-                elem.classList.remove('vertical-list');
+                childrenItemsContainer.classList.add(scrollClass);
+                childrenItemsContainer.classList.remove('vertical-wrap');
+                childrenItemsContainer.classList.remove('vertical-list');
             } else {
-                elem.classList.remove('hiddenScrollX');
-                elem.classList.remove('smoothScrollX');
+                childrenItemsContainer.classList.remove('hiddenScrollX');
+                childrenItemsContainer.classList.remove('smoothScrollX');
 
                 if (isList) {
-                    elem.classList.add('vertical-list');
-                    elem.classList.remove('vertical-wrap');
+                    childrenItemsContainer.classList.add('vertical-list');
+                    childrenItemsContainer.classList.remove('vertical-wrap');
                 } else {
-                    elem.classList.add('vertical-wrap');
-                    elem.classList.remove('vertical-list');
+                    childrenItemsContainer.classList.add('vertical-wrap');
+                    childrenItemsContainer.classList.remove('vertical-list');
                 }
             }
 
-            elem.innerHTML = html;
-            imageLoader.lazyChildren(elem);
+            childrenItemsContainer.innerHTML = html;
+            imageLoader.lazyChildren(childrenItemsContainer);
 
             if (item.Type == "BoxSet") {
 
@@ -2087,6 +2137,42 @@
         playCurrentItem(this);
     }
 
+    function onDeleteClick() {
+
+        var item = currentItem;
+        var itemId = item.Id;
+        var parentId = item.ParentId;
+        var serverId = item.ServerId;
+
+        var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
+        var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
+        var apiClient = ApiClient;
+
+        require(['confirm'], function (confirm) {
+
+            confirm({
+
+                title: title,
+                text: msg,
+                confirmText: globalize.translate('sharedcomponents#Delete'),
+                primary: 'cancel'
+
+            }).then(function () {
+
+                apiClient.deleteItem(itemId).then(function () {
+
+                    if (parentId) {
+                        Emby.Page.showItem(parentId, serverId);
+                    } else {
+                        Emby.Page.goHome();
+                    }
+                });
+
+            });
+
+        });
+    }
+
     return function (view, params) {
 
         function resetSyncStatus() {
@@ -2159,6 +2245,11 @@
         elems = view.querySelectorAll('.btnPlayTrailer');
         for (i = 0, length = elems.length; i < length; i++) {
             elems[i].addEventListener('click', onPlayTrailerClick);
+        }
+
+        elems = view.querySelectorAll('.btnDeleteItem');
+        for (i = 0, length = elems.length; i < length; i++) {
+            elems[i].addEventListener('click', onDeleteClick);
         }
 
         view.querySelector('.btnSplitVersions').addEventListener('click', function () {
