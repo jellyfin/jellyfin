@@ -33,18 +33,35 @@ namespace Emby.Common.Implementations.Net
 
         public ISocket CreateSocket(IpAddressFamily family, MediaBrowser.Model.Net.SocketType socketType, MediaBrowser.Model.Net.ProtocolType protocolType, bool dualMode)
         {
-            var addressFamily = family == IpAddressFamily.InterNetwork
-                ? AddressFamily.InterNetwork
-                : AddressFamily.InterNetworkV6;
-
-            var socket = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-
-            if (dualMode)
+            try
             {
-                socket.DualMode = true;
-            }
+                var addressFamily = family == IpAddressFamily.InterNetwork
+                    ? AddressFamily.InterNetwork
+                    : AddressFamily.InterNetworkV6;
 
-            return new NetSocket(socket, _logger);
+                var socket = new Socket(addressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+
+                if (dualMode)
+                {
+                    socket.DualMode = true;
+                }
+
+                return new NetSocket(socket, _logger);
+            }
+            catch (SocketException ex)
+            {
+                if (dualMode)
+                {
+                    _logger.Error("Error creating dual mode socket: {0}. Will retry with ipv4-only.", ex.SocketErrorCode);
+
+                    if (ex.SocketErrorCode == SocketError.AddressFamilyNotSupported)
+                    {
+                        return CreateSocket(IpAddressFamily.InterNetwork, socketType, protocolType, false);
+                    }
+                }
+
+                throw;
+            }
         }
 
         #region ISocketFactory Members
