@@ -441,25 +441,6 @@
     opacity: .7;
 }
 
-.visibleGuideScroller::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-button:start:decrement,
-.visibleGuideScroller::-webkit-scrollbar-button:end:increment {
-    display: none;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-track-piece {
-    background-color: #3b3b3b;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-thumb:vertical, .visibleGuideScroller::-webkit-scrollbar-thumb:horizontal {
-    -webkit-border-radius: 2px;
-    background: #888 no-repeat center;
-}
-
 .guideOptions {
     color: #eee;
     flex-shrink: 0;

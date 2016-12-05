@@ -51,7 +51,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (item.CanDelete) {
+            if (item.CanDelete && options.deleteItem !== false) {
 
                 if (item.Type === 'Playlist' || item.Type === 'BoxSet') {
                     commands.push({

@@ -52,6 +52,7 @@ namespace Rssdp.Infrastructure
         private int _MulticastTtl;
 
         private bool _IsShared;
+        private readonly bool _enableMultiSocketBinding;
 
         #endregion
 
@@ -75,8 +76,8 @@ namespace Rssdp.Infrastructure
         /// Minimum constructor.
         /// </summary>
         /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger)
-            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger)
+        public SsdpCommunicationsServer(ISocketFactory socketFactory, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
+            : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
         }
 
@@ -85,7 +86,7 @@ namespace Rssdp.Infrastructure
         /// </summary>
         /// <exception cref="System.ArgumentNullException">The <paramref name="socketFactory"/> argument is null.</exception>
         /// <exception cref="System.ArgumentOutOfRangeException">The <paramref name="multicastTimeToLive"/> argument is less than or equal to zero.</exception>
-        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger)
+        public SsdpCommunicationsServer(ISocketFactory socketFactory, int localPort, int multicastTimeToLive, INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
         {
             if (socketFactory == null) throw new ArgumentNullException("socketFactory");
             if (multicastTimeToLive <= 0) throw new ArgumentOutOfRangeException("multicastTimeToLive", "multicastTimeToLive must be greater than zero.");
@@ -102,6 +103,7 @@ namespace Rssdp.Infrastructure
             _MulticastTtl = multicastTimeToLive;
             _networkManager = networkManager;
             _logger = logger;
+            _enableMultiSocketBinding = enableMultiSocketBinding;
         }
 
         #endregion
@@ -199,16 +201,22 @@ namespace Rssdp.Infrastructure
                 if (fromLocalIpAddress.AddressFamily == IpAddressFamily.InterNetwork)
                 {
                     sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
+
+                    // If sending to the loopback address, filter the socket list as well
+                    if (destination.IpAddress.Equals(IpAddressInfo.Loopback))
+                    {
+                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.Any) || i.LocalIPAddress.Equals(IpAddressInfo.Loopback));
+                    }
                 }
                 else if (fromLocalIpAddress.AddressFamily == IpAddressFamily.InterNetworkV6)
                 {
                     sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.IPv6Any) || fromLocalIpAddress.Equals(i.LocalIPAddress));
-                }
 
-                // If sending to the loopback address, filter the socket list as well
-                if (destination.IpAddress.Equals(IpAddressInfo.Loopback))
-                {
-                    sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.Any) || i.LocalIPAddress.Equals(IpAddressInfo.Loopback));
+                    // If sending to the loopback address, filter the socket list as well
+                    if (destination.IpAddress.Equals(IpAddressInfo.IPv6Loopback))
+                    {
+                        sockets = sockets.Where(i => i.LocalIPAddress.Equals(IpAddressInfo.IPv6Any) || i.LocalIPAddress.Equals(IpAddressInfo.IPv6Loopback));
+                    }
                 }
 
                 return sockets.ToList();
@@ -353,15 +361,18 @@ namespace Rssdp.Infrastructure
 
             sockets.Add(_SocketFactory.CreateSsdpUdpSocket(IpAddressInfo.Any, _LocalPort));
 
-            foreach (var address in _networkManager.GetLocalIpAddresses().ToList())
+            if (_enableMultiSocketBinding)
             {
-                try
+                foreach (var address in _networkManager.GetLocalIpAddresses().ToList())
                 {
-                    sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error in CreateSsdpUdpSocket. IPAddress: {0}", ex, address);
+                    try
+                    {
+                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error in CreateSsdpUdpSocket. IPAddress: {0}", ex, address);
+                    }
                 }
             }
 

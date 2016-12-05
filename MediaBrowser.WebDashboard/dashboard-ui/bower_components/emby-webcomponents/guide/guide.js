@@ -903,9 +903,9 @@
             context.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
             if (layoutManager.desktop) {
-                var visibleGuideScrollers = context.querySelectorAll('.guideScroller');
-                for (var i = 0, length = visibleGuideScrollers.length; i < length; i++) {
-                    visibleGuideScrollers[i].classList.add('visibleGuideScroller');
+                var guideScrollers = context.querySelectorAll('.guideScroller');
+                for (var i = 0, length = guideScrollers.length; i < length; i++) {
+                    guideScrollers[i].classList.add('darkScroller');
                 }
             }
 

@@ -12,7 +12,7 @@
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
-        background-color: rgba(6, 6,6, .76);
+        background-color: rgba(6, 6,6, .72);
     }
 
 .ui-body-b {
@@ -158,8 +158,6 @@
 }
 
 .detailPageContent {
-    margin: 3em auto 0;
-    padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
 }
@@ -355,8 +353,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .detailImageContainer {
         position: absolute;
-        top: -130px;
-        left: 3%;
+        top: -90px;
+        left: 5%;
     }
 
     .itemDetailImage {
@@ -400,6 +398,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: absolute;
     right: 5%;
     background-color: #52B54B !important;
+    z-index: 1;
 }
 
 .emby-button.btnFloatingRecord {
@@ -500,6 +499,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-right: .5em;
     }
 
+    .mainDetailButtons.hide + .recordingFields {
+        margin-top: 1.5em !important;
+    }
+
 .detailImageProgressContainer {
     position: absolute;
     bottom: 4px;
@@ -575,18 +578,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailPageContent {
-    max-width: 94%;
+    padding: 3em 3% 0;
 }
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 94%;
+        padding: 3em 3% 0;
     }
 }
 
 @media all and (min-width: 1200px) {
     .detailPageContent {
-        max-width: 90%;
+        padding: 3em 5% 0;
     }
 }
 
