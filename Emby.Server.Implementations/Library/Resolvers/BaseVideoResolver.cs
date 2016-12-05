@@ -299,8 +299,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 return false;
             }
 
-            return directoryService.GetFiles(fullPath).Any(i => string.Equals(i.Extension, ".m2ts", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(i.Extension, ".mts", StringComparison.OrdinalIgnoreCase));
+            return true;
+            //var blurayExtensions = new[]
+            //{
+            //    ".mts",
+            //    ".m2ts",
+            //    ".bdmv",
+            //    ".mpls"
+            //};
+
+            //return directoryService.GetFiles(fullPath).Any(i => blurayExtensions.Contains(i.Extension ?? string.Empty, StringComparer.OrdinalIgnoreCase));
         }
     }
 }
