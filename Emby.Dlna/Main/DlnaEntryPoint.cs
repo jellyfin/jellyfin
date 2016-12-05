@@ -158,7 +158,9 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger)
+                    var enableMultiSocketBinding = _environmentInfo.OperatingSystem == OperatingSystem.Windows;
+
+                    _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
                         IsShared = true
                     };
