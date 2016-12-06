@@ -19,6 +19,8 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public string SeriesPresentationUniqueKey { get; set; }
+        [IgnoreDataMember]
         public string SeriesName { get; set; }
         [IgnoreDataMember]
         public Guid? SeriesId { get; set; }
@@ -32,6 +34,10 @@ namespace MediaBrowser.Controller.Entities
         public string FindSeriesName()
         {
             return SeriesName;
+        }
+        public string FindSeriesPresentationUniqueKey()
+        {
+            return SeriesPresentationUniqueKey;
         }
 
         [IgnoreDataMember]

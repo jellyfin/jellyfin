@@ -55,6 +55,13 @@ namespace MediaBrowser.Providers.TV
                 updateType |= ItemUpdateType.MetadataImport;
             }
 
+            var seriesPresentationUniqueKey = item.FindSeriesPresentationUniqueKey();
+            if (!string.Equals(item.SeriesPresentationUniqueKey, seriesPresentationUniqueKey, StringComparison.Ordinal))
+            {
+                item.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
+                updateType |= ItemUpdateType.MetadataImport;
+            }
+
             return updateType;
         }
 
