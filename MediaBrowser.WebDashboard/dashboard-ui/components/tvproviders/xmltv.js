@@ -107,7 +107,7 @@
                 }, function () {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
-                        message: Globalize.translate('ErrorAddingListingsToSchedulesDirect')
+                        message: Globalize.translate('ErrorAddingXmlTvFile')
                     });
                 });
 

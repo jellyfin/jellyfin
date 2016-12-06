@@ -12,10 +12,6 @@
              name: globalize.translate('TabDisplay')
          },
          {
-             href: 'librarypathmapping.html',
-             name: globalize.translate('TabPathSubstitution')
-         },
-         {
              href: 'librarysettings.html',
              name: globalize.translate('TabAdvanced')
          }];

@@ -119,7 +119,7 @@
 
             if (dom.getWindowSize().innerWidth >= 800) {
                 backdrop.setBackdrops([item], {
-                    blur: 30
+                    blur: 27
                 }, false);
             } else {
                 backdrop.clear();

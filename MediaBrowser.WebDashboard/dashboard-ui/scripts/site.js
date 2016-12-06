@@ -466,7 +466,7 @@ var Dashboard = {
             divider: true,
             name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage', 'librarySettingsPage', 'libraryDisplayPage'],
+            pageIds: ['mediaLibraryPage', 'librarySettingsPage', 'libraryDisplayPage'],
             icon: 'folder',
             color: '#38c'
         }, {
@@ -821,7 +821,7 @@ var Dashboard = {
                 if (enableVlcAudio) {
 
                     profile.DirectPlayProfiles.push({
-                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac",
+                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac,m4a",
                         Type: 'Audio'
                     });
 
@@ -2128,13 +2128,6 @@ var AppInfo = {};
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/librarydisplay'
-        });
-
-        defineRoute({
-            path: '/librarypathmapping.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
         });
 
         defineRoute({

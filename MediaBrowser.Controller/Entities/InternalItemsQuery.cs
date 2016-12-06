@@ -147,6 +147,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] ArtistNames { get; set; }
         public string[] ExcludeArtistIds { get; set; }
         public string AncestorWithPresentationUniqueKey { get; set; }
+        public string SeriesPresentationUniqueKey { get; set; }
 
         public bool GroupByPresentationUniqueKey { get; set; }
         public bool EnableTotalRecordCount { get; set; }

@@ -1208,7 +1208,7 @@
   "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
   "OptionDownloadImagesInAdvance": "Download images in advance",
   "SettingsSaved": "Settings saved.",
-  "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+  "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
   "Users": "Users",
   "Delete": "Delete",
   "Password": "Password",
@@ -1942,5 +1942,8 @@
   "HeaderRecordingPostProcessing": "Recording Post Processing",
   "LabelPostProcessorArguments": "Post-processor command line arguments:",
   "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-  "LabelPostProcessor": "Post-processing application:"
+  "LabelPostProcessor": "Post-processing application:",
+  "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+  "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+  "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series."
 }

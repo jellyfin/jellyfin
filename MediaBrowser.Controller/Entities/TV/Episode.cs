@@ -168,10 +168,19 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public string SeriesPresentationUniqueKey { get; set; }
+
+        [IgnoreDataMember]
         public string SeriesName { get; set; }
 
         [IgnoreDataMember]
         public string SeasonName { get; set; }
+
+        public string FindSeriesPresentationUniqueKey()
+        {
+            var series = Series;
+            return series == null ? null : series.PresentationUniqueKey;
+        }
 
         public string FindSeasonName()
         {

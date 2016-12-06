@@ -332,6 +332,10 @@
             return 'secondaryitems.html?type=' + type + '&artistId=' + item.Id;
         }
 
+        if (item.Type == 'Person') {
+            return 'secondaryitems.html?type=' + type + '&personId=' + item.Id;
+        }
+
         return 'secondaryitems.html?type=' + type + '&parentId=' + item.Id;
     }
 
