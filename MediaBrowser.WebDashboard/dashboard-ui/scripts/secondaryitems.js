@@ -223,7 +223,7 @@
 
         function getItemPromise() {
 
-            var id = params.genreId || params.studioId || params.artistId || params.parentId;
+            var id = params.genreId || params.studioId || params.artistId || params.personId || params.parentId;
 
             if (id) {
                 return ApiClient.getItem(Dashboard.getCurrentUserId(), id);

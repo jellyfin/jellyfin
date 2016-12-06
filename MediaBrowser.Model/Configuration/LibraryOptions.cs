@@ -14,6 +14,7 @@
         public bool SaveLocalMetadata { get; set; }
         public bool EnableInternetProviders { get; set; }
         public bool ImportMissingEpisodes { get; set; }
+        public bool EnableAutomaticSeriesGrouping { get; set; }
 
         public LibraryOptions()
         {
@@ -21,6 +22,7 @@
             EnableRealtimeMonitor = true;
             PathInfos = new MediaPathInfo[] { };
             EnableInternetProviders = true;
+            EnableAutomaticSeriesGrouping = true;
         }
     }
 

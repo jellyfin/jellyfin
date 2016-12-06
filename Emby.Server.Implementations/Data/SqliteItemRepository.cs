@@ -291,6 +291,7 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "TypedBaseItems", "Artists", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "AlbumArtists", "Text", existingColumnNames);
                     AddColumn(db, "TypedBaseItems", "ExternalId", "Text", existingColumnNames);
+                    AddColumn(db, "TypedBaseItems", "SeriesPresentationUniqueKey", "Text", existingColumnNames);
 
                     existingColumnNames = GetColumnNames(db, "ItemValues");
                     AddColumn(db, "ItemValues", "CleanValue", "Text", existingColumnNames);
@@ -341,6 +342,7 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists Idx_ProviderIds1",
                 "drop table if exists Images",
                 "drop index if exists idx_Images",
+                "drop index if exists idx_TypeSeriesPresentationUniqueKey",
 
                 "create index if not exists idx_PathTypedBaseItems on TypedBaseItems(Path)",
                 "create index if not exists idx_ParentIdTypedBaseItems on TypedBaseItems(ParentId)",
@@ -352,6 +354,9 @@ namespace Emby.Server.Implementations.Data
 
                 // covering index
                 "create index if not exists idx_TopParentIdGuid on TypedBaseItems(TopParentId,Guid)",
+
+                // series
+                "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
 
                 // live tv programs
                 "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
@@ -488,7 +493,8 @@ namespace Emby.Server.Implementations.Data
             "ExtraType",
             "Artists",
             "AlbumArtists",
-            "ExternalId"
+            "ExternalId",
+            "SeriesPresentationUniqueKey"
         };
 
         private readonly string[] _mediaStreamSaveColumns =
@@ -619,7 +625,8 @@ namespace Emby.Server.Implementations.Data
                 "ExtraType",
                 "Artists",
                 "AlbumArtists",
-                "ExternalId"
+                "ExternalId",
+            "SeriesPresentationUniqueKey"
             };
 
             var saveItemCommandCommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -1024,11 +1031,13 @@ namespace Emby.Server.Implementations.Data
             {
                 saveItemStatement.TryBind("@SeriesId", hasSeries.SeriesId);
                 saveItemStatement.TryBind("@SeriesSortName", hasSeries.SeriesSortName);
+                saveItemStatement.TryBind("@SeriesPresentationUniqueKey", hasSeries.SeriesPresentationUniqueKey);
             }
             else
             {
                 saveItemStatement.TryBindNull("@SeriesId");
                 saveItemStatement.TryBindNull("@SeriesSortName");
+                saveItemStatement.TryBindNull("@SeriesPresentationUniqueKey");
             }
 
             saveItemStatement.TryBind("@ExternalSeriesId", item.ExternalSeriesId);
@@ -1980,6 +1989,15 @@ namespace Emby.Server.Implementations.Data
             if (!reader.IsDBNull(index))
             {
                 item.ExternalId = reader.GetString(index);
+            }
+            index++;
+
+            if (hasSeries != null)
+            {
+                if (!reader.IsDBNull(index))
+                {
+                    hasSeries.SeriesPresentationUniqueKey = reader.GetString(index);
+                }
             }
             index++;
 
@@ -4289,6 +4307,16 @@ namespace Emby.Server.Implementations.Data
                 if (statement != null)
                 {
                     statement.TryBind("@AncestorWithPresentationUniqueKey", query.AncestorWithPresentationUniqueKey);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.SeriesPresentationUniqueKey))
+            {
+                whereClauses.Add("SeriesPresentationUniqueKey=@SeriesPresentationUniqueKey");
+
+                if (statement != null)
+                {
+                    statement.TryBind("@SeriesPresentationUniqueKey", query.SeriesPresentationUniqueKey);
                 }
             }
 

@@ -15,7 +15,7 @@
                 page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
 
                 page.querySelector('#chkThemeSong').checked = userSettings.enableThemeSongs();
-                page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '';
+                page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '0';
 
                 page.querySelector('#selectLanguage').value = userSettings.language() || '';
 

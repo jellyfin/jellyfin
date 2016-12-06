@@ -1,8 +1,4 @@
-﻿html {
-    font-size: 15px;
-}
-
-body:not(.dashboardDocument) .mainDrawerButton {
+﻿body:not(.dashboardDocument) .mainDrawerButton {
     display: none !important;
 }
 

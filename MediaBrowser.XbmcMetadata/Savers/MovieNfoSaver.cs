@@ -35,7 +35,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 list.Add(Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo"));
             }
 
-            if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay || item.VideoType == VideoType.HdDvd)
+            if (!item.IsPlaceHolder && (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay || item.VideoType == VideoType.HdDvd))
             {
                 var path = item.ContainingFolderPath;
 

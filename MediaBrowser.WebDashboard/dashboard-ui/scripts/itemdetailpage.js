@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser) {
     'use strict';
 
     var currentItem;
@@ -119,7 +119,7 @@
 
             if (dom.getWindowSize().innerWidth >= 800) {
                 backdrop.setBackdrops([item], {
-                    blur: 30
+                    blur: 27
                 }, false);
             } else {
                 backdrop.clear();
@@ -539,8 +539,6 @@
 
             if (item.Type == "BoxSet") {
                 page.querySelector('#childrenCollapsible').classList.add('hide');
-            } else {
-                page.querySelector('#childrenCollapsible').classList.remove('hide');
             }
             renderChildren(page, item);
         }
@@ -1189,20 +1187,28 @@
                 }
 
                 scrollX = item.Type == "Episode";
-                scrollClass = 'smoothScrollX';
+                if (!browser.touch) {
+                    scrollClass = 'smoothScrollX';
+                }
 
-                html = cardBuilder.getCardsHtml({
-                    items: result.Items,
-                    shape: getThumbShape(scrollX),
-                    showTitle: true,
-                    displayAsSpecial: item.Type == "Season" && item.IndexNumber,
-                    playFromHere: true,
-                    overlayText: true,
-                    lazy: true,
-                    showDetailsMenu: true,
-                    overlayPlayButton: true,
-                    allowBottomPadding: !scrollX
-                });
+                if (result.Items.length == 1 && item.Type === 'Episode') {
+
+                    return;
+
+                } else {
+                    html = cardBuilder.getCardsHtml({
+                        items: result.Items,
+                        shape: getThumbShape(scrollX),
+                        showTitle: true,
+                        displayAsSpecial: item.Type == "Season" && item.IndexNumber,
+                        playFromHere: true,
+                        overlayText: true,
+                        lazy: true,
+                        showDetailsMenu: true,
+                        overlayPlayButton: true,
+                        allowBottomPadding: !scrollX
+                    });
+                }
             }
             else if (item.Type == "GameSystem") {
                 html = cardBuilder.getCardsHtml({
@@ -1214,6 +1220,8 @@
                     showDetailsMenu: true
                 });
             }
+
+            page.querySelector('#childrenCollapsible').classList.remove('hide');
 
             if (scrollX) {
                 childrenItemsContainer.classList.add(scrollClass);
