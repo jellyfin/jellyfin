@@ -119,6 +119,7 @@ namespace MediaBrowser.Api
             config.SkipDeserializationForBasicTypes = true;
             config.SkipDeserializationForPrograms = true;
             config.SkipDeserializationForAudio = true;
+            config.EnableSeriesPresentationUniqueKey = true;
         }
 
         public void Post(UpdateStartupConfiguration request)

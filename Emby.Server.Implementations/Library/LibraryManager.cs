@@ -1057,6 +1057,12 @@ namespace Emby.Server.Implementations.Library
             try
             {
                 await PerformLibraryValidation(progress, cancellationToken).ConfigureAwait(false);
+
+                if (!ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey)
+                {
+                    ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey = true;
+                    ConfigurationManager.SaveConfiguration();
+                }
             }
             finally
             {
@@ -1478,8 +1484,9 @@ namespace Emby.Server.Implementations.Library
                 !query.ParentId.HasValue &&
                 query.ChannelIds.Length == 0 &&
                 query.TopParentIds.Length == 0 &&
-                string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey)
-                && query.ItemIds.Length == 0)
+                string.IsNullOrWhiteSpace(query.AncestorWithPresentationUniqueKey) &&
+                string.IsNullOrWhiteSpace(query.SeriesPresentationUniqueKey) &&
+                query.ItemIds.Length == 0)
             {
                 var userViews = _userviewManager().GetUserViews(new UserViewQuery
                 {
