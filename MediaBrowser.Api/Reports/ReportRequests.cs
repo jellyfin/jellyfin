@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.Reports
     {
         /// <summary> Gets or sets the report view. </summary>
         /// <value> The report view. </value>
-        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportStatistics, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ReportView { get; set; }
         
         /// <summary> Gets or sets the report view. </summary>
@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.Reports
     {
         /// <summary> Gets or sets the report view. </summary>
         /// <value> The report view. </value>
-        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportStatistics, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ReportView { get; set; }
 
         /// <summary> Gets or sets the report view. </summary>
@@ -118,13 +118,6 @@ namespace MediaBrowser.Api.Reports
         /// <value> The report columns. </value>
         [ApiMember(Name = "ReportColumns", Description = "Optional. The columns to show.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ReportColumns { get; set; }
-	}
-
-	[Route("/Reports/Statistics", "GET", Summary = "Gets reports statistics based on library items")]
-	public class GetReportStatistics : BaseReportRequest, IReturn<ReportStatResult>
-	{
-		public int? TopItems { get; set; }
-
 	}
 
 	[Route("/Reports/Items/Download", "GET", Summary = "Downloads report")]
@@ -150,7 +143,7 @@ namespace MediaBrowser.Api.Reports
     {
         /// <summary> Gets or sets the report view. </summary>
         /// <value> The report view. </value>
-        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportStatistics, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "ReportView", Description = "The report view. Values (ReportData, ReportActivities)", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ReportView { get; set; }
 
         /// <summary> Gets or sets the report view. </summary>
