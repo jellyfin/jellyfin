@@ -119,7 +119,7 @@
 
             if (dom.getWindowSize().innerWidth >= 800) {
                 backdrop.setBackdrops([item], {
-                    blur: 27
+                    blur: 24
                 }, false);
             } else {
                 backdrop.clear();
@@ -1162,7 +1162,8 @@
                     playFromHere: true,
                     action: 'playallfromhere',
                     image: false,
-                    artist: false
+                    artist: 'auto',
+                    containerAlbumArtist: item.AlbumArtist
                 });
                 isList = true;
             }
@@ -1261,7 +1262,7 @@
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderEpisodes');
         }
         else if (item.Type == "Episode") {
-            page.querySelector('#childrenTitle').innerHTML = item.SeriesName + ' - ' + item.SeasonName;
+            page.querySelector('#childrenTitle').innerHTML = item.SeasonName;
         }
         else if (item.Type == "Series") {
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderSeasons');

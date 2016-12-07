@@ -231,9 +231,9 @@
 
         require(['actionsheet'], function (actionsheet) {
 
-            var card = $(elem).parents('.card');
-            var page = $(elem).parents('.page');
-            var id = card.attr('data-id');
+            var card = $(elem).parents('.card')[0];
+            var page = $(elem).parents('.page')[0];
+            var id = card.getAttribute('data-id');
 
             actionsheet.show({
                 items: menuItems,

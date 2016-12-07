@@ -273,7 +273,8 @@
                 }, {
                     playFromHere: true,
                     action: 'playallfromhere',
-                    smallIcon: true
+                    smallIcon: true,
+                    artist: true
                 });
                 break;
 

@@ -200,65 +200,6 @@
         return html;
     }
 
-    function getStats(result) {
-        var html = '';
-        html += '<div class="detailSection" >';
-        //html += '<div class="detailSectionHeader">If you like Africa Fever II, check these out...</div>';
-        html += '<div class="detailSectionContent">';
-        result.Groups.map(function (group) {
-            //html += '<div class="card transparentCard detailPageSquareCard" style="vertical-align: top;">';
-            //html += '<div class="card transparentCard horizontalBackdropCard"  style="vertical-align: top;">';
-            //html += '<div class="card transparentCard backdropCard"  style="vertical-align: top;">';
-            html += '<div class="card transparentCard bannerCard"  style="vertical-align: top;">';
-            //html += '<div class="card transparentCard cardImage" style="vertical-align: top;">';
-            html += '<div class="visualCardBox">';
-            html += '<div class="cardBox " >';
-
-            html += '<div class="detailSection">'
-            html += '<div class="detailSectionHeader">';
-            html += '<span>' + group.Header + '&nbsp;' + '</span>';
-            html += '</div>';
-
-            html += '<div class="detailSectionContent">';
-            html += '<div class="childrenItemsContainer itemsContainer" style="text-align: left;">';
-            html += '<ul class="itemsListview ui-listview" >';
-
-            var l = group.Items.length - 1;
-            for (var j = 0; j < topItems  ; j++) {
-
-                html += '<li class="ui-li listItem ui-li-has-alt ui-first-child">';
-                if (j <= l) {
-                    var rItem = group.Items[j];
-                    html += '<a class="item ui-btn"';
-                    if (rItem.Id > "")
-                        html += ' href="itemdetails.html?id=' + rItem.Id + '"';
-                    html += '>' + rItem.Name + '&nbsp;' + '</a>';
-                    html += '<a title="" class="listviewMenuButton ui-btn ui-btn-inline">' + rItem.Value + '&nbsp;' + '</a>';
-                }
-                else
-                    html += '<a class="item ui-btn">' + '&nbsp;' + '</a>';
-
-                html += '</li>';
-
-            }
-            html += '</ul>';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-
-        });
-
-
-        html += '</div>';
-        //html += '</div>';
-        html += '</div>';
-        return html;
-    }
-
     function ExportReport(page, e) {
 
         query.UserId = Dashboard.getCurrentUserId();
@@ -302,7 +243,7 @@
         window.scrollTo(0, 0);
         var html = '';
 
-        if (query.ReportView === "ReportData" || query.ReportView === "ReportStatistics") {
+        if (query.ReportView === "ReportData") {
             $('#selectIncludeItemTypesBox', page).show();
             $('#tabFilter', page).show();
         }
@@ -380,25 +321,6 @@
                 reloadItems(page);
             });
         }
-        else {
-
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
-            // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-            $('.listTopPaging', page).show();
-            $('.listBottomPaging', page).hide();
-
-            $('.btnNextPage', page).hide();
-            $('.btnPreviousPage', page).hide();
-
-            $('#btnReportExport', page).hide();
-            $('#selectPageSizeBox', page).hide();
-            $('#selectReportGroupingBox', page).hide();
-            $('#grpReportsColumns', page).hide();
-
-            html += getStats(result);
-            $('.reporContainer', page).html(html).trigger('create');
-        }
 
         $('#GroupStatus', page).hide();
         $('#GroupAirDays', page).hide();
@@ -428,11 +350,6 @@
             case "ReportData":
                 query.HasQueryLimit = true;
                 url = ApiClient.getUrl("Reports/Items", query);
-                break;
-            case "ReportStatistics":
-                query.TopItems = topItems;
-                query.HasQueryLimit = false;
-                url = ApiClient.getUrl("Reports/Statistics", query);
                 break;
             case "ReportActivities":
                 query.HasQueryLimit = true;
