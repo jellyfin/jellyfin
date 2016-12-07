@@ -26,7 +26,7 @@ namespace SocketHttpListener.Net
         Dictionary<HttpConnection, HttpConnection> unregistered;
         private readonly ILogger _logger;
         private bool _closed;
-        private readonly bool _enableDualMode;
+        private bool _enableDualMode;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly IStreamFactory _streamFactory;
         private readonly ISocketFactory _socketFactory;
@@ -65,7 +65,23 @@ namespace SocketHttpListener.Net
 
         private void CreateSocket()
         {
-            sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+            try
+            {
+                sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+            }
+            catch (SocketCreateException ex)
+            {
+                if (_enableDualMode && endpoint.IpAddress.Equals(IpAddressInfo.IPv6Any) && string.Equals(ex.ErrorCode, "AddressFamilyNotSupported", StringComparison.OrdinalIgnoreCase))
+                {
+                    endpoint = new IpEndPointInfo(IpAddressInfo.Any, endpoint.Port);
+                    _enableDualMode = false;
+                    sock = _socketFactory.CreateSocket(endpoint.IpAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp, _enableDualMode);
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             sock.Bind(endpoint);
 

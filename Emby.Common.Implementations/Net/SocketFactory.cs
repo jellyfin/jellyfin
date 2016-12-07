@@ -46,21 +46,11 @@ namespace Emby.Common.Implementations.Net
                     socket.DualMode = true;
                 }
 
-                return new NetSocket(socket, _logger);
+                return new NetSocket(socket, _logger, dualMode);
             }
             catch (SocketException ex)
             {
-                if (dualMode)
-                {
-                    _logger.Error("Error creating dual mode socket: {0}. Will retry with ipv4-only.", ex.SocketErrorCode);
-
-                    if (ex.SocketErrorCode == SocketError.AddressFamilyNotSupported)
-                    {
-                        return CreateSocket(IpAddressFamily.InterNetwork, socketType, protocolType, false);
-                    }
-                }
-
-                throw;
+                throw new SocketCreateException(ex.SocketErrorCode.ToString(), ex);
             }
         }
 

@@ -1305,19 +1305,49 @@ namespace Emby.Server.Core
 
         public async Task<List<IpAddressInfo>> GetLocalIpAddresses()
         {
-            var addresses = NetworkManager.GetLocalIpAddresses().ToList();
-            var list = new List<IpAddressInfo>();
+            var addresses = ServerConfigurationManager
+                .Configuration
+                .LocalNetworkAddresses
+                .Select(NormalizeConfiguredLocalAddress)
+                .Where(i => i != null)
+                .ToList();
 
-            foreach (var address in addresses)
+            if (addresses.Count == 0)
             {
-                var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
-                if (valid)
+                addresses.AddRange(NetworkManager.GetLocalIpAddresses());
+
+                var list = new List<IpAddressInfo>();
+
+                foreach (var address in addresses)
                 {
-                    list.Add(address);
+                    var valid = await IsIpAddressValidAsync(address).ConfigureAwait(false);
+                    if (valid)
+                    {
+                        list.Add(address);
+                    }
                 }
+
+                addresses = list;
             }
 
-            return list;
+            return addresses;
+        }
+
+        private IpAddressInfo NormalizeConfiguredLocalAddress(string address)
+        {
+            var index = address.Trim('/').IndexOf('/');
+
+            if (index != -1)
+            {
+                address = address.Substring(index + 1);
+            }
+
+            IpAddressInfo result;
+            if (NetworkManager.TryParseIpAddress(address.Trim('/'), out result))
+            {
+                return result;
+            }
+            return null;
         }
 
         private readonly ConcurrentDictionary<string, bool> _validAddressResults = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -1553,7 +1583,8 @@ namespace Emby.Server.Core
                 throw new NotImplementedException();
             }
 
-            var process = ProcessFactory.Create(new ProcessOptions {
+            var process = ProcessFactory.Create(new ProcessOptions
+            {
                 FileName = url,
                 EnableRaisingEvents = true,
                 UseShellExecute = true,

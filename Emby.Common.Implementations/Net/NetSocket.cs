@@ -13,7 +13,9 @@ namespace Emby.Common.Implementations.Net
         public Socket Socket { get; private set; }
         private readonly ILogger _logger;
 
-        public NetSocket(Socket socket, ILogger logger)
+        public bool DualMode { get; private set; }
+
+        public NetSocket(Socket socket, ILogger logger, bool isDualMode)
         {
             if (socket == null)
             {
@@ -26,6 +28,7 @@ namespace Emby.Common.Implementations.Net
 
             Socket = socket;
             _logger = logger;
+            DualMode = isDualMode;
         }
 
         public IpEndPointInfo LocalEndPoint
@@ -81,7 +84,7 @@ namespace Emby.Common.Implementations.Net
         private SocketAcceptor _acceptor;
         public void StartAccept(Action<ISocket> onAccept, Func<bool> isClosed)
         {
-            _acceptor = new SocketAcceptor(_logger, Socket, onAccept, isClosed);
+            _acceptor = new SocketAcceptor(_logger, Socket, onAccept, isClosed, DualMode);
 
             _acceptor.StartAccept();
         }
