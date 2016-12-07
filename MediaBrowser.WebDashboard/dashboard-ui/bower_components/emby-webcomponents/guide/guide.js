@@ -841,7 +841,7 @@
                 require(['scrollHelper'], function (scrollHelper) {
 
                     var fn = enabled ? 'on' : 'off';
-                    scrollHelper.centerFocus[fn](view.querySelector('.smoothScrollY'), false);
+                    scrollHelper.centerFocus[fn](view.querySelector('.guideVerticalScroller'), false);
                     scrollHelper.centerFocus[fn](view.querySelector('.programGrid'), true);
                 });
             }
@@ -935,6 +935,16 @@
             var timeslotHeaders = context.querySelector('.timeslotHeaders');
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
+
+            if (browser.iOS || browser.osx) {
+                context.querySelector('.channelsContainer').classList.add('noRubberBanding');
+
+                var programGridContainer = context.querySelector('.programGridContainer');
+
+                programGridContainer.classList.add('noRubberBanding');
+                programGridContainer.classList.remove('smoothScrollX');
+                programGridContainer.classList.add('hiddenScrollX');
+            }
 
             dom.addEventListener(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
