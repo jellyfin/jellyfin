@@ -1,4 +1,4 @@
-﻿define(['jQuery', 'fnchecked', 'jqmlistview', 'emby-select', 'emby-button', 'emby-input', 'emby-checkbox'], function ($) {
+﻿define(['jQuery', 'fnchecked', 'jqmlistview', 'emby-select', 'emby-button', 'emby-input', 'emby-checkbox', 'listViewStyle'], function ($) {
     'use strict';
 
     var currentProfile;
@@ -110,26 +110,27 @@
 
         var index = 0;
 
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + headers.map(function (h) {
+        var html = '<div class="paperList">' + headers.map(function (h) {
 
-            var li = '<li>';
+            var li = '<div class="listItem">';
 
-            li += '<a href="#">';
+            li += '<i class="md-icon listItemIcon">info</i>';
+            li += '<div class="listItemBody">';
 
-            li += '<div style="font-weight:normal;">' + h.Name + ': ' + (h.Value || '') + '</div>';
-            li += '<div style="font-weight:normal;">' + (h.Match || '') + '</div>';
+            li += '<h3 class="listItemBodyText">' + h.Name + ': ' + (h.Value || '') + '</h3>';
+            li += '<div class="listItemBodyText secondary">' + (h.Match || '') + '</div>';
 
-            li += '</a>';
+            li += '</div>';
 
-            li += '<a class="btnDeleteIdentificationHeader" href="#" data-index="' + index + '"></a>';
+            li += '<button type="button" is="paper-icon-button-light" class="btnDeleteIdentificationHeader listItemButton" data-index="' + index + '"><i class="md-icon">delete</i></button>';
 
-            li += '</li>';
+            li += '</div>';
 
             index++;
 
             return li;
 
-        }).join('') + '</ul>';
+        }).join('') + '</div>';
 
         var elem = $('.httpHeaderIdentificationList', page).html(html).trigger('create');
 
@@ -183,25 +184,24 @@
 
         var index = 0;
 
-        var html = '<ul data-role="listview" data-inset="true" data-split-icon="delete">' + attribute.map(function (h) {
+        var html = '<div class="paperList">' + attribute.map(function (h) {
 
-            var li = '<li>';
+            var li = '<div class="listItem">';
 
-            li += '<a href="#">';
+            li += '<i class="md-icon listItemIcon">info</i>';
+            li += '<div class="listItemBody">';
 
-            li += '<div style="font-weight:normal;">' + h.Name + ' = ' + (h.Value || '') + '</div>';
+            li += '<h3 class="listItemBodyText">' + h.Name + ' = ' + (h.Value || '') + '</h3>';
 
-            li += '</a>';
+            li += '</div>';
 
-            li += '<a class="btnDeleteXmlAttribute" href="#" data-icon="delete" data-index="' + index + '"></a>';
+            li += '<button type="button" is="paper-icon-button-light" class="btnDeleteXmlAttribute listItemButton" data-index="' + index + '"><i class="md-icon">delete</i></button>';
 
-            li += '</li>';
-
-            index++;
+            li += '</div>';
 
             return li;
 
-        }).join('') + '</ul>';
+        }).join('') + '</div>';
 
         var elem = $('.xmlDocumentAttributeList', page).html(html).trigger('create');
 
