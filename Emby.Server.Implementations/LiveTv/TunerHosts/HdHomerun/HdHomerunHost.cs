@@ -377,7 +377,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var url = GetApiUrl(info, true) + "/auto/v" + channelId;
 
-            if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
+            // If raw was used, the tuner doesn't support params
+            if (!string.IsNullOrWhiteSpace(profile)
+                && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
             {
                 url += "?transcode=" + profile;
             }
@@ -451,16 +453,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
-
             try
             {
-                if (info.AllowHWTranscoding)
-                {
-                    string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
-                    model = model ?? string.Empty;
+                var model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
+                model = model ?? string.Empty;
 
-                    if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                if ((model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1))
+                {
+                    list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
+
+                    if (info.AllowHWTranscoding)
                     {
                         list.Add(await GetMediaSource(info, hdhrId, "heavy").ConfigureAwait(false));
 
@@ -475,6 +477,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             catch
             {
 
+            }
+
+            if (list.Count == 0)
+            {
+                list.Add(await GetMediaSource(info, hdhrId, "native").ConfigureAwait(false));
             }
 
             return list;
