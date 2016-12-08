@@ -291,6 +291,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageContainer {
     margin-right: 2em;
+    width: 280px;
+    flex-shrink: 0;
 }
 
 .detailPagePrimaryContent {
@@ -325,10 +327,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .itemDetailImage {
     border: solid 1px transparent;
-    width: 280px;
+    width: 100%;
 }
 
-.thumbDetailImageContainer .itemDetailImage {
+.thumbDetailImageContainer {
     width: 400px;
 }
 
@@ -355,6 +357,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         position: absolute;
         top: -90px;
         left: 5%;
+        width: auto;
     }
 
     .itemDetailImage {
