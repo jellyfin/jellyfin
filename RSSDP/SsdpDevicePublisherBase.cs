@@ -249,7 +249,7 @@ namespace Rssdp.Infrastructure
 
             if (IsDuplicateSearchRequest(searchTarget, remoteEndPoint))
             {
-                WriteTrace("Search Request is Duplicate, ignoring.");
+                //WriteTrace("Search Request is Duplicate, ignoring.");
                 return;
             }
 
@@ -299,7 +299,9 @@ namespace Rssdp.Infrastructure
                     }
                 }
                 else
+                {
                     WriteTrace(String.Format("Sending 0 search responses."));
+                }
             });
         }
 

@@ -89,6 +89,7 @@ h1, h2, h3 {
 h1 {
     font-weight: normal !important;
     opacity: .7;
+    font-size: 1.72em;
 }
 
 h2 {

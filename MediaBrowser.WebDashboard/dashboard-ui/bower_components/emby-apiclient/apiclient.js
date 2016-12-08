@@ -669,23 +669,53 @@
             });
         };
 
-        self.detectBitrate = function () {
+        function normalizeReturnBitrate(bitrate) {
 
-            // First try a small amount so that we don't hang up their mobile connection
-            return self.getDownloadSpeed(1000000).then(function (bitrate) {
+            if (!bitrate) {
+                return Promise.reject();
+            }
 
-                if (bitrate < 1000000) {
-                    return Math.round(bitrate * 0.8);
+            return Math.round(bitrate * 0.8);
+        }
+
+        function detectBitrateInternal(tests, index, currentBitrate) {
+
+            if (index >= tests.length) {
+
+                return normalizeReturnBitrate(currentBitrate);
+            }
+
+            var test = tests[0];
+
+            return self.getDownloadSpeed(test.bytes).then(function (bitrate) {
+
+                if (bitrate < test.threshold) {
+
+                    return normalizeReturnBitrate(bitrate);
                 } else {
-
-                    // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    return self.getDownloadSpeed(2400000).then(function (bitrate) {
-
-                        return Math.round(bitrate * 0.8);
-                    });
+                    return detectBitrateInternal(tests, index + 1, bitrate);
                 }
 
+            }, function () {
+                return normalizeReturnBitrate(currentBitrate);
             });
+        }
+
+        self.detectBitrate = function () {
+
+            return detectBitrateInternal([
+            {
+                bytes: 100000,
+                threshold: 5000000
+            },
+            {
+                bytes: 1000000,
+                threshold: 50000000
+            },
+            {
+                bytes: 3000000,
+                threshold: 50000000
+            }], 0);
         };
 
         /**

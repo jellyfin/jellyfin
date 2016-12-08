@@ -240,7 +240,7 @@ define(['browser'], function (browser) {
     return function (options) {
 
         options = options || {};
-        var physicalAudioChannels = options.audioChannels || 2;
+        var physicalAudioChannels = options.audioChannels || (browser.tv || browser.xboxOne || browser.ps4 ? 6 : 2);
 
         var bitrateSetting = getMaxBitrate();
 
@@ -334,12 +334,12 @@ define(['browser'], function (browser) {
                 AudioCodec: videoAudioCodecs.join(',')
             });
         }
-        
+
         if (browser.tizen) {
             mp4VideoCodecs.push('mpeg2video');
             mp4VideoCodecs.push('vc1');
         }
-        
+
         if (canPlayMkv && mp4VideoCodecs.length) {
             profile.DirectPlayProfiles.push({
                 Container: 'mkv',

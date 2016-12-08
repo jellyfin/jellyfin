@@ -38,14 +38,18 @@
         var currentDate;
         var currentStartIndex = 0;
         var currentChannelLimit = 0;
+        var autoRefreshInterval;
 
         self.refresh = function () {
 
             currentDate = null;
             reloadPage(options.element);
+            restartAutoRefresh();
         };
 
         self.destroy = function () {
+
+            stopAutoRefresh();
 
             events.off(serverNotifications, 'TimerCreated', onTimerCreated);
             events.off(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
@@ -57,6 +61,24 @@
             itemShortcuts.off(options.element);
             items = {};
         };
+
+        function restartAutoRefresh() {
+
+            stopAutoRefresh();
+
+            var intervalMs = 60000 * 15; // (minutes)
+
+            autoRefreshInterval = setInterval(function () {
+                self.refresh();
+            }, intervalMs);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
 
         function normalizeDateToTimeslot(date) {
 
@@ -819,7 +841,7 @@
                 require(['scrollHelper'], function (scrollHelper) {
 
                     var fn = enabled ? 'on' : 'off';
-                    scrollHelper.centerFocus[fn](view.querySelector('.smoothScrollY'), false);
+                    scrollHelper.centerFocus[fn](view.querySelector('.guideVerticalScroller'), false);
                     scrollHelper.centerFocus[fn](view.querySelector('.programGrid'), true);
                 });
             }
@@ -914,6 +936,16 @@
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
 
+            if (browser.iOS || browser.osx) {
+                context.querySelector('.channelsContainer').classList.add('noRubberBanding');
+
+                var programGridContainer = context.querySelector('.programGridContainer');
+
+                programGridContainer.classList.add('noRubberBanding');
+                programGridContainer.classList.remove('smoothScrollX');
+                programGridContainer.classList.add('hiddenScrollX');
+            }
+
             dom.addEventListener(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
             }, {
@@ -928,29 +960,35 @@
 
             context.querySelector('.btnSelectDate').addEventListener('click', function () {
                 selectDate(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnNextPage').addEventListener('click', function () {
                 currentStartIndex += currentChannelLimit;
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnPreviousPage').addEventListener('click', function () {
                 currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnGuideViewSettings').addEventListener('click', function () {
                 showViewSettings(self);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnCategories').addEventListener('click', function () {
                 showCategoryOptions(self);
+                restartAutoRefresh();
             });
 
             context.classList.add('tvguide');

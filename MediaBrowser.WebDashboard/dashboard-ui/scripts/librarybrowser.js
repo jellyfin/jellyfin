@@ -801,6 +801,14 @@
                     });
                     shape = 'square';
                 }
+                else if (item.SeriesId && item.SeriesPrimaryImageTag) {
+
+                    url = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Primary",
+                        maxHeight: imageHeight,
+                        tag: item.SeriesPrimaryImageTag
+                    });
+                }
 
                 html += '<div style="position:relative;">';
 

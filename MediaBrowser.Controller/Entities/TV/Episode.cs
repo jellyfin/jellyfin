@@ -3,6 +3,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.Serialization;
 
@@ -185,6 +186,15 @@ namespace MediaBrowser.Controller.Entities.TV
         public string FindSeasonName()
         {
             var season = Season;
+
+            if (season == null)
+            {
+                if (ParentIndexNumber.HasValue)
+                {
+                    return "Season " + ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture);
+                }
+            }
+
             return season == null ? SeasonName : season.Name;
         }
 

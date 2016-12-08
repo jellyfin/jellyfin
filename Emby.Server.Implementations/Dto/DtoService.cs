@@ -1351,6 +1351,27 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
+                        if (!string.IsNullOrWhiteSpace(dto.SeriesStudio))
+                        {
+                            try
+                            {
+                                var studio = _libraryManager.GetStudio(dto.SeriesStudio);
+
+                                if (studio != null)
+                                {
+                                    dto.SeriesStudioInfo = new StudioDto
+                                    {
+                                        Name = dto.SeriesStudio,
+                                        Id = studio.Id.ToString("N"),
+                                        PrimaryImageTag = GetImageCacheTag(studio, ImageType.Primary)
+                                    };
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                
+                            }
+                        }
                     }
                 }
             }
