@@ -695,7 +695,7 @@
 
         var dateAddedElement = page.querySelector('#dateAdded');
 
-        if (!item.IsFolder && item.MediaType && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer') {
+        if (itemHelper.enableDateAddedDisplay(item)) {
             dateAddedElement.classList.remove('hide');
             dateAddedElement.innerHTML = globalize.translate('DateAddedValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)));
         } else {

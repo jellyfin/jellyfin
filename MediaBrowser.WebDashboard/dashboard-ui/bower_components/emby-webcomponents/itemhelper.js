@@ -190,6 +190,10 @@ define(['apphost'], function (appHost) {
                 }
             }
             return user.Policy.EnablePublicSharing && appHost.supports('sharing');
+        },
+
+        enableDateAddedDisplay: function(item) {
+            return !item.IsFolder && item.MediaType && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer';
         }
     };
 });
