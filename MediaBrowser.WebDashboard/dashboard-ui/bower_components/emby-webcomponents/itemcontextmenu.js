@@ -577,25 +577,16 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         return new Promise(function (resolve, reject) {
 
-            var itemId = item.Id;
+            require(['deleteHelper'], function (deleteHelper) {
 
-            var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
-            var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
-
-            require(['confirm'], function (confirm) {
-
-                confirm({
-
-                    title: title,
-                    text: msg,
-                    confirmText: globalize.translate('sharedcomponents#Delete'),
-                    primary: 'cancel'
+                deleteHelper.deleteItem({
+                    
+                    item: item,
+                    navigate: false
 
                 }).then(function () {
 
-                    apiClient.deleteItem(itemId).then(function () {
-                        resolve(true);
-                    });
+                    resolve(true);
 
                 }, reject);
 

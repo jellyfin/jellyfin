@@ -2148,37 +2148,12 @@
 
     function onDeleteClick() {
 
-        var item = currentItem;
-        var itemId = item.Id;
-        var parentId = item.ParentId;
-        var serverId = item.ServerId;
+        require(['deleteHelper'], function (deleteHelper) {
 
-        var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
-        var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
-        var apiClient = ApiClient;
-
-        require(['confirm'], function (confirm) {
-
-            confirm({
-
-                title: title,
-                text: msg,
-                confirmText: globalize.translate('sharedcomponents#Delete'),
-                primary: 'cancel'
-
-            }).then(function () {
-
-                apiClient.deleteItem(itemId).then(function () {
-
-                    if (parentId) {
-                        Emby.Page.showItem(parentId, serverId);
-                    } else {
-                        Emby.Page.goHome();
-                    }
-                });
-
+            deleteHelper.deleteItem({
+                item: currentItem,
+                navigate: true
             });
-
         });
     }
 

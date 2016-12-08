@@ -1278,6 +1278,7 @@ var AppInfo = {};
         define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);
         define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
 
+        define("deleteHelper", [embyWebComponentsBowerPath + "/deletehelper"], returnFirstDependency);
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide"], returnFirstDependency);
         define("programStyles", ['css!' + embyWebComponentsBowerPath + "/guide/programs"], returnFirstDependency);
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);

@@ -115,18 +115,18 @@ namespace Emby.Server.Implementations.Notifications
                         statement.TryBind("@IsRead", false);
                         statement.TryBind("@UserId", userId.ToGuidParamValue());
 
+                        var levels = new List<NotificationLevel>();
+
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            var levels = new List<NotificationLevel>();
-
                             levels.Add(GetLevel(row, 0));
+                        }
 
-                            result.UnreadCount = levels.Count;
+                        result.UnreadCount = levels.Count;
 
-                            if (levels.Count > 0)
-                            {
-                                result.MaxUnreadNotificationLevel = levels.Max();
-                            }
+                        if (levels.Count > 0)
+                        {
+                            result.MaxUnreadNotificationLevel = levels.Max();
                         }
                     }
 
