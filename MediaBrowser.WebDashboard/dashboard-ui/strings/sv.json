@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "F\u00f6r att l\u00e4gga till en anv\u00e4ndare som inte \u00e4r listad s\u00e5 m\u00e5ste du f\u00f6rst l\u00e4nka deras konto till Emby Connect ifr\u00e5n profilens anv\u00e4ndarsida.",
     "LabelPinCode": "Pinkod:",
     "OptionHideWatchedContentFromLatestMedia": "D\u00f6lj visat inneh\u00e5ll ifr\u00e5n senaste media",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Synkronisera",
     "ButtonOk": "OK",
     "ButtonCancel": "Avbryt",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

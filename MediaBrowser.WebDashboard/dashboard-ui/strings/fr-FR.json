@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Pour ajouter un utilisateur qui n'est pas dans la liste, vous devrez d'abord connecter son compte \u00e0 Emby Connect depuis son profil.",
     "LabelPinCode": "Code PIN\u00a0:",
     "OptionHideWatchedContentFromLatestMedia": "Cacher le contenu d\u00e9j\u00e0 vu des derniers m\u00e9dias",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Synchroniser",
     "ButtonOk": "OK",
     "ButtonCancel": "Annuler",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

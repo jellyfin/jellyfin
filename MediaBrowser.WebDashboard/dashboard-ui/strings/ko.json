@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "\uc774\uc804",
     "LabelFinish": "\ub05d\ub0b4\uae30",
     "LabelNext": "\ub2e4\uc74c",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "\ubaa9\ub85d\uc5d0 \uc5c6\ub294 \uc0ac\uc6a9\uc790\ub97c \ucd94\uac00\ud558\ub824\uba74 \uc0ac\uc6a9\uc790 \ud504\ub85c\ud30c\uc77c \ud398\uc774\uc9c0\uc5d0\uc11c Emby Connect\uc5d0 \uba3c\uc800 \uc5f0\uacb0\ud558\uc5ec\uc57c \ud569\ub2c8\ub2e4.",
     "LabelPinCode": "PIN \ucf54\ub4dc:",
     "OptionHideWatchedContentFromLatestMedia": "\ucd5c\uadfc \ubbf8\ub514\uc5b4\uc5d0\uc11c \uc2dc\uccad\ud55c \ucf58\ud150\uce20 \uc228\uae40",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "\ub3d9\uae30\ud654",
     "ButtonOk": "OK",
     "ButtonCancel": "\ucde8\uc18c",
@@ -1207,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
     "OptionDownloadImagesInAdvance": "Download images in advance",
     "SettingsSaved": "\uc124\uc815\uc774 \uc800\uc7a5\ub418\uc5c8\uc2b5\ub2c8\ub2e4.",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
     "Users": "\uc0ac\uc6a9\uc790",
     "Delete": "\uc0ad\uc81c",
     "Password": "\ube44\ubc00\ubc88\ud638",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

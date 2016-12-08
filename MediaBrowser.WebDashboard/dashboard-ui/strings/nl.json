@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Vorige",
     "LabelFinish": "Voltooien",
     "LabelNext": "Volgende",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Om een \u200b\u200bgebruiker toe te voegen die niet in de lijst voorkomt, moet u eerst hun account aan Emby Connect koppelen vanuit hun gebruikersprofiel pagina.",
     "LabelPinCode": "Pincode:",
     "OptionHideWatchedContentFromLatestMedia": "Verberg bekeken inhoud van recent toegevoegd",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
     "ButtonOk": "Ok",
     "ButtonCancel": "Annuleren",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Opname nabewerking",
     "LabelPostProcessorArguments": "Nabewerkings command line argumenten:",
     "LabelPostProcessorArgumentsHelp": "Gebruik {path} als het pad naar het opnamebestand.",
-    "LabelPostProcessor": "Nabewerkings toepassing:"
+    "LabelPostProcessor": "Nabewerkings toepassing:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

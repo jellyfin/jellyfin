@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "\u524d\u4e00\u500b",
     "LabelFinish": "\u5b8c\u6210",
     "LabelNext": "\u4e0b\u4e00\u500b",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "\u8981\u6dfb\u52a0\u6c92\u6709\u5217\u51fa\u7684\u7528\u6236\uff0c\u9996\u5148\u9700\u8981\u7531\u500b\u4eba\u5e33\u6236\u9801\uff0c\u9023\u63a5\u4ed6\u5011\u5e33\u6236\u5230 Emby Connect \u3002",
     "LabelPinCode": "PIN \u78bc\uff1a",
     "OptionHideWatchedContentFromLatestMedia": "\u96b1\u85cf\u6700\u65b0\u5a92\u9ad4\u5167\u5bb9",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "\u540c\u6b65",
     "ButtonOk": "\u78ba\u5b9a",
     "ButtonCancel": "\u53d6\u6d88",
@@ -1207,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
     "OptionDownloadImagesInAdvance": "Download images in advance",
     "SettingsSaved": "Settings saved.",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
     "Users": "\u7528\u6236",
     "Delete": "Delete",
     "Password": "Password",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "P\u0159edchoz\u00ed",
     "LabelFinish": "Dokon\u010dit",
     "LabelNext": "Dal\u0161\u00ed",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Chcete-li p\u0159idat u\u017eivatele, kter\u00fd nen\u00ed uveden v seznamu, budete muset nejprve propojit sv\u016fj \u00fa\u010det Emby Connect ze strany profilu u\u017eivatele.",
     "LabelPinCode": "Pin k\u00f3d:",
     "OptionHideWatchedContentFromLatestMedia": "Skr\u00fdt p\u0159ehran\u00e9 polo\u017eky ze seznamu naposledy p\u0159idan\u00fdch m\u00e9di\u00ed",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Synchronizace",
     "ButtonOk": "Ok",
     "ButtonCancel": "Zru\u0161it",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }
