@@ -396,7 +396,7 @@ namespace MediaBrowser.Api.Playback
                     param += " -crf 23";
                 }
 
-                //param += " -tune zerolatency";
+                param += " -tune zerolatency";
             }
 
             else if (string.Equals(videoEncoder, "libx265", StringComparison.OrdinalIgnoreCase))
