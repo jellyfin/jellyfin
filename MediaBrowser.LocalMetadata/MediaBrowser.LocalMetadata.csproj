@@ -59,7 +59,6 @@
     <Compile Include="Providers\GameXmlProvider.cs" />
     <Compile Include="Providers\MovieXmlProvider.cs" />
     <Compile Include="Providers\MusicVideoXmlProvider.cs" />
-    <Compile Include="Providers\PersonXmlProvider.cs" />
     <Compile Include="Providers\PlaylistXmlProvider.cs" />
     <Compile Include="Providers\SeriesXmlProvider.cs" />
     <Compile Include="Providers\VideoXmlProvider.cs" />

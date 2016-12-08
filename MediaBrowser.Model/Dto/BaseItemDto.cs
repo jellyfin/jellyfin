@@ -729,6 +729,8 @@ namespace MediaBrowser.Model.Dto
         /// <value>The series studio.</value>
         public string SeriesStudio { get; set; }
 
+        public StudioDto SeriesStudioInfo { get; set; }
+
         /// <summary>
         /// Gets or sets the parent thumb item id.
         /// </summary>

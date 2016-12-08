@@ -341,13 +341,13 @@ namespace Emby.Server.Implementations.Library
             }
             if (item is IItemByName)
             {
-                if (!(item is MusicArtist))
+                if (!(item is MusicArtist) && !(item is Studio))
                 {
                     return;
                 }
             }
 
-            if (item.IsFolder)
+            else if (item.IsFolder)
             {
                 //if (!(item is ICollectionFolder) && !(item is UserView) && !(item is Channel) && !(item is AggregateFolder))
                 //{

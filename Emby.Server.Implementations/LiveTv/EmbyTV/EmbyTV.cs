@@ -1594,7 +1594,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void Process_Exited(object sender, EventArgs e)
         {
-            ((IProcess)sender).Dispose();
+            var process = (IProcess)sender;
+            try
+            {
+                _logger.Info("Recording post-processing script completed with exit code {0}", process.ExitCode);
+            }
+            catch
+            {
+
+            }
+
+            process.Dispose();
         }
 
         private async Task SaveRecordingImage(string recordingPath, LiveTvProgram program, ItemImageInfo image)

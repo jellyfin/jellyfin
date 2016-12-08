@@ -111,7 +111,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var inputModifier = GetInputModifier(state);
 
-            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
+            return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -map_chapters -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
                 GetInputArgument(state),
                 keyFrame,

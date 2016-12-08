@@ -11,8 +11,9 @@ namespace Emby.Common.Implementations.Net
         private readonly Socket _originalSocket;
         private readonly Func<bool> _isClosed;
         private readonly Action<ISocket> _onAccept;
+        private readonly bool _isDualMode;
 
-        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<ISocket> onAccept, Func<bool> isClosed)
+        public SocketAcceptor(ILogger logger, Socket originalSocket, Action<ISocket> onAccept, Func<bool> isClosed, bool isDualMode)
         {
             if (logger == null)
             {
@@ -34,6 +35,7 @@ namespace Emby.Common.Implementations.Net
             _logger = logger;
             _originalSocket = originalSocket;
             _isClosed = isClosed;
+            _isDualMode = isDualMode;
             _onAccept = onAccept;
         }
 
@@ -115,7 +117,7 @@ namespace Emby.Common.Implementations.Net
             if (acceptSocket != null)
             {
                 //ProcessAccept(acceptSocket);
-                _onAccept(new NetSocket(acceptSocket, _logger));
+                _onAccept(new NetSocket(acceptSocket, _logger, _isDualMode));
             }
 
             // Accept the next connection request

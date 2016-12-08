@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -100,16 +101,23 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             extInf = extInf.Trim();
 
-            channel.ImageUrl = FindProperty("tvg-logo", extInf);
+            string remaining;
+            var attributes = ParseExtInf(extInf, out remaining);
+            extInf = remaining;
 
-            channel.Name = GetChannelName(extInf);
+            string value;
+            if (attributes.TryGetValue("tvg-logo", out value))
+            {
+                channel.ImageUrl = value;
+            }
 
-            channel.Number = GetChannelNumber(extInf, mediaUrl);
+            channel.Name = GetChannelName(extInf, attributes);
+            channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 
             return channel;
         }
 
-        private string GetChannelNumber(string extInf, string mediaUrl)
+        private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
@@ -130,18 +138,41 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(numberString) || 
-                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(numberString))
             {
-                numberString = FindProperty("tvg-id", extInf);
+                numberString = numberString.Trim();
             }
 
             if (string.IsNullOrWhiteSpace(numberString) ||
                 string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
             {
-                numberString = FindProperty("channel-id", extInf);
+                string value;
+                if (attributes.TryGetValue("tvg-id", out value))
+                {
+                    numberString = value;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(numberString))
+            {
+                numberString = numberString.Trim();
+            }
+
+            if (string.IsNullOrWhiteSpace(numberString) ||
+                string.Equals(numberString, "-1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(numberString, "0", StringComparison.OrdinalIgnoreCase))
+            {
+                string value;
+                if (attributes.TryGetValue("channel-id", out value))
+                {
+                    numberString = value;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(numberString))
+            {
+                numberString = numberString.Trim();
             }
 
             if (string.IsNullOrWhiteSpace(numberString) ||
@@ -160,13 +191,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 else
                 {
                     numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+
+                    double value;
+                    if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                    {
+                        numberString = null;
+                    }
                 }
             }
 
             return numberString;
         }
 
-        private string GetChannelName(string extInf)
+        private string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
             var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
@@ -186,7 +223,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            var name = FindProperty("tvg-name", extInf);
+            string name;
+            attributes.TryGetValue("tvg-name", out name);
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 name = nameInExtInf;
@@ -194,7 +233,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                name = FindProperty("tvg-id", extInf);
+                attributes.TryGetValue("tvg-id", out name);
             }
 
             if (string.IsNullOrWhiteSpace(name))
@@ -205,18 +244,27 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return name;
         }
 
-        private string FindProperty(string property, string properties)
+        private Dictionary<string, string> ParseExtInf(string line, out string remaining)
         {
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
             var reg = new Regex(@"([a-z0-9\-_]+)=\""([^""]+)\""", RegexOptions.IgnoreCase);
-            var matches = reg.Matches(properties);
+            var matches = reg.Matches(line);
+            var minIndex = int.MaxValue;
             foreach (Match match in matches)
             {
-                if (match.Groups[1].Value == property)
-                {
-                    return match.Groups[2].Value;
-                }
+                dict[match.Groups[1].Value] = match.Groups[2].Value;
+                minIndex = Math.Min(minIndex, match.Index);
             }
-            return null;
+
+            if (minIndex > 0 && minIndex < line.Length)
+            {
+                line = line.Substring(0, minIndex);
+            }
+
+            remaining = line;
+
+            return dict;
         }
     }
 
