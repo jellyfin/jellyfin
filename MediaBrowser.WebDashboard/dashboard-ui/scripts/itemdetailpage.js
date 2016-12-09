@@ -119,7 +119,7 @@
 
             if (dom.getWindowSize().innerWidth >= 800) {
                 backdrop.setBackdrops([item], {
-                    blur: 24
+                    blur: 20
                 }, false);
             } else {
                 backdrop.clear();
@@ -362,7 +362,7 @@
 
         if (links.length) {
 
-            var html = links.join('&bull;');
+            var html = links.join('<span class="bulletSeparator">&bull;</span>');
 
             linksElem.innerHTML = html;
             linksElem.classList.remove('hide');
@@ -693,13 +693,10 @@
 
         renderSeriesAirTime(page, item, isStatic);
 
-        var dateAddedElement = page.querySelector('#dateAdded');
-
-        if (itemHelper.enableDateAddedDisplay(item)) {
-            dateAddedElement.classList.remove('hide');
-            dateAddedElement.innerHTML = globalize.translate('DateAddedValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)));
+        if (renderDynamicMediaIcons(page, item)) {
+            page.querySelector('.mediaInfoIcons').classList.remove('hide');
         } else {
-            dateAddedElement.classList.add('hide');
+            page.querySelector('.mediaInfoIcons').classList.add('hide');
         }
 
         var artist = page.querySelectorAll('.artist');
@@ -724,6 +721,25 @@
         } else {
             page.querySelector('.photoInfo').classList.add('hide');
         }
+    }
+
+    function renderDynamicMediaIcons(view, item) {
+
+        var html = mediaInfo.getMediaInfoStats(item).map(function (mediaInfoItem) {
+
+            var text = mediaInfoItem.text;
+
+            if (mediaInfoItem.type === 'added') {
+                return '<div class="mediaInfoText">' + text + '</div>';
+            }
+
+            return '<div class="mediaInfoText mediaInfoText-upper">' + text + '</div>';
+
+        }).join('');
+
+        view.querySelector('.mediaInfoIcons').innerHTML = html;
+
+        return html;
     }
 
     function renderPhotoInfo(page, item) {
@@ -1422,7 +1438,7 @@
             }
 
             if (i > 0) {
-                html += '&bull;';
+                html += '<span class="bulletSeparator">&bull;</span>';
             }
 
             var param = item.Type == "Audio" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" ? "musicgenre" : "genre";
