@@ -1216,7 +1216,6 @@ namespace Emby.Server.Core
             {
                 HasPendingRestart = HasPendingRestart,
                 Version = ApplicationVersion.ToString(),
-                IsNetworkDeployed = CanSelfUpdate,
                 WebSocketPortNumber = HttpPort,
                 FailedPluginAssemblies = FailedAssemblies.ToList(),
                 InProgressInstallations = InstallationManager.CurrentInstallations.Select(i => i.Item1).ToList(),

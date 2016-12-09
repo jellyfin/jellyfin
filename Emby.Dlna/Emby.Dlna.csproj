@@ -34,38 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <EmbeddedResource Include="Profiles\Json\BubbleUPnp.json" />
-    <EmbeddedResource Include="Profiles\Json\Default.json" />
-    <EmbeddedResource Include="Profiles\Json\Denon AVR.json" />
-    <EmbeddedResource Include="Profiles\Json\DirecTV HD-DVR.json" />
-    <EmbeddedResource Include="Profiles\Json\Dish Hopper-Joey.json" />
-    <EmbeddedResource Include="Profiles\Json\foobar2000.json" />
-    <EmbeddedResource Include="Profiles\Json\Kodi.json" />
-    <EmbeddedResource Include="Profiles\Json\LG Smart TV.json" />
-    <EmbeddedResource Include="Profiles\Json\Linksys DMA2100.json" />
-    <EmbeddedResource Include="Profiles\Json\MediaMonkey.json" />
-    <EmbeddedResource Include="Profiles\Json\Panasonic Viera.json" />
-    <EmbeddedResource Include="Profiles\Json\Popcorn Hour.json" />
-    <EmbeddedResource Include="Profiles\Json\Samsung Smart TV.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2013.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2014.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2015.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player 2016.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Blu-ray Player.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282010%29.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282011%29.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282012%29.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282013%29.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony Bravia %282014%29.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 3.json" />
-    <EmbeddedResource Include="Profiles\Json\Sony PlayStation 4.json" />
-    <EmbeddedResource Include="Profiles\Json\Vlc.json" />
-    <EmbeddedResource Include="Profiles\Json\WDTV Live.json" />
-    <EmbeddedResource Include="Profiles\Json\Xbox 360.json" />
-    <EmbeddedResource Include="Profiles\Json\Xbox One.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Common\DeviceIcon.cs" />
     <Compile Include="Common\DeviceService.cs" />
@@ -111,16 +79,6 @@
     <Compile Include="PlayTo\uParserObject.cs" />
     <Compile Include="PlayTo\UpnpContainer.cs" />
     <Compile Include="PlayTo\uPnpNamespaces.cs" />
-    <Compile Include="ProfileSerialization\CodecProfile.cs" />
-    <Compile Include="ProfileSerialization\ContainerProfile.cs" />
-    <Compile Include="ProfileSerialization\DeviceProfile.cs" />
-    <Compile Include="ProfileSerialization\DirectPlayProfile.cs" />
-    <Compile Include="ProfileSerialization\HttpHeaderInfo.cs" />
-    <Compile Include="ProfileSerialization\ProfileCondition.cs" />
-    <Compile Include="ProfileSerialization\ResponseProfile.cs" />
-    <Compile Include="ProfileSerialization\SubtitleProfile.cs" />
-    <Compile Include="ProfileSerialization\TranscodingProfile.cs" />
-    <Compile Include="ProfileSerialization\XmlAttribute.cs" />
     <Compile Include="Profiles\BubbleUpnpProfile.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DenonAvrProfile.cs" />
@@ -189,6 +147,38 @@
       <Project>{21002819-c39a-4d3e-be83-2a276a77fb1f}</Project>
       <Name>RSSDP</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Denon AVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\DirecTV HD-DVR.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Dish Hopper-Joey.xml" />
+    <EmbeddedResource Include="Profiles\Xml\foobar2000.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Kodi.xml" />
+    <EmbeddedResource Include="Profiles\Xml\LG Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Linksys DMA2100.xml" />
+    <EmbeddedResource Include="Profiles\Xml\MediaMonkey.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Panasonic Viera.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Popcorn Hour.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Samsung Smart TV.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2013.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2014.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2015.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player 2016.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Blu-ray Player.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Vlc.xml" />
+    <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

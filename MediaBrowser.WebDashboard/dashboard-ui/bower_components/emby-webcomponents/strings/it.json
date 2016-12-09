@@ -1,6 +1,4 @@
 {
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Mensile {0}",
-    "HeaderAlreadyPaid": "Hai gi\u00e0 pagato?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Sblocca questa funzionalit\u00e0 con un piccolo acquisto singolo, o con un abbonamento Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Sblocca questa funzionalit\u00e0 con un abbonamento Emby Premiere",
     "MessageToValidateSupporter": "Se hai un abbonamento Emby Premiere, assicurati di averlo configurato nel Pannello di Controllo del Server, a cui puoi accedere cliccando su Emby Premiere dal menu principale.",
@@ -345,7 +343,8 @@
     "ButtonRestorePreviousPurchase": "Ripristina Acquisto",
     "ButtonUnlockWithPurchase": "Sblocca con l'Acquisto",
     "ButtonUnlockPrice": "Sblocca {0}",
-    "ButtonAlreadyPaid": "Hai gi\u00e0 pagato?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Mensile {0}",
+    "HeaderAlreadyPaid": "Hai gi\u00e0 pagato?",
     "ButtonPlayOneMinute": "Riproduci un minuto",
     "PlaceFavoriteChannelsAtBeginning": "Mostra prima i canali preferiti",
     "HeaderUnlockFeature": "Sblocca Funzionalit\u00e0",
@@ -353,5 +352,6 @@
     "MessageDidYouKnowCinemaMode2": "Modalit\u00e0 Cinema ti d\u00e0 la vera esperienza del cinema con trailer ed intro personalizzate prima del contenuto principale.",
     "HeaderPlayMyMedia": "Riproduci i miei Media",
     "HeaderDiscoverEmbyPremiere": "Scopri Emby Premiere",
-    "OneChannel": "Un canale"
+    "OneChannel": "Un canale",
+    "AddedOnValue": "Added on {0}"
 }

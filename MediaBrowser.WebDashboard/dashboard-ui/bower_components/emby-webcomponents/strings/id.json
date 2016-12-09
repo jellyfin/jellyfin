@@ -1,6 +1,4 @@
 {
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
-    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Unlock this feature with a small one-time purchase, or with an active Emby Premiere subscription.",
     "MessageUnlockAppWithSupporter": "Unlock this feature with an active Emby Premiere subscription.",
     "MessageToValidateSupporter": "If you have an active Emby Premiere subscription, ensure you've setup Emby Premiere in your Emby Server Dashboard, which you can access by clicking Emby Premiere within the main menu.",
@@ -345,7 +343,8 @@
     "ButtonRestorePreviousPurchase": "Restore Purchase",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
     "ButtonUnlockPrice": "Unlock {0}",
-    "ButtonAlreadyPaid": "Already Paid?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Play One Minute",
     "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
     "HeaderUnlockFeature": "Unlock Feature",
@@ -353,5 +352,6 @@
     "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
     "HeaderPlayMyMedia": "Play my Media",
     "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
-    "OneChannel": "One channel"
+    "OneChannel": "One channel",
+    "AddedOnValue": "Added on {0}"
 }

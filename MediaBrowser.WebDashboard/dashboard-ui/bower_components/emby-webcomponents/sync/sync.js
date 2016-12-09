@@ -345,6 +345,9 @@
         if (firstItem.Type === 'MusicGenre') {
             return true;
         }
+        if (firstItem.Type === 'Playlist' && firstItem.MediaType === 'Audio') {
+            return true;
+        }
 
         return false;
     }

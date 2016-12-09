@@ -453,6 +453,160 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         return '';
     }
 
+    function getResolutionText(item) {
+
+        if (!item.MediaSources || !item.MediaSources.length) {
+            return null;
+        }
+
+        return item.MediaSources[0].MediaStreams.filter(function (i) {
+
+            return i.Type === 'Video';
+
+        }).map(function (i) {
+
+            if (i.Height) {
+
+                if (i.Width >= 3800) {
+                    return '4K';
+                }
+                if (i.Width >= 2500) {
+                    return '1440P';
+                }
+                if (i.Width >= 1900) {
+                    return '1080P';
+                }
+                if (i.Width >= 1260) {
+                    return '720P';
+                }
+                if (i.Width >= 700) {
+                    return '480P';
+                }
+
+            }
+            return null;
+        })[0];
+
+    }
+
+    function getAudioStreamForDisplay(item) {
+
+        if (!item.MediaSources) {
+            return null;
+        }
+
+        var mediaSource = item.MediaSources[0];
+        if (!mediaSource) {
+            return null;
+        }
+
+        return (mediaSource.MediaStreams || []).filter(function (i) {
+            return i.Type === 'Audio' && (i.Index === mediaSource.DefaultAudioStreamIndex || mediaSource.DefaultAudioStreamIndex == null);
+        })[0];
+    }
+
+    function getMediaInfoStats(item, options) {
+
+        options = options || {};
+
+        var list = [];
+
+        if (item.DateCreated && itemHelper.enableDateAddedDisplay(item)) {
+            list.push({
+                type: 'added',
+                text: globalize.translate('sharedcomponents#AddedOnValue', datetime.toLocaleDateString(datetime.parseISO8601Date(item.DateCreated)))
+            });
+        }
+
+        if (!item.MediaSources) {
+            return list;
+        }
+
+        var mediaSource = item.MediaSources[0];
+        if (!mediaSource) {
+            return list;
+        }
+
+        var videoStream = (mediaSource.MediaStreams || []).filter(function (i) {
+            return i.Type === 'Video';
+        })[0] || {};
+        var audioStream = getAudioStreamForDisplay(item) || {};
+
+        if (item.VideoType === 'Dvd') {
+            list.push({
+                type: 'mediainfo',
+                text: 'Dvd'
+            });
+        }
+
+        if (item.VideoType === 'BluRay') {
+            list.push({
+                type: 'mediainfo',
+                text: 'BluRay'
+            });
+        }
+
+        //if (mediaSource.Container) {
+        //    html += '<div class="mediaInfoIcon mediaInfoText">' + mediaSource.Container + '</div>';
+        //}
+
+        var resolutionText = getResolutionText(item);
+        if (resolutionText) {
+            list.push({
+                type: 'mediainfo',
+                text: resolutionText
+            });
+        }
+
+        if (videoStream.Codec) {
+            list.push({
+                type: 'mediainfo',
+                text: videoStream.Codec
+            });
+        }
+
+        var channels = audioStream.Channels;
+        var channelText;
+
+        if (channels === 8) {
+
+            channelText = '7.1';
+
+        } else if (channels === 7) {
+
+            channelText = '6.1';
+
+        } else if (channels === 6) {
+
+            channelText = '5.1';
+
+        } else if (channels === 2) {
+
+            channelText = '2.0';
+        }
+
+        if (channelText) {
+            list.push({
+                type: 'mediainfo',
+                text: channelText
+            });
+        }
+
+        if (audioStream.Codec === 'dca' && audioStream.Profile) {
+            list.push({
+                type: 'mediainfo',
+                text: audioStream.Profile
+            });
+        } else if (audioStream.Codec) {
+            list.push({
+                type: 'mediainfo',
+                text: audioStream.Codec
+            });
+        }
+
+        return list;
+    }
+
     return {
         getMediaInfoHtml: getPrimaryMediaInfoHtml,
         fill: fillPrimaryMediaInfo,
@@ -461,6 +615,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         getPrimaryMediaInfoHtml: getPrimaryMediaInfoHtml,
         getSecondaryMediaInfoHtml: getSecondaryMediaInfoHtml,
         fillPrimaryMediaInfo: fillPrimaryMediaInfo,
-        fillSecondaryMediaInfo: fillSecondaryMediaInfo
+        fillSecondaryMediaInfo: fillSecondaryMediaInfo,
+        getMediaInfoStats: getMediaInfoStats
     };
 });

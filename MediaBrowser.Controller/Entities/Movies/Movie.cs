@@ -125,7 +125,18 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (!DetectIsInMixedFolder())
             {
-                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+                var name = System.IO.Path.GetFileName(ContainingFolderPath);
+
+                if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
+                {
+                    if (string.Equals(name, System.IO.Path.GetFileName(Path), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // if the folder has the file extension, strip it
+                        name = System.IO.Path.GetFileNameWithoutExtension(name);
+                    }
+                }
+
+                info.Name = name;
             }
 
             return info;

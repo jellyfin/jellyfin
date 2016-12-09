@@ -798,6 +798,15 @@ var Dashboard = {
                         }]
                     });
 
+                    //profile.TranscodingProfiles.filter(function (p) {
+
+                    //    return p.Type == 'Video' && p.Container == 'mkv';
+
+                    //}).forEach(function (p) {
+
+                    //    p.Container = 'ts';
+                    //});
+
                     profile.TranscodingProfiles.filter(function (p) {
 
                         return p.Type == 'Video' && p.CopyTimestamps == true;

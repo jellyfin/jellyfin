@@ -1,17 +1,22 @@
 ﻿using MediaBrowser.Model.Extensions;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class SubtitleProfile
     {
+        [XmlAttribute("format")]
         public string Format { get; set; }
 
+        [XmlAttribute("method")]
         public SubtitleDeliveryMethod Method { get; set; }
 
+        [XmlAttribute("didlMode")]
         public string DidlMode { get; set; }
 
+        [XmlAttribute("language")]
         public string Language { get; set; }
 
         public List<string> GetLanguages()

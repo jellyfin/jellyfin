@@ -1,6 +1,4 @@
 {
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
-    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Otklju\u010daj ovu mogu\u0107nost s malom jednokratnom kupnjom ili s aktivnom pretplatom Emby Premijere.",
     "MessageUnlockAppWithSupporter": "Otklju\u010daj ovu mogu\u0107nost sa pretplatom Emby Premijere.",
     "MessageToValidateSupporter": "Ako imate aktivnu pretplatu Emby Premijere provjerite dali ste postavili Emby Premijeru u svojoj nadzornoj plo\u010di Emby Server-a kojoj mo\u017eete pristupiti klikom Emby Premijera u glavnom izborniku.",
@@ -345,7 +343,8 @@
     "ButtonRestorePreviousPurchase": "Vrati kupovinu",
     "ButtonUnlockWithPurchase": "Otklju\u010daj s kupovinom",
     "ButtonUnlockPrice": "Otklju\u010daj {0}",
-    "ButtonAlreadyPaid": "Ve\u0107 pla\u0107eno?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Reproduciraj jednu minutu",
     "PlaceFavoriteChannelsAtBeginning": "Postavi omiljene kanale na po\u010detak",
     "HeaderUnlockFeature": "Otklju\u010daj zna\u010dajke",
@@ -353,5 +352,6 @@
     "MessageDidYouKnowCinemaMode2": "Kino na\u010din vam daje pravi do\u017eivljaj kina s kratkim filmovima i prilago\u0111enim isje\u010dcima prije odabrane zna\u010dajke.",
     "HeaderPlayMyMedia": "Reproduciraj moje medije",
     "HeaderDiscoverEmbyPremiere": "Otkrijte Emby Premijeru",
-    "OneChannel": "One channel"
+    "OneChannel": "One channel",
+    "AddedOnValue": "Added on {0}"
 }
