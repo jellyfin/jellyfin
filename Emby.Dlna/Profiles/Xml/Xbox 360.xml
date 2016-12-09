@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Xbox 360</Name>
+  <Identification>
+    <ModelName>Xbox 360</ModelName>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="Xbox" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="Xenon" match="Substring" />
+    </Headers>
+  </Identification>
+  <FriendlyName>${HostName}: 1</FriendlyName>
+  <Manufacturer>Microsoft Corporation</Manufacturer>
+  <ManufacturerUrl>http://www.microsoft.com</ManufacturerUrl>
+  <ModelName>Windows Media Player Sharing</ModelName>
+  <ModelDescription>Emby : UPnP Media Server</ModelDescription>
+  <ModelNumber>12.0</ModelNumber>
+  <ModelUrl>http://go.microsoft.com/fwlink/?LinkId=105926</ModelUrl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
+  <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
+  <MaxIconWidth>48</MaxIconWidth>
+  <MaxIconHeight>48</MaxIconHeight>
+  <MaxStreamingBitrate>24000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>24000000</MaxStaticBitrate>
+  <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
+  <MaxStaticMusicBitrate xsi:nil="true" />
+  <XDlnaDoc>DMS-1.50</XDlnaDoc>
+  <ProtocolInfo>http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_HD_50_AC3;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_HD_50_AC3_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=AVC_TS_HD_50_AC3_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/L16;rate=44100;channels=1:DLNA.ORG_PN=LPCM;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/L16;rate=44100;channels=2:DLNA.ORG_PN=LPCM;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/L16;rate=48000;channels=1:DLNA.ORG_PN=LPCM;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/L16;rate=48000;channels=2:DLNA.ORG_PN=LPCM;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/x-ms-wma:DLNA.ORG_PN=WMA_BASE;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:audio/x-ms-wma:DLNA.ORG_PN=WMA_FULL;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_MED;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_LRG;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG1;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_NTSC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_EU;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_EU_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_EU_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_NA;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_NA_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_NA_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_KO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=MPEG_TS_SD_KO_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_TS_SD_KO_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-msvideo:DLNA.ORG_PN=AVI;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-matroska:DLNA.ORG_PN=MATROSKA;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_MP_SD_AAC_MULT5;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_MP_SD_MPEG1_L3;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_MP_SD_AC3;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_MP_HD_720p_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_MP_HD_1080i_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_HP_HD_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=AVC_MP4_LPCM;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=MPEG4_P2_MP4_ASP_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=MPEG4_P2_MP4_SP_L6_AAC;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mp4:DLNA.ORG_PN=MPEG4_P2_MP4_NDSD;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_SD_AAC_MULT5;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_SD_AAC_MULT5_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=AVC_TS_MP_SD_AAC_MULT5_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_SD_MPEG1_L3;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_SD_MPEG1_L3_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=AVC_TS_MP_SD_MPEG1_L3_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_HD_AAC_MULT5;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_HD_AAC_MULT5_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=AVC_TS_MP_HD_AAC_MULT5_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_HD_MPEG1_L3;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_MP_HD_MPEG1_L3_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=AVC_TS_MP_HD_MPEG1_L3_ISO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/vnd.dlna.mpeg-tts:DLNA.ORG_PN=AVC_TS_HD_50_LPCM_T;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-wmv:DLNA.ORG_PN=WMVMED_BASE;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-wmv:DLNA.ORG_PN=WMVMED_FULL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-wmv:DLNA.ORG_PN=WMVHIGH_FULL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-wmv:DLNA.ORG_PN=WMVMED_PRO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-wmv:DLNA.ORG_PN=WMVHIGH_PRO;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-asf:DLNA.ORG_PN=VC1_ASF_AP_L1_WMA;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-asf:DLNA.ORG_PN=VC1_ASF_AP_L2_WMA;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000,http-get:*:video/x-ms-asf:DLNA.ORG_PN=VC1_ASF_AP_L3_WMA;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=01500000000000000000000000000000</ProtocolInfo>
+  <TimelineOffsetSeconds>40</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
+  <RequiresPlainFolders>true</RequiresPlainFolders>
+  <EnableMSMediaReceiverRegistrar>true</EnableMSMediaReceiverRegistrar>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <XmlRootAttributes />
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
+    <DirectPlayProfile container="avi" audioCodec="aac" videoCodec="h264" type="Video" />
+    <DirectPlayProfile container="mp4,mov" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro" videoCodec="wmv2,wmv3,vc1" type="Video" />
+    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+    <TranscodingProfile container="asf" type="Video" videoCodec="wmv2" audioCodec="wmav2" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+  </TranscodingProfiles>
+  <ContainerProfiles>
+    <ContainerProfile type="Video" container="mp4,mov">
+      <Conditions>
+        <ProfileCondition condition="Equals" property="Has64BitOffsets" value="false" isRequired="false" />
+      </Conditions>
+    </ContainerProfile>
+    <ContainerProfile type="Photo">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+      </Conditions>
+    </ContainerProfile>
+  </ContainerProfiles>
+  <CodecProfiles>
+    <CodecProfile type="Video" codec="mpeg4">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1280" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="720" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="5120000" isRequired="false" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="10240000" isRequired="false" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="ac3,wmav2,wmapro">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="false" />
+        <ProfileCondition condition="Equals" property="AudioProfile" value="lc" isRequired="false" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+  </CodecProfiles>
+  <ResponseProfiles>
+    <ResponseProfile container="avi" type="Video" mimeType="video/avi">
+      <Conditions />
+    </ResponseProfile>
+  </ResponseProfiles>
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
+</Profile>

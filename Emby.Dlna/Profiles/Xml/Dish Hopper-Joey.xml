@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<Profile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Dish Hopper-Joey</Name>
+  <Identification>
+    <Manufacturer>Echostar Technologies LLC</Manufacturer>
+    <ManufacturerUrl>http://www.echostar.com</ManufacturerUrl>
+    <Headers>
+      <HttpHeaderInfo name="User-Agent" value="XiP" match="Substring" />
+    </Headers>
+  </Identification>
+  <Manufacturer>Emby</Manufacturer>
+  <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
+  <ModelName>Emby Server</ModelName>
+  <ModelDescription>Emby</ModelDescription>
+  <ModelNumber>Emby</ModelNumber>
+  <ModelUrl>http://emby.media/</ModelUrl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
+  <EnableSingleSubtitleLimit>false</EnableSingleSubtitleLimit>
+  <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
+  <AlbumArtPn>JPEG_SM</AlbumArtPn>
+  <MaxAlbumArtWidth>480</MaxAlbumArtWidth>
+  <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
+  <MaxIconWidth>48</MaxIconWidth>
+  <MaxIconHeight>48</MaxIconHeight>
+  <MaxStreamingBitrate>24000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>24000000</MaxStaticBitrate>
+  <MusicStreamingTranscodingBitrate>192000</MusicStreamingTranscodingBitrate>
+  <MaxStaticMusicBitrate xsi:nil="true" />
+  <XDlnaDoc>DMS-1.50</XDlnaDoc>
+  <ProtocolInfo>http-get:*:video/mp2t:*,http-get:*:video/MP1S:*,http-get:*:video/mpeg2:*,http-get:*:video/mp4:*,http-get:*:video/x-matroska:*,http-get:*:audio/mpeg:*,http-get:*:audio/mpeg3:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/mp4a-latm:*,http-get:*:image/jpeg:*</ProtocolInfo>
+  <TimelineOffsetSeconds>0</TimelineOffsetSeconds>
+  <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
+  <RequiresPlainFolders>false</RequiresPlainFolders>
+  <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <XmlRootAttributes />
+  <DirectPlayProfiles>
+    <DirectPlayProfile container="mp4,mkv,mpeg,ts" audioCodec="mp3,ac3,aac,he-aac,pcm" videoCodec="h264,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
+    <DirectPlayProfile container="alac" audioCodec="alac" type="Audio" />
+    <DirectPlayProfile container="flac" audioCodec="flac" type="Audio" />
+    <DirectPlayProfile container="jpeg" type="Photo" />
+  </DirectPlayProfiles>
+  <TranscodingProfiles>
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+    <TranscodingProfile container="mp4" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+    <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" enableSplittingOnNonKeyFrames="false" />
+  </TranscodingProfiles>
+  <ContainerProfiles />
+  <CodecProfiles>
+    <CodecProfile type="Video" codec="h264">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="ac3,he-aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
+  </CodecProfiles>
+  <ResponseProfiles>
+    <ResponseProfile container="mkv,ts" type="Video" mimeType="video/mp4">
+      <Conditions />
+    </ResponseProfile>
+  </ResponseProfiles>
+  <SubtitleProfiles>
+    <SubtitleProfile format="srt" method="Embed" />
+  </SubtitleProfiles>
+</Profile>
