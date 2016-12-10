@@ -1,6 +1,6 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "Si se habilita, las series que se reparten a trav\u00e9s de m\u00faltiples carpetas dentro de esta biblioteca ser\u00e1n fusionadas en una sola serie.",
+    "OptionAutomaticallyGroupSeries": "Fusionar autom\u00e1ticamente series esparcidas a trav\u00e9s de m\u00faltiples carpetas.",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -26,7 +26,7 @@
     "LabelAddConnectSupporterHelp": "Para agregar un usuario que no esta listado, necesita primero enlazar su cuenta a Emby Connect desde su pagina de perfil de usuario.",
     "LabelPinCode": "C\u00f3digo pin:",
     "OptionHideWatchedContentFromLatestMedia": "Ocultar contenido ya visto de Agregadas Recientemente",
-    "DeleteMedia": "Delete media",
+    "DeleteMedia": "Eliminar medios",
     "HeaderSync": "Sinc",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
@@ -1945,5 +1945,5 @@
     "LabelPostProcessorArguments": "Argumentos de linea de comando para el post-procesador:",
     "LabelPostProcessorArgumentsHelp": "Use {path} como la ruta a el archivo de grabado.",
     "LabelPostProcessor": "Aplicaci\u00f3n de Post Procesado:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "Hubo un error accediendo al archivo XmlTV. Por favor aseg\u00farese de que el archivo existe e intente de nuevo."
 }
