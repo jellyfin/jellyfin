@@ -1,8 +1,5 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'events', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser, events) {
     'use strict';
-
-    var currentItem;
-    var currentRecordingFields;
 
     function getPromise(params) {
 
@@ -39,6 +36,9 @@
             throw new Error('Invalid request');
         }
     }
+
+    var currentItem;
+    var currentRecordingFields;
 
     function reload(page, params) {
 
@@ -87,14 +87,25 @@
         return options;
     }
 
-    function updateSyncStatus(page, item) {
+    function renderSyncLocalContainer(page, params, user, item) {
 
-        var i, length;
-        var elems = page.querySelectorAll('.chkOffline');
-        for (i = 0, length = elems.length; i < length; i++) {
-
-            elems[i].checked = item.SyncPercent != null;
+        if (page.syncToggleInstance) {
+            page.syncToggleInstance.refresh(item);
+            return;
         }
+
+        require(['syncToggle'], function (syncToggle) {
+
+            page.syncToggleInstance = new syncToggle({
+                user: user,
+                item: item,
+                container: page.querySelector('.syncLocalContainer')
+            });
+
+            events.on(page.syncToggleInstance, 'sync', function () {
+                reload(page, params);
+            });
+        });
     }
 
     function reloadFromItem(page, params, item) {
@@ -166,19 +177,7 @@
                 hideAll(page, 'btnDeleteItem');
             }
 
-            if (itemHelper.canSync(user, item)) {
-                if (appHost.supports('sync')) {
-                    hideAll(page, 'syncLocalContainer', true);
-                    hideAll(page, 'btnSync');
-                } else {
-                    hideAll(page, 'syncLocalContainer');
-                    hideAll(page, 'btnSync', true);
-                }
-                updateSyncStatus(page, item);
-            } else {
-                hideAll(page, 'btnSync');
-                hideAll(page, 'syncLocalContainer');
-            }
+            renderSyncLocalContainer(page, params, user, item);
 
             if (hasAnyButton || item.Type !== 'Program') {
                 hideAll(page, 'mainDetailButtons', true);
@@ -641,6 +640,12 @@
         }
 
         var overview = page.querySelector('.overview');
+        var externalLinksElem = page.querySelector('.itemExternalLinks');
+
+        if (item.Type === 'Season' || item.Type === 'MusicAlbum' || item.Type === 'MusicArtist') {
+            overview.classList.add('detailsHiddenOnMobile');
+            externalLinksElem.classList.add('detailsHiddenOnMobile');
+        }
 
         renderOverview([overview], item);
 
@@ -677,7 +682,7 @@
 
         renderStudios(page.querySelector('.itemStudios'), item, isStatic);
         renderUserDataIcons(page, item);
-        renderLinks(page.querySelector('.itemExternalLinks'), item);
+        renderLinks(externalLinksElem, item);
 
         page.querySelector('.criticRatingScore').innerHTML = (item.CriticRating || '0') + '%';
 
@@ -2175,51 +2180,8 @@
 
     return function (view, params) {
 
-        function resetSyncStatus() {
-            updateSyncStatus(view, currentItem);
-        }
-
-        function onSyncLocalClick() {
-
-            if (this.checked) {
-                require(['syncDialog'], function (syncDialog) {
-                    syncDialog.showMenu({
-                        items: [currentItem],
-                        isLocalSync: true,
-                        serverId: ApiClient.serverId()
-
-                    }).then(function () {
-                        reload(view, params);
-                    }, resetSyncStatus);
-                });
-            } else {
-
-                require(['confirm'], function (confirm) {
-
-                    confirm(globalize.translate('ConfirmRemoveDownload')).then(function () {
-                        ApiClient.cancelSyncItems([currentItem.Id]);
-                    }, resetSyncStatus);
-                });
-            }
-        }
-
         function onPlayTrailerClick() {
             playTrailer(view);
-        }
-
-        function onRecordClick() {
-            var id = params.id;
-            Dashboard.showLoadingMsg();
-
-            require(['recordingCreator'], function (recordingCreator) {
-                recordingCreator.show(id, currentItem.ServerId).then(function () {
-                    reload(view, params);
-                });
-            });
-        }
-
-        function onCancelRecordingClick() {
-            deleteTimer(view, params, currentItem.TimerId);
         }
 
         function onMoreCommandsClick() {
@@ -2256,11 +2218,6 @@
 
             splitVersions(view, params);
         });
-
-        elems = view.querySelectorAll('.chkOffline');
-        for (i = 0, length = elems.length; i < length; i++) {
-            elems[i].addEventListener('change', onSyncLocalClick);
-        }
 
         elems = view.querySelectorAll('.btnMoreCommands');
         for (i = 0, length = elems.length; i < length; i++) {
@@ -2349,7 +2306,7 @@
             var page = this;
             reload(page, params);
 
-            Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
+            events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
         });
 
         view.addEventListener('viewbeforehide', function () {
@@ -2357,8 +2314,16 @@
             currentItem = null;
             currentRecordingFields = null;
 
-            Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
+            events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
             libraryMenu.setTransparentMenu(false);
+        });
+
+        view.addEventListener('viewdestroy', function () {
+
+            if (view.syncToggleInstance) {
+                view.syncToggleInstance.destroy();
+                view.syncToggleInstance = null;
+            }
         });
     };
 });

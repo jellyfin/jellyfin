@@ -777,6 +777,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
+@media all and (max-width: 800px), (max-height: 800px) {
+
+    .detailsHiddenOnMobile {
+        display: none;
+    }
+}
+
 #criticReviewsContent.hiddenScrollX {
     white-space: nowrap;
 }

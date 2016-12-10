@@ -1293,6 +1293,7 @@ var AppInfo = {};
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
         define("guide-categories-dialog", [embyWebComponentsBowerPath + "/guide/guide-categories"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
+        define("syncToggle", [embyWebComponentsBowerPath + "/sync/synctoggle"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
         define("voiceProcessor", [embyWebComponentsBowerPath + "/voice/voiceprocessor"], returnFirstDependency);

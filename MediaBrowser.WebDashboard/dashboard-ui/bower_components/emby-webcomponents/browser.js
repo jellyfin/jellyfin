@@ -55,6 +55,11 @@
     }
 
     function isStyleSupported(prop, value) {
+
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
         // If no value is supplied, use "inherit"
         value = arguments.length === 2 ? value : 'inherit';
         // Try the native standard method first
@@ -220,7 +225,7 @@
         };
     };
 
-    var userAgent = window.navigator.userAgent;
+    var userAgent = navigator.userAgent;
     var matched = uaMatch(userAgent);
     var browser = {};
 
@@ -248,7 +253,7 @@
     }
 
     browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') !== -1;
-    browser.animate = document.documentElement.animate != null;
+    browser.animate = typeof document !== 'undefined' && document.documentElement.animate != null;
     browser.tizen = userAgent.toLowerCase().indexOf('tizen') !== -1 || userAgent.toLowerCase().indexOf('smarthub') !== -1;
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) !== -1;
     browser.edgeUwp = browser.edge && userAgent.toLowerCase().indexOf('msapphost') !== -1;
@@ -264,8 +269,10 @@
         browser.slow = true;
     }
 
-    if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
-        browser.touch = true;
+    if (typeof document !== 'undefined') {
+        if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
+            browser.touch = true;
+        }
     }
 
     browser.keyboard = hasKeyboard(browser);

@@ -353,5 +353,6 @@
   "HeaderPlayMyMedia": "Play my Media",
   "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
   "OneChannel": "One channel",
+  "ConfirmRemoveDownload": "Remove download?",
   "AddedOnValue": "Added {0}"
 }
