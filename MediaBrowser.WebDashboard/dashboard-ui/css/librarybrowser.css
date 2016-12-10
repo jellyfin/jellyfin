@@ -285,8 +285,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailUserDataIcons {
-    display: inline-block;
     margin-left: .5em;
+    white-space: nowrap;
 }
 
 .detailImageContainer {
@@ -314,11 +314,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-width: 1400px) {
 
     .detailLogo {
-        right: 10%;
+        right: 5%;
     }
 }
 
-@media all and (max-width: 1000px) {
+@media all and (max-width: 1200px) {
 
     .detailLogo {
         display: none;
@@ -805,7 +805,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .mediaInfoIcons {
     display: flex;
     align-items: center;
-    margin: 1.25em 0;
+    margin: 1.5em 0 1em;
+    flex-wrap: wrap;
 }
 
 .mediaInfoText {
@@ -814,10 +815,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border-radius: .25em;
     color: #ddd;
     margin-right: .5em;
+    margin-bottom: .5em;
     font-size: 94%;
     background: rgba(170,170,190, .2);
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .mediaInfoText-upper {

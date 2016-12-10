@@ -1573,7 +1573,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     ErrorDialog = false,
                     FileName = options.RecordingPostProcessor,
                     IsHidden = true,
-                    UseShellExecute = true
+                    UseShellExecute = false
                 });
 
                 _logger.Info("Running recording post processor {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);

@@ -213,7 +213,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 {
                     ScheduleDirect.Station station;
 
-                    if (channelPair.TryGetValue(channelNumber, out station))
+                    if (!string.IsNullOrWhiteSpace(channelNumber) && channelPair.TryGetValue(channelNumber, out station))
                     {
                         return station;
                     }

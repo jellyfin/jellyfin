@@ -297,7 +297,10 @@ define(['browser'], function (browser) {
             if (!mp3Added) {
                 videoAudioCodecs.push('mp3');
             }
-            hlsVideoAudioCodecs.push('mp3');
+            if (!browser.ps4) {
+                // PS4 fails to load HLS with mp3 audio
+                hlsVideoAudioCodecs.push('mp3');
+            }
         }
 
         if (browser.tizen || options.supportsDts) {
