@@ -989,7 +989,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
-                UseShellExecute = true,
+                UseShellExecute = false,
                 FileName = FFMpegPath,
                 Arguments = args,
                 IsHidden = true,
@@ -1092,7 +1092,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
-                UseShellExecute = true,
+                UseShellExecute = false,
                 FileName = FFMpegPath,
                 Arguments = args,
                 IsHidden = true,
