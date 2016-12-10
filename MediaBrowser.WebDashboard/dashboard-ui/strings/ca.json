@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalitzar",
     "LabelNext": "Seg\u00fcent",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Per afegir un usuari que no estigui llistat primer necessitar\u00e0s vincular el seu compte a Emby Connect des del seu perfil d'usuari.",
     "LabelPinCode": "Codi pin:",
     "OptionHideWatchedContentFromLatestMedia": "Oculta contingut ja visualitzat a darrers multim\u00e8dia",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
     "ButtonOk": "D'acord",
     "ButtonCancel": "Cancel\u00b7la",
@@ -1207,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Reprodueix el seg\u00fcent episodi autom\u00e0ticament",
     "OptionDownloadImagesInAdvance": "Download images in advance",
     "SettingsSaved": "Configuraci\u00f3 guardada.",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
     "Users": "Usuaris",
     "Delete": "Esborrar",
     "Password": "Contrasenya",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

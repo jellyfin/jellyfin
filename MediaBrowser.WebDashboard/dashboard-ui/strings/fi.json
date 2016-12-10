@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Edellinen",
     "LabelFinish": "Valmis",
     "LabelNext": "Seuraava",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
     "ButtonOk": "Ok",
     "ButtonCancel": "Lopeta",
@@ -1207,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
     "OptionDownloadImagesInAdvance": "Download images in advance",
     "SettingsSaved": "Asetukset tallennettu.",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
     "Users": "K\u00e4ytt\u00e4j\u00e4t",
     "Delete": "Poista",
     "Password": "Salasana",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

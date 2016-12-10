@@ -49,12 +49,6 @@ namespace MediaBrowser.Model.System
         public bool SupportsLibraryMonitor { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is network deployed.
-        /// </summary>
-        /// <value><c>true</c> if this instance is network deployed; otherwise, <c>false</c>.</value>
-        public bool IsNetworkDeployed { get; set; }
-
-        /// <summary>
         /// Gets or sets the in progress installations.
         /// </summary>
         /// <value>The in progress installations.</value>

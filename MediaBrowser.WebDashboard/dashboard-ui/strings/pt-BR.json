@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Finalizar",
     "LabelNext": "Pr\u00f3ximo",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Para adicionar um usu\u00e1rio que n\u00e3o esteja listado, voc\u00ea precisar\u00e1 associar sua conta ao Emby Connect na sua p\u00e1gina de perfil.",
     "LabelPinCode": "C\u00f3digo Pin:",
     "OptionHideWatchedContentFromLatestMedia": "Ocultar conte\u00fado j\u00e1 assistido das m\u00eddias recentes",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sincroniza\u00e7\u00e3o",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Processamento P\u00f3s-Grava\u00e7\u00e3o",
     "LabelPostProcessorArguments": "Argumentos de linha de comando do P\u00f3s-processador:",
     "LabelPostProcessorArgumentsHelp": "Usar {path} como a localiza\u00e7\u00e3o do arquivo de grava\u00e7\u00e3o.",
-    "LabelPostProcessor": "Aplica\u00e7\u00e3o de P\u00f3s-processamento:"
+    "LabelPostProcessor": "Aplica\u00e7\u00e3o de P\u00f3s-processamento:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

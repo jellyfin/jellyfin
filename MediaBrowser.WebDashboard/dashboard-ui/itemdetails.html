@@ -15,13 +15,6 @@
 
                 <div class="detailLogo"></div>
 
-                <div class="syncLocalContainer hide" style="margin-top: 1em; display: inline-flex; padding: 0 .5em;">
-                    <label class="checkboxContainer" style="margin: 0;">
-                        <input type="checkbox" is="emby-checkbox" class="chkOffline" />
-                        <span>${MakeAvailableOffline}</span>
-                    </label>
-                </div>
-
                 <div class="detailSection" style="margin-bottom: 0;">
 
                     <div>
@@ -52,7 +45,14 @@
                             &nbsp;
                         </button>
                         <div class="detailUserDataIcons userDataIcons"></div>
-                        <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">delete</i></button>
+                        <button is="emby-button" type="button" class="btnDeleteItem fab mini hide" title="${DeleteMedia}"><i class="md-icon">&#xE872;</i></button>
+                    </div>
+
+                    <div class="syncLocalContainer hide" style="margin: 1em 0;">
+                        <label class="checkboxContainer" style="margin: 0;">
+                            <input type="checkbox" is="emby-checkbox" class="chkOffline" />
+                            <span>${MakeAvailableOffline}</span>
+                        </label>
                     </div>
 
                     <div class="recordingFields hide" style="margin:  .5em 0 1.5em;">
@@ -61,16 +61,17 @@
 
                     <div class="detailSectionContent">
 
-                        <p class="itemGenres textLinkList"></p>
+                        <p class="itemGenres"></p>
                         <h1 class="tagline" style="margin-bottom: .7em;"></h1>
                         <p class="artist"></p>
                         <p class="overview"></p>
-                        <p id="dateAdded"></p>
+                        <div class="mediaInfoIcons hide">
+                        </div>
                         <p id="itemBirthday"></p>
                         <p id="itemBirthLocation"></p>
                         <p id="itemDeathDate"></p>
                         <p id="seriesAirTime"></p>
-                        <p class="itemExternalLinks textLinkList"></p>
+                        <p class="itemExternalLinks"></p>
                         <p class="itemStudios"></p>
                         <p class="itemTags"></p>
                     </div>

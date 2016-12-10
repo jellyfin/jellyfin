@@ -1,6 +1,4 @@
 {
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
-    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Odemknout tuto funkci pomoc\u00ed jednor\u00e1zov\u00e9 platby, nebo pomoc\u00ed aktivace p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageUnlockAppWithSupporter": "Odemknout tuto funkci pomoc\u00ed aktivn\u00edho p\u0159edplatn\u00e9ho Emby Premiere.",
     "MessageToValidateSupporter": "Pokud m\u00e1te aktivn\u00ed p\u0159edplatn\u00e9 Emby Premiere, ujist\u011bte se, \u017ee m\u00e1te nastaven Emby Premiere v panelu Nastaven\u00ed pod N\u00e1pov\u011bda -> Emby Premiere.",
@@ -345,7 +343,8 @@
     "ButtonRestorePreviousPurchase": "Obnovit n\u00e1kup",
     "ButtonUnlockWithPurchase": "Odemkn\u011bte pomoc\u00ed koup\u011b",
     "ButtonUnlockPrice": "Odemknout {0}",
-    "ButtonAlreadyPaid": "U\u017e jste provedli platbu?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "P\u0159ehr\u00e1t jednu minutu",
     "PlaceFavoriteChannelsAtBeginning": "Um\u00edstit obl\u00edben\u00e9 kan\u00e1ly na za\u010d\u00e1tek",
     "HeaderUnlockFeature": "Odemknout funkci",
@@ -353,5 +352,6 @@
     "MessageDidYouKnowCinemaMode2": "S re\u017eimem Kino budou p\u0159ed hlavn\u00edm programem p\u0159ehr\u00e1ny upout\u00e1vky a u\u017eivatelsk\u00e1 intra.",
     "HeaderPlayMyMedia": "P\u0159ehr\u00e1t moje M\u00e9dia",
     "HeaderDiscoverEmbyPremiere": "Objevte v\u00fdhody Emby Premiere",
-    "OneChannel": "Jeden kan\u00e1l"
+    "OneChannel": "Jeden kan\u00e1l",
+    "AddedOnValue": "Added on {0}"
 }

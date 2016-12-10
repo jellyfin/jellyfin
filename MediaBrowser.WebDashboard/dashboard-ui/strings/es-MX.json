@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Para agregar un usuario que no esta listado, necesita primero enlazar su cuenta a Emby Connect desde su pagina de perfil de usuario.",
     "LabelPinCode": "C\u00f3digo pin:",
     "OptionHideWatchedContentFromLatestMedia": "Ocultar contenido ya visto de Agregadas Recientemente",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sinc",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancelar",
@@ -170,7 +173,7 @@
     "OptionPlayCount": "Contador",
     "OptionDatePlayed": "Fecha de Reproducci\u00f3n",
     "OptionDateAdded": "Fecha de Adici\u00f3n",
-    "DateAddedValue": "Date added: {0}",
+    "DateAddedValue": "Fecha de adici\u00f3n: {0}",
     "OptionAlbumArtist": "Artista del \u00c1lbum",
     "OptionArtist": "Artista",
     "OptionAlbum": "\u00c1lbum",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Post Procesado de las Grabaciones",
     "LabelPostProcessorArguments": "Argumentos de linea de comando para el post-procesador:",
     "LabelPostProcessorArgumentsHelp": "Use {path} como la ruta a el archivo de grabado.",
-    "LabelPostProcessor": "Aplicaci\u00f3n de Post Procesado:"
+    "LabelPostProcessor": "Aplicaci\u00f3n de Post Procesado:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Tr\u01b0\u1edbc",
     "LabelFinish": "K\u1ebft th\u00fac",
     "LabelNext": "Ti\u1ebfp theo",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
     "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
+    "DeleteMedia": "Delete media",
     "HeaderSync": "Sync",
     "ButtonOk": "Ok",
     "ButtonCancel": "Tho\u00e1t",
@@ -1207,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Play next episode automatically",
     "OptionDownloadImagesInAdvance": "Download images in advance",
     "SettingsSaved": "L\u01b0u c\u00e1c c\u00e0i \u0111\u1eb7t.",
-    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported.",
+    "OptionDownloadImagesInAdvanceHelp": "By default, most images are only downloaded when requested by an Emby app. Enable this option to download all images in advance, as new media is imported. This may cause significantly longer library scans.",
     "Users": "Ng\u01b0\u1eddi d\u00f9ng",
     "Delete": "X\u00f3a",
     "Password": "M\u1eadt kh\u1ea9u",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Recording Post Processing",
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
-    "LabelPostProcessor": "Post-processing application:"
+    "LabelPostProcessor": "Post-processing application:",
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
 }

@@ -1,4 +1,6 @@
 {
+    "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
+    "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
@@ -24,6 +26,7 @@
     "LabelAddConnectSupporterHelp": "Um einen Benutzer hinzuzuf\u00fcgen, der nicht angezeigt wird, muss dieser zuerst im Benutzerprofil mit Emby Connect verkn\u00fcpft werden.",
     "LabelPinCode": "PIN Code:",
     "OptionHideWatchedContentFromLatestMedia": "Verberge gesehene Inhalte von neuesten Medien.",
+    "DeleteMedia": "Medien l\u00f6schen",
     "HeaderSync": "Synchronisation",
     "ButtonOk": "Ok",
     "ButtonCancel": "Abbrechen",
@@ -1941,5 +1944,6 @@
     "HeaderRecordingPostProcessing": "Aufnahme Nachbearbeitung",
     "LabelPostProcessorArguments": "Nachbearbeitung Kommandozeilen-Argumente:",
     "LabelPostProcessorArgumentsHelp": "Verwende {path} als das Verzeichnis f\u00fcr Aufnahmen.",
-    "LabelPostProcessor": "Nachbearbeitungs Anwendung:"
+    "LabelPostProcessor": "Nachbearbeitungs Anwendung:",
+    "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal."
 }

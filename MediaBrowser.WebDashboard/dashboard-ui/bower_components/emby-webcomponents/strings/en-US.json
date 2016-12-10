@@ -352,5 +352,6 @@
   "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
   "HeaderPlayMyMedia": "Play my Media",
   "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
-  "OneChannel": "One channel"
+  "OneChannel": "One channel",
+  "AddedOnValue": "Added {0}"
 }

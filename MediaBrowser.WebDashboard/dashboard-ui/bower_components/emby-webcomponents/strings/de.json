@@ -1,6 +1,4 @@
 {
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
-    "HeaderAlreadyPaid": "Already Paid?",
     "MessageUnlockAppWithPurchaseOrSupporter": "Schalte diese Funktion mit einer kleinen einmaligen Geb\u00fchr oder einem aktiven Emby Premium Abo frei.",
     "MessageUnlockAppWithSupporter": "Schalte diese Funktion mit einem aktiven Emby Premium Abo frei.",
     "MessageToValidateSupporter": "Wenn du eine aktive Emby Premiere Mitgliedschaft hast, stelle bitte sicher, dass du diese \u00fcber das Emby Server Dashboard eingerichtet hast (Hauptmenu -> Emby Premiere).",
@@ -345,7 +343,8 @@
     "ButtonRestorePreviousPurchase": "Kauf wiederherstellen",
     "ButtonUnlockWithPurchase": "Freischalten durch Kauf",
     "ButtonUnlockPrice": "{0} freischalten",
-    "ButtonAlreadyPaid": "Schon bezahlt?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Eine Minute wiedergeben",
     "PlaceFavoriteChannelsAtBeginning": "Platziere favorisierte Kan\u00e4le am Anfang",
     "HeaderUnlockFeature": "Feature freischalten",
@@ -353,5 +352,6 @@
     "MessageDidYouKnowCinemaMode2": "Der Kino-Modus bringt das richtige Kino-Erlebnis nach Hause, mit Trailern und eigenen Intros vor deinem Hauptfilm.",
     "HeaderPlayMyMedia": "Spiele meine Medien ab",
     "HeaderDiscoverEmbyPremiere": "Entdecke Emby Premiere",
-    "OneChannel": "Ein Kanal"
+    "OneChannel": "Ein Kanal",
+    "AddedOnValue": "Added on {0}"
 }

@@ -4,22 +4,28 @@
     return function (view, params) {
 
         var userId = params.userId || Dashboard.getCurrentUserId();
-        var userSettings = new userSettingsBuilder();
+        var userSettingsInstance = new userSettingsBuilder();
         var userSettingsLoaded;
 
         function loadForm(page, user) {
 
-            userSettings.setUserInfo(userId, ApiClient).then(function () {
+            userSettingsInstance.setUserInfo(userId, ApiClient).then(function () {
                 userSettingsLoaded = true;
                 page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
                 page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
 
-                page.querySelector('#chkThemeSong').checked = userSettings.enableThemeSongs();
+                page.querySelector('#chkThemeSong').checked = userSettingsInstance.enableThemeSongs();
                 page.querySelector('#selectBackdrop').value = appStorage.getItem('enableBackdrops-' + user.Id) || '0';
 
-                page.querySelector('#selectLanguage').value = userSettings.language() || '';
+                page.querySelector('#selectLanguage').value = userSettingsInstance.language() || '';
 
                 Dashboard.hideLoadingMsg();
+            });
+        }
+
+        function refreshGlobalUserSettings() {
+            require(['userSettings'], function (userSettings) {
+                userSettings.importFrom(userSettingsInstance);
             });
         }
 
@@ -29,8 +35,12 @@
             user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
 
             if (userSettingsLoaded) {
-                userSettings.language(page.querySelector('#selectLanguage').value);
-                userSettings.enableThemeSongs(page.querySelector('#chkThemeSong').checked);
+                userSettingsInstance.language(page.querySelector('#selectLanguage').value);
+                userSettingsInstance.enableThemeSongs(page.querySelector('#chkThemeSong').checked);
+
+                if (userId === Dashboard.getCurrentUserId()) {
+                    refreshGlobalUserSettings();
+                }
             }
 
             appStorage.setItem('enableBackdrops-' + user.Id, page.querySelector('#selectBackdrop').value);

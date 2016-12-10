@@ -561,12 +561,6 @@
 
         function enableNativeTrackSupport(track) {
 
-            if (browser.firefox) {
-                if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
-                    return false;
-                }
-            }
-
             if (track) {
                 var format = (track.format || '').toLowerCase();
                 if (format == 'ssa' || format == 'ass') {
@@ -602,8 +596,6 @@
             }
 
             customTrackIndex = -1;
-            currentSubtitlesElement = null;
-            currentTrackEvents = null;
             currentClock = null;
 
             var renderer = currentAssRenderer;
@@ -637,7 +629,6 @@
             destroyCustomTrack(videoElement, true);
             customTrackIndex = track.index;
             renderTracksEvents(videoElement, track);
-            lastCustomTrackMs = 0;
         }
 
         function renderWithLibjass(videoElement, track) {
@@ -690,48 +681,9 @@
                 renderWithLibjass(videoElement, track);
                 return;
             }
-
-            var trackElement = null;
-            var expectedId = 'manualTrack' + track.index;
-
-            var allTracks = videoElement.textTracks; // get list of tracks
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var currentTrack = allTracks[i];
-
-                if (currentTrack.label == expectedId) {
-                    trackElement = currentTrack;
-                    break;
-                } else {
-                    currentTrack.mode = 'disabled';
-                }
-            }
-
-            if (!trackElement) {
-                trackElement = videoElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
-                trackElement.label = 'manualTrack' + track.index;
-
-                // download the track json
-                fetchSubtitles(track).then(function (data) {
-
-                    // show in ui
-                    console.log('downloaded ' + data.TrackEvents.length + ' track events');
-                    // add some cues to show the text
-                    // in safari, the cues need to be added before setting the track mode to showing
-                    data.TrackEvents.forEach(function (trackEvent) {
-                        trackElement.addCue(new (window.VTTCue || window.TextTrackCue)(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
-                    });
-                    trackElement.mode = 'showing';
-                });
-            } else {
-                trackElement.mode = 'showing';
-            }
         }
 
-        var currentSubtitlesElement;
-        var currentTrackEvents;
         var customTrackIndex = -1;
-        var lastCustomTrackMs = 0;
         var currentClock;
         var currentAssRenderer;
         function updateSubtitleText(timeMs) {
@@ -740,44 +692,6 @@
             if (clock) {
                 clock.seek(timeMs / 1000);
             }
-
-            var trackEvents = currentTrackEvents;
-            if (!trackEvents) {
-                return;
-            }
-
-            if (!currentSubtitlesElement) {
-                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-                if (!videoSubtitlesElem) {
-                    videoSubtitlesElem = document.createElement('div');
-                    videoSubtitlesElem.classList.add('videoSubtitles');
-                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
-                    document.body.appendChild(videoSubtitlesElem);
-                }
-                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
-            }
-
-            if (lastCustomTrackMs > 0) {
-                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
-                    return;
-                }
-            }
-
-            lastCustomTrackMs = new Date().getTime();
-
-            var positionTicks = timeMs * 10000;
-            for (var i = 0, length = trackEvents.length; i < length; i++) {
-
-                var caption = trackEvents[i];
-                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
-                    currentSubtitlesElement.innerHTML = caption.Text;
-                    currentSubtitlesElement.classList.remove('hide');
-                    return;
-                }
-            }
-
-            currentSubtitlesElement.innerHTML = '';
-            currentSubtitlesElement.classList.add('hide');
         }
 
         self.setCurrentTrackElement = function (streamIndex) {
@@ -809,6 +723,7 @@
                 var currentTrack = allTracks[i];
 
                 console.log('currentTrack id: ' + currentTrack.id);
+                console.log('currentTrack label: ' + currentTrack.label);
 
                 var mode;
 
