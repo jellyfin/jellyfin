@@ -214,16 +214,17 @@ namespace Emby.Dlna.Didl
                 AddVideoResource(writer, video, deviceId, filter, contentFeature, streamInfo);
             }
 
-            foreach (var subtitle in streamInfo.GetSubtitleProfiles(false, _serverAddress, _accessToken))
-            {
-                if (subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
-                {
-                    var subtitleAdded = AddSubtitleElement(writer, subtitle);
+            var subtitleProfiles = streamInfo.GetSubtitleProfiles(false, _serverAddress, _accessToken)
+                .Where(subtitle => subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
+                .ToList();
 
-                    if (subtitleAdded && _profile.EnableSingleSubtitleLimit)
-                    {
-                        break;
-                    }
+            foreach (var subtitle in subtitleProfiles)
+            {
+                var subtitleAdded = AddSubtitleElement(writer, subtitle);
+
+                if (subtitleAdded && _profile.EnableSingleSubtitleLimit)
+                {
+                    break;
                 }
             }
         }

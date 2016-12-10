@@ -451,7 +451,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
-                UseShellExecute = true,
+                UseShellExecute = false,
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = string.Format("{0} -i \"{1}\" -c:s srt \"{2}\"", encodingParam, inputPath, outputPath),
 
@@ -582,7 +582,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var process = _processFactory.Create(new ProcessOptions
             {
                 CreateNoWindow = true,
-                UseShellExecute = true,
+                UseShellExecute = false,
 
                 FileName = _mediaEncoder.EncoderPath,
                 Arguments = processArgs,

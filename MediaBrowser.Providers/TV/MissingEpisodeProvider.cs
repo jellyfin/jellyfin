@@ -232,10 +232,14 @@ namespace MediaBrowser.Providers.TV
                 {
                     continue;
                 }
+
                 var now = DateTime.UtcNow;
 
                 var targetSeries = DetermineAppropriateSeries(series, tuple.Item1);
                 var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(targetSeries.ProviderIds) ?? ((targetSeries.AnimeSeriesIndex ?? 1) - 1);
+
+                var unairedThresholdDays = 1;
+                now = now.AddDays(0 - unairedThresholdDays);
 
                 if (airDate.Value < now)
                 {

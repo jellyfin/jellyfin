@@ -289,23 +289,13 @@ namespace Emby.Dlna
                 var allFiles = _fileSystem.GetFiles(path)
                     .ToList();
 
-                var xmlFies = type == DeviceProfileType.System ? 
-                    new List<FileSystemMetadata>() : 
-                    allFiles
+                var xmlFies = allFiles
                     .Where(i => string.Equals(i.Extension, ".xml", StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
-                var jsonFiles = allFiles
-                    .Where(i => string.Equals(i.Extension, ".json", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                var parseFiles = new List<FileSystemMetadata>();
 
-                var jsonFileNames = jsonFiles
-                    .Select(i => Path.GetFileNameWithoutExtension(i.Name))
-                    .ToList();
-
-                var parseFiles = jsonFiles.ToList();
-
-                parseFiles.AddRange(xmlFies.Where(i => !jsonFileNames.Contains(Path.GetFileNameWithoutExtension(i.Name), StringComparer.Ordinal)));
+                parseFiles.AddRange(xmlFies);
 
                 return parseFiles
                     .Select(i => ParseProfileFile(i.FullName, type))
@@ -334,10 +324,9 @@ namespace Emby.Dlna
 
                     if (string.Equals(Path.GetExtension(path), ".xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        var tempProfile = (ProfileSerialization.DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(Emby.Dlna.ProfileSerialization.DeviceProfile), path);
+                        var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
 
-                        var json = _jsonSerializer.SerializeToString(tempProfile);
-                        profile = (DeviceProfile)_jsonSerializer.DeserializeFromString<DeviceProfile>(json);
+                        profile = ReserializeProfile(tempProfile);
                     }
                     else
                     {
@@ -406,7 +395,7 @@ namespace Emby.Dlna
 
         private void ExtractSystemProfiles()
         {
-            var namespaceName = GetType().Namespace + ".Profiles.Json.";
+            var namespaceName = GetType().Namespace + ".Profiles.Xml.";
 
             var systemProfilesPath = SystemProfilesPath;
 
@@ -464,7 +453,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".json";
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
             SaveProfile(profile, path, DeviceProfileType.User);
@@ -485,7 +474,7 @@ namespace Emby.Dlna
 
             var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
 
-            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".json";
+            var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
 
             if (!string.Equals(path, current.Path, StringComparison.Ordinal) &&
@@ -503,21 +492,12 @@ namespace Emby.Dlna
             {
                 _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
             }
-            SerializeToJson(profile, path);
+            SerializeToXml(profile, path);
         }
 
-        internal void SerializeToJson(DeviceProfile profile, string path)
+        internal void SerializeToXml(DeviceProfile profile, string path)
         {
-            _jsonSerializer.SerializeToFile(profile, path);
-
-            try
-            {
-                _fileSystem.DeleteFile(Path.ChangeExtension(path, ".xml"));
-            }
-            catch
-            {
-
-            }
+            _xmlSerializer.SerializeToFile(profile, path);
         }
 
         /// <summary>
@@ -575,12 +555,14 @@ namespace Emby.Dlna
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
+        private readonly IXmlSerializer _xmlSerializer;
 
-        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public DlnaProfileEntryPoint(IApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IXmlSerializer xmlSerializer)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _xmlSerializer = xmlSerializer;
         }
 
         public void Run()
@@ -628,9 +610,9 @@ namespace Emby.Dlna
 
             foreach (var item in list)
             {
-                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".json");
+                var path = Path.Combine(_appPaths.ProgramDataPath, _fileSystem.GetValidFilename(item.Name) + ".xml");
 
-                _jsonSerializer.SerializeToFile(item, path);
+                _xmlSerializer.SerializeToFile(item, path);
             }
         }
 
