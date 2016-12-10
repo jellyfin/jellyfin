@@ -272,7 +272,7 @@ define(['browser'], function (browser) {
 
             // This works in edge desktop, but not mobile
             // TODO: Retest this on mobile
-            if (!browser.edge || !browser.touch) {
+            if (!browser.edge || !browser.touch || browser.edgeUwp) {
                 hlsVideoAudioCodecs.push('ac3');
             }
         }

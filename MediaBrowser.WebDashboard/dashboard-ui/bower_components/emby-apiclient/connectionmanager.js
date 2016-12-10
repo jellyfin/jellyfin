@@ -447,6 +447,7 @@
             if (options.reportCapabilities !== false) {
                 apiClient.reportCapabilities(capabilities);
             }
+            apiClient.enableAutomaticBitrateDetection = options.enableAutomaticBitrateDetection;
 
             if (options.enableWebSocket !== false) {
                 console.log('calling apiClient.ensureWebSocket');

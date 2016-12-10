@@ -670,8 +670,6 @@ define(['appSettings', 'userSettings', 'datetime', 'browser'], function (appSett
             });
         };
 
-        self.lastBitrateDetections = {};
-
         self.playInternal = function (item, startPosition, callback) {
 
             if (item == null) {
@@ -699,15 +697,12 @@ define(['appSettings', 'userSettings', 'datetime', 'browser'], function (appSett
                 });
             };
 
-            var bitrateDetectionKey = ApiClient.serverAddress();
-
-            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
+            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection()) {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
                     console.log('Max bitrate auto detected to ' + bitrate);
-                    self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     appSettings.maxStreamingBitrate(bitrate);
 
                     onBitrateDetected();

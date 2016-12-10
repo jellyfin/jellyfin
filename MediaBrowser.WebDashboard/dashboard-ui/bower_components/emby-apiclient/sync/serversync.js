@@ -16,7 +16,8 @@
             var connectionOptions = {
                 updateDateLastAccessed: false,
                 enableWebSocket: false,
-                reportCapabilities: false
+                reportCapabilities: false,
+                enableAutomaticBitrateDetection: false
             };
 
             return connectionManager.connectToServer(server, connectionOptions).then(function (result) {

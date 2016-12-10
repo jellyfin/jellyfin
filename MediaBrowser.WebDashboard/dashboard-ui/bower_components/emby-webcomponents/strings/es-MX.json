@@ -182,7 +182,7 @@
     "LabelAirsBeforeSeason": "Transmisi\u00f3n antes de la temporada:",
     "LabelAirsAfterSeason": "Transmisi\u00f3n despu\u00e9s de la temporada:",
     "LabelAirsBeforeEpisode": "Transmisi\u00f3n antes del episodio:",
-    "HeaderExternalIds": "Id\u00b4s Externos:",
+    "HeaderExternalIds": "IDs Externos:",
     "HeaderDisplaySettings": "Configuraci\u00f3n de Pantalla",
     "LabelTreatImageAs": "Tratar imagen como:",
     "LabelDisplayOrder": "Orden para mostrar:",
@@ -353,5 +353,6 @@
     "HeaderPlayMyMedia": "Reproducir mis Medios",
     "HeaderDiscoverEmbyPremiere": "Descubra Emby Premier",
     "OneChannel": "Un canal",
-    "AddedOnValue": "Added on {0}"
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Agregado el {0}"
 }

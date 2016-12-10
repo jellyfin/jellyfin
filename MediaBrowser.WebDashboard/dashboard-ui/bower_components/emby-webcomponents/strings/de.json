@@ -182,7 +182,7 @@
     "LabelAirsBeforeSeason": "Ausstrahlungen vor Staffel:",
     "LabelAirsAfterSeason": "Ausstrahlungen nach Staffel:",
     "LabelAirsBeforeEpisode": "Ausstrahlungen vor Episode:",
-    "HeaderExternalIds": "Externe Id's:",
+    "HeaderExternalIds": "Externe IDs:",
     "HeaderDisplaySettings": "Anzeige Einstellungen",
     "LabelTreatImageAs": "Bild behandeln, wie:",
     "LabelDisplayOrder": "Anzeigereihenfolge:",
@@ -343,8 +343,8 @@
     "ButtonRestorePreviousPurchase": "Kauf wiederherstellen",
     "ButtonUnlockWithPurchase": "Freischalten durch Kauf",
     "ButtonUnlockPrice": "{0} freischalten",
-    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
-    "HeaderAlreadyPaid": "Already Paid?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monatlich {0}",
+    "HeaderAlreadyPaid": "Schon bezahlt?",
     "ButtonPlayOneMinute": "Eine Minute wiedergeben",
     "PlaceFavoriteChannelsAtBeginning": "Platziere favorisierte Kan\u00e4le am Anfang",
     "HeaderUnlockFeature": "Feature freischalten",
@@ -353,5 +353,6 @@
     "HeaderPlayMyMedia": "Spiele meine Medien ab",
     "HeaderDiscoverEmbyPremiere": "Entdecke Emby Premiere",
     "OneChannel": "Ein Kanal",
-    "AddedOnValue": "Added on {0}"
+    "ConfirmRemoveDownload": "Download entfernen?",
+    "AddedOnValue": "Hinzugef\u00fcgt {0}"
 }

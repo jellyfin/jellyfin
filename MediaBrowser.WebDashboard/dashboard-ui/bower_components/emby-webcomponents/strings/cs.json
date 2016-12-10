@@ -353,5 +353,6 @@
     "HeaderPlayMyMedia": "P\u0159ehr\u00e1t moje M\u00e9dia",
     "HeaderDiscoverEmbyPremiere": "Objevte v\u00fdhody Emby Premiere",
     "OneChannel": "Jeden kan\u00e1l",
-    "AddedOnValue": "Added on {0}"
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Added {0}"
 }

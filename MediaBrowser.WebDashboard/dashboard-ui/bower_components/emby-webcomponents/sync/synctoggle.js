@@ -10,6 +10,8 @@
 
         var self = this;
 
+        self.options = options;
+
         function resetSyncStatus() {
             updateSyncStatus(options.container, options.item);
         }

@@ -353,5 +353,6 @@
     "HeaderPlayMyMedia": "Reproduciraj moje medije",
     "HeaderDiscoverEmbyPremiere": "Otkrijte Emby Premijeru",
     "OneChannel": "One channel",
-    "AddedOnValue": "Added on {0}"
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Added {0}"
 }

@@ -353,5 +353,6 @@
     "HeaderPlayMyMedia": "Riproduci i miei Media",
     "HeaderDiscoverEmbyPremiere": "Scopri Emby Premiere",
     "OneChannel": "Un canale",
-    "AddedOnValue": "Added on {0}"
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Added {0}"
 }

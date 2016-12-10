@@ -22,6 +22,27 @@
         var self = this;
         var webSocket;
         var serverInfo = {};
+        var lastDetectedBitrate;
+        var lastDetectedBitrateTime;
+
+        var detectTimeout;
+        function redetectBitrate() {
+            stopBitrateDetection();
+
+            if (self.accessToken() && self.enableAutomaticBitrateDetection !== false) {
+                setTimeout(redetectBitrateInternal, 6000);
+            }
+        }
+
+        function redetectBitrateInternal() {
+            self.detectBitrate();
+        }
+
+        function stopBitrateDetection() {
+            if (detectTimeout) {
+                clearTimeout(detectTimeout);
+            }
+        }
 
         /**
          * Gets the server address.
@@ -38,9 +59,14 @@
 
                 serverAddress = val;
 
+                lastDetectedBitrate = 0;
+                lastDetectedBitrateTime = 0;
+
                 if (changed) {
                     events.trigger(this, 'serveraddresschanged');
                 }
+
+                redetectBitrate();
             }
 
             return serverAddress;
@@ -128,6 +154,7 @@
 
             serverInfo.AccessToken = accessKey;
             serverInfo.UserId = userId;
+            redetectBitrate();
         };
 
         self.encodeName = function (name) {
@@ -672,10 +699,20 @@
         function normalizeReturnBitrate(bitrate) {
 
             if (!bitrate) {
+
+                if (lastDetectedBitrate) {
+                    return lastDetectedBitrate;
+                }
+
                 return Promise.reject();
             }
 
-            return Math.round(bitrate * 0.8);
+            var result = Math.round(bitrate * 0.8);
+
+            lastDetectedBitrate = result;
+            lastDetectedBitrateTime = new Date().getTime();
+
+            return result;
         }
 
         function detectBitrateInternal(tests, index, currentBitrate) {
@@ -685,7 +722,7 @@
                 return normalizeReturnBitrate(currentBitrate);
             }
 
-            var test = tests[0];
+            var test = tests[index];
 
             return self.getDownloadSpeed(test.bytes).then(function (bitrate) {
 
@@ -702,6 +739,10 @@
         }
 
         self.detectBitrate = function () {
+
+            if (lastDetectedBitrate && (new Date().getTime() - (lastDetectedBitrateTime || 0)) <= 3600000) {
+                return Promise.resolve(lastDetectedBitrate);
+            }
 
             return detectBitrateInternal([
             {
@@ -798,6 +839,7 @@
 
         self.logout = function () {
 
+            stopBitrateDetection();
             self.closeWebSocket();
 
             var done = function () {
@@ -2591,6 +2633,8 @@
                             self.onAuthenticated(self, result);
                         }
 
+                        redetectBitrate();
+
                         resolve(result);
 
                     }, reject);
@@ -3341,6 +3385,8 @@
                 throw new Error("null options");
             }
 
+            stopBitrateDetection();
+
             var url = self.getUrl("Sessions/Playing");
 
             return self.ajax({
@@ -3468,6 +3514,8 @@
             if (!options) {
                 throw new Error("null options");
             }
+
+            redetectBitrate();
 
             var url = self.getUrl("Sessions/Playing/Stopped");
 
