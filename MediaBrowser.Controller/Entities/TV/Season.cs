@@ -48,11 +48,7 @@ namespace MediaBrowser.Controller.Entities.TV
         [IgnoreDataMember]
         public override Guid? DisplayParentId
         {
-            get
-            {
-                var series = Series;
-                return series == null ? ParentId : series.Id;
-            }
+            get { return SeriesId; }
         }
 
         [IgnoreDataMember]

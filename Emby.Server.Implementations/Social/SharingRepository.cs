@@ -52,9 +52,9 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("info.Id");
             }
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -77,9 +77,9 @@ namespace Emby.Server.Implementations.Social
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = "select Id, ItemId, UserId, ExpirationDate from Shares where id = ?";
 

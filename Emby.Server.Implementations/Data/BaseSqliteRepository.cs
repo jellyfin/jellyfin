@@ -20,14 +20,7 @@ namespace Emby.Server.Implementations.Data
         {
             Logger = logger;
 
-            WriteLock = AllowLockRecursion ?
-              new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion) :
-              new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
-        }
-
-        protected virtual bool AllowLockRecursion
-        {
-            get { return false; }
+            WriteLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         }
 
         protected TransactionMode TransactionMode
@@ -35,12 +28,26 @@ namespace Emby.Server.Implementations.Data
             get { return TransactionMode.Immediate; }
         }
 
+        protected TransactionMode ReadTransactionMode
+        {
+            get { return TransactionMode.Deferred; }
+        }
+
+        internal static int ThreadSafeMode { get; set; }
+
         static BaseSqliteRepository()
         {
             SQLite3.EnableSharedCache = false;
 
             int rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MEMSTATUS, 0);
             //CheckOk(rc);
+
+            rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MULTITHREAD, 1);
+            //CheckOk(rc);
+
+            rc = raw.sqlite3_enable_shared_cache(1);
+
+            ThreadSafeMode = raw.sqlite3_threadsafe();
         }
 
         private static bool _versionLogged;
@@ -61,16 +68,19 @@ namespace Emby.Server.Implementations.Data
             if (isReadOnly)
             {
                 //Logger.Info("Opening read connection");
+                //connectionFlags = ConnectionFlags.ReadOnly;
+                connectionFlags = ConnectionFlags.Create;
+                connectionFlags |= ConnectionFlags.ReadWrite;
             }
             else
             {
                 //Logger.Info("Opening write connection");
+                connectionFlags = ConnectionFlags.Create;
+                connectionFlags |= ConnectionFlags.ReadWrite;
             }
 
-            connectionFlags = ConnectionFlags.Create;
-            connectionFlags |= ConnectionFlags.ReadWrite;
-            connectionFlags |= ConnectionFlags.SharedCached;
-            //connectionFlags |= ConnectionFlags.NoMutex;
+            //connectionFlags |= ConnectionFlags.SharedCached;
+            connectionFlags |= ConnectionFlags.NoMutex;
 
             var db = SQLite3.Open(DbFilePath, connectionFlags, null);
 
@@ -114,12 +124,33 @@ namespace Emby.Server.Implementations.Data
                     db.ExecuteAll(string.Join(";", queries.ToArray()));
                 }
             }
-            else*/ if (queries.Count > 0)
+            else*/
+            if (queries.Count > 0)
             {
                 db.ExecuteAll(string.Join(";", queries.ToArray()));
             }
 
             return db;
+        }
+
+        public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
+        {
+            return connection.PrepareStatement(sql);
+        }
+
+        public IStatement PrepareStatementSafe(IDatabaseConnection connection, string sql)
+        {
+            return connection.PrepareStatement(sql);
+        }
+
+        public List<IStatement> PrepareAll(IDatabaseConnection connection, string sql)
+        {
+            return connection.PrepareAll(sql).ToList();
+        }
+
+        public List<IStatement> PrepareAllSafe(IDatabaseConnection connection, string sql)
+        {
+            return connection.PrepareAll(sql).ToList();
         }
 
         protected void RunDefaultInitialization(IDatabaseConnection db)
@@ -288,12 +319,27 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        public class DummyToken : IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
+
         public static IDisposable Read(this ReaderWriterLockSlim obj)
         {
+            //if (BaseSqliteRepository.ThreadSafeMode > 0)
+            //{
+            //    return new DummyToken();
+            //}
             return new ReadLockToken(obj);
         }
         public static IDisposable Write(this ReaderWriterLockSlim obj)
         {
+            //if (BaseSqliteRepository.ThreadSafeMode > 0)
+            //{
+            //    return new DummyToken();
+            //}
             return new WriteLockToken(obj);
         }
     }
