@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("key");
             }
 
-            using (WriteLock.Write())
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -349,7 +349,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<UserItemData>();
 
-            using (WriteLock.Write())
+            using (WriteLock.Read())
             {
                 using (var connection = CreateConnection())
                 {

@@ -266,7 +266,7 @@
                     resolve(response);
                 }, function (error) {
                     clearTimeout(timeout);
-                    reject();
+                    reject(error);
                 });
             });
         }
@@ -448,11 +448,14 @@
 
             }, function (error) {
 
-                console.log("Request failed to " + request.url);
+                if (error) {
+                    console.log("Request failed to " + request.url + ' ' + error.toString());
+                } else {
+                    console.log("Request timed out to " + request.url + ' ' + error.toString());
+                }
 
-                // http://api.jquery.com/jQuery.ajax/
-                if (enableReconnection) {
-
+                // http://api.jquery.com/jQuery.ajax/		     
+                if (!error && enableReconnection) {
                     console.log("Attempting reconnection");
 
                     var previousServerAddress = self.serverAddress();
