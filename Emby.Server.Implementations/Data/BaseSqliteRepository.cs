@@ -332,7 +332,7 @@ namespace Emby.Server.Implementations.Data
             //{
             //    return new DummyToken();
             //}
-            return new WriteLockToken(obj);
+            return new ReadLockToken(obj);
         }
         public static IDisposable Write(this ReaderWriterLockSlim obj)
         {
