@@ -388,7 +388,7 @@ namespace Emby.Server.Implementations.Data
         {
             try
             {
-                lock (WriteLock)
+                using (WriteLock.Write())
                 {
                     using (var connection = CreateConnection())
                     {
@@ -688,7 +688,7 @@ namespace Emby.Server.Implementations.Data
                 tuples.Add(new Tuple<BaseItem, List<Guid>, BaseItem, string>(item, ancestorIds, topParent, userdataKey));
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -1257,7 +1257,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
             //Logger.Info("Retrieving item {0}", id.ToString("N"));
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2083,7 +2083,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<ChapterInfo>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2117,7 +2117,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("id");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2198,7 +2198,7 @@ namespace Emby.Server.Implementations.Data
 
             var index = 0;
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -2492,7 +2492,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2687,7 +2687,7 @@ namespace Emby.Server.Implementations.Data
                 statementTexts.Add(commandText);
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2906,7 +2906,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Guid>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -2977,7 +2977,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<Tuple<Guid, string>>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -3091,7 +3091,7 @@ namespace Emby.Server.Implementations.Data
                 statementTexts.Add(commandText);
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -4461,7 +4461,7 @@ namespace Emby.Server.Implementations.Data
 
             var commandText = "select Guid,InheritedTags,(select group_concat(Tags, '|') from TypedBaseItems where (guid=outer.guid) OR (guid in (Select AncestorId from AncestorIds where ItemId=Outer.guid))) as NewInheritedTags from typedbaseitems as Outer where NewInheritedTags <> InheritedTags";
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -4535,7 +4535,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -4595,7 +4595,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<string>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -4636,7 +4636,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<PersonInfo>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -4851,7 +4851,7 @@ namespace Emby.Server.Implementations.Data
 
             commandText += " Group By CleanValue";
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -5030,7 +5030,7 @@ namespace Emby.Server.Implementations.Data
                 statementTexts.Add(countText);
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -5253,7 +5253,7 @@ namespace Emby.Server.Implementations.Data
 
             CheckDisposed();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -5340,7 +5340,7 @@ namespace Emby.Server.Implementations.Data
 
             cmdText += " order by StreamIndex ASC";
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -5385,7 +5385,7 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {

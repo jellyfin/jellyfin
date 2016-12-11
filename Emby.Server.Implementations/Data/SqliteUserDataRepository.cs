@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.Data
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
@@ -296,7 +296,7 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("key");
             }
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection(true))
                 {
@@ -349,7 +349,7 @@ namespace Emby.Server.Implementations.Data
 
             var list = new List<UserItemData>();
 
-            lock (WriteLock)
+            using (WriteLock.Write())
             {
                 using (var connection = CreateConnection())
                 {
