@@ -105,9 +105,9 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = BaseJobSelectText + " where Id=?";
                     var paramList = new List<object>();
@@ -216,9 +216,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     string commandText;
                     var paramList = new List<object>();
@@ -277,9 +277,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -299,9 +299,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = BaseJobSelectText;
                     var paramList = new List<object>();
@@ -399,9 +399,9 @@ namespace Emby.Server.Implementations.Sync
 
             var guid = new Guid(id);
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = BaseJobItemSelectText + " where Id=?";
                     var paramList = new List<object>();
@@ -425,9 +425,9 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentNullException("query");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = baseSelectText;
                     var paramList = new List<object>();
@@ -505,41 +505,41 @@ namespace Emby.Server.Implementations.Sync
 
             var now = DateTime.UtcNow;
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                var commandText = "select ItemId,Status,Progress from SyncJobItems";
-                var whereClauses = new List<string>();
-
-                if (!string.IsNullOrWhiteSpace(query.TargetId))
+                using (var connection = CreateConnection(true))
                 {
-                    whereClauses.Add("TargetId=@TargetId");
-                }
+                    var commandText = "select ItemId,Status,Progress from SyncJobItems";
+                    var whereClauses = new List<string>();
 
-                if (query.Statuses.Length > 0)
-                {
-                    var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
+                    if (!string.IsNullOrWhiteSpace(query.TargetId))
+                    {
+                        whereClauses.Add("TargetId=@TargetId");
+                    }
 
-                    whereClauses.Add(string.Format("Status in ({0})", statuses));
-                }
+                    if (query.Statuses.Length > 0)
+                    {
+                        var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 
-                if (whereClauses.Count > 0)
-                {
-                    commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
-                }
+                        whereClauses.Add(string.Format("Status in ({0})", statuses));
+                    }
 
-                var statementTexts = new List<string>
+                    if (whereClauses.Count > 0)
+                    {
+                        commandText += " where " + string.Join(" AND ", whereClauses.ToArray());
+                    }
+
+                    var statementTexts = new List<string>
                 {
                     commandText
                 };
 
-                commandText = commandText
-                    .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
-                    .Replace("'Synced'", "'Completed','CompletedWithError'");
+                    commandText = commandText
+                        .Replace("select ItemId,Status,Progress from SyncJobItems", "select ItemIds,Status,Progress from SyncJobs")
+                        .Replace("'Synced'", "'Completed','CompletedWithError'");
 
-                statementTexts.Add(commandText);
+                    statementTexts.Add(commandText);
 
-                using (WriteLock.Read())
-                {
                     var statements = connection.PrepareAll(string.Join(";", statementTexts.ToArray()))
                         .ToList();
 
@@ -692,9 +692,9 @@ namespace Emby.Server.Implementations.Sync
 
             CheckDisposed();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     string commandText;
 
