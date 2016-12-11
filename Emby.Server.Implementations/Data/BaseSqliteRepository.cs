@@ -343,46 +343,4 @@ namespace Emby.Server.Implementations.Data
             return new WriteLockToken(obj);
         }
     }
-
-    public static class SemaphpreSlimExtensions
-    {
-        private sealed class WriteLockToken : IDisposable
-        {
-            private SemaphoreSlim _sync;
-            public WriteLockToken(SemaphoreSlim sync)
-            {
-                _sync = sync;
-                var task = sync.WaitAsync();
-                Task.WaitAll(task);
-            }
-            public void Dispose()
-            {
-                if (_sync != null)
-                {
-                    _sync.Release();
-                    _sync = null;
-                }
-            }
-        }
-
-        public class DummyToken : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
-
-        public static IDisposable Read(this SemaphoreSlim obj)
-        {
-            return Write(obj);
-        }
-        public static IDisposable Write(this SemaphoreSlim obj)
-        {
-            //if (BaseSqliteRepository.ThreadSafeMode > 0)
-            //{
-            //    return new DummyToken();
-            //}
-            return new WriteLockToken(obj);
-        }
-    }
 }
