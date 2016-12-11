@@ -1210,7 +1210,7 @@
     "OptionPlayNextEpisodeAutomatically": "Starte n\u00e4chste Episode automatisch",
     "OptionDownloadImagesInAdvance": "Bilder vorab herunterladen",
     "SettingsSaved": "Einstellungen gespeichert.",
-    "OptionDownloadImagesInAdvanceHelp": "Grunds\u00e4tzlich werden die meisten Bilder erst dann runter geladen, wenn eine Emby-App diese anfragt. Schalten Sie diese Option ein um alle Bilder im Voraus herunterzuladen, wenn neue Medien importiert wurden.",
+    "OptionDownloadImagesInAdvanceHelp": "Grunds\u00e4tzlich werden die meisten Bilder erst dann runter geladen, wenn eine Emby-App diese anfragt. Schalten Sie diese Option ein um alle Bilder im Voraus herunterzuladen, wenn neue Medien importiert wurden. Diese Einstellung kann zu signifikant l\u00e4ngeren Bibliothekscans f\u00fchren.",
     "Users": "Benutzer",
     "Delete": "L\u00f6schen",
     "Password": "Passwort",

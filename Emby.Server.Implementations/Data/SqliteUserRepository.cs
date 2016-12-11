@@ -85,9 +85,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -110,9 +110,9 @@ namespace Emby.Server.Implementations.Data
         {
             var list = new List<User>();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     foreach (var row in connection.Query("select guid,data from users"))
                     {
@@ -148,9 +148,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {

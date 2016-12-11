@@ -101,13 +101,6 @@ namespace Emby.Server.Implementations.Devices
         {
             IEnumerable<DeviceInfo> devices = _repo.GetDevices().OrderByDescending(i => i.DateLastModified);
 
-            if (query.SupportsContentUploading.HasValue)
-            {
-                var val = query.SupportsContentUploading.Value;
-
-                devices = devices.Where(i => GetCapabilities(i.Id).SupportsContentUploading == val);
-            }
-
             if (query.SupportsSync.HasValue)
             {
                 var val = query.SupportsSync.Value;

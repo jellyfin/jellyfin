@@ -66,9 +66,9 @@ namespace Emby.Server.Implementations.Security
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -202,9 +202,9 @@ namespace Emby.Server.Implementations.Security
 
             var list = new List<AuthenticationInfo>();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     using (var statement = connection.PrepareStatement(commandText))
                     {
@@ -241,9 +241,9 @@ namespace Emby.Server.Implementations.Security
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = BaseSelectText + " where Id=@Id";
 

@@ -52,9 +52,9 @@ namespace Emby.Server.Implementations.Data
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -92,9 +92,9 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -110,9 +110,9 @@ namespace Emby.Server.Implementations.Data
 
         public async Task DeleteAll()
         {
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                using (WriteLock.Write())
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(db =>
                     {
@@ -131,9 +131,9 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("query");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     var commandText = "SELECT ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults";
 
@@ -182,9 +182,9 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException("id");
             }
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                using (WriteLock.Read())
+                using (var connection = CreateConnection(true))
                 {
                     using (var statement = connection.PrepareStatement("select ResultId, OriginalPath, TargetPath, FileLength, OrganizationDate, Status, OrganizationType, StatusMessage, ExtractedName, ExtractedYear, ExtractedSeasonNumber, ExtractedEpisodeNumber, ExtractedEndingEpisodeNumber, DuplicatePaths from FileOrganizerResults where ResultId=@ResultId"))
                     {

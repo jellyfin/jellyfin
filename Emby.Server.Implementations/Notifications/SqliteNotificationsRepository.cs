@@ -51,24 +51,24 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationResult();
 
+            var clauses = new List<string>();
+            var paramList = new List<object>();
+
+            if (query.IsRead.HasValue)
+            {
+                clauses.Add("IsRead=?");
+                paramList.Add(query.IsRead.Value);
+            }
+
+            clauses.Add("UserId=?");
+            paramList.Add(query.UserId.ToGuidParamValue());
+
+            var whereClause = " where " + string.Join(" And ", clauses.ToArray());
+
             using (var connection = CreateConnection(true))
             {
-                using (WriteLock.Read())
+                lock (WriteLock)
                 {
-                    var clauses = new List<string>();
-                    var paramList = new List<object>();
-
-                    if (query.IsRead.HasValue)
-                    {
-                        clauses.Add("IsRead=?");
-                        paramList.Add(query.IsRead.Value);
-                    }
-
-                    clauses.Add("UserId=?");
-                    paramList.Add(query.UserId.ToGuidParamValue());
-
-                    var whereClause = " where " + string.Join(" And ", clauses.ToArray());
-
                     result.TotalRecordCount = connection.Query("select count(Id) from Notifications" + whereClause, paramList.ToArray()).SelectScalarInt().First();
 
                     var commandText = string.Format("select Id,UserId,Date,Name,Description,Url,Level,IsRead,Category,RelatedId from Notifications{0} order by IsRead asc, Date desc", whereClause);
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection(true))
             {
-                using (WriteLock.Read())
+                lock (WriteLock)
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection())
             {
-                using (WriteLock.Write())
+                lock (WriteLock)
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -288,7 +288,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection())
             {
-                using (WriteLock.Write())
+                lock (WriteLock)
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.Notifications
 
             using (var connection = CreateConnection())
             {
-                using (WriteLock.Write())
+                lock (WriteLock)
                 {
                     connection.RunInTransaction(conn =>
                     {
