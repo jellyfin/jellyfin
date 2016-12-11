@@ -887,6 +887,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
             var enableSplittingOnNonKeyFrames = state.VideoRequest.EnableSplittingOnNonKeyFrames && string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase);
+            enableSplittingOnNonKeyFrames = false;
 
             // TODO: check libavformat version for 57 50.100 and use -hls_flags split_by_time
             var hlsProtocolSupportsSplittingByTime = false;
