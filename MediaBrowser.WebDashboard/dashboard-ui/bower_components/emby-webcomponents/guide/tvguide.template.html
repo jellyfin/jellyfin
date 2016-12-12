@@ -1,34 +1,30 @@
 ﻿<div class="tvGuideHeader">
-    <div class="channelTimeslotHeader">
-        <button is="emby-button" type="button" class="btnSelectDate block button-flat" style="color:inherit;">
-            <div class="btnSelectDateContent">
-                <div class="guideDateText">
-                </div>
-                <i class="md-icon selectDateIcon">&#xE5C5;</i>
+
+    <div class="guideHeaderDateSelection">
+        <div is="emby-tabs" class="guideDateTabs" data-selectionbar="false">
+            <div class="emby-tabs-slider guideDateTabsSlider">
             </div>
-        </button>
-        <button is="paper-icon-button-light" type="button" class="btnGuideViewSettings">
-            <i class="md-icon btnGuideViewSettingsIcon">&#xE42A;</i>
-        </button>
+        </div>
     </div>
-    <div class="timeslotHeaders smoothScrollX guideScroller" style="scroll-behavior: auto;"></div>
+
+    <div class="guideHeaderTimeslots">
+        <div class="channelTimeslotHeader">
+            <button is="paper-icon-button-light" type="button" class="btnGuideViewSettings">
+                <i class="md-icon btnGuideViewSettingsIcon">&#xE5D3;</i>
+            </button>
+        </div>
+        <div class="timeslotHeaders smoothScrollX guideScroller" style="scroll-behavior: auto;"></div>
+    </div>
 </div>
 
-<div class="guideContent">
+<div class="smoothScrollY guideVerticalScroller programContainer guideScroller">
 
-    <button is="emby-button" type="button" class="btnCategories">
-        <div class="btnCategoriesText">${Categories}</div>
-    </button>
-    <div class="smoothScrollY guideVerticalScroller programContainer guideScroller">
-
-        <div class="channelsContainer">
-            <div class="channelList"></div>
-        </div>
-
-        <div class="programGridContainer programGrid smoothScrollX guideScroller" style="white-space: nowrap;">
-        </div>
+    <div class="channelsContainer">
+        <div class="channelList"></div>
     </div>
 
+    <div class="programGridContainer programGrid smoothScrollX guideScroller" style="white-space: nowrap;">
+    </div>
 </div>
 
 <div class="guideRequiresUnlock hide">

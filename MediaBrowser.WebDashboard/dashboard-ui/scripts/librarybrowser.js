@@ -97,7 +97,7 @@
                     }
 
                     if (elem.classList) {
-                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
+                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('animatedScrollX');
                     }
 
                     return true;
