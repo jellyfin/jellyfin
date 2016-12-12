@@ -2443,6 +2443,66 @@ namespace Emby.Server.Implementations.Data
             return " from TypedBaseItems " + alias;
         }
 
+        public int GetCount(InternalItemsQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            CheckDisposed();
+
+            //Logger.Info("GetItemList: " + _environmentInfo.StackTrace);
+
+            var now = DateTime.UtcNow;
+
+            // Hack for right now since we currently don't support filtering out these duplicates within a query
+            if (query.Limit.HasValue && query.EnableGroupByMetadataKey)
+            {
+                query.Limit = query.Limit.Value + 4;
+            }
+
+            var commandText = "select " + string.Join(",", GetFinalColumnsToSelect(query, new [] { "count(distinct PresentationUniqueKey)" })) + GetFromText();
+            commandText += GetJoinUserDataText(query);
+
+            var whereClauses = GetWhereClauses(query, null);
+
+            var whereText = whereClauses.Count == 0 ?
+                string.Empty :
+                " where " + string.Join(" AND ", whereClauses.ToArray());
+
+            commandText += whereText;
+
+            //commandText += GetGroupBy(query);
+
+            int count = 0;
+
+            using (WriteLock.Read())
+            {
+                using (var connection = CreateConnection(true))
+                {
+                    using (var statement = PrepareStatementSafe(connection, commandText))
+                    {
+                        if (EnableJoinUserData(query))
+                        {
+                            statement.TryBind("@UserId", query.User.Id);
+                        }
+
+                        BindSimilarParams(query, statement);
+
+                        // Running this again will bind the params
+                        GetWhereClauses(query, statement);
+
+                        count = statement.ExecuteQuery().SelectScalarInt().First();
+                    }
+                }
+
+                LogQueryTime("GetCount", commandText, now);
+            }
+
+            return count;
+        }
+
         public List<BaseItem> GetItemList(InternalItemsQuery query)
         {
             if (query == null)
@@ -2859,7 +2919,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
+                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
             }
 
             return new Tuple<string, bool>(name, false);
