@@ -119,6 +119,7 @@
     <Compile Include="Library\Resolvers\Audio\MusicAlbumResolver.cs" />
     <Compile Include="Library\Resolvers\Audio\MusicArtistResolver.cs" />
     <Compile Include="Library\Resolvers\BaseVideoResolver.cs" />
+    <Compile Include="Library\Resolvers\Books\BookResolver.cs" />
     <Compile Include="Library\Resolvers\FolderResolver.cs" />
     <Compile Include="Library\Resolvers\ItemResolver.cs" />
     <Compile Include="Library\Resolvers\Movies\BoxSetResolver.cs" />

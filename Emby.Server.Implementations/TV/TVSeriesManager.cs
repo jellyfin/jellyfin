@@ -62,7 +62,14 @@ namespace Emby.Server.Implementations.TV
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 ParentId = parentIdGuid,
-                Recursive = true
+                Recursive = true,
+                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+
+                    }
+                }
 
             }).Cast<Series>();
 
@@ -104,7 +111,15 @@ namespace Emby.Server.Implementations.TV
                 IncludeItemTypes = new[] { typeof(Series).Name },
                 SortOrder = SortOrder.Ascending,
                 PresentationUniqueKey = presentationUniqueKey,
-                Limit = limit
+                Limit = limit,
+                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+                        
+                    },
+                    EnableImages = false
+                }
 
             }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>();
 
@@ -120,26 +135,32 @@ namespace Emby.Server.Implementations.TV
             var currentUser = user;
 
             var allNextUp = series
-                .Select(i => GetNextUp(i, currentUser))
+                .Select(i => GetNextUp(GetUniqueSeriesKey(i), currentUser))
                 // Include if an episode was found, and either the series is not unwatched or the specific series was requested
-                .OrderByDescending(i => i.Item1)
-                .ToList();
+                .OrderByDescending(i => i.Item1);
 
             // If viewing all next up for all series, remove first episodes
-            if (string.IsNullOrWhiteSpace(request.SeriesId))
-            {
-                var withoutFirstEpisode = allNextUp
-                    .Where(i => i.Item1 != DateTime.MinValue)
-                    .ToList();
-
-                // But if that returns empty, keep those first episodes (avoid completely empty view)
-                if (withoutFirstEpisode.Count > 0)
-                {
-                    allNextUp = withoutFirstEpisode;
-                }
-            }
+            // But if that returns empty, keep those first episodes (avoid completely empty view)
+            var alwaysEnableFirstEpisode = string.IsNullOrWhiteSpace(request.SeriesId);
+            var isFirstItemAFirstEpisode = true;
 
             return allNextUp
+                .Where(i =>
+                {
+                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    {
+                        isFirstItemAFirstEpisode = false;
+                        return true;
+                    }
+
+                    if (isFirstItemAFirstEpisode)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                })
+                .Take(request.Limit.HasValue ? (request.Limit.Value * 2) : int.MaxValue)
                 .Select(i => i.Item2())
                 .Where(i => i != null)
                 .Take(request.Limit ?? int.MaxValue);
@@ -153,13 +174,10 @@ namespace Emby.Server.Implementations.TV
         /// <summary>
         /// Gets the next up.
         /// </summary>
-        /// <param name="series">The series.</param>
-        /// <param name="user">The user.</param>
         /// <returns>Task{Episode}.</returns>
-        private Tuple<DateTime, Func<Episode>> GetNextUp(Series series, User user)
+        private Tuple<DateTime, Func<Episode>> GetNextUp(string seriesKey, User user)
         {
             var enableSeriesPresentationKey = _config.Configuration.EnableSeriesPresentationUniqueKey;
-            var seriesKey = GetUniqueSeriesKey(series);
 
             var lastWatchedEpisode = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -170,7 +188,15 @@ namespace Emby.Server.Implementations.TV
                 SortOrder = SortOrder.Descending,
                 IsPlayed = true,
                 Limit = 1,
-                ParentIndexNumberNotEquals = 0
+                ParentIndexNumberNotEquals = 0,
+                DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+
+                    },
+                    EnableImages = false
+                }
 
             }).FirstOrDefault();
 

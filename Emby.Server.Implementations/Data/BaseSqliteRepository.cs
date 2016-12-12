@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Data
                 connectionFlags |= ConnectionFlags.ReadWrite;
             }
 
-            //connectionFlags |= ConnectionFlags.SharedCached;
+            connectionFlags |= ConnectionFlags.SharedCached;
             connectionFlags |= ConnectionFlags.NoMutex;
 
             var db = SQLite3.Open(DbFilePath, connectionFlags, null);

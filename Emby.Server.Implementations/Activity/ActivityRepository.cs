@@ -84,6 +84,9 @@ namespace Emby.Server.Implementations.Activity
             {
                 using (var connection = CreateConnection(true))
                 {
+                    var list = new List<ActivityLogEntry>();
+                    int totalRecordCount = 0;
+
                     var commandText = BaseActivitySelectText;
                     var whereClauses = new List<string>();
 
@@ -120,32 +123,37 @@ namespace Emby.Server.Implementations.Activity
                         commandText += " LIMIT " + limit.Value.ToString(_usCulture);
                     }
 
-                    var list = new List<ActivityLogEntry>();
+                    var statementTexts = new List<string>();
+                    statementTexts.Add(commandText);
+                    statementTexts.Add("select count (Id) from ActivityLogEntries" + whereTextWithoutPaging);
 
-                    using (var statement = connection.PrepareStatement(commandText))
+                    connection.RunInTransaction(db =>
                     {
-                        if (minDate.HasValue)
+                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray())).ToList();
+
+                        using (var statement = statements[0])
                         {
-                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                            if (minDate.HasValue)
+                            {
+                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                            }
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                list.Add(GetEntry(row));
+                            }
                         }
 
-                        foreach (var row in statement.ExecuteQuery())
+                        using (var statement = statements[1])
                         {
-                            list.Add(GetEntry(row));
+                            if (minDate.HasValue)
+                            {
+                                statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
+                            }
+
+                            totalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
-                    }
-
-                    int totalRecordCount;
-
-                    using (var statement = connection.PrepareStatement("select count (Id) from ActivityLogEntries" + whereTextWithoutPaging))
-                    {
-                        if (minDate.HasValue)
-                        {
-                            statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
-                        }
-
-                        totalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
-                    }
+                    }, ReadTransactionMode);
 
                     return new QueryResult<ActivityLogEntry>()
                     {

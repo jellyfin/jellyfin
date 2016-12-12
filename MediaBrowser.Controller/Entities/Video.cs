@@ -45,6 +45,15 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPositionTicksResume
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         protected override bool SupportsIsInMixedFolderDetection
         {
             get
