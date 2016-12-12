@@ -300,20 +300,26 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
-                    {
-                        statement.TryBind("@UserId", userId.ToGuidParamValue());
-                        statement.TryBind("@Key", key);
+                    UserItemData result = null;
 
-                        foreach (var row in statement.ExecuteQuery())
+                    connection.RunInTransaction(db =>
+                    {
+                        using (var statement = db.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
                         {
-                            return ReadRow(row);
+                            statement.TryBind("@UserId", userId.ToGuidParamValue());
+                            statement.TryBind("@Key", key);
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                result = ReadRow(row);
+                                break;
+                            }
                         }
-                    }
+                    }, ReadTransactionMode);
+
+                    return result;
                 }
             }
-
-            return null;
         }
 
         public UserItemData GetUserData(Guid userId, List<string> keys)

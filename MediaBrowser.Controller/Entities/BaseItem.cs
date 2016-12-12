@@ -142,6 +142,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsPositionTicksResume
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         public bool DetectIsInMixedFolder()
         {
             if (SupportsIsInMixedFolderDetection)

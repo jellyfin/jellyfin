@@ -1748,7 +1748,7 @@
   "HeaderCancelSyncJob": "Cancel Sync",
   "CancelSyncJobConfirmation": "Cancelling the sync job will remove synced media from the device during the next sync process. Are you sure you wish to proceed?",
   "LabelQuality": "Quality:",
-  "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
+  "BookLibraryHelp": "Audio and text books are supported",
   "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
   "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders.",
   "SyncJobItemStatusQueued": "Queued",

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.Providers;
@@ -324,7 +325,7 @@ namespace MediaBrowser.Api.UserLibrary
                 var item = i.Item2[0];
                 var childCount = 0;
 
-                if (i.Item1 != null && i.Item2.Count > 1)
+                if (i.Item1 != null && (i.Item2.Count > 1 || i.Item1 is MusicAlbum))
                 {
                     item = i.Item1;
                     childCount = i.Item2.Count;

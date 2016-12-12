@@ -39,6 +39,15 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         [IgnoreDataMember]
+        public override bool SupportsPositionTicksResume
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
         public override SourceType SourceType
         {
             get { return SourceType.LiveTV; }

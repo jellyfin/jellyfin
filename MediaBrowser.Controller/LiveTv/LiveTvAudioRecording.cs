@@ -46,6 +46,15 @@ namespace MediaBrowser.Controller.LiveTv
             set { }
         }
 
+        [IgnoreDataMember]
+        public override bool SupportsPositionTicksResume
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>

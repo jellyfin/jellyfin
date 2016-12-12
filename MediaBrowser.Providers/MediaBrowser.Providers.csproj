@@ -46,6 +46,8 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Books\AudioBookMetadataService.cs" />
+    <Compile Include="Books\AudioPodcastMetadataService.cs" />
     <Compile Include="Books\BookMetadataService.cs" />
     <Compile Include="BoxSets\BoxSetMetadataService.cs" />
     <Compile Include="BoxSets\MovieDbBoxSetImageProvider.cs" />
