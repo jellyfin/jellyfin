@@ -40,8 +40,29 @@
         </div>
         <br />
         <label class="checkboxContainer">
-            <input type="checkbox" is="emby-checkbox" class="chkColorCodedBackgrounds" />
+            <input type="checkbox" is="emby-checkbox" class="chkColorCodedBackgrounds"/>
             <span>${EnableColorCodedBackgrounds}</span>
         </label>
+
+        <h3 class="checkboxListLabel">${Categories}</h3>
+       <div class="checkboxList">
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkCategory" data-type="movies" />
+                <span>${Movies}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkCategory" data-type="sports" />
+                <span>${Sports}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkCategory" data-type="kids" />
+                <span>${Kids}</span>
+            </label>
+            <label>
+                <input type="checkbox" is="emby-checkbox" class="chkCategory" data-type="news" />
+                <span>${News}</span>
+            </label>
+        </div>
+
     </form>
 </div>

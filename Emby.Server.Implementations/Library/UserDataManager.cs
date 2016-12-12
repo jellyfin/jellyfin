@@ -274,7 +274,7 @@ namespace Emby.Server.Implementations.Library
                 positionTicks = 0;
                 data.Played = false;
             }
-            if (item is Audio)
+            if (!item.SupportsPositionTicksResume)
             {
                 positionTicks = 0;
             }

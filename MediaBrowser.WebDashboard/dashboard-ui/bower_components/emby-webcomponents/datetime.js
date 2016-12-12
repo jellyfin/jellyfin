@@ -110,30 +110,70 @@
         return locale;
     }
 
+    function getOptionList(options) {
+
+        var list = [];
+
+        for (var i in options) {
+            list.push({
+                name: i,
+                value: options[i]
+            });
+        }
+
+        return list;
+    }
+
     function toLocaleString(date, options) {
+        options = options || {};
+
         var currentLocale = getCurrentLocale();
 
-        return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleString(currentLocale, options || {}) :
-            date.toLocaleString();
+        if (currentLocale && toLocaleTimeStringSupportsLocales) {
+            return date.toLocaleString(currentLocale, options);
+        }
+
+        return date.toLocaleString();
     }
 
     function toLocaleDateString(date, options) {
 
+        options = options || {};
+
         var currentLocale = getCurrentLocale();
 
-        return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleDateString(currentLocale, options || {}) :
-            date.toLocaleDateString();
+        if (currentLocale && toLocaleTimeStringSupportsLocales) {
+            return date.toLocaleDateString(currentLocale, options);
+        }
+
+        // This is essentially a hard-coded polyfill
+        var optionList = getOptionList(options);
+        if (optionList.length === 1 && optionList[0].name === 'weekday') {
+            var weekday = [];
+            weekday[0] = "Sun";
+            weekday[1] = "Mon";
+            weekday[2] = "Tue";
+            weekday[3] = "Wed";
+            weekday[4] = "Thu";
+            weekday[5] = "Fri";
+            weekday[6] = "Sat";
+            return weekday[date.getDay()];
+        }
+
+        return date.toLocaleDateString();
     }
 
     function toLocaleTimeString(date, options) {
 
+        options = options || {};
+
         var currentLocale = getCurrentLocale();
 
-        return currentLocale && toLocaleTimeStringSupportsLocales ?
-            date.toLocaleTimeString(currentLocale, options || {}).toLowerCase() :
-            date.toLocaleTimeString().toLowerCase();
+        if (currentLocale && toLocaleTimeStringSupportsLocales) {
+            return date.toLocaleTimeString(currentLocale, options);
+        }
+
+        return date.toLocaleTimeString();
     }
 
     function getDisplayTime(date) {

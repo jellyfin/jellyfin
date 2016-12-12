@@ -264,6 +264,7 @@ namespace MediaBrowser.Controller.Entities
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
         /// <value>The linked children.</value>
+        [IgnoreDataMember]
         public override List<LinkedChild> LinkedChildren
         {
             get { return GetLinkedChildrenInternal(); }

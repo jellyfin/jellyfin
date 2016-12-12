@@ -1,21 +1,10 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationServices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationServices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-tabs'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
     'use strict';
 
     function showViewSettings(instance) {
 
         require(['guide-settings-dialog'], function (guideSettingsDialog) {
-            guideSettingsDialog.show().then(function () {
-                instance.refresh();
-            });
-        });
-    }
-
-    function showCategoryOptions(instance) {
-
-        require(['guide-categories-dialog'], function (guideCategoriesDialog) {
-            guideCategoriesDialog.show(instance.categoryOptions).then(function (categoryOptions) {
-
-                instance.categoryOptions = categoryOptions;
+            guideSettingsDialog.show(instance.categoryOptions).then(function () {
                 instance.refresh();
             });
         });
@@ -233,8 +222,8 @@
                     channelQuery.SortBy = "DatePlayed";
                     channelQuery.SortOrder = "Descending";
                 } else {
-                    channelQuery.SortBy = "SortName";
-                    channelQuery.SortOrder = "Ascending";
+                    channelQuery.SortBy = null;
+                    channelQuery.SortOrder = null;
                 }
 
                 var date = newStartDate;
@@ -753,13 +742,22 @@
             currentDate = newStartDate;
 
             reloadGuide(page, newStartDate);
-
-            var dateText = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
-
-            page.querySelector('.guideDateText').innerHTML = dateText;
         }
 
-        var dateOptions = [];
+        function getDateTabText(date, isActive, tabIndex) {
+
+            var cssClass = isActive ? 'emby-tab-button guide-date-tab-button emby-tab-button-active' : 'emby-tab-button guide-date-tab-button';
+
+            var html = '<button is="emby-button" class="' + cssClass + '" data-index="' + tabIndex + '" data-date="' + date.getTime() + '">';
+            var tabText = datetime.toLocaleDateString(date, { weekday: 'short' });
+
+            tabText += '<br/>';
+            tabText += date.getDate();
+            html += '<div class="emby-button-foreground">' + tabText + '</div>';
+            html += '</button>';
+
+            return html;
+        }
 
         function setDateRange(page, guideInfo) {
 
@@ -778,24 +776,27 @@
 
             start = new Date(Math.max(today, start));
 
-            dateOptions = [];
-
-            while (start <= end) {
-
-                dateOptions.push({
-                    name: datetime.toLocaleDateString(start, { weekday: 'long', month: 'long', day: 'numeric' }),
-                    id: start.getTime()
-                });
-
-                start.setDate(start.getDate() + 1);
-                start.setHours(0, 0, 0, 0);
-            }
+            var dateTabsHtml = '';
+            var tabIndex = 0;
 
             var date = new Date();
 
             if (currentDate) {
                 date.setTime(currentDate.getTime());
             }
+
+            while (start <= end) {
+
+                var isActive = date.getDate() === start.getDate() && date.getMonth() === start.getMonth() && date.getFullYear() === start.getFullYear();
+
+                dateTabsHtml += getDateTabText(start, isActive, tabIndex);
+
+                start.setDate(start.getDate() + 1);
+                start.setHours(0, 0, 0, 0);
+            }
+
+            page.querySelector('.emby-tabs-slider').innerHTML = dateTabsHtml;
+            page.querySelector('.guideDateTabs').refresh();
 
             changeDate(page, date);
         }
@@ -809,29 +810,6 @@
             apiClient.getLiveTvGuideInfo().then(function (guideInfo) {
 
                 setDateRange(page, guideInfo);
-            });
-        }
-
-        function selectDate(page) {
-
-            var selectedDate = currentDate || new Date();
-            dateOptions.forEach(function (d) {
-                d.selected = new Date(d.id).getDate() === selectedDate.getDate();
-            });
-
-            require(['actionsheet'], function (actionsheet) {
-
-                actionsheet.show({
-                    items: dateOptions,
-                    title: globalize.translate('sharedcomponents#HeaderSelectDate'),
-                    callback: function (id) {
-
-                        var date = new Date();
-                        date.setTime(parseInt(id));
-                        changeDate(page, date);
-                    }
-                });
-
             });
         }
 
@@ -958,11 +936,6 @@
                 passive: true
             });
 
-            context.querySelector('.btnSelectDate').addEventListener('click', function () {
-                selectDate(context);
-                restartAutoRefresh();
-            });
-
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
                 reloadPage(context);
@@ -986,9 +959,13 @@
                 restartAutoRefresh();
             });
 
-            context.querySelector('.btnCategories').addEventListener('click', function () {
-                showCategoryOptions(self);
-                restartAutoRefresh();
+            context.querySelector('.guideDateTabsSlider').addEventListener('click', function (e) {
+                var tabButton = dom.parentWithClass(e.target, 'guide-date-tab-button');
+                if (tabButton) {
+                    var date = new Date();
+                    date.setTime(parseInt(tabButton.getAttribute('data-date')));
+                    changeDate(context, date);
+                }
             });
 
             context.classList.add('tvguide');

@@ -212,6 +212,13 @@
         initSelectionBar(this);
     };
 
+    EmbyTabs.refresh = function () {
+
+        if (this.scroller) {
+            this.scroller.reload();
+        }
+    };
+
     EmbyTabs.attachedCallback = function () {
 
         initScroller(this);

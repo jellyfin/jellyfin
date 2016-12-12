@@ -557,13 +557,6 @@ var Dashboard = {
             href: "reports.html",
             pageIds: [],
             icon: 'insert_chart'
-        }, {
-            name: Globalize.translate('TabAbout'),
-            href: "about.html",
-            icon: 'info',
-            color: '#679C34',
-            divider: true,
-            pageIds: ['aboutPage']
         }];
 
     },
@@ -1291,7 +1284,6 @@ var AppInfo = {};
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide"], returnFirstDependency);
         define("programStyles", ['css!' + embyWebComponentsBowerPath + "/guide/programs"], returnFirstDependency);
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
-        define("guide-categories-dialog", [embyWebComponentsBowerPath + "/guide/guide-categories"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
         define("syncToggle", [embyWebComponentsBowerPath + "/sync/synctoggle"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
@@ -1865,14 +1857,6 @@ var AppInfo = {};
     function defineCoreRoutes() {
 
         console.log('Defining core routes');
-
-        defineRoute({
-            path: '/about.html',
-            dependencies: [],
-            autoFocus: false,
-            controller: 'dashboard/aboutpage',
-            roles: 'admin'
-        });
 
         defineRoute({
             path: '/addplugin.html',

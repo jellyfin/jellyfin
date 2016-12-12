@@ -20,7 +20,7 @@
     z-index: 1;
     margin: 0 !important;
     /* Page needs to supply padding */
-    top: 102px !important;
+    top: 98px !important;
     transition: transform 200ms ease-out;
 }
 
