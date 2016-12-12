@@ -1279,6 +1279,26 @@ namespace Emby.Server.Implementations.Library
             return ItemRepository.GetItemList(query);
         }
 
+        public int GetCount(InternalItemsQuery query)
+        {
+            if (query.Recursive && query.ParentId.HasValue)
+            {
+                var parent = GetItemById(query.ParentId.Value);
+                if (parent != null)
+                {
+                    SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
+                    query.ParentId = null;
+                }
+            }
+
+            if (query.User != null)
+            {
+                AddUserToQuery(query, query.User);
+            }
+
+            return ItemRepository.GetCount(query);
+        }
+
         public IEnumerable<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents)
         {
             SetTopParentIdsOrAncestors(query, parents);
