@@ -58,7 +58,8 @@ namespace Emby.Server.Implementations.TV
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                SortOrder = SortOrder.Ascending,
+                SortBy = new[] { ItemSortBy.SeriesDatePlayed },
+                SortOrder = SortOrder.Descending,
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 ParentId = parentIdGuid,
@@ -71,7 +72,7 @@ namespace Emby.Server.Implementations.TV
                     }
                 }
 
-            }).Cast<Series>();
+            }).Cast<Series>().Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -109,19 +110,20 @@ namespace Emby.Server.Implementations.TV
             var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { typeof(Series).Name },
-                SortOrder = SortOrder.Ascending,
+                SortBy = new[] { ItemSortBy.SeriesDatePlayed },
+                SortOrder = SortOrder.Descending,
                 PresentationUniqueKey = presentationUniqueKey,
                 Limit = limit,
                 DtoOptions = new MediaBrowser.Controller.Dto.DtoOptions
                 {
                     Fields = new List<ItemFields>
                     {
-                        
+
                     },
                     EnableImages = false
                 }
 
-            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>();
+            }, parentsFolders.Cast<BaseItem>().ToList()).Cast<Series>().Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
             var episodes = GetNextUpEpisodes(request, user, items);
@@ -129,15 +131,15 @@ namespace Emby.Server.Implementations.TV
             return GetResult(episodes, null, request);
         }
 
-        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<Series> series)
+        public IEnumerable<Episode> GetNextUpEpisodes(NextUpQuery request, User user, IEnumerable<string> seriesKeys)
         {
             // Avoid implicitly captured closure
             var currentUser = user;
 
-            var allNextUp = series
-                .Select(i => GetNextUp(GetUniqueSeriesKey(i), currentUser))
-                // Include if an episode was found, and either the series is not unwatched or the specific series was requested
-                .OrderByDescending(i => i.Item1);
+            var allNextUp = seriesKeys
+                .Select(i => GetNextUp(i, currentUser));
+
+            //allNextUp = allNextUp.OrderByDescending(i => i.Item1);
 
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
@@ -160,7 +162,6 @@ namespace Emby.Server.Implementations.TV
 
                     return true;
                 })
-                .Take(request.Limit.HasValue ? (request.Limit.Value * 2) : int.MaxValue)
                 .Select(i => i.Item2())
                 .Where(i => i != null)
                 .Take(request.Limit ?? int.MaxValue);

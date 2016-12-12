@@ -18,6 +18,25 @@
     "SQLitePCLRaw.provider.sqlite3.netstandard11": "1.1.1-pre20161109081005"
   },
 
+  "runtimes": {
+    "win7-x86": {},
+    "win7-x64": {},
+    "win8-x86": {},
+    "win8-x64": {},
+    "win8-arm": {},
+    "win81-x86": {},
+    "win81-x64": {},
+    "win81-arm": {},
+    "win10-x86": {},
+    "win10-x64": {},
+    "win10-arm": {},
+    "win10-arm64": {},
+    "osx.10.10-x64": {},
+    "osx.10.11-x64": {},
+    "osx.10.12-x64": {},
+    "ubuntu.14.04-x64": {}
+  },
+
   "frameworks": {
     "netcoreapp1.1": {
       "imports": "dnxcore50",
