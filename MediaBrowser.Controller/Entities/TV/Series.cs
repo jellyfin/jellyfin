@@ -138,16 +138,24 @@ namespace MediaBrowser.Controller.Entities.TV
             var enableSeriesPresentationKey = ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey;
             var seriesKey = GetUniqueSeriesKey(this);
 
-            var result = LibraryManager.GetItemsResult(new InternalItemsQuery(user)
+            var result = LibraryManager.GetCount(new InternalItemsQuery(user)
             {
                 AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey,
                 SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null,
                 IncludeItemTypes = new[] { typeof(Season).Name },
                 IsVirtualItem = false,
-                Limit = 0
+                Limit = 0,
+                DtoOptions = new Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+
+                    },
+                    EnableImages = false
+                }
             });
 
-            return result.TotalRecordCount;
+            return result;
         }
 
         public override int GetRecursiveChildCount(User user)
@@ -159,19 +167,25 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey,
                 SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null,
+                DtoOptions = new Dto.DtoOptions
+                {
+                    Fields = new List<ItemFields>
+                    {
+                        
+                    },
+                    EnableImages = false
+                }
             };
 
-            if (query.SortBy.Length == 0)
-            {
-                query.SortBy = new[] { ItemSortBy.SortName };
-            }
             if (query.IncludeItemTypes.Length == 0)
             {
                 query.IncludeItemTypes = new[] { typeof(Episode).Name, typeof(Season).Name };
             }
             query.IsVirtualItem = false;
             query.Limit = 0;
-            return LibraryManager.GetItemsResult(query).TotalRecordCount;
+            var totalRecordCount = LibraryManager.GetCount(query);
+
+            return totalRecordCount;
         }
 
         /// <summary>

@@ -163,6 +163,8 @@ namespace MediaBrowser.Controller.Persistence
         /// <returns>Task.</returns>
         Task UpdateInheritedValues(CancellationToken cancellationToken);
 
+        int GetCount(InternalItemsQuery query);
+
         QueryResult<Tuple<BaseItem, ItemCounts>> GetGenres(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetMusicGenres(InternalItemsQuery query);
         QueryResult<Tuple<BaseItem, ItemCounts>> GetGameGenres(InternalItemsQuery query);

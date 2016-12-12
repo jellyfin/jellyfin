@@ -571,5 +571,6 @@ namespace MediaBrowser.Controller.Library
 
         void RegisterIgnoredPath(string path);
         void UnRegisterIgnoredPath(string path);
+        int GetCount(InternalItemsQuery query);
     }
 }
