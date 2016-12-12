@@ -201,12 +201,13 @@ namespace Emby.Server.Implementations.Security
             }
 
             var list = new List<AuthenticationInfo>();
-            int totalRecordCount = 0;
 
             using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
+                    var result = new QueryResult<AuthenticationInfo>();
+
                     connection.RunInTransaction(db =>
                     {
                         var statementTexts = new List<string>();
@@ -229,7 +230,7 @@ namespace Emby.Server.Implementations.Security
                             {
                                 BindAuthenticationQueryParams(query, totalCountStatement);
 
-                                totalRecordCount = totalCountStatement.ExecuteQuery()
+                                result.TotalRecordCount = totalCountStatement.ExecuteQuery()
                                     .SelectScalarInt()
                                     .First();
                             }
@@ -237,11 +238,8 @@ namespace Emby.Server.Implementations.Security
 
                     }, ReadTransactionMode);
 
-                    return new QueryResult<AuthenticationInfo>()
-                    {
-                        Items = list.ToArray(),
-                        TotalRecordCount = totalRecordCount
-                    };
+                    result.Items = list.ToArray();
+                    return result;
                 }
             }
         }

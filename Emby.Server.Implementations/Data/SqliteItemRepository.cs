@@ -343,6 +343,9 @@ namespace Emby.Server.Implementations.Data
                 // series
                 "create index if not exists idx_TypeSeriesPresentationUniqueKey1 on TypedBaseItems(Type,SeriesPresentationUniqueKey,PresentationUniqueKey,SortName)",
 
+                // series next up
+                "create index if not exists idx_SeriesPresentationUniqueKey on TypedBaseItems(SeriesPresentationUniqueKey)",
+
                 // live tv programs
                 "create index if not exists idx_TypeTopParentIdStartDate on TypedBaseItems(Type,TopParentId,StartDate)",
 
@@ -2263,6 +2266,10 @@ namespace Emby.Server.Implementations.Data
             {
                 return true;
             }
+            if (sortingFields.Contains(ItemSortBy.SeriesDatePlayed, StringComparer.OrdinalIgnoreCase))
+            {
+                return true;
+            }
 
             if (query.IsFavoriteOrLiked.HasValue)
             {
@@ -2656,7 +2663,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            var totalRecordCount = 0;
+            var result = new QueryResult<BaseItem>();
             var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
 
             var statementTexts = new List<string>();
@@ -2714,23 +2721,23 @@ namespace Emby.Server.Implementations.Data
                                     }
                                 }
                             }
+                        }
 
-                            if (query.EnableTotalRecordCount)
+                        if (query.EnableTotalRecordCount)
+                        {
+                            using (var statement = statements[statements.Count - 1])
                             {
-                                using (var statement = statements[statements.Count - 1])
+                                if (EnableJoinUserData(query))
                                 {
-                                    if (EnableJoinUserData(query))
-                                    {
-                                        statement.TryBind("@UserId", query.User.Id);
-                                    }
-
-                                    BindSimilarParams(query, statement);
-
-                                    // Running this again will bind the params
-                                    GetWhereClauses(query, statement);
-
-                                    totalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                                    statement.TryBind("@UserId", query.User.Id);
                                 }
+
+                                BindSimilarParams(query, statement);
+
+                                // Running this again will bind the params
+                                GetWhereClauses(query, statement);
+
+                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                             }
                         }
 
@@ -2738,11 +2745,8 @@ namespace Emby.Server.Implementations.Data
 
                     LogQueryTime("GetItems", commandText, now);
 
-                    return new QueryResult<BaseItem>()
-                    {
-                        Items = list.ToArray(),
-                        TotalRecordCount = totalRecordCount
-                    };
+                    result.Items = list.ToArray();
+                    return result;
                 }
             }
         }
@@ -2855,7 +2859,7 @@ namespace Emby.Server.Implementations.Data
             }
             if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where B.Guid in (Select ItemId from AncestorIds where AncestorId in (select guid from typedbaseitems c where C.Type = 'MediaBrowser.Controller.Entities.TV.Series' And C.Guid in (Select AncestorId from AncestorIds where ItemId=A.Guid))))", false);
+                return new Tuple<string, bool>("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
             }
 
             return new Tuple<string, bool>(name, false);
@@ -3094,7 +3098,7 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var totalRecordCount = 0;
+                    var result = new QueryResult<Guid>();
 
                     connection.RunInTransaction(db =>
                     {
@@ -3136,7 +3140,7 @@ namespace Emby.Server.Implementations.Data
                                 // Running this again will bind the params
                                 GetWhereClauses(query, statement);
 
-                                totalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                             }
                         }
 
@@ -3144,11 +3148,8 @@ namespace Emby.Server.Implementations.Data
 
                     LogQueryTime("GetItemIds", commandText, now);
 
-                    return new QueryResult<Guid>()
-                    {
-                        Items = list.ToArray(),
-                        TotalRecordCount = totalRecordCount
-                    };
+                    result.Items = list.ToArray();
+                    return result;
                 }
             }
         }
@@ -5026,7 +5027,7 @@ namespace Emby.Server.Implementations.Data
             var isReturningZeroItems = query.Limit.HasValue && query.Limit <= 0;
 
             var list = new List<Tuple<BaseItem, ItemCounts>>();
-            var count = 0;
+            var result = new QueryResult<Tuple<BaseItem, ItemCounts>>();
 
             var statementTexts = new List<string>();
             if (!isReturningZeroItems)
@@ -5106,7 +5107,7 @@ namespace Emby.Server.Implementations.Data
                                 GetWhereClauses(innerQuery, statement);
                                 GetWhereClauses(outerQuery, statement);
 
-                                count = statement.ExecuteQuery().SelectScalarInt().First();
+                                result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
 
                                 LogQueryTime("GetItemValues", commandText, now);
                             }
@@ -5115,16 +5116,13 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (count == 0)
+            if (result.TotalRecordCount == 0)
             {
-                count = list.Count;
+                result.TotalRecordCount = list.Count;
             }
+            result.Items = list.ToArray();
 
-            return new QueryResult<Tuple<BaseItem, ItemCounts>>
-            {
-                Items = list.ToArray(),
-                TotalRecordCount = count
-            };
+            return result;
         }
 
         private ItemCounts GetItemCounts(IReadOnlyList<IResultSetValue> reader, int countStartColumn, List<string> typesToCount)

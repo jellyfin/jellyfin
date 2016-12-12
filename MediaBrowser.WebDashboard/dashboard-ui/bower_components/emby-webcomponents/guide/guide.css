@@ -13,7 +13,7 @@
 }
 
 .guideHeaderDateSelection {
-    font-size: 90%;
+    font-size: 86%;
 }
 
 .guideHeaderTimeslots {
@@ -87,7 +87,7 @@
 
 .currentTimeIndicatorArrowContainer {
     position: absolute;
-    bottom: -1.3vh;
+    bottom: -1vh;
     width: 100%;
     color: #52B54B;
     margin-left: .65vh;
@@ -101,11 +101,11 @@
 }
 
 .currentTimeIndicatorArrow {
-    width: 4vh;
-    height: 4vh;
-    font-size: 4vh;
+    width: 3vh;
+    height: 3vh;
+    font-size: 3vh;
     color: #52B54B;
-    margin-left: -2vh;
+    margin-left: -1.5vh;
 }
 
 .channelPrograms, .timeslotHeadersInner {
@@ -238,7 +238,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 3em;
+    height: 2.2em;
 }
 
 .programGrid {

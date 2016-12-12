@@ -171,7 +171,9 @@ namespace MediaBrowser.Controller.Entities.TV
             }
             query.IsVirtualItem = false;
             query.Limit = 0;
-            return LibraryManager.GetItemsResult(query).TotalRecordCount;
+            var totalRecordCount = LibraryManager.GetItemsResult(query).TotalRecordCount;
+
+            return totalRecordCount;
         }
 
         /// <summary>

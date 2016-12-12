@@ -85,7 +85,7 @@ namespace Emby.Server.Implementations.Activity
                 using (var connection = CreateConnection(true))
                 {
                     var list = new List<ActivityLogEntry>();
-                    int totalRecordCount = 0;
+                    var result = new QueryResult<ActivityLogEntry>();
 
                     var commandText = BaseActivitySelectText;
                     var whereClauses = new List<string>();
@@ -151,15 +151,12 @@ namespace Emby.Server.Implementations.Activity
                                 statement.TryBind("@DateCreated", minDate.Value.ToDateTimeParamValue());
                             }
 
-                            totalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
+                            result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
                     }, ReadTransactionMode);
 
-                    return new QueryResult<ActivityLogEntry>()
-                    {
-                        Items = list.ToArray(),
-                        TotalRecordCount = totalRecordCount
-                    };
+                    result.Items = list.ToArray();
+                    return result;
                 }
             }
         }
