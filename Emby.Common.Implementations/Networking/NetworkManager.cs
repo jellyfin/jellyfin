@@ -198,6 +198,12 @@ namespace Emby.Common.Implementations.Networking
             return Dns.GetHostAddressesAsync(hostName);
         }
 
+        private readonly List<NetworkInterfaceType> _validNetworkInterfaceTypes = new List<NetworkInterfaceType>
+        {
+            NetworkInterfaceType.Ethernet,
+            NetworkInterfaceType.Wireless80211
+        };
+
         private List<IPAddress> GetIPsDefault()
         {
             NetworkInterface[] interfaces;
@@ -223,9 +229,22 @@ namespace Emby.Common.Implementations.Networking
                 {
                     Logger.Debug("Querying interface: {0}. Type: {1}. Status: {2}", network.Name, network.NetworkInterfaceType, network.OperationalStatus);
 
-                    var properties = network.GetIPProperties();
+                    var ipProperties = network.GetIPProperties();
 
-                    return properties.UnicastAddresses
+                    // Try to exclude virtual adapters
+                    // http://stackoverflow.com/questions/8089685/c-sharp-finding-my-machines-local-ip-address-and-not-the-vms
+                    var addr = ipProperties.GatewayAddresses.FirstOrDefault();
+                    if (addr == null|| string.Equals(addr.Address.ToString(), "0.0.0.0", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new List<IPAddress>();
+                    }
+
+                    //if (!_validNetworkInterfaceTypes.Contains(network.NetworkInterfaceType))
+                    //{
+                    //    return new List<IPAddress>();
+                    //}
+
+                    return ipProperties.UnicastAddresses
                         .Where(i => i.IsDnsEligible)
                         .Select(i => i.Address)
                         .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
