@@ -193,9 +193,10 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     return "Season " + ParentIndexNumber.Value.ToString(CultureInfo.InvariantCulture);
                 }
+                return "Season Unknown";
             }
 
-            return season == null ? SeasonName : season.Name;
+            return season.Name;
         }
 
         public string FindSeriesName()

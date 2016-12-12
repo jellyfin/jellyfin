@@ -201,35 +201,47 @@ namespace Emby.Server.Implementations.Security
             }
 
             var list = new List<AuthenticationInfo>();
+            int totalRecordCount = 0;
 
             using (WriteLock.Read())
             {
                 using (var connection = CreateConnection(true))
                 {
-                    using (var statement = connection.PrepareStatement(commandText))
+                    connection.RunInTransaction(db =>
                     {
-                        BindAuthenticationQueryParams(query, statement);
+                        var statementTexts = new List<string>();
+                        statementTexts.Add(commandText);
+                        statementTexts.Add("select count (Id) from AccessTokens" + whereTextWithoutPaging);
 
-                        foreach (var row in statement.ExecuteQuery())
+                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray()))
+                            .ToList();
+
+                        using (var statement = statements[0])
                         {
-                            list.Add(Get(row));
-                        }
+                            BindAuthenticationQueryParams(query, statement);
 
-                        using (var totalCountStatement = connection.PrepareStatement("select count (Id) from AccessTokens" + whereTextWithoutPaging))
-                        {
-                            BindAuthenticationQueryParams(query, totalCountStatement);
-
-                            var count = totalCountStatement.ExecuteQuery()
-                                .SelectScalarInt()
-                                .First();
-
-                            return new QueryResult<AuthenticationInfo>()
+                            foreach (var row in statement.ExecuteQuery())
                             {
-                                Items = list.ToArray(),
-                                TotalRecordCount = count
-                            };
+                                list.Add(Get(row));
+                            }
+
+                            using (var totalCountStatement = statements[1])
+                            {
+                                BindAuthenticationQueryParams(query, totalCountStatement);
+
+                                totalRecordCount = totalCountStatement.ExecuteQuery()
+                                    .SelectScalarInt()
+                                    .First();
+                            }
                         }
-                    }
+
+                    }, ReadTransactionMode);
+
+                    return new QueryResult<AuthenticationInfo>()
+                    {
+                        Items = list.ToArray(),
+                        TotalRecordCount = totalRecordCount
+                    };
                 }
             }
         }

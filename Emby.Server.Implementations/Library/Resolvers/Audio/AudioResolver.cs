@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using System;
+using MediaBrowser.Controller.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
@@ -58,6 +59,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                         isMixed)
                     {
                         return new MediaBrowser.Controller.Entities.Audio.Audio();
+                    }
+
+                    if (string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new AudioBook();
                     }
                 }
             }

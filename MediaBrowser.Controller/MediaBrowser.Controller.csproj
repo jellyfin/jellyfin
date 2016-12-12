@@ -96,6 +96,7 @@
     <Compile Include="Drawing\ImageStream.cs" />
     <Compile Include="Dto\DtoOptions.cs" />
     <Compile Include="Dto\IDtoService.cs" />
+    <Compile Include="Entities\AudioBook.cs" />
     <Compile Include="Entities\Audio\AudioPodcast.cs" />
     <Compile Include="Entities\Audio\IHasAlbumArtist.cs" />
     <Compile Include="Entities\Audio\IHasMusicGenres.cs" />
