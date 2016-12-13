@@ -65,9 +65,9 @@ namespace Emby.Server.Implementations.Notifications
 
             var whereClause = " where " + string.Join(" And ", clauses.ToArray());
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                lock (WriteLock)
+                using (var connection = CreateConnection(true))
                 {
                     result.TotalRecordCount = connection.Query("select count(Id) from Notifications" + whereClause, paramList.ToArray()).SelectScalarInt().First();
 
@@ -106,9 +106,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             var result = new NotificationsSummary();
 
-            using (var connection = CreateConnection(true))
+            using (WriteLock.Read())
             {
-                lock (WriteLock)
+                using (var connection = CreateConnection(true))
                 {
                     using (var statement = connection.PrepareStatement("select Level from Notifications where UserId=@UserId and IsRead=@IsRead"))
                     {
@@ -223,9 +223,9 @@ namespace Emby.Server.Implementations.Notifications
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            lock (WriteLock)
             {
-                lock (WriteLock)
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -286,9 +286,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                lock (WriteLock)
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(conn =>
                     {
@@ -308,9 +308,9 @@ namespace Emby.Server.Implementations.Notifications
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var connection = CreateConnection())
+            using (WriteLock.Write())
             {
-                lock (WriteLock)
+                using (var connection = CreateConnection())
                 {
                     connection.RunInTransaction(conn =>
                     {
