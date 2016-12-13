@@ -387,6 +387,7 @@ namespace Emby.Common.Implementations.ScheduledTasks
             finally
             {
                 _currentTask = null;
+                GC.Collect();
             }
         }
 

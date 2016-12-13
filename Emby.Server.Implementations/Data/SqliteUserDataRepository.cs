@@ -42,8 +42,10 @@ namespace Emby.Server.Implementations.Data
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
-        public void Initialize(ReaderWriterLockSlim writeLock)
+        public void Initialize(ReaderWriterLockSlim writeLock, ManagedConnection managedConnection)
         {
+            _connection = managedConnection;
+
             WriteLock.Dispose();
             WriteLock = writeLock;
 
@@ -90,7 +92,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void ImportUserDataIfNeeded(IDatabaseConnection connection)
+        private void ImportUserDataIfNeeded(ManagedConnection connection)
         {
             if (!_fileSystem.FileExists(_importFile))
             {
@@ -117,7 +119,7 @@ namespace Emby.Server.Implementations.Data
             }, TransactionMode);
         }
 
-        private void ImportUserData(IDatabaseConnection connection, string file)
+        private void ImportUserData(ManagedConnection connection, string file)
         {
             SqliteExtensions.Attach(connection, file, "UserDataBackup");
 
@@ -300,24 +302,18 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    UserItemData result = null;
-
-                    connection.RunInTransaction(db =>
+                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
                     {
-                        using (var statement = db.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
+                        statement.TryBind("@UserId", userId.ToGuidParamValue());
+                        statement.TryBind("@Key", key);
+
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            statement.TryBind("@UserId", userId.ToGuidParamValue());
-                            statement.TryBind("@Key", key);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                result = ReadRow(row);
-                                break;
-                            }
+                            return ReadRow(row);
                         }
-                    }, ReadTransactionMode);
+                    }
 
-                    return result;
+                    return null;
                 }
             }
         }

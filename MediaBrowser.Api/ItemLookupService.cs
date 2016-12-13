@@ -14,8 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Services;
@@ -88,6 +86,12 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Items/RemoteSearch/Book", "POST")]
+    [Authenticated]
+    public class GetBookRemoteSearchResults : RemoteSearchQuery<BookInfo>, IReturn<List<RemoteSearchResult>>
+    {
+    }
+
     [Route("/Items/RemoteSearch/Image", "GET", Summary = "Gets a remote image")]
     public class GetRemoteSearchImage
     {
@@ -143,6 +147,13 @@ namespace MediaBrowser.Api
         public async Task<object> Post(GetTrailerRemoteSearchResults request)
         {
             var result = await _providerManager.GetRemoteSearchResults<Trailer, TrailerInfo>(request, CancellationToken.None).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
+        }
+
+        public async Task<object> Post(GetBookRemoteSearchResults request)
+        {
+            var result = await _providerManager.GetRemoteSearchResults<Book, BookInfo>(request, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }

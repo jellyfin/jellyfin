@@ -37,5 +37,10 @@
     <ProjectReference Include="..\..\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\SharedVersion.cs">
+      <Link>Properties\SharedVersion.cs</Link>
+    </Compile>
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

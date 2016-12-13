@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -186,16 +187,16 @@ namespace Emby.Server.Implementations.Library
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            await item.FillUserDataDtoValues(dto, userData, null, user).ConfigureAwait(false);
+            await item.FillUserDataDtoValues(dto, userData, null, user, new List<ItemFields>()).ConfigureAwait(false);
             return dto;
         }
 
-        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user)
+        public async Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields)
         {
             var userData = GetUserData(user.Id, item);
             var dto = GetUserItemDataDto(userData);
 
-            await item.FillUserDataDtoValues(dto, userData, itemDto, user).ConfigureAwait(false);
+            await item.FillUserDataDtoValues(dto, userData, itemDto, user, fields).ConfigureAwait(false);
             return dto;
         }
 

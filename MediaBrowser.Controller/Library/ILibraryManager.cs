@@ -62,6 +62,8 @@ namespace MediaBrowser.Controller.Library
         /// <returns>BaseItem.</returns>
         BaseItem FindByPath(string path, bool? isFolder);
 
+        Guid? FindIdByPath(string path, bool? isFolder);
+
         /// <summary>
         /// Gets the artist.
         /// </summary>

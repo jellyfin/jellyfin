@@ -27,6 +27,7 @@ namespace MediaBrowser.Controller.Entities
         public CollectionFolder()
         {
             PhysicalLocationsList = new List<string>();
+            PhysicalFolderIds = new List<Guid>();
         }
 
         [IgnoreDataMember]
@@ -153,6 +154,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         public List<string> PhysicalLocationsList { get; set; }
+        public List<Guid> PhysicalFolderIds { get; set; }
 
         protected override IEnumerable<FileSystemMetadata> GetFileSystemChildren(IDirectoryService directoryService)
         {
@@ -176,6 +178,18 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (!changed)
+            {
+                var folderIds = PhysicalFolderIds.ToList();
+
+                var newFolderIds = GetPhysicalFolders(false).Select(i => i.Id).ToList();
+
+                if (!folderIds.SequenceEqual(newFolderIds))
+                {
+                    changed = true;
+                }
+            }
+
             return changed;
         }
 
@@ -183,6 +197,31 @@ namespace MediaBrowser.Controller.Entities
         {
             var changed = base.BeforeMetadataRefresh() || _requiresRefresh;
             _requiresRefresh = false;
+            return changed;
+        }
+
+        protected override bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
+        {
+            var physicalFolders = GetPhysicalFolders(false)
+                .ToList();
+
+            var linkedChildren = physicalFolders
+                .SelectMany(c => c.LinkedChildren)
+                .ToList();
+
+            var changed = !linkedChildren.SequenceEqual(LinkedChildren, new LinkedChildComparer());
+
+            LinkedChildren = linkedChildren;
+
+            var folderIds = PhysicalFolderIds.ToList();
+            var newFolderIds = physicalFolders.Select(i => i.Id).ToList();
+
+            if (!folderIds.SequenceEqual(newFolderIds))
+            {
+                changed = true;
+                PhysicalFolderIds = newFolderIds.ToList();
+            }
+
             return changed;
         }
 
@@ -263,26 +302,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Our children are actually just references to the ones in the physical root...
         /// </summary>
-        /// <value>The linked children.</value>
-        [IgnoreDataMember]
-        public override List<LinkedChild> LinkedChildren
-        {
-            get { return GetLinkedChildrenInternal(); }
-            set
-            {
-                base.LinkedChildren = value;
-            }
-        }
-        private List<LinkedChild> GetLinkedChildrenInternal()
-        {
-            return GetPhysicalParents()
-                .SelectMany(c => c.LinkedChildren)
-                .ToList();
-        }
-
-        /// <summary>
-        /// Our children are actually just references to the ones in the physical root...
-        /// </summary>
         /// <value>The actual children.</value>
         [IgnoreDataMember]
         protected override IEnumerable<BaseItem> ActualChildren
@@ -292,11 +311,16 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<BaseItem> GetActualChildren()
         {
-            return GetPhysicalParents().SelectMany(c => c.Children);
+            return GetPhysicalFolders(true).SelectMany(c => c.Children);
         }
 
-        public IEnumerable<Folder> GetPhysicalParents()
+        private IEnumerable<Folder> GetPhysicalFolders(bool enableCache)
         {
+            if (enableCache)
+            {
+                return PhysicalFolderIds.Select(i => LibraryManager.GetItemById(i)).OfType<Folder>();
+            }
+
             var rootChildren = LibraryManager.RootFolder.Children
                 .OfType<Folder>()
                 .ToList();

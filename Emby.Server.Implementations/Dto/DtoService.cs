@@ -459,12 +459,21 @@ namespace Emby.Server.Implementations.Dto
 
                 if (dtoOptions.EnableUserData)
                 {
-                    dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user).ConfigureAwait(false);
+                    dto.UserData = await _userDataRepository.GetUserDataDto(item, dto, user, dtoOptions.Fields).ConfigureAwait(false);
                 }
 
                 if (!dto.ChildCount.HasValue && item.SourceType == SourceType.Library)
                 {
-                    dto.ChildCount = GetChildCount(folder, user);
+                    // For these types we can try to optimize and assume these values will be equal
+                    if (item is MusicAlbum || item is Season)
+                    {
+                        dto.ChildCount = dto.RecursiveItemCount;
+                    }
+
+                    if (dtoOptions.Fields.Contains(ItemFields.ChildCount))
+                    {
+                        dto.ChildCount = dto.ChildCount ?? GetChildCount(folder, user);
+                    }
                 }
 
                 if (fields.Contains(ItemFields.CumulativeRunTimeTicks))
@@ -1151,28 +1160,29 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.Artists = hasArtist.Artists;
 
-                var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
-                {
-                    EnableTotalRecordCount = false,
-                    ItemIds = new[] { item.Id.ToString("N") }
-                });
+                //var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
+                //{
+                //    EnableTotalRecordCount = false,
+                //    ItemIds = new[] { item.Id.ToString("N") }
+                //});
 
-                dto.ArtistItems = artistItems.Items
-                    .Select(i =>
-                    {
-                        var artist = i.Item1;
-                        return new NameIdPair
-                        {
-                            Name = artist.Name,
-                            Id = artist.Id.ToString("N")
-                        };
-                    })
-                    .ToList();
+                //dto.ArtistItems = artistItems.Items
+                //    .Select(i =>
+                //    {
+                //        var artist = i.Item1;
+                //        return new NameIdPair
+                //        {
+                //            Name = artist.Name,
+                //            Id = artist.Id.ToString("N")
+                //        };
+                //    })
+                //    .ToList();
 
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
-                var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                //var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
+                dto.ArtistItems = new List<NameIdPair>();
                 dto.ArtistItems.AddRange(hasArtist.Artists
-                    .Except(foundArtists, new DistinctNameComparer())
+                    //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
                         // This should not be necessary but we're seeing some cases of it
@@ -1201,23 +1211,48 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
-                var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
-                {
-                    EnableTotalRecordCount = false,
-                    ItemIds = new[] { item.Id.ToString("N") }
-                });
+                //var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
+                //{
+                //    EnableTotalRecordCount = false,
+                //    ItemIds = new[] { item.Id.ToString("N") }
+                //});
 
-                dto.AlbumArtists = artistItems.Items
+                //dto.AlbumArtists = artistItems.Items
+                //    .Select(i =>
+                //    {
+                //        var artist = i.Item1;
+                //        return new NameIdPair
+                //        {
+                //            Name = artist.Name,
+                //            Id = artist.Id.ToString("N")
+                //        };
+                //    })
+                //    .ToList();
+
+                dto.AlbumArtists = new List<NameIdPair>();
+                dto.AlbumArtists.AddRange(hasAlbumArtist.AlbumArtists
+                    //.Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
-                        var artist = i.Item1;
-                        return new NameIdPair
+                        // This should not be necessary but we're seeing some cases of it
+                        if (string.IsNullOrWhiteSpace(i))
                         {
-                            Name = artist.Name,
-                            Id = artist.Id.ToString("N")
-                        };
-                    })
-                    .ToList();
+                            return null;
+                        }
+
+                        var artist = _libraryManager.GetArtist(i);
+                        if (artist != null)
+                        {
+                            return new NameIdPair
+                            {
+                                Name = artist.Name,
+                                Id = artist.Id.ToString("N")
+                            };
+                        }
+
+                        return null;
+
+                    }).Where(i => i != null));
             }
 
             // Add video info
