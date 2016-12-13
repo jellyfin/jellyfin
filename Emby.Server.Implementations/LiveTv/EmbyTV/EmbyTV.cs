@@ -328,15 +328,35 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 await UpdateTimersForSeriesTimer(epgData, timer, true).ConfigureAwait(false);
             }
+        }
 
+        public async Task RefreshTimers(CancellationToken cancellationToken, IProgress<double> progress)
+        {
             var timers = await GetTimersAsync(cancellationToken).ConfigureAwait(false);
 
-            foreach (var timer in timers.ToList())
+            foreach (var timer in timers)
             {
                 if (DateTime.UtcNow > timer.EndDate && !_activeRecordings.ContainsKey(timer.Id))
                 {
                     OnTimerOutOfDate(timer);
+                    continue;
                 }
+
+                if (string.IsNullOrWhiteSpace(timer.ProgramId) || string.IsNullOrWhiteSpace(timer.ChannelId))
+                {
+                    continue;
+                }
+
+                var epg = GetEpgDataForChannel(timer.ChannelId);
+                var program = epg.FirstOrDefault(i => string.Equals(i.Id, timer.ProgramId, StringComparison.OrdinalIgnoreCase));
+                if (program == null)
+                {
+                    OnTimerOutOfDate(timer);
+                    continue;
+                }
+
+                RecordingHelper.CopyProgramInfoToTimerInfo(program, timer);
+                _timerProvider.Update(timer);
             }
         }
 

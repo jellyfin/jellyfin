@@ -201,6 +201,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayCollectionsView { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
         public string[] CodecsUsed { get; set; }
+        public string[] Migrations { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
         public bool EnableSimpleArtistDetection { get; set; }
@@ -213,6 +214,7 @@ namespace MediaBrowser.Model.Configuration
         {
             LocalNetworkAddresses = new string[] { };
             CodecsUsed = new string[] { };
+            Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
 
             EnableLocalizedGuids = true;
