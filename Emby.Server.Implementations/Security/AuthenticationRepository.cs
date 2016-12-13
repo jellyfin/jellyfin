@@ -206,10 +206,10 @@ namespace Emby.Server.Implementations.Security
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var result = new QueryResult<AuthenticationInfo>();
-
-                    connection.RunInTransaction(db =>
+                    return connection.RunInTransaction(db =>
                     {
+                        var result = new QueryResult<AuthenticationInfo>();
+
                         var statementTexts = new List<string>();
                         statementTexts.Add(commandText);
                         statementTexts.Add("select count (Id) from AccessTokens" + whereTextWithoutPaging);
@@ -236,10 +236,10 @@ namespace Emby.Server.Implementations.Security
                             }
                         }
 
-                    }, ReadTransactionMode);
+                        result.Items = list.ToArray();
+                        return result;
 
-                    result.Items = list.ToArray();
-                    return result;
+                    }, ReadTransactionMode);
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -14,10 +15,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Fills the user data dto values.
         /// </summary>
-        /// <param name="dto">The dto.</param>
-        /// <param name="userData">The user data.</param>
-        /// <param name="user">The user.</param>
-        Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user);
+        Task FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, List<ItemFields> fields);
 
         bool EnableRememberingTrackSelections { get; }
 

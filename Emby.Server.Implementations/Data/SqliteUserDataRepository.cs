@@ -300,9 +300,7 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    UserItemData result = null;
-
-                    connection.RunInTransaction(db =>
+                    return connection.RunInTransaction(db =>
                     {
                         using (var statement = db.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from userdata where key =@Key and userId=@UserId"))
                         {
@@ -311,13 +309,13 @@ namespace Emby.Server.Implementations.Data
 
                             foreach (var row in statement.ExecuteQuery())
                             {
-                                result = ReadRow(row);
-                                break;
+                                return ReadRow(row);
                             }
                         }
-                    }, ReadTransactionMode);
 
-                    return result;
+                        return null;
+
+                    }, ReadTransactionMode);
                 }
             }
         }

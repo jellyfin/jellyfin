@@ -121,12 +121,42 @@ namespace MediaBrowser.Api
         {
             var options = new DtoOptions();
 
-            options.DeviceId = authContext.GetAuthorizationInfo(Request).DeviceId;
+            var authInfo = authContext.GetAuthorizationInfo(Request);
+
+            options.DeviceId = authInfo.DeviceId;
 
             var hasFields = request as IHasItemFields;
             if (hasFields != null)
             {
                 options.Fields = hasFields.GetItemFields().ToList();
+            }
+
+            var client = authInfo.Client ?? string.Empty;
+            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.RecursiveItemCount);
+            }
+
+            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
+            }
+
+            if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("mobile", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("ios", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("android", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("theater", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
 
             var hasDtoOptions = request as IHasDtoOptions;

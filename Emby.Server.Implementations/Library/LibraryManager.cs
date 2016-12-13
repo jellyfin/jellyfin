@@ -817,7 +817,31 @@ namespace Emby.Server.Implementations.Library
 
             return _userRootFolder;
         }
-        
+
+        public Guid? FindIdByPath(string path, bool? isFolder)
+        {
+            // If this returns multiple items it could be tricky figuring out which one is correct. 
+            // In most cases, the newest one will be and the others obsolete but not yet cleaned up
+
+            var query = new InternalItemsQuery
+            {
+                Path = path,
+                IsFolder = isFolder,
+                SortBy = new[] { ItemSortBy.DateCreated },
+                SortOrder = SortOrder.Descending,
+                Limit = 1
+            };
+
+            var id = GetItemIds(query);
+
+            if (id.Count == 0)
+            {
+                return null;
+            }
+
+            return id[0];
+        }
+
         public BaseItem FindByPath(string path, bool? isFolder)
         {
             // If this returns multiple items it could be tricky figuring out which one is correct. 
@@ -1430,7 +1454,7 @@ namespace Emby.Server.Implementations.Library
             }))
             {
                 // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentsForQuery(i, query.User)).Select(i => i.Id.ToString("N")).ToArray();
+                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).Select(i => i.ToString("N")).ToArray();
                 query.AncestorIds = new string[] { };
             }
         }
@@ -1489,7 +1513,7 @@ namespace Emby.Server.Implementations.Library
             }))
             {
                 // Optimize by querying against top level views
-                query.TopParentIds = parents.SelectMany(i => GetTopParentsForQuery(i, query.User)).Select(i => i.Id.ToString("N")).ToArray();
+                query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).Select(i => i.ToString("N")).ToArray();
             }
             else
             {
@@ -1515,11 +1539,11 @@ namespace Emby.Server.Implementations.Library
 
                 }, CancellationToken.None).Result.ToList();
 
-                query.TopParentIds = userViews.SelectMany(i => GetTopParentsForQuery(i, user)).Select(i => i.Id.ToString("N")).ToArray();
+                query.TopParentIds = userViews.SelectMany(i => GetTopParentIdsForQuery(i, user)).Select(i => i.ToString("N")).ToArray();
             }
         }
 
-        private IEnumerable<BaseItem> GetTopParentsForQuery(BaseItem item, User user)
+        private IEnumerable<Guid> GetTopParentIdsForQuery(BaseItem item, User user)
         {
             var view = item as UserView;
 
@@ -1527,7 +1551,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (string.Equals(view.ViewType, CollectionType.LiveTv))
                 {
-                    return new[] { view };
+                    return new[] { view.Id };
                 }
                 if (string.Equals(view.ViewType, CollectionType.Channels))
                 {
@@ -1537,7 +1561,7 @@ namespace Emby.Server.Implementations.Library
 
                     }, CancellationToken.None).Result;
 
-                    return channelResult.Items;
+                    return channelResult.Items.Select(i =>  i.Id);
                 }
 
                 // Translate view into folders
@@ -1546,18 +1570,18 @@ namespace Emby.Server.Implementations.Library
                     var displayParent = GetItemById(view.DisplayParentId);
                     if (displayParent != null)
                     {
-                        return GetTopParentsForQuery(displayParent, user);
+                        return GetTopParentIdsForQuery(displayParent, user);
                     }
-                    return new BaseItem[] { };
+                    return new Guid[] { };
                 }
                 if (view.ParentId != Guid.Empty)
                 {
                     var displayParent = GetItemById(view.ParentId);
                     if (displayParent != null)
                     {
-                        return GetTopParentsForQuery(displayParent, user);
+                        return GetTopParentIdsForQuery(displayParent, user);
                     }
-                    return new BaseItem[] { };
+                    return new Guid[] { };
                 }
 
                 // Handle grouping
@@ -1568,23 +1592,23 @@ namespace Emby.Server.Implementations.Library
                         .OfType<CollectionFolder>()
                         .Where(i => string.IsNullOrWhiteSpace(i.CollectionType) || string.Equals(i.CollectionType, view.ViewType, StringComparison.OrdinalIgnoreCase))
                         .Where(i => user.IsFolderGrouped(i.Id))
-                        .SelectMany(i => GetTopParentsForQuery(i, user));
+                        .SelectMany(i => GetTopParentIdsForQuery(i, user));
                 }
-                return new BaseItem[] { };
+                return new Guid[] { };
             }
 
             var collectionFolder = item as CollectionFolder;
             if (collectionFolder != null)
             {
-                return collectionFolder.GetPhysicalParents();
+                return collectionFolder.PhysicalFolderIds;
             }
-
+            
             var topParent = item.GetTopParent();
             if (topParent != null)
             {
-                return new[] { topParent };
+                return new[] { topParent.Id };
             }
-            return new BaseItem[] { };
+            return new Guid[] { };
         }
 
         /// <summary>

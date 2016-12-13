@@ -171,6 +171,8 @@
         /// </summary>
         PrimaryImageAspectRatio,
 
+        RecursiveItemCount,
+
         /// <summary>
         /// The revenue
         /// </summary>

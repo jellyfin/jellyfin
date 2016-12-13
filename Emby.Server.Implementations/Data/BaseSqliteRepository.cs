@@ -43,6 +43,7 @@ namespace Emby.Server.Implementations.Data
             //CheckOk(rc);
 
             rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MULTITHREAD, 1);
+            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SERIALIZED, 1);
             //CheckOk(rc);
 
             rc = raw.sqlite3_enable_shared_cache(1);
@@ -94,6 +95,7 @@ namespace Emby.Server.Implementations.Data
             var queries = new List<string>
             {
                 //"PRAGMA cache size=-10000"
+                //"PRAGMA read_uncommitted = true"
             };
 
             if (EnableTempStoreMemory)
