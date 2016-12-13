@@ -291,7 +291,7 @@ namespace Rssdp.Infrastructure
                 if (devices != null)
                 {
                     var deviceList = devices.ToList();
-                    WriteTrace(String.Format("Sending {0} search responses", deviceList.Count));
+                    //WriteTrace(String.Format("Sending {0} search responses", deviceList.Count));
 
                     foreach (var device in deviceList)
                     {
@@ -300,7 +300,7 @@ namespace Rssdp.Infrastructure
                 }
                 else
                 {
-                    WriteTrace(String.Format("Sending 0 search responses."));
+                    //WriteTrace(String.Format("Sending 0 search responses."));
                 }
             });
         }
@@ -413,7 +413,7 @@ namespace Rssdp.Infrastructure
 
                 //DisposeRebroadcastTimer();
 
-                WriteTrace("Begin Sending Alive Notifications For All Devices");
+                //WriteTrace("Begin Sending Alive Notifications For All Devices");
 
                 _LastNotificationTime = DateTime.Now;
 
@@ -430,7 +430,7 @@ namespace Rssdp.Infrastructure
                     SendAliveNotifications(device, true);
                 }
 
-                WriteTrace("Completed Sending Alive Notifications For All Devices");
+                //WriteTrace("Completed Sending Alive Notifications For All Devices");
             }
             catch (ObjectDisposedException ex)
             {

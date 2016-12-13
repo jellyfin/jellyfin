@@ -191,7 +191,6 @@ namespace MediaBrowser.Model.Configuration
         public int SharingExpirationDays { get; set; }
 
         public int SchemaVersion { get; set; }
-        public int SqliteCacheSize { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
@@ -202,6 +201,7 @@ namespace MediaBrowser.Model.Configuration
         public bool DisplayCollectionsView { get; set; }
         public string[] LocalNetworkAddresses { get; set; }
         public string[] CodecsUsed { get; set; }
+        public string[] Migrations { get; set; }
         public bool EnableChannelView { get; set; }
         public bool EnableExternalContentInSuggestions { get; set; }
         public bool EnableSimpleArtistDetection { get; set; }
@@ -214,7 +214,7 @@ namespace MediaBrowser.Model.Configuration
         {
             LocalNetworkAddresses = new string[] { };
             CodecsUsed = new string[] { };
-            SqliteCacheSize = 0;
+            Migrations = new string[] { };
             ImageExtractionTimeoutMs = 0;
 
             EnableLocalizedGuids = true;

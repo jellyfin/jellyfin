@@ -6,6 +6,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -409,6 +410,17 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 return null;
+            }
+        }
+
+        public List<string> AllAudioCodecs
+        {
+            get
+            {
+                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
+                        .Select(i => i.Codec)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .ToList();
             }
         }
 

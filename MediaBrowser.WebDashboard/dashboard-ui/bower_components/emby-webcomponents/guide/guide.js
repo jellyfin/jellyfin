@@ -163,7 +163,7 @@
             });
         }
 
-        function reloadGuide(context, newStartDate) {
+        function reloadGuide(context, newStartDate, focusProgramOnRender) {
 
             var apiClient = connectionManager.currentApiClient();
 
@@ -278,7 +278,7 @@
 
                     }).then(function (programsResult) {
 
-                        renderGuide(context, date, channelsResult.Items, programsResult.Items, apiClient);
+                        renderGuide(context, date, channelsResult.Items, programsResult.Items, apiClient, focusProgramOnRender);
 
                         hideLoading();
 
@@ -616,7 +616,7 @@
             imageLoader.lazyChildren(channelList);
         }
 
-        function renderGuide(context, date, channels, programs, apiClient) {
+        function renderGuide(context, date, channels, programs, apiClient, focusProgramOnRender) {
 
             //var list = [];
             //channels.forEach(function(i) {
@@ -674,7 +674,7 @@
             items = {};
             renderPrograms(context, date, channels, programs);
 
-            if (layoutManager.tv) {
+            if (focusProgramOnRender) {
 
                 var focusElem;
                 if (itemId) {
@@ -734,14 +734,14 @@
             }
         }
 
-        function changeDate(page, date) {
+        function changeDate(page, date, focusProgramOnRender) {
 
             clearCurrentTimeUpdateInterval();
 
             var newStartDate = normalizeDateToTimeslot(date);
             currentDate = newStartDate;
 
-            reloadGuide(page, newStartDate);
+            reloadGuide(page, newStartDate, focusProgramOnRender);
         }
 
         function getDateTabText(date, isActive, tabIndex) {
@@ -798,7 +798,7 @@
             page.querySelector('.emby-tabs-slider').innerHTML = dateTabsHtml;
             page.querySelector('.guideDateTabs').refresh();
 
-            changeDate(page, date);
+            changeDate(page, date, layoutManager.tv);
         }
 
         function reloadPage(page) {
@@ -964,7 +964,7 @@
                 if (tabButton) {
                     var date = new Date();
                     date.setTime(parseInt(tabButton.getAttribute('data-date')));
-                    changeDate(context, date);
+                    changeDate(context, date, false);
                 }
             });
 

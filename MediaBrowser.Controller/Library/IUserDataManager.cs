@@ -5,6 +5,7 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -37,12 +38,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <returns>UserItemDataDto.</returns>
         Task<UserItemDataDto> GetUserDataDto(IHasUserData item, User user);
 
-        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user);
+        Task<UserItemDataDto> GetUserDataDto(IHasUserData item, BaseItemDto itemDto, User user, List<ItemFields> fields);
 
         /// <summary>
         /// Get all user data for the given user

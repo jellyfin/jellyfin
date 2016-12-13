@@ -155,7 +155,7 @@
         promise.then(function (result) {
 
             renderRecordings(context.querySelector('#episodeRecordings'), result.Items, {
-                showItemCounts: true,
+                showSeriesYear: true,
                 showParentTitle: false
             });
         });

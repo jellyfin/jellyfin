@@ -84,9 +84,6 @@ namespace Emby.Server.Implementations.Activity
             {
                 using (var connection = CreateConnection(true))
                 {
-                    var list = new List<ActivityLogEntry>();
-                    var result = new QueryResult<ActivityLogEntry>();
-
                     var commandText = BaseActivitySelectText;
                     var whereClauses = new List<string>();
 
@@ -127,9 +124,12 @@ namespace Emby.Server.Implementations.Activity
                     statementTexts.Add(commandText);
                     statementTexts.Add("select count (Id) from ActivityLogEntries" + whereTextWithoutPaging);
 
-                    connection.RunInTransaction(db =>
+                    return connection.RunInTransaction(db =>
                     {
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray())).ToList();
+                        var list = new List<ActivityLogEntry>();
+                        var result = new QueryResult<ActivityLogEntry>();
+
+                        var statements = PrepareAllSafe(db, statementTexts).ToList();
 
                         using (var statement = statements[0])
                         {
@@ -153,10 +153,11 @@ namespace Emby.Server.Implementations.Activity
 
                             result.TotalRecordCount = statement.ExecuteQuery().SelectScalarInt().First();
                         }
-                    }, ReadTransactionMode);
 
-                    result.Items = list.ToArray();
-                    return result;
+                        result.Items = list.ToArray();
+                        return result;
+
+                    }, ReadTransactionMode);
                 }
             }
         }

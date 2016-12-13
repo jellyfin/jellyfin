@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "3.1.0-*",
   "buildOptions": {
     "emitEntryPoint": true
   },
@@ -33,8 +33,26 @@
     "win10-arm64": {},
     "osx.10.10-x64": {},
     "osx.10.11-x64": {},
-    "osx.10.12-x64": {},
-    "ubuntu.14.04-x64": {}
+    "osx.10.12-x64": ,
+    "rhel.7.0-x64": {},
+    "rhel.7.1-x64": {},
+    "rhel.7.2-x64": {},
+    "ubuntu.14.04-x64": {},
+    "ubuntu.14.10-x64": {},
+    "ubuntu.15.04-x64": {},
+    "ubuntu.15.10-x64": {},
+    "ubuntu.16.04-x64": {},
+    "ubuntu.16.10-x64": {},
+    "centos.7-x64": {},
+    "debian.8-x64": {},
+    "fedora.23-x64": {},
+    "fedora.24-x64": {},
+    "opensuse.13.2-x64": {},
+    "opensuse.42.1-x64": {},
+    "ol.7-x64": {},
+    "ol.7.0-x64": {},
+    "ol.7.1-x64": {},
+    "ol.7.2-x64": {}
   },
 
   "frameworks": {

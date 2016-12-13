@@ -76,7 +76,8 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
 
         private void ProcessContext(HttpListenerContext context)
         {
-            Task.Factory.StartNew(() => InitTask(context));
+            //Task.Factory.StartNew(() => InitTask(context), TaskCreationOptions.DenyChildAttach | TaskCreationOptions.PreferFairness);
+            Task.Run(() => InitTask(context));
         }
 
         private Task InitTask(HttpListenerContext context)

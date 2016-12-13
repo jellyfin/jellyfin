@@ -519,6 +519,12 @@ namespace Emby.Server.Implementations.FileOrganization
 
         private void PerformFileSorting(TvFileOrganizationOptions options, FileOrganizationResult result)
         {
+            // We should probably handle this earlier so that we never even make it this far
+            if (string.Equals(result.OriginalPath, result.TargetPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
             _libraryMonitor.ReportFileSystemChangeBeginning(result.TargetPath);
 
             _fileSystem.CreateDirectory(Path.GetDirectoryName(result.TargetPath));
