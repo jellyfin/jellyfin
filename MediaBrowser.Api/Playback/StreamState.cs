@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace MediaBrowser.Api.Playback
@@ -243,6 +244,17 @@ namespace MediaBrowser.Api.Playback
         public int? OutputAudioSampleRate;
         public int? OutputAudioBitrate;
         public int? OutputVideoBitrate;
+
+        public List<string> AllAudioCodecs
+        {
+            get
+            {
+                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
+                        .Select(i => i.Codec)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .ToList();
+            }
+        }
 
         public string ActualOutputVideoCodec
         {

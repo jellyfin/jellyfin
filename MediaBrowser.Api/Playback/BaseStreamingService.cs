@@ -2358,7 +2358,8 @@ namespace MediaBrowser.Api.Playback
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,
                 state.TargetVideoCodecTag,
-                state.IsTargetAVC);
+                state.IsTargetAVC,
+                state.AllAudioCodecs);
 
             if (mediaProfile != null)
             {
@@ -2580,7 +2581,8 @@ namespace MediaBrowser.Api.Playback
                     state.TargetVideoStreamCount,
                     state.TargetAudioStreamCount,
                     state.TargetVideoCodecTag,
-                    state.IsTargetAVC
+                    state.IsTargetAVC,
+                    state.AllAudioCodecs
 
                     ).FirstOrDefault() ?? string.Empty;
             }

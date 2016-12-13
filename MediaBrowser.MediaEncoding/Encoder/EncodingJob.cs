@@ -11,6 +11,7 @@ using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -114,6 +115,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 LogFileStream = null;
+            }
+        }
+
+        public List<string> AllAudioCodecs
+        {
+            get
+            {
+                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
+                        .Select(i => i.Codec)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .ToList();
             }
         }
 

@@ -541,7 +541,8 @@ namespace Emby.Dlna.PlayTo
                     streamInfo.TargetVideoStreamCount,
                     streamInfo.TargetAudioStreamCount,
                     streamInfo.TargetVideoCodecTag,
-                    streamInfo.IsTargetAVC);
+                    streamInfo.IsTargetAVC,
+                    streamInfo.AllAudioCodecs);
 
                 return list.FirstOrDefault();
             }
