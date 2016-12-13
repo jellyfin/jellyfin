@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Logging;
@@ -43,6 +44,7 @@ namespace Emby.Server.Implementations.Data
             //CheckOk(rc);
 
             rc = raw.sqlite3_config(raw.SQLITE_CONFIG_MULTITHREAD, 1);
+            //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SINGLETHREAD, 1);
             //rc = raw.sqlite3_config(raw.SQLITE_CONFIG_SERIALIZED, 1);
             //CheckOk(rc);
 
@@ -54,9 +56,20 @@ namespace Emby.Server.Implementations.Data
         private static bool _versionLogged;
 
         private string _defaultWal;
+        protected ManagedConnection _connection;
 
-        protected SQLiteDatabaseConnection CreateConnection(bool isReadOnly = false)
+        protected virtual bool EnableSingleConnection
         {
+            get { return true; }
+        }
+
+        protected ManagedConnection CreateConnection(bool isReadOnly = false)
+        {
+            if (_connection != null)
+            {
+                return _connection;
+            }
+
             lock (WriteLock)
             {
                 if (!_versionLogged)
@@ -82,7 +95,15 @@ namespace Emby.Server.Implementations.Data
                     connectionFlags |= ConnectionFlags.ReadWrite;
                 }
 
-                connectionFlags |= ConnectionFlags.SharedCached;
+                if (EnableSingleConnection)
+                {
+                    connectionFlags |= ConnectionFlags.PrivateCache;
+                }
+                else
+                {
+                    connectionFlags |= ConnectionFlags.SharedCached;
+                }
+
                 connectionFlags |= ConnectionFlags.NoMutex;
 
                 var db = SQLite3.Open(DbFilePath, connectionFlags, null);
@@ -95,11 +116,16 @@ namespace Emby.Server.Implementations.Data
                 }
 
                 var queries = new List<string>
-            {
-                //"PRAGMA cache size=-10000"
-                //"PRAGMA read_uncommitted = true",
-                "PRAGMA synchronous=Normal"
-            };
+                {
+                    //"PRAGMA cache size=-10000"
+                    //"PRAGMA read_uncommitted = true",
+                    "PRAGMA synchronous=Normal"
+                };
+
+                if (CacheSize.HasValue)
+                {
+                    queries.Add("PRAGMA cache_size=-" + CacheSize.Value.ToString(CultureInfo.InvariantCulture));
+                }
 
                 if (EnableTempStoreMemory)
                 {
@@ -135,8 +161,20 @@ namespace Emby.Server.Implementations.Data
                     db.Execute(query);
                 }
 
-                return db;
+                _connection = new ManagedConnection(db, false);
+
+                return _connection;
             }
+        }
+
+        public IStatement PrepareStatement(ManagedConnection connection, string sql)
+        {
+            return connection.PrepareStatement(sql);
+        }
+
+        public IStatement PrepareStatementSafe(ManagedConnection connection, string sql)
+        {
+            return connection.PrepareStatement(sql);
         }
 
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
@@ -159,7 +197,7 @@ namespace Emby.Server.Implementations.Data
             return sql.Select(connection.PrepareStatement).ToList();
         }
 
-        protected void RunDefaultInitialization(IDatabaseConnection db)
+        protected void RunDefaultInitialization(ManagedConnection db)
         {
             var queries = new List<string>
             {
@@ -246,6 +284,12 @@ namespace Emby.Server.Implementations.Data
                     {
                         using (WriteLock.Write())
                         {
+                            if (_connection != null)
+                            {
+                                _connection.Close();
+                                _connection = null;
+                            }
+
                             CloseConnection();
                         }
                     }
@@ -340,7 +384,7 @@ namespace Emby.Server.Implementations.Data
             //{
             //    return new DummyToken();
             //}
-            return new ReadLockToken(obj);
+            return new WriteLockToken(obj);
         }
         public static IDisposable Write(this ReaderWriterLockSlim obj)
         {
