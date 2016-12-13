@@ -102,11 +102,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(byte[] bytes, bool endOfMessage, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<bool>();
-
-            WebSocket.SendAsync(bytes, res => completionSource.TrySetResult(true));
-
-            return completionSource.Task;
+            return WebSocket.SendAsync(bytes);
         }
 
         /// <summary>
@@ -118,11 +114,7 @@ namespace Emby.Server.Implementations.HttpServer.SocketSharp
         /// <returns>Task.</returns>
         public Task SendAsync(string text, bool endOfMessage, CancellationToken cancellationToken)
         {
-            var completionSource = new TaskCompletionSource<bool>();
-
-            WebSocket.SendAsync(text, res => completionSource.TrySetResult(true));
-
-            return completionSource.Task;
+            return WebSocket.SendAsync(text);
         }
 
         /// <summary>
