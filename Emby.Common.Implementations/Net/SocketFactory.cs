@@ -125,15 +125,15 @@ namespace Emby.Common.Implementations.Net
 
             try
             {
-#if NETSTANDARD1_3
-				// The ExclusiveAddressUse socket option is a Windows-specific option that, when set to "true," tells Windows not to allow another socket to use the same local address as this socket
-				// See https://github.com/dotnet/corefx/pull/11509 for more details
-				if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+#if NET46
+				retVal.ExclusiveAddressUse = false;
+#else
+                // The ExclusiveAddressUse socket option is a Windows-specific option that, when set to "true," tells Windows not to allow another socket to use the same local address as this socket
+                // See https://github.com/dotnet/corefx/pull/11509 for more details
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
 				{
 					retVal.ExclusiveAddressUse = false;
 				}
-#else
-                retVal.ExclusiveAddressUse = false;
 #endif
                 //retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

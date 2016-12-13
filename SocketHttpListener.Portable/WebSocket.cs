@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.IO;
 using SocketHttpListener.Net.WebSockets;
@@ -621,26 +622,22 @@ namespace SocketHttpListener
             }
         }
 
-        private void sendAsync(Opcode opcode, Stream stream, Action<bool> completed)
+        private Task sendAsync(Opcode opcode, Stream stream)
         {
-            Func<Opcode, Stream, bool> sender = send;
-            sender.BeginInvoke(
-              opcode,
-              stream,
-              ar =>
-              {
-                  try
-                  {
-                      var sent = sender.EndInvoke(ar);
-                      if (completed != null)
-                          completed(sent);
-                  }
-                  catch (Exception ex)
-                  {
-                      error("An exception has occurred while callback.", ex);
-                  }
-              },
-              null);
+            var completionSource = new TaskCompletionSource<bool>();
+            Task.Run(() =>
+           {
+               try
+               {
+                   send(opcode, stream);
+                   completionSource.TrySetResult(true);
+               }
+               catch (Exception ex)
+               {
+                   completionSource.TrySetException(ex);
+               }
+           });
+            return completionSource.Task;
         }
 
         // As server
@@ -833,22 +830,18 @@ namespace SocketHttpListener
         /// <param name="data">
         /// An array of <see cref="byte"/> that represents the binary data to send.
         /// </param>
-        /// <param name="completed">
         /// An Action&lt;bool&gt; delegate that references the method(s) called when the send is
         /// complete. A <see cref="bool"/> passed to this delegate is <c>true</c> if the send is
         /// complete successfully; otherwise, <c>false</c>.
-        /// </param>
-        public void SendAsync(byte[] data, Action<bool> completed)
+        public Task SendAsync(byte[] data)
         {
             var msg = _readyState.CheckIfOpen() ?? data.CheckIfValidSendData();
             if (msg != null)
             {
-                error(msg);
-
-                return;
+                throw new Exception(msg);
             }
 
-            sendAsync(Opcode.Binary, _memoryStreamFactory.CreateNew(data), completed);
+            return sendAsync(Opcode.Binary, _memoryStreamFactory.CreateNew(data));
         }
 
         /// <summary>
@@ -860,22 +853,18 @@ namespace SocketHttpListener
         /// <param name="data">
         /// A <see cref="string"/> that represents the text data to send.
         /// </param>
-        /// <param name="completed">
         /// An Action&lt;bool&gt; delegate that references the method(s) called when the send is
         /// complete. A <see cref="bool"/> passed to this delegate is <c>true</c> if the send is
         /// complete successfully; otherwise, <c>false</c>.
-        /// </param>
-        public void SendAsync(string data, Action<bool> completed)
+        public Task SendAsync(string data)
         {
             var msg = _readyState.CheckIfOpen() ?? data.CheckIfValidSendData();
             if (msg != null)
             {
-                error(msg);
-
-                return;
+                throw new Exception(msg);
             }
 
-            sendAsync(Opcode.Text, _memoryStreamFactory.CreateNew(Encoding.UTF8.GetBytes(data)), completed);
+            return sendAsync(Opcode.Text, _memoryStreamFactory.CreateNew(Encoding.UTF8.GetBytes(data)));
         }
 
         #endregion
