@@ -214,7 +214,7 @@ namespace Emby.Server.Implementations.Security
                         statementTexts.Add(commandText);
                         statementTexts.Add("select count (Id) from AccessTokens" + whereTextWithoutPaging);
 
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray()))
+                        var statements = PrepareAllSafe(db, statementTexts)
                             .ToList();
 
                         using (var statement = statements[0])

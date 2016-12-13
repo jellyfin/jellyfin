@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Activity
                         var list = new List<ActivityLogEntry>();
                         var result = new QueryResult<ActivityLogEntry>();
 
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray())).ToList();
+                        var statements = PrepareAllSafe(db, statementTexts).ToList();
 
                         using (var statement = statements[0])
                         {

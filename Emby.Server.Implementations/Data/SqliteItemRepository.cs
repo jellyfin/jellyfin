@@ -701,12 +701,12 @@ namespace Emby.Server.Implementations.Data
         {
             var requiresReset = false;
 
-            var statements = PrepareAll(db, string.Join(";", new string[]
+            var statements = PrepareAllSafe(db, new string[]
             {
                 GetSaveItemCommandText(),
                 "delete from AncestorIds where ItemId=@ItemId",
                 "insert into AncestorIds (ItemId, AncestorId, AncestorIdText) values (@ItemId, @AncestorId, @AncestorIdText)"
-            })).ToList();
+            }).ToList();
 
             using (var saveItemStatement = statements[0])
             {
@@ -1258,18 +1258,23 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    using (var statement = PrepareStatementSafe(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
+                    return connection.RunInTransaction(db =>
                     {
-                        statement.TryBind("@guid", id);
-
-                        foreach (var row in statement.ExecuteQuery())
+                        using (var statement = PrepareStatementSafe(db, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
                         {
-                            return GetItem(row);
+                            statement.TryBind("@guid", id);
+
+                            foreach (var row in statement.ExecuteQuery())
+                            {
+                                return GetItem(row);
+                            }
                         }
-                    }
+
+                        return null;
+
+                    }, ReadTransactionMode);
                 }
             }
-            return null;
         }
 
         private BaseItem GetItem(IReadOnlyList<IResultSetValue> reader)
@@ -2762,7 +2767,7 @@ namespace Emby.Server.Implementations.Data
                     return connection.RunInTransaction(db =>
                     {
                         var result = new QueryResult<BaseItem>();
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray()))
+                        var statements = PrepareAllSafe(db, statementTexts)
                             .ToList();
 
                         if (!isReturningZeroItems)
@@ -3173,7 +3178,7 @@ namespace Emby.Server.Implementations.Data
                     {
                         var result = new QueryResult<Guid>();
 
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray()))
+                        var statements = PrepareAllSafe(db, statementTexts)
                             .ToList();
 
                         if (!isReturningZeroItems)
@@ -5121,7 +5126,8 @@ namespace Emby.Server.Implementations.Data
                         var list = new List<Tuple<BaseItem, ItemCounts>>();
                         var result = new QueryResult<Tuple<BaseItem, ItemCounts>>();
 
-                        var statements = PrepareAllSafe(db, string.Join(";", statementTexts.ToArray())).ToList();
+                        var statements = PrepareAllSafe(db, statementTexts)
+                            .ToList();
 
                         if (!isReturningZeroItems)
                         {
