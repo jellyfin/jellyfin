@@ -191,7 +191,6 @@ namespace MediaBrowser.Model.Configuration
         public int SharingExpirationDays { get; set; }
 
         public int SchemaVersion { get; set; }
-        public int SqliteCacheSize { get; set; }
 
         public bool EnableAnonymousUsageReporting { get; set; }
         public bool EnableStandaloneMusicKeys { get; set; }
@@ -214,7 +213,6 @@ namespace MediaBrowser.Model.Configuration
         {
             LocalNetworkAddresses = new string[] { };
             CodecsUsed = new string[] { };
-            SqliteCacheSize = 0;
             ImageExtractionTimeoutMs = 0;
 
             EnableLocalizedGuids = true;

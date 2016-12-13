@@ -105,13 +105,7 @@ namespace Emby.Server.Implementations.Data
         {
             get
             {
-                var cacheSize = _config.Configuration.SqliteCacheSize;
-                if (cacheSize <= 0)
-                {
-                    cacheSize = Math.Min(Environment.ProcessorCount * 50000, 100000);
-                }
-
-                return 0 - cacheSize;
+                return 20000;
             }
         }
 
@@ -376,9 +370,9 @@ namespace Emby.Server.Implementations.Data
                 //await Vacuum(_connection).ConfigureAwait(false);
             }
 
-            userDataRepo.Initialize(WriteLock);
+            userDataRepo.Initialize(WriteLock, _connection);
 
-            _shrinkMemoryTimer = _timerFactory.Create(OnShrinkMemoryTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(30));
+            _shrinkMemoryTimer = _timerFactory.Create(OnShrinkMemoryTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(15));
         }
 
         private void OnShrinkMemoryTimerCallback(object state)
@@ -1258,21 +1252,17 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    using (var statement = PrepareStatementSafe(connection, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
                     {
-                        using (var statement = PrepareStatementSafe(db, "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid"))
+                        statement.TryBind("@guid", id);
+
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            statement.TryBind("@guid", id);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                return GetItem(row);
-                            }
+                            return GetItem(row);
                         }
+                    }
 
-                        return null;
-
-                    }, ReadTransactionMode);
+                    return null;
                 }
             }
         }
@@ -2091,23 +2081,19 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<ChapterInfo>();
+
+                    using (var statement = PrepareStatementSafe(connection, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
                     {
-                        var list = new List<ChapterInfo>();
+                        statement.TryBind("@ItemId", id);
 
-                        using (var statement = PrepareStatementSafe(db, "select StartPositionTicks,Name,ImagePath,ImageDateModified from " + ChaptersTableName + " where ItemId = @ItemId order by ChapterIndex asc"))
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            statement.TryBind("@ItemId", id);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(GetChapter(row));
-                            }
+                            list.Add(GetChapter(row));
                         }
+                    }
 
-                        return list;
-
-                    }, ReadTransactionMode);
+                    return list;
                 }
             }
         }
@@ -2486,26 +2472,22 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    using (var statement = PrepareStatementSafe(connection, commandText))
                     {
-                        using (var statement = PrepareStatementSafe(db, commandText))
+                        if (EnableJoinUserData(query))
                         {
-                            if (EnableJoinUserData(query))
-                            {
-                                statement.TryBind("@UserId", query.User.Id);
-                            }
-
-                            BindSimilarParams(query, statement);
-
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
-
-                            var count = statement.ExecuteQuery().SelectScalarInt().First();
-                            LogQueryTime("GetCount", commandText, now);
-                            return count;
+                            statement.TryBind("@UserId", query.User.Id);
                         }
 
-                    }, ReadTransactionMode);
+                        BindSimilarParams(query, statement);
+
+                        // Running this again will bind the params
+                        GetWhereClauses(query, statement);
+
+                        var count = statement.ExecuteQuery().SelectScalarInt().First();
+                        LogQueryTime("GetCount", commandText, now);
+                        return count;
+                    }
                 }
 
             }
@@ -2983,33 +2965,29 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<Guid>();
+
+                    using (var statement = PrepareStatementSafe(connection, commandText))
                     {
-                        var list = new List<Guid>();
-
-                        using (var statement = PrepareStatementSafe(db, commandText))
+                        if (EnableJoinUserData(query))
                         {
-                            if (EnableJoinUserData(query))
-                            {
-                                statement.TryBind("@UserId", query.User.Id);
-                            }
-
-                            BindSimilarParams(query, statement);
-
-                            // Running this again will bind the params
-                            GetWhereClauses(query, statement);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(row[0].ReadGuid());
-                            }
+                            statement.TryBind("@UserId", query.User.Id);
                         }
 
-                        LogQueryTime("GetItemList", commandText, now);
+                        BindSimilarParams(query, statement);
 
-                        return list;
+                        // Running this again will bind the params
+                        GetWhereClauses(query, statement);
 
-                    }, ReadTransactionMode);
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(row[0].ReadGuid());
+                        }
+                    }
+
+                    LogQueryTime("GetItemList", commandText, now);
+
+                    return list;
                 }
             }
         }
@@ -4678,21 +4656,18 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<string>();
+                    using (var statement = PrepareStatementSafe(connection, commandText))
                     {
-                        var list = new List<string>();
-                        using (var statement = PrepareStatementSafe(db, commandText))
-                        {
-                            // Run this again to bind the params
-                            GetPeopleWhereClauses(query, statement);
+                        // Run this again to bind the params
+                        GetPeopleWhereClauses(query, statement);
 
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(row.GetString(0));
-                            }
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(row.GetString(0));
                         }
-                        return list;
-                    }, ReadTransactionMode);
+                    }
+                    return list;
                 }
             }
         }
@@ -4721,23 +4696,20 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<PersonInfo>();
+
+                    using (var statement = PrepareStatementSafe(connection, commandText))
                     {
-                        var list = new List<PersonInfo>();
+                        // Run this again to bind the params
+                        GetPeopleWhereClauses(query, statement);
 
-                        using (var statement = PrepareStatementSafe(db, commandText))
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            // Run this again to bind the params
-                            GetPeopleWhereClauses(query, statement);
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(GetPerson(row));
-                            }
+                            list.Add(GetPerson(row));
                         }
+                    }
 
-                        return list;
-                    }, ReadTransactionMode);
+                    return list;
                 }
             }
         }
@@ -4939,25 +4911,22 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
-                    {
-                        var list = new List<string>();
+                    var list = new List<string>();
 
-                        using (var statement = PrepareStatementSafe(db, commandText))
+                    using (var statement = PrepareStatementSafe(connection, commandText))
+                    {
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            foreach (var row in statement.ExecuteQuery())
+                            if (!row.IsDBNull(0))
                             {
-                                if (!row.IsDBNull(0))
-                                {
-                                    list.Add(row.GetString(0));
-                                }
+                                list.Add(row.GetString(0));
                             }
                         }
+                    }
 
-                        LogQueryTime("GetItemValueNames", commandText, now);
+                    LogQueryTime("GetItemValueNames", commandText, now);
 
-                        return list;
-                    }, ReadTransactionMode);
+                    return list;
                 }
             }
         }
@@ -5434,33 +5403,29 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var connection = CreateConnection(true))
                 {
-                    return connection.RunInTransaction(db =>
+                    var list = new List<MediaStream>();
+
+                    using (var statement = PrepareStatementSafe(connection, cmdText))
                     {
-                        var list = new List<MediaStream>();
+                        statement.TryBind("@ItemId", query.ItemId.ToGuidParamValue());
 
-                        using (var statement = PrepareStatementSafe(db, cmdText))
+                        if (query.Type.HasValue)
                         {
-                            statement.TryBind("@ItemId", query.ItemId.ToGuidParamValue());
-
-                            if (query.Type.HasValue)
-                            {
-                                statement.TryBind("@StreamType", query.Type.Value.ToString());
-                            }
-
-                            if (query.Index.HasValue)
-                            {
-                                statement.TryBind("@StreamIndex", query.Index.Value);
-                            }
-
-                            foreach (var row in statement.ExecuteQuery())
-                            {
-                                list.Add(GetMediaStream(row));
-                            }
+                            statement.TryBind("@StreamType", query.Type.Value.ToString());
                         }
 
-                        return list;
+                        if (query.Index.HasValue)
+                        {
+                            statement.TryBind("@StreamIndex", query.Index.Value);
+                        }
 
-                    }, ReadTransactionMode);
+                        foreach (var row in statement.ExecuteQuery())
+                        {
+                            list.Add(GetMediaStream(row));
+                        }
+                    }
+
+                    return list;
                 }
             }
         }
