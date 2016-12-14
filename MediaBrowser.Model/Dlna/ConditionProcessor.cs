@@ -24,15 +24,12 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string videoCodecTag,
-            bool? isAvc,
-            List<string> allAudioCodecs )
+            bool? isAvc )
         {
             switch (condition.Property)
             {
                 case ProfileConditionValue.IsAnamorphic:
                     return IsConditionSatisfied(condition, isAnamorphic);
-                case ProfileConditionValue.HasAudioCodec:
-                    return IsHasAudioCodecConditionSatisfied(condition, allAudioCodecs);
                 case ProfileConditionValue.IsAvc:
                     return IsConditionSatisfied(condition, isAvc);
                 case ProfileConditionValue.VideoFramerate:
@@ -162,25 +159,6 @@ namespace MediaBrowser.Model.Dlna
                     return StringHelper.EqualsIgnoreCase(currentValue, expected);
                 case ProfileConditionType.NotEquals:
                     return !StringHelper.EqualsIgnoreCase(currentValue, expected);
-                default:
-                    throw new InvalidOperationException("Unexpected ProfileConditionType");
-            }
-        }
-
-        private bool IsHasAudioCodecConditionSatisfied(ProfileCondition condition, List<string> allAudioCodecs)
-        {
-            if (allAudioCodecs.Count == 0)
-            {
-                // If the value is unknown, it satisfies if not marked as required
-                return !condition.IsRequired;
-            }
-
-            switch (condition.Condition)
-            {
-                case ProfileConditionType.Equals:
-                    return allAudioCodecs.Contains(condition.Value, StringComparer.Ordinal);
-                case ProfileConditionType.NotEquals:
-                    return !allAudioCodecs.Contains(condition.Value, StringComparer.Ordinal);
                 default:
                     throw new InvalidOperationException("Unexpected ProfileConditionType");
             }

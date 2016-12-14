@@ -215,9 +215,12 @@ namespace Emby.Server
 
             var initProgress = new Progress<double>();
 
-            // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
-            SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
-                         ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
+            if (environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows)
+            {
+                // Not crazy about this but it's the only way to suppress ffmpeg crash dialog boxes
+                SetErrorMode(ErrorModes.SEM_FAILCRITICALERRORS | ErrorModes.SEM_NOALIGNMENTFAULTEXCEPT |
+                             ErrorModes.SEM_NOGPFAULTERRORBOX | ErrorModes.SEM_NOOPENFILEERRORBOX);
+            }
 
             var task = _appHost.Init(initProgress);
             Task.WaitAll(task);
