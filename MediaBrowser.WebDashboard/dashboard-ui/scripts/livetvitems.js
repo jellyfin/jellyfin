@@ -76,6 +76,7 @@
                     showChannelName: params.type != 'Recordings' && params.type != 'RecordingSeries',
                     overlayMoreButton: !supportsImageAnalysis,
                     showYear: query.IsMovie && params.type == 'Recordings',
+                    showSeriesYear: params.type === 'RecordingSeries',
                     coverImage: true,
                     cardLayout: supportsImageAnalysis,
                     vibrant: supportsImageAnalysis

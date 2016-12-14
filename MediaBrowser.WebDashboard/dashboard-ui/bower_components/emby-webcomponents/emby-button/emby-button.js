@@ -1,4 +1,4 @@
-﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
+﻿define(['browser', 'dom', 'layoutManager', 'css!./emby-button', 'registerElement'], function (browser, dom, layoutManager) {
     'use strict';
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
@@ -76,6 +76,10 @@
         // Even though they support flex, it doesn't quite work with button elements
         if (browser.firefox || browser.safari) {
             this.classList.add('emby-button-noflex');
+        }
+
+        if (layoutManager.tv) {
+            this.classList.add('emby-button-focusscale');
         }
 
         if (enableAnimation()) {

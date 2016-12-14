@@ -413,17 +413,6 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public List<string> AllAudioCodecs
-        {
-            get
-            {
-                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
-                        .Select(i => i.Codec)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .ToList();
-            }
-        }
-
         /// <summary>
         /// Returns the video stream that will be used
         /// </summary>

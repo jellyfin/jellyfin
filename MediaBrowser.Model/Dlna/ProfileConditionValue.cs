@@ -21,7 +21,6 @@
         NumVideoStreams = 17,
         IsSecondaryAudio = 18,
         VideoCodecTag = 19,
-        IsAvc = 20,
-        HasAudioCodec = 21
+        IsAvc = 20
     }
 }

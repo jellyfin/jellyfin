@@ -1,4 +1,4 @@
-﻿define(['dom', 'scroller', 'browser', 'registerElement', 'css!./emby-tabs', 'scrollStyles'], function (dom, scroller, browser) {
+﻿define(['dom', 'scroller', 'browser', 'layoutManager', 'focusManager', 'registerElement', 'css!./emby-tabs', 'scrollStyles'], function (dom, scroller, browser, layoutManager, focusManager) {
     'use strict';
 
     var EmbyTabs = Object.create(HTMLDivElement.prototype);
@@ -94,6 +94,23 @@
             animtateSelectionBar(selectionBar, startOffset, endPosition, delay, onAnimationFinish);
         } else {
             onAnimationFinish();
+        }
+    }
+
+    function getFocusCallback(tabs, e) {
+        return function () {
+            onClick.call(tabs, e);
+        };
+    }
+
+    function onFocus(e) {
+
+        if (layoutManager.tv) {
+
+            if (this.focusTimeout) {
+                clearTimeout(this.focusTimeout);
+            }
+            this.focusTimeout = setTimeout(getFocusCallback(this, e), 700);
         }
     }
 
@@ -204,12 +221,28 @@
             return;
         }
         this.classList.add('emby-tabs');
+        this.classList.add('focusable');
 
         dom.addEventListener(this, 'click', onClick, {
             passive: true
         });
+        dom.addEventListener(this, 'focus', onFocus, {
+            passive: true,
+            capture: true
+        });
 
         initSelectionBar(this);
+    };
+
+    EmbyTabs.focus = function () {
+
+        var selected = this.querySelector('.' + activeButtonClass);
+
+        if (selected) {
+            focusManager.focus(selected);
+        } else {
+            focusManager.autoFocus(this);
+        }
     };
 
     EmbyTabs.refresh = function () {
@@ -242,6 +275,10 @@
 
         dom.removeEventListener(this, 'click', onClick, {
             passive: true
+        });
+        dom.removeEventListener(this, 'focus', onFocus, {
+            passive: true,
+            capture: true
         });
         this.selectionBar = null;
     };

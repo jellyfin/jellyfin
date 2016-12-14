@@ -552,25 +552,6 @@ define(['browser'], function (browser) {
             maxLevel = '51';
         }
 
-        if (browser.iOS) {
-            profile.ContainerProfiles.push({
-                Type: 'Video',
-                Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'HasAudioCodec',
-                    Value: 'dca',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'NotEquals',
-                    Property: 'HasAudioCodec',
-                    Value: 'dts',
-                    IsRequired: false
-                }]
-            });
-        }
-
         profile.CodecProfiles.push({
             Type: 'Video',
             Codec: 'h264',

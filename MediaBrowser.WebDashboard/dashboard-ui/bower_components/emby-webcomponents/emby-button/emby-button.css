@@ -40,6 +40,18 @@
     text-transform: uppercase;
 }
 
+.emby-button-focusscale {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+    .emby-button-focusscale:focus {
+        transform: scale(1.16);
+        z-index: 1;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
 .emby-button > i {
     /* For non-fab buttons that have icons */
     font-size: 1.36em;
@@ -220,3 +232,14 @@
     position: relative;
     z-index: 1;
 }
+
+.icon-button-focusscale {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+    .icon-button-focusscale:focus {
+        transform: scale(1.3);
+        z-index: 1;
+    }

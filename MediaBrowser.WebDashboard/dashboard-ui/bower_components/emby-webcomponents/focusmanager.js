@@ -304,10 +304,12 @@ define(['dom'], function (dom) {
             var nearestElement = nearest[0].node;
 
             // See if there's a focusable container, and if so, send the focus command to that
-            var nearestElementFocusableParent = dom.parentWithClass(nearestElement, 'focusable');
-            if (nearestElementFocusableParent && nearestElementFocusableParent !== nearestElement && activeElement) {
-                if (dom.parentWithClass(activeElement, 'focusable') !== nearestElementFocusableParent) {
-                    nearestElement = nearestElementFocusableParent;
+            if (activeElement) {
+                var nearestElementFocusableParent = dom.parentWithClass(nearestElement, 'focusable');
+                if (nearestElementFocusableParent && nearestElementFocusableParent !== nearestElement) {
+                    if (focusableContainer !== nearestElementFocusableParent) {
+                        nearestElement = nearestElementFocusableParent;
+                    }
                 }
             }
             focus(nearestElement);

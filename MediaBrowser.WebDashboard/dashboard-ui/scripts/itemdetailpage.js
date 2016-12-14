@@ -1228,7 +1228,8 @@
                         lazy: true,
                         showDetailsMenu: true,
                         overlayPlayButton: true,
-                        allowBottomPadding: !scrollX
+                        allowBottomPadding: !scrollX,
+                        includeParentInfoInTitle: false
                     });
                 }
             }

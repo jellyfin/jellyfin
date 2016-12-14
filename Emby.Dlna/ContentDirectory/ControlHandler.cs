@@ -98,6 +98,9 @@ namespace Emby.Dlna.ContentDirectory
             if (string.Equals(methodName, "Search", StringComparison.OrdinalIgnoreCase))
                 return HandleSearch(methodParams, user, deviceId).Result;
 
+            if (string.Equals(methodName, "X_BrowseByLetter", StringComparison.OrdinalIgnoreCase))
+                return HandleX_BrowseByLetter(methodParams, user, deviceId).Result;
+
             throw new ResourceNotFoundException("Unexpected control request name: " + methodName);
         }
 
@@ -118,7 +121,7 @@ namespace Emby.Dlna.ContentDirectory
             _userDataManager.SaveUserData(user.Id, item, userdata, UserDataSaveReason.TogglePlayed,
                 CancellationToken.None);
 
-            return new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSearchCapabilities()
@@ -147,7 +150,7 @@ namespace Emby.Dlna.ContentDirectory
 
         private IEnumerable<KeyValuePair<string, string>> HandleGetSystemUpdateID()
         {
-            var headers = new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);
+            var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             headers.Add("Id", _systemUpdateId.ToString(_usCulture));
             return headers;
         }
@@ -307,6 +310,12 @@ namespace Emby.Dlna.ContentDirectory
                     new KeyValuePair<string,string>("TotalMatches", totalCount.ToString(_usCulture)),
                     new KeyValuePair<string,string>("UpdateID", _systemUpdateId.ToString(_usCulture))
                 };
+        }
+
+        private Task<IEnumerable<KeyValuePair<string, string>>> HandleX_BrowseByLetter(IDictionary<string, string> sparams, User user, string deviceId)
+        {
+            // TODO: Implement this method
+            return HandleSearch(sparams, user, deviceId);
         }
 
         private async Task<IEnumerable<KeyValuePair<string, string>>> HandleSearch(IDictionary<string, string> sparams, User user, string deviceId)
@@ -551,20 +560,6 @@ namespace Emby.Dlna.ContentDirectory
             result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
 
             return result;
-        }
-
-        private bool EnablePeopleDisplay(BaseItem item)
-        {
-            if (_libraryManager.GetPeopleNames(new InternalPeopleQuery
-            {
-                ItemId = item.Id
-
-            }).Count > 0)
-            {
-                return item is Movie;
-            }
-
-            return false;
         }
 
         private ServerItem GetItemFromObjectId(string id, User user)
