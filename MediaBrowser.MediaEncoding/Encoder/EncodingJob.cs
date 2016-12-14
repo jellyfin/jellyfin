@@ -118,17 +118,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        public List<string> AllAudioCodecs
-        {
-            get
-            {
-                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
-                        .Select(i => i.Codec)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .ToList();
-            }
-        }
-
         private void DisposeIsoMount()
         {
             if (IsoMount != null)

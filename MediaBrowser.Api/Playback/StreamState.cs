@@ -245,17 +245,6 @@ namespace MediaBrowser.Api.Playback
         public int? OutputAudioBitrate;
         public int? OutputVideoBitrate;
 
-        public List<string> AllAudioCodecs
-        {
-            get
-            {
-                return MediaSource.MediaStreams.Where(i => i.Type == MediaStreamType.Audio)
-                        .Select(i => i.Codec)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .ToList();
-            }
-        }
-
         public string ActualOutputVideoCodec
         {
             get
