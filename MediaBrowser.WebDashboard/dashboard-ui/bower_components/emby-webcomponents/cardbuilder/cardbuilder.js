@@ -813,7 +813,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
 
             if (showMediaTitle) {
 
-                var name = options.showTitle === 'auto' && !item.IsFolder && item.MediaType === 'Photo' ? '' : itemHelper.getDisplayName(item);
+                var name = options.showTitle === 'auto' && !item.IsFolder && item.MediaType === 'Photo' ? '' : itemHelper.getDisplayName(item, {
+                    includeParentInfo: options.includeParentInfoInTitle
+                });
 
                 lines.push(name);
             }

@@ -119,8 +119,7 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string videoCodecTag,
-            bool? isAvc,
-            List<string> allAudioCodecs)
+            bool? isAvc)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
@@ -162,8 +161,7 @@ namespace MediaBrowser.Model.Dlna
                 numVideoStreams,
                 numAudioStreams,
                 videoCodecTag,
-                isAvc,
-                allAudioCodecs);
+                isAvc);
 
             List<string> orgPnValues = new List<string>();
 

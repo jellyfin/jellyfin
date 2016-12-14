@@ -245,7 +245,7 @@ namespace Emby.Common.Implementations.Networking
                     //}
 
                     return ipProperties.UnicastAddresses
-                        .Where(i => i.IsDnsEligible)
+                        //.Where(i => i.IsDnsEligible)
                         .Select(i => i.Address)
                         .Where(i => i.AddressFamily == AddressFamily.InterNetwork)
                         .ToList();

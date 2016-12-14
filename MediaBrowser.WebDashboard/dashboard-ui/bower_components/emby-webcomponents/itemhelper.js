@@ -30,10 +30,10 @@ define(['apphost'], function (appHost) {
 
             var displayIndexNumber = item.IndexNumber;
 
-            var number = "E" + displayIndexNumber;
+            var number = displayIndexNumber;
 
             if (options.includeParentInfo !== false) {
-                number = "S" + item.ParentIndexNumber + ", " + number;
+                number = "S" + item.ParentIndexNumber + ", E" + number;
             }
 
             if (item.IndexNumberEnd) {

@@ -818,7 +818,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .mediaInfoText {
     background: rgba(31,31,31,.7);
-    padding: .2em .5em;
+    padding: .25em .5em;
     border-radius: .25em;
     color: #ddd;
     margin-right: .5em;

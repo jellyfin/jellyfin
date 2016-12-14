@@ -846,8 +846,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.TargetVideoStreamCount,
                 state.TargetAudioStreamCount,
                 state.TargetVideoCodecTag,
-                state.IsTargetAVC,
-                state.AllAudioCodecs);
+                state.IsTargetAVC);
 
             if (mediaProfile != null)
             {

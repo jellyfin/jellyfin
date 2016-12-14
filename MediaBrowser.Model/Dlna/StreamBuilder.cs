@@ -411,7 +411,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var allMediaStreams = item.MediaStreams;
-            var allAudioCodecs = allMediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
 
             MediaStream videoStream = item.VideoStream;
 
@@ -556,7 +555,7 @@ namespace MediaBrowser.Model.Dlna
                             int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                             int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
-                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, allAudioCodecs))
+                            if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                             {
                                 LogConditionFailure(options.Profile, "VideoCodecProfile", applyCondition, item);
                                 applyConditions = false;
@@ -739,12 +738,10 @@ namespace MediaBrowser.Model.Dlna
             int? numAudioStreams = mediaSource.GetStreamCount(MediaStreamType.Audio);
             int? numVideoStreams = mediaSource.GetStreamCount(MediaStreamType.Video);
 
-            var allAudioCodecs = allMediaStreams.Where(i => i.Type == MediaStreamType.Audio).Select(i => i.Codec).Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
-
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, allAudioCodecs))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -771,7 +768,7 @@ namespace MediaBrowser.Model.Dlna
                     bool applyConditions = true;
                     foreach (ProfileCondition applyCondition in i.ApplyConditions)
                     {
-                        if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, allAudioCodecs))
+                        if (!conditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                         {
                             LogConditionFailure(profile, "VideoCodecProfile", applyCondition, mediaSource);
                             applyConditions = false;
@@ -791,7 +788,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, allAudioCodecs))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
