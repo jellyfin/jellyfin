@@ -1,5 +1,29 @@
 ﻿<div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage noSecondaryNavPage selfBackdropPage" data-theme="b" data-backbutton="true">
 
+    <style>
+        @media all and (min-width: 800px) {
+
+            .itemBackdrop {
+                display: none;
+            }
+
+            .detailPagePrimaryContainer {
+                display: flex;
+                margin-bottom: 3.6em;
+            }
+
+            .shadedDetailSection, .detailPagePrimaryContainer {
+                background: rgba(0, 0, 0, .7) !important;
+                padding: 1em !important;
+                box-shadow: 0 0 10px 1px black !important;
+            }
+
+            .detailSection h1 {
+                opacity: .9;
+            }
+        }
+    </style>
+
     <div id="itemBackdrop" class="itemBackdrop noBackdrop">
         <div class="itemBackdropContent">
         </div>
@@ -179,7 +203,7 @@
                 <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
             </div>
 
-            <div class="detailSection audioVideoMediaInfo hide">
+            <div class="detailSection audioVideoMediaInfo hide shadedDetailSection">
                 <h1>${HeaderMediaInfo}</h1>
                 <div>
                     <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
