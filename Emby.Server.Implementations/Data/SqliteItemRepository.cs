@@ -389,6 +389,8 @@ namespace Emby.Server.Implementations.Data
                         });
                     }
                 }
+
+                GC.Collect();
             }
             catch (Exception ex)
             {
