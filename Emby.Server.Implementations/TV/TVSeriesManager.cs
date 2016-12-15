@@ -144,23 +144,16 @@ namespace Emby.Server.Implementations.TV
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
             var alwaysEnableFirstEpisode = !string.IsNullOrWhiteSpace(request.SeriesId);
-            var isFirstItemAFirstEpisode = true;
 
             return allNextUp
                 .Where(i =>
                 {
                     if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
                     {
-                        isFirstItemAFirstEpisode = false;
                         return true;
                     }
 
-                    if (isFirstItemAFirstEpisode)
-                    {
-                        return false;
-                    }
-
-                    return true;
+                    return false;
                 })
                 .Select(i => i.Item2())
                 .Where(i => i != null)

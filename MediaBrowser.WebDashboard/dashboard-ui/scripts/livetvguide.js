@@ -11,6 +11,16 @@
                     element: tabContent
                 });
             }
+        };
+        self.onShow = function () {
+            if (guideInstance) {
+                guideInstance.resume();
+            }
+        };
+        self.onHide = function () {
+            if (guideInstance) {
+                guideInstance.pause();
+            }
         };
     };
 });

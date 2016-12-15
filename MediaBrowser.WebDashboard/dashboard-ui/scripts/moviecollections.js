@@ -41,7 +41,7 @@
         function getSavedQueryKey(context) {
 
             if (!context.savedQueryKey) {
-                context.savedQueryKey = libraryBrowser.getSavedQueryKey('movies');
+                context.savedQueryKey = libraryBrowser.getSavedQueryKey('moviecollections');
             }
             return context.savedQueryKey;
         }
