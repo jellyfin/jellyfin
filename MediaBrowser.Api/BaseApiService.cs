@@ -145,12 +145,13 @@ namespace MediaBrowser.Api
                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
                client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1)
+               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
 
-            else if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
+            if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
 
                 // covers both emby mobile and emby for android mobile
                 client.IndexOf("mobile", StringComparison.OrdinalIgnoreCase) == -1 &&
