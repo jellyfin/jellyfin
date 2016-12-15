@@ -20,9 +20,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        const string ServiceAvtransportType = "urn:schemas-upnp-org:service:AVTransport:1";
-        const string ServiceRenderingType = "urn:schemas-upnp-org:service:RenderingControl:1";
-
         #region Fields & Properties
 
         private ITimer _timer;
@@ -254,13 +251,29 @@ namespace Emby.Dlna.PlayTo
             }
         }
 
+        private DeviceService GetServiceRenderingControl()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:RenderingControl:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:RenderingControl", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private DeviceService GetAvTransportService()
+        {
+            var services = Properties.Services;
+
+            return services.FirstOrDefault(s => string.Equals(s.ServiceType, "urn:schemas-upnp-org:service:AVTransport:1", StringComparison.OrdinalIgnoreCase)) ??
+                services.FirstOrDefault(s => (s.ServiceType ?? string.Empty).StartsWith("urn:schemas-upnp-org:service:AVTransport", StringComparison.OrdinalIgnoreCase));
+        }
+
         private async Task<bool> SetMute(bool mute)
         {
             var command = RendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
             if (command == null)
                 return false;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
+            var service = GetServiceRenderingControl();
 
             if (service == null)
             {
@@ -287,7 +300,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
+            var service = GetServiceRenderingControl();
 
             if (service == null)
             {
@@ -308,7 +321,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             if (service == null)
             {
@@ -333,7 +346,7 @@ namespace Emby.Dlna.PlayTo
                 {"CurrentURIMetaData", CreateDidlMeta(metaData)}
             };
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             if (service == null)
             {
@@ -373,7 +386,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             if (service == null)
             {
@@ -390,7 +403,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.First(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -402,7 +415,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.First(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType, 1))
                 .ConfigureAwait(false);
@@ -521,7 +534,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
+            var service = GetServiceRenderingControl();
 
             if (service == null)
             {
@@ -554,7 +567,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
+            var service = GetServiceRenderingControl();
 
             if (service == null)
             {
@@ -579,7 +592,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return null;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
             if (service == null)
                 return null;
 
@@ -613,7 +626,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return null;
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             if (service == null)
             {
@@ -644,7 +657,7 @@ namespace Emby.Dlna.PlayTo
             if (command == null)
                 return new Tuple<bool, uBaseObject>(false, null);
 
-            var service = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var service = GetAvTransportService();
 
             if (service == null)
             {
@@ -697,7 +710,7 @@ namespace Emby.Dlna.PlayTo
             }
 
             XElement uPnpResponse;
-            
+
             // Handle different variations sent back by devices
             try
             {
@@ -780,28 +793,28 @@ namespace Emby.Dlna.PlayTo
 
         private async Task GetAVProtocolAsync()
         {
-            var avService = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceAvtransportType);
+            var avService = GetAvTransportService();
             if (avService == null)
                 return;
 
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(url);
+            var document = await httpClient.GetDataAsync(url).ConfigureAwait(false);
 
             AvCommands = TransportCommands.Create(document);
         }
 
         private async Task GetRenderingProtocolAsync()
         {
-            var avService = Properties.Services.FirstOrDefault(s => s.ServiceType == ServiceRenderingType);
+            var avService = GetServiceRenderingControl();
 
             if (avService == null)
                 return;
             string url = NormalizeUrl(Properties.BaseUrl, avService.ScpdUrl);
 
             var httpClient = new SsdpHttpClient(_httpClient, _config);
-            var document = await httpClient.GetDataAsync(url);
+            var document = await httpClient.GetDataAsync(url).ConfigureAwait(false);
 
             RendererCommands = TransportCommands.Create(document);
         }
@@ -899,8 +912,6 @@ namespace Emby.Dlna.PlayTo
                 deviceProperties.Icon = CreateIcon(icon);
             }
 
-            var isRenderer = false;
-
             foreach (var services in document.Descendants(uPnpNamespaces.ud.GetName("serviceList")))
             {
                 if (services == null)
@@ -918,17 +929,13 @@ namespace Emby.Dlna.PlayTo
                     if (service != null)
                     {
                         deviceProperties.Services.Add(service);
-                        if (service.ServiceType == ServiceAvtransportType)
-                        {
-                            isRenderer = true;
-                        }
                     }
                 }
             }
 
             var device = new Device(deviceProperties, httpClient, logger, config, timerFactory);
 
-            if (isRenderer)
+            if (device.GetAvTransportService() != null)
             {
                 await device.GetRenderingProtocolAsync().ConfigureAwait(false);
                 await device.GetAVProtocolAsync().ConfigureAwait(false);
