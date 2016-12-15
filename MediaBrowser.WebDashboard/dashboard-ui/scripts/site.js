@@ -1087,6 +1087,10 @@ var AppInfo = {};
             return;
         }
 
+        if (AppInfo.isNativeApp) {
+            return;
+        }
+
         var date = new Date();
         var month = date.getMonth();
         var day = date.getDate();

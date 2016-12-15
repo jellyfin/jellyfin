@@ -855,7 +855,7 @@ namespace Emby.Server.Implementations.Library
                 SortOrder = SortOrder.Descending,
                 Limit = 1
             };
-            
+
             return GetItemList(query)
                 .FirstOrDefault();
         }
@@ -1113,16 +1113,21 @@ namespace Emby.Server.Implementations.Library
 
             progress.Report(1);
 
-            var userRoot = GetUserRootFolder();
+            await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
-            await userRoot.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-            await userRoot.ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
+            await GetUserRootFolder().ValidateChildren(new Progress<double>(), cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: false).ConfigureAwait(false);
             progress.Report(2);
+
+            // Quickly scan CollectionFolders for changes
+            foreach (var folder in GetUserRootFolder().Children.OfType<Folder>().ToList())
+            {
+                await folder.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+            }
+            progress.Report(3);
 
             var innerProgress = new ActionableProgress<double>();
 
-            innerProgress.RegisterAction(pct => progress.Report(2 + pct * .73));
+            innerProgress.RegisterAction(pct => progress.Report(3 + pct * .72));
 
             // Now validate the entire media library
             await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(_fileSystem), recursive: true).ConfigureAwait(false);
@@ -1291,7 +1296,6 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
-                    query.ParentId = null;
                 }
             }
 
@@ -1311,7 +1315,6 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
-                    query.ParentId = null;
                 }
             }
 
@@ -1456,6 +1459,12 @@ namespace Emby.Server.Implementations.Library
                 // Optimize by querying against top level views
                 query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).Select(i => i.ToString("N")).ToArray();
                 query.AncestorIds = new string[] { };
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.TopParentIds.Length == 0)
+                {
+                    query.TopParentIds = new[] { Guid.NewGuid().ToString("N") };
+                }
             }
         }
 
@@ -1478,7 +1487,6 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     SetTopParentIdsOrAncestors(query, new List<BaseItem> { parent });
-                    query.ParentId = null;
                 }
             }
 
@@ -1514,12 +1522,26 @@ namespace Emby.Server.Implementations.Library
             {
                 // Optimize by querying against top level views
                 query.TopParentIds = parents.SelectMany(i => GetTopParentIdsForQuery(i, query.User)).Select(i => i.ToString("N")).ToArray();
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.TopParentIds.Length == 0)
+                {
+                    query.TopParentIds = new[] { Guid.NewGuid().ToString("N") };
+                }
             }
             else
             {
                 // We need to be able to query from any arbitrary ancestor up the tree
                 query.AncestorIds = parents.SelectMany(i => i.GetIdsForAncestorQuery()).Select(i => i.ToString("N")).ToArray();
+
+                // Prevent searching in all libraries due to empty filter
+                if (query.AncestorIds.Length == 0)
+                {
+                    query.AncestorIds = new[] { Guid.NewGuid().ToString("N") };
+                }
             }
+
+            query.ParentId = null;
         }
 
         private void AddUserToQuery(InternalItemsQuery query, User user)
@@ -1561,7 +1583,7 @@ namespace Emby.Server.Implementations.Library
 
                     }, CancellationToken.None).Result;
 
-                    return channelResult.Items.Select(i =>  i.Id);
+                    return channelResult.Items.Select(i => i.Id);
                 }
 
                 // Translate view into folders
@@ -1602,7 +1624,7 @@ namespace Emby.Server.Implementations.Library
             {
                 return collectionFolder.PhysicalFolderIds;
             }
-            
+
             var topParent = item.GetTopParent();
             if (topParent != null)
             {

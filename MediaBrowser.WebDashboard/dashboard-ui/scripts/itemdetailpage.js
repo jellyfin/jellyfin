@@ -129,9 +129,7 @@
             renderDetails(page, item, context);
 
             if (dom.getWindowSize().innerWidth >= 800) {
-                backdrop.setBackdrops([item], {
-                    blur: 20
-                }, false);
+                backdrop.setBackdrops([item]);
             } else {
                 backdrop.clear();
             }

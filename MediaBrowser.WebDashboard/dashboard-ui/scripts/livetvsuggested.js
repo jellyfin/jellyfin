@@ -266,6 +266,7 @@
 
         var tabControllers = [];
         var renderedTabs = [];
+        var currentTabController;
 
         function getTabController(page, index, callback) {
 
@@ -343,7 +344,12 @@
                         renderedTabs.push(index);
                     }
                     controller.renderTab();
+                } else {
+                    if (controller.onShow) {
+                        controller.onShow();
+                    }
                 }
+                currentTabController = controller;
             });
         }
 
@@ -356,11 +362,20 @@
         });
 
         viewTabs.addEventListener('tabchange', function (e) {
+
+            var previousTabController = tabControllers[parseInt(e.detail.previousIndex)];
+            if (previousTabController && previousTabController.onHide) {
+                previousTabController.onHide();
+            }
+
             loadTab(view, parseInt(e.detail.selectedTabIndex));
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
+            if (currentTabController && currentTabController.onHide) {
+                currentTabController.onHide();
+            }
             document.body.classList.remove('autoScrollY');
         });
 

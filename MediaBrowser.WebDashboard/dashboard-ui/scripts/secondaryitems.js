@@ -110,7 +110,7 @@
         }
 
         function onViewStyleChange(parentItem) {
-            
+
             var query = getQuery(parentItem);
 
             var itemsContainer = view.querySelector('#items');
@@ -146,7 +146,13 @@
                     showLimit: false
                 });
 
-                view.querySelector('.listTopPaging').innerHTML = pagingHtml;
+                var i, length;
+                var elems;
+
+                elems = view.querySelectorAll('.paging');
+                for (i = 0, length = elems.length; i < length; i++) {
+                    elems[i].innerHTML = pagingHtml;
+                }
 
                 var itemsContainer = view.querySelector('#items');
 
@@ -189,11 +195,8 @@
                     html = cardBuilder.getCardsHtml(posterOptions);
                 }
 
-                itemsContainer.innerHTML = html + pagingHtml;
+                itemsContainer.innerHTML = html;
                 imageLoader.lazyChildren(itemsContainer);
-
-                var i, length;
-                var elems;
 
                 function onNextPageClick() {
                     query.StartIndex += query.Limit;

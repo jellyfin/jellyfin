@@ -380,6 +380,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: flex;
         margin-bottom: 3.6em;
     }
+
+    .shadedDetailSection, .detailPagePrimaryContainer {
+        background: rgba(0,0,0,.7);
+        padding: 1em;
+        box-shadow: 0 0 10px 1px black;
+    }
+
+    .detailSection h1 {
+        opacity: .9;
+    }
 }
 
 @media all and (max-width: 1200px) {
@@ -777,7 +787,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-width: 800px), (max-height: 800px) {
+@media all and (max-width: 800px) {
 
     .detailsHiddenOnMobile {
         display: none;

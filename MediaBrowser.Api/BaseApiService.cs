@@ -145,7 +145,8 @@ namespace MediaBrowser.Api
                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
                client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
-               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1)
+               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
