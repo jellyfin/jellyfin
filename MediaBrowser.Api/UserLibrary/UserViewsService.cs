@@ -95,7 +95,6 @@ namespace MediaBrowser.Api.UserLibrary
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
             var dtoOptions = GetDtoOptions(_authContext, request);
-            dtoOptions.Fields = new List<ItemFields>();
             dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
             dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
 
