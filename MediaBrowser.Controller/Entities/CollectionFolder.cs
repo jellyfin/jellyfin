@@ -202,6 +202,11 @@ namespace MediaBrowser.Controller.Entities
 
         protected override bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
+            return RefreshLinkedChildrenInternal(true);
+        }
+
+        private bool RefreshLinkedChildrenInternal(bool setFolders)
+        {
             var physicalFolders = GetPhysicalFolders(false)
                 .ToList();
 
@@ -219,7 +224,10 @@ namespace MediaBrowser.Controller.Entities
             if (!folderIds.SequenceEqual(newFolderIds))
             {
                 changed = true;
-                PhysicalFolderIds = newFolderIds.ToList();
+                if (setFolders)
+                {
+                    PhysicalFolderIds = newFolderIds.ToList();
+                }
             }
 
             return changed;

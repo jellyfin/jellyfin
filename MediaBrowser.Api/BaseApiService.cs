@@ -150,7 +150,7 @@ namespace MediaBrowser.Api
                 options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
 
-            if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
+            else if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
 
                 // covers both emby mobile and emby for android mobile
                 client.IndexOf("mobile", StringComparison.OrdinalIgnoreCase) == -1 &&
