@@ -63,6 +63,7 @@
 
 .formDialogFooter-flex {
     position: static;
+    width: 100%;
 }
 
 .formDialogFooterItem {

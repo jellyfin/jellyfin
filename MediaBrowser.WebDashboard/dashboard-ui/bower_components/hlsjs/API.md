@@ -402,6 +402,16 @@ Enable WebWorker (if available on browser) for TS demuxing/MP4 remuxing, to impr
 
 Enable to use JavaScript version AES decryption for fallback of WebCrypto API.
 
+
+#### `enableLazyURLResolve`
+
+(default: `false`)
+
+Enable lazy URL resolving in fragment/key object.
+Instead of resolving relative fragment/key URL on playlist parsing, URL are resolved on `FRAG_LOADING` / `KEY_LOADING`
+this improves manifest parsing performance.
+the drawback is that `frag.url` is not set in frag object, instead it is replaced by `frag.baseurl and `frag.relurl`
+
 #### `startLevel`
 
 (default: `undefined`)
