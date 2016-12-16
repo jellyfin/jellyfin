@@ -27,14 +27,14 @@
     "netstandard1.6": {
       "imports": "dnxcore50",
       "dependencies": {
-        "NETStandard.Library": "1.6.0",
+        "NETStandard.Library": "1.6.1",
         "MediaBrowser.Common": {
           "target": "project"
         },
         "MediaBrowser.Model": {
           "target": "project"
         },
-        "System.Net.NetworkInformation": "4.1.0"
+        "System.Net.NetworkInformation": "4.3.0"
       }
     }
   }
