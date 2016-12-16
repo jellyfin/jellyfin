@@ -106,11 +106,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
 
             val = self.get('enableThemeSongs', false);
 
-            if (val) {
-                return val !== 'false';
-            }
-
-            return true;
+            return val !== 'false';
         };
 
         self.enableThemeVideos = function (val) {

@@ -6,7 +6,11 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
 
     function playThemeMedia(items, ownerId) {
 
-        if (items.length) {
+        var currentThemeItems = items.filter(function (i) {
+            return enabled(i.MediaType);
+        });
+
+        if (currentThemeItems.length) {
 
             // Stop if a theme song from another ownerId
             // Leave it alone if anything else (e.g user playing a movie)
@@ -14,14 +18,12 @@ define(['playbackManager', 'userSettings'], function (playbackManager, userSetti
                 return;
             }
 
-            currentThemeIds = items.filter(function (i) {
-                return enabled(i.MediaType);
-            }).map(function (i) {
+            currentThemeIds = currentThemeItems.map(function (i) {
                 return i.Id;
             });
 
             playbackManager.play({
-                items: items,
+                items: currentThemeItems,
                 fullscreen: false,
                 enableRemotePlayers: false
             }).then(function () {
