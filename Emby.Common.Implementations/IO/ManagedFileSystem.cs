@@ -488,20 +488,17 @@ namespace Emby.Common.Implementations.IO
             }
 
             var temp1 = Path.GetTempFileName();
-            var temp2 = Path.GetTempFileName();
 
             // Copying over will fail against hidden files
             RemoveHiddenAttribute(file1);
             RemoveHiddenAttribute(file2);
 
             CopyFile(file1, temp1, true);
-            CopyFile(file2, temp2, true);
 
+            CopyFile(file2, file1, true);
             CopyFile(temp1, file2, true);
-            CopyFile(temp2, file1, true);
 
             DeleteFile(temp1);
-            DeleteFile(temp2);
         }
 
         /// <summary>
