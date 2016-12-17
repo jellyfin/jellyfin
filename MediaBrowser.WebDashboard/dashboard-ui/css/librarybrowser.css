@@ -12,7 +12,8 @@
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
-        background-color: rgba(6, 6,6, .74);
+        background-color: rgba(6, 6, 6, .94) !important;
+        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .96), rgba(0, 0, 0, .64)) !important;
     }
 
 .ui-body-b {
@@ -380,16 +381,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: flex;
         margin-bottom: 3.6em;
     }
-
-    .shadedDetailSection, .detailPagePrimaryContainer {
-        background: rgba(0,0,0,.7);
-        padding: 1em;
-        box-shadow: 0 0 10px 1px black;
-    }
-
-    .detailSection h1 {
-        opacity: .9;
-    }
 }
 
 @media all and (max-width: 1200px) {
@@ -507,6 +498,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .mainDetailButtons.hide + .recordingFields {
         margin-top: 1.5em !important;
     }
+
+@media all and (min-width: 800px) {
+
+    .mainDetailButtons, .recordingFields button {
+        font-size: 110%;
+    }
+}
 
 .detailImageProgressContainer {
     position: absolute;

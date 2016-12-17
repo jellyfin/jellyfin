@@ -202,5 +202,10 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             return false;
         }
+
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisible(user);
+        }
     }
 }

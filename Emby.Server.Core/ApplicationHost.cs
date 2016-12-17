@@ -548,6 +548,8 @@ namespace Emby.Server.Core
             RegisterSingleInstance(UserDataManager);
 
             UserRepository = GetUserRepository();
+            // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
+            RegisterSingleInstance(UserRepository);
 
             var displayPreferencesRepo = new SqliteDisplayPreferencesRepository(LogManager.GetLogger("SqliteDisplayPreferencesRepository"), JsonSerializer, ApplicationPaths, MemoryStreamFactory);
             DisplayPreferencesRepository = displayPreferencesRepo;
@@ -678,6 +680,8 @@ namespace Emby.Server.Core
 
             var sharingRepo = new SharingRepository(LogManager.GetLogger("SharingRepository"), ApplicationPaths);
             sharingRepo.Initialize();
+            // This is only needed for disposal purposes. If removing this, make sure to have the manager handle disposing it
+            RegisterSingleInstance<ISharingRepository>(sharingRepo);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
 
             var activityLogRepo = GetActivityLogRepository();

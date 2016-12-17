@@ -1504,6 +1504,20 @@ namespace Emby.Server.Implementations.Dto
             }
         }
 
+        private BaseItem GetImageDisplayParent(BaseItem item)
+        {
+            var musicAlbum = item as MusicAlbum;
+            if (musicAlbum != null)
+            {
+                var artist = musicAlbum.MusicArtist;
+                if (artist != null)
+                {
+                    return artist;
+                }
+            }
+            return item.GetParent();
+        }
+
         private void AddInheritedImages(BaseItemDto dto, BaseItem item, DtoOptions options, BaseItem owner)
         {
             if (!item.SupportsInheritedParentImages)
@@ -1528,7 +1542,7 @@ namespace Emby.Server.Implementations.Dto
             var isFirst = true;
 
             while (((!dto.HasLogo && logoLimit > 0) || (!dto.HasArtImage && artLimit > 0) || (!dto.HasThumb && thumbLimit > 0) || parent is Series) &&
-                (parent = parent ?? (isFirst ? item.GetParent() ?? owner : parent)) != null)
+                (parent = parent ?? (isFirst ? GetImageDisplayParent(item) ?? owner : parent)) != null)
             {
                 if (parent == null)
                 {
@@ -1585,7 +1599,7 @@ namespace Emby.Server.Implementations.Dto
                     break;
                 }
 
-                parent = parent.GetParent();
+                parent = GetImageDisplayParent(parent);
             }
         }
 
