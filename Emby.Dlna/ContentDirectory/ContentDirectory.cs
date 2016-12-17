@@ -126,7 +126,8 @@ namespace Emby.Dlna.ContentDirectory
             }
 
             // No configuration so it's going to be pretty arbitrary
-            return _userManager.Users.First();
+            return _userManager.Users.FirstOrDefault(i => i.Policy.IsAdministrator) ??
+                _userManager.Users.First();
         }
 
         public void Dispose()
