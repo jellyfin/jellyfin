@@ -47,7 +47,17 @@ namespace MediaBrowser.ServerApplication.Updates
                     product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath, MainStartup.ApplicationPath, systemPath);
 
             logger.Info("Args: {0}", args);
-            Process.Start(tempUpdater, args);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = tempUpdater,
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = Path.GetDirectoryName(tempUpdater)
+            });
 
             // That's it.  The installer will do the work once we exit
         }

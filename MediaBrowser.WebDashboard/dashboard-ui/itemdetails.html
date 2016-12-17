@@ -7,19 +7,9 @@
                 display: none;
             }
 
-            .detailPagePrimaryContainer {
-                display: flex;
-                margin-bottom: 3.6em;
-            }
-
-            .shadedDetailSection, .detailPagePrimaryContainer {
-                background: rgba(0, 0, 0, .7) !important;
-                padding: 1em !important;
-                box-shadow: 0 0 10px 1px black !important;
-            }
-
-            .detailSection h1 {
-                opacity: .9;
+            .background-theme-b .backgroundContainer.withBackdrop {
+                background-color: rgba(6, 6, 6, .94) !important;
+                background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .94), rgba(0, 0, 0, .64)) !important;
             }
         }
     </style>
@@ -203,7 +193,7 @@
                 <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
             </div>
 
-            <div class="detailSection audioVideoMediaInfo hide shadedDetailSection">
+            <div class="detailSection audioVideoMediaInfo hide">
                 <h1>${HeaderMediaInfo}</h1>
                 <div>
                     <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
