@@ -286,7 +286,10 @@ namespace Emby.Server.Implementations.Data
                         {
                             if (_connection != null)
                             {
-                                _connection.Close();
+                                using (_connection)
+                                {
+                                    
+                                }
                                 _connection = null;
                             }
 
