@@ -14,6 +14,7 @@
 
 .guideHeaderDateSelection {
     font-size: 86%;
+    padding: .4em 0;
 }
 
 .guideHeaderTimeslots {
@@ -424,8 +425,8 @@
 .guide-date-tab-button {
     font-weight: 500 !important;
     color: inherit !important;
-    padding-top: .8em !important;
-    padding-bottom: .8em !important;
+    padding-top: .3em !important;
+    padding-bottom: .3em !important;
     opacity: .25;
 }
 
@@ -443,6 +444,7 @@
 
 .layout-tv .guide-date-tab-button:focus {
     background-color: #52B54B !important;
+    border-radius: .25em !important;
     color: #fff !important;
 }
 
@@ -451,13 +453,5 @@
     .guide-date-tab-button {
         padding-left: 1em !important;
         padding-right: 1em !important;
-    }
-}
-
-@media all and (min-width: 1400px) {
-
-    .guide-date-tab-button {
-        padding-left: 1.1em !important;
-        padding-right: 1.1em !important;
     }
 }

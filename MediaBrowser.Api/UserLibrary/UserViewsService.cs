@@ -97,6 +97,8 @@ namespace MediaBrowser.Api.UserLibrary
             var dtoOptions = GetDtoOptions(_authContext, request);
             dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
             dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
 
             var user = _userManager.GetUserById(request.UserId);
 

@@ -412,11 +412,17 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
     }
 
+    function getShortcutAttributesHtml(item) {
+
+        return 'data-id="' + item.Id + '" data-serverid="' + item.ServerId + '" data-type="' + item.Type + '" data-mediatype="' + item.MediaType + '" data-channelid="' + item.ChannelId + '" data-isfolder="' + item.IsFolder + '"';
+    }
+
     return {
         on: on,
         off: off,
         onClick: onClick,
-        showContextMenu: showContextMenu
+        showContextMenu: showContextMenu,
+        getShortcutAttributesHtml: getShortcutAttributesHtml
     };
 
 });

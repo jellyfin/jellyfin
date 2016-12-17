@@ -146,7 +146,7 @@ design idea is pretty simple :
   - [src/remux/mp4-remuxer.js][]
    - in charge of converting AVC/AAC/MP3 samples provided by demuxer into fragmented ISO BMFF boxes, compatible with MediaSource
    - this remuxer is able to deal with small gaps between fragments and ensure timestamp continuity. it is also able to create audio padding (silent AAC audio frames) in case there is a significant audio 'hole' in the stream.
-   - it notifies remuxing completion using events (```FRAG_PARSING_INIT_SEGMENT```and ```FRAG_PARSING_DATA```)
+   - it notifies remuxing completion using events (```FRAG_PARSING_INIT_SEGMENT```, ```FRAG_PARSING_DATA``` and ```FRAG_PARSED```)
   - [src/utils/attr-list.js][]
     - Attribute List parsing helper class, used by playlist-loader
   - [src/utils/binary-search.js][]
@@ -240,6 +240,7 @@ design idea is pretty simple :
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
   - ```FRAG_DECRYPT_ERROR``` is raised by [src/demux/demuxer.js][] upon fragment decrypting error. this error is fatal. 
   - ```FRAG_PARSING_ERROR``` is raised by [src/demux/tsdemuxer.js][] upon TS parsing error. this error is not fatal.
+  - ```REMUX_ALLOC_ERROR``` is raised by [src/remux/mp4-remuxer.js][] upon memory allocation error while remuxing. this error is not fatal if in auto-mode and loaded frag level is greater than 0. in that case a level switch down will occur.
   - ```KEY_LOAD_ERROR``` is raised by [src/loader/key-loader.js][] upon xhr failure detected by [src/utils/xhr-loader.js][].
     - if auto level switch is enabled and loaded frag level is greater than 0, this error is not fatal: in that case [src/controller/level-controller.js][] will trigger an emergency switch down to level 0.
     - if frag level is 0 or auto level switch is disabled, this error is marked as fatal and a call to ```hls.startLoad()``` could help recover it.
