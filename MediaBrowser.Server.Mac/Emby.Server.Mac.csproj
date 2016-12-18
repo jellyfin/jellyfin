@@ -380,9 +380,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvitems.html">
       <Link>Resources\dashboard-ui\livetvitems.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvseriestimer.html">
-      <Link>Resources\dashboard-ui\livetvseriestimer.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvsettings.html">
       <Link>Resources\dashboard-ui\livetvsettings.html</Link>
     </BundleResource>
@@ -3166,9 +3163,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvschedule.js">
       <Link>Resources\dashboard-ui\scripts\livetvschedule.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvseriestimer.js">
-      <Link>Resources\dashboard-ui\scripts\livetvseriestimer.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvseriestimers.js">
       <Link>Resources\dashboard-ui\scripts\livetvseriestimers.js</Link>
