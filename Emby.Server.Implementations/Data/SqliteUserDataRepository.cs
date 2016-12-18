@@ -80,7 +80,14 @@ namespace Emby.Server.Implementations.Data
                     AddColumn(db, "userdata", "SubtitleStreamIndex", "int", existingColumnNames);
                 }, TransactionMode);
 
-                ImportUserDataIfNeeded(connection);
+                try
+                {
+                    ImportUserDataIfNeeded(connection);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in ImportUserDataIfNeeded", ex);
+                }
             }
         }
 
