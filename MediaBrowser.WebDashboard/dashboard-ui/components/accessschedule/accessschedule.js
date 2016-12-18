@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'datetime', 'emby-select', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, datetime) {
+    'use strict';
 
     function getDisplayTime(hours) {
 

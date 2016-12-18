@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Dlna
 {

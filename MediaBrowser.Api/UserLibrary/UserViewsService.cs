@@ -5,12 +5,13 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -57,12 +58,14 @@ namespace MediaBrowser.Api.UserLibrary
         private readonly IUserManager _userManager;
         private readonly IUserViewManager _userViewManager;
         private readonly IDtoService _dtoService;
+        private readonly IAuthorizationContext _authContext;
 
-        public UserViewsService(IUserManager userManager, IUserViewManager userViewManager, IDtoService dtoService)
+        public UserViewsService(IUserManager userManager, IUserViewManager userViewManager, IDtoService dtoService, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _userViewManager = userViewManager;
             _dtoService = dtoService;
+            _authContext = authContext;
         }
 
         public async Task<object> Get(GetUserViews request)
@@ -82,7 +85,7 @@ namespace MediaBrowser.Api.UserLibrary
                 query.PresetViews = request.PresetViews.Split(',');
             }
 
-            var app = AuthorizationContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
+            var app = _authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
             if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 query.PresetViews = new[] { CollectionType.Music, CollectionType.Movies, CollectionType.TvShows };
@@ -91,10 +94,11 @@ namespace MediaBrowser.Api.UserLibrary
 
             var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
 
-            var dtoOptions = GetDtoOptions(request);
-            dtoOptions.Fields = new List<ItemFields>();
+            var dtoOptions = GetDtoOptions(_authContext, request);
             dtoOptions.Fields.Add(ItemFields.PrimaryImageAspectRatio);
             dtoOptions.Fields.Add(ItemFields.DisplayPreferencesId);
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            dtoOptions.Fields.Remove(ItemFields.BasicSyncInfo);
 
             var user = _userManager.GetUserById(request.UserId);
 

@@ -3,6 +3,7 @@ using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Session
 {
@@ -106,7 +107,9 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <value>The now playing item.</value>
         public BaseItemInfo NowPlayingItem { get; set; }
-        
+
+        public BaseItem FullNowPlayingItem { get; set; }
+
         /// <summary>
         /// Gets or sets the device id.
         /// </summary>

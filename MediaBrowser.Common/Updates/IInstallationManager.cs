@@ -2,7 +2,6 @@
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +23,7 @@ namespace MediaBrowser.Common.Updates
         /// <summary>
         /// The completed installations
         /// </summary>
-        ConcurrentBag<InstallationInfo> CompletedInstallations { get; set; }
+        IEnumerable<InstallationInfo> CompletedInstallations { get; }
 
         /// <summary>
         /// Occurs when [plugin uninstalled].

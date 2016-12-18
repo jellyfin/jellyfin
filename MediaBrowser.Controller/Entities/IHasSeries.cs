@@ -15,5 +15,7 @@ namespace MediaBrowser.Controller.Entities
         string FindSeriesSortName();
         Guid? SeriesId { get; set; }
         Guid? FindSeriesId();
+        string SeriesPresentationUniqueKey { get; set; }
+        string FindSeriesPresentationUniqueKey();
     }
 }

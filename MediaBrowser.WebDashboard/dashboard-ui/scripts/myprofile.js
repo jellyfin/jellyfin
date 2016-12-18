@@ -1,4 +1,5 @@
 ﻿define(['scripts/userpasswordpage'], function (Userpasswordpage) {
+    'use strict';
 
     var currentFile;
 

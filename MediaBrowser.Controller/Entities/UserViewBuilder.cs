@@ -17,7 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
-using MoreLinq;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -1778,7 +1778,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => user.IsFolderGrouped(i.Id) && UserView.IsEligibleForGrouping(i));
         }
 
-        private IEnumerable<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)
+        private List<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)
         {
             if (user == null)
             {
@@ -1788,7 +1788,7 @@ namespace MediaBrowser.Controller.Entities
                         var folder = i as ICollectionFolder;
 
                         return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-                    });
+                    }).ToList();
             }
             return GetMediaFolders(user)
                 .Where(i =>
@@ -1796,17 +1796,17 @@ namespace MediaBrowser.Controller.Entities
                     var folder = i as ICollectionFolder;
 
                     return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-                });
+                }).ToList();
         }
 
-        private IEnumerable<Folder> GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
+        private List<Folder> GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)
         {
             if (parent == null || parent is UserView)
             {
                 return GetMediaFolders(user, viewTypes);
             }
 
-            return new[] { parent };
+            return new List<Folder> { parent };
         }
 
         private IEnumerable<BaseItem> GetRecursiveChildren(Folder parent, User user, IEnumerable<string> viewTypes)

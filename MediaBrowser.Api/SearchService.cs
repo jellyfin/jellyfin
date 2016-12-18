@@ -7,9 +7,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
-using ServiceStack;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

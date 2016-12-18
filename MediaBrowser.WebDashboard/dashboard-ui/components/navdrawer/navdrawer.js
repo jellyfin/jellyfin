@@ -1,4 +1,5 @@
 ﻿define(['browser', 'css!./navdrawer', 'scrollStyles'], function (browser) {
+    'use strict';
 
     return function (options) {
 
@@ -96,7 +97,7 @@
             if (options.disableEdgeSwipe) {
                 return;
             }
-
+            return;
             require(['hammer-main'], initEdgeSwipeInternal);
         }
 

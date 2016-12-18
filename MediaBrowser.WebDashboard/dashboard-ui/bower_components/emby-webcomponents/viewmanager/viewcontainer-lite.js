@@ -9,19 +9,12 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
     function enableAnimation() {
 
-        if (browser.animate) {
-            return true;
-        }
-
+        // too slow
         if (browser.tv) {
             return false;
         }
 
-        if (browser.operaTv) {
-            return false;
-        }
-
-        return browser.edge && !browser.mobile;
+        return browser.supportsCssAnimation();
     }
 
     function loadView(options) {
@@ -102,7 +95,7 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
     function animate(newAnimatedPage, oldAnimatedPage, transition, isBack) {
 
-        if (enableAnimation() && oldAnimatedPage && newAnimatedPage.animate) {
+        if (enableAnimation() && oldAnimatedPage) {
             if (transition === 'slide') {
                 return slide(newAnimatedPage, oldAnimatedPage, transition, isBack);
             } else if (transition === 'fade') {
@@ -123,7 +116,6 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
 
             if (oldAnimatedPage) {
                 if (isBack) {
-                    oldAnimatedPage.style.animation = 'view-slideright-r ' + duration + 'ms ease-out normal both';
                     setAnimation(oldAnimatedPage, 'view-slideright-r ' + duration + 'ms ease-out normal both');
                 } else {
                     setAnimation(oldAnimatedPage, 'view-slideleft-r ' + duration + 'ms ease-out normal both');
@@ -141,13 +133,13 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
             currentAnimations = animations;
 
             var onAnimationComplete = function () {
-                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                dom.removeEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
                 resolve();
             };
 
-            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+            dom.addEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                 once: true
             });
         });
@@ -171,13 +163,13 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
             currentAnimations = animations;
 
             var onAnimationComplete = function () {
-                dom.removeEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+                dom.removeEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
                 resolve();
             };
 
-            dom.addEventListener(newAnimatedPage, 'animationend', onAnimationComplete, {
+            dom.addEventListener(newAnimatedPage, dom.whichAnimationEvent(), onAnimationComplete, {
                 once: true
             });
         });
@@ -260,10 +252,6 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
         currentUrls = [];
         mainAnimatedPages.innerHTML = '';
         selectedPageIndex = -1;
-    }
-
-    if (enableAnimation()) {
-        require(['webAnimations']);
     }
 
     return {

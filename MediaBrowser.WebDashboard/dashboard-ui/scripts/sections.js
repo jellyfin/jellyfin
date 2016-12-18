@@ -1,4 +1,5 @@
-﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'dom', 'apphost', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, appSettings, groupedcards, dom, appHost) {
+﻿define(['libraryBrowser', 'cardBuilder', 'appSettings', 'components/groupedcards', 'dom', 'apphost', 'imageLoader', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-itemscontainer'], function (libraryBrowser, cardBuilder, appSettings, groupedcards, dom, appHost, imageLoader) {
+    'use strict';
 
     function getUserViews(userId) {
 
@@ -10,6 +11,10 @@
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
     }
 
     function getThumbShape() {
@@ -251,136 +256,106 @@
         return html;
     }
 
+    function renderLatestSection(elem, user, parent) {
+
+        var options = {
+
+            Limit: 12,
+            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Thumb",
+            ParentId: parent.Id
+        };
+
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+
+            var html = '';
+
+            var scrollX = enableScrollX();
+
+            if (items.length) {
+
+                html += '<div>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('LatestFromLibrary', parent.Name) + '</h1>';
+                html += '<a href="' + libraryBrowser.getHref(parent) + '" class="clearLink" style="margin-left:2em;"><button is="emby-button" type="button" class="raised more mini"><span>' + Globalize.translate('ButtonMore') + '</span></button></a>';
+                html += '</div>';
+
+                if (scrollX) {
+                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
+                }
+
+                var viewType = parent.CollectionType;
+
+                var shape = viewType === 'movies' ?
+                    getPortraitShape() :
+                    viewType === 'music' ?
+                    getSquareShape() :
+                    getThumbShape();
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+                var cardLayout = supportsImageAnalysis && (viewType === 'music' || viewType === 'movies' || viewType === 'tvshows' || !viewType);
+
+                html += cardBuilder.getCardsHtml({
+                    items: items,
+                    shape: shape,
+                    preferThumb: viewType !== 'movies' && viewType !== 'music',
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    context: 'home',
+                    overlayText: false,
+                    centerText: !cardLayout,
+                    overlayPlayButton: viewType !== 'photos',
+                    allowBottomPadding: !enableScrollX() && !cardLayout,
+                    cardLayout: cardLayout,
+                    showTitle: viewType === 'music' || !viewType || (cardLayout && (viewType === 'movies' || viewType === 'tvshows')),
+                    showYear: cardLayout && viewType === 'movies',
+                    showSeriesYear: cardLayout && viewType === 'tvshows',
+                    showParentTitle: viewType === 'music' || !viewType || (cardLayout && (viewType === 'tvshows')),
+                    vibrant: supportsImageAnalysis && cardLayout,
+                    lines: 2
+                });
+                html += '</div>';
+            }
+
+            elem.innerHTML = html;
+            imageLoader.lazyChildren(elem);
+        });
+    }
+
     function loadRecentlyAdded(elem, user) {
 
-        var options = {
+        elem.classList.remove('homePageSection');
 
-            Limit: 20,
-            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Thumb"
-        };
+        return getUserViews(user.Id).then(function (items) {
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
+            var excludeViewTypes = ['playlists', 'livetv', 'boxsets', 'channels'];
+            var excludeItemTypes = ['Channel'];
 
-            var html = '';
+            for (var i = 0, length = items.length; i < length; i++) {
 
-            var cardLayout = false;
+                var item = items[i];
 
-            if (items.length) {
-                html += '<div>';
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-
-                html += '</div>';
-
-                html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
-
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    preferThumb: true,
-                    shape: 'backdrop',
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    lazy: true,
-                    cardLayout: cardLayout,
-                    showTitle: cardLayout,
-                    showYear: cardLayout,
-                    showDetailsMenu: true,
-                    context: 'home'
-                });
-                html += '</div>';
-            }
-
-            elem.innerHTML = html;
-            elem.addEventListener('click', groupedcards.onItemsContainerClick);
-            ImageLoader.lazyChildren(elem);
-        });
-    }
-
-    function loadLatestMovies(elem, user) {
-
-        var options = {
-
-            Limit: 12,
-            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Thumb",
-            IncludeItemTypes: "Movie"
-        };
-
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
-
-            var html = '';
-
-            var scrollX = enableScrollX();
-
-            if (items.length) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMovies') + '</h1>';
-                if (scrollX) {
-                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
-                } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
-                }
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    shape: getPortraitShape(),
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    lazy: true,
-                    context: 'home',
-                    centerText: true,
-                    overlayPlayButton: true,
-                    allowBottomPadding: !enableScrollX()
-                });
-                html += '</div>';
-            }
-
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-        });
-    }
-
-    function loadLatestEpisodes(elem, user) {
-
-        var options = {
-
-            Limit: 12,
-            Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Thumb",
-            IncludeItemTypes: "Episode"
-        };
-
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).then(function (items) {
-
-            var html = '';
-
-            var scrollX = enableScrollX();
-
-            if (items.length) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestEpisodes') + '</h1>';
-                if (scrollX) {
-                    html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
-                } else {
-                    html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
+                if (user.Configuration.LatestItemsExcludes.indexOf(item.Id) !== -1) {
+                    continue;
                 }
 
-                html += cardBuilder.getCardsHtml({
-                    items: items,
-                    preferThumb: true,
-                    shape: getThumbShape(),
-                    showUnplayedIndicator: false,
-                    showChildCountIndicator: true,
-                    lazy: true,
-                    context: 'home',
-                    overlayPlayButton: true,
-                    allowBottomPadding: !enableScrollX()
-                });
-                html += '</div>';
-            }
+                if (excludeViewTypes.indexOf(item.CollectionType || []) !== -1) {
+                    continue;
+                }
 
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+                // not implemented yet
+                if (excludeItemTypes.indexOf(item.Type) !== -1) {
+                    continue;
+                }
+
+                var frag = document.createElement('div');
+                frag.classList.add('homePageSection');
+                elem.appendChild(frag);
+
+                renderLatestSection(frag, user, item);
+            }
         });
     }
 
@@ -417,30 +392,25 @@
             }
 
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 
-    function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
+    function loadLibraryTiles(elem, user, shape) {
 
         return getUserViews(user.Id).then(function (items) {
 
             var html = '';
 
-            if (autoHideOnMobile) {
-                html += '<div class="hiddenSectionOnMobile">';
-            } else {
-                html += '<div>';
-            }
+            html += '<div>';
 
             if (items.length) {
 
                 html += '<div>';
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
-
                 html += '</div>';
 
-                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 600;
+                var scrollX = enableScrollX() && dom.getWindowSize().innerWidth >= 500;
 
                 if (scrollX) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
@@ -450,8 +420,8 @@
 
                 html += cardBuilder.getCardsHtml({
                     items: items,
-                    shape: scrollX ? 'overflowBackdrop' : shape,
-                    showTitle: showTitles,
+                    shape: scrollX ? 'overflowSmallBackdrop' : shape,
+                    showTitle: true,
                     centerText: true,
                     overlayText: false,
                     lazy: true,
@@ -463,16 +433,10 @@
 
             html += '</div>';
 
-            if (autoHideOnMobile) {
-                html += '<div class="hiddenSectionOnNonMobile" style="margin-top:1em;">';
-                html += getLibraryButtonsHtml(items);
-                html += '</div>';
-            }
-
             return getAppInfo().then(function (infoHtml) {
 
                 elem.innerHTML = html + infoHtml;
-                ImageLoader.lazyChildren(elem);
+                imageLoader.lazyChildren(elem);
             });
         });
     }
@@ -481,13 +445,25 @@
 
         var screenWidth = dom.getWindowSize().innerWidth;
 
+        var limit;
+
+        if (enableScrollX()) {
+
+            limit = 12;
+
+        } else {
+
+            limit = screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6));
+            limit = Math.min(limit, 5);
+        }
+
         var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             MediaTypes: "Video",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 8 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 9 : 6)),
+            Limit: limit,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             CollapseBoxSetItems: false,
@@ -502,12 +478,16 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderContinueWatching') + '</h1>';
                 if (enableScrollX()) {
                     html += '<div is="emby-itemscontainer" class="hiddenScrollX itemsContainer">';
                 } else {
                     html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap">';
                 }
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
+                var cardLayout = supportsImageAnalysis;
+
                 html += cardBuilder.getCardsHtml({
                     items: result.Items,
                     preferThumb: true,
@@ -519,15 +499,19 @@
                     showDetailsMenu: true,
                     overlayPlayButton: true,
                     context: 'home',
-                    centerText: true,
-                    allowBottomPadding: !enableScrollX()
+                    centerText: !cardLayout,
+                    allowBottomPadding: false,
+                    cardLayout: cardLayout,
+                    showYear: true,
+                    lines: 2,
+                    vibrant: cardLayout && supportsImageAnalysis
                 });
                 html += '</div>';
             }
 
             elem.innerHTML = html;
 
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 
@@ -535,7 +519,7 @@
 
         var query = {
 
-            Limit: 20,
+            Limit: enableScrollX() ? 20 : 10,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,BasicSyncInfo",
             UserId: userId,
             ImageTypeLimit: 1,
@@ -576,7 +560,7 @@
 
             elem.innerHTML = html;
 
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 
@@ -654,7 +638,7 @@
 
             var elem = page.querySelector('#channel' + channel.Id + '');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 
@@ -708,7 +692,7 @@
             html += '</div>';
 
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 
@@ -720,9 +704,7 @@
         loadNextUp: loadNextUp,
         loadLatestChannelItems: loadLatestChannelItems,
         loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
-        loadlibraryButtons: loadlibraryButtons,
-        loadLatestMovies: loadLatestMovies,
-        loadLatestEpisodes: loadLatestEpisodes
+        loadlibraryButtons: loadlibraryButtons
     };
 
     return window.Sections;

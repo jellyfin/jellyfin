@@ -17,7 +17,9 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 
@@ -96,7 +98,7 @@ namespace MediaBrowser.Providers.Music
                 {
 
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
 
                 }
@@ -204,8 +206,7 @@ namespace MediaBrowser.Providers.Music
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = FanArtResourcePool
+                Url = url
             });
         }
 
@@ -255,11 +256,12 @@ namespace MediaBrowser.Providers.Music
                 {
                     Url = url,
                     ResourcePool = FanArtResourcePool,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    BufferContent = true
 
                 }).ConfigureAwait(false))
                 {
-                    using (var saveFileStream = _fileSystem.GetFileStream(jsonPath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    using (var saveFileStream = _fileSystem.GetFileStream(jsonPath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {
                         await response.CopyToAsync(saveFileStream).ConfigureAwait(false);
                     }

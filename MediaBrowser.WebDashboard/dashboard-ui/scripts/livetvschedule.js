@@ -1,4 +1,5 @@
-﻿define(['cardBuilder', 'apphost', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder, appHost) {
+﻿define(['cardBuilder', 'apphost', 'imageLoader', 'scripts/livetvcomponents', 'emby-button', 'emby-itemscontainer'], function (cardBuilder, appHost, imageLoader) {
+    'use strict';
 
     function enableScrollX() {
         return browserInfo.mobile && AppInfo.enableAppLayouts;
@@ -39,7 +40,7 @@
 
         }, cardOptions || {}));
 
-        ImageLoader.lazyChildren(recordingItems);
+        imageLoader.lazyChildren(recordingItems);
     }
 
     function getBackdropShape() {
@@ -83,7 +84,7 @@
 
             elem.querySelector('.recordingItems').innerHTML = html;
 
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
         });
     }
 

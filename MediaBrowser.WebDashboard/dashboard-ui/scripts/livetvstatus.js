@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'scripts/taskbutton', 'listViewStyle'], function ($, taskButton) {
+    'use strict';
 
     function resetTuner(page, id) {
 
@@ -422,7 +423,7 @@
         switch (providerId) {
 
             case 'm3u':
-                return 'M3U Playlist';
+                return 'M3U';
             case 'hdhomerun':
                 return 'HDHomerun';
             case 'satip':

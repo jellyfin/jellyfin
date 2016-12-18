@@ -7,7 +7,8 @@ define([], function () {
     var NamedRegExp = function (pattern, string) {
         pattern = pattern.toString();
         var regexp = [];
-        var groupRX = /\(\?\<(.*?)\>\s?(.*?)\)/i;
+        //var groupRX = /\(\?\<(.*?)\>\s?(.*?)\)/i;
+        var groupRX = /\(\?<(.*?)\>\s?(.*?)\)/i;
         while (groupRX.test(pattern)) {
 
             var match = groupRX.exec(pattern);

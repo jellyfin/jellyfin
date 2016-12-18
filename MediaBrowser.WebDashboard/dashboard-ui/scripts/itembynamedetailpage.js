@@ -1,4 +1,5 @@
-﻿define(['listView', 'cardBuilder', 'emby-itemscontainer'], function (listView, cardBuilder) {
+﻿define(['listView', 'cardBuilder', 'imageLoader', 'emby-itemscontainer'], function (listView, cardBuilder, imageLoader) {
+    'use strict';
 
     function renderItems(page, item) {
 
@@ -272,7 +273,8 @@
                 }, {
                     playFromHere: true,
                     action: 'playallfromhere',
-                    smallIcon: true
+                    smallIcon: true,
+                    artist: true
                 });
                 break;
 
@@ -313,11 +315,27 @@
 
             itemsContainer.innerHTML = html;
 
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
         });
     }
 
     function getMoreItemsHref(item, type) {
+
+        if (item.Type == 'Genre' || item.Type == 'MusicGenre' || item.Type == 'GameGenre') {
+            return 'secondaryitems.html?type=' + type + '&genreId=' + item.Id;
+        }
+
+        if (item.Type == 'Studio') {
+            return 'secondaryitems.html?type=' + type + '&studioId=' + item.Id;
+        }
+
+        if (item.Type == 'MusicArtist') {
+            return 'secondaryitems.html?type=' + type + '&artistId=' + item.Id;
+        }
+
+        if (item.Type == 'Person') {
+            return 'secondaryitems.html?type=' + type + '&personId=' + item.Id;
+        }
 
         return 'secondaryitems.html?type=' + type + '&parentId=' + item.Id;
     }

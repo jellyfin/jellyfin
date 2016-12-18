@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     function load(page, device, capabilities) {
 

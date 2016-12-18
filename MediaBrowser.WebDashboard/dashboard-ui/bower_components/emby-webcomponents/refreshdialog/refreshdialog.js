@@ -42,7 +42,7 @@
 
         html += '<br />';
         html += '<div class="formDialogFooter">';
-        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#ButtonOk') + '</button>';
+        html += '<button is="emby-button" type="submit" class="raised btnSubmit block formDialogFooterItem button-submit">' + globalize.translate('sharedcomponents#Refresh') + '</button>';
         html += '</div>';
 
         html += '</form>';

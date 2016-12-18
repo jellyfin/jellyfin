@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     function loadPage(page, config) {
 

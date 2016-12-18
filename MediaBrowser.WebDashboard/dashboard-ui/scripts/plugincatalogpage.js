@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'cardStyle'], function ($) {
+    'use strict';
 
     // The base query options
     var query = {

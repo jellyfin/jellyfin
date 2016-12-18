@@ -1,4 +1,5 @@
 ﻿define(['appSettings'], function (appSettings) {
+    'use strict';
 
     // Based on https://github.com/googlecast/CastVideos-chrome/blob/master/CastVideos.js
     var currentResolve;
@@ -314,7 +315,7 @@
 
         if (!this.session) {
             console.log("no session");
-            return;
+            return Promise.reject();
         }
 
         // Convert the items to smaller stubs to send the minimal amount of information
@@ -329,7 +330,7 @@
             };
         });
 
-        this.sendMessage({
+        return this.sendMessage({
             options: options,
             command: command
         });
@@ -358,11 +359,15 @@
             message.maxBitrate = bitrateSetting;
         }
 
-        require(['chromecasthelpers'], function (chromecasthelpers) {
+        return new Promise(function (resolve, reject) {
 
-            chromecasthelpers.getServerAddress(ApiClient).then(function (serverAddress) {
-                message.serverAddress = serverAddress;
-                player.sendMessageInternal(message);
+            require(['chromecasthelpers'], function (chromecasthelpers) {
+
+                chromecasthelpers.getServerAddress(ApiClient).then(function (serverAddress) {
+                    message.serverAddress = serverAddress;
+                    player.sendMessageInternal(message).then(resolve, reject);
+
+                }, reject);
             });
         });
     };
@@ -373,6 +378,7 @@
         //console.log(message);
 
         this.session.sendMessage(messageNamespace, message, this.onPlayCommandSuccess.bind(this), this.errorHandler);
+        return Promise.resolve();
     };
 
     CastPlayer.prototype.onPlayCommandSuccess = function () {
@@ -540,22 +546,22 @@
 
         self.play = function (options) {
 
-            Dashboard.getCurrentUser().then(function (user) {
+            return Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
-                    self.playWithCommand(options, 'PlayNow');
+                    return self.playWithCommand(options, 'PlayNow');
 
                 } else {
 
-                    self.getItemsForPlayback({
+                    return self.getItemsForPlayback({
 
                         Ids: options.ids.join(',')
 
                     }).then(function (result) {
 
                         options.items = result.Items;
-                        self.playWithCommand(options, 'PlayNow');
+                        return self.playWithCommand(options, 'PlayNow');
 
                     });
                 }
@@ -567,16 +573,14 @@
         self.playWithCommand = function (options, command) {
 
             if (!options.items) {
-                ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).then(function (item) {
+                return ApiClient.getItem(Dashboard.getCurrentUserId(), options.ids[0]).then(function (item) {
 
                     options.items = [item];
-                    self.playWithCommand(options, command);
+                    return self.playWithCommand(options, command);
                 });
-
-                return;
             }
 
-            castPlayer.loadMedia(options, command);
+            return castPlayer.loadMedia(options, command);
         };
 
         self.unpause = function () {

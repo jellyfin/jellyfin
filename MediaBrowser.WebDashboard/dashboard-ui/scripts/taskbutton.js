@@ -1,4 +1,5 @@
 ﻿define(['userSettings', 'emby-button'], function (userSettings) {
+    'use strict';
 
     return function (options) {
 

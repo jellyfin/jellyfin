@@ -12,7 +12,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -80,67 +82,73 @@ namespace MediaBrowser.Providers.TV
 			// Use XmlReader for best performance
 			using (reader)
 			{
-				reader.MoveToContent();
+                reader.MoveToContent();
+                reader.Read();
 
-				// Loop through each element
-				while (reader.Read())
-				{
-					cancellationToken.ThrowIfCancellationRequested();
+                // Loop through each element
+                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
 
-					if (reader.NodeType == XmlNodeType.Element)
-					{
-						switch (reader.Name)
-						{
-						case "thumb_width":
-							{
-								var val = reader.ReadElementContentAsString();
+                        switch (reader.Name)
+                        {
+                            case "thumb_width":
+                                {
+                                    var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
 
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										width = rval;
-									}
-								}
-								break;
-							}
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            width = rval;
+                                        }
+                                    }
+                                    break;
+                                }
 
-						case "thumb_height":
-							{
-								var val = reader.ReadElementContentAsString();
+                            case "thumb_height":
+                                {
+                                    var val = reader.ReadElementContentAsString();
 
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									int rval;
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        int rval;
 
-									// int.TryParse is local aware, so it can be probamatic, force us culture
-									if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
-									{
-										height = rval;
-									}
-								}
-								break;
-							}
+                                        // int.TryParse is local aware, so it can be probamatic, force us culture
+                                        if (int.TryParse(val, NumberStyles.Integer, _usCulture, out rval))
+                                        {
+                                            height = rval;
+                                        }
+                                    }
+                                    break;
+                                }
 
-						case "filename":
-							{
-								var val = reader.ReadElementContentAsString();
-								if (!string.IsNullOrWhiteSpace(val))
-								{
-									url = TVUtils.BannerUrl + val;
-								}
-								break;
-							}
-
-						default:
-							reader.Skip();
-							break;
-						}
-					}
-				}
+                            case "filename":
+                                {
+                                    var val = reader.ReadElementContentAsString();
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        url = TVUtils.BannerUrl + val;
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    reader.Skip();
+                                    break;
+                                }
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
+                    }
+                }
 			}
 
             if (string.IsNullOrEmpty(url))

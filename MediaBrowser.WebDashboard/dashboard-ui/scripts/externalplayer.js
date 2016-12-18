@@ -1,4 +1,5 @@
-﻿define(['appSettings', 'datetime', 'jQuery', 'emby-slider', 'emby-button'], function (appSettings, datetime, $) {
+﻿define(['appSettings', 'datetime', 'jQuery', 'actionsheet', 'emby-slider', 'emby-button'], function (appSettings, datetime, $, actionsheet) {
+    'use strict';
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -334,21 +335,17 @@
 
     function showMenuForItem(item, players) {
 
-        require(['actionsheet'], function (actionsheet) {
+        actionsheet.show({
+            items: players
+        }).then(function (id) {
+            var player = players.filter(function (p) {
+                return p.id == id;
+            })[0];
 
-            actionsheet.show({
-                items: players,
-                callback: function (id) {
-                    var player = players.filter(function (p) {
-                        return p.id == id;
-                    })[0];
-
-                    if (player) {
-                        window.open(player.url, '_blank');
-                        onPlaybackStart();
-                    }
-                }
-            });
+            if (player) {
+                window.open(player.url, '_blank');
+                onPlaybackStart();
+            }
         });
     }
 

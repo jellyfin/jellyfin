@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked'], function ($) {
+    'use strict';
 
     function loadMediaFolders(page, user, mediaFolders) {
 

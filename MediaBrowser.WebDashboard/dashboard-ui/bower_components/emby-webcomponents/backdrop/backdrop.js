@@ -40,7 +40,7 @@
                 backdropImage.style.backgroundImage = "url('" + url + "')";
                 backdropImage.setAttribute('data-url', url);
 
-                backdropImage.style.animation = 'backdrop-fadein ' + 800 + 'ms ease-in normal both';
+                backdropImage.classList.add('backdropImageFadeIn');
                 parent.appendChild(backdropImage);
 
                 if (!enableAnimation(backdropImage)) {
@@ -52,7 +52,7 @@
                 }
 
                 var onAnimationComplete = function () {
-                    dom.removeEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                    dom.removeEventListener(backdropImage, dom.whichAnimationEvent(), onAnimationComplete, {
                         once: true
                     });
                     if (backdropImage === currentAnimatingElement) {
@@ -63,7 +63,7 @@
                     }
                 };
 
-                dom.addEventListener(backdropImage, 'animationend', onAnimationComplete, {
+                dom.addEventListener(backdropImage, dom.whichAnimationEvent(), onAnimationComplete, {
                     once: true
                 });
 
@@ -75,7 +75,7 @@
         function cancelAnimation() {
             var elem = currentAnimatingElement;
             if (elem) {
-                elem.style.animation = '';
+                elem.classList.remove('backdropImageFadeIn');
                 currentAnimatingElement = null;
             }
         }
@@ -176,7 +176,24 @@
         currentLoadingBackdrop = instance;
     }
 
-    function getItemImageUrls(item) {
+    var standardWidths = [480, 720, 1280, 1440, 1920];
+    function getBackdropMaxWidth() {
+
+        var width = dom.getWindowSize().innerWidth;
+
+        if (standardWidths.indexOf(width) !== -1) {
+            return width;
+        }
+
+        var roundScreenTo = 100;
+        width = Math.floor(width / roundScreenTo) * roundScreenTo;
+
+        return Math.min(width, 1920);
+    }
+
+    function getItemImageUrls(item, imageOptions) {
+
+        imageOptions = imageOptions || {};
 
         var apiClient = connectionManager.getApiClient(item.ServerId);
 
@@ -184,12 +201,12 @@
 
             return item.BackdropImageTags.map(function (imgTag, index) {
 
-                return apiClient.getScaledImageUrl(item.Id, {
+                return apiClient.getScaledImageUrl(item.Id, Object.assign(imageOptions, {
                     type: "Backdrop",
                     tag: imgTag,
-                    maxWidth: Math.min(dom.getWindowSize().innerWidth, 1920),
+                    maxWidth: getBackdropMaxWidth(),
                     index: index
-                });
+                }));
             });
         }
 
@@ -197,19 +214,19 @@
 
             return item.ParentBackdropImageTags.map(function (imgTag, index) {
 
-                return apiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                return apiClient.getScaledImageUrl(item.ParentBackdropItemId, Object.assign(imageOptions, {
                     type: "Backdrop",
                     tag: imgTag,
-                    maxWidth: Math.min(dom.getWindowSize().innerWidth, 1920),
+                    maxWidth: getBackdropMaxWidth(),
                     index: index
-                });
+                }));
             });
         }
 
         return [];
     }
 
-    function getImageUrls(items) {
+    function getImageUrls(items, imageOptions) {
 
         var list = [];
 
@@ -219,7 +236,7 @@
 
         for (var i = 0, length = items.length; i < length; i++) {
 
-            var itemImages = getItemImageUrls(items[i]);
+            var itemImages = getItemImageUrls(items[i], imageOptions);
 
             itemImages.forEach(onImg);
         }
@@ -252,21 +269,20 @@
     var rotationInterval;
     var currentRotatingImages = [];
     var currentRotationIndex = -1;
-    function setBackdrops(items, imageSetId) {
+    function setBackdrops(items, imageOptions, enableImageRotation) {
 
-        var images = getImageUrls(items);
+        var images = getImageUrls(items, imageOptions);
 
-        imageSetId = imageSetId || new Date().getTime();
         if (images.length) {
 
-            startRotation(images, imageSetId);
+            startRotation(images, enableImageRotation);
 
         } else {
             clearBackdrop();
         }
     }
 
-    function startRotation(images) {
+    function startRotation(images, enableImageRotation) {
 
         if (arraysEqual(images, currentRotatingImages)) {
             return;
@@ -277,7 +293,7 @@
         currentRotatingImages = images;
         currentRotationIndex = -1;
 
-        if (images.length > 1 && enableRotation()) {
+        if (images.length > 1 && enableImageRotation !== false && enableRotation()) {
             rotationInterval = setInterval(onRotationInterval, 20000);
         }
         onRotationInterval();
@@ -308,10 +324,12 @@
         currentRotationIndex = -1;
     }
 
-    function setBackdrop(url) {
+    function setBackdrop(url, imageOptions) {
 
-        if (typeof url !== 'string') {
-            url = getImageUrls([url])[0];
+        if (url) {
+            if (typeof url !== 'string') {
+                url = getImageUrls([url], imageOptions)[0];
+            }
         }
 
         if (url) {

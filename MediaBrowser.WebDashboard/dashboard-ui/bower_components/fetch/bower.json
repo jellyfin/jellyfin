@@ -1,9 +1,6 @@
 {
   "name": "fetch",
   "main": "fetch.js",
-  "devDependencies": {
-    "es6-promise": "1.0.0"
-  },
   "ignore": [
     ".*",
     "*.md",

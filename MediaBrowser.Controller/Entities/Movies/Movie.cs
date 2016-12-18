@@ -4,18 +4,20 @@ using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasSpecialFeatures, IHasBudget, IHasTrailers, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasSpecialFeatures, IHasBudget, IHasTrailers, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
@@ -123,7 +125,18 @@ namespace MediaBrowser.Controller.Entities.Movies
 
             if (!DetectIsInMixedFolder())
             {
-                info.Name = System.IO.Path.GetFileName(ContainingFolderPath);
+                var name = System.IO.Path.GetFileName(ContainingFolderPath);
+
+                if (VideoType == VideoType.VideoFile || VideoType == VideoType.Iso)
+                {
+                    if (string.Equals(name, System.IO.Path.GetFileName(Path), StringComparison.OrdinalIgnoreCase))
+                    {
+                        // if the folder has the file extension, strip it
+                        name = System.IO.Path.GetFileNameWithoutExtension(name);
+                    }
+                }
+
+                info.Name = name;
             }
 
             return info;

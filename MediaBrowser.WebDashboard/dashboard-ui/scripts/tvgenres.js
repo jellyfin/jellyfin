@@ -1,4 +1,5 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'lazyLoader', 'apphost', 'globalize', 'dom'], function (libraryBrowser, cardBuilder, lazyLoader, appHost, globalize, dom) {
+    'use strict';
 
     return function (view, params, tabContent) {
 
@@ -16,10 +17,9 @@
                         SortOrder: "Ascending",
                         IncludeItemTypes: "Series",
                         Recursive: true,
-                        Fields: "DateCreated,ItemCounts,PrimaryImageAspectRatio",
-                        StartIndex: 0
+                        EnableTotalRecordCount: false
                     },
-                    view: libraryBrowser.getSavedView(key) || 'Thumb'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -35,7 +35,7 @@
 
         function getSavedQueryKey() {
 
-            return libraryBrowser.getSavedQueryKey('genres');
+            return libraryBrowser.getSavedQueryKey('seriesgenres');
         }
 
         function getPromise() {
@@ -46,71 +46,174 @@
             return ApiClient.getGenres(Dashboard.getCurrentUserId(), query);
         }
 
-        function reloadItems(context, promise) {
+        function enableScrollX() {
+            return browserInfo.mobile && AppInfo.enableAppLayouts;
+        }
 
-            var query = getQuery();
+        function getThumbShape() {
+            return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+        }
 
-            promise.then(function (result) {
+        function getPortraitShape() {
+            return enableScrollX() ? 'overflowPortrait' : 'portrait';
+        }
 
-                var html = '';
+        function getMoreItemsHref(itemId, type) {
 
-                var viewStyle = self.getCurrentViewStyle();
-                var elem = context.querySelector('#items');
+            return 'secondaryitems.html?type=' + type + '&genreId=' + itemId + '&parentId=' + params.topParentId;
+        }
+
+        dom.addEventListener(tabContent, 'click', function (e) {
+
+            var btnMoreFromGenre = dom.parentWithClass(e.target, 'btnMoreFromGenre');
+            if (btnMoreFromGenre) {
+                var id = btnMoreFromGenre.getAttribute('data-id');
+                Dashboard.navigate(getMoreItemsHref(id, 'Series'));
+            }
+
+        }, {
+            passive: true
+        });
+
+        function fillItemsContainer(elem) {
+
+            var id = elem.getAttribute('data-id');
+
+            var viewStyle = self.getCurrentViewStyle();
+
+            var limit = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
+                5 :
+                8;
+
+            if (enableScrollX()) {
+                limit = 10;
+            }
+
+            var enableImageTypes = viewStyle == 'Thumb' || viewStyle == 'ThumbCard' ?
+              "Primary,Backdrop,Thumb" :
+              "Primary";
+
+            var query = {
+                SortBy: "SortName",
+                SortOrder: "Ascending",
+                IncludeItemTypes: "Series",
+                Recursive: true,
+                Fields: "PrimaryImageAspectRatio,MediaSourceCount,BasicSyncInfo",
+                ImageTypeLimit: 1,
+                EnableImageTypes: enableImageTypes,
+                Limit: limit,
+                GenreIds: id,
+                EnableTotalRecordCount: false,
+                ParentId: params.topParentId
+            };
+
+            ApiClient.getItems(Dashboard.getCurrentUserId(), query).then(function (result) {
+
+                var supportsImageAnalysis = appHost.supports('imageanalysis');
 
                 if (viewStyle == "Thumb") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         preferThumb: true,
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        allowBottomPadding: false
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
 
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "backdrop",
+                        shape: getThumbShape(),
                         preferThumb: true,
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: false,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis,
+                        showSeriesYear: true
                     });
                 }
                 else if (viewStyle == "PosterCard") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "auto",
+                        shape: getPortraitShape(),
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: false,
-                        cardLayout: true
+                        cardLayout: true,
+                        vibrant: supportsImageAnalysis,
+                        showSeriesYear: true
                     });
                 }
                 else if (viewStyle == "Poster") {
                     cardBuilder.buildCards(result.Items, {
                         itemsContainer: elem,
-                        shape: "auto",
+                        shape: getPortraitShape(),
                         showTitle: true,
                         scalable: true,
-                        showItemCounts: true,
                         centerText: true,
-                        overlayMoreButton: true
+                        overlayMoreButton: true,
+                        allowBottomPadding: false
                     });
                 }
+
+                if (result.Items.length >= query.Limit) {
+                    tabContent.querySelector('.btnMoreFromGenre' + id).classList.remove('hide');
+                }
+            });
+        }
+
+        function reloadItems(context, promise) {
+
+            var query = getQuery();
+
+            promise.then(function (result) {
+
+                var elem = context.querySelector('#items');
+                var html = '';
+
+                var items = result.Items;
+
+                for (var i = 0, length = items.length; i < length; i++) {
+
+                    var item = items[i];
+
+                    html += '<div class="homePageSection">';
+
+                    html += '<div style="display:flex;align-items:center;">';
+                    html += '<h1 class="listHeader">';
+                    html += item.Name;
+                    html += '</h1>';
+                    html += '<button is="emby-button" type="button" class="raised more mini hide btnMoreFromGenre btnMoreFromGenre' + item.Id + '" data-id="' + item.Id + '">';
+                    html += '<span>' + globalize.translate('ButtonMore') + '</span>';
+                    html += '</button>';
+                    html += '</div>';
+
+                    if (enableScrollX()) {
+                        html += '<div is="emby-itemscontainer" class="itemsContainer hiddenScrollX lazy" data-id="' + item.Id + '">';
+                    } else {
+                        html += '<div is="emby-itemscontainer" class="itemsContainer vertical-wrap lazy" data-id="' + item.Id + '">';
+                    }
+                    html += '</div>';
+
+                    html += '</div>';
+                }
+
+                elem.innerHTML = html;
+
+                lazyLoader.lazyChildren(elem, fillItemsContainer);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
                 Dashboard.hideLoadingMsg();
             });
         }
-        self.getViewStyles = function () {
+
+        self.getViewStyles = function () {
             return 'Poster,PosterCard,Thumb,ThumbCard'.split(',');
         };
 
@@ -140,16 +243,5 @@
             self.preRender();
             self.renderTab();
         }
-
-        var btnSelectView = tabContent.querySelector('.btnSelectView');
-        btnSelectView.addEventListener('click', function (e) {
-
-            libraryBrowser.showLayoutMenu(e.target, self.getCurrentViewStyle(), self.getViewStyles());
-        });
-
-        btnSelectView.addEventListener('layoutchange', function (e) {
-
-            self.setCurrentViewStyle(e.detail.viewStyle);
-        });
     };
 });

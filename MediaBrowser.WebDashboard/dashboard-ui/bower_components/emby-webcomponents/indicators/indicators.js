@@ -49,11 +49,28 @@ define(['css!./indicators.css', 'material-icons'], function () {
 
     function enablePlayedIndicator(item) {
 
-        if (item.Type === "Series" || item.Type === "Season" || item.Type === "BoxSet" || item.MediaType === "Video" || item.MediaType === "Game" || item.MediaType === "Book") {
-
+        if (item.MediaType === 'Video') {
             if (item.Type !== 'TvChannel') {
                 return true;
             }
+        }
+
+        if (item.MediaType === 'Audio') {
+            if (item.Type === 'AudioPodcast') {
+                return true;
+            }
+            if (item.Type === 'AudioBook') {
+                return true;
+            }
+        }
+
+        if (item.Type === "Series" ||
+            item.Type === "Season" ||
+            item.Type === "BoxSet" ||
+            item.MediaType === "Game" ||
+            item.MediaType === "Book" ||
+            item.MediaType === "Recording") {
+            return true;
         }
 
         return false;

@@ -4,11 +4,12 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -30,6 +31,7 @@ namespace MediaBrowser.Api.UserLibrary
         protected readonly IUserDataManager UserDataRepository;
         protected readonly IItemRepository ItemRepository;
         protected IDtoService DtoService { get; private set; }
+        protected IAuthorizationContext AuthorizationContext { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemsByNameService{TItemType}" /> class.
@@ -39,13 +41,14 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="itemRepository">The item repository.</param>
         /// <param name="dtoService">The dto service.</param>
-        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService)
+        protected BaseItemsByNameService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext)
         {
             UserManager = userManager;
             LibraryManager = libraryManager;
             UserDataRepository = userDataRepository;
             ItemRepository = itemRepository;
             DtoService = dtoService;
+            AuthorizationContext = authorizationContext;
         }
 
         protected BaseItem GetParentItem(GetItemsByName request)
@@ -86,7 +89,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         protected ItemsResult GetResultSlim(GetItemsByName request)
         {
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             User user = null;
             BaseItem parentItem;
@@ -223,7 +226,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         protected ItemsResult GetResult(GetItemsByName request)
         {
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             User user = null;
             BaseItem parentItem;

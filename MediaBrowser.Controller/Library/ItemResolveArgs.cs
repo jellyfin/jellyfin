@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -93,18 +95,6 @@ namespace MediaBrowser.Controller.Library
             get
             {
                 return FileInfo.IsDirectory;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is hidden.
-        /// </summary>
-        /// <value><c>true</c> if this instance is hidden; otherwise, <c>false</c>.</value>
-        public bool IsHidden
-        {
-            get
-            {
-                return (FileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
             }
         }
 

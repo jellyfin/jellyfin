@@ -1,0 +1,16 @@
+﻿.imageEditor-buttons {
+    display: flex;
+    align-items: center;
+    margin: 1em 0 1em;
+}
+
+.first-imageEditor-buttons {
+    margin-top: 2em;
+}
+
+@media all and (min-width: 1200px) {
+
+    .imageEditorCard {
+        width: 20%;
+    }
+}

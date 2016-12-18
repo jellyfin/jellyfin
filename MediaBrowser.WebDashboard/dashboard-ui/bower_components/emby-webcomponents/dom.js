@@ -94,12 +94,65 @@ define([], function () {
         return windowSize;
     }
 
+    var _animationEvent;
+    function whichAnimationEvent() {
+
+        if (_animationEvent) {
+            return _animationEvent;
+        }
+
+        var t,
+            el = document.createElement("div");
+        var animations = {
+            "animation": "animationend",
+            "OAnimation": "oAnimationEnd",
+            "MozAnimation": "animationend",
+            "WebkitAnimation": "webkitAnimationEnd"
+        };
+        for (t in animations) {
+            if (el.style[t] !== undefined) {
+                _animationEvent = animations[t];
+                return animations[t];
+            }
+        }
+
+        _animationEvent = 'animationend';
+        return _animationEvent;
+    }
+
+    var _transitionEvent;
+    function whichTransitionEvent() {
+        if (_transitionEvent) {
+            return _transitionEvent;
+        }
+
+        var t,
+            el = document.createElement("div");
+        var transitions = {
+            "transition": "transitionend",
+            "OTransition": "oTransitionEnd",
+            "MozTransition": "transitionend",
+            "WebkitTransition": "webkitTransitionEnd"
+        };
+        for (t in transitions) {
+            if (el.style[t] !== undefined) {
+                _transitionEvent = transitions[t];
+                return transitions[t];
+            }
+        }
+
+        _transitionEvent = 'transitionend';
+        return _transitionEvent;
+    }
+
     return {
         parentWithAttribute: parentWithAttribute,
         parentWithClass: parentWithClass,
         parentWithTag: parentWithTag,
         addEventListener: addEventListenerWithOptions,
         removeEventListener: removeEventListenerWithOptions,
-        getWindowSize: getWindowSize
+        getWindowSize: getWindowSize,
+        whichTransitionEvent: whichTransitionEvent,
+        whichAnimationEvent: whichAnimationEvent
     };
 });

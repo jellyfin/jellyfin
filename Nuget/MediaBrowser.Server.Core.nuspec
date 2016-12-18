@@ -2,21 +2,21 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Server.Core</id>
-        <version>3.0.665</version>
-        <title>Media Browser.Server.Core</title>
+        <version>3.0.691</version>
+        <title>Emby.Server.Core</title>
         <authors>Emby Team</authors>
         <owners>ebr,Luke,scottisafool</owners>
-        <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
+        <projectUrl>https://github.com/MediaBrowser/Emby</projectUrl>
 		<iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Contains core components required to build plugins for Emby Server.</description>
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.665" />
-			<dependency id="Interfaces.IO" version="1.0.0.5" />
+            <dependency id="MediaBrowser.Common" version="3.0.691" />
         </dependencies>
     </metadata>
     <files>
         <file src="dlls\MediaBrowser.Controller.dll" target="lib\net45\MediaBrowser.Controller.dll" />
+        <file src="dlls\MediaBrowser.Controller.dll" target="lib\portable-net45+win8+wpa81\MediaBrowser.Controller.dll" />
     </files>
 </package>

@@ -3,11 +3,11 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using CommonIO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.ServerApplication.Native
 {
-    public class LnkShortcutHandler : IShortcutHandler
+    public class LnkShortcutHandler :IShortcutHandler
     {
         public string Extension
         {

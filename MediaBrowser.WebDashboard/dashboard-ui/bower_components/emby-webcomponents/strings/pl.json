@@ -236,7 +236,7 @@
     "PackageInstallCompleted": "Instalacja {0} zako\u0144czona.",
     "PackageInstallFailed": "Instalacja {0} nieudana.",
     "PackageInstallCancelled": "Instalacja {0} anulowana.",
-    "SeriesYearToPresent": "{0}-Obecnych",
+    "SeriesYearToPresent": "{0} - Obecnych",
     "ValueOneSong": "1 utw\u00f3r",
     "ValueSongCount": "{0} utwory",
     "ValueOneMovie": "1 film",
@@ -343,12 +343,16 @@
     "ButtonRestorePreviousPurchase": "Restore Purchase",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
     "ButtonUnlockPrice": "Unlock {0}",
-    "ButtonAlreadyPaid": "Already Paid?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Play One Minute",
     "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
     "HeaderUnlockFeature": "Unlock Feature",
     "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
     "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
     "HeaderPlayMyMedia": "Play my Media",
-    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere"
+    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
+    "OneChannel": "One channel",
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Added {0}"
 }

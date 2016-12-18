@@ -1,8 +1,5 @@
-define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser', 'dom', 'appSettings', 'require'], function (visibleinviewport, imageFetcher, layoutManager, events, browser, dom, appSettings, require) {
+define(['lazyLoader', 'imageFetcher', 'layoutManager', 'browser', 'appSettings', 'require'], function (lazyLoader, imageFetcher, layoutManager, browser, appSettings, require) {
     'use strict';
-
-    var thresholdX;
-    var thresholdY;
 
     var requestIdleCallback = window.requestIdleCallback || function (fn) {
         fn();
@@ -10,41 +7,6 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
     //var imagesWorker = new Worker(require.toUrl('.').split('?')[0] + '/imagesworker.js');
 
-    var supportsIntersectionObserver = function () {
-
-        if (window.IntersectionObserver) {
-
-            return true;
-        }
-
-        return false;
-    }();
-
-    function resetThresholds() {
-
-        var x = screen.availWidth;
-        var y = screen.availHeight;
-
-        if (browser.touch) {
-            x *= 1.5;
-            y *= 1.5;
-        }
-
-        thresholdX = x;
-        thresholdY = y;
-    }
-
-    if (!supportsIntersectionObserver) {
-        dom.addEventListener(window, "orientationchange", resetThresholds, { passive: true });
-        dom.addEventListener(window, 'resize', resetThresholds, { passive: true });
-        resetThresholds();
-    }
-
-    function isVisible(elem) {
-        return visibleinviewport(elem, true, thresholdX, thresholdY);
-    }
-
-    var wheelEvent = (document.implementation.hasFeature('Event.wheel', '3.0') ? 'wheel' : 'mousewheel');
     var self = {};
 
     var enableFade = browser.animate && !browser.slow;
@@ -65,7 +27,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     function fillImageElement(elem, source, enableEffects) {
         imageFetcher.loadImage(elem, source).then(function () {
 
-            var fillingVibrant = elem.tagName !== 'IMG' ? false : fillVibrant(elem, source);
+            var fillingVibrant = fillVibrant(elem, source);
 
             if (enableFade && !layoutManager.tv && enableEffects !== false && !fillingVibrant) {
                 fadeIn(elem);
@@ -148,14 +110,17 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         requestIdleCallback(function () {
 
             //var now = new Date().getTime();
-            var swatch = getVibrantInfo(img, url).split('|');
-            //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
-            if (swatch.length) {
+            getVibrantInfoFromElement(img, url).then(function (vibrantInfo) {
 
-                var index = 0;
-                vibrantElement.style.backgroundColor = swatch[index];
-                vibrantElement.style.color = swatch[index + 1];
-            }
+                var swatch = vibrantInfo.split('|');
+                //console.log('vibrant took ' + (new Date().getTime() - now) + 'ms');
+                if (swatch.length) {
+
+                    var index = 0;
+                    vibrantElement.style.backgroundColor = swatch[index];
+                    vibrantElement.style.color = swatch[index + 1];
+                }
+            });
         });
         /*
          * Results into:
@@ -167,6 +132,26 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
          */
     }
 
+    function getVibrantInfoFromElement(elem, url) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(['vibrant'], function () {
+
+                if (elem.tagName === 'IMG') {
+                    resolve(getVibrantInfo(elem, url));
+                    return;
+                }
+
+                var img = new Image();
+                img.onload = function () {
+                    resolve(getVibrantInfo(img, url));
+                };
+                img.src = url;
+            });
+        });
+    }
+
     function getSettingsKey(url) {
 
         var parts = url.split('://');
@@ -176,7 +161,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         url = url.split('?')[0];
 
-        var cacheKey = 'vibrant25';
+        var cacheKey = 'vibrant31';
         //cacheKey = 'vibrant' + new Date().getTime();
         return cacheKey + url;
     }
@@ -198,31 +183,19 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
 
         value = '';
         var swatch = swatches.DarkVibrant;
-        if (swatch) {
-            value += swatch.getHex() + '|' + swatch.getBodyTextColor();
-        }
-        //swatch = swatches.DarkMuted;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
-        //swatch = swatches.Vibrant;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
-        //swatch = swatches.Muted;
-        //if (swatch) {
-        //    value += '|' + swatch.getHex() + '|' + swatch.getBodyTextColor();
-        //} else {
-        //    value += '||';
-        //}
+        value += getSwatchString(swatch);
 
         appSettings.set(getSettingsKey(url), value);
 
         return value;
+    }
+
+    function getSwatchString(swatch) {
+
+        if (swatch) {
+            return swatch.getHex() + '|' + swatch.getBodyTextColor() + '|' + swatch.getTitleTextColor();
+        }
+        return '||';
     }
 
     function fadeIn(elem) {
@@ -236,135 +209,9 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
         elem.animate(keyframes, timing);
     }
 
-    function cancelAll(tokens) {
-        for (var i = 0, length = tokens.length; i < length; i++) {
-
-            tokens[i] = true;
-        }
-    }
-
-    function unveilWithIntersection(images, root) {
-
-        var filledCount = 0;
-
-        var options = {};
-
-        //options.rootMargin = "300%";
-
-        var observer = new IntersectionObserver(function (entries) {
-            for (var j = 0, length2 = entries.length; j < length2; j++) {
-                var entry = entries[j];
-                var target = entry.target;
-                observer.unobserve(target);
-                fillImage(target);
-                filledCount++;
-            }
-        },
-        options
-        );
-        // Start observing an element
-        for (var i = 0, length = images.length; i < length; i++) {
-            observer.observe(images[i]);
-        }
-    }
-
-    function unveilElements(images, root) {
-
-        if (!images.length) {
-            return;
-        }
-
-        if (supportsIntersectionObserver) {
-            unveilWithIntersection(images, root);
-            return;
-        }
-
-        var filledImages = [];
-        var cancellationTokens = [];
-
-        function unveilInternal(tokenIndex) {
-
-            var anyFound = false;
-            var out = false;
-
-            // TODO: This out construct assumes left to right, top to bottom
-
-            for (var i = 0, length = images.length; i < length; i++) {
-
-                if (cancellationTokens[tokenIndex]) {
-                    return;
-                }
-                if (filledImages[i]) {
-                    continue;
-                }
-                var img = images[i];
-                if (!out && isVisible(img)) {
-                    anyFound = true;
-                    filledImages[i] = true;
-                    fillImage(img);
-                } else {
-
-                    if (anyFound) {
-                        out = true;
-                    }
-                }
-            }
-
-            if (!images.length) {
-                dom.removeEventListener(document, 'focus', unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(document, 'scroll', unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(document, wheelEvent, unveil, {
-                    capture: true,
-                    passive: true
-                });
-                dom.removeEventListener(window, 'resize', unveil, {
-                    capture: true,
-                    passive: true
-                });
-            }
-        }
-
-        function unveil() {
-
-            cancelAll(cancellationTokens);
-
-            var index = cancellationTokens.length;
-            cancellationTokens.length++;
-
-            setTimeout(function () {
-                unveilInternal(index);
-            }, 1);
-        }
-
-        dom.addEventListener(document, 'focus', unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(document, 'scroll', unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(document, wheelEvent, unveil, {
-            capture: true,
-            passive: true
-        });
-        dom.addEventListener(window, 'resize', unveil, {
-            capture: true,
-            passive: true
-        });
-
-        unveil();
-    }
-
     function lazyChildren(elem) {
 
-        unveilElements(elem.getElementsByClassName('lazy'), elem);
+        lazyLoader.lazyChildren(elem, fillImage);
     }
 
     function getPrimaryImageAspectRatio(items) {
@@ -439,6 +286,7 @@ define(['visibleinviewport', 'imageFetcher', 'layoutManager', 'events', 'browser
     self.lazyChildren = lazyChildren;
     self.getPrimaryImageAspectRatio = getPrimaryImageAspectRatio;
     self.getCachedVibrantInfo = getCachedVibrantInfo;
+    self.getVibrantInfoFromElement = getVibrantInfoFromElement;
 
     return self;
 });

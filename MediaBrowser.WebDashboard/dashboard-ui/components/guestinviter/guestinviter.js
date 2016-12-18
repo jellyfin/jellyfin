@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'jQuery', 'emby-input', 'emby-button', 'emby-checkbox', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, $) {
+    'use strict';
 
     function renderLibrarySharingList(context, result) {
 

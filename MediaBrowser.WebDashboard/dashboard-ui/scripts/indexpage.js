@@ -1,29 +1,10 @@
 ﻿define(['libraryBrowser', 'emby-tabs', 'emby-button'], function (libraryBrowser) {
+    'use strict';
 
     var defaultFirstSection = 'smalllibrarytiles';
 
     function getDefaultSection(index) {
 
-        if (AppInfo.isNativeApp) {
-
-            switch (index) {
-
-                case 0:
-                    return defaultFirstSection;
-                case 1:
-                    return 'resume';
-                case 2:
-                    return 'nextup';
-                case 3:
-                    return 'latestmovies';
-                case 4:
-                    return 'latestepisodes';
-                case 5:
-                    return 'latesttvrecordings';
-                default:
-                    return '';
-            }
-        }
         switch (index) {
 
             case 0:
@@ -31,49 +12,42 @@
             case 1:
                 return 'resume';
             case 2:
-                return 'latestmedia';
+                return 'nextup';
             case 3:
+                return 'latestmedia';
+            case 4:
                 return 'latesttvrecordings';
             default:
                 return '';
         }
-
     }
 
-    function loadSection(page, user, displayPreferences, index) {
+    function loadSection(page, user, userSettings, index) {
 
         var userId = user.Id;
 
-        var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
+        var section = userSettings.get('homesection' + index) || getDefaultSection(index);
 
         if (section == 'folders') {
             section = defaultFirstSection;
         }
-
-        var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';
 
         var elem = page.querySelector('.section' + index);
 
         if (section == 'latestmedia') {
             return Sections.loadRecentlyAdded(elem, user);
         }
-        else if (section == 'latestmovies') {
-            return Sections.loadLatestMovies(elem, user);
-        }
-        else if (section == 'latestepisodes') {
-            return Sections.loadLatestEpisodes(elem, user);
-        }
         else if (section == 'librarytiles') {
-            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index);
         }
         else if (section == 'smalllibrarytiles') {
-            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, false, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index, true, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'smallBackdrop', index);
         }
         else if (section == 'librarytiles-automobile') {
-            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, true, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index);
         }
         else if (section == 'librarybuttons') {
             return Sections.loadlibraryButtons(elem, userId, index);
@@ -101,10 +75,10 @@
         }
     }
 
-    function loadSections(page, user, displayPreferences) {
+    function loadSections(page, user, userSettings) {
 
         var i, length;
-        var sectionCount = 6;
+        var sectionCount = 5;
 
         var elem = page.querySelector('.sections');
 
@@ -122,7 +96,7 @@
 
         for (i = 0, length = sectionCount; i < length; i++) {
 
-            promises.push(loadSection(page, user, displayPreferences, i));
+            promises.push(loadSection(page, user, userSettings, i));
         }
 
         return Promise.all(promises);
@@ -210,24 +184,37 @@
         });
     }
 
+    function getRequirePromise(deps) {
+
+        return new Promise(function (resolve, reject) {
+
+            require(deps, resolve);
+        });
+    }
+
     function loadHomeTab(page, tabContent) {
 
         if (window.ApiClient) {
             var userId = Dashboard.getCurrentUserId();
             Dashboard.showLoadingMsg();
 
-            getDisplayPreferences('home', userId).then(function (result) {
+            var promises = [
+                getDisplayPreferences('home', userId),
+                Dashboard.getCurrentUser(),
+                getRequirePromise(['userSettings'])
+            ];
 
-                Dashboard.getCurrentUser().then(function (user) {
+            Promise.all(promises).then(function(responses) {
+                var displayPreferences = responses[0];
+                var user = responses[1];
+                var userSettings = responses[2];
 
-                    loadSections(tabContent, user, result).then(function () {
+                loadSections(tabContent, user, userSettings).then(function () {
 
-                        if (!AppInfo.isNativeApp) {
-                            showWelcomeIfNeeded(page, result);
-                        }
-                        Dashboard.hideLoadingMsg();
-                    });
-
+                    if (!AppInfo.isNativeApp) {
+                        showWelcomeIfNeeded(page, displayPreferences);
+                    }
+                    Dashboard.hideLoadingMsg();
                 });
             });
         }

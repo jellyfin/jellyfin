@@ -55,6 +55,11 @@
     }
 
     function isStyleSupported(prop, value) {
+
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
         // If no value is supplied, use "inherit"
         value = arguments.length === 2 ? value : 'inherit';
         // Try the native standard method first
@@ -114,6 +119,50 @@
         }
 
         return false;
+    }
+
+    var _supportsCssAnimation;
+    var _supportsCssAnimationWithPrefix;
+    function supportsCssAnimation(allowPrefix) {
+
+        if (allowPrefix) {
+            if (_supportsCssAnimationWithPrefix === true || _supportsCssAnimationWithPrefix === false) {
+                return _supportsCssAnimationWithPrefix;
+            }
+        } else {
+            if (_supportsCssAnimation === true || _supportsCssAnimation === false) {
+                return _supportsCssAnimation;
+            }
+        }
+
+        var animation = false,
+            animationstring = 'animation',
+            keyframeprefix = '',
+            domPrefixes = ['Webkit', 'O', 'Moz'],
+            pfx = '',
+            elm = document.createElement('div');
+
+        if (elm.style.animationName !== undefined) { animation = true; }
+
+        if (animation === false && allowPrefix) {
+            for (var i = 0; i < domPrefixes.length; i++) {
+                if (elm.style[domPrefixes[i] + 'AnimationName'] !== undefined) {
+                    pfx = domPrefixes[i];
+                    animationstring = pfx + 'Animation';
+                    keyframeprefix = '-' + pfx.toLowerCase() + '-';
+                    animation = true;
+                    break;
+                }
+            }
+        }
+
+        if (allowPrefix) {
+            _supportsCssAnimationWithPrefix = animation;
+            return _supportsCssAnimationWithPrefix;
+        } else {
+            _supportsCssAnimation = animation;
+            return _supportsCssAnimation;
+        }
     }
 
     var uaMatch = function (ua) {
@@ -176,7 +225,7 @@
         };
     };
 
-    var userAgent = window.navigator.userAgent;
+    var userAgent = navigator.userAgent;
     var matched = uaMatch(userAgent);
     var browser = {};
 
@@ -204,7 +253,7 @@
     }
 
     browser.xboxOne = userAgent.toLowerCase().indexOf('xbox') !== -1;
-    browser.animate = document.documentElement.animate != null;
+    browser.animate = typeof document !== 'undefined' && document.documentElement.animate != null;
     browser.tizen = userAgent.toLowerCase().indexOf('tizen') !== -1 || userAgent.toLowerCase().indexOf('smarthub') !== -1;
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) !== -1;
     browser.edgeUwp = browser.edge && userAgent.toLowerCase().indexOf('msapphost') !== -1;
@@ -220,11 +269,17 @@
         browser.slow = true;
     }
 
-    if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
-        browser.touch = true;
+    if (typeof document !== 'undefined') {
+        if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
+            browser.touch = true;
+        }
     }
 
     browser.keyboard = hasKeyboard(browser);
+    browser.supportsCssAnimation = supportsCssAnimation;
+
+    browser.osx = userAgent.toLowerCase().indexOf('os x') !== -1;
+    browser.iOS = browser.ipad || browser.iphone || browser.ipod;
 
     return browser;
 });

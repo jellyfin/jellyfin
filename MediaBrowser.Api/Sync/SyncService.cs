@@ -6,11 +6,11 @@ using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
 using MediaBrowser.Model.Users;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Sync
 {
@@ -161,13 +161,15 @@ namespace MediaBrowser.Api.Sync
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
+        private readonly IAuthorizationContext _authContext;
 
-        public SyncService(ISyncManager syncManager, IDtoService dtoService, ILibraryManager libraryManager, IUserManager userManager)
+        public SyncService(ISyncManager syncManager, IDtoService dtoService, ILibraryManager libraryManager, IUserManager userManager, IAuthorizationContext authContext)
         {
             _syncManager = syncManager;
             _dtoService = dtoService;
             _libraryManager = libraryManager;
             _userManager = userManager;
+            _authContext = authContext;
         }
 
         public object Get(GetSyncTargets request)
@@ -263,7 +265,7 @@ namespace MediaBrowser.Api.Sync
             result.Targets = _syncManager.GetSyncTargets(request.UserId)
                 .ToList();
 
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var auth = _authContext.GetAuthorizationInfo(Request);
             var authenticatedUser = _userManager.GetUserById(auth.UserId);
 
             if (!string.IsNullOrWhiteSpace(request.TargetId))

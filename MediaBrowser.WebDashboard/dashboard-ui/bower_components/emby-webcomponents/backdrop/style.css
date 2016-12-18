@@ -15,6 +15,10 @@
     contain: layout style;
 }
 
+.backdropImageFadeIn {
+    animation: backdrop-fadein 800ms ease-in normal both;
+}
+
 @keyframes backdrop-fadein {
     from {
         opacity: 0;

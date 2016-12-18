@@ -1,4 +1,4 @@
-﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'registrationServices', 'paper-icon-button-light', 'emby-button'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, registrationServices) {
+﻿define(['globalize', 'connectionManager', 'require', 'loading', 'apphost', 'dom', 'recordingHelper', 'events', 'registrationServices', 'paper-icon-button-light', 'emby-button', 'css!./recordingfields'], function (globalize, connectionManager, require, loading, appHost, dom, recordingHelper, events, registrationServices) {
     'use strict';
 
     function getRegistration(apiClient, programId, feature) {
@@ -106,21 +106,21 @@
         }
 
         if (program.SeriesTimerId) {
-            parent.querySelector('.btnManageSeriesRecording').classList.remove('visibilityHide');
+            parent.querySelector('.btnManageSeriesRecording').classList.remove('hide');
             parent.querySelector('.seriesRecordingButton .recordingIcon').classList.add('recordingIcon-active');
             parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#CancelSeries');
         } else {
-            parent.querySelector('.btnManageSeriesRecording').classList.add('visibilityHide');
+            parent.querySelector('.btnManageSeriesRecording').classList.add('hide');
             parent.querySelector('.seriesRecordingButton .recordingIcon').classList.remove('recordingIcon-active');
             parent.querySelector('.seriesRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#RecordSeries');
         }
 
         if (program.TimerId && program.Status !== 'Cancelled') {
-            parent.querySelector('.btnManageRecording').classList.remove('visibilityHide');
+            parent.querySelector('.btnManageRecording').classList.remove('hide');
             parent.querySelector('.singleRecordingButton .recordingIcon').classList.add('recordingIcon-active');
             parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#DoNotRecord');
         } else {
-            parent.querySelector('.btnManageRecording').classList.add('visibilityHide');
+            parent.querySelector('.btnManageRecording').classList.add('hide');
             parent.querySelector('.singleRecordingButton .recordingIcon').classList.remove('recordingIcon-active');
             parent.querySelector('.singleRecordingButton .buttonText').innerHTML = globalize.translate('sharedcomponents#Record');
         }

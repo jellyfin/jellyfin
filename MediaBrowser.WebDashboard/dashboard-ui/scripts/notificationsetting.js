@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'emby-checkbox', 'fnchecked'], function ($) {
+    'use strict';
 
     var notificationsConfigurationKey = "notifications";
 

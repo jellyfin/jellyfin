@@ -118,6 +118,10 @@
             inputId++;
         }
 
+        if (!browser.firefox) {
+            this.classList.add('emby-select-withoptioncolor');
+        }
+
         this.addEventListener('mousedown', onMouseDown);
         this.addEventListener('keydown', onKeyDown);
 

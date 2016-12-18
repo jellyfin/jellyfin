@@ -5,10 +5,10 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Music
 {
@@ -68,13 +68,15 @@ namespace MediaBrowser.Api.Music
         private readonly IDtoService _dtoService;
         private readonly ILibraryManager _libraryManager;
         private readonly IMusicManager _musicManager;
+        private readonly IAuthorizationContext _authContext;
 
-        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager, ILibraryManager libraryManager)
+        public InstantMixService(IUserManager userManager, IDtoService dtoService, IMusicManager musicManager, ILibraryManager libraryManager, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _dtoService = dtoService;
             _musicManager = musicManager;
             _libraryManager = libraryManager;
+            _authContext = authContext;
         }
 
         public Task<object> Get(GetInstantMixFromItem request)
@@ -171,7 +173,7 @@ namespace MediaBrowser.Api.Music
                 TotalRecordCount = list.Count
             };
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             result.Items = (await _dtoService.GetBaseItemDtos(list.Take(request.Limit ?? list.Count), dtoOptions, user).ConfigureAwait(false)).ToArray();
 

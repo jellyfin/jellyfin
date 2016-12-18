@@ -16,7 +16,8 @@
             var connectionOptions = {
                 updateDateLastAccessed: false,
                 enableWebSocket: false,
-                reportCapabilities: false
+                reportCapabilities: false,
+                enableAutomaticBitrateDetection: false
             };
 
             return connectionManager.connectToServer(server, connectionOptions).then(function (result) {
@@ -37,7 +38,7 @@
 
         function performSync(server, options) {
 
-            console.log("Creating ContentUploader to server: " + server.Id);
+            console.log("ServerSync.performSync to server: " + server.Id);
 
             options = options || {};
 
@@ -47,34 +48,27 @@
                 uploadPhotos = false;
             }
 
-            if (!uploadPhotos) {
-                return syncOfflineUsers(server, options);
-            }
+            var pr = syncOfflineUsers(server, options);
 
-            return new Promise(function (resolve, reject) {
+            return pr.then(function () {
 
-                require(['contentuploader'], function (ContentUploader) {
+                if (uploadPhotos) {
+                    return uploadContent(server, options);
+                }
 
-                    new ContentUploader(connectionManager).uploadImages(server).then(function () {
+                return Promise.resolve();
 
-                        console.log("ContentUploaded succeeded to server: " + server.Id);
+            }).then(function () {
 
-                        syncOfflineUsers(server, options).then(resolve, reject);
-
-                    }, function () {
-
-                        console.log("ContentUploaded failed to server: " + server.Id);
-
-                        syncOfflineUsers(server, options).then(resolve, reject);
-                    });
-                });
+                return syncMedia(server, options);
             });
         }
+
 
         function syncOfflineUsers(server, options) {
 
             if (options.syncOfflineUsers === false) {
-                return syncMedia(server, options);
+                return Promise.resolve();
             }
 
             return new Promise(function (resolve, reject) {
@@ -83,13 +77,19 @@
 
                     var apiClient = connectionManager.getApiClient(server.Id);
 
-                    new OfflineUserSync().sync(apiClient, server).then(function () {
+                    new OfflineUserSync().sync(apiClient, server).then(resolve, reject);
+                });
+            });
+        }
 
-                        console.log("OfflineUserSync succeeded to server: " + server.Id);
+        function uploadContent(server, options) {
 
-                        syncMedia(server, options).then(resolve, reject);
+            return new Promise(function (resolve, reject) {
 
-                    }, reject);
+                require(['contentuploader'], function (contentuploader) {
+
+                    uploader = new ContentUploader(connectionManager);
+                    uploader.uploadImages(server).then(resolve, reject);
                 });
             });
         }

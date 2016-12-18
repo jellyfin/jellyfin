@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'jQuery', 'emby-button', 'emby-select'], function (dialogHelper, $) {
+    'use strict';
 
     var currentItemId;
     var currentFile;

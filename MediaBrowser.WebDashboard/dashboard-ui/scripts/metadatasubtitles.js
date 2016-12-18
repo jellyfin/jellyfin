@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked'], function ($) {
+    'use strict';
 
     function loadPage(page, config, languages) {
 

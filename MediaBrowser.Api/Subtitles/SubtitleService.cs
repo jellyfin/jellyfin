@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,7 +14,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
 namespace MediaBrowser.Api.Subtitles
@@ -133,8 +135,9 @@ namespace MediaBrowser.Api.Subtitles
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IProviderManager _providerManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
 
-        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem)
+        public SubtitleService(ILibraryManager libraryManager, ISubtitleManager subtitleManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager, IProviderManager providerManager, IFileSystem fileSystem, IAuthorizationContext authContext)
         {
             _libraryManager = libraryManager;
             _subtitleManager = subtitleManager;
@@ -142,6 +145,7 @@ namespace MediaBrowser.Api.Subtitles
             _mediaSourceManager = mediaSourceManager;
             _providerManager = providerManager;
             _fileSystem = fileSystem;
+            _authContext = authContext;
         }
 
         public async Task<object> Get(GetSubtitlePlaylist request)
@@ -168,7 +172,7 @@ namespace MediaBrowser.Api.Subtitles
             long positionTicks = 0;
             var segmentLengthTicks = TimeSpan.FromSeconds(request.SegmentLength).Ticks;
 
-            var accessToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+            var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
 
             while (positionTicks < runtime)
             {

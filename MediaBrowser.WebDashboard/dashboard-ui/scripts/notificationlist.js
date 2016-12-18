@@ -1,4 +1,5 @@
 ﻿define(['jQuery'], function ($) {
+    'use strict';
 
     $(document).on("pageshow", "#notificationsPage", function () {
 

@@ -20,3 +20,17 @@
 .recordingDialog-btnRecord {
     background-color: #cc3333;
 }
+
+.recordingDetailsContainer {
+    display: flex;
+}
+
+.recordingDetails {
+    flex-grow: 1;
+}
+
+.recordingDetailText {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}

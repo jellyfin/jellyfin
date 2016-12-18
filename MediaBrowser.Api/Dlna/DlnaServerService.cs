@@ -1,6 +1,4 @@
 ﻿using MediaBrowser.Controller.Dlna;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Dlna
 {
@@ -98,7 +98,7 @@ namespace MediaBrowser.Api.Dlna
     {
         [ApiMember(Name = "UuId", Description = "Server UuId", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string UuId { get; set; }
-        
+
         [ApiMember(Name = "Filename", Description = "The icon filename", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Filename { get; set; }
     }
@@ -111,9 +111,9 @@ namespace MediaBrowser.Api.Dlna
         private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
         private const string XMLContentType = "text/xml; charset=UTF-8";
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar, IMemoryStreamProvider memoryStreamProvider)
+        public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar, IMemoryStreamFactory memoryStreamProvider)
         {
             _dlnaManager = dlnaManager;
             _contentDirectory = contentDirectory;
@@ -126,79 +126,64 @@ namespace MediaBrowser.Api.Dlna
         {
             var url = Request.AbsoluteUri;
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
-            var xml = _dlnaManager.GetServerDescriptionXml(GetRequestHeaders(), request.UuId, serverAddress);
+            var xml = _dlnaManager.GetServerDescriptionXml(Request.Headers.ToDictionary(), request.UuId, serverAddress);
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetContentDirectory request)
         {
-            var xml = _contentDirectory.GetServiceXml(GetRequestHeaders());
+            var xml = _contentDirectory.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetMediaReceiverRegistrar request)
         {
-            var xml = _mediaReceiverRegistrar.GetServiceXml(GetRequestHeaders());
+            var xml = _mediaReceiverRegistrar.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetConnnectionManager request)
         {
-            var xml = _connectionManager.GetServiceXml(GetRequestHeaders());
+            var xml = _connectionManager.GetServiceXml(Request.Headers.ToDictionary());
 
             return ResultFactory.GetResult(xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
+        public object Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _mediaReceiverRegistrar);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessContentDirectoryControlRequest request)
+        public object Post(ProcessContentDirectoryControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _contentDirectory);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        public async Task<object> Post(ProcessConnectionManagerControlRequest request)
+        public object Post(ProcessConnectionManagerControlRequest request)
         {
-            var response = await PostAsync(request.RequestStream, _connectionManager).ConfigureAwait(false);
+            var response = PostAsync(request.RequestStream, _connectionManager);
 
             return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
-        private async Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
+        private ControlResponse PostAsync(Stream requestStream, IUpnpService service)
         {
             var id = GetPathValue(2);
 
-            using (var reader = new StreamReader(requestStream))
+            return service.ProcessControlRequest(new ControlRequest
             {
-                return service.ProcessControlRequest(new ControlRequest
-                {
-                    Headers = GetRequestHeaders(),
-                    InputXml = await reader.ReadToEndAsync().ConfigureAwait(false),
-                    TargetServerUuId = id,
-                    RequestedUrl = Request.AbsoluteUri
-                });
-            }
-        }
-
-        private IDictionary<string, string> GetRequestHeaders()
-        {
-            var headers = new Dictionary<string, string>();
-
-            foreach (var key in Request.Headers.AllKeys)
-            {
-                headers[key] = Request.Headers[key];
-            }
-
-            return headers;
+                Headers = Request.Headers.ToDictionary(),
+                InputXml = requestStream,
+                TargetServerUuId = id,
+                RequestedUrl = Request.AbsoluteUri
+            });
         }
 
         public object Get(GetIcon request)

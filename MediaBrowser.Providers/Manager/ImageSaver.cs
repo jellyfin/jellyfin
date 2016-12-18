@@ -16,7 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Manager
 {
@@ -38,7 +39,7 @@ namespace MediaBrowser.Providers.Manager
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageSaver" /> class.
@@ -47,7 +48,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
-        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger, IMemoryStreamProvider memoryStreamProvider)
+        public ImageSaver(IServerConfigurationManager config, ILibraryMonitor libraryMonitor, IFileSystem fileSystem, ILogger logger, IMemoryStreamFactory memoryStreamProvider)
         {
             _config = config;
             _libraryMonitor = libraryMonitor;
@@ -172,14 +173,14 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var currentFile = new FileInfo(currentPath);
+                    var currentFile = _fileSystem.GetFileInfo(currentPath);
 
                     // This will fail if the file is hidden
                     if (currentFile.Exists)
                     {
-                        if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                        if (currentFile.IsHidden)
                         {
-                            currentFile.Attributes &= ~FileAttributes.Hidden;
+                            _fileSystem.SetHidden(currentFile.FullName, false);
                         }
 
                         _fileSystem.DeleteFile(currentFile.FullName);
@@ -254,18 +255,22 @@ namespace MediaBrowser.Providers.Manager
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(path));
 
                 // If the file is currently hidden we'll have to remove that or the save will fail
-                var file = new FileInfo(path);
+                var file = _fileSystem.GetFileInfo(path);
 
                 // This will fail if the file is hidden
                 if (file.Exists)
                 {
-                    if ((file.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    if (file.IsHidden)
                     {
-                        file.Attributes &= ~FileAttributes.Hidden;
+                        _fileSystem.SetHidden(file.FullName, false);
+                    }
+                    if (file.IsReadOnly)
+                    {
+                        _fileSystem.SetReadOnly(path, false);
                     }
                 }
 
-                using (var fs = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await source.CopyToAsync(fs, StreamDefaults.DefaultCopyToBufferSize, cancellationToken)
                             .ConfigureAwait(false);
@@ -273,10 +278,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (_config.Configuration.SaveMetadataHidden)
                 {
-                    file.Refresh();
-
-                    // Add back the attribute
-                    file.Attributes |= FileAttributes.Hidden;
+                    _fileSystem.SetHidden(file.FullName, true);
                 }
             }
             finally

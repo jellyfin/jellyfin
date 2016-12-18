@@ -42,9 +42,6 @@
             Name: dlg.querySelector('#txtNewCollectionName').value,
             IsLocked: !dlg.querySelector('#chkEnableInternetMetadata').checked,
             Ids: dlg.querySelector('.fldSelectedItemIds').value || ''
-
-            //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
-
         });
 
         apiClient.ajax({

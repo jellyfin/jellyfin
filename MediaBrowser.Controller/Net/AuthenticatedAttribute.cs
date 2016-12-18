@@ -1,13 +1,13 @@
-﻿using ServiceStack.Web;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
     public class AuthenticatedAttribute : Attribute, IHasRequestFilter, IAuthenticationAttributes
     {
-        public IAuthService AuthService { get; set; }
+        public static IAuthService AuthService { get; set; }
 
         /// <summary>
         /// Gets or sets the roles.
@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value><c>true</c> if [allow before startup wizard]; otherwise, <c>false</c>.</value>
         public bool AllowBeforeStartupWizard { get; set; }
-        
+
         /// <summary>
         /// The request filter is executed before the service.
         /// </summary>
@@ -35,18 +35,9 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestDto">The request DTO</param>
         public void RequestFilter(IRequest request, IResponse response, object requestDto)
         {
-            var serviceRequest = new ServiceStackServiceRequest(request);
+            var serviceRequest = new ServiceRequest(request);
 
             AuthService.Authenticate(serviceRequest, this);
-        }
-
-        /// <summary>
-        /// A new shallow copy of this filter is used on every request.
-        /// </summary>
-        /// <returns>IHasRequestFilter.</returns>
-        public IHasRequestFilter Copy()
-        {
-            return this;
         }
 
         /// <summary>
@@ -59,7 +50,6 @@ namespace MediaBrowser.Controller.Net
         {
             get { return 0; }
         }
-
 
         public IEnumerable<string> GetRoles()
         {

@@ -3,7 +3,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -17,7 +16,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.BoxSets
 {
@@ -317,8 +319,7 @@ namespace MediaBrowser.Providers.BoxSets
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+                Url = url
             });
         }
     }

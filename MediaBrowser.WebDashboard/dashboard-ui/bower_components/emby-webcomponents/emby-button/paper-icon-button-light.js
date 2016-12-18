@@ -1,4 +1,4 @@
-﻿define(['browser', 'dom', 'css!./emby-button', 'registerElement'], function (browser, dom) {
+﻿define(['browser', 'dom', 'layoutManager', 'css!./emby-button', 'registerElement'], function (browser, dom, layoutManager) {
     'use strict';
 
     var EmbyButtonPrototype = Object.create(HTMLButtonElement.prototype);
@@ -29,7 +29,7 @@
 
         btn.appendChild(div);
 
-        div.addEventListener("animationend", function () {
+        div.addEventListener(dom.whichAnimationEvent(), function () {
             div.parentNode.removeChild(div);
         }, false);
     }
@@ -60,6 +60,10 @@
         }
 
         this.classList.add('paper-icon-button-light');
+
+        if (layoutManager.tv) {
+            this.classList.add('icon-button-focusscale');
+        }
 
         if (enableAnimation()) {
             dom.addEventListener(this, 'keydown', onKeyDown, {

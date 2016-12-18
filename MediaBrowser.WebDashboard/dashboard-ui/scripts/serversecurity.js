@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'jQuery'], function (datetime, $) {
+    'use strict';
 
     function revoke(page, key) {
 

@@ -6,7 +6,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -31,6 +31,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is owned item; otherwise, <c>false</c>.</value>
         [IgnoreDataMember]
         public override bool IsOwnedItem
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPositionTicksResume
         {
             get
             {

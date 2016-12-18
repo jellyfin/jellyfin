@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'registrationServices', 'emby-checkbox', 'emby-input', 'listViewStyle', 'paper-icon-button-light'], function ($, registrationServices) {
+    'use strict';
 
     return function (page, providerId, options) {
 
@@ -34,6 +35,7 @@
                     page.querySelector('.txtNews').value = (info.NewsCategories || []).join('|');
                     page.querySelector('.txtSports').value = (info.SportsCategories || []).join('|');
                     page.querySelector('.txtMovies').value = (info.MovieCategories || []).join('|');
+                    page.querySelector('.txtMoviePrefix').value = info.MoviePrefix || '';
 
                     page.querySelector('.chkAllTuners').checked = info.EnableAllTuners;
 
@@ -72,6 +74,8 @@
 
                 info.Path = page.querySelector('.txtPath').value;
 
+                info.MoviePrefix = page.querySelector('.txtMoviePrefix').value || null;
+
                 info.MovieCategories = getCategories(page.querySelector('.txtMovies'));
                 info.KidsCategories = getCategories(page.querySelector('.txtKids'));
                 info.NewsCategories = getCategories(page.querySelector('.txtNews'));
@@ -103,7 +107,7 @@
                 }, function () {
                     Dashboard.hideLoadingMsg();
                     Dashboard.alert({
-                        message: Globalize.translate('ErrorAddingListingsToSchedulesDirect')
+                        message: Globalize.translate('ErrorAddingXmlTvFile')
                     });
                 });
 
@@ -137,7 +141,7 @@
 
                 html += '<div class="listItem">';
 
-                var enabledTuners = providerInfo.EnableAllTuners || [];
+                var enabledTuners = providerInfo.EnabledTuners || [];
                 var isChecked = providerInfo.EnableAllTuners || enabledTuners.indexOf(device.Id) != -1;
                 var checkedAttribute = isChecked ? ' checked' : '';
                 html += '<label class="listItemCheckboxContainer"><input type="checkbox" is="emby-checkbox" class="chkTuner" data-id="' + device.Id + '" ' + checkedAttribute + '><span></span></label>';

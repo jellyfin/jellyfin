@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'cardBuilder', 'imageLoader', 'apphost', 'paper-icon-button-light', 'emby-button'], function (datetime, cardBuilder, imageLoader, appHost) {
+    'use strict';
 
     var query = {
 

@@ -1,4 +1,5 @@
-﻿define(['dialogHelper', 'emby-checkbox', 'emby-button', 'paper-icon-button-light', 'css!css/metadataeditor.css'], function (dialogHelper) {
+﻿define(['dialogHelper', 'imageLoader', 'emby-checkbox', 'emby-button', 'paper-icon-button-light', 'css!css/metadataeditor.css'], function (dialogHelper, imageLoader) {
+    'use strict';
 
     var currentItemId;
     var currentItemType;
@@ -71,7 +72,7 @@
 
         var availableImagesList = page.querySelector('.availableImagesList');
         availableImagesList.innerHTML = html;
-        ImageLoader.lazyChildren(availableImagesList);
+        imageLoader.lazyChildren(availableImagesList);
 
         var btnNextPage = page.querySelector('.btnNextPage');
         var btnPreviousPage = page.querySelector('.btnPreviousPage');

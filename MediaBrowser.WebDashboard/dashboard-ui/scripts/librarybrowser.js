@@ -1,4 +1,5 @@
-﻿define(['viewManager', 'appSettings', 'appStorage', 'apphost', 'datetime', 'itemHelper', 'mediaInfo', 'scroller', 'indicators', 'dom', 'browser', 'imageLoader', 'scrollStyles'], function (viewManager, appSettings, appStorage, appHost, datetime, itemHelper, mediaInfo, scroller, indicators, dom, browser) {
+﻿define(['appSettings', 'dom', 'browser', 'scrollStyles'], function (appSettings, dom, browser) {
+    'use strict';
 
     function fadeInRight(elem) {
 
@@ -32,7 +33,7 @@
 
             loadSavedQueryValues: function (key, query) {
 
-                var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
+                var values = appSettings.get(key + '_' + Dashboard.getCurrentUserId());
 
                 if (values) {
 
@@ -56,7 +57,7 @@
                 }
 
                 try {
-                    appStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+                    appSettings.set(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
                 } catch (e) {
 
                 }
@@ -65,7 +66,7 @@
             saveViewSetting: function (key, value) {
 
                 try {
-                    appStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+                    appSettings.set(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
                 } catch (e) {
 
                 }
@@ -73,7 +74,7 @@
 
             getSavedView: function (key) {
 
-                var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+                var val = appSettings.get(key + '_' + Dashboard.getCurrentUserId() + '_view');
 
                 return val;
             },
@@ -96,7 +97,7 @@
                     }
 
                     if (elem.classList) {
-                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('libraryViewNav');
+                        return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX') && !elem.classList.contains('animatedScrollX');
                     }
 
                     return true;
@@ -139,7 +140,7 @@
                 };
 
                 require(['hammer-main'], function (hammertime) {
-                    
+
                     hammertime.on('swipeleft', onSwipeLeft);
                     hammertime.on('swiperight', onSwipeRight);
 
@@ -201,7 +202,9 @@
 
                 if (window.location.href.toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
-                    afterNavigate.call(viewManager.currentView());
+                    require(['viewManager'], function (viewManager) {
+                        afterNavigate.call(viewManager.currentView());
+                    });
                 } else {
 
                     pageClassOn('pageinit', 'page', afterNavigate);
@@ -236,24 +239,6 @@
 
             getHref: function (item, context, topParentId) {
 
-                var href = LibraryBrowser.getHrefInternal(item, context);
-
-                if (context == 'tv') {
-                    if (!topParentId) {
-                        topParentId = LibraryMenu.getTopParentId();
-                    }
-
-                    if (topParentId) {
-                        href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
-                        href += topParentId;
-                    }
-                }
-
-                return href;
-            },
-
-            getHrefInternal: function (item, context) {
-
                 if (!item) {
                     throw new Error('item cannot be null');
                 }
@@ -262,11 +247,13 @@
                     return item.url;
                 }
 
+                var url;
                 // Handle search hints
                 var id = item.Id || item.ItemId;
 
                 if (item.Type == "SeriesTimer") {
-                    return "livetvseriestimer.html?id=" + id;
+                    //return "livetvseriestimer.html?id=" + id;
+                    return "itemdetails.html?seriesTimerId=" + id;
                 }
 
                 if (item.CollectionType == 'livetv') {
@@ -345,16 +332,56 @@
                     return "itemdetails.html?id=" + id;
                 }
                 if (item.Type == "Genre") {
-                    return "itemdetails.html?id=" + id;
+                    var type;
+                    switch (context) {
+                        case 'tvshows':
+                            type = 'Series';
+                            break;
+                        case 'games':
+                            type = 'Game';
+                            break;
+                        default:
+                            type = 'Movie';
+                            break;
+                    }
+
+                    url = "secondaryitems.html?type=" + type + "&genreId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "MusicGenre") {
                     return "itemdetails.html?id=" + id;
                 }
                 if (item.Type == "GameGenre") {
-                    return "itemdetails.html?id=" + id;
+
+                    url = "secondaryitems.html?type=Game&genreId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "Studio") {
-                    return "itemdetails.html?id=" + id;
+
+                    var type;
+                    switch (context) {
+                        case 'tvshows':
+                            type = 'Series';
+                            break;
+                        case 'games':
+                            type = 'Game';
+                            break;
+                        default:
+                            type = 'Movie';
+                            break;
+                    }
+
+                    url = "secondaryitems.html?type=" + type + "&studioId=" + id;
+                    if (topParentId) {
+                        url += "&parentId=" + topParentId;
+                    }
+                    return url;
                 }
                 if (item.Type == "Person") {
                     return "itemdetails.html?id=" + id;
@@ -423,17 +450,17 @@
 
             renderName: function (item, nameElem, linkToElement, context) {
 
-                var name = itemHelper.getDisplayName(item, {
-                    includeParentInfo: false
+                require(['itemHelper'], function (itemHelper) {
+                    var name = itemHelper.getDisplayName(item, {
+                        includeParentInfo: false
+                    });
+
+                    if (linkToElement) {
+                        nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
+                    } else {
+                        nameElem.innerHTML = name;
+                    }
                 });
-
-                LibraryMenu.setTitle(name);
-
-                if (linkToElement) {
-                    nameElem.innerHTML = '<a class="detailPageParentLink" href="' + LibraryBrowser.getHref(item, context) + '">' + name + '</a>';
-                } else {
-                    nameElem.innerHTML = name;
-                }
             },
 
             renderParentName: function (item, parentNameElem, context) {
@@ -467,7 +494,7 @@
 
                 } else if (item.Album) {
                     html.push(item.Album);
-                } else if (item.Type == 'Program' && item.EpisodeTitle) {
+                } else if (item.Type == 'Program' && item.IsSeries) {
                     html.push(item.Name);
                 }
 
@@ -535,7 +562,7 @@
 
                 if (limit && options.updatePageSizeSetting !== false) {
                     try {
-                        appStorage.setItem(options.pageSizeKey || pageSizeKey, limit);
+                        appSettings.set(options.pageSizeKey || pageSizeKey, limit);
                     } catch (e) {
 
                     }
@@ -705,7 +732,11 @@
                 });
             },
 
-            renderDetailImage: function (elem, item, editable, preferThumb) {
+            renderDetailImage: function (elem, item, editable, preferThumb, imageLoader, indicators) {
+
+                if (item.Type === 'SeriesTimer') {
+                    editable = false;
+                }
 
                 var imageTags = item.ImageTags || {};
 
@@ -775,29 +806,21 @@
                     });
                     shape = 'square';
                 }
-                else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicGenre") {
-                    url = "css/images/items/detail/audio.png";
-                    shape = 'square';
+                else if (item.SeriesId && item.SeriesPrimaryImageTag) {
+
+                    url = ApiClient.getScaledImageUrl(item.SeriesId, {
+                        type: "Primary",
+                        maxHeight: imageHeight,
+                        tag: item.SeriesPrimaryImageTag
+                    });
                 }
-                else if (item.MediaType == "Game" || item.Type == "GameGenre") {
-                    url = "css/images/items/detail/game.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "Person") {
-                    url = "css/images/items/detail/person.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "Genre" || item.Type == "Studio") {
-                    url = "css/images/items/detail/video.png";
-                    shape = 'square';
-                }
-                else if (item.Type == "TvChannel") {
-                    url = "css/images/items/detail/tv.png";
-                    shape = 'square';
-                }
-                else {
-                    url = "css/images/items/detail/video.png";
-                    shape = 'square';
+                else if (item.ParentPrimaryImageItemId && item.ParentPrimaryImageTag) {
+
+                    url = ApiClient.getScaledImageUrl(item.ParentPrimaryImageItemId, {
+                        type: "Primary",
+                        maxHeight: imageHeight,
+                        tag: item.ParentPrimaryImageTag
+                    });
                 }
 
                 html += '<div style="position:relative;">';
@@ -848,16 +871,18 @@
                     elem.classList.remove('squareDetailImageContainer');
                 }
 
-                var img = elem.querySelector('img');
-                img.onload = function () {
-                    if (img.src.indexOf('empty.png') == -1) {
-                        img.classList.add('loaded');
-                    }
-                };
-                ImageLoader.lazyImage(img, url);
+                if (url) {
+                    var img = elem.querySelector('img');
+                    img.onload = function () {
+                        if (img.src.indexOf('empty.png') == -1) {
+                            img.classList.add('loaded');
+                        }
+                    };
+                    imageLoader.lazyImage(img, url);
+                }
             },
 
-            renderDetailPageBackdrop: function (page, item) {
+            renderDetailPageBackdrop: function (page, item, imageLoader) {
 
                 var screenWidth = screen.availWidth;
 
@@ -876,7 +901,7 @@
                     });
 
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
+                    imageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
@@ -889,7 +914,7 @@
                     });
 
                     itemBackdropElement.classList.remove('noBackdrop');
-                    ImageLoader.lazyImage(itemBackdropElement, imgUrl, false);
+                    imageLoader.lazyImage(itemBackdropElement, imgUrl, false);
                     hasbackdrop = true;
                 }
                 else {

@@ -1,4 +1,5 @@
-﻿define(['imageLoader', 'layoutManager', 'viewManager', 'libraryBrowser', 'apphost', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (imageLoader, layoutManager, viewManager, libraryBrowser, appHost, embyRouter) {
+﻿define(['layoutManager', 'viewManager', 'libraryBrowser', 'embyRouter', 'paper-icon-button-light', 'material-icons'], function (layoutManager, viewManager, libraryBrowser, embyRouter) {
+    'use strict';
 
     var enableBottomTabs = AppInfo.isNativeApp;
     var enableLibraryNavDrawer = !enableBottomTabs;
@@ -21,7 +22,7 @@
         html += '<button type="button" is="paper-icon-button-light" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft hide"><i class="md-icon">menu</i></button>';
         html += '<button type="button" is="paper-icon-button-light" class="headerButton headerAppsButton barsMenuButton headerButtonLeft"><i class="md-icon">home</i></button>';
 
-        html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
+        html += '<h3 class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</h3>';
 
         html += '<div class="viewMenuSecondary">';
 
@@ -52,10 +53,16 @@
 
         document.querySelector('.skinHeader').appendChild(viewMenuBar);
 
-        imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        lazyLoadViewMenuBarImages();
 
         document.dispatchEvent(new CustomEvent("headercreated", {}));
         bindMenuEvents();
+    }
+
+    function lazyLoadViewMenuBarImages() {
+        require(['imageLoader'], function (imageLoader) {
+            imageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
+        });
     }
 
     function onBackClick() {
@@ -139,13 +146,11 @@
             }
 
             require(['apphost'], function (apphost) {
-
                 if (apphost.supports('voiceinput')) {
-                    header.querySelector('.headerVoiceButton').classList.remove('hide');
+                    header.querySelector('.headerVoiceButton').classList.add('hide');
                 } else {
                     header.querySelector('.headerVoiceButton').classList.add('hide');
                 }
-
             });
 
         } else {
@@ -307,7 +312,7 @@
         html += '<div class="sidebarDivider"></div>';
 
         if (user.localUser && (AppInfo.isNativeApp && browserInfo.android)) {
-            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><i class="md-icon sidebarLinkIcon">settings</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mypreferencesmenu.html"><i class="md-icon sidebarLinkIcon">settings</i><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
         html += '<a class="sidebarLink lnkMediaFolder lnkManageOffline" data-itemid="manageoffline" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html?mode=offline"><i class="md-icon sidebarLinkIcon">file_download</i><span class="sidebarLinkText">' + Globalize.translate('ManageOfflineDownloads') + '</span></a>';
@@ -459,11 +464,13 @@
             showBySelector('.lnkSyncToOtherDevices', false);
         }
 
-        if (user.Policy.EnableSync && appHost.supports('sync')) {
-            showBySelector('.lnkManageOffline', true);
-        } else {
-            showBySelector('.lnkManageOffline', false);
-        }
+        require(['apphost'], function (appHost) {
+            if (user.Policy.EnableSync && appHost.supports('sync')) {
+                showBySelector('.lnkManageOffline', true);
+            } else {
+                showBySelector('.lnkManageOffline', false);
+            }
+        });
 
         var userId = Dashboard.getCurrentUserId();
 
@@ -1048,4 +1055,6 @@
             });
         });
     }
+
+    return LibraryMenu;
 });

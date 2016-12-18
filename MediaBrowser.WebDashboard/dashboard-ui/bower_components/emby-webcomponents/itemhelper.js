@@ -13,7 +13,7 @@ define(['apphost'], function (appHost) {
             item = item.ProgramInfo || item;
         }
 
-        var name = (item.Type === 'Program' && item.IsSeries ? item.EpisodeTitle : item.Name) || '';
+        var name = ((item.Type === 'Program' || item.Type === 'Recording') && item.IsSeries ? item.EpisodeTitle : item.Name) || '';
 
         if (item.Type === "TvChannel") {
 
@@ -30,10 +30,10 @@ define(['apphost'], function (appHost) {
 
             var displayIndexNumber = item.IndexNumber;
 
-            var number = "E" + displayIndexNumber;
+            var number = displayIndexNumber;
 
             if (options.includeParentInfo !== false) {
-                number = "S" + item.ParentIndexNumber + ", " + number;
+                number = "S" + item.ParentIndexNumber + ", E" + number;
             }
 
             if (item.IndexNumberEnd) {
@@ -69,6 +69,9 @@ define(['apphost'], function (appHost) {
     function supportsAddingToPlaylist(item) {
 
         if (item.Type === 'Program') {
+            return false;
+        }
+        if (item.Type === 'TvChannel') {
             return false;
         }
         if (item.Type === 'Timer') {
@@ -169,6 +172,12 @@ define(['apphost'], function (appHost) {
 
         canShare: function (user, item) {
 
+            if (item.Type === 'Program') {
+                return false;
+            }
+            if (item.Type === 'TvChannel') {
+                return false;
+            }
             if (item.Type === 'Timer') {
                 return false;
             }
@@ -181,6 +190,10 @@ define(['apphost'], function (appHost) {
                 }
             }
             return user.Policy.EnablePublicSharing && appHost.supports('sharing');
+        },
+
+        enableDateAddedDisplay: function(item) {
+            return !item.IsFolder && item.MediaType && item.Type !== 'Program' && item.Type !== 'TvChannel' && item.Type !== 'Trailer';
         }
     };
 });

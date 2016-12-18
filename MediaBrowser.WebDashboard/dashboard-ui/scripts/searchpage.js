@@ -1,4 +1,5 @@
-﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'cardBuilder', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter, cardBuilder) {
+﻿define(['libraryBrowser', 'focusManager', 'embyRouter', 'cardBuilder', 'imageLoader', 'emby-input', 'paper-icon-button-light', 'material-icons', 'emby-itemscontainer'], function (libraryBrowser, focusManager, embyRouter, cardBuilder, imageLoader) {
+    'use strict';
 
     function loadSuggestions(page) {
 
@@ -130,7 +131,7 @@
             itemsContainer.innerHTML = html;
             searchResults.classList.remove('hide');
             textSuggestions.classList.add('hide');
-            ImageLoader.lazyChildren(itemsContainer);
+            imageLoader.lazyChildren(itemsContainer);
         }
 
         function requestSearchHintsForOverlay(searchTerm) {

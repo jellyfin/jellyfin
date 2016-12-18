@@ -9,11 +9,11 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Connect;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
@@ -246,7 +246,7 @@ namespace MediaBrowser.Api
     /// <summary>
     /// Class UsersService
     /// </summary>
-    public class UserService : BaseApiService, IHasAuthorization
+    public class UserService : BaseApiService
     {
         /// <summary>
         /// The _user manager
@@ -256,14 +256,16 @@ namespace MediaBrowser.Api
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
+        private readonly IAuthorizationContext _authContext;
 
-        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager)
+        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _sessionMananger = sessionMananger;
             _config = config;
             _networkManager = networkManager;
             _deviceManager = deviceManager;
+            _authContext = authContext;
         }
 
         public object Get(GetPublicUsers request)
@@ -316,7 +318,7 @@ namespace MediaBrowser.Api
 
             if (filterByDevice)
             {
-                var deviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+                var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
 
                 if (!string.IsNullOrWhiteSpace(deviceId))
                 {
@@ -412,7 +414,7 @@ namespace MediaBrowser.Api
 
         public async Task<object> Post(AuthenticateUserByName request)
         {
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var auth = _authContext.GetAuthorizationInfo(Request);
 
             var result = await _sessionMananger.AuthenticateNewSession(new AuthenticationRequest
             {
@@ -442,7 +444,7 @@ namespace MediaBrowser.Api
 
         public async Task PostAsync(UpdateUserPassword request)
         {
-            AssertCanUpdateUser(_userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id);
 
             var user = _userManager.GetUserById(request.Id);
 
@@ -466,7 +468,7 @@ namespace MediaBrowser.Api
 
                 await _userManager.ChangePassword(user, request.NewPassword).ConfigureAwait(false);
 
-                var currentToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+                var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
 
                 await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
             }
@@ -480,7 +482,7 @@ namespace MediaBrowser.Api
         
         public async Task PostAsync(UpdateUserEasyPassword request)
         {
-            AssertCanUpdateUser(_userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id);
             
             var user = _userManager.GetUserById(request.Id);
 
@@ -516,7 +518,7 @@ namespace MediaBrowser.Api
             // https://code.google.com/p/servicestack/source/browse/trunk/Common/ServiceStack.Text/ServiceStack.Text/Controller/PathInfo.cs
             var id = GetPathValue(1);
 
-            AssertCanUpdateUser(_userManager, id);
+            AssertCanUpdateUser(_authContext, _userManager, id);
 
             var dtoUser = request;
 
@@ -566,7 +568,7 @@ namespace MediaBrowser.Api
 
         public void Post(UpdateUserConfiguration request)
         {
-            AssertCanUpdateUser(_userManager, request.Id);
+            AssertCanUpdateUser(_authContext, _userManager, request.Id);
 
             var task = _userManager.UpdateConfiguration(request.Id, request);
 
@@ -606,7 +608,7 @@ namespace MediaBrowser.Api
                     throw new ArgumentException("There must be at least one enabled user in the system.");
                 }
 
-                var currentToken = AuthorizationContext.GetAuthorizationInfo(Request).Token;
+                var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
                 await _sessionMananger.RevokeUserTokens(user.Id.ToString("N"), currentToken).ConfigureAwait(false);
             }
 

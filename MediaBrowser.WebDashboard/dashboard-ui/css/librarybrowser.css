@@ -12,7 +12,8 @@
 }
 
     .background-theme-b .backgroundContainer.withBackdrop {
-        background-color: rgba(6, 6,6, .9);
+        background-color: rgba(6, 6, 6, .94) !important;
+        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .92), rgba(0, 0, 0, .5)) !important;
     }
 
 .ui-body-b {
@@ -33,6 +34,14 @@
     z-index: -1;
 }
 
+.backdropImage {
+    /*-webkit-filter: blur(20px);
+    -moz-filter: blur(20px);
+    -o-filter: blur(20px);
+    -ms-filter: blur(20px);
+    filter: blur(20px);*/
+}
+
 .libraryPage .header {
     padding-bottom: 0;
 }
@@ -41,8 +50,12 @@
     contain: style;
 }
 
-.pageWithAbsoluteTabs .pageTabContent, .libraryPage > .ui-content {
+.libraryPage > .ui-content {
     padding-top: 10px;
+}
+
+.pageWithAbsoluteTabs .pageTabContent {
+    padding-top: 2.6em;
 }
 
 /*.pageWithAbsoluteTabs .pageTabContent {
@@ -85,12 +98,8 @@
 }
 
 .homePageSection {
-    margin-top: 20px;
+    margin-bottom: 3.6em;
 }
-
-    .homePageSection + .homePageSection {
-        margin-top: 30px;
-    }
 
 .sectionHeaderButton {
     vertical-align: middle;
@@ -101,13 +110,6 @@
 
 .viewPanelTabs {
     margin-bottom: 2em;
-}
-
-@media all and (max-width: 800px) {
-
-    .hiddenSectionOnMobile {
-        display: none;
-    }
 }
 
 @media all and (min-width: 800px) {
@@ -136,12 +138,12 @@
 }
 
 .homePageSection h1 {
-    padding-left: 2vw;
+    padding-left: .55em;
 }
 
 .homePageSection .itemsContainer {
-    padding-left: 1vw;
-    padding-right: 1vw;
+    padding-left: .7em;
+    padding-right: .7em;
 }
 
 @media all and (min-width: 1200px) {
@@ -157,8 +159,6 @@
 }
 
 .detailPageContent {
-    margin: 0 auto;
-    padding: 0;
     border-spacing: 0;
     border-collapse: collapse;
 }
@@ -170,7 +170,6 @@
 
 .listPaging {
     text-align: center;
-    margin: .5em 0 .5em;
 }
 
 .viewControls + .listTopPaging {
@@ -199,7 +198,7 @@
 
 .itemTag {
     display: inline-block;
-    background-color: #181818;
+    background-color: #333;
     border-radius: 4px;
     padding: 5px 7px;
     margin: 0 5px 5px 0;
@@ -251,12 +250,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 640px;
+    height: 50vh;
     position: relative;
-}
-
-.smallBackdrop {
-    height: 500px;
 }
 
 .noSecondaryNavPage .itemBackdrop {
@@ -264,9 +259,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .noBackdrop {
-    height: 170px;
     background: #181818;
-    margin-top: 0 !important;
+    height: 170px !important;
 }
 
 .withBackdrop + .mainDrawerPanel .noBackdrop {
@@ -286,40 +280,106 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-color: transparent;
 }
 
-.detailNameContainer {
-    margin-top: -120px;
-    height: 110px;
-}
-
 .desktopMiscInfoContainer {
     position: absolute;
     bottom: 10px;
 }
 
-.lnkSibling {
-    position: absolute;
-    bottom: 0;
-    text-decoration: none;
-    font-weight: normal !important;
-    display: none;
-    background-color: rgba(0,0,0,0.6);
-    color: #ddd !important;
-    background-color: transparent;
-    padding: 0;
+.detailUserDataIcons {
+    margin-left: .5em;
+    white-space: nowrap;
 }
 
-    .lnkSibling:not(.hide) {
-        display: block;
+.detailImageContainer {
+    margin-right: 2em;
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.detailPagePrimaryContent {
+    position: relative;
+    flex-grow: 1;
+}
+
+.detailLogo {
+    width: 300px;
+    height: 70px;
+    position: absolute;
+    top: 10%;
+    right: 20%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+}
+
+@media all and (max-width: 1400px) {
+
+    .detailLogo {
+        right: 5%;
+    }
+}
+
+@media all and (max-width: 1200px) {
+
+    .detailLogo {
+        display: none;
+    }
+}
+
+.itemDetailImage {
+    border: solid 1px transparent;
+    width: 100%;
+}
+
+.thumbDetailImageContainer {
+    width: 400px;
+}
+
+.itemDetailImage.loaded {
+    -moz-box-shadow: 0px 0 20px #000;
+    -webkit-box-shadow: 0px 0 20px #000;
+    box-shadow: 0px 0 20px #000;
+    border: solid 1px #222;
+}
+
+.itemDetailGalleryLink img:hover {
+    -moz-box-shadow: 0 0 20px 3px #52B54B;
+    -webkit-box-shadow: 0 0 20px 3px #52B54B;
+    box-shadow: 0 0 20px 3px #52B54B;
+}
+
+@media all and (max-width: 800px) {
+
+    .detailPageContent {
+        position: relative;
     }
 
-.detailUserDataIcons {
-    display: inline-block;
+    .detailImageContainer {
+        position: absolute;
+        top: -90px;
+        left: 5%;
+        width: auto;
+    }
+
+    .itemDetailImage {
+        height: 120px;
+        width: auto !important;
+    }
+
+    .btnPlaySimple {
+        display: none !important;
+    }
 }
 
-@media all and (min-width: 540px) {
+@media all and (min-width: 800px) {
 
-    .detailUserDataIcons {
-        margin-left: .5em;
+    .itemBackdrop {
+        display: none;
+    }
+
+    .detailPagePrimaryContainer {
+        display: flex;
+        margin-bottom: 3.6em;
     }
 }
 
@@ -330,64 +390,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.lnkPreviousItem {
-    left: 10px;
-}
-
-.lnkNextItem {
-    right: 10px;
-}
-
-.detailImageContainer {
-    float: left;
-    margin-top: -140px;
-}
-
-.itemDetailImage {
-    border: solid 1px transparent;
-}
-
-    .itemDetailImage.loaded {
-        -moz-box-shadow: 0px 0 20px #000;
-        -webkit-box-shadow: 0px 0 20px #000;
-        box-shadow: 0px 0 20px #000;
-        border: solid 1px #222;
-    }
-
-.detailImageContainer img {
-    width: 280px;
-    /* This is just to make sure it always takes up some space */
-    min-height: 140px;
-}
-
-.portraitDetailImageContainer img {
-    width: 220px;
-}
-
-.squareDetailImageContainer {
-    margin-top: -150px;
-}
-
-.thumbDetailImageContainer {
-    margin-top: -130px;
-}
-
-.itemDetailGalleryLink img:hover {
-    -moz-box-shadow: 0 0 20px 3px #52B54B;
-    -webkit-box-shadow: 0 0 20px 3px #52B54B;
-    box-shadow: 0 0 20px 3px #52B54B;
-}
-
-.primaryDetailsContainer {
-    float: left;
-    padding: .75em 0 0 1.5em;
-    width: 66%;
-}
-
-.portraitDetailImageContainer + .primaryDetailsContainer {
-    width: 74%;
-}
-
 .parentName {
     display: block;
     margin-bottom: .5em;
@@ -396,35 +398,15 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .emby-button.detailFloatingButton {
     width: 56px !important;
     height: 56px !important;
-    top: -28px;
+    bottom: -28px;
     position: absolute;
-    right: 25%;
+    right: 5%;
     background-color: #52B54B !important;
+    z-index: 1;
 }
 
 .emby-button.btnFloatingRecord {
     background-color: #cc3333 !important;
-}
-
-@media all and (max-width: 1000px) {
-
-    .primaryDetailsContainer {
-        width: 64%;
-    }
-
-    .portraitDetailImageContainer + .primaryDetailsContainer {
-        width: 72%;
-    }
-
-    .detailImageContainer img {
-        width: 240px;
-        /* This is just to make sure it always takes up some space */
-        min-height: 120px;
-    }
-
-    .portraitDetailImageContainer img {
-        width: 180px;
-    }
 }
 
 @media all and (max-width: 800px) {
@@ -433,47 +415,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-bottom: 1em;
     }
 
-    .primaryDetailsContainer {
-        padding-top: 2.5em;
-        padding-left: 1em;
-    }
-
-    .detailNameContainer {
-        margin-top: auto;
-        height: auto;
-    }
-
     .itemBackdropContent {
         min-height: 0;
-    }
-}
-
-@media all and (max-width: 600px) {
-
-    .detailFloatingButton {
-        right: 15px !important;
-    }
-}
-
-@media all and (max-width: 600px) {
-
-    .primaryDetailsContainer {
-        width: 68%;
-    }
-
-    .portraitDetailImageContainer + .primaryDetailsContainer {
-        width: 68%;
-    }
-}
-
-@media all and (max-width: 400px) {
-
-    .primaryDetailsContainer {
-        width: 60%;
-    }
-
-    .portraitDetailImageContainer + .primaryDetailsContainer {
-        width: 60%;
     }
 }
 
@@ -541,6 +484,28 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1em;
 }
 
+.mainDetailButtons {
+    padding: 1em 0;
+    display: flex;
+    align-items: center;
+}
+
+    .mainDetailButtons button, .recordingFields button {
+        margin-left: 0;
+        margin-right: .5em;
+    }
+
+    .mainDetailButtons.hide + .recordingFields {
+        margin-top: 1.5em !important;
+    }
+
+@media all and (min-width: 800px) {
+
+    .mainDetailButtons, .recordingFields button {
+        font-size: 110%;
+    }
+}
+
 .detailImageProgressContainer {
     position: absolute;
     bottom: 4px;
@@ -553,148 +518,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: inline-block;
 }
 
-@media all and (min-width: 600px) {
-    .inlineDetailSection:not(.hide) {
-        display: inline-block;
-        margin-bottom: 2em;
-    }
-}
-
-@media all and (max-height: 900px), (max-width: 800px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 500px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 300px;
-    }
-}
-
-@media all and (max-height: 800px), (max-width: 700px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 450px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 300px;
-    }
-}
-
-@media all and (max-height: 700px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 350px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 300px;
-    }
-}
-
-@media all and (max-width: 540px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 290px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 200px;
-    }
-}
-
-@media all and (max-height: 540px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 250px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 200px;
-    }
-}
-
-@media all and (max-height: 460px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 200px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 120px;
-    }
-}
-
-@media all and (max-height: 300px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 150px;
-    }
-
-    .smallBackdrop:not(.noBackdrop) {
-        height: 120px;
-    }
-}
-
-@media all and (max-height: 250px) {
-
-    .itemBackdrop:not(.noBackdrop) {
-        height: 120px;
-    }
-}
-
-@media all and (max-width: 1000px) {
-
-    .detailImageContainer {
-        padding-left: 15px;
-    }
-}
-
 @media all and (max-width: 800px) {
 
     .editorMenuLink {
         display: none;
-    }
-
-    .noBackdrop {
-        height: 80px;
-    }
-
-    .detailImageContainer {
-        margin-top: -55px;
-    }
-
-    .squareDetailImageContainer {
-        margin-top: -40px;
-    }
-
-    .thumbDetailImageContainer {
-        margin-top: -80px;
-    }
-
-    .portraitDetailImageContainer + .primaryDetailsContainer {
-        width: 70%;
-    }
-
-    .detailImageContainer img {
-        width: 140px;
-        /* This is just to make sure it always takes up some space */
-        min-height: 140px;
-    }
-
-    .primaryDetailPageContent p {
-        margin: 1em 0 !important;
-    }
-
-    .backdropDetailPageContent {
-        text-align: center;
-    }
-
-    .thumbDetailImageContainer img {
-        width: 180px;
-        /* This is just to make sure it always takes up some space */
-        min-height: 60px;
     }
 }
 
@@ -706,26 +533,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     align-items: center;
 }
 
-@media all and (max-width: 600px) {
-
-    .portraitDetailImageContainer + .primaryDetailsContainer {
-        width: 65%;
-    }
-}
-
 @media all and (max-width: 500px) {
-
-    .detailImageContainer img {
-        width: 80px;
-        /* This is just to make sure it always takes up some space */
-        min-height: 60px;
-    }
-
-    .thumbDetailImageContainer img {
-        width: 180px;
-        /* This is just to make sure it always takes up some space */
-        min-height: 60px;
-    }
 
     .mobileDetails .itemMiscInfo {
         text-align: center;
@@ -737,14 +545,24 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
+.detailPageContent {
+    padding: 3em 3% 0;
+}
+
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 950px;
+        padding: 3em 3% 0;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .detailPageContent {
+        padding: 3em 5% 0;
     }
 }
 
 .detailPageParentLink {
-    text-decoration: none;
+    font-weight: inherit !important;
 }
 
 .mediaInfoContent {
@@ -837,14 +655,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 20px;
 }
 
-@media all and (max-height: 480px) {
+@media all and (max-height: 500px) {
 
     .alphabetPicker {
         display: none !important;
     }
 }
 
-@media all and (min-height: 480px) {
+@media all and (min-height: 500px) {
 
     .itemsContainerWithAlphaPicker {
         margin-right: 20px;
@@ -932,10 +750,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-width: 1000px) {
+@media all and (max-width: 800px) {
 
-    .smallDetailImageContainer {
-        padding-left: 1em;
+    .detailsHiddenOnMobile {
+        display: none;
     }
 }
 
@@ -952,26 +770,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin: 0 4px 0 0;
     }
 
-
-@media all and (min-width: 1000px) {
-
-    .itemDetailPage .portraitCard-scalable {
-        width: 20% !important;
-    }
-
-    .itemDetailPage .squareCard-scalable {
-        width: 25% !important;
-    }
-
-    .itemDetailPage .backdropCard-scalable, .itemDetailPage .smallBackdropCard-scalable {
-        width: 33.3333333333333333% !important;
-    }
-
-    .itemDetailPage .personCard.portraitCard {
-        width: 16.666666666666666666666666666667% !important;
-    }
-}
-
 .btnSyncComplete {
     background: #673AB7 !important;
 }
@@ -979,3 +777,32 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .btnSyncComplete i {
         border-radius: 1000px;
     }
+
+.bulletSeparator {
+    margin: 0 .35em;
+}
+
+.mediaInfoIcons {
+    display: flex;
+    align-items: center;
+    margin: 1.5em 0 1em;
+    flex-wrap: wrap;
+}
+
+.mediaInfoText {
+    background: rgba(31,31,31,.7);
+    padding: .25em .5em;
+    border-radius: .25em;
+    color: #ddd;
+    margin-right: .5em;
+    margin-bottom: .5em;
+    font-size: 94%;
+    background: rgba(170,170,190, .2);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.mediaInfoText-upper {
+    text-transform: uppercase;
+}

@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'apphost', 'emby-checkbox', 'emby-select', 'emby-input'], function (appSettings, appHost) {
+    'use strict';
 
     function loadForm(page, user) {
 

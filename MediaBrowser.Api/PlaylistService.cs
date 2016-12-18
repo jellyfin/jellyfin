@@ -5,9 +5,9 @@ using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Playlists;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
@@ -125,13 +125,15 @@ namespace MediaBrowser.Api
         private readonly IDtoService _dtoService;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IAuthorizationContext _authContext;
 
-        public PlaylistService(IDtoService dtoService, IPlaylistManager playlistManager, IUserManager userManager, ILibraryManager libraryManager)
+        public PlaylistService(IDtoService dtoService, IPlaylistManager playlistManager, IUserManager userManager, ILibraryManager libraryManager, IAuthorizationContext authContext)
         {
             _dtoService = dtoService;
             _playlistManager = playlistManager;
             _userManager = userManager;
             _libraryManager = libraryManager;
+            _authContext = authContext;
         }
 
         public void Post(MoveItem request)
@@ -188,7 +190,7 @@ namespace MediaBrowser.Api
                 items = items.Take(request.Limit.Value).ToArray();
             }
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dtos = (await _dtoService.GetBaseItemDtos(items.Select(i => i.Item2), dtoOptions, user).ConfigureAwait(false))
                    .ToArray();

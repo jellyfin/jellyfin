@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -38,7 +40,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.Person = Name;
+            query.PersonIds = new[] { Id.ToString("N") };
 
             return LibraryManager.GetItemList(query);
         }
@@ -93,7 +95,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
             {
-                Person = Name
+                PersonIds = new[] { Id.ToString("N") }
             });
 
             return inputItems.Where(i => itemsWithPerson.Contains(i.Id));

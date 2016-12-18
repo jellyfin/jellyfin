@@ -1,24 +1,24 @@
 ﻿<h1>Schedules Direct</h1>
 <p class="createAccountHelp"></p>
-<div style="font-size:16px;">
-    <div style="display:inline-block;background-color:rgba(82,181,75,.8);color:#fff;padding:2px 10px;font-size:20px;border-radius:1000px;vertical-align:middle;">
+<div style="display: flex; align-items: center;margin:1.5em 0 1em;">
+    <h2 style="background-color:rgba(82,181,75,.8);color:#fff;padding:3px 10px;margin: 0;border-radius:1000px;vertical-align:middle;">
         1
-    </div>
-    <div style="display:inline-block;vertical-align:middle;margin-left:5px;">
+    </h2>
+    <h3 style="margin:0 0 0 .5em;">
         ${GuideProviderLogin}
-    </div>
+    </h3>
 </div>
 
 <form class="formLogin">
     <!-- Terrible, but this hidden field prevents the yellow background in chrome -->
     <div style="height:0; overflow: hidden;"><input type="text" name="fakeusernameremembered" tabindex="-1" /><input type="password" name="fakepasswordremembered" tabindex="-1" /></div>
     <div>
-        <br/>
+        <br />
         <div class="inputContainer">
-            <input is="emby-input" class="txtUser" label="${LabelUsername}" required="required" autocomplete="off"/>
+            <input is="emby-input" class="txtUser" label="${LabelUsername}" required="required" autocomplete="off" />
         </div>
         <div class="inputContainer">
-            <input is="emby-input" class="txtPass" label="${LabelPassword}" required="required" autocomplete="off" type="password"/>
+            <input is="emby-input" class="txtPass" label="${LabelPassword}" required="required" autocomplete="off" type="password" />
         </div>
         <div>
             <button is="emby-button" type="submit" class="raised button-submit block"><span>${ButtonSave}</span></button>
@@ -29,13 +29,13 @@
 <br />
 <br />
 <div class="listingsSection hide">
-    <div style="font-size:16px;">
-        <div style="display:inline-block;background-color:rgba(82,181,75,.8);color:#fff;padding:2px 10px;font-size:20px;border-radius:1000px;vertical-align:middle;">
+    <div style="display: flex; align-items: center;margin:1.5em 0 1em;">
+        <h2 style="background-color:rgba(82,181,75,.8);color:#fff;padding:3px 10px;margin: 0;border-radius:1000px;vertical-align:middle;">
             2
-        </div>
-        <div style="display:inline-block;vertical-align:middle;margin-left:5px;">
+        </h2>
+        <h3 style="margin:0 0 0 .5em;">
             ${GuideProviderSelectListings}
-        </div>
+        </h3>
     </div>
     <form class="formListings">
         <div>
@@ -44,7 +44,7 @@
                 <select is="emby-select" id="selectCountry" data-mini="true" required="required" label="${LabelCountry}"></select>
             </div>
             <div class="inputContainer">
-                <input is="emby-input" class="txtZipCode" label="${LabelZipCode}" required="required"/>
+                <input is="emby-input" class="txtZipCode" label="${LabelZipCode}" required="required" />
             </div>
             <div class="selectContainer">
                 <select is="emby-select" id="selectListing" data-mini="true" required="required" label="${LabelLineup}"></select>

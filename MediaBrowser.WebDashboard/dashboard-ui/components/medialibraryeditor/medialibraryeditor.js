@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'dom', 'components/libraryoptionseditor/libraryoptionseditor', 'emby-button', 'listViewStyle', 'paper-icon-button-light', 'formDialogStyle'], function (dialogHelper, dom, libraryoptionseditor) {
+    'use strict';
 
     var currentDeferred;
     var hasChanges;

@@ -1,4 +1,5 @@
 ﻿define(['serverNotifications', 'events', 'scripts/taskbutton', 'datetime', 'paper-icon-button-light'], function (serverNotifications, events, taskButton, datetime) {
+    'use strict';
 
     var query = {
 
@@ -375,6 +376,7 @@
         clearButton.addEventListener('click', function () {
 
             ApiClient.clearOrganizationLog().then(function () {
+                query.StartIndex = 0;
                 reloadItems(view, true);
             }, Dashboard.processErrorResponse);
         });

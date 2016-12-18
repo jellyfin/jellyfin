@@ -3,12 +3,15 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {
@@ -100,15 +103,17 @@ namespace MediaBrowser.Api.Images
         private readonly IServerApplicationPaths _appPaths;
 
         private readonly IFileSystem _fileSystem;
+        private readonly IHttpResultFactory _resultFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageByNameService" /> class.
         /// </summary>
         /// <param name="appPaths">The app paths.</param>
-        public ImageByNameService(IServerApplicationPaths appPaths, IFileSystem fileSystem)
+        public ImageByNameService(IServerApplicationPaths appPaths, IFileSystem fileSystem, IHttpResultFactory resultFactory)
         {
             _appPaths = appPaths;
             _fileSystem = fileSystem;
+            _resultFactory = resultFactory;
         }
 
         public object Get(GetMediaInfoImages request)
@@ -148,7 +153,7 @@ namespace MediaBrowser.Api.Images
                     .OrderBy(i => i.Name)
                     .ToList();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 return new List<ImageByNameInfo>();
             }
@@ -175,7 +180,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetGeneralImage request)
+        public Task<object> Get(GetGeneralImage request)
         {
             var filename = string.Equals(request.Type, "primary", StringComparison.OrdinalIgnoreCase)
                                ? "folder"
@@ -185,7 +190,7 @@ namespace MediaBrowser.Api.Images
 
 			var path = paths.FirstOrDefault(_fileSystem.FileExists) ?? paths.FirstOrDefault();
 
-            return ToStaticFileResult(path);
+            return _resultFactory.GetStaticFileResult(Request, path);
         }
 
         /// <summary>
@@ -205,7 +210,7 @@ namespace MediaBrowser.Api.Images
 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(path);
+                    return _resultFactory.GetStaticFileResult(Request, path);
                 }
             }
 
@@ -222,7 +227,7 @@ namespace MediaBrowser.Api.Images
 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(path);
+                    return _resultFactory.GetStaticFileResult(Request, path);
                 }
             }
 
@@ -234,7 +239,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetMediaInfoImage request)
+        public Task<object> Get(GetMediaInfoImage request)
         {
             var themeFolder = Path.Combine(_appPaths.MediaInfoImagesPath, request.Theme);
 
@@ -245,7 +250,7 @@ namespace MediaBrowser.Api.Images
 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(path);
+                    return _resultFactory.GetStaticFileResult(Request, path);
                 }
             }
 
@@ -261,7 +266,7 @@ namespace MediaBrowser.Api.Images
 
                 if (!string.IsNullOrEmpty(path))
                 {
-                    return ToStaticFileResult(path);
+                    return _resultFactory.GetStaticFileResult(Request, path);
                 }
             }
 

@@ -1,9 +1,11 @@
-﻿using System.Runtime.Serialization;
+﻿using MediaBrowser.Model.Serialization;
 using MediaBrowser.Controller.Entities.Audio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -35,6 +37,15 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 return Path;
+            }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsAncestors
+        {
+            get
+            {
+                return false;
             }
         }
 

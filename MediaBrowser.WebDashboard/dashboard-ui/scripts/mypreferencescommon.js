@@ -1,4 +1,5 @@
 ﻿define(['apphost', 'listViewStyle'], function (appHost) {
+    'use strict';
 
     return function (view, params) {
 

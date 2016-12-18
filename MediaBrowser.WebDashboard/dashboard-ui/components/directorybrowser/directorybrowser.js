@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'dom', 'listViewStyle', 'emby-input', 'emby-button', 'paper-icon-button-light', 'css!./directorybrowser', 'formDialogStyle'], function (dialogHelper, dom) {
+    'use strict';
 
     var systemInfo;
     function getSystemInfo() {

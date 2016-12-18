@@ -30,318 +30,173 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Mono.Nat.Pmp
 {
-	internal sealed class PmpNatDevice : AbstractNatDevice, IEquatable<PmpNatDevice> 
-	{
-        private AsyncResult externalIpResult;
-        private bool pendingOp;
-		private IPAddress localAddress;
-		private IPAddress publicAddress;
-		
-		internal PmpNatDevice (IPAddress localAddress, IPAddress publicAddress)
-		{
-			this.localAddress = localAddress;
-			this.publicAddress = publicAddress;
-		}
-		
-		public override IPAddress LocalAddress
-		{
-			get { return localAddress; }
-		}
+    internal sealed class PmpNatDevice : AbstractNatDevice, IEquatable<PmpNatDevice>
+    {
+        private IPAddress localAddress;
+        private IPAddress publicAddress;
 
-		public override IPAddress GetExternalIP ()
-		{
-			return publicAddress;
-		}
-
-        public override IAsyncResult BeginCreatePortMap(Mapping mapping, AsyncCallback callback, object asyncState)
-		{
-			PortMapAsyncResult pmar = new PortMapAsyncResult (mapping.Protocol, mapping.PublicPort, PmpConstants.DefaultLeaseTime, callback, asyncState);
-			ThreadPool.QueueUserWorkItem (delegate 
-            {
-				try 
-                {
-					CreatePortMap(pmar.Mapping, true);
-					pmar.Complete();
-				} 
-                catch (Exception e) 
-                {
-					pmar.Complete(e);
-				}
-			});
-			return pmar;
-		}
-
-		public override IAsyncResult BeginDeletePortMap (Mapping mapping, AsyncCallback callback, object asyncState)
-		{
-			PortMapAsyncResult pmar =  new PortMapAsyncResult (mapping, callback, asyncState);
-			ThreadPool.QueueUserWorkItem (delegate {
-				try {
-					CreatePortMap(pmar.Mapping, false);
-					pmar.Complete();
-				} catch (Exception e) {
-					pmar.Complete(e);
-				}
-			});
-			return pmar;
-		}
-
-		public override void EndCreatePortMap (IAsyncResult result)
-		{
-			PortMapAsyncResult pmar = result as PortMapAsyncResult;
-			pmar.AsyncWaitHandle.WaitOne ();
-		}
-
-		public override void EndDeletePortMap (IAsyncResult result)
-		{
-			PortMapAsyncResult pmar = result as PortMapAsyncResult;
-			pmar.AsyncWaitHandle.WaitOne ();
-		}
-		
-		public override IAsyncResult BeginGetAllMappings (AsyncCallback callback, object asyncState)
-		{
-			//NAT-PMP does not specify a way to get all port mappings
-			throw new NotSupportedException ();
-		}
-
-		public override IAsyncResult BeginGetExternalIP (AsyncCallback callback, object asyncState)
-		{
-            StartOp(ref externalIpResult, callback, asyncState);
-            AsyncResult result = externalIpResult;
-            result.Complete();
-            return result;
-		}
-
-		public override IAsyncResult BeginGetSpecificMapping (Protocol protocol, int port, AsyncCallback callback, object asyncState)
-		{
-			//NAT-PMP does not specify a way to get a specific port map
-			throw new NotSupportedException ();
-		}
-		
-		public override Mapping[] EndGetAllMappings (IAsyncResult result)
-		{
-			//NAT-PMP does not specify a way to get all port mappings
-			throw new NotSupportedException ();
-		}
-
-		public override IPAddress EndGetExternalIP (IAsyncResult result)
-		{
-            EndOp(result, ref externalIpResult);
-			return publicAddress;
-		}
-
-        private void StartOp(ref AsyncResult result, AsyncCallback callback, object asyncState)
+        internal PmpNatDevice(IPAddress localAddress, IPAddress publicAddress)
         {
-            if (pendingOp == true)
-                throw new InvalidOperationException("Can only have one simultaenous async operation");
-
-            pendingOp = true;
-            result = new AsyncResult(callback, asyncState);
+            this.localAddress = localAddress;
+            this.publicAddress = publicAddress;
         }
 
-        private void EndOp(IAsyncResult supplied, ref AsyncResult actual)
+        public override IPAddress LocalAddress
         {
-            if (supplied == null)
-                throw new ArgumentNullException("result");
-
-            if (supplied != actual)
-                throw new ArgumentException("Supplied IAsyncResult does not match the stored result");
-
-            if (!supplied.IsCompleted)
-                supplied.AsyncWaitHandle.WaitOne();
-
-            if (actual.StoredException != null)
-                throw actual.StoredException;
-
-            pendingOp = false;
-            actual = null;
+            get { return localAddress; }
         }
 
-		public override Mapping EndGetSpecificMapping (IAsyncResult result)
-		{
-			//NAT-PMP does not specify a way to get a specific port map
-			throw new NotSupportedException ();
-		}
-		
-		public override bool Equals(object obj)
-		{
-			PmpNatDevice device = obj as PmpNatDevice;
-			return (device == null) ? false : this.Equals(device);
-		}
-		
-		public override int GetHashCode ()
-		{
-			return this.publicAddress.GetHashCode();
-		}
+        public override Task CreatePortMap(Mapping mapping)
+        {
+            return InternalCreatePortMapAsync(mapping, true);
+        }
 
-		public bool Equals (PmpNatDevice other)
-		{
-			return (other == null) ? false : this.publicAddress.Equals(other.publicAddress);
-		}
+        public override bool Equals(object obj)
+        {
+            PmpNatDevice device = obj as PmpNatDevice;
+            return (device == null) ? false : this.Equals(device);
+        }
 
-		private Mapping CreatePortMap (Mapping mapping, bool create)
-		{
-			List<byte> package = new List<byte> ();
-			
-			package.Add (PmpConstants.Version);
-			package.Add (mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp);
-			package.Add ((byte)0); //reserved
-			package.Add ((byte)0); //reserved
-			package.AddRange (BitConverter.GetBytes (IPAddress.HostToNetworkOrder((short)mapping.PrivatePort)));
-			package.AddRange (BitConverter.GetBytes (create ? IPAddress.HostToNetworkOrder((short)mapping.PublicPort) : (short)0));
-			package.AddRange (BitConverter.GetBytes (IPAddress.HostToNetworkOrder(mapping.Lifetime)));
+        public override int GetHashCode()
+        {
+            return this.publicAddress.GetHashCode();
+        }
 
-			CreatePortMapAsyncState state = new CreatePortMapAsyncState ();
-			state.Buffer = package.ToArray ();
-			state.Mapping = mapping;
+        public bool Equals(PmpNatDevice other)
+        {
+            return (other == null) ? false : this.publicAddress.Equals(other.publicAddress);
+        }
 
-			ThreadPool.QueueUserWorkItem (new WaitCallback (CreatePortMapAsync), state);
-			WaitHandle.WaitAll (new WaitHandle[] {state.ResetEvent});
-			
-			if (!state.Success) {
-				string type = create ? "create" : "delete";
-				throw new MappingException (String.Format ("Failed to {0} portmap (protocol={1}, private port={2}", type, mapping.Protocol, mapping.PrivatePort));
-			}
-			
-			return state.Mapping;
-		}
-		
-		private void CreatePortMapAsync (object obj)
-		{
-			CreatePortMapAsyncState state = obj as CreatePortMapAsyncState;
-			
-			UdpClient udpClient = new UdpClient ();
-			CreatePortMapListenState listenState = new CreatePortMapListenState (state, udpClient);
+        private async Task<Mapping> InternalCreatePortMapAsync(Mapping mapping, bool create)
+        {
+            var package = new List<byte>();
 
-			int attempt = 0;
-			int delay = PmpConstants.RetryDelay;
-			
-			ThreadPool.QueueUserWorkItem (new WaitCallback (CreatePortMapListen), listenState);
+            package.Add(PmpConstants.Version);
+            package.Add(mapping.Protocol == Protocol.Tcp ? PmpConstants.OperationCodeTcp : PmpConstants.OperationCodeUdp);
+            package.Add(0); //reserved
+            package.Add(0); //reserved
+            package.AddRange(BitConverter.GetBytes(IPAddress.HostToNetworkOrder((short)mapping.PrivatePort)));
+            package.AddRange(
+                BitConverter.GetBytes(create ? IPAddress.HostToNetworkOrder((short)mapping.PublicPort) : (short)0));
+            package.AddRange(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(mapping.Lifetime)));
 
-			while (attempt < PmpConstants.RetryAttempts && !listenState.Success) {
-				udpClient.Send (state.Buffer, state.Buffer.Length, new IPEndPoint (localAddress, PmpConstants.ServerPort));
-                listenState.UdpClientReady.Set();
-
-				attempt++;
-				delay *= 2;
-				Thread.Sleep (delay);
-			}
-			
-			state.Success = listenState.Success;
-			
-			udpClient.Close ();
-			state.ResetEvent.Set ();
-		}
-		
-		private void CreatePortMapListen (object obj)
-		{
-			CreatePortMapListenState state = obj as CreatePortMapListenState;
-
-            UdpClient udpClient = state.UdpClient;
-            state.UdpClientReady.WaitOne(); // Evidently UdpClient has some lazy-init Send/Receive race?
-			IPEndPoint endPoint = new IPEndPoint (localAddress, PmpConstants.ServerPort);
-			
-			while (!state.Success) 
+            try
             {
-                byte[] data;
-                try
+                byte[] buffer = package.ToArray();
+                int attempt = 0;
+                int delay = PmpConstants.RetryDelay;
+
+                using (var udpClient = new UdpClient())
                 {
-                    data = udpClient.Receive(ref endPoint);
+                    var cancellationTokenSource = new CancellationTokenSource();
+
+                    while (attempt < PmpConstants.RetryAttempts)
+                    {
+                        await udpClient.SendAsync(buffer, buffer.Length,
+                                new IPEndPoint(LocalAddress, PmpConstants.ServerPort));
+
+                        if (attempt == 0)
+                        {
+                            Task.Run(() => CreatePortMapListen(udpClient, mapping, cancellationTokenSource.Token));
+                        }
+
+                        attempt++;
+                        delay *= 2;
+                        await Task.Delay(delay).ConfigureAwait(false);
+                    }
+
+                    cancellationTokenSource.Cancel();
                 }
-                catch (SocketException)
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
+            catch (Exception e)
+            {
+                string type = create ? "create" : "delete";
+                string message = String.Format("Failed to {0} portmap (protocol={1}, private port={2}) {3}",
+                                               type,
+                                               mapping.Protocol,
+                                               mapping.PrivatePort,
+                                               e.Message);
+                NatUtility.Log(message);
+                var pmpException = e as MappingException;
+                throw new MappingException(message, pmpException);
+            }
+
+            return mapping;
+        }
+
+        private async void CreatePortMapListen(UdpClient udpClient, Mapping mapping, CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var result = await udpClient.ReceiveAsync().ConfigureAwait(false);
+                var endPoint = result.RemoteEndPoint;
+                byte[] data = data = result.Buffer;
+
+                if (data.Length < 16)
+                    continue;
+
+                if (data[0] != PmpConstants.Version)
+                    continue;
+
+                var opCode = (byte)(data[1] & 127);
+
+                var protocol = Protocol.Tcp;
+                if (opCode == PmpConstants.OperationCodeUdp)
+                    protocol = Protocol.Udp;
+
+                short resultCode = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 2));
+                int epoch = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 4));
+
+                short privatePort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 8));
+                short publicPort = IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 10));
+
+                var lifetime = (uint)IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 12));
+
+                if (privatePort < 0 || publicPort < 0 || resultCode != PmpConstants.ResultCodeSuccess)
                 {
-                    state.Success = false;
+                    var errors = new[]
+                                     {
+                                         "Success",
+                                         "Unsupported Version",
+                                         "Not Authorized/Refused (e.g. box supports mapping, but user has turned feature off)"
+                                         ,
+                                         "Network Failure (e.g. NAT box itself has not obtained a DHCP lease)",
+                                         "Out of resources (NAT box cannot create any more mappings at this time)",
+                                         "Unsupported opcode"
+                                     };
+
+                    var errorMsg = errors[resultCode];
+                    NatUtility.Log("Error in CreatePortMapListen: " + errorMsg);
                     return;
                 }
 
-                catch (ObjectDisposedException)
-                {
-                    state.Success = false;
-                    return;
-                }
-			
-				if (data.Length < 16)
-					continue;
+                if (lifetime == 0) return; //mapping was deleted
 
-				if (data[0] != PmpConstants.Version)
-					continue;
-			
-				byte opCode = (byte)(data[1] & (byte)127);
-				
-				Protocol protocol = Protocol.Tcp;
-				if (opCode == PmpConstants.OperationCodeUdp)
-					protocol = Protocol.Udp;
-
-				short resultCode = IPAddress.NetworkToHostOrder (BitConverter.ToInt16 (data, 2));
-				uint epoch = (uint)IPAddress.NetworkToHostOrder (BitConverter.ToInt32 (data, 4));
-
-				int privatePort = IPAddress.NetworkToHostOrder (BitConverter.ToInt16 (data, 8));
-				int publicPort = IPAddress.NetworkToHostOrder (BitConverter.ToInt16 (data, 10));
-
-				uint lifetime = (uint)IPAddress.NetworkToHostOrder (BitConverter.ToInt32 (data, 12));
-
-				if (publicPort < 0 || privatePort < 0 || resultCode != PmpConstants.ResultCodeSuccess)
-                {
-					state.Success = false;
-					return;
-				}
-				
-				if (lifetime == 0) 
-                {
-					//mapping was deleted
-					state.Success = true;
-					state.Mapping = null;
-					return;
-				} 
-                else 
-                {
-					//mapping was created
-					//TODO: verify that the private port+protocol are a match
-					Mapping mapping = state.Mapping;
-					mapping.PublicPort = publicPort;
-                    mapping.Protocol = protocol;
-					mapping.Expiration = DateTime.Now.AddSeconds (lifetime);
-
-					state.Success = true;
-				}
-			}
-		}
-
+                //mapping was created
+                //TODO: verify that the private port+protocol are a match
+                mapping.PublicPort = publicPort;
+                mapping.Protocol = protocol;
+                mapping.Expiration = DateTime.Now.AddSeconds(lifetime);
+                return;
+            }
+        }
 
         /// <summary>
         /// Overridden.
         /// </summary>
         /// <returns></returns>
-        public override string ToString( )
+        public override string ToString()
         {
-            return String.Format( "PmpNatDevice - Local Address: {0}, Public IP: {1}, Last Seen: {2}",
-                this.localAddress, this.publicAddress, this.LastSeen );
+            return String.Format("PmpNatDevice - Local Address: {0}, Public IP: {1}, Last Seen: {2}",
+                this.localAddress, this.publicAddress, this.LastSeen);
         }
-
-
-		private class CreatePortMapAsyncState
-		{
-			internal byte[] Buffer;
-			internal ManualResetEvent ResetEvent = new ManualResetEvent (false);
-			internal Mapping Mapping;
-			
-			internal bool Success;
-		}
-		
-		private class CreatePortMapListenState
-		{
-			internal volatile bool Success;
-			internal Mapping Mapping;
-            internal UdpClient UdpClient;
-            internal ManualResetEvent UdpClientReady;
-			
-			internal CreatePortMapListenState (CreatePortMapAsyncState state, UdpClient client)
-			{
-                Mapping = state.Mapping;
-                UdpClient = client; UdpClientReady = new ManualResetEvent(false);
-			}
-		}
-	}
+    }
 }

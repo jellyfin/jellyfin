@@ -1,4 +1,5 @@
-﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost) {
+﻿define(['components/categorysyncbuttons', 'cardBuilder', 'apphost', 'imageLoader', 'emby-itemscontainer'], function (categorysyncbuttons, cardBuilder, appHost, imageLoader) {
+    'use strict';
 
     function getNextUpPromise() {
 
@@ -45,7 +46,7 @@
 
             var elem = page.querySelector('#nextUpItems');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
         });
     }

@@ -45,6 +45,8 @@
         /// </summary>
         Chapters,
 
+        ChildCount,
+
         /// <summary>
         /// The critic rating summary
         /// </summary>
@@ -168,6 +170,8 @@
         /// The aspect ratio of the primary image
         /// </summary>
         PrimaryImageAspectRatio,
+
+        RecursiveItemCount,
 
         /// <summary>
         /// The revenue

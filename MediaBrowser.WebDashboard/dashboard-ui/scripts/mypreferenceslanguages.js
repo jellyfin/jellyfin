@@ -1,4 +1,5 @@
 ﻿define(['appSettings', 'userSettingsBuilder'], function (appSettings, userSettingsBuilder) {
+    'use strict';
 
     function populateLanguages(select, languages) {
 
@@ -19,12 +20,12 @@
     return function (view, params) {
 
         var userId = params.userId || Dashboard.getCurrentUserId();
-        var userSettings = new userSettingsBuilder();
+        var userSettingsInstance = new userSettingsBuilder();
         var userSettingsLoaded;
 
         function loadForm(page, user, loggedInUser, allCulturesPromise) {
 
-            userSettings.setUserInfo(userId, ApiClient).then(function () {
+            userSettingsInstance.setUserInfo(userId, ApiClient).then(function () {
                 userSettingsLoaded = true;
                 allCulturesPromise.then(function (allCultures) {
 
@@ -39,7 +40,7 @@
                 page.querySelector('#selectSubtitlePlaybackMode').value = user.Configuration.SubtitleMode || "";
 
                 page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
-                page.querySelector('.chkEnableCinemaMode').checked = userSettings.enableCinemaMode();
+                page.querySelector('.chkEnableCinemaMode').checked = userSettingsInstance.enableCinemaMode();
                 page.querySelector('.chkExternalVideoPlayer').checked = appSettings.enableExternalPlayers();
 
                 require(['qualityoptions'], function (qualityoptions) {
@@ -94,6 +95,12 @@
             });
         }
 
+        function refreshGlobalUserSettings() {
+            require(['userSettings'], function (userSettings) {
+                userSettings.importFrom(userSettingsInstance);
+            });
+        }
+
         function saveUser(page, user) {
 
             user.Configuration.AudioLanguagePreference = page.querySelector('#selectAudioLanguage').value;
@@ -103,7 +110,11 @@
             user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
             user.Configuration.EnableNextEpisodeAutoPlay = page.querySelector('.chkEpisodeAutoPlay').checked;
             if (userSettingsLoaded) {
-                userSettings.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
+                userSettingsInstance.enableCinemaMode(page.querySelector('.chkEnableCinemaMode').checked);
+
+                if (userId === Dashboard.getCurrentUserId()) {
+                    refreshGlobalUserSettings();
+                }
             }
 
             return ApiClient.updateUserConfiguration(user.Id, user.Configuration);

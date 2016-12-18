@@ -1,4 +1,5 @@
 ﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize) {
+    'use strict';
 
     function onSyncJobsUpdated(e, apiClient, data) {
 

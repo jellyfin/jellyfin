@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -14,11 +13,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.Providers.TV
 {
-    class MissingEpisodeProvider
+    public class MissingEpisodeProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
@@ -27,21 +30,23 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-        private static readonly SemaphoreSlim _resourceLock = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim ResourceLock = new SemaphoreSlim(1, 1);
         public static bool IsRunning = false;
+        private readonly IXmlReaderSettingsFactory _xmlSettings;
 
-        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem)
+        public MissingEpisodeProvider(ILogger logger, IServerConfigurationManager config, ILibraryManager libraryManager, ILocalizationManager localization, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlSettings)
         {
             _logger = logger;
             _config = config;
             _libraryManager = libraryManager;
             _localization = localization;
             _fileSystem = fileSystem;
+            _xmlSettings = xmlSettings;
         }
 
         public async Task Run(List<IGrouping<string, Series>> series, bool addNewItems, CancellationToken cancellationToken)
         {
-            await _resourceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await ResourceLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             IsRunning = true;
 
             foreach (var seriesGroup in series)
@@ -54,9 +59,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     break;
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException ex)
                 {
                     //_logger.Warn("Series files missing for series id {0}", seriesGroup.Key);
+                    _logger.ErrorException("Error in missing episode provider for series id {0}", ex, seriesGroup.Key);
                 }
                 catch (Exception ex)
                 {
@@ -65,12 +71,15 @@ namespace MediaBrowser.Providers.TV
             }
 
             IsRunning = false;
-            _resourceLock.Release();
+            ResourceLock.Release();
         }
 
         private async Task Run(IGrouping<string, Series> group, bool addNewItems, CancellationToken cancellationToken)
         {
-            var tvdbId = group.Key;
+            var seriesList = group.ToList();
+            var tvdbId = seriesList
+                .Select(i => i.GetProviderId(MetadataProviders.Tvdb))
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
 
             // Todo: Support series by imdb id
             var seriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -78,7 +87,8 @@ namespace MediaBrowser.Providers.TV
 
             var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
-            var episodeFiles = Directory.EnumerateFiles(seriesDataPath, "*.xml", SearchOption.TopDirectoryOnly)
+            var episodeFiles = _fileSystem.GetFilePaths(seriesDataPath)
+                .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFileNameWithoutExtension)
                 .Where(i => i.StartsWith("episode-", StringComparison.OrdinalIgnoreCase))
                 .ToList();
@@ -108,30 +118,33 @@ namespace MediaBrowser.Providers.TV
                 .Where(i => i.Item1 != -1 && i.Item2 != -1)
                 .ToList();
 
-            var hasBadData = HasInvalidContent(group);
+            var hasBadData = HasInvalidContent(seriesList);
 
-            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(group, episodeLookup)
+            // Be conservative here to avoid creating missing episodes for ones they already have
+            var addMissingEpisodes = !hasBadData && seriesList.All(i => _libraryManager.GetLibraryOptions(i).ImportMissingEpisodes);
+
+            var anySeasonsRemoved = await RemoveObsoleteOrMissingSeasons(seriesList, episodeLookup)
                 .ConfigureAwait(false);
 
-            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(group, episodeLookup)
+            var anyEpisodesRemoved = await RemoveObsoleteOrMissingEpisodes(seriesList, episodeLookup, addMissingEpisodes)
                 .ConfigureAwait(false);
 
             var hasNewEpisodes = false;
 
-            if (addNewItems && !group.Any(i => !i.IsInternetMetadataEnabled()))
+            if (addNewItems && seriesList.All(i => i.IsInternetMetadataEnabled()))
             {
                 var seriesConfig = _config.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, typeof(Series).Name, StringComparison.OrdinalIgnoreCase));
 
                 if (seriesConfig == null || !seriesConfig.DisabledMetadataFetchers.Contains(TvdbSeriesProvider.Current.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    hasNewEpisodes = await AddMissingEpisodes(group.ToList(), hasBadData, seriesDataPath, episodeLookup, cancellationToken)
+                    hasNewEpisodes = await AddMissingEpisodes(seriesList, addMissingEpisodes, seriesDataPath, episodeLookup, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
 
             if (hasNewEpisodes || anySeasonsRemoved || anyEpisodesRemoved)
             {
-                foreach (var series in group)
+                foreach (var series in seriesList)
                 {
                     var directoryService = new DirectoryService(_logger, _fileSystem);
 
@@ -170,13 +183,9 @@ namespace MediaBrowser.Providers.TV
         /// Adds the missing episodes.
         /// </summary>
         /// <param name="series">The series.</param>
-        /// <param name="seriesHasBadData">if set to <c>true</c> [series has bad data].</param>
-        /// <param name="seriesDataPath">The series data path.</param>
-        /// <param name="episodeLookup">The episode lookup.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         private async Task<bool> AddMissingEpisodes(List<Series> series,
-            bool seriesHasBadData,
+            bool addMissingEpisodes,
             string seriesDataPath,
             IEnumerable<Tuple<int, int>> episodeLookup,
             CancellationToken cancellationToken)
@@ -223,15 +232,18 @@ namespace MediaBrowser.Providers.TV
                 {
                     continue;
                 }
+
                 var now = DateTime.UtcNow;
 
                 var targetSeries = DetermineAppropriateSeries(series, tuple.Item1);
                 var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(targetSeries.ProviderIds) ?? ((targetSeries.AnimeSeriesIndex ?? 1) - 1);
 
+                var unairedThresholdDays = 1;
+                now = now.AddDays(0 - unairedThresholdDays);
+
                 if (airDate.Value < now)
                 {
-                    // Be conservative here to avoid creating missing episodes for ones they already have
-                    if (!seriesHasBadData)
+                    if (addMissingEpisodes)
                     {
                         // tvdb has a lot of nearly blank episodes
                         _logger.Info("Creating virtual missing episode {0} {1}x{2}", targetSeries.Name, tuple.Item1, tuple.Item2);
@@ -268,7 +280,8 @@ namespace MediaBrowser.Providers.TV
         /// Removes the virtual entry after a corresponding physical version has been added
         /// </summary>
         private async Task<bool> RemoveObsoleteOrMissingEpisodes(IEnumerable<Series> series,
-            IEnumerable<Tuple<int, int>> episodeLookup)
+            IEnumerable<Tuple<int, int>> episodeLookup,
+            bool allowMissingEpisodes)
         {
             var existingEpisodes = (from s in series
                                     let seasonOffset = TvdbSeriesProvider.GetSeriesOffset(s.ProviderIds) ?? ((s.AnimeSeriesIndex ?? 1) - 1)
@@ -302,6 +315,11 @@ namespace MediaBrowser.Providers.TV
 
                         // If the episode no longer exists in the remote lookup, delete it
                         if (!episodeLookup.Any(e => e.Item1 == seasonNumber && e.Item2 == episodeNumber))
+                        {
+                            return true;
+                        }
+
+                        if (!allowMissingEpisodes && i.Episode.IsMissingEpisode)
                         {
                             return true;
                         }
@@ -362,7 +380,7 @@ namespace MediaBrowser.Providers.TV
                         var seasonNumber = i.Season.IndexNumber.Value + i.SeasonOffset;
 
                         // If there's a physical season with the same number, delete it
-                        if (physicalSeasons.Any(p => p.Season.IndexNumber.HasValue && (p.Season.IndexNumber.Value + p.SeasonOffset) == seasonNumber))
+                        if (physicalSeasons.Any(p => p.Season.IndexNumber.HasValue && (p.Season.IndexNumber.Value + p.SeasonOffset) == seasonNumber && string.Equals(p.Season.Series.PresentationUniqueKey, i.Season.Series.PresentationUniqueKey, StringComparison.Ordinal)))
                         {
                             return true;
                         }
@@ -492,56 +510,65 @@ namespace MediaBrowser.Providers.TV
 
             DateTime? airDate = null;
 
-            // It appears the best way to filter out invalid entries is to only include those with valid air dates
-            using (var streamReader = new StreamReader(xmlPath, Encoding.UTF8))
+            using (var fileStream = _fileSystem.GetFileStream(xmlPath, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
-                // Use XmlReader for best performance
-                using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
+                // It appears the best way to filter out invalid entries is to only include those with valid air dates
+                using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 {
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true,
-                    ValidationType = ValidationType.None
-                }))
-                {
-                    reader.MoveToContent();
+                    var settings = _xmlSettings.Create(false);
 
-                    // Loop through each element
-                    while (reader.Read())
+                    settings.CheckCharacters = false;
+                    settings.IgnoreProcessingInstructions = true;
+                    settings.IgnoreComments = true;
+                    
+                    // Use XmlReader for best performance
+                    using (var reader = XmlReader.Create(streamReader, settings))
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        reader.MoveToContent();
+                        reader.Read();
+
+                        // Loop through each element
+                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                         {
-                            switch (reader.Name)
+                            if (reader.NodeType == XmlNodeType.Element)
                             {
-                                case "EpisodeName":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-                                        if (string.IsNullOrWhiteSpace(val))
+                                switch (reader.Name)
+                                {
+                                    case "EpisodeName":
                                         {
-                                            // Not valid, ignore these
-                                            return null;
-                                        }
-                                        break;
-                                    }
-                                case "FirstAired":
-                                    {
-                                        var val = reader.ReadElementContentAsString();
-
-                                        if (!string.IsNullOrWhiteSpace(val))
-                                        {
-                                            DateTime date;
-                                            if (DateTime.TryParse(val, out date))
+                                            var val = reader.ReadElementContentAsString();
+                                            if (string.IsNullOrWhiteSpace(val))
                                             {
-                                                airDate = date.ToUniversalTime();
+                                                // Not valid, ignore these
+                                                return null;
                                             }
+                                            break;
                                         }
+                                    case "FirstAired":
+                                        {
+                                            var val = reader.ReadElementContentAsString();
 
-                                        break;
-                                    }
+                                            if (!string.IsNullOrWhiteSpace(val))
+                                            {
+                                                DateTime date;
+                                                if (DateTime.TryParse(val, out date))
+                                                {
+                                                    airDate = date.ToUniversalTime();
+                                                }
+                                            }
 
-                                default:
-                                    reader.Skip();
-                                    break;
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            reader.Skip();
+                                            break;
+                                        }
+                                }
+                            }
+                            else
+                            {
+                                reader.Read();
                             }
                         }
                     }

@@ -10,7 +10,7 @@
     <RootNamespace>MediaBrowser.Server.Mono</RootNamespace>
     <AssemblyName>MediaBrowser.Server.Mono</AssemblyName>
     <StartupObject>MediaBrowser.Server.Mono.MainClass</StartupObject>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -24,7 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <Externalconsole>true</Externalconsole>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>full</DebugType>
@@ -35,7 +35,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Externalconsole>true</Externalconsole>
     <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>false</Optimize>
@@ -55,66 +55,99 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Mono|x86'">
     <Prefer32Bit>false</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
+    <Reference Include="Emby.Common.Implementations">
+      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.Core">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging, Version=1.0.5494.41209, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.0-betaV15\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.2.4.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.4\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.1\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.sqlite3, Version=1.0.0.0, Culture=neutral, PublicKeyToken=62684c7b4f184e3f, processorArchitecture=MSIL">
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.1\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="MediaBrowser.IsoMounting.Linux">
       <HintPath>..\ThirdParty\MediaBrowser.IsoMounting.Linux\MediaBrowser.IsoMounting.Linux.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\1.0.94.0\System.Data.SQLite.dll</HintPath>
-    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
-      <Link>Native\SqliteExtensions.cs</Link>
-    </Compile>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
-    <Compile Include="Native\BaseMonoApp.cs" />
-    <Compile Include="Native\DbConnector.cs" />
-    <Compile Include="Networking\CertificateGenerator.cs" />
+    <Compile Include="MonoAppHost.cs" />
+    <Compile Include="Native\MonoFileSystem.cs" />
+    <Compile Include="Native\PowerManagement.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Native\NativeApp.cs" />
-    <Compile Include="Networking\NetworkManager.cs" />
-    <Compile Include="Security\ASN1.cs" />
-    <Compile Include="Security\ASN1Convert.cs" />
-    <Compile Include="Security\BitConverterLE.cs" />
-    <Compile Include="Security\CryptoConvert.cs" />
-    <Compile Include="Security\PKCS1.cs" />
-    <Compile Include="Security\PKCS12.cs" />
-    <Compile Include="Security\PKCS7.cs" />
-    <Compile Include="Security\PKCS8.cs" />
-    <Compile Include="Security\X501Name.cs" />
-    <Compile Include="Security\X509Builder.cs" />
-    <Compile Include="Security\X509Certificate.cs" />
-    <Compile Include="Security\X509CertificateBuilder.cs" />
-    <Compile Include="Security\X509CertificateCollection.cs" />
-    <Compile Include="Security\X509Extension.cs" />
-    <Compile Include="Security\X509Extensions.cs" />
-    <Compile Include="Security\X520Attributes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
+      <Project>{88ae38df-19d7-406f-a6a9-09527719a21e}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DvdLib\DvdLib.csproj">
+      <Project>{713f42b5-878e-499d-a878-e4c652b1d5e8}</Project>
+      <Name>DvdLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
+      <Project>{805844ab-e92f-45e6-9d99-4f6d48d129a5}</Project>
+      <Name>Emby.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
+      <Project>{6cfee013-6e7c-432b-ac37-cabf0880c69a}</Project>
+      <Name>Emby.Drawing.ImageMagick</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
+      <Project>{c97a239e-a96c-4d64-a844-ccf8cc30aecb}</Project>
+      <Name>Emby.Drawing.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
+      <Project>{08fff49b-f175-4807-a2b5-73b0ebd9f716}</Project>
+      <Name>Emby.Drawing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
+      <Project>{89ab4548-770d-41fd-a891-8daff44f452c}</Project>
+      <Name>Emby.Photos</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{e383961b-9356-4d5d-8233-9a1079d03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Server.Startup.Common\MediaBrowser.Server.Startup.Common.csproj">
       <Project>{b90ab8f2-1bff-4568-a3fd-2a338a435a75}</Project>
       <Name>MediaBrowser.Server.Startup.Common</Name>
@@ -131,10 +164,6 @@
       <Project>{442B5058-DCAF-4263-BB6A-F21E31120A1B}</Project>
       <Name>MediaBrowser.Providers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
-      <Project>{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}</Project>
-      <Name>MediaBrowser.Dlna</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
@@ -142,10 +171,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj">
       <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
       <Name>MediaBrowser.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
-      <Project>{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}</Project>
-      <Name>MediaBrowser.Common.Implementations</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
@@ -167,6 +192,22 @@
       <Project>{23499896-B135-4527-8574-C26E926EA99E}</Project>
       <Name>MediaBrowser.XbmcMetadata</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OpenSubtitlesHandler\OpenSubtitlesHandler.csproj">
+      <Project>{4a4402d4-e910-443b-b8fc-2c18286a2ca0}</Project>
+      <Name>OpenSubtitlesHandler</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RSSDP\RSSDP.csproj">
+      <Project>{21002819-c39a-4d3e-be83-2a276a77fb1f}</Project>
+      <Name>RSSDP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680a1709-25eb-4d52-a87f-ee03ffd94baa}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
+      <Project>{4f26d5d8-a7b0-42b3-ba42-7cb7d245934e}</Project>
+      <Name>SocketHttpListener.Portable</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
@@ -182,6 +223,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="SQLitePCLRaw.provider.sqlite3.dll.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="System.Data.SQLite.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

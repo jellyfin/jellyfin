@@ -1,4 +1,4 @@
-﻿using CommonIO;
+﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
@@ -12,6 +12,8 @@ using MediaBrowser.Providers.Omdb;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -55,7 +57,7 @@ namespace MediaBrowser.Providers.TV
 
             if (OmdbProvider.IsValidSeries(info.SeriesProviderIds) && info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
             {
-                var seriesImdbId = info.SeriesProviderIds[MetadataProviders.Imdb.ToString()];
+                var seriesImdbId = info.GetProviderId(MetadataProviders.Imdb);
 
                 result.HasMetadata = await new OmdbProvider(_jsonSerializer, _httpClient, _fileSystem, _configurationManager).FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }

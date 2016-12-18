@@ -1,4 +1,5 @@
 ﻿define(['dialogHelper', 'events', 'browser', 'emby-checkbox', 'emby-collapse', 'css!components/filterdialog/style'], function (dialogHelper, events, browser) {
+    'use strict';
 
     function renderOptions(context, selector, cssClass, items, isCheckedFn) {
 

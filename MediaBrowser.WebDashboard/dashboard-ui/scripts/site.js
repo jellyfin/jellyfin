@@ -1,4 +1,5 @@
 ﻿function getWindowLocationSearch(win) {
+    'use strict';
 
     var search = (win || window).location.search;
 
@@ -14,6 +15,8 @@
 }
 
 function getParameterByName(name, url) {
+    'use strict';
+
     name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
     var regexS = "[\\?&]" + name + "=([^&#]*)";
     var regex = new RegExp(regexS, "i");
@@ -311,7 +314,7 @@ var Dashboard = {
 
     showUserFlyout: function () {
 
-        Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+        Dashboard.navigate('mypreferencesmenu.html');
     },
 
     getPluginSecurityInfo: function () {
@@ -463,7 +466,7 @@ var Dashboard = {
             divider: true,
             name: Globalize.translate('TabLibrary'),
             href: "library.html",
-            pageIds: ['mediaLibraryPage', 'libraryPathMappingPage', 'librarySettingsPage', 'libraryDisplayPage'],
+            pageIds: ['mediaLibraryPage', 'librarySettingsPage', 'libraryDisplayPage'],
             icon: 'folder',
             color: '#38c'
         }, {
@@ -554,13 +557,6 @@ var Dashboard = {
             href: "reports.html",
             pageIds: [],
             icon: 'insert_chart'
-        }, {
-            name: Globalize.translate('TabAbout'),
-            href: "about.html",
-            icon: 'info',
-            color: '#679C34',
-            divider: true,
-            pageIds: ['aboutPage']
         }];
 
     },
@@ -703,6 +699,14 @@ var Dashboard = {
                         Method: 'External'
                     });
                     profile.SubtitleProfiles.push({
+                        Format: 'ssa',
+                        Method: 'External'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ass',
+                        Method: 'External'
+                    });
+                    profile.SubtitleProfiles.push({
                         Format: 'srt',
                         Method: 'Embed'
                     });
@@ -716,6 +720,18 @@ var Dashboard = {
                     });
                     profile.SubtitleProfiles.push({
                         Format: 'ssa',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvb_teletext',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvb_subtitle',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'dvbsub',
                         Method: 'Embed'
                     });
                     profile.SubtitleProfiles.push({
@@ -760,18 +776,6 @@ var Dashboard = {
                     });
 
                     profile.CodecProfiles.push({
-                        Type: 'VideoAudio',
-                        Codec: 'aac,mp3',
-                        Conditions: [
-                            {
-                                Condition: 'LessThanEqual',
-                                Property: 'AudioChannels',
-                                Value: '6'
-                            }
-                        ]
-                    });
-
-                    profile.CodecProfiles.push({
                         Type: 'Video',
                         Codec: 'h264',
                         Conditions: [
@@ -786,6 +790,15 @@ var Dashboard = {
                             Value: '41'
                         }]
                     });
+
+                    //profile.TranscodingProfiles.filter(function (p) {
+
+                    //    return p.Type == 'Video' && p.Container == 'mkv';
+
+                    //}).forEach(function (p) {
+
+                    //    p.Container = 'ts';
+                    //});
 
                     profile.TranscodingProfiles.filter(function (p) {
 
@@ -810,7 +823,7 @@ var Dashboard = {
                 if (enableVlcAudio) {
 
                     profile.DirectPlayProfiles.push({
-                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,m4a,opus,flac",
+                        Container: "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus,flac,m4a",
                         Type: 'Audio'
                     });
 
@@ -883,6 +896,7 @@ var Dashboard = {
 var AppInfo = {};
 
 (function () {
+    'use strict';
 
     function setAppInfo() {
 
@@ -1023,7 +1037,7 @@ var AppInfo = {};
                         var capabilities = Dashboard.capabilities();
                         capabilities.DeviceProfile = deviceProfile;
 
-                        connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
+                        var connectionManager = new MediaBrowser.ConnectionManager(credentialProviderInstance, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities, window.devicePixelRatio);
 
                         defineConnectionManager(connectionManager);
                         bindConnectionManagerEvents(connectionManager, events, userSettings);
@@ -1073,6 +1087,10 @@ var AppInfo = {};
             return;
         }
 
+        if (AppInfo.isNativeApp) {
+            return;
+        }
+
         var date = new Date();
         var month = date.getMonth();
         var day = date.getDate();
@@ -1082,7 +1100,7 @@ var AppInfo = {};
             return;
         }
 
-        if (month == 11 && day >= 21 && day <= 26) {
+        if (month == 11 && day >= 20 && day <= 25) {
             require(['themes/holiday/theme']);
             return;
         }
@@ -1210,6 +1228,11 @@ var AppInfo = {};
 
         define("libjass", [bowerPath + "/libjass/libjass.min", "css!" + bowerPath + "/libjass/libjass"], returnFirstDependency);
 
+        if (window.IntersectionObserver) {
+            define("lazyLoader", [embyWebComponentsBowerPath + "/lazyloader/lazyloader-intersectionobserver"], returnFirstDependency);
+        } else {
+            define("lazyLoader", [embyWebComponentsBowerPath + "/lazyloader/lazyloader-scroll"], returnFirstDependency);
+        }
         define("imageLoader", [embyWebComponentsBowerPath + "/images/imagehelper"], returnFirstDependency);
         define("syncJobList", ["components/syncjoblist/syncjoblist"], returnFirstDependency);
         define("appfooter", ["components/appfooter/appfooter"], returnFirstDependency);
@@ -1217,6 +1240,8 @@ var AppInfo = {};
         define("directorybrowser", ["components/directorybrowser/directorybrowser"], returnFirstDependency);
         define("metadataEditor", [embyWebComponentsBowerPath + "/metadataeditor/metadataeditor"], returnFirstDependency);
         define("personEditor", [embyWebComponentsBowerPath + "/metadataeditor/personeditor"], returnFirstDependency);
+
+        define("libraryMenu", ["scripts/librarymenu"], returnFirstDependency);
 
         define("emby-collapse", [embyWebComponentsBowerPath + "/emby-collapse/emby-collapse"], returnFirstDependency);
         define("emby-button", [embyWebComponentsBowerPath + "/emby-button/emby-button"], returnFirstDependency);
@@ -1259,11 +1284,12 @@ var AppInfo = {};
         define("peoplecardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/peoplecardbuilder"], returnFirstDependency);
         define("chaptercardbuilder", [embyWebComponentsBowerPath + "/cardbuilder/chaptercardbuilder"], returnFirstDependency);
 
+        define("deleteHelper", [embyWebComponentsBowerPath + "/deletehelper"], returnFirstDependency);
         define("tvguide", [embyWebComponentsBowerPath + "/guide/guide"], returnFirstDependency);
         define("programStyles", ['css!' + embyWebComponentsBowerPath + "/guide/programs"], returnFirstDependency);
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
-        define("guide-categories-dialog", [embyWebComponentsBowerPath + "/guide/guide-categories"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
+        define("syncToggle", [embyWebComponentsBowerPath + "/sync/synctoggle"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
         define("voiceProcessor", [embyWebComponentsBowerPath + "/voice/voiceprocessor"], returnFirstDependency);
@@ -1351,7 +1377,6 @@ var AppInfo = {};
         define('arraypolyfills', [embyWebComponentsBowerPath + '/polyfills/array']);
         define('objectassign', [embyWebComponentsBowerPath + '/polyfills/objectassign']);
 
-        define('native-promise-only', [bowerPath + '/native-promise-only/lib/npo.src']);
         define("clearButtonStyle", ['css!' + embyWebComponentsBowerPath + '/clearbutton']);
         define("userdataButtons", [embyWebComponentsBowerPath + "/userdatabuttons/userdatabuttons"], returnFirstDependency);
         define("listView", [embyWebComponentsBowerPath + "/listview/listview"], returnFirstDependency);
@@ -1437,11 +1462,11 @@ var AppInfo = {};
                     if (options.fullscreen === false) {
                         // theme backdrops - not supported
                         if (!options.items || options.items[0].MediaType == 'Video') {
-                            return;
+                            return Promise.reject();
                         }
                     }
 
-                    MediaController.play(options);
+                    return MediaController.play(options);
                 },
                 queue: function (options) {
 
@@ -1530,7 +1555,7 @@ var AppInfo = {};
             };
 
             embyRouter.showSettings = function () {
-                Dashboard.navigate('mypreferencesmenu.html?userId=' + ApiClient.getCurrentUserId());
+                Dashboard.navigate('mypreferencesmenu.html');
             };
 
             embyRouter.showGuide = function () {
@@ -1615,7 +1640,11 @@ var AppInfo = {};
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
         if (Dashboard.isRunningInCordova()) {
-            define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
+            if (window.MainActivity && window.MainActivity.getAndroidBuildVersion() >= 24) {
+                define("actionsheet", ["webActionSheet"], returnFirstDependency);
+            } else {
+                define("actionsheet", ["cordova/actionsheet"], returnFirstDependency);
+            }
         } else {
             define("actionsheet", ["webActionSheet"], returnFirstDependency);
         }
@@ -1636,7 +1665,7 @@ var AppInfo = {};
             define("imageFetcher", [embyWebComponentsBowerPath + "/images/basicimagefetcher"], returnFirstDependency);
         }
 
-        var preferNativeAlerts = (browser.mobile && !browser.animate) || browser.tv || browser.xboxOne || browser.ps4;
+        var preferNativeAlerts = browser.tv || browser.xboxOne || browser.ps4;
         // use native alerts if preferred and supported (not supported in opera tv)
         if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -1682,14 +1711,9 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
 
-            if (MainActivity.getChromeVersion() >= 48) {
-                //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-                window.VlcAudio = true;
-                define("audiorenderer", ["cordova/android/vlcplayer"]);
-            } else {
-                window.VlcAudio = true;
-                define("audiorenderer", ["cordova/android/vlcplayer"]);
-            }
+            //define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            window.VlcAudio = true;
+            define("audiorenderer", ["cordova/android/vlcplayer"]);
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
@@ -1837,14 +1861,6 @@ var AppInfo = {};
     function defineCoreRoutes() {
 
         console.log('Defining core routes');
-
-        defineRoute({
-            path: '/about.html',
-            dependencies: [],
-            autoFocus: false,
-            controller: 'dashboard/aboutpage',
-            roles: 'admin'
-        });
 
         defineRoute({
             path: '/addplugin.html',
@@ -2111,13 +2127,6 @@ var AppInfo = {};
             autoFocus: false,
             roles: 'admin',
             controller: 'dashboard/librarydisplay'
-        });
-
-        defineRoute({
-            path: '/librarypathmapping.html',
-            dependencies: [],
-            autoFocus: false,
-            roles: 'admin'
         });
 
         defineRoute({
@@ -2637,7 +2646,6 @@ var AppInfo = {};
 
         var deps = [];
 
-        deps.push('imageLoader');
         deps.push('embyRouter');
 
         if (!(AppInfo.isNativeApp && browserInfo.android)) {
@@ -2661,15 +2669,13 @@ var AppInfo = {};
             }
         }
 
-        deps.push('scripts/librarymenu');
+        deps.push('libraryMenu');
 
         console.log('onAppReady - loading dependencies');
 
-        require(deps, function (imageLoader, pageObjects) {
+        require(deps, function (pageObjects) {
 
             console.log('Loaded dependencies in onAppReady');
-
-            window.ImageLoader = imageLoader;
 
             window.Emby = {};
             window.Emby.Page = pageObjects;
@@ -2776,32 +2782,28 @@ var AppInfo = {};
 
     initRequire();
 
-    function onWebComponentsReady() {
+    function onWebComponentsReady(browser) {
 
         var initialDependencies = [];
 
-        initialDependencies.push('browser');
-
-        if (!window.Promise) {
-            initialDependencies.push('native-promise-only');
+        if (!window.Promise || browser.web0s) {
+            initialDependencies.push('bower_components/emby-webcomponents/native-promise-only/lib/npo.src');
         }
 
-        require(initialDependencies, function (browser) {
+        initRequireWithBrowser(browser);
 
-            initRequireWithBrowser(browser);
+        window.browserInfo = browser;
+        setAppInfo();
+        setDocumentClasses(browser);
 
-            window.browserInfo = browser;
-            setAppInfo();
-            setDocumentClasses(browser);
-
-            init();
-        });
+        require(initialDependencies, init);
     }
 
-    onWebComponentsReady();
+    require(['browser'], onWebComponentsReady);
 })();
 
 function pageClassOn(eventName, className, fn) {
+    'use strict';
 
     document.addEventListener(eventName, function (e) {
 
@@ -2813,6 +2815,7 @@ function pageClassOn(eventName, className, fn) {
 }
 
 function pageIdOn(eventName, id, fn) {
+    'use strict';
 
     document.addEventListener(eventName, function (e) {
 
@@ -2824,6 +2827,7 @@ function pageIdOn(eventName, id, fn) {
 }
 
 pageClassOn('viewinit', "page", function () {
+    'use strict';
 
     var page = this;
 
@@ -2864,6 +2868,7 @@ pageClassOn('viewinit', "page", function () {
 });
 
 pageClassOn('viewshow', "page", function () {
+    'use strict';
 
     var page = this;
 

@@ -3,9 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
@@ -86,9 +88,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>Task.</returns>
         private async Task DownloadFontFile(string fontsDirectory, string fontFilename, IProgress<double> progress)
         {
-            var existingFile = Directory
-                .EnumerateFiles(_appPaths.ProgramDataPath, fontFilename, SearchOption.AllDirectories)
-                .FirstOrDefault();
+            var existingFile = _fileSystem
+                .GetFilePaths(_appPaths.ProgramDataPath, true)
+                .FirstOrDefault(i => string.Equals(fontFilename, Path.GetFileName(i), StringComparison.OrdinalIgnoreCase));
 
             if (existingFile != null)
             {
@@ -168,8 +170,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 var bytes = Encoding.UTF8.GetBytes(contents);
 
-                using (var fileStream = _fileSystem.GetFileStream(fontConfigFile, FileMode.Create, FileAccess.Write,
-                                                    FileShare.Read, true))
+                using (var fileStream = _fileSystem.GetFileStream(fontConfigFile, FileOpenMode.Create, FileAccessMode.Write,
+                                                    FileShareMode.Read, true))
                 {
                     await fileStream.WriteAsync(bytes, 0, bytes.Length);
                 }

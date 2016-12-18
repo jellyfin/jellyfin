@@ -11,13 +11,12 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -33,6 +32,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly ISessionManager SessionManager;
         protected readonly ISubtitleEncoder SubtitleEncoder;
         protected readonly IMediaSourceManager MediaSourceManager;
+        protected IProcessFactory ProcessFactory;
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
@@ -44,7 +44,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILibraryManager libraryManager,
             ISessionManager sessionManager,
             ISubtitleEncoder subtitleEncoder,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager, IProcessFactory processFactory)
         {
             MediaEncoder = mediaEncoder;
             Logger = logger;
@@ -55,6 +55,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
             MediaSourceManager = mediaSourceManager;
+            ProcessFactory = processFactory;
         }
 
         public async Task<EncodingJob> Start(EncodingJobOptions options,
@@ -73,27 +74,23 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var commandLineArgs = await GetCommandLineArguments(encodingJob).ConfigureAwait(false);
 
-            var process = new Process
+            var process = ProcessFactory.Create(new ProcessOptions
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
+                CreateNoWindow = true,
+                UseShellExecute = false,
 
-                    // Must consume both stdout and stderr or deadlocks may occur
-                    //RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    RedirectStandardInput = true,
+                // Must consume both stdout and stderr or deadlocks may occur
+                //RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
 
-                    FileName = MediaEncoder.EncoderPath,
-                    Arguments = commandLineArgs,
+                FileName = MediaEncoder.EncoderPath,
+                Arguments = commandLineArgs,
 
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false
-                },
-
+                IsHidden = true,
+                ErrorDialog = false,
                 EnableRaisingEvents = true
-            };
+            });
 
             var workingDirectory = GetWorkingDirectory(options);
             if (!string.IsNullOrWhiteSpace(workingDirectory))
@@ -110,7 +107,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             FileSystem.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            encodingJob.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
+            encodingJob.LogFileStream = FileSystem.GetFileStream(logFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await encodingJob.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationToken).ConfigureAwait(false);
@@ -147,7 +144,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return encodingJob;
         }
 
-        private void Cancel(Process process, EncodingJob job)
+        private void Cancel(IProcess process, EncodingJob job)
         {
             Logger.Info("Killing ffmpeg process for {0}", job.OutputFilePath);
 
@@ -162,7 +159,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="job">The job.</param>
-        private void OnFfMpegProcessExited(Process process, EncodingJob job)
+        private void OnFfMpegProcessExited(IProcess process, EncodingJob job)
         {
             job.HasExited = true;
 
@@ -215,7 +212,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 try
                 {
-                    job.TaskCompletionSource.TrySetException(new ApplicationException("Encoding failed"));
+                    job.TaskCompletionSource.TrySetException(new Exception("Encoding failed"));
                 }
                 catch
                 {
@@ -773,7 +770,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!string.Equals(videoEncoder, "h264_omx", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoEncoder, "h264_qsv", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(videoEncoder, "h264_vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-pix_fmt yuv420p " + param;

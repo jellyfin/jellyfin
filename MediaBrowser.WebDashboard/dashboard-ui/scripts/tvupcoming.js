@@ -1,4 +1,5 @@
-﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder, appHost) {
+﻿define(['datetime', 'libraryBrowser', 'cardBuilder', 'apphost', 'imageLoader', 'scrollStyles', 'emby-itemscontainer'], function (datetime, libraryBrowser, cardBuilder, appHost, imageLoader) {
+    'use strict';
 
     function getUpcomingPromise(context, params) {
 
@@ -122,6 +123,7 @@
                 showDetailsMenu: true,
                 centerText: !supportsImageAnalysis,
                 showParentTitle: true,
+                overlayText: false,
                 allowBottomPadding: allowBottomPadding,
                 cardLayout: supportsImageAnalysis,
                 vibrant: supportsImageAnalysis
@@ -133,7 +135,7 @@
         }
 
         elem.innerHTML = html;
-        ImageLoader.lazyChildren(elem);
+        imageLoader.lazyChildren(elem);
     }
     return function (view, params, tabContent) {
 

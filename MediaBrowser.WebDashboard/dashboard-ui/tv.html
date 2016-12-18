@@ -15,13 +15,13 @@
                 <div class="emby-button-foreground">${TabShows}</div>
             </button>
             <button is="emby-button" class="emby-tab-button" data-index="4">
-                <div class="emby-button-foreground">${TabEpisodes}</div>
-            </button>
-            <button is="emby-button" class="emby-tab-button" data-index="5">
                 <div class="emby-button-foreground">${TabGenres}</div>
             </button>
-            <button is="emby-button" class="emby-tab-button" data-index="6">
+            <button is="emby-button" class="emby-tab-button" data-index="5">
                 <div class="emby-button-foreground">${TabNetworks}</div>
+            </button>
+            <button is="emby-button" class="emby-tab-button" data-index="6">
+                <div class="emby-button-foreground">${TabEpisodes}</div>
             </button>
         </div>
     </div>
@@ -29,7 +29,7 @@
     <div class="is-active pageTabContent ehsContent fullWidth" id="suggestionsTab" data-index="0">
         <div id="resumableSection" class="homePageSection">
             <div>
-                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderResume}</h1>
+                <h1 class="listHeader" style="display: inline-block; vertical-align: middle;">${HeaderContinueWatching}</h1>
                 <button is="emby-button" type="button" class="raised mini categorySyncButton button-accent" data-category="Resume">
                     <span>${ButtonSync}</span>
                 </button>
@@ -74,24 +74,31 @@
         </div>
     </div>
     <div class="pageTabContent ehsContent" id="seriesTab" data-index="3">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
             <button is="paper-icon-button-light" class="btnFilter autoSize" title="${ButtonFilter}"><i class="md-icon">filter_list</i></button>
         </div>
 
-        <div class="alphaPicker alphabetPicker alphaPicker-vertical">
-        </div>
-
-        <div is="emby-itemscontainer" class="itemsContainer itemsContainerWithAlphaPicker">
+        <div is="emby-itemscontainer" class="itemsContainer">
         </div>
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>
     </div>
-    <div class="pageTabContent ehsContent" id="episodesTab" data-index="4">
-        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
+    <div class="pageTabContent ehsContent fullWidth" id="genresTab" data-index="4">
+        <div id="items"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="studiosTab" data-index="5">
+        <div class="viewSettings">
+            <div class="listTopPaging">
+            </div>
+        </div>
+        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer vertical-wrap" style="text-align: center;"></div>
+    </div>
+    <div class="pageTabContent ehsContent" id="episodesTab" data-index="6">
+        <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:0 .5em 1em;">
             <div class="paging"></div>
             <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
             <button is="paper-icon-button-light" class="btnSort autoSize" title="${ButtonSort}"><i class="md-icon">sort_by_alpha</i></button>
@@ -102,19 +109,6 @@
         <div style="text-align: center; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;padding:.7em .5em;">
             <div class="paging"></div>
         </div>
-    </div>
-    <div class="pageTabContent ehsContent" id="genresTab" data-index="5">
-        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
-            <button is="paper-icon-button-light" class="btnSelectView autoSize" title="${ButtonSelectView}"><i class="md-icon">view_comfy</i></button>
-        </div>
-        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer vertical-wrap"></div>
-    </div>
-    <div class="pageTabContent ehsContent" id="studiosTab" data-index="6">
-        <div class="viewSettings">
-            <div class="listTopPaging">
-            </div>
-        </div>
-        <div is="emby-itemscontainer" id="items" class="itemsContainer paddedItemsContainer vertical-wrap" style="text-align: center;"></div>
     </div>
 
     <div data-role="content">

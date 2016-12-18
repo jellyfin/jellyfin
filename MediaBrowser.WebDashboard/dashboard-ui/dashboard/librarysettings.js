@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
+    'use strict';
 
     function loadPage(page, config) {
 
@@ -14,14 +15,6 @@
 
         $('#txtMetadataPath', page).val(config.MetadataPath || '');
         $('#txtMetadataNetworkPath', page).val(config.MetadataNetworkPath || '');
-
-        $('#chkPeopleActors', page).checked(config.PeopleMetadataOptions.DownloadActorMetadata);
-        $('#chkPeopleComposers', page).checked(config.PeopleMetadataOptions.DownloadComposerMetadata);
-        $('#chkPeopleDirectors', page).checked(config.PeopleMetadataOptions.DownloadDirectorMetadata);
-        $('#chkPeopleProducers', page).checked(config.PeopleMetadataOptions.DownloadProducerMetadata);
-        $('#chkPeopleWriters', page).checked(config.PeopleMetadataOptions.DownloadWriterMetadata);
-        $('#chkPeopleOthers', page).checked(config.PeopleMetadataOptions.DownloadOtherPeopleMetadata);
-        $('#chkPeopleGuestStars', page).checked(config.PeopleMetadataOptions.DownloadGuestStarMetadata);
 
         Dashboard.hideLoadingMsg();
     }
@@ -74,14 +67,6 @@
             config.MetadataNetworkPath = $('#txtMetadataNetworkPath', form).val();
             config.FanartApiKey = $('#txtFanartApiKey', form).val();
 
-            config.PeopleMetadataOptions.DownloadActorMetadata = $('#chkPeopleActors', form).checked();
-            config.PeopleMetadataOptions.DownloadComposerMetadata = $('#chkPeopleComposers', form).checked();
-            config.PeopleMetadataOptions.DownloadDirectorMetadata = $('#chkPeopleDirectors', form).checked();
-            config.PeopleMetadataOptions.DownloadGuestStarMetadata = $('#chkPeopleGuestStars', form).checked();
-            config.PeopleMetadataOptions.DownloadProducerMetadata = $('#chkPeopleProducers', form).checked();
-            config.PeopleMetadataOptions.DownloadWriterMetadata = $('#chkPeopleWriters', form).checked();
-            config.PeopleMetadataOptions.DownloadOtherPeopleMetadata = $('#chkPeopleOthers', form).checked();
-
             ApiClient.updateServerConfiguration(config).then(Dashboard.processServerConfigurationUpdateResult);
         });
 
@@ -101,10 +86,6 @@
          {
              href: 'librarydisplay.html',
              name: Globalize.translate('TabDisplay')
-         },
-         {
-             href: 'librarypathmapping.html',
-             name: Globalize.translate('TabPathSubstitution')
          },
          {
              href: 'librarysettings.html',

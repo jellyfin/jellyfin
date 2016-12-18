@@ -1,4 +1,5 @@
-﻿define(['appStorage', 'events', 'browser'], function (appStorage, events, browser) {
+﻿define(['appSettings', 'events', 'browser'], function (appSettings, events, browser) {
+    'use strict';
 
     var currentDisplayInfo;
     var datetime;
@@ -459,22 +460,24 @@
             });
         };
 
-        function doWithPlaybackValidation(player, fn) {
+        function validatePlayback(player) {
 
             if (!player.isLocalPlayer) {
-                fn();
-                return;
+                return Promise.resolve();
             }
 
-            requirejs(["registrationServices"], function (registrationServices) {
+            return new Promise(function (resolve, reject) {
 
-                self.playbackTimeLimitMs = null;
+                requirejs(["registrationServices"], function (registrationServices) {
 
-                registrationServices.validateFeature('playback').then(fn, function () {
+                    self.playbackTimeLimitMs = null;
 
-                    self.playbackTimeLimitMs = lockedTimeLimitMs;
-                    startAutoStopTimer();
-                    fn();
+                    registrationServices.validateFeature('playback').then(resolve, function () {
+
+                        self.playbackTimeLimitMs = lockedTimeLimitMs;
+                        startAutoStopTimer();
+                        resolve();
+                    });
                 });
             });
         }
@@ -509,7 +512,7 @@
             if (enabled != null) {
 
                 var val = enabled ? '1' : '0';
-                appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
+                appSettings.set('displaymirror--' + Dashboard.getCurrentUserId(), val);
 
                 if (enabled) {
                     mirrorIfEnabled();
@@ -517,23 +520,23 @@
                 return;
             }
 
-            return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
+            return (appSettings.get('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
         };
 
         self.play = function (options) {
 
             if (options.enableRemotePlayers === false) {
                 if (!currentPlayer.isLocalPlayer) {
-                    return;
+                    return Promise.reject();
                 }
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            return validatePlayback(currentPlayer).then(function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };
                 }
 
-                currentPlayer.play(options);
+                return currentPlayer.play(options);
             });
         };
 
@@ -544,7 +547,7 @@
                 id = id.Id;
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            validatePlayback(currentPlayer).then(function () {
                 currentPlayer.shuffle(id);
             });
         };
@@ -556,7 +559,7 @@
                 id = id.Id;
             }
 
-            doWithPlaybackValidation(currentPlayer, function () {
+            validatePlayback(currentPlayer).then(function () {
                 currentPlayer.instantMix(id);
             });
         };
@@ -980,7 +983,7 @@
             });
         };
 
-        self.supportsDirectPlay = function (mediaSource) {
+        self.supportsDirectPlay = function (mediaSource, itemType) {
 
             return new Promise(function (resolve, reject) {
                 if (mediaSource.SupportsDirectPlay) {
@@ -993,6 +996,7 @@
                         }
                         else {
                             var val = mediaSource.Path.toLowerCase().replace('https:', 'http').indexOf(ApiClient.serverAddress().toLowerCase().replace('https:', 'http').substring(0, 14)) == 0;
+                            //resolve(val || itemType !== 'TvChannel');
                             resolve(val);
                         }
                     }

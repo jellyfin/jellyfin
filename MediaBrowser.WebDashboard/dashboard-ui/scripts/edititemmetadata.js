@@ -1,4 +1,5 @@
 ﻿define(['historyManager', 'jQuery'], function (historyManager, $) {
+    'use strict';
 
     var currentItemId;
 

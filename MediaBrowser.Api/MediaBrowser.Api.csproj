@@ -11,10 +11,9 @@
     <AssemblyName>MediaBrowser.Api</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
-    <ReleaseVersion>
-    </ReleaseVersion>
-    <TargetFrameworkProfile />
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -46,32 +45,10 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
-    </Reference>
-    <Reference Include="MoreLinq">
-      <HintPath>..\packages\morelinq.1.4.0\lib\net35\MoreLinq.dll</HintPath>
-    </Reference>
-    <Reference Include="Patterns.Logging">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\ThirdParty\ServiceStack.Text\ServiceStack.Text.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="BasePeriodicWebSocketListener.cs" />
     <Compile Include="BrandingService.cs" />
     <Compile Include="ChannelService.cs" />
     <Compile Include="ConnectService.cs" />
@@ -165,6 +142,7 @@
     <Compile Include="System\ActivityLogWebSocketListener.cs" />
     <Compile Include="System\SystemService.cs" />
     <Compile Include="Movies\TrailersService.cs" />
+    <Compile Include="TestService.cs" />
     <Compile Include="TvShowsService.cs" />
     <Compile Include="UserLibrary\ArtistsService.cs" />
     <Compile Include="UserLibrary\BaseItemsByNameService.cs" />
@@ -198,15 +176,8 @@
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
-      <Project>{2e781478-814d-4a48-9d80-bff206441a65}</Project>
-      <Name>MediaBrowser.Server.Implementations</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>

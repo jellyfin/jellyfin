@@ -6,16 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class PlaylistXmlParser : BaseItemXmlParser<Playlist>
     {
-        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> result)
         {
             var item = result.Item;
@@ -46,17 +43,31 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                 case "PlaylistItems":
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        FetchFromCollectionItemsNode(subReader, item);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            FetchFromCollectionItemsNode(subReader, item);
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                     break;
 
                 case "Shares":
 
-                    using (var subReader = reader.ReadSubtree())
+                    if (!reader.IsEmptyElement)
                     {
-                        FetchFromSharesNode(subReader, item);
+                        using (var subReader = reader.ReadSubtree())
+                        {
+                            FetchFromSharesNode(subReader, item);
+                        }
+                    }
+                    else
+                    {
+                        reader.Read();
                     }
                     break;
 
@@ -68,11 +79,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromCollectionItemsNode(XmlReader reader, Playlist item)
         {
-            reader.MoveToContent();
-
             var list = new List<LinkedChild>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -80,6 +93,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "PlaylistItem":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
                                 using (var subReader = reader.ReadSubtree())
                                 {
                                     var child = GetLinkedChild(subReader);
@@ -92,11 +111,16 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -105,11 +129,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromSharesNode(XmlReader reader, Playlist item)
         {
-            reader.MoveToContent();
-
             var list = new List<Share>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -117,6 +143,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         case "Share":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
                                 using (var subReader = reader.ReadSubtree())
                                 {
                                     var child = GetShare(subReader);
@@ -129,15 +161,24 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
             item.Shares = list;
+        }
+
+        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

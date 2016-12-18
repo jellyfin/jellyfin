@@ -73,25 +73,20 @@
 
 .libraryMenuButtonText {
     text-decoration: none;
-    font-weight: 400 !important;
     display: inline-flex;
     vertical-align: middle;
     padding-left: 0 !important;
     cursor: default;
-    position: relative;
-    top: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     align-items: center;
-    margin-left: .75em;
-    font-size: 108%;
+    margin: 0 0 0 .5em;
     /* Avoid pushing right header off the screen */
     flex-shrink: 1;
 }
 
 .viewMenuBar {
-    font-weight: bold;
     position: fixed;
     right: 0;
     left: 0;
@@ -101,7 +96,6 @@
     height: 50px;
     display: flex;
     flex-direction: column;
-    font-size: 13px;
 }
 
 .hiddenViewMenuBar .viewMenuBar {
@@ -120,9 +114,6 @@
     text-align: center;
     margin: 0 auto;
     align-items: center;
-}
-
-.emby-tabs {
     font-size: 13px;
 }
 
@@ -238,14 +229,8 @@ body:not(.dashboardDocument) .btnNotifications {
         margin-left: 1.6em;
     }
 
-i.sidebarLinkIcon {
-    font-size: 114%;
-    height: auto;
-    width: auto;
-}
-
 .darkDrawer i.sidebarLinkIcon {
-    margin-left: 1.7em;
+    margin-left: 1.9em;
 }
 
 .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {

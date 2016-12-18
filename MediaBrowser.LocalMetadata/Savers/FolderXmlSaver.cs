@@ -9,38 +9,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
-using CommonIO;
+using System.Xml;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class FolderXmlSaver : IMetadataFileSaver
+    public class FolderXmlSaver : BaseXmlSaver
     {
-        public string Name
+        protected override string GetLocalSavePath(IHasMetadata item)
         {
-            get
-            {
-                return XmlProviderUtils.Name;
-            }
+            return Path.Combine(item.Path, "folder.xml");
         }
 
-        private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
-
-        public FolderXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager, IFileSystem fileSystem)
+        protected override string GetRootElementName(IHasMetadata item)
         {
-            _config = config;
-            _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
+            return "Item";
         }
 
-        /// <summary>
-        /// Determines whether [is enabled for] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -61,35 +51,12 @@ namespace MediaBrowser.LocalMetadata.Savers
             return false;
         }
 
-        /// <summary>
-        /// Saves the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public void Save(IHasMetadata item, CancellationToken cancellationToken)
+        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
         {
-            var builder = new StringBuilder();
-
-            builder.Append("<Item>");
-
-            XmlSaverHelpers.AddCommonNodes((Folder)item, _libraryManager, builder);
-
-            builder.Append("</Item>");
-
-            var xmlFilePath = GetSavePath(item);
-
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>(), _config, _fileSystem);
         }
 
-        /// <summary>
-        /// Gets the save path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        public string GetSavePath(IHasMetadata item)
+        public FolderXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
         {
-            return Path.Combine(item.Path, "folder.xml");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView) {
+    'use strict';
 
     return function (view, params, tabContent) {
 
@@ -71,7 +72,8 @@
                 var html = listView.getListViewHtml({
                     items: result.Items,
                     action: 'playallfromhere',
-                    smallIcon: true
+                    smallIcon: true,
+                    artist: true
                 });
 
                 var i, length;

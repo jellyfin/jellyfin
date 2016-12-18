@@ -6,6 +6,8 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -408,6 +410,8 @@ namespace MediaBrowser.Model.Dlna
                 audioStreamIndex = audioStream.Index;
             }
 
+            var allMediaStreams = item.MediaStreams;
+
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
@@ -423,7 +427,7 @@ namespace MediaBrowser.Model.Dlna
             if (isEligibleForDirectPlay || isEligibleForDirectStream)
             {
                 // See if it can be direct played
-                PlayMethod? directPlay = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream);
+                PlayMethod? directPlay = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream, allMediaStreams);
 
                 if (directPlay != null)
                 {
@@ -483,7 +487,7 @@ namespace MediaBrowser.Model.Dlna
                 if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
                 {
                     int transcodingMaxAudioChannels;
-                    if (IntHelper.TryParseCultureInvariant(transcodingProfile.MaxAudioChannels, out transcodingMaxAudioChannels))
+                    if (int.TryParse(transcodingProfile.MaxAudioChannels, NumberStyles.Any, CultureInfo.InvariantCulture, out transcodingMaxAudioChannels))
                     {
                         playlistItem.TranscodingMaxAudioChannels = transcodingMaxAudioChannels;
                     }
@@ -652,7 +656,8 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream,
             MediaStream audioStream,
             bool isEligibleForDirectPlay,
-            bool isEligibleForDirectStream)
+            bool isEligibleForDirectStream,
+            List<MediaStream> allMediaStreams)
         {
             DeviceProfile profile = options.Profile;
 
@@ -700,7 +705,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (ContainerProfile i in profile.ContainerProfiles)
             {
                 if (i.Type == DlnaProfileType.Video &&
-                    ListHelper.ContainsIgnoreCase(i.GetContainers(), container))
+                    i.ContainsContainer(container))
                 {
                     foreach (ProfileCondition c in i.Conditions)
                     {
@@ -975,7 +980,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (item.Bitrate.Value > maxBitrate.Value)
             {
-                _logger.Info("Bitrate exceeds DirectPlay limit");
+                _logger.Info("Bitrate exceeds DirectPlay limit: media bitrate: {0}, max bitrate: {1}", item.Bitrate.Value.ToString(CultureInfo.InvariantCulture), maxBitrate.Value.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 
@@ -1039,7 +1044,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.AudioBitrate:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.AudioBitrate = num;
                             }
@@ -1048,9 +1053,25 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.AudioChannels:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxAudioChannels = num;
+                            }
+                            break;
+                        }
+                    case ProfileConditionValue.IsAvc:
+                        {
+                            bool isAvc;
+                            if (bool.TryParse(value, out isAvc))
+                            {
+                                if (isAvc && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.RequireAvc = true;
+                                }
+                                else if (!isAvc && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.RequireAvc = true;
+                                }
                             }
                             break;
                         }
@@ -1069,7 +1090,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.RefFrames:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxRefFrames = num;
                             }
@@ -1078,7 +1099,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoBitDepth:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxVideoBitDepth = num;
                             }
@@ -1092,7 +1113,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.Height:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxHeight = num;
                             }
@@ -1101,7 +1122,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoBitrate:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.VideoBitrate = num;
                             }
@@ -1110,7 +1131,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoFramerate:
                         {
                             float num;
-                            if (FloatHelper.TryParseCultureInvariant(value, out num))
+                            if (float.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxFramerate = num;
                             }
@@ -1119,7 +1140,7 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.VideoLevel:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.VideoLevel = num;
                             }
@@ -1128,12 +1149,14 @@ namespace MediaBrowser.Model.Dlna
                     case ProfileConditionValue.Width:
                         {
                             int num;
-                            if (IntHelper.TryParseCultureInvariant(value, out num))
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out num))
                             {
                                 item.MaxWidth = num;
                             }
                             break;
                         }
+                    default:
+                        break;
                 }
             }
         }

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -131,6 +131,8 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The album.</value>
         public string Album { get; set; }
+
+        public bool IsThemeMedia { get; set; }
 
         /// <summary>
         /// Gets or sets the artists.

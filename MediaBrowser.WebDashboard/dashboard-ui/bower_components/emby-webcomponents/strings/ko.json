@@ -182,7 +182,7 @@
     "LabelAirsBeforeSeason": "Airs before season:",
     "LabelAirsAfterSeason": "Airs after season:",
     "LabelAirsBeforeEpisode": "Airs before episode:",
-    "HeaderExternalIds": "External Id's:",
+    "HeaderExternalIds": "External Ids:",
     "HeaderDisplaySettings": "Display Settings",
     "LabelTreatImageAs": "Treat image as:",
     "LabelDisplayOrder": "\ud45c\uc2dc \uc21c\uc11c:",
@@ -343,12 +343,16 @@
     "ButtonRestorePreviousPurchase": "Restore Purchase",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
     "ButtonUnlockPrice": "Unlock {0}",
-    "ButtonAlreadyPaid": "Already Paid?",
+    "EmbyPremiereMonthlyWithPrice": "Emby Premiere Monthly {0}",
+    "HeaderAlreadyPaid": "Already Paid?",
     "ButtonPlayOneMinute": "Play One Minute",
     "PlaceFavoriteChannelsAtBeginning": "Place favorite channels at the beginning",
     "HeaderUnlockFeature": "Unlock Feature",
     "MessageDidYouKnowCinemaMode": "Did you know that with Emby Premiere, you can enhance your experience with features like Cinema Mode?",
     "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
     "HeaderPlayMyMedia": "Play my Media",
-    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere"
+    "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
+    "OneChannel": "One channel",
+    "ConfirmRemoveDownload": "Remove download?",
+    "AddedOnValue": "Added {0}"
 }

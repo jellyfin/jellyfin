@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {
@@ -63,6 +63,8 @@ namespace MediaBrowser.Api.Images
 
         [ApiMember(Name = "UnplayedCount", Description = "Optional unplayed count overlay to render", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? UnplayedCount { get; set; }
+
+        public int? Blur { get; set; }
 
         [ApiMember(Name = "BackgroundColor", Description = "Optional. Apply a background color for transparent images.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string BackgroundColor { get; set; }

@@ -1,4 +1,8 @@
-﻿.ui-body-b h1, .ui-body-b h2 {
+﻿.background-theme-b .backgroundContainer.withBackdrop {
+    background: rgba(6, 6, 6, .86) !important;
+}
+
+.ui-body-b h1, .ui-body-b h2 {
     color: #E53A35;
 }
 
@@ -9,10 +13,6 @@
 .libraryViewNav .ui-btn-active {
     border-bottom-color: #AC3326 !important;
     color: #AC3326 !important;
-}
-
-paper-button[raised].more {
-    background: #AC3326;
 }
 
 .channelTimeslotHeader, .timeslotHeader {

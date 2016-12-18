@@ -98,15 +98,24 @@
 
     function reload(context, id) {
 
-        loading.show();
-        currentItemId = id;
-
         var apiClient = connectionManager.getApiClient(currentServerId);
-        apiClient.getLiveTvSeriesTimer(id).then(function (result) {
 
-            renderTimer(context, result, apiClient);
+        loading.show();
+        if (typeof id === 'string') {
+            currentItemId = id;
+
+            apiClient.getLiveTvSeriesTimer(id).then(function (result) {
+
+                renderTimer(context, result, apiClient);
+                loading.hide();
+            });
+        } else if (id) {
+
+            currentItemId = id.Id;
+
+            renderTimer(context, id, apiClient);
             loading.hide();
-        });
+        }
     }
 
     function fillKeepUpTo(context) {
@@ -129,6 +138,10 @@
         }
 
         context.querySelector('.selectKeepUpTo').innerHTML = html;
+    }
+    
+    function onFieldChange(e) {
+        this.querySelector('.btnSubmit').click();
     }
 
     function embed(itemId, serverId, options) {
@@ -163,9 +176,8 @@
             dlg.querySelector('.dialogContentInner').className = '';
             dlg.classList.remove('hide');
 
-            dlg.addEventListener('change', function () {
-                dlg.querySelector('.btnSubmit').click();
-            });
+            dlg.removeEventListener('change', onFieldChange);
+            dlg.addEventListener('change', onFieldChange);
 
             currentDialog = dlg;
 

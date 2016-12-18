@@ -33,12 +33,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Logging;
 
 namespace Mono.Nat.Upnp
 {
     internal class Upnp
     {
-        public UpnpNatDevice Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
+        protected readonly ILogger Logger;
+        protected readonly IHttpClient HttpClient;
+
+        public Upnp(ILogger logger, IHttpClient httpClient)
+        {
+            Logger = logger;
+            HttpClient = httpClient;
+        }
+
+        public virtual Task<UpnpNatDevice> Handle(IPAddress localAddress, byte[] response, IPEndPoint endpoint)
         {
             // Convert it to a string for easy parsing
             string dataString = null;
@@ -77,7 +89,8 @@ namespace Mono.Nat.Upnp
                 throw new NotSupportedException("Received non-supported device type");
 
             // We have an internet gateway device now
-            return new UpnpNatDevice(localAddress, dataString, urn);
+            var device = new UpnpNatDevice(localAddress, dataString, urn, Logger, HttpClient);
+            return Task.FromResult(device);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿define(['libraryBrowser', 'cardBuilder', 'apphost'], function (libraryBrowser, cardBuilder, appHost) {
+    'use strict';
 
     // The base query options
     var data = {};
@@ -48,11 +49,12 @@
                 itemsContainer: elem,
                 shape: "backdrop",
                 preferThumb: true,
-                showTitle: false,
+                showTitle: true,
                 scalable: true,
                 showItemCounts: true,
                 centerText: true,
-                overlayMoreButton: true
+                overlayMoreButton: true,
+                context: 'tvshows'
             });
 
             Dashboard.hideLoadingMsg();

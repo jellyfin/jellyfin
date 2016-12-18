@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'jQuery', 'dom', 'humanedate', 'cardStyle', 'listViewStyle'], function (datetime, $, dom) {
+    'use strict';
 
     function renderNoHealthAlertsMessage(page) {
 

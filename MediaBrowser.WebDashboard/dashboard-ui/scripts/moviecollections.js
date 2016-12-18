@@ -1,4 +1,5 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView, cardBuilder, appHost) {
+    'use strict';
 
     return function (view, params, tabContent) {
 
@@ -24,7 +25,7 @@
                         StartIndex: 0,
                         Limit: pageSize
                     },
-                    view: libraryBrowser.getSavedView(key) || 'Poster'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 libraryBrowser.loadSavedQueryValues(key, pageData.query);
@@ -40,7 +41,7 @@
         function getSavedQueryKey(context) {
 
             if (!context.savedQueryKey) {
-                context.savedQueryKey = libraryBrowser.getSavedQueryKey('movies');
+                context.savedQueryKey = libraryBrowser.getSavedQueryKey('moviecollections');
             }
             return context.savedQueryKey;
         }
@@ -204,25 +205,9 @@
 
         function updateFilterControls(tabContent) {
 
-            var query = getQuery(tabContent);
-            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
         function initPage(tabContent) {
-
-            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
-            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
-                var newValue = e.detail.value;
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = newValue;
-                query.StartIndex = 0;
-                reloadItems(tabContent);
-            });
-
-            self.alphaPicker = new alphaPicker({
-                element: alphaPickerElement,
-                valueChangeEvent: 'click'
-            });
 
             tabContent.querySelector('.btnSort').addEventListener('click', function (e) {
                 libraryBrowser.showSortMenu({

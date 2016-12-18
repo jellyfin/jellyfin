@@ -3,12 +3,12 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
-using ServiceStack;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

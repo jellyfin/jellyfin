@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'apphost', 'scripts/taskbutton', 'cardStyle'], function ($, appHost, taskButton) {
+    'use strict';
 
     function changeCollectionType(page, virtualFolder) {
 
@@ -249,7 +250,7 @@
             { name: Globalize.translate('FolderTypeMovies'), value: "movies" },
             { name: Globalize.translate('FolderTypeMusic'), value: "music" },
             { name: Globalize.translate('FolderTypeTvShows'), value: "tvshows" },
-            { name: Globalize.translate('FolderTypeBooks'), value: "books", message: Globalize.translate('MessageBookPluginRequired') },
+            { name: Globalize.translate('FolderTypeBooks'), value: "books", message: Globalize.translate('BookLibraryHelp') },
             { name: Globalize.translate('FolderTypeGames'), value: "games", message: Globalize.translate('MessageGamePluginRequired') },
             { name: Globalize.translate('OptionHomeVideos'), value: "homevideos" },
             { name: Globalize.translate('FolderTypeMusicVideos'), value: "musicvideos" },
@@ -441,10 +442,6 @@
          {
              href: 'librarydisplay.html',
              name: Globalize.translate('TabDisplay')
-         },
-         {
-             href: 'librarypathmapping.html',
-             name: Globalize.translate('TabPathSubstitution')
          },
          {
              href: 'librarysettings.html',

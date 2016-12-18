@@ -1,4 +1,5 @@
 ﻿define(['globalize', 'emby-checkbox', 'emby-button'], function (globalize) {
+    'use strict';
 
     function getTabs() {
         return [
@@ -9,10 +10,6 @@
          {
              href: 'librarydisplay.html',
              name: globalize.translate('TabDisplay')
-         },
-         {
-             href: 'librarypathmapping.html',
-             name: globalize.translate('TabPathSubstitution')
          },
          {
              href: 'librarysettings.html',

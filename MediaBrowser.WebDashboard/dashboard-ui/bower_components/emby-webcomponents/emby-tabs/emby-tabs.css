@@ -8,7 +8,7 @@
     width: auto;
     font-family: inherit;
     font-size: inherit;
-    color: #aaa !important;
+    color: #aaa;
     display: inline-block;
     vertical-align: middle;
     flex-shrink: 0;
@@ -17,7 +17,7 @@
     transition: none !important;
     position: relative;
     text-transform: uppercase;
-    font-weight: bold !important;
+    font-weight: bold;
     height: auto;
     min-width: initial;
     line-height: initial;
@@ -26,11 +26,11 @@
 }
 
     .emby-tab-button:focus {
-        font-weight: bold !important;
+        font-weight: bold;
     }
 
 .emby-tab-button-active {
-    color: #52B54B !important;
+    color: #52B54B;
     border-color: #52B54B;
 }
 

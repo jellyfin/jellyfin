@@ -873,6 +873,11 @@ define(['browser', 'layoutManager', 'dom', 'focusManager', 'scrollStyles'], func
                 }
             } else {
                 slideeElement.style['will-change'] = 'transform';
+                if (o.horizontal) {
+                    slideeElement.classList.add('animatedScrollX');
+                } else {
+                    slideeElement.classList.add('animatedScrollY');
+                }
             }
 
             dragSourceElement.addEventListener('mousedown', dragInitSlidee);

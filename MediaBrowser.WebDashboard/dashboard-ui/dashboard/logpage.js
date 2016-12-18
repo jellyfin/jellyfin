@@ -1,4 +1,5 @@
 ﻿define(['datetime', 'listViewStyle'], function (datetime) {
+    'use strict';
 
     return function (view, params) {
 

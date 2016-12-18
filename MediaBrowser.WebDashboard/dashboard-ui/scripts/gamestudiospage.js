@@ -1,4 +1,5 @@
-define(['jQuery'], function ($) {
+define(['jQuery', 'imageLoader'], function ($, imageLoader) {
+    'use strict';
 
     // The base query options
     var query = {
@@ -46,7 +47,7 @@ define(['jQuery'], function ($) {
 
             var elem = page.querySelector('#items');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

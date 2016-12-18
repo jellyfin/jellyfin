@@ -310,7 +310,8 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                 textlines.push(displayName);
             }
 
-            if (options.artist !== false) {
+            if (options.artist !== false && (options.artist === true || item.AlbumArtist !== options.containerAlbumArtist)) {
+
                 if (item.ArtistItems && item.Type !== 'MusicAlbum') {
                     textlines.push(item.ArtistItems.map(function (a) {
                         return a.Name;
@@ -318,7 +319,7 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
                     }).join(', '));
                 }
 
-                if (item.AlbumArtist && item.Type === 'MusicAlbum') {
+                else if (item.AlbumArtist && item.Type === 'MusicAlbum') {
                     textlines.push(item.AlbumArtist);
                 }
             }

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Providers;
 
@@ -78,16 +78,15 @@ namespace MediaBrowser.Providers.Manager
 
             bool hasRefreshedMetadata = true;
             bool hasRefreshedImages = true;
+            var isFirstRefresh = item.DateLastRefreshed == default(DateTime);
 
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, refreshOptions, requiresRefresh)
+                var providers = GetProviders(item, refreshOptions, isFirstRefresh, requiresRefresh)
                     .ToList();
 
-                var dateLastRefresh = item.DateLastRefreshed;
-
-                if (providers.Count > 0 || dateLastRefresh == default(DateTime))
+                if (providers.Count > 0 || isFirstRefresh)
                 {
                     if (item.BeforeMetadataRefresh())
                     {
@@ -110,11 +109,7 @@ namespace MediaBrowser.Providers.Manager
                     var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    if (result.Failures == 0)
-                    {
-                        hasRefreshedMetadata = true;
-                    }
-                    else
+                    if (result.Failures > 0)
                     {
                         hasRefreshedMetadata = false;
                     }
@@ -138,18 +133,12 @@ namespace MediaBrowser.Providers.Manager
                     var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, config, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
-                    if (result.Failures == 0)
-                    {
-                        hasRefreshedImages = true;
-                    }
-                    else
+                    if (result.Failures > 0)
                     {
                         hasRefreshedImages = false;
                     }
                 }
             }
-
-            var isFirstRefresh = item.DateLastRefreshed == default(DateTime);
 
             var beforeSaveResult = await BeforeSave(itemOfType, isFirstRefresh || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || requiresRefresh, updateType).ConfigureAwait(false);
             updateType = updateType | beforeSaveResult;
@@ -373,15 +362,18 @@ namespace MediaBrowser.Providers.Manager
         /// Gets the providers.
         /// </summary>
         /// <returns>IEnumerable{`0}.</returns>
-        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataRefreshOptions options, bool requiresRefresh)
+        protected IEnumerable<IMetadataProvider> GetProviders(IHasMetadata item, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
             // Get providers to refresh
             var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item).ToList();
 
-            var dateLastRefresh = item.DateLastRefreshed;
+            var metadataRefreshMode = options.MetadataRefreshMode;
 
             // Run all if either of these flags are true
-            var runAllProviders = options.ReplaceAllMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || dateLastRefresh == default(DateTime) || requiresRefresh;
+            var runAllProviders = options.ReplaceAllMetadata ||
+                metadataRefreshMode == MetadataRefreshMode.FullRefresh || 
+                (isFirstRefresh && metadataRefreshMode >= MetadataRefreshMode.Default) ||
+                (requiresRefresh && metadataRefreshMode >= MetadataRefreshMode.Default);
 
             if (!runAllProviders)
             {
@@ -404,6 +396,9 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
+                    var anyRemoteProvidersChanged = providersWithChanges.OfType<IRemoteMetadataProvider>()
+                        .Any();
+
                     providers = providers.Where(i =>
                     {
                         // If any provider reports a change, always run local ones as well
@@ -412,12 +407,14 @@ namespace MediaBrowser.Providers.Manager
                             return true;
                         }
 
-                        var anyRemoteProvidersChanged = providersWithChanges.OfType<IRemoteMetadataProvider>()
-                            .Any();
-
                         // If any remote providers changed, run them all so that priorities can be honored
                         if (i is IRemoteMetadataProvider)
                         {
+                            if (options.MetadataRefreshMode == MetadataRefreshMode.ValidationOnly)
+                            {
+                                return false;
+                            }
+
                             return anyRemoteProvidersChanged;
                         }
 
@@ -536,7 +533,7 @@ namespace MediaBrowser.Providers.Manager
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
-                        if (item.IsLocked || IsFullLocalMetadata(localItem.Item))
+                        if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
                         {
                             hasLocalMetadata = true;
                         }
@@ -573,14 +570,16 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
-                    // If no local metadata, take data from item itself
-                    if (!hasLocalMetadata)
+                    if (hasLocalMetadata)
+                    {
+                        MergeData(temp, metadata, item.LockedFields, true, true);
+                    }
+                    else
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, new List<MetadataFields>(), false, true);
+                        MergeData(metadata, temp, new List<MetadataFields>(), false, false);
+                        MergeData(temp, metadata, item.LockedFields, true, false);
                     }
-
-                    MergeData(temp, metadata, item.LockedFields, true, true);
                 }
             }
 

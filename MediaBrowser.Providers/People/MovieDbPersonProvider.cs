@@ -16,7 +16,9 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 
@@ -80,7 +82,7 @@ namespace MediaBrowser.Providers.People
                 };
 
                 result.SetProviderId(MetadataProviders.Tmdb, info.id.ToString(_usCulture));
-                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id.ToString(_usCulture));
+                result.SetProviderId(MetadataProviders.Imdb, info.imdb_id);
 
                 return new[] { result };
             }
@@ -250,7 +252,7 @@ namespace MediaBrowser.Providers.People
             {
                 _fileSystem.CreateDirectory(Path.GetDirectoryName(dataFilePath));
 
-                using (var fs = _fileSystem.GetFileStream(dataFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var fs = _fileSystem.GetFileStream(dataFilePath, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await json.CopyToAsync(fs).ConfigureAwait(false);
                 }
@@ -406,8 +408,7 @@ namespace MediaBrowser.Providers.People
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+                Url = url
             });
         }
     }

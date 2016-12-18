@@ -37,17 +37,17 @@ namespace OpenSubtitlesHandler
         protected double seconds;
         protected string status;
 
-        protected virtual void LoadAttributes()
+        protected void LoadAttributes()
         {
-            foreach (Attribute attr in Attribute.GetCustomAttributes(this.GetType()))
-            {
-                if (attr.GetType() == typeof(MethodResponseDescription))
-                {
-                    this.name = ((MethodResponseDescription)attr).Name;
-                    this.message = ((MethodResponseDescription)attr).Message;
-                    break;
-                }
-            }
+            //foreach (Attribute attr in Attribute.GetCustomAttributes(this.GetType()))
+            //{
+            //    if (attr.GetType() == typeof(MethodResponseDescription))
+            //    {
+            //        this.name = ((MethodResponseDescription)attr).Name;
+            //        this.message = ((MethodResponseDescription)attr).Message;
+            //        break;
+            //    }
+            //}
         }
 
         [Description("The name of this response"), Category("MethodResponse")]
@@ -58,5 +58,15 @@ namespace OpenSubtitlesHandler
         public double Seconds { get { return seconds; } set { seconds = value; } }
         [Description("The status"), Category("MethodResponse")]
         public string Status { get { return status; } set { status = value; } }
+    }
+
+    public class DescriptionAttribute : Attribute
+    {
+        public DescriptionAttribute(string text) { }
+    }
+
+    public class CategoryAttribute : Attribute
+    {
+        public CategoryAttribute(string text) { }
     }
 }

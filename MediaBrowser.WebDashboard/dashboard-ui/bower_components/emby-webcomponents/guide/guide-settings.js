@@ -1,6 +1,42 @@
 ﻿define(['dialogHelper', 'globalize', 'userSettings', 'layoutManager', 'connectionManager', 'require', 'loading', 'scrollHelper', 'emby-checkbox', 'emby-radio', 'css!./../formdialog', 'material-icons'], function (dialogHelper, globalize, userSettings, layoutManager, connectionManager, require, loading, scrollHelper) {
     'use strict';
 
+    function saveCategories(context, options) {
+
+        var categories = [];
+
+        var chkCategorys = context.querySelectorAll('.chkCategory');
+        for (var i = 0, length = chkCategorys.length; i < length; i++) {
+
+            var type = chkCategorys[i].getAttribute('data-type');
+
+            if (chkCategorys[i].checked) {
+                categories.push(type);
+            }
+        }
+
+        if (categories.length >= 4) {
+            categories.push('series');
+        }
+
+        // differentiate between none and all
+        categories.push('all');
+        options.categories = categories;
+    }
+
+    function loadCategories(context, options) {
+
+        var selectedCategories = options.categories || [];
+
+        var chkCategorys = context.querySelectorAll('.chkCategory');
+        for (var i = 0, length = chkCategorys.length; i < length; i++) {
+
+            var type = chkCategorys[i].getAttribute('data-type');
+
+            chkCategorys[i].checked = !selectedCategories.length || selectedCategories.indexOf(type) !== -1;
+        }
+    }
+
     function save(context) {
 
         var i, length;
@@ -65,7 +101,7 @@
         }
     }
 
-    function showEditor() {
+    function showEditor(options) {
 
         return new Promise(function (resolve, reject) {
 
@@ -106,6 +142,7 @@
                     }
 
                     save(dlg);
+                    saveCategories(dlg, options);
 
                     if (settingsChanged) {
                         resolve();
@@ -123,6 +160,7 @@
                 }
 
                 load(dlg);
+                loadCategories(dlg, options);
                 dialogHelper.open(dlg);
             });
         });

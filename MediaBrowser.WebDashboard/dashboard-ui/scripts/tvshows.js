@@ -1,4 +1,5 @@
-﻿define(['events', 'libraryBrowser', 'imageLoader', 'alphaPicker', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, alphaPicker, listView, cardBuilder, appHost) {
+﻿define(['events', 'libraryBrowser', 'imageLoader', 'listView', 'cardBuilder', 'apphost', 'emby-itemscontainer'], function (events, libraryBrowser, imageLoader, listView, cardBuilder, appHost) {
+    'use strict';
 
     return function (view, params, tabContent) {
 
@@ -100,9 +101,9 @@
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
                 else if (viewStyle == "ThumbCard") {
@@ -111,7 +112,7 @@
                         items: result.Items,
                         shape: "backdrop",
                         preferThumb: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true,
                         cardLayout: true,
                         showTitle: true,
@@ -125,7 +126,7 @@
                         items: result.Items,
                         shape: "banner",
                         preferBanner: true,
-                        context: 'tv',
+                        context: 'tvshows',
                         lazy: true
                     });
                 }
@@ -133,7 +134,7 @@
 
                     html = listView.getListViewHtml({
                         items: result.Items,
-                        context: 'tv',
+                        context: 'tvshows',
                         sortBy: query.SortBy
                     });
                 }
@@ -142,7 +143,7 @@
                     html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
-                        context: 'tv',
+                        context: 'tvshows',
                         showTitle: true,
                         showSeriesYear: true,
                         lazy: true,
@@ -156,10 +157,10 @@
                     html = cardBuilder.getCardsHtml({
                         items: result.Items,
                         shape: "portrait",
-                        context: 'tv',
+                        context: 'tvshows',
                         centerText: true,
                         lazy: true,
-                        overlayPlayButton: true
+                        overlayMoreButton: true
                     });
                 }
 
@@ -219,25 +220,9 @@
 
         function updateFilterControls(tabContent) {
 
-            var query = getQuery(tabContent);
-            self.alphaPicker.value(query.NameStartsWithOrGreater);
         }
 
         function initPage(tabContent) {
-
-            var alphaPickerElement = tabContent.querySelector('.alphaPicker');
-            alphaPickerElement.addEventListener('alphavaluechanged', function (e) {
-                var newValue = e.detail.value;
-                var query = getQuery(tabContent);
-                query.NameStartsWithOrGreater = newValue;
-                query.StartIndex = 0;
-                reloadItems(tabContent);
-            });
-
-            self.alphaPicker = new alphaPicker({
-                element: alphaPickerElement,
-                valueChangeEvent: 'click'
-            });
 
             tabContent.querySelector('.btnFilter').addEventListener('click', function () {
                 self.showFilterMenu();

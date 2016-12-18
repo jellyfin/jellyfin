@@ -135,6 +135,8 @@
         var selectQuality = form.querySelector('#selectQuality');
         if (selectQuality) {
             job.Quality = selectQuality.value;
+
+            appSettings.set('sync-lastquality', job.Quality || '');
         }
 
         var selectProfile = form.querySelector('#selectProfile');
@@ -341,6 +343,9 @@
             return true;
         }
         if (firstItem.Type === 'MusicGenre') {
+            return true;
+        }
+        if (firstItem.Type === 'Playlist' && firstItem.MediaType === 'Audio') {
             return true;
         }
 
@@ -589,6 +594,15 @@
                 return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
 
             }).join('');
+
+            var lastQuality = appSettings.get('sync-lastquality');
+            if (lastQuality && options.QualityOptions.filter(function (i) {
+
+                return i.Id === lastQuality;
+
+            }).length) {
+                selectQuality.value = lastQuality;
+            }
 
             selectQuality.dispatchEvent(new CustomEvent('change', {
                 bubbles: true

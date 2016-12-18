@@ -1,21 +1,10 @@
-﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationServices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
+﻿define(['require', 'browser', 'globalize', 'connectionManager', 'serverNotifications', 'loading', 'datetime', 'focusManager', 'userSettings', 'imageLoader', 'events', 'layoutManager', 'itemShortcuts', 'registrationServices', 'dom', 'clearButtonStyle', 'css!./guide.css', 'programStyles', 'material-icons', 'scrollStyles', 'emby-button', 'paper-icon-button-light', 'emby-tabs'], function (require, browser, globalize, connectionManager, serverNotifications, loading, datetime, focusManager, userSettings, imageLoader, events, layoutManager, itemShortcuts, registrationServices, dom) {
     'use strict';
 
     function showViewSettings(instance) {
 
         require(['guide-settings-dialog'], function (guideSettingsDialog) {
-            guideSettingsDialog.show().then(function () {
-                instance.refresh();
-            });
-        });
-    }
-
-    function showCategoryOptions(instance) {
-
-        require(['guide-categories-dialog'], function (guideCategoriesDialog) {
-            guideCategoriesDialog.show(instance.categoryOptions).then(function (categoryOptions) {
-
-                instance.categoryOptions = categoryOptions;
+            guideSettingsDialog.show(instance.categoryOptions).then(function () {
                 instance.refresh();
             });
         });
@@ -38,14 +27,30 @@
         var currentDate;
         var currentStartIndex = 0;
         var currentChannelLimit = 0;
+        var autoRefreshInterval;
 
         self.refresh = function () {
 
             currentDate = null;
             reloadPage(options.element);
+            restartAutoRefresh();
+        };
+
+        self.pause = function () {
+            stopAutoRefresh();
+        };
+
+        self.resume = function (refreshData) {
+            if (refreshData) {
+                self.refresh();
+            } else {
+                restartAutoRefresh();
+            }
         };
 
         self.destroy = function () {
+
+            stopAutoRefresh();
 
             events.off(serverNotifications, 'TimerCreated', onTimerCreated);
             events.off(serverNotifications, 'SeriesTimerCreated', onSeriesTimerCreated);
@@ -57,6 +62,24 @@
             itemShortcuts.off(options.element);
             items = {};
         };
+
+        function restartAutoRefresh() {
+
+            stopAutoRefresh();
+
+            var intervalMs = 60000 * 15; // (minutes)
+
+            autoRefreshInterval = setInterval(function () {
+                self.refresh();
+            }, intervalMs);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
 
         function normalizeDateToTimeslot(date) {
 
@@ -152,7 +175,7 @@
             });
         }
 
-        function reloadGuide(context, newStartDate) {
+        function reloadGuide(context, newStartDate, focusProgramOnRender) {
 
             var apiClient = connectionManager.currentApiClient();
 
@@ -211,8 +234,8 @@
                     channelQuery.SortBy = "DatePlayed";
                     channelQuery.SortOrder = "Descending";
                 } else {
-                    channelQuery.SortBy = "SortName";
-                    channelQuery.SortOrder = "Ascending";
+                    channelQuery.SortBy = null;
+                    channelQuery.SortOrder = null;
                 }
 
                 var date = newStartDate;
@@ -267,7 +290,7 @@
 
                     }).then(function (programsResult) {
 
-                        renderGuide(context, date, channelsResult.Items, programsResult.Items, apiClient);
+                        renderGuide(context, date, channelsResult.Items, programsResult.Items, apiClient, focusProgramOnRender);
 
                         hideLoading();
 
@@ -482,7 +505,7 @@
                     timerAttributes += ' data-seriestimerid="' + program.SeriesTimerId + '"';
                 }
 
-                html += '<button data-action="' + clickAction + '"' + timerAttributes + ' data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+                html += '<button data-action="' + clickAction + '"' + timerAttributes + ' data-channelid="' + program.ChannelId + '" data-id="' + program.Id + '" data-serverid="' + program.ServerId + '" data-type="' + program.Type + '" class="' + cssClass + '" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
                 if (displayInnerContent) {
                     var guideProgramNameClass = "guideProgramName";
@@ -605,7 +628,7 @@
             imageLoader.lazyChildren(channelList);
         }
 
-        function renderGuide(context, date, channels, programs, apiClient) {
+        function renderGuide(context, date, channels, programs, apiClient, focusProgramOnRender) {
 
             //var list = [];
             //channels.forEach(function(i) {
@@ -663,7 +686,7 @@
             items = {};
             renderPrograms(context, date, channels, programs);
 
-            if (layoutManager.tv) {
+            if (focusProgramOnRender) {
 
                 var focusElem;
                 if (itemId) {
@@ -723,21 +746,30 @@
             }
         }
 
-        function changeDate(page, date) {
+        function changeDate(page, date, focusProgramOnRender) {
 
             clearCurrentTimeUpdateInterval();
 
             var newStartDate = normalizeDateToTimeslot(date);
             currentDate = newStartDate;
 
-            reloadGuide(page, newStartDate);
-
-            var dateText = datetime.toLocaleDateString(date, { weekday: 'short', month: 'short', day: 'numeric' });
-
-            page.querySelector('.guideDateText').innerHTML = dateText;
+            reloadGuide(page, newStartDate, focusProgramOnRender);
         }
 
-        var dateOptions = [];
+        function getDateTabText(date, isActive, tabIndex) {
+
+            var cssClass = isActive ? 'emby-tab-button guide-date-tab-button emby-tab-button-active' : 'emby-tab-button guide-date-tab-button';
+
+            var html = '<button is="emby-button" class="' + cssClass + '" data-index="' + tabIndex + '" data-date="' + date.getTime() + '">';
+            var tabText = datetime.toLocaleDateString(date, { weekday: 'short' });
+
+            tabText += '<br/>';
+            tabText += date.getDate();
+            html += '<div class="emby-button-foreground">' + tabText + '</div>';
+            html += '</button>';
+
+            return html;
+        }
 
         function setDateRange(page, guideInfo) {
 
@@ -756,18 +788,8 @@
 
             start = new Date(Math.max(today, start));
 
-            dateOptions = [];
-
-            while (start <= end) {
-
-                dateOptions.push({
-                    name: datetime.toLocaleDateString(start, { weekday: 'long', month: 'long', day: 'numeric' }),
-                    id: start.getTime()
-                });
-
-                start.setDate(start.getDate() + 1);
-                start.setHours(0, 0, 0, 0);
-            }
+            var dateTabsHtml = '';
+            var tabIndex = 0;
 
             var date = new Date();
 
@@ -775,7 +797,21 @@
                 date.setTime(currentDate.getTime());
             }
 
-            changeDate(page, date);
+            while (start <= end) {
+
+                var isActive = date.getDate() === start.getDate() && date.getMonth() === start.getMonth() && date.getFullYear() === start.getFullYear();
+
+                dateTabsHtml += getDateTabText(start, isActive, tabIndex);
+
+                start.setDate(start.getDate() + 1);
+                start.setHours(0, 0, 0, 0);
+                tabIndex++;
+            }
+
+            page.querySelector('.emby-tabs-slider').innerHTML = dateTabsHtml;
+            page.querySelector('.guideDateTabs').refresh();
+
+            changeDate(page, date, layoutManager.tv);
         }
 
         function reloadPage(page) {
@@ -790,36 +826,13 @@
             });
         }
 
-        function selectDate(page) {
-
-            var selectedDate = currentDate || new Date();
-            dateOptions.forEach(function (d) {
-                d.selected = new Date(d.id).getDate() === selectedDate.getDate();
-            });
-
-            require(['actionsheet'], function (actionsheet) {
-
-                actionsheet.show({
-                    items: dateOptions,
-                    title: globalize.translate('sharedcomponents#HeaderSelectDate'),
-                    callback: function (id) {
-
-                        var date = new Date();
-                        date.setTime(parseInt(id));
-                        changeDate(page, date);
-                    }
-                });
-
-            });
-        }
-
         function setScrollEvents(view, enabled) {
 
             if (layoutManager.tv) {
                 require(['scrollHelper'], function (scrollHelper) {
 
                     var fn = enabled ? 'on' : 'off';
-                    scrollHelper.centerFocus[fn](view.querySelector('.smoothScrollY'), false);
+                    scrollHelper.centerFocus[fn](view.querySelector('.guideVerticalScroller'), false);
                     scrollHelper.centerFocus[fn](view.querySelector('.programGrid'), true);
                 });
             }
@@ -903,9 +916,9 @@
             context.innerHTML = globalize.translateDocument(template, 'sharedcomponents');
 
             if (layoutManager.desktop) {
-                var visibleGuideScrollers = context.querySelectorAll('.guideScroller');
-                for (var i = 0, length = visibleGuideScrollers.length; i < length; i++) {
-                    visibleGuideScrollers[i].classList.add('visibleGuideScroller');
+                var guideScrollers = context.querySelectorAll('.guideScroller');
+                for (var i = 0, length = guideScrollers.length; i < length; i++) {
+                    guideScrollers[i].classList.add('darkScroller');
                 }
             }
 
@@ -913,6 +926,16 @@
             var timeslotHeaders = context.querySelector('.timeslotHeaders');
 
             programGrid.addEventListener('focus', onProgramGridFocus, true);
+
+            if (browser.iOS || browser.osx) {
+                context.querySelector('.channelsContainer').classList.add('noRubberBanding');
+
+                var programGridContainer = context.querySelector('.programGridContainer');
+
+                programGridContainer.classList.add('noRubberBanding');
+                programGridContainer.classList.remove('smoothScrollX');
+                programGridContainer.classList.add('hiddenScrollX');
+            }
 
             dom.addEventListener(programGrid, 'scroll', function (e) {
                 onProgramGridScroll(context, this, timeslotHeaders);
@@ -926,31 +949,37 @@
                 passive: true
             });
 
-            context.querySelector('.btnSelectDate').addEventListener('click', function () {
-                selectDate(context);
-            });
-
             context.querySelector('.btnUnlockGuide').addEventListener('click', function () {
                 currentStartIndex = 0;
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnNextPage').addEventListener('click', function () {
                 currentStartIndex += currentChannelLimit;
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnPreviousPage').addEventListener('click', function () {
                 currentStartIndex = Math.max(currentStartIndex - currentChannelLimit, 0);
                 reloadPage(context);
+                restartAutoRefresh();
             });
 
             context.querySelector('.btnGuideViewSettings').addEventListener('click', function () {
                 showViewSettings(self);
+                restartAutoRefresh();
             });
 
-            context.querySelector('.btnCategories').addEventListener('click', function () {
-                showCategoryOptions(self);
+            context.querySelector('.guideDateTabs').addEventListener('tabchange', function (e) {
+
+                var tabButton = e.target.querySelectorAll('.guide-date-tab-button')[parseInt(e.detail.selectedTabIndex)];
+                if (tabButton) {
+                    var date = new Date();
+                    date.setTime(parseInt(tabButton.getAttribute('data-date')));
+                    changeDate(context, date, false);
+                }
             });
 
             context.classList.add('tvguide');

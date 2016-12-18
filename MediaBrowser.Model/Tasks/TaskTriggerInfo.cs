@@ -42,5 +42,11 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The maximum runtime ms.</value>
         public int? MaxRuntimeMs { get; set; }
+
+        public const string TriggerDaily = "DailyTrigger";
+        public const string TriggerWeekly = "WeeklyTrigger";
+        public const string TriggerInterval = "IntervalTrigger";
+        public const string TriggerSystemEvent = "SystemEventTrigger";
+        public const string TriggerStartup = "StartupTrigger";
     }
 }

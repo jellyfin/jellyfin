@@ -51,7 +51,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 });
             }
 
-            if (item.CanDelete) {
+            if (item.CanDelete && options.deleteItem !== false) {
 
                 if (item.Type === 'Playlist' || item.Type === 'BoxSet') {
                     commands.push({
@@ -174,7 +174,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (item.Type === 'Program') {
+            if (item.Type === 'Program' && options.record !== false) {
 
                 commands.push({
                     name: Globalize.translate('sharedcomponents#Record'),
@@ -184,7 +184,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             if (user.Policy.IsAdministrator) {
 
-                if (item.Type !== 'Timer' && item.Type !== 'SeriesTimer' && item.Type !== 'Program' && !(item.Type === 'Recording' && item.Status !== 'Completed')) {
+                if (item.Type !== 'Timer' && item.Type !== 'SeriesTimer' && item.Type !== 'Program' && item.Type !== 'TvChannel' && !(item.Type === 'Recording' && item.Status !== 'Completed')) {
                     commands.push({
                         name: globalize.translate('sharedcomponents#Refresh'),
                         id: 'refresh'
@@ -233,7 +233,7 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
-            if (options.openAlbum !== false && item.AlbumId) {
+            if (options.openAlbum !== false && item.AlbumId && item.MediaType !== 'Photo') {
                 commands.push({
                     name: Globalize.translate('sharedcomponents#ViewAlbum'),
                     id: 'album'
@@ -577,25 +577,16 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
         return new Promise(function (resolve, reject) {
 
-            var itemId = item.Id;
+            require(['deleteHelper'], function (deleteHelper) {
 
-            var msg = globalize.translate('sharedcomponents#ConfirmDeleteItem');
-            var title = globalize.translate('sharedcomponents#HeaderDeleteItem');
-
-            require(['confirm'], function (confirm) {
-
-                confirm({
-
-                    title: title,
-                    text: msg,
-                    confirmText: globalize.translate('sharedcomponents#Delete'),
-                    primary: 'cancel'
+                deleteHelper.deleteItem({
+                    
+                    item: item,
+                    navigate: false
 
                 }).then(function () {
 
-                    apiClient.deleteItem(itemId).then(function () {
-                        resolve(true);
-                    });
+                    resolve(true);
 
                 }, reject);
 

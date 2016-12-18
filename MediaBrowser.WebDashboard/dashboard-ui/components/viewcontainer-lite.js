@@ -1,4 +1,5 @@
 define(['browser'], function (browser) {
+    'use strict';
 
     var mainAnimatedPages = document.querySelector('.mainAnimatedPages');
     var allPages = [];

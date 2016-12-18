@@ -1,5 +1,5 @@
-define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo', 'focusManager', 'indicators', 'globalize', 'layoutManager', 'apphost', 'dom', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
-    function (datetime, imageLoader, connectionManager, itemHelper, mediaInfo, focusManager, indicators, globalize, layoutManager, appHost, dom) {
+define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusManager', 'indicators', 'globalize', 'layoutManager', 'apphost', 'dom', 'browser', 'emby-button', 'css!./card', 'paper-icon-button-light', 'clearButtonStyle'],
+    function (datetime, imageLoader, connectionManager, itemHelper, focusManager, indicators, globalize, layoutManager, appHost, dom, browser) {
         'use strict';
 
         var devicePixelRatio = window.devicePixelRatio || 1;
@@ -144,6 +144,20 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         return 100 / 64;
                     }
                     return 100 / 72;
+                case 'overflowSmallBackdrop':
+                    if (screenWidth >= 1200) {
+                        return 100 / 18;
+                    }
+                    if (screenWidth >= 1000) {
+                        return 100 / 24;
+                    }
+                    if (screenWidth >= 770) {
+                        return 100 / 30;
+                    }
+                    if (screenWidth >= 540) {
+                        return 100 / 40;
+                    }
+                    return 100 / 60;
                 default:
                     return 4;
             }
@@ -689,7 +703,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
             return 'defaultCardColor' + getDefaultColorIndex(str);
         }
 
-        function getCardTextLines(lines, cssClass, forceLines, isOuterFooter, cardLayout, addRightMargin) {
+        function getCardTextLines(lines, cssClass, forceLines, isOuterFooter, cardLayout, addRightMargin, maxLines) {
 
             var html = '';
 
@@ -714,10 +728,17 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     html += text;
                     html += "</div>";
                     valid++;
+
+                    if (maxLines && valid >= maxLines) {
+                        break;
+                    }
                 }
             }
 
             if (forceLines) {
+
+                length = Math.min(lines.length, maxLines || lines.length);
+
                 while (valid < length) {
                     html += "<div class='" + cssClass + "'>&nbsp;</div>";
                     valid++;
@@ -792,7 +813,9 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
             if (showMediaTitle) {
 
-                var name = options.showTitle === 'auto' && !item.IsFolder && item.MediaType === 'Photo' ? '' : itemHelper.getDisplayName(item);
+                var name = options.showTitle === 'auto' && !item.IsFolder && item.MediaType === 'Photo' ? '' : itemHelper.getDisplayName(item, {
+                    includeParentInfo: options.includeParentInfoInTitle
+                });
 
                 lines.push(name);
             }
@@ -964,8 +987,8 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     if (item.RecordAnyChannel) {
                         lines.push(globalize.translate('sharedcomponents#AllChannels'));
                     }
-                    else if (item.ChannelId) {
-                        lines.push(item.ChannelName || '');
+                    else {
+                        lines.push(item.ChannelName || globalize.translate('sharedcomponents#OneChannel'));
                     }
                 }
 
@@ -974,7 +997,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                         lines.push('as ' + item.Role);
                     }
                     else if (item.Type) {
-                        lines.push(globalize.translate('core#' + item.Type));
+                        lines.push(globalize.translate('sharedcomponents#' + item.Type));
                     } else {
                         lines.push('');
                     }
@@ -985,7 +1008,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 lines = [];
             }
 
-            html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter, options.cardLayout, isOuterFooter && options.cardLayout && !options.centerText);
+            html += getCardTextLines(lines, cssClass, !options.overlayText, isOuterFooter, options.cardLayout, isOuterFooter && options.cardLayout && !options.centerText, options.lines);
 
             if (progressHtml) {
                 html += progressHtml;
@@ -1041,10 +1064,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
 
                     minutes = minutes || 1;
 
-                    childText += globalize.translate('ValueMinutes', Math.round(minutes));
+                    childText += globalize.translate('sharedcomponents#ValueMinutes', Math.round(minutes));
 
                 } else {
-                    childText += globalize.translate('ValueMinutes', 0);
+                    childText += globalize.translate('sharedcomponents#ValueMinutes', 0);
                 }
 
                 counts.push(childText);
@@ -1236,7 +1259,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                 }
 
                 if (overlayPlayButton && !item.IsPlaceHolder && (item.LocationType !== 'Virtual' || !item.MediaType || item.Type === 'Program') && item.Type !== 'Person' && item.PlayAccess === 'Full') {
-                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="playmenu" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
+                    overlayButtons += '<button is="paper-icon-button-light" class="cardOverlayButton itemAction autoSize" data-action="play" onclick="return false;"><i class="md-icon">play_arrow</i></button>';
                 }
                 if (options.overlayMoreButton) {
 
@@ -1268,7 +1291,12 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                     cardContentClose = '</button>';
                 }
 
-                if (options.vibrant && imgUrl && !vibrantSwatch) {
+                var vibrantAttributes = options.vibrant && imgUrl && !vibrantSwatch ?
+                    (' data-vibrant="' + cardFooterId + '" data-swatch="db"') :
+                    '';
+
+                // Don't use the IMG tag with safari because it puts a white border around it
+                if (vibrantAttributes && !browser.safari) {
                     cardImageContainerOpen = '<div class="' + cardImageContainerClass + '">';
 
                     var imgClass = 'cardImage cardImage-img lazy';
@@ -1279,10 +1307,10 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'mediaInfo
                             imgClass += ' coveredImage-img';
                         }
                     }
-                    cardImageContainerOpen += '<img crossOrigin="Anonymous" class="' + imgClass + '" data-vibrant="' + cardFooterId + '" data-swatch="db" data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
+                    cardImageContainerOpen += '<img crossOrigin="Anonymous" class="' + imgClass + '"' + vibrantAttributes + ' data-src="' + imgUrl + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />';
 
                 } else {
-                    cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy" data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
+                    cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClass + ' lazy"' + vibrantAttributes + ' data-src="' + imgUrl + '">') : ('<div class="' + cardImageContainerClass + '">');
                 }
 
                 var cardScalableClass = options.cardLayout ? 'cardScalable visualCardBox-cardScalable' : 'cardScalable';

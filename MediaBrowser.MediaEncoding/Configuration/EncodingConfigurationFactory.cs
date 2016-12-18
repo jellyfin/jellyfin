@@ -2,7 +2,9 @@
 using MediaBrowser.Model.Configuration;
 using System.Collections.Generic;
 using System.IO;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.MediaEncoding.Configuration
 {
@@ -48,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Configuration
                 // Validate
                 if (!_fileSystem.DirectoryExists(newPath))
                 {
-                    throw new DirectoryNotFoundException(string.Format("{0} does not exist.", newPath));
+                    throw new FileNotFoundException(string.Format("{0} does not exist.", newPath));
                 }
             }
         }

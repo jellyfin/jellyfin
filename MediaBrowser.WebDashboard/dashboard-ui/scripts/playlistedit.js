@@ -1,4 +1,5 @@
-﻿define(['jQuery', 'listView'], function ($, listView) {
+﻿define(['jQuery', 'listView', 'imageLoader'], function ($, listView, imageLoader) {
+    'use strict';
 
     var data = {};
     function getPageData() {
@@ -73,7 +74,7 @@
             elem.classList.remove('vertical-wrap');
             elem.innerHTML = html;
 
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             $('.btnNextPage', elem).on('click', function () {
                 query.StartIndex += query.Limit;

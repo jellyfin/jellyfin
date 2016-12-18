@@ -1,4 +1,4 @@
-﻿using CommonIO;
+﻿using MediaBrowser.Model.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -12,6 +12,8 @@ using MediaBrowser.Model.Serialization;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
 
 namespace MediaBrowser.Providers.Omdb
 {
@@ -68,9 +70,7 @@ namespace MediaBrowser.Providers.Omdb
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = OmdbProvider.ResourcePool
-
+                Url = url
             });
         }
 

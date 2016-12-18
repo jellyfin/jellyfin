@@ -36,7 +36,7 @@ html {
     padding: 0;
     height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Oxygen-Sans", "Ubuntu", "Cantarell", "Helvetica Neue", 'Open Sans', sans-serif;
-    font-size: 14px;
+    font-size: 88%;
 }
 
 h1 {
@@ -82,25 +82,22 @@ body {
     overflow-y: hidden !important;
 }
 
-.textlink {
-    text-decoration: none;
-}
-
 h1, h2, h3 {
     margin-top: 1em;
 }
 
-    h1, h1 a {
-        font-weight: 300 !important;
-        font-size: 24px;
-    }
+h1 {
+    font-weight: normal !important;
+    opacity: .7;
+    font-size: 1.72em;
+}
 
 h2 {
-    font-weight: 400;
+    font-weight: normal;
 }
 
 h3 {
-    font-weight: 400;
+    font-weight: normal;
 }
 
 a, a:active, a:hover {
@@ -123,7 +120,11 @@ h1 a:hover {
     background-color: #fff;
 }
 
-.ui-body-a select, .ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
+.ui-body-a [is="emby-select"] {
+    border-color: #ccc !important;
+}
+
+.ui-body-a [is="emby-input"], .ui-body-a [is="emby-textarea"] {
     background: none;
     border-color: #ccc !important;
 }
@@ -198,13 +199,6 @@ div[data-role='page'] {
     white-space: normal !important;
 }
 
-.warningFieldDescription {
-    padding: 5px;
-    border: 1px solid #f4c63f;
-    background: #fff3a5;
-    border-radius: 5px;
-}
-
 .fieldDescription + .fieldDescription {
     margin-top: 5px;
 }
@@ -229,6 +223,7 @@ div[data-role='page'] {
     color: #111 !important;
     font-weight: 500 !important;
     vertical-align: middle;
+    font-size: 110%;
 }
 
     .sidebarLink:hover {
@@ -348,15 +343,6 @@ div[data-role='page'] {
     text-align: center;
     color: #bbb;
 }
-
-.ui-body-a select {
-    background: none;
-    border-color: #757575;
-}
-
-    .ui-body-a select option {
-        color: #000;
-    }
 
 .ui-body-a .emby-collapsible-button {
     border-color: #ddd;

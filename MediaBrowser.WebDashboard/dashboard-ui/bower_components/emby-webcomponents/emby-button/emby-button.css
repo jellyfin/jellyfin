@@ -15,7 +15,7 @@
     user-select: none;
     cursor: pointer;
     z-index: 0;
-    padding: 0.7em 0.57em;
+    padding: 1em .7em;
     font-weight: normal;
     vertical-align: middle;
     border: 0;
@@ -40,6 +40,18 @@
     text-transform: uppercase;
 }
 
+.emby-button-focusscale {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+    .emby-button-focusscale:focus {
+        transform: scale(1.16);
+        z-index: 1;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
 .emby-button > i {
     /* For non-fab buttons that have icons */
     font-size: 1.36em;
@@ -50,7 +62,7 @@
 .fab {
     display: inline-flex;
     border-radius: 50%;
-    background-color: #444;
+    background-color: rgba(170,170,190, .4);
     padding: .6em;
     box-sizing: border-box;
     align-items: center;
@@ -220,3 +232,14 @@
     position: relative;
     z-index: 1;
 }
+
+.icon-button-focusscale {
+    transition: transform 180ms ease-out !important;
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+}
+
+    .icon-button-focusscale:focus {
+        transform: scale(1.3);
+        z-index: 1;
+    }

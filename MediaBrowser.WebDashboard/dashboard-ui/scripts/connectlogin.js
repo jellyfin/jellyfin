@@ -1,4 +1,5 @@
 ﻿define(['appSettings'], function (appSettings) {
+    'use strict';
 
     function login(page, username, password) {
 

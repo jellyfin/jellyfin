@@ -1,4 +1,5 @@
-define(['jQuery'], function ($) {
+define(['jQuery', 'imageLoader'], function ($, imageLoader) {
+    'use strict';
 
     $(document).on('pagebeforeshow', "#gamesRecommendedPage", function () {
 
@@ -28,7 +29,7 @@ define(['jQuery'], function ($) {
                 lazy: true
 
             });
-            ImageLoader.lazyChildren(recentlyAddedItems);
+            imageLoader.lazyChildren(recentlyAddedItems);
 
         });
 
@@ -63,7 +64,7 @@ define(['jQuery'], function ($) {
                 lazy: true
 
             });
-            ImageLoader.lazyChildren(recentlyPlayedItems);
+            imageLoader.lazyChildren(recentlyPlayedItems);
         });
 
     });

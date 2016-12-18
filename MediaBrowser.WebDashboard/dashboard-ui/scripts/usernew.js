@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked', 'emby-checkbox'], function ($) {
+    'use strict';
 
     function loadMediaFolders(page, mediaFolders) {
 

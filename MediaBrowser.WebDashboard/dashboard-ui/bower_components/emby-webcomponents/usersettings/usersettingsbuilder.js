@@ -7,8 +7,13 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
         var currentUserId;
         var currentApiClient;
         var displayPrefs;
+        var saveTimeout;
 
         self.setUserInfo = function (userId, apiClient) {
+
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
 
             currentUserId = userId;
             currentApiClient = apiClient;
@@ -24,7 +29,6 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             });
         };
 
-        var saveTimeout;
         function onSaveTimeout() {
             saveTimeout = null;
             currentApiClient.updateDisplayPreferences('usersettings', displayPrefs, currentUserId, 'emby');
@@ -35,6 +39,14 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
             }
             saveTimeout = setTimeout(onSaveTimeout, 50);
         }
+
+        self.getData = function () {
+            return displayPrefs;
+        };
+
+        self.importFrom = function (instance) {
+            displayPrefs = instance.getData();
+        };
 
         self.set = function (name, value, enableOnServer) {
 
@@ -94,11 +106,7 @@ define(['appSettings', 'events', 'browser'], function (appsettings, events, brow
 
             val = self.get('enableThemeSongs', false);
 
-            if (val) {
-                return val !== 'false';
-            }
-
-            return true;
+            return val !== 'false';
         };
 
         self.enableThemeVideos = function (val) {

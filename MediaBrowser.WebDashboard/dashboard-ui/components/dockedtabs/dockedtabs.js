@@ -1,4 +1,5 @@
 ﻿define(['apphost', 'connectionManager', 'events', 'globalize', 'browser', 'require', 'dom', 'embyRouter', 'emby-tabs'], function (appHost, connectionManager, events, globalize, browser, require, dom, embyRouter) {
+    'use strict';
 
     // Make sure this is pulled in after button and tab css
     require(['css!./dockedtabs']);
@@ -110,7 +111,7 @@
                 id: 'manageserver'
             });
 
-            if (dom.getWindowSize().innerWidth >= 800) {
+            if (dom.getWindowSize().innerWidth >= 1000) {
                 commands.push({
                     name: globalize.translate('MetadataManager'),
                     id: 'metadatamanager'

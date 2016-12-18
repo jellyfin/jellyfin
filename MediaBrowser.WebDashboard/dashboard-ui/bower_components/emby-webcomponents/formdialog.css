@@ -51,7 +51,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    display: block;
+    display: flex;
+    position: absolute;
     padding: 1.25em 1em;
     /* Without this emby-checkbox is able to appear on top */
     z-index: 1;
@@ -60,16 +61,9 @@
     flex-wrap: wrap;
 }
 
-@supports (display: flex) {
-
-    .formDialogFooter {
-        display: flex;
-        position: absolute;
-    }
-}
-
 .formDialogFooter-flex {
     position: static;
+    width: 100%;
 }
 
 .formDialogFooterItem {

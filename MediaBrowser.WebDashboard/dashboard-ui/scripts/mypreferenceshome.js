@@ -1,4 +1,5 @@
-﻿define(['listViewStyle'], function () {
+﻿define(['userSettingsBuilder', 'listViewStyle'], function (userSettingsBuilder) {
+    'use strict';
 
     function renderViews(page, user, result) {
 
@@ -35,8 +36,20 @@
         var folderHtml = '';
 
         folderHtml += '<div class="checkboxList">';
+        var excludeViewTypes = ['playlists', 'livetv', 'boxsets', 'channels'];
+        var excludeItemTypes = ['Channel'];
+
         folderHtml += result.Items.map(function (i) {
 
+            if (excludeViewTypes.indexOf(i.CollectionType || []) !== -1) {
+                return '';
+            }
+
+            // not implemented yet
+            if (excludeItemTypes.indexOf(i.Type) !== -1) {
+                return '';
+            }
+            
             var currentHtml = '';
 
             var id = 'chkIncludeInLatest' + i.Id;
@@ -100,37 +113,26 @@
         page.querySelector('.viewOrderList').innerHTML = html;
     }
 
-    function loadForm(page, user, displayPreferences) {
+    function loadForm(page, user, userSettings) {
 
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
 
-        page.querySelector('#selectHomeSection1').value = displayPreferences.CustomPrefs.home0 || '';
-        page.querySelector('#selectHomeSection2').value = displayPreferences.CustomPrefs.home1 || '';
-        page.querySelector('#selectHomeSection3').value = displayPreferences.CustomPrefs.home2 || '';
-        page.querySelector('#selectHomeSection4').value = displayPreferences.CustomPrefs.home3 || '';
+        page.querySelector('#selectHomeSection1').value = userSettings.get('homesection0') || '';
+        page.querySelector('#selectHomeSection2').value = userSettings.get('homesection1') || '';
+        page.querySelector('#selectHomeSection3').value = userSettings.get('homesection2') || '';
+        page.querySelector('#selectHomeSection4').value = userSettings.get('homesection3') || '';
 
-        var promise1 = ApiClient.getItems(user.Id, {
-            sortBy: "SortName"
-        });
-        var promise2 = ApiClient.getUserViews({}, user.Id);
-        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
+        var promise1 = ApiClient.getUserViews({}, user.Id);
+        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/GroupingOptions"));
 
-        Promise.all([promise1, promise2, promise3]).then(function (responses) {
+        Promise.all([promise1, promise2]).then(function (responses) {
 
-            renderViews(page, user, responses[2]);
+            renderViews(page, user, responses[1]);
             renderLatestItems(page, user, responses[0]);
-            renderViewOrder(page, user, responses[1]);
+            renderViewOrder(page, user, responses[0]);
 
             Dashboard.hideLoadingMsg();
         });
-    }
-
-    function displayPreferencesKey() {
-        if (AppInfo.isNativeApp) {
-            return 'Emby Mobile';
-        }
-
-        return 'webclient';
     }
 
     function getCheckboxItems(selector, page, isChecked) {
@@ -149,7 +151,13 @@
         return list;
     }
 
-    function saveUser(page, user, displayPreferences) {
+    function refreshGlobalUserSettings(userSettingsInstance) {
+        require(['userSettings'], function (userSettings) {
+            userSettings.importFrom(userSettingsInstance);
+        });
+    }
+
+    function saveUser(page, user, userSettingsInstance) {
 
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
@@ -173,18 +181,19 @@
 
         user.Configuration.OrderedViews = orderedViews;
 
-        displayPreferences.CustomPrefs.home0 = page.querySelector('#selectHomeSection1').value;
-        displayPreferences.CustomPrefs.home1 = page.querySelector('#selectHomeSection2').value;
-        displayPreferences.CustomPrefs.home2 = page.querySelector('#selectHomeSection3').value;
-        displayPreferences.CustomPrefs.home3 = page.querySelector('#selectHomeSection4').value;
+        userSettingsInstance.set('homesection0', page.querySelector('#selectHomeSection1').value);
+        userSettingsInstance.set('homesection1', page.querySelector('#selectHomeSection2').value);
+        userSettingsInstance.set('homesection2', page.querySelector('#selectHomeSection3').value);
+        userSettingsInstance.set('homesection3', page.querySelector('#selectHomeSection4').value);
 
-        return ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, displayPreferencesKey()).then(function () {
+        if (user.Id === Dashboard.getCurrentUserId()) {
+            refreshGlobalUserSettings(userSettingsInstance);
+        }
 
-            return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
-        });
+        return ApiClient.updateUserConfiguration(user.Id, user.Configuration);
     }
 
-    function save(page, userId) {
+    function save(page, userId, userSettings) {
 
         Dashboard.showLoadingMsg();
 
@@ -194,21 +203,17 @@
 
         ApiClient.getUser(userId).then(function (user) {
 
-            ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (displayPreferences) {
+            saveUser(page, user, userSettings).then(function () {
 
-                saveUser(page, user, displayPreferences).then(function () {
+                Dashboard.hideLoadingMsg();
+                if (!AppInfo.enableAutoSave) {
+                    require(['toast'], function (toast) {
+                        toast(Globalize.translate('SettingsSaved'));
+                    });
+                }
 
-                    Dashboard.hideLoadingMsg();
-                    if (!AppInfo.enableAutoSave) {
-                        require(['toast'], function (toast) {
-                            toast(Globalize.translate('SettingsSaved'));
-                        });
-                    }
-
-                }, function () {
-                    Dashboard.hideLoadingMsg();
-                });
-
+            }, function () {
+                Dashboard.hideLoadingMsg();
             });
         });
     }
@@ -247,14 +252,21 @@
 
     return function (view, params) {
 
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
+        var userId = params.userId || Dashboard.getCurrentUserId();
+        var userSettings = new userSettingsBuilder();
+        var userSettingsLoaded;
 
         function onSubmit(e) {
 
-            save(view, userId);
+            userSettings.setUserInfo(userId, ApiClient).then(function () {
+
+                save(view, userId, userSettings);
+            });
 
             // Disable default form submission
-            e.preventDefault();
+            if (e) {
+                e.preventDefault();
+            }
             return false;
         }
 
@@ -319,19 +331,18 @@
 
             ApiClient.getUser(userId).then(function (user) {
 
-                ApiClient.getDisplayPreferences('home', user.Id, displayPreferencesKey()).then(function (result) {
+                userSettings.setUserInfo(userId, ApiClient).then(function () {
 
-                    loadForm(page, user, result);
+                    userSettingsLoaded = true;
 
+                    loadForm(page, user, userSettings);
                 });
             });
         });
 
         view.addEventListener('viewbeforehide', function () {
-            var page = this;
-
             if (AppInfo.enableAutoSave) {
-                save(page, userId);
+                onSubmit();
             }
         });
     };

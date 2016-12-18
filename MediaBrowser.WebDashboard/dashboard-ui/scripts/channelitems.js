@@ -1,4 +1,5 @@
-﻿define(['jQuery', 'cardBuilder', 'emby-itemscontainer'], function ($, cardBuilder) {
+﻿define(['jQuery', 'cardBuilder', 'imageLoader', 'emby-itemscontainer'], function ($, cardBuilder, imageLoader) {
+    'use strict';
 
     var data = {};
 
@@ -147,7 +148,7 @@
 
             var elem = page.querySelector('#items');
             elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
+            imageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

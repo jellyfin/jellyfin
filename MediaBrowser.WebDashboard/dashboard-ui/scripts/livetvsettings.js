@@ -1,4 +1,5 @@
 ﻿define(['jQuery', 'fnchecked'], function ($) {
+    'use strict';
 
     function loadPage(page, config) {
 
@@ -11,6 +12,7 @@
         $('#chkOrganize', page).checked(config.EnableAutoOrganize);
         $('#chkConvertRecordings', page).checked(config.EnableRecordingEncoding);
         $('#chkPreserveAudio', page).checked(config.EnableOriginalAudioWithEncodedRecordings || false);
+        $('#chkPreserveVideo', page).checked(config.RecordedVideoCodec == 'copy');
 
         $('#txtPrePaddingMinutes', page).val(config.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(config.PostPaddingSeconds / 60);
@@ -20,7 +22,8 @@
         page.querySelector('#txtSeriesRecordingPath').value = config.SeriesRecordingPath || '';
         page.querySelector('#selectConversionFormat').value = config.RecordingEncodingFormat || '';
 
-        page.querySelector('#chkEnableRecordingSubfolders').checked = config.EnableRecordingSubfolders || false;
+        page.querySelector('#txtPostProcessor').value = config.RecordingPostProcessor || '';
+        page.querySelector('#txtPostProcessorArguments').value = config.RecordingPostProcessorArguments || '';
 
         Dashboard.hideLoadingMsg();
     }
@@ -38,6 +41,7 @@
             config.EnableAutoOrganize = $('#chkOrganize', form).checked();
             config.EnableRecordingEncoding = $('#chkConvertRecordings', form).checked();
             config.EnableOriginalAudioWithEncodedRecordings = $('#chkPreserveAudio', form).checked();
+            config.RecordedVideoCodec = $('#chkPreserveVideo', form).checked() ? 'copy' : null;
 
             var recordingPath = form.querySelector('#txtRecordingPath').value || null;
             var movieRecordingPath = form.querySelector('#txtMovieRecordingPath').value || null;
@@ -54,7 +58,9 @@
             config.RecordingEncodingFormat = form.querySelector('#selectConversionFormat').value;
             config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            config.EnableRecordingSubfolders = form.querySelector('#chkEnableRecordingSubfolders').checked;
+
+            config.RecordingPostProcessor = $('#txtPostProcessor', form).val();
+            config.RecordingPostProcessorArguments = $('#txtPostProcessorArguments', form).val();
 
             ApiClient.updateNamedConfiguration("livetv", config).then(function () {
                 Dashboard.processServerConfigurationUpdateResult();
@@ -154,6 +160,26 @@
 
                         if (path) {
                             $('#txtSeriesRecordingPath', page).val(path);
+                        }
+                        picker.close();
+                    }
+                });
+            });
+        });
+
+        $('#btnSelectPostProcessorPath', page).on("click.selectDirectory", function () {
+
+            require(['directorybrowser'], function (directoryBrowser) {
+
+                var picker = new directoryBrowser();
+
+                picker.show({
+
+                    includeFiles: true,
+                    callback: function (path) {
+
+                        if (path) {
+                            $('#txtPostProcessor', page).val(path);
                         }
                         picker.close();
                     }

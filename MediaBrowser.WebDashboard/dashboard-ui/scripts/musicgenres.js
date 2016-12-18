@@ -1,4 +1,5 @@
-﻿define(['libraryBrowser', 'cardBuilder'], function (libraryBrowser, cardBuilder) {
+﻿define(['libraryBrowser', 'cardBuilder', 'apphost', 'imageLoader'], function (libraryBrowser, cardBuilder, appHost, imageLoader) {
+    'use strict';
 
     return function (view, params, tabContent) {
 
@@ -19,7 +20,7 @@
                         Fields: "DateCreated,ItemCounts",
                         StartIndex: 0
                     },
-                    view: libraryBrowser.getSavedView(key) || 'PosterCard'
+                    view: libraryBrowser.getSavedView(key) || (appHost.preferVisualCards ? 'PosterCard' : 'Poster')
                 };
 
                 pageData.query.ParentId = params.topParentId;
@@ -110,7 +111,7 @@
 
                 var elem = context.querySelector('#items');
                 elem.innerHTML = html;
-                ImageLoader.lazyChildren(elem);
+                imageLoader.lazyChildren(elem);
 
                 libraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 

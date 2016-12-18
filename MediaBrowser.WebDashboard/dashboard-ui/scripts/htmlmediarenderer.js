@@ -1,4 +1,5 @@
 ﻿define(['browser'], function (browser) {
+    'use strict';
 
     var supportsTextTracks;
     var hlsPlayer;
@@ -194,13 +195,8 @@
                     //return false;
                 }
 
-                // For now don't do this in edge because we lose some native audio support
-                if (browser.edge && browser.mobile) {
-                    return false;
-                }
-
                 // hls.js is only in beta. needs more testing.
-                if (browser.safari) {
+                if (browser.safari && !browser.osx) {
                     return false;
                 }
 
@@ -224,17 +220,20 @@
             // Safari often displays the poster under the video and it doesn't look good
             var poster = !browser.safari && options.poster ? (' poster="' + options.poster + '"') : '';
 
+            // playsinline new for iOS 10
+            // https://developer.apple.com/library/content/releasenotes/General/WhatsNewInSafari/Articles/Safari_10_0.html
+
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls && AppInfo.isNativeApp && browser.android) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline playsinline>';
             }
             else if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' controls="controls" webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' controls="controls" webkit-playsinline playsinline>';
             }
             else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline playsinline>';
             }
 
             html += '</video>';
@@ -418,7 +417,9 @@
                     setTracks(elem, tracks);
 
                     requireHlsPlayer(function () {
-                        var hls = new Hls();
+                        var hls = new Hls({
+                            manifestLoadingTimeOut: 20000
+                        });
                         hls.loadSource(val);
                         hls.attachMedia(elem);
                         hls.on(Hls.Events.MANIFEST_PARSED, function () {
@@ -558,17 +559,6 @@
 
         function enableNativeTrackSupport(track) {
 
-            if (browser.safari && browser.mobile) {
-                // Leave it to apple to have different behavior between safari on ios vs osx
-                return false;
-            }
-
-            if (browser.firefox) {
-                if ((currentSrc || '').toLowerCase().indexOf('.m3u8') != -1) {
-                    return false;
-                }
-            }
-
             if (track) {
                 var format = (track.format || '').toLowerCase();
                 if (format == 'ssa' || format == 'ass') {
@@ -604,8 +594,6 @@
             }
 
             customTrackIndex = -1;
-            currentSubtitlesElement = null;
-            currentTrackEvents = null;
             currentClock = null;
 
             var renderer = currentAssRenderer;
@@ -613,15 +601,6 @@
                 renderer.setEnabled(false);
             }
             currentAssRenderer = null;
-        }
-
-        function fetchSubtitles(track) {
-
-            return ApiClient.ajax({
-                url: track.url.replace('.vtt', '.js'),
-                type: 'GET',
-                dataType: 'json'
-            });
         }
 
         function setTrackForCustomDisplay(videoElement, track) {
@@ -639,7 +618,6 @@
             destroyCustomTrack(videoElement, true);
             customTrackIndex = track.index;
             renderTracksEvents(videoElement, track);
-            lastCustomTrackMs = 0;
         }
 
         function renderWithLibjass(videoElement, track) {
@@ -692,48 +670,9 @@
                 renderWithLibjass(videoElement, track);
                 return;
             }
-
-            var trackElement = null;
-            var expectedId = 'manualTrack' + track.index;
-
-            var allTracks = videoElement.textTracks; // get list of tracks
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var currentTrack = allTracks[i];
-
-                if (currentTrack.label == expectedId) {
-                    trackElement = currentTrack;
-                    break;
-                } else {
-                    currentTrack.mode = 'disabled';
-                }
-            }
-
-            if (!trackElement) {
-                trackElement = videoElement.addTextTrack('subtitles', 'manualTrack' + track.index, track.language || 'und');
-                trackElement.label = 'manualTrack' + track.index;
-
-                // download the track json
-                fetchSubtitles(track).then(function (data) {
-
-                    // show in ui
-                    console.log('downloaded ' + data.TrackEvents.length + ' track events');
-                    // add some cues to show the text
-                    // in safari, the cues need to be added before setting the track mode to showing
-                    data.TrackEvents.forEach(function (trackEvent) {
-                        trackElement.addCue(new (window.VTTCue || window.TextTrackCue)(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n')));
-                    });
-                    trackElement.mode = 'showing';
-                });
-            } else {
-                trackElement.mode = 'showing';
-            }
         }
 
-        var currentSubtitlesElement;
-        var currentTrackEvents;
         var customTrackIndex = -1;
-        var lastCustomTrackMs = 0;
         var currentClock;
         var currentAssRenderer;
         function updateSubtitleText(timeMs) {
@@ -742,44 +681,6 @@
             if (clock) {
                 clock.seek(timeMs / 1000);
             }
-
-            var trackEvents = currentTrackEvents;
-            if (!trackEvents) {
-                return;
-            }
-
-            if (!currentSubtitlesElement) {
-                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
-                if (!videoSubtitlesElem) {
-                    videoSubtitlesElem = document.createElement('div');
-                    videoSubtitlesElem.classList.add('videoSubtitles');
-                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
-                    document.body.appendChild(videoSubtitlesElem);
-                }
-                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
-            }
-
-            if (lastCustomTrackMs > 0) {
-                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
-                    return;
-                }
-            }
-
-            lastCustomTrackMs = new Date().getTime();
-
-            var positionTicks = timeMs * 10000;
-            for (var i = 0, length = trackEvents.length; i < length; i++) {
-
-                var caption = trackEvents[i];
-                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
-                    currentSubtitlesElement.innerHTML = caption.Text;
-                    currentSubtitlesElement.classList.remove('hide');
-                    return;
-                }
-            }
-
-            currentSubtitlesElement.innerHTML = '';
-            currentSubtitlesElement.classList.add('hide');
         }
 
         self.setCurrentTrackElement = function (streamIndex) {
@@ -811,6 +712,7 @@
                 var currentTrack = allTracks[i];
 
                 console.log('currentTrack id: ' + currentTrack.id);
+                console.log('currentTrack label: ' + currentTrack.label);
 
                 var mode;
 
@@ -906,7 +808,7 @@
 
             if (AppInfo.isNativeApp && browser.safari) {
 
-                if (navigator.userAgent.toLowerCase().indexOf('ipad') != -1) {
+                if (browser.ipad) {
                     // Need to disable it in order to support picture in picture
                     return false;
                 }

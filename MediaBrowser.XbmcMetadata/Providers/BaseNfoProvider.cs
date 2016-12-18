@@ -4,7 +4,9 @@ using MediaBrowser.XbmcMetadata.Savers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.XbmcMetadata.Providers
 {
@@ -39,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 result.HasMetadata = false;
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 result.HasMetadata = false;
             }

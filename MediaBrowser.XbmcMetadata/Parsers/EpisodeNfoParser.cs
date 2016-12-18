@@ -7,15 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class EpisodeNfoParser : BaseNfoParser<Episode>
     {
-        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager) : base(logger, config, providerManager)
-        {
-        }
-
         public void Fetch(MetadataResult<Episode> item,
             List<LocalImageInfo> images,
             string metadataFile, 
@@ -229,6 +227,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
+        }
+
+        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
+        {
         }
     }
 }

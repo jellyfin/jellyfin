@@ -7,9 +7,18 @@
 .tvGuideHeader {
     white-space: nowrap;
     width: 100%;
+    flex-direction: column;
     flex-shrink: 0;
     display: flex;
-    padding-left: 3.4em;
+}
+
+.guideHeaderDateSelection {
+    font-size: 86%;
+    padding: .4em 0;
+}
+
+.guideHeaderTimeslots {
+    display: flex;
 }
 
 .tvProgramSectionHeader {
@@ -38,6 +47,7 @@
 
 .channelTimeslotHeader {
     flex-shrink: 0;
+    justify-content: center;
 }
 
 .timeslotHeaders {
@@ -49,6 +59,7 @@
     position: relative;
     display: flex;
     align-items: flex-start;
+    flex-grow: 1;
 }
 
 .channelPrograms {
@@ -77,7 +88,7 @@
 
 .currentTimeIndicatorArrowContainer {
     position: absolute;
-    bottom: -1.3vh;
+    bottom: -1vh;
     width: 100%;
     color: #52B54B;
     margin-left: .65vh;
@@ -91,11 +102,11 @@
 }
 
 .currentTimeIndicatorArrow {
-    width: 4vh;
-    height: 4vh;
-    font-size: 4vh;
+    width: 3vh;
+    height: 3vh;
+    font-size: 3vh;
     color: #52B54B;
-    margin-left: -2vh;
+    margin-left: -1.5vh;
 }
 
 .channelPrograms, .timeslotHeadersInner {
@@ -171,29 +182,6 @@
     }
 }
 
-.btnSelectDate {
-    padding-left: .5em;
-    text-transform: none;
-    font-weight: normal;
-}
-
-.btnSelectDateContent {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.guideDateText {
-    font-size: 80%;
-}
-
-@media all and (min-width: 1600px) {
-
-    .guideDateText {
-        font-size: 92%;
-    }
-}
-
 .btnGuideViewSettings {
     margin: 0;
     flex-shrink: 0;
@@ -201,13 +189,6 @@
 
 .btnGuideViewSettingsIcon {
     font-size: 1.5em !important;
-}
-
-@media all and (max-width: 1280px) {
-
-    .btnGuideViewSettings {
-        display: none;
-    }
 }
 
 .selectDateIcon {
@@ -258,11 +239,12 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 3em;
+    height: 2.2em;
 }
 
 .programGrid {
     padding-bottom: 4px;
+    flex-grow: 1;
 }
 
 .timeslotHeader {
@@ -347,7 +329,7 @@
 }
 
 .programTextIcon-tv {
-    font-size: .7em;
+    font-size: .6em;
 }
 
 .guideChannelNumber {
@@ -384,29 +366,6 @@
     flex-shrink: 0;
 }
 
-.btnCategories {
-    margin: 0 .3em 0 .5em !important;
-    padding: 0 !important;
-    flex-shrink: 0;
-    background: rgba(40, 40, 40, .9);
-    border-radius: 0 !important;
-    width: 2.6em;
-    font-weight: normal !important;
-    position: relative;
-}
-
-.btnCategoriesText {
-    transform: rotate(90deg);
-    text-transform: uppercase;
-    transform-origin: left;
-    margin-left: 1.2em;
-    letter-spacing: .25em;
-    position: absolute;
-    top: 0;
-    margin-top: 1em;
-    white-space: nowrap;
-}
-
 .channelList {
     display: flex;
     flex-direction: column;
@@ -416,11 +375,11 @@
     contain: layout style;
 }
 
-.programCell, .channelHeaderCell, .btnSelectDate {
+.programCell, .channelHeaderCell {
     outline: none !important;
 }
 
-    .programCell:focus, .channelHeaderCell:focus, .btnSelectDate:focus {
+    .programCell:focus, .channelHeaderCell:focus {
         background-color: #555;
     }
 
@@ -431,25 +390,6 @@
 .seriesTimerIcon-inactive {
     color: inherit !important;
     opacity: .7;
-}
-
-.visibleGuideScroller::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-button:start:decrement,
-.visibleGuideScroller::-webkit-scrollbar-button:end:increment {
-    display: none;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-track-piece {
-    background-color: #3b3b3b;
-}
-
-.visibleGuideScroller::-webkit-scrollbar-thumb:vertical, .visibleGuideScroller::-webkit-scrollbar-thumb:horizontal {
-    -webkit-border-radius: 2px;
-    background: #888 no-repeat center;
 }
 
 .guideOptions {
@@ -464,8 +404,54 @@
     .tvGuideHeader {
         padding-left: 0;
     }
+}
 
-    .btnCategories {
-        display: none;
+.guideRequiresUnlock {
+    margin: 1em auto;
+    text-align: center;
+    padding: 1em;
+    flex-shrink: 0;
+}
+
+.noRubberBanding {
+    /* This is needed to combat the rubber banding in iOS */
+    padding-bottom: 100px;
+}
+
+.guideDateTabsSlider {
+    text-align: center;
+}
+
+.guide-date-tab-button {
+    font-weight: 500 !important;
+    color: inherit !important;
+    padding-top: .3em !important;
+    padding-bottom: .3em !important;
+    opacity: .25;
+}
+
+    .guide-date-tab-button.emby-tab-button-active {
+        color: #52B54B !important;
+        border-color: transparent !important;
+        opacity: 1;
+        font-weight: 500 !important;
+    }
+
+    .guide-date-tab-button:focus {
+        color: #52B54B !important;
+        opacity: 1;
+    }
+
+.layout-tv .guide-date-tab-button:focus {
+    background-color: #52B54B !important;
+    border-radius: .25em !important;
+    color: #fff !important;
+}
+
+@media all and (min-width: 1200px) {
+
+    .guide-date-tab-button {
+        padding-left: 1em !important;
+        padding-right: 1em !important;
     }
 }
