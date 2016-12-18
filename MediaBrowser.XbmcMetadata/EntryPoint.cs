@@ -52,7 +52,7 @@ namespace MediaBrowser.XbmcMetadata
 
                     var items = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        Person = person.Name
+                        PersonIds = new [] { person.Id.ToString("N") }
 
                     }).ToList();
 

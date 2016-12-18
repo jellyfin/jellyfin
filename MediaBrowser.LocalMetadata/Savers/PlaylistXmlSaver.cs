@@ -4,41 +4,16 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using System.Collections.Generic;
 using System.IO;
-using System.Security;
-using System.Text;
-using System.Threading;
-using CommonIO;
+using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class PlaylistXmlSaver : IMetadataFileSaver
+    public class PlaylistXmlSaver : BaseXmlSaver
     {
-        public string Name
-        {
-            get
-            {
-                return XmlProviderUtils.Name;
-            }
-        }
-
-        private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
-
-        public PlaylistXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager, IFileSystem fileSystem)
-        {
-            _config = config;
-            _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
-        }
-
-        /// <summary>
-        /// Determines whether [is enabled for] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="updateType">Type of the update.</param>
-        /// <returns><c>true</c> if [is enabled for] [the specified item]; otherwise, <c>false</c>.</returns>
-        public bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
+        public override bool IsEnabledFor(IHasMetadata item, ItemUpdateType updateType)
         {
             if (!item.SupportsLocalMetadata)
             {
@@ -48,47 +23,34 @@ namespace MediaBrowser.LocalMetadata.Savers
             return item is Playlist && updateType >= ItemUpdateType.MetadataImport;
         }
 
-        /// <summary>
-        /// Saves the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public void Save(IHasMetadata item, CancellationToken cancellationToken)
+        protected override List<string> GetTagsUsed()
         {
-            var playlist = (Playlist)item;
-
-            var builder = new StringBuilder();
-
-            builder.Append("<Item>");
-
-            if (!string.IsNullOrEmpty(playlist.PlaylistMediaType))
-            {
-                builder.Append("<PlaylistMediaType>" + SecurityElement.Escape(playlist.PlaylistMediaType) + "</PlaylistMediaType>");
-            }
-
-            XmlSaverHelpers.AddCommonNodes(playlist, _libraryManager, builder);
-
-            builder.Append("</Item>");
-
-            var xmlFilePath = GetSavePath(item);
-
-            XmlSaverHelpers.Save(builder, xmlFilePath, new List<string>
+            var list = new List<string>
             {
                 "OwnerUserId",
                 "PlaylistMediaType"
+            };
 
-                }, _config, _fileSystem);
+            return list;
         }
 
-        /// <summary>
-        /// Gets the save path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>System.String.</returns>
-        public string GetSavePath(IHasMetadata item)
+        protected override void WriteCustomElements(IHasMetadata item, XmlWriter writer)
+        {
+            var game = (Playlist)item;
+
+            if (!string.IsNullOrEmpty(game.PlaylistMediaType))
+            {
+                writer.WriteElementString("PlaylistMediaType", game.PlaylistMediaType);
+            }
+        }
+
+        protected override string GetLocalSavePath(IHasMetadata item)
         {
             return Path.Combine(item.Path, "playlist.xml");
+        }
+
+        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
+        {
         }
     }
 }

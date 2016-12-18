@@ -5,13 +5,15 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
@@ -54,8 +56,9 @@ namespace MediaBrowser.Api
         private readonly IFileSystem _fileSystem;
         private readonly IItemRepository _itemRepo;
         private readonly IServerConfigurationManager _config;
+        private readonly IAuthorizationContext _authContext;
 
-        public VideosService(ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService, IItemRepository itemRepo, IFileSystem fileSystem, IServerConfigurationManager config)
+        public VideosService(ILibraryManager libraryManager, IUserManager userManager, IDtoService dtoService, IItemRepository itemRepo, IFileSystem fileSystem, IServerConfigurationManager config, IAuthorizationContext authContext)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -63,6 +66,7 @@ namespace MediaBrowser.Api
             _itemRepo = itemRepo;
             _fileSystem = fileSystem;
             _config = config;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -80,7 +84,7 @@ namespace MediaBrowser.Api
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var video = item as Video;
             BaseItemDto[] items;

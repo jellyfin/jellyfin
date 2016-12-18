@@ -15,8 +15,12 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Diagnostics;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api
 {
@@ -34,7 +38,8 @@ namespace MediaBrowser.Api
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        private ILogger Logger { get; set; }
+        internal ILogger Logger { get; private set; }
+        internal IHttpResultFactory ResultFactory { get; private set; }
 
         /// <summary>
         /// The application paths
@@ -44,6 +49,8 @@ namespace MediaBrowser.Api
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
         private readonly IMediaSourceManager _mediaSourceManager;
+        public readonly ITimerFactory TimerFactory;
+        public readonly IProcessFactory ProcessFactory;
 
         /// <summary>
         /// The active transcoding jobs
@@ -61,13 +68,16 @@ namespace MediaBrowser.Api
         /// <param name="config">The configuration.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="mediaSourceManager">The media source manager.</param>
-        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager)
+        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager, ITimerFactory timerFactory, IProcessFactory processFactory, IHttpResultFactory resultFactory)
         {
             Logger = logger;
             _sessionManager = sessionManager;
             _config = config;
             _fileSystem = fileSystem;
             _mediaSourceManager = mediaSourceManager;
+            TimerFactory = timerFactory;
+            ProcessFactory = processFactory;
+            ResultFactory = resultFactory;
 
             Instance = this;
             _sessionManager.PlaybackProgress += _sessionManager_PlaybackProgress;
@@ -114,11 +124,15 @@ namespace MediaBrowser.Api
             {
                 DeleteEncodedMediaCache();
             }
-            catch (DirectoryNotFoundException)
+            catch (FileNotFoundException)
             {
                 // Don't clutter the log
             }
-            catch (IOException ex)
+            catch (IOException)
+            {
+                // Don't clutter the log
+            }
+            catch (Exception ex)
             {
                 Logger.ErrorException("Error deleting encoded media cache", ex);
             }
@@ -166,7 +180,8 @@ namespace MediaBrowser.Api
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
             {
-                Thread.Sleep(1000);
+                var task = Task.Delay(1000);
+                Task.WaitAll(task);
             }
         }
 
@@ -188,14 +203,14 @@ namespace MediaBrowser.Api
             string liveStreamId,
             string transcodingJobId,
             TranscodingJobType type,
-            Process process,
+            IProcess process,
             string deviceId,
             StreamState state,
             CancellationTokenSource cancellationTokenSource)
         {
             lock (_activeTranscodingJobs)
             {
-                var job = new TranscodingJob(Logger)
+                var job = new TranscodingJob(Logger, TimerFactory)
                 {
                     Type = type,
                     Path = path,
@@ -598,10 +613,6 @@ namespace MediaBrowser.Api
                     DeleteHlsPartialStreamFiles(path);
                 }
             }
-            catch (DirectoryNotFoundException)
-            {
-
-            }
             catch (FileNotFoundException)
             {
 
@@ -648,10 +659,6 @@ namespace MediaBrowser.Api
                 {
                     //Logger.Debug("Deleting HLS file {0}", file);
                     _fileSystem.DeleteFile(file);
-                }
-                catch (DirectoryNotFoundException)
-                {
-
                 }
                 catch (FileNotFoundException)
                 {
@@ -704,7 +711,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the process.
         /// </summary>
         /// <value>The process.</value>
-        public Process Process { get; set; }
+        public IProcess Process { get; set; }
         public ILogger Logger { get; private set; }
         /// <summary>
         /// Gets or sets the active request count.
@@ -715,7 +722,9 @@ namespace MediaBrowser.Api
         /// Gets or sets the kill timer.
         /// </summary>
         /// <value>The kill timer.</value>
-        private Timer KillTimer { get; set; }
+        private ITimer KillTimer { get; set; }
+
+        private readonly ITimerFactory _timerFactory;
 
         public string DeviceId { get; set; }
 
@@ -745,9 +754,10 @@ namespace MediaBrowser.Api
         public DateTime LastPingDate { get; set; }
         public int PingTimeout { get; set; }
 
-        public TranscodingJob(ILogger logger)
+        public TranscodingJob(ILogger logger, ITimerFactory timerFactory)
         {
             Logger = logger;
+            _timerFactory = timerFactory;
         }
 
         public void StopKillTimer()
@@ -773,12 +783,12 @@ namespace MediaBrowser.Api
             }
         }
 
-        public void StartKillTimer(TimerCallback callback)
+        public void StartKillTimer(Action<object> callback)
         {
             StartKillTimer(callback, PingTimeout);
         }
 
-        public void StartKillTimer(TimerCallback callback, int intervalMs)
+        public void StartKillTimer(Action<object> callback, int intervalMs)
         {
             if (HasExited)
             {
@@ -790,7 +800,7 @@ namespace MediaBrowser.Api
                 if (KillTimer == null)
                 {
                     //Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
-                    KillTimer = new Timer(callback, this, intervalMs, Timeout.Infinite);
+                    KillTimer = _timerFactory.Create(callback, this, intervalMs, Timeout.Infinite);
                 }
                 else
                 {

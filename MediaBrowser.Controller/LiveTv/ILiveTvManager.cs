@@ -393,5 +393,8 @@ namespace MediaBrowser.Controller.LiveTv
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
+
+        string GetEmbyTvActiveRecordingPath(string id);
+        Task<LiveStream> GetEmbyTvLiveStream(string id);
     }
 }

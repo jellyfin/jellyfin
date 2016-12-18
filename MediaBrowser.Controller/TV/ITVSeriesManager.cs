@@ -19,6 +19,6 @@ namespace MediaBrowser.Controller.TV
         /// <param name="request">The request.</param>
         /// <param name="parentsFolders">The parents folders.</param>
         /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
-        QueryResult<BaseItem> GetNextUp(NextUpQuery request, IEnumerable<Folder> parentsFolders);
+        QueryResult<BaseItem> GetNextUp(NextUpQuery request, List<Folder> parentsFolders);
     }
 }

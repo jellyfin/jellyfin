@@ -1,5 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -195,6 +195,7 @@ namespace MediaBrowser.Api.Playback
 
         public bool EnableSubtitlesInManifest { get; set; }
         public bool EnableSplittingOnNonKeyFrames { get; set; }
+        public bool RequireAvc { get; set; }
 
         public VideoStreamRequest()
         {

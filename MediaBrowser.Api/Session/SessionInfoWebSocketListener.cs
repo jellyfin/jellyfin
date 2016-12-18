@@ -6,6 +6,7 @@ using MediaBrowser.Model.Session;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api.Session
 {
@@ -31,10 +32,8 @@ namespace MediaBrowser.Api.Session
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionInfoWebSocketListener"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="sessionManager">The session manager.</param>
-        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager)
-            : base(logger)
+        public SessionInfoWebSocketListener(ILogger logger, ISessionManager sessionManager, ITimerFactory timerFactory)
+            : base(logger, timerFactory)
         {
             _sessionManager = sessionManager;
 

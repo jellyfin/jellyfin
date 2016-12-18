@@ -1,11 +1,13 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
-using ServiceStack;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -14,7 +16,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.mp3", "GET")]
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.aac", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsAudioSegmentLegacy
     {
         // TODO: Deprecate with new iOS app
@@ -36,7 +37,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsPlaylistLegacy
     {
         // TODO: Deprecate with new iOS app
@@ -51,7 +51,6 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     [Route("/Videos/ActiveEncodings", "DELETE")]
-    [Api(Description = "Stops an encoding process")]
     public class StopEncodingProcess
     {
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
@@ -65,7 +64,6 @@ namespace MediaBrowser.Api.Playback.Hls
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
-    [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
     public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
         public string PlaylistId { get; set; }
@@ -81,11 +79,13 @@ namespace MediaBrowser.Api.Playback.Hls
     {
         private readonly IServerApplicationPaths _appPaths;
         private readonly IServerConfigurationManager _config;
+        private readonly IFileSystem _fileSystem;
 
-        public HlsSegmentService(IServerApplicationPaths appPaths, IServerConfigurationManager config)
+        public HlsSegmentService(IServerApplicationPaths appPaths, IServerConfigurationManager config, IFileSystem fileSystem)
         {
             _appPaths = appPaths;
             _config = config;
+            _fileSystem = fileSystem;
         }
 
         public Task<object> Get(GetHlsPlaylistLegacy request)
@@ -113,7 +113,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var normalizedPlaylistId = request.PlaylistId;
 
-            var playlistPath = Directory.EnumerateFiles(_config.ApplicationPaths.TranscodingTempPath, "*")
+            var playlistPath = _fileSystem.GetFilePaths(_config.ApplicationPaths.TranscodingTempPath)
                 .FirstOrDefault(i => string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase) && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
 
             return GetFileResult(file, playlistPath);
@@ -124,13 +124,13 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsAudioSegmentLegacy request)
+        public Task<object> Get(GetHlsAudioSegmentLegacy request)
         {
             // TODO: Deprecate with new iOS app
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
 
-            return ResultFactory.GetStaticFileResult(Request, file, FileShare.ReadWrite).Result;
+            return ResultFactory.GetStaticFileResult(Request, file, FileShareMode.ReadWrite);
         }
 
         private Task<object> GetFileResult(string path, string playlistPath)
@@ -140,7 +140,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 Path = path,
-                FileShare = FileShare.ReadWrite,
+                FileShare = FileShareMode.ReadWrite,
                 OnComplete = () =>
                 {
                     if (transcodingJob != null)

@@ -3,13 +3,12 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Social;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Social;
-using ServiceStack;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Social
 {
@@ -67,13 +66,15 @@ namespace MediaBrowser.Api.Social
         private readonly ILibraryManager _libraryManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IDtoService _dtoService;
+        private readonly IHttpResultFactory _resultFactory;
 
-        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager, IDtoService dtoService)
+        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager, IDtoService dtoService, IHttpResultFactory resultFactory)
         {
             _sharingManager = sharingManager;
             _dlnaManager = dlnaManager;
             _libraryManager = libraryManager;
             _dtoService = dtoService;
+            _resultFactory = resultFactory;
         }
 
         public object Get(GetSocialShareInfo request)
@@ -145,14 +146,14 @@ namespace MediaBrowser.Api.Social
             {
                 if (image.IsLocalFile)
                 {
-                    return ToStaticFileResult(image.Path);
+                    return await _resultFactory.GetStaticFileResult(Request, image.Path).ConfigureAwait(false);
                 }
 
                 try
                 {
                     // Don't fail the request over this
                     var updatedImage = await _libraryManager.ConvertImageToLocal(item, image, 0).ConfigureAwait(false);
-                    return ToStaticFileResult(updatedImage.Path);
+                    return await _resultFactory.GetStaticFileResult(Request, updatedImage.Path).ConfigureAwait(false);
                 }
                 catch
                 {

@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.TV
 {
@@ -20,11 +21,13 @@ namespace MediaBrowser.Providers.TV
     {
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
+        private readonly IFileSystem _fileSystem;
 
-        public MovieDbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public MovieDbSeriesImageProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient, IFileSystem fileSystem)
         {
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _fileSystem = fileSystem;
         }
 
         public string Name
@@ -166,7 +169,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrEmpty(path))
             {
-                var fileInfo = new FileInfo(path);
+                var fileInfo = _fileSystem.GetFileInfo(path);
 
                 if (fileInfo.Exists)
                 {
@@ -191,8 +194,7 @@ namespace MediaBrowser.Providers.TV
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = MovieDbProvider.Current.MovieDbResourcePool
+                Url = url
             });
         }
     }

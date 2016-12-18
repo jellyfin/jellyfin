@@ -2,17 +2,12 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
     public interface INetworkManager
     {
-        /// <summary>
-        /// Gets the machine's local ip address
-        /// </summary>
-        /// <returns>IPAddress.</returns>
-		IEnumerable<IPAddress> GetLocalIpAddresses();
-
         /// <summary>
         /// Gets a random port number that is currently available
         /// </summary>
@@ -46,24 +41,18 @@ namespace MediaBrowser.Common.Net
         IEnumerable<FileSystemEntryInfo> GetNetworkDevices();
 
         /// <summary>
-        /// Parses the specified endpointstring.
-        /// </summary>
-        /// <param name="endpointstring">The endpointstring.</param>
-        /// <returns>IPEndPoint.</returns>
-        IPEndPoint Parse(string endpointstring);
-
-        /// <summary>
         /// Determines whether [is in local network] [the specified endpoint].
         /// </summary>
         /// <param name="endpoint">The endpoint.</param>
         /// <returns><c>true</c> if [is in local network] [the specified endpoint]; otherwise, <c>false</c>.</returns>
         bool IsInLocalNetwork(string endpoint);
 
-        /// <summary>
-        /// Generates a self signed certificate at the locatation specified by <paramref name="certificatePath"/>.
-        /// </summary>
-        /// <param name="certificatePath">The path to generate the certificate.</param>
-        /// <param name="hostname">The common name for the certificate.</param>
-        void GenerateSelfSignedSslCertificate(string certificatePath, string hostname);
+        List<IpAddressInfo> GetLocalIpAddresses();
+
+        IpAddressInfo ParseIpAddress(string ipAddress);
+
+        bool TryParseIpAddress(string ipAddress, out IpAddressInfo ipAddressInfo);
+
+        Task<IpAddressInfo[]> GetHostAddressesAsync(string host);
     }
 }

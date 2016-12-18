@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Dto;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -101,6 +102,18 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is pre padding required; otherwise, <c>false</c>.</value>
         public bool IsPrePaddingRequired { get; set; }
+
+        /// <summary>
+        /// If the item does not have any backdrops, this will hold the Id of the Parent that has one.
+        /// </summary>
+        /// <value>The parent backdrop item id.</value>
+        public string ParentBackdropItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parent backdrop image tags.
+        /// </summary>
+        /// <value>The parent backdrop image tags.</value>
+        public List<string> ParentBackdropImageTags { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is post padding required.

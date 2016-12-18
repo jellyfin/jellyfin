@@ -8,6 +8,8 @@
         /// <value>The channel identifier.</value>
         public string ChannelId { get; set; }
 
+        public string Id { get; set; }
+
         /// <summary>
         /// Gets or sets the series timer identifier.
         /// </summary>

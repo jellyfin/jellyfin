@@ -29,6 +29,7 @@ using System.IO;
 using System.Globalization;
 using System.Text;
 using System.Xml;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -51,8 +52,7 @@ namespace Mono.Nat.Upnp
         }
         #endregion
 
-
-        public override WebRequest Encode(out byte[] body)
+        public override HttpRequestOptions Encode()
         {
             CultureInfo culture = CultureInfo.InvariantCulture;
 
@@ -69,7 +69,7 @@ namespace Mono.Nat.Upnp
             WriteFullElement(writer, "NewLeaseDuration", mapping.Lifetime.ToString());
 
             writer.Flush();
-            return CreateRequest("AddPortMapping", builder.ToString(), out body);
+            return CreateRequest("AddPortMapping", builder.ToString());
         }
     }
 }

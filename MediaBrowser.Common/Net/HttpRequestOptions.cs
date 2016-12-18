@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Net
         /// <value>The URL.</value>
         public string Url { get; set; }
 
-        public DecompressionMethods? DecompressionMethod { get; set; }
+        public CompressionMethod? DecompressionMethod { get; set; }
 
         /// <summary>
         /// Gets or sets the accept header.
@@ -116,7 +116,6 @@ namespace MediaBrowser.Common.Net
         public HttpRequestOptions()
         {
             EnableHttpCompression = true;
-            BufferContent = true;
 
             RequestHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -141,5 +140,11 @@ namespace MediaBrowser.Common.Net
     {
         None = 0,
         Unconditional = 1
+    }
+
+    public enum CompressionMethod
+    {
+        Deflate,
+        Gzip
     }
 }

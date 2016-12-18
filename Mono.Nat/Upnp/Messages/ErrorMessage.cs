@@ -25,6 +25,7 @@
 //
 
 using System;
+using MediaBrowser.Common.Net;
 
 namespace Mono.Nat.Upnp
 {
@@ -54,8 +55,7 @@ namespace Mono.Nat.Upnp
         }
         #endregion
 
-
-        public override System.Net.WebRequest Encode(out byte[] body)
+        public override HttpRequestOptions Encode()
         {
             throw new NotImplementedException();
         }

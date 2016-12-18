@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
+using MediaBrowser.Model.Cryptography;
 
 namespace MediaBrowser.Common.Extensions
 {
@@ -12,6 +10,7 @@ namespace MediaBrowser.Common.Extensions
     /// </summary>
     public static class BaseExtensions
     {
+        public static ICryptoProvider CryptographyProvider { get; set; }
 
         /// <summary>
         /// Strips the HTML.
@@ -26,15 +25,6 @@ namespace MediaBrowser.Common.Extensions
             return Regex.Replace(htmlString, pattern, string.Empty).Trim();
         }
 
-        public static string RemoveDiacritics(this string text)
-        {
-            return String.Concat(
-                text.Normalize(NormalizationForm.FormD)
-                .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
-                                              UnicodeCategory.NonSpacingMark)
-              ).Normalize(NormalizationForm.FormC);
-        }
-
         /// <summary>
         /// Gets the M d5.
         /// </summary>
@@ -42,10 +32,7 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>Guid.</returns>
         public static Guid GetMD5(this string str)
         {
-            using (var provider = MD5.Create())
-            {
-                return new Guid(provider.ComputeHash(Encoding.Unicode.GetBytes(str)));
-            }
+            return CryptographyProvider.GetMD5(str);
         }
 
         /// <summary>

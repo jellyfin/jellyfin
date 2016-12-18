@@ -3,10 +3,10 @@ using MediaBrowser.Controller.FileOrganization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Querying;
-using ServiceStack;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Library
 {
@@ -204,10 +204,10 @@ namespace MediaBrowser.Api.Library
 
         public void Post(DeleteSmartMatchEntry request)
         {
-            request.Entries.ForEach(entry =>
+            foreach (var entry in request.Entries)
             {
                 _iFileOrganizationService.DeleteSmartMatchEntry(entry.Name, entry.Value);
-            });
+            }
         }
     }
 }

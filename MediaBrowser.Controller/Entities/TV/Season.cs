@@ -2,12 +2,11 @@
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
-using MoreLinq;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.TV
 {
@@ -41,13 +40,15 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public override bool SupportsInheritedParentImages
+        {
+            get { return true; }
+        }
+
+        [IgnoreDataMember]
         public override Guid? DisplayParentId
         {
-            get
-            {
-                var series = Series;
-                return series == null ? ParentId : series.Id;
-            }
+            get { return SeriesId; }
         }
 
         [IgnoreDataMember]
@@ -203,10 +204,19 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         [IgnoreDataMember]
+        public string SeriesPresentationUniqueKey { get; set; }
+
+        [IgnoreDataMember]
         public string SeriesName { get; set; }
 
         [IgnoreDataMember]
         public Guid? SeriesId { get; set; }
+
+        public string FindSeriesPresentationUniqueKey()
+        {
+            var series = Series;
+            return series == null ? null : series.PresentationUniqueKey;
+        }
 
         public string FindSeriesName()
         {

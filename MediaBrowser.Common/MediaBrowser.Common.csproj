@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +13,10 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,7 +27,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -33,7 +35,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release Mono|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -42,13 +43,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
@@ -60,9 +55,7 @@
     <Compile Include="Extensions\BaseExtensions.cs" />
     <Compile Include="Extensions\ResourceNotFoundException.cs" />
     <Compile Include="IDependencyContainer.cs" />
-    <Compile Include="IO\IMemoryStreamProvider.cs" />
     <Compile Include="IO\ProgressStream.cs" />
-    <Compile Include="IO\StreamDefaults.cs" />
     <Compile Include="Configuration\IApplicationPaths.cs" />
     <Compile Include="Net\HttpRequestOptions.cs" />
     <Compile Include="Net\HttpResponseInfo.cs" />
@@ -72,26 +65,12 @@
     <Compile Include="Plugins\IDependencyModule.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Progress\ActionableProgress.cs" />
-    <Compile Include="ScheduledTasks\IConfigurableScheduledTask.cs" />
-    <Compile Include="ScheduledTasks\IHasKey.cs" />
-    <Compile Include="ScheduledTasks\IScheduledTask.cs" />
-    <Compile Include="ScheduledTasks\IScheduledTaskWorker.cs" />
-    <Compile Include="ScheduledTasks\ITaskManager.cs" />
-    <Compile Include="ScheduledTasks\ITaskTrigger.cs" />
-    <Compile Include="ScheduledTasks\ScheduledTaskHelpers.cs" />
-    <Compile Include="ScheduledTasks\StartupTrigger.cs" />
-    <Compile Include="ScheduledTasks\SystemEventTrigger.cs" />
     <Compile Include="Plugins\BasePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScheduledTasks\DailyTrigger.cs" />
-    <Compile Include="ScheduledTasks\IntervalTrigger.cs" />
-    <Compile Include="ScheduledTasks\TaskCompletionEventArgs.cs" />
-    <Compile Include="ScheduledTasks\TaskExecutionOptions.cs" />
-    <Compile Include="ScheduledTasks\WeeklyTrigger.cs" />
     <Compile Include="Security\IRequiresRegistration.cs" />
     <Compile Include="Security\ISecurityManager.cs" />
     <Compile Include="Security\PaymentRequiredException.cs" />
-    <Compile Include="Threading\PeriodicTimer.cs" />
+    <Compile Include="Updates\GithubUpdater.cs" />
     <Compile Include="Updates\IInstallationManager.cs" />
     <Compile Include="Updates\InstallationEventArgs.cs" />
     <Compile Include="Updates\InstallationFailedEventArgs.cs" />
@@ -102,8 +81,10 @@
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="project.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent />
   </PropertyGroup>

@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Branding;
-using ServiceStack;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {

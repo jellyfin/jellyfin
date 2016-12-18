@@ -6,9 +6,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using ServiceStack;
 using System.Collections.Generic;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -50,18 +50,6 @@ namespace MediaBrowser.Api.UserLibrary
     public class ArtistsService : BaseItemsByNameService<MusicArtist>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArtistsService" /> class.
-        /// </summary>
-        /// <param name="userManager">The user manager.</param>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="userDataRepository">The user data repository.</param>
-        /// <param name="itemRepo">The item repo.</param>
-        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
-            : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
-        {
-        }
-
-        /// <summary>
         /// Gets the specified request.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -81,8 +69,8 @@ namespace MediaBrowser.Api.UserLibrary
         private BaseItemDto GetItem(GetArtist request)
         {
             var item = GetArtist(request.Name, LibraryManager);
-
-            var dtoOptions = GetDtoOptions(request);
+            
+            var dtoOptions = GetDtoOptions(AuthorizationContext, request);
 
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
@@ -147,6 +135,10 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             throw new NotImplementedException();
+        }
+
+        public ArtistsService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
+        {
         }
     }
 }

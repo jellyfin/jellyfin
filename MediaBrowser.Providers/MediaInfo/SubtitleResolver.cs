@@ -1,13 +1,15 @@
 ﻿using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -43,6 +45,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 var codec = Path.GetExtension(fullName).ToLower().TrimStart('.');
 
+                if (string.Equals(codec, "txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    codec = "srt";
+                }
+
                 // If the subtitle file matches the video file name
                 if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                 {
@@ -72,9 +79,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     // Try to translate to three character code
                     // Be flexible and check against both the full and three character versions
                     var culture = _localization.GetCultures()
-                        .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) || 
-                        string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) || 
-                        string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) || 
+                        .FirstOrDefault(i => string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(i.ThreeLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
 
                     if (culture != null)
@@ -117,7 +124,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             get
             {
-                return new[] { ".srt", ".ssa", ".ass", ".sub", ".smi", ".sami" };
+                return new[] { ".srt", ".ssa", ".ass", ".sub", ".smi", ".sami", ".txt" };
             }
         }
 
@@ -136,7 +143,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             return files.Where(i =>
             {
-                if (!i.Attributes.HasFlag(FileAttributes.Directory) &&
+                if (!i.IsDirectory &&
                     SubtitleExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
                 {
                     var fileNameWithoutExtension = fileSystem.GetFileNameWithoutExtension(i);

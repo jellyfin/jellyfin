@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -23,8 +25,7 @@ namespace MediaBrowser.Controller.Entities
     public class Video : BaseItem,
         IHasAspectRatio,
         ISupportsPlaceHolders,
-        IHasMediaSources,
-        IThemeMedia
+        IHasMediaSources
     {
         [IgnoreDataMember]
         public string PrimaryVersionId { get; set; }
@@ -35,16 +36,16 @@ namespace MediaBrowser.Controller.Entities
         public List<ChannelMediaInfo> ChannelMediaSources { get; set; }
 
         [IgnoreDataMember]
-        public bool IsThemeMedia
+        public override bool SupportsPlayedStatus
         {
             get
             {
-                return ExtraType.HasValue && ExtraType.Value == Model.Entities.ExtraType.ThemeVideo;
+                return true;
             }
         }
 
         [IgnoreDataMember]
-        public override bool SupportsPlayedStatus
+        public override bool SupportsPositionTicksResume
         {
             get
             {
@@ -86,9 +87,6 @@ namespace MediaBrowser.Controller.Entities
             get { return true; }
         }
 
-        public int? TotalBitrate { get; set; }
-        public ExtraType? ExtraType { get; set; }
-
         /// <summary>
         /// Gets or sets the timestamp.
         /// </summary>
@@ -110,12 +108,6 @@ namespace MediaBrowser.Controller.Entities
         public bool IsPlaceHolder { get; set; }
         public bool IsShortcut { get; set; }
         public string ShortcutPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the video bit rate.
-        /// </summary>
-        /// <value>The video bit rate.</value>
-        public int? VideoBitRate { get; set; }
 
         /// <summary>
         /// Gets or sets the default index of the video stream.

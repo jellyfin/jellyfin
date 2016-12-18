@@ -4,14 +4,16 @@ using MediaBrowser.Common.Security;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.System;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.System
 {
@@ -124,7 +126,7 @@ namespace MediaBrowser.Api.System
                     .Where(i => string.Equals(i.Extension, ".txt", StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 files = new List<FileSystemMetadata>();
             }
@@ -149,7 +151,7 @@ namespace MediaBrowser.Api.System
             var file = _fileSystem.GetFiles(_appPaths.LogDirectoryPath)
                 .First(i => string.Equals(i.Name, request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShare.ReadWrite);
+            return ResultFactory.GetStaticFileResult(Request, file.FullName, FileShareMode.ReadWrite);
         }
 
         /// <summary>

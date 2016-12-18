@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Controller.Plugins;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.WebDashboard
 {
@@ -10,7 +11,7 @@ namespace MediaBrowser.WebDashboard
         /// Gets the list of plugin configuration pages
         /// </summary>
         /// <value>The configuration pages.</value>
-        public IEnumerable<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
+        public List<IPluginConfigurationPage> PluginConfigurationPages { get; private set; }
 
         private readonly IApplicationHost _appHost;
 
@@ -24,7 +25,7 @@ namespace MediaBrowser.WebDashboard
 
         public void Run()
         {
-            PluginConfigurationPages = _appHost.GetExports<IPluginConfigurationPage>();
+            PluginConfigurationPages = _appHost.GetExports<IPluginConfigurationPage>().ToList();
         }
 
         public void Dispose()

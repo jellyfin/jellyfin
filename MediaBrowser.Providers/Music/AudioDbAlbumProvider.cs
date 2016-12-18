@@ -13,7 +13,9 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Providers.Music
 {
@@ -162,12 +164,11 @@ namespace MediaBrowser.Providers.Music
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
-                ResourcePool = AudioDbArtistProvider.Current.AudioDbResourcePool,
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false))
             {
-                using (var xmlFileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                using (var xmlFileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                 {
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);
                 }

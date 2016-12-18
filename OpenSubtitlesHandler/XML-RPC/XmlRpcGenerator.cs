@@ -22,6 +22,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using OpenSubtitlesHandler;
+
 namespace XmlRpcHandler
 {
     /// <summary>
@@ -55,40 +57,41 @@ namespace XmlRpcHandler
 
             using (var ms = new MemoryStream())
             {
-                XmlWriter XMLwrt = XmlWriter.Create(ms, sett);
-                // Let's write the methods
-                foreach (XmlRpcMethodCall method in methods)
+                using (XmlWriter XMLwrt = XmlWriter.Create(ms, sett))
                 {
-                    XMLwrt.WriteStartElement("methodCall");//methodCall
-                    XMLwrt.WriteStartElement("methodName");//methodName
-                    XMLwrt.WriteString(method.Name);
-                    XMLwrt.WriteEndElement();//methodName
-                    XMLwrt.WriteStartElement("params");//params
-                                                       // Write values
-                    foreach (IXmlRpcValue p in method.Parameters)
+                    // Let's write the methods
+                    foreach (XmlRpcMethodCall method in methods)
                     {
-                        XMLwrt.WriteStartElement("param");//param
-                        if (p is XmlRpcValueBasic)
+                        XMLwrt.WriteStartElement("methodCall");//methodCall
+                        XMLwrt.WriteStartElement("methodName");//methodName
+                        XMLwrt.WriteString(method.Name);
+                        XMLwrt.WriteEndElement();//methodName
+                        XMLwrt.WriteStartElement("params");//params
+                                                           // Write values
+                        foreach (IXmlRpcValue p in method.Parameters)
                         {
-                            WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                            XMLwrt.WriteStartElement("param");//param
+                            if (p is XmlRpcValueBasic)
+                            {
+                                WriteBasicValue(XMLwrt, (XmlRpcValueBasic)p);
+                            }
+                            else if (p is XmlRpcValueStruct)
+                            {
+                                WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
+                            }
+                            else if (p is XmlRpcValueArray)
+                            {
+                                WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
+                            }
+                            XMLwrt.WriteEndElement();//param
                         }
-                        else if (p is XmlRpcValueStruct)
-                        {
-                            WriteStructValue(XMLwrt, (XmlRpcValueStruct)p);
-                        }
-                        else if (p is XmlRpcValueArray)
-                        {
-                            WriteArrayValue(XMLwrt, (XmlRpcValueArray)p);
-                        }
-                        XMLwrt.WriteEndElement();//param
-                    }
 
-                    XMLwrt.WriteEndElement();//params
-                    XMLwrt.WriteEndElement();//methodCall
+                        XMLwrt.WriteEndElement();//params
+                        XMLwrt.WriteEndElement();//methodCall
+                    }
+                    XMLwrt.Flush();
+                    return ms.ToArray();
                 }
-                XMLwrt.Flush();
-                XMLwrt.Close();
-                return ms.ToArray();
             }
         }
         /// <summary>
@@ -102,27 +105,34 @@ namespace XmlRpcHandler
             XmlReaderSettings sett = new XmlReaderSettings();
             sett.DtdProcessing = DtdProcessing.Ignore;
             sett.IgnoreWhitespace = true;
-            MemoryStream str = new MemoryStream(Encoding.ASCII.GetBytes(xmlResponse));
+            MemoryStream str;
             if (xmlResponse.Contains(@"encoding=""utf-8"""))
             {
                 str = new MemoryStream(Encoding.UTF8.GetBytes(xmlResponse));
             }
-            XmlReader XMLread = XmlReader.Create(str, sett);
-
-            XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
-            // Read parameters
-            while (XMLread.Read())
+            else
             {
-                if (XMLread.Name == "param" && XMLread.IsStartElement())
+                str = new MemoryStream(Utilities.GetASCIIBytes(xmlResponse));
+            }
+            using (str)
+            {
+                using (XmlReader XMLread = XmlReader.Create(str, sett))
                 {
-                    IXmlRpcValue val = ReadValue(XMLread);
-                    if (val != null)
-                        call.Parameters.Add(val);
+                    XmlRpcMethodCall call = new XmlRpcMethodCall("methodResponse");
+                    // Read parameters
+                    while (XMLread.Read())
+                    {
+                        if (XMLread.Name == "param" && XMLread.IsStartElement())
+                        {
+                            IXmlRpcValue val = ReadValue(XMLread);
+                            if (val != null)
+                                call.Parameters.Add(val);
+                        }
+                    }
+                    methods.Add(call);
+                    return methods.ToArray();
                 }
             }
-            methods.Add(call);
-            XMLread.Close();
-            return methods.ToArray();
         }
 
         private static void WriteBasicValue(XmlWriter XMLwrt, XmlRpcValueBasic val)
@@ -231,33 +241,42 @@ namespace XmlRpcHandler
             XMLwrt.WriteEndElement();//value
         }
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        
-        private static IXmlRpcValue ReadValue(XmlReader xmlReader)
+
+        private static string ReadString(XmlReader reader)
         {
-            while (xmlReader.Read())
+            if (reader.NodeType == XmlNodeType.Element)
+            {
+                return reader.ReadElementContentAsString();
+            }
+            return reader.ReadContentAsString();
+        }
+        
+        private static IXmlRpcValue ReadValue(XmlReader xmlReader, bool skipRead = false)
+        {
+            while (skipRead || xmlReader.Read())
             {
                 if (xmlReader.Name == "value" && xmlReader.IsStartElement())
                 {
                     xmlReader.Read();
                     if (xmlReader.Name == "string" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(xmlReader.ReadString(), XmlRpcBasicValueType.String);
+                        return new XmlRpcValueBasic(ReadString(xmlReader), XmlRpcBasicValueType.String);
                     }
                     else if (xmlReader.Name == "int" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(int.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Int);
+                        return new XmlRpcValueBasic(int.Parse(ReadString(xmlReader), UsCulture), XmlRpcBasicValueType.Int);
                     }
                     else if (xmlReader.Name == "boolean" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(xmlReader.ReadString() == "1", XmlRpcBasicValueType.Boolean);
+                        return new XmlRpcValueBasic(ReadString(xmlReader) == "1", XmlRpcBasicValueType.Boolean);
                     }
                     else if (xmlReader.Name == "double" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(double.Parse(xmlReader.ReadString(), UsCulture), XmlRpcBasicValueType.Double);
+                        return new XmlRpcValueBasic(double.Parse(ReadString(xmlReader), UsCulture), XmlRpcBasicValueType.Double);
                     }
                     else if (xmlReader.Name == "dateTime.iso8601" && xmlReader.IsStartElement())
                     {
-                        string date = xmlReader.ReadString();
+                        string date = ReadString(xmlReader);
                         int year = int.Parse(date.Substring(0, 4), UsCulture);
                         int month = int.Parse(date.Substring(4, 2), UsCulture);
                         int day = int.Parse(date.Substring(6, 2), UsCulture);
@@ -269,7 +288,7 @@ namespace XmlRpcHandler
                     }
                     else if (xmlReader.Name == "base64" && xmlReader.IsStartElement())
                     {
-                        return new XmlRpcValueBasic(BitConverter.ToInt64(Convert.FromBase64String(xmlReader.ReadString()), 0)
+                        return new XmlRpcValueBasic(BitConverter.ToInt64(Convert.FromBase64String(ReadString(xmlReader)), 0)
                             , XmlRpcBasicValueType.Double);
                     }
                     else if (xmlReader.Name == "struct" && xmlReader.IsStartElement())
@@ -282,9 +301,9 @@ namespace XmlRpcHandler
                             {
                                 XmlRpcStructMember member = new XmlRpcStructMember("", null);
                                 xmlReader.Read();// read name
-                                member.Name = xmlReader.ReadString();
+                                member.Name = ReadString(xmlReader);
 
-                                IXmlRpcValue val = ReadValue(xmlReader);
+                                IXmlRpcValue val = ReadValue(xmlReader, true);
                                 if (val != null)
                                 {
                                     member.Data = val;
@@ -319,6 +338,11 @@ namespace XmlRpcHandler
                     }
                 }
                 else break;
+
+                if (skipRead)
+                {
+                    return null;
+                }
             }
             return null;
         }

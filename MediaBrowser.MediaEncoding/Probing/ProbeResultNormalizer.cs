@@ -8,10 +8,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using CommonIO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 
@@ -22,9 +23,9 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly IMemoryStreamProvider _memoryStreamProvider;
+        private readonly IMemoryStreamFactory _memoryStreamProvider;
 
-        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, IMemoryStreamProvider memoryStreamProvider)
+        public ProbeResultNormalizer(ILogger logger, IFileSystem fileSystem, IMemoryStreamFactory memoryStreamProvider)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -187,7 +188,13 @@ namespace MediaBrowser.MediaEncoding.Probing
         private void FetchFromItunesInfo(string xml, MediaInfo info)
         {
             // Make things simpler and strip out the dtd
-            xml = xml.Substring(xml.IndexOf("<plist", StringComparison.OrdinalIgnoreCase));
+            var plistIndex = xml.IndexOf("<plist", StringComparison.OrdinalIgnoreCase);
+
+            if (plistIndex != -1)
+            {
+                xml = xml.Substring(plistIndex);
+            }
+
             xml = "<?xml version=\"1.0\"?>" + xml;
 
             // <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>cast</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Blender Foundation</string>\n\t\t</dict>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Janus Bager Kristensen</string>\n\t\t</dict>\n\t</array>\n\t<key>directors</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>name</key>\n\t\t\t<string>Sacha Goedegebure</string>\n\t\t</dict>\n\t</array>\n\t<key>studio</key>\n\t<string>Blender Foundation</string>\n</dict>\n</plist>\n
@@ -195,30 +202,48 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 using (var streamReader = new StreamReader(stream))
                 {
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(streamReader))
+                    try
                     {
-                        reader.MoveToContent();
-
-                        // Loop through each element
-                        while (reader.Read())
+                        // Use XmlReader for best performance
+                        using (var reader = XmlReader.Create(streamReader))
                         {
-                            if (reader.NodeType == XmlNodeType.Element)
+                            reader.MoveToContent();
+                            reader.Read();
+
+                            // Loop through each element
+                            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                             {
-                                switch (reader.Name)
+                                if (reader.NodeType == XmlNodeType.Element)
                                 {
-                                    case "dict":
-                                        using (var subtree = reader.ReadSubtree())
-                                        {
-                                            ReadFromDictNode(subtree, info);
-                                        }
-                                        break;
-                                    default:
-                                        reader.Skip();
-                                        break;
+                                    switch (reader.Name)
+                                    {
+                                        case "dict":
+                                            if (reader.IsEmptyElement)
+                                            {
+                                                reader.Read();
+                                                continue;
+                                            }
+                                            using (var subtree = reader.ReadSubtree())
+                                            {
+                                                ReadFromDictNode(subtree, info);
+                                            }
+                                            break;
+                                        default:
+                                            reader.Skip();
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    reader.Read();
                                 }
                             }
                         }
+                    }
+                    catch (XmlException)
+                    {
+                        // I've seen probe examples where the iTunMOVI value is just "<"
+                        // So we should not allow this to fail the entire probing operation
                     }
                 }
             }
@@ -226,13 +251,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void ReadFromDictNode(XmlReader reader, MediaInfo info)
         {
-            reader.MoveToContent();
-
             string currentKey = null;
             List<NameValuePair> pairs = new List<NameValuePair>();
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -258,9 +284,14 @@ namespace MediaBrowser.MediaEncoding.Probing
                             }
                             break;
                         case "array":
-                            if (!string.IsNullOrWhiteSpace(currentKey))
+                            if (reader.IsEmptyElement)
                             {
-                                using (var subtree = reader.ReadSubtree())
+                                reader.Read();
+                                continue;
+                            }
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                if (!string.IsNullOrWhiteSpace(currentKey))
                                 {
                                     pairs.AddRange(ReadValueArray(subtree));
                                 }
@@ -271,23 +302,35 @@ namespace MediaBrowser.MediaEncoding.Probing
                             break;
                     }
                 }
+                else
+                {
+                    reader.Read();
+                }
             }
         }
 
         private List<NameValuePair> ReadValueArray(XmlReader reader)
         {
-            reader.MoveToContent();
 
             List<NameValuePair> pairs = new List<NameValuePair>();
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
                     switch (reader.Name)
                     {
                         case "dict":
+
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                continue;
+                            }
                             using (var subtree = reader.ReadSubtree())
                             {
                                 var dict = GetNameValuePair(subtree);
@@ -301,6 +344,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -359,13 +406,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private NameValuePair GetNameValuePair(XmlReader reader)
         {
-            reader.MoveToContent();
-
             string name = null;
             string value = null;
 
+            reader.MoveToContent();
+            reader.Read();
+
             // Loop through each element
-            while (reader.Read())
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -381,6 +429,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                             reader.Skip();
                             break;
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
@@ -780,24 +832,24 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
-            if (!string.IsNullOrWhiteSpace(conductor))
-            {
-                foreach (var person in Split(conductor, false))
-                {
-                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
-                }
-            }
+            //var conductor = FFProbeHelpers.GetDictionaryValue(tags, "conductor");
+            //if (!string.IsNullOrWhiteSpace(conductor))
+            //{
+            //    foreach (var person in Split(conductor, false))
+            //    {
+            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+            //    }
+            //}
 
-            var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            //var lyricist = FFProbeHelpers.GetDictionaryValue(tags, "lyricist");
+            //if (!string.IsNullOrWhiteSpace(lyricist))
+            //{
+            //    foreach (var person in Split(lyricist, false))
+            //    {
+            //        audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+            //    }
+            //}
 
-            if (!string.IsNullOrWhiteSpace(lyricist))
-            {
-                foreach (var person in Split(lyricist, false))
-                {
-                    audio.People.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
-                }
-            }
             // Check for writer some music is tagged that way as alternative to composer/lyricist
             var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
 
@@ -972,27 +1024,10 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             if (_splitWhiteList == null)
             {
-                var file = GetType().Namespace + ".whitelist.txt";
-
-                using (var stream = GetType().Assembly.GetManifestResourceStream(file))
-                {
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var list = new List<string>();
-
-                        while (!reader.EndOfStream)
+                _splitWhiteList = new List<string>
                         {
-                            var val = reader.ReadLine();
-
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                list.Add(val);
-                            }
-                        }
-
-                        _splitWhiteList = list;
-                    }
-                }
+                            "AC/DC"
+                        };
             }
 
             return _splitWhiteList;
@@ -1247,7 +1282,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var packetBuffer = new byte['Å'];
 
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = _fileSystem.GetFileStream(path, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
             {
                 fs.Read(packetBuffer, 0, packetBuffer.Length);
             }

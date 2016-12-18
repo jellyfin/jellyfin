@@ -34,10 +34,10 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.NetworkInformation;
-using MediaBrowser.Controller.Dlna;
+using System.Threading.Tasks;
+using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Logging;
-using Mono.Nat.Pmp.Mappers;
-using Mono.Nat.Upnp.Mappers;
 
 namespace Mono.Nat
 {
@@ -47,16 +47,15 @@ namespace Mono.Nat
 		public static event EventHandler<DeviceEventArgs> DeviceFound;
 		public static event EventHandler<DeviceEventArgs> DeviceLost;
         
-        public static event EventHandler<UnhandledExceptionEventArgs> UnhandledException;
-
 		private static List<ISearcher> controllers;
 		private static bool verbose;
 
         public static List<NatProtocol> EnabledProtocols { get; set; }
 
 	    public static ILogger Logger { get; set; }
+        public static IHttpClient HttpClient { get; set; }
 
-	    public static bool Verbose
+        public static bool Verbose
 		{
 			get { return verbose; }
 			set { verbose = value; }
@@ -66,14 +65,12 @@ namespace Mono.Nat
         {
             EnabledProtocols = new List<NatProtocol>
             {
-                NatProtocol.Upnp,
                 NatProtocol.Pmp
             };
 
             searching = new ManualResetEvent(false);
 
             controllers = new List<ISearcher>();
-            controllers.Add(UpnpSearcher.Instance);
             controllers.Add(PmpSearcher.Instance);
 
             controllers.ForEach(searcher =>
@@ -89,9 +86,8 @@ namespace Mono.Nat
                             DeviceLost(sender, args);
                     };
                 });
-            Thread t = new Thread(SearchAndListen);
-            t.IsBackground = true;
-            t.Start();
+
+            Task.Factory.StartNew(SearchAndListen, TaskCreationOptions.LongRunning);
         }
 
 		internal static void Log(string format, params object[] args)
@@ -101,7 +97,7 @@ namespace Mono.Nat
 		        logger.Debug(format, args);
 		}
 
-        private static void SearchAndListen()
+        private static async Task SearchAndListen()
         {
             while (true)
             {
@@ -111,56 +107,40 @@ namespace Mono.Nat
                 {
                     var enabledProtocols = EnabledProtocols.ToList();
 
-                    if (enabledProtocols.Contains(UpnpSearcher.Instance.Protocol))
-                    {
-                        Receive(UpnpSearcher.Instance, UpnpSearcher.sockets);
-                    }
                     if (enabledProtocols.Contains(PmpSearcher.Instance.Protocol))
                     {
-                        Receive(PmpSearcher.Instance, PmpSearcher.sockets);
+                        await Receive(PmpSearcher.Instance, PmpSearcher.sockets).ConfigureAwait(false);
                     }
 
                     foreach (ISearcher s in controllers)
+                    {
                         if (s.NextSearch < DateTime.Now && enabledProtocols.Contains(s.Protocol))
                         {
                             Log("Searching for: {0}", s.GetType().Name);
-							s.Search();
+                            s.Search();
                         }
+                    }
                 }
                 catch (Exception e)
                 {
-                    if (UnhandledException != null)
-                        UnhandledException(typeof(NatUtility), new UnhandledExceptionEventArgs(e, false));
+                    
                 }
-				Thread.Sleep(10);
+                await Task.Delay(100).ConfigureAwait(false);
             }
 		}
 
-		static void Receive (ISearcher searcher, List<UdpClient> clients)
+		static async Task Receive (ISearcher searcher, List<UdpClient> clients)
 		{
-			IPEndPoint received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
 			foreach (UdpClient client in clients)
 			{
 				if (client.Available > 0)
 				{
 				    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
-					byte[] data = client.Receive(ref received);
+				    var result = await client.ReceiveAsync().ConfigureAwait(false);
+				    var data = result.Buffer;
+				    var received = result.RemoteEndPoint;
 					searcher.Handle(localAddress, data, received);
 				}
-            }
-        }
-
-        static void Receive(IMapper mapper, List<UdpClient> clients)
-        {
-            IPEndPoint received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
-            foreach (UdpClient client in clients)
-            {
-                if (client.Available > 0)
-                {
-                    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
-                    byte[] data = client.Receive(ref received);
-                    mapper.Handle(localAddress, data);
-                }
             }
         }
 		
@@ -172,49 +152,6 @@ namespace Mono.Nat
 		public static void StopDiscovery ()
 		{
             searching.Reset();
-		}
-
-        //This is for when you know the Gateway IP and want to skip the costly search...
-        public static void DirectMap(IPAddress gatewayAddress, MapperType type)
-        {
-            IMapper mapper;
-            switch (type)
-            {
-                case MapperType.Pmp:
-                    mapper = new PmpMapper();
-                    break;
-                case MapperType.Upnp:
-                    mapper = new UpnpMapper();
-                    mapper.DeviceFound += (sender, args) =>
-                    {
-                        if (DeviceFound != null)
-                            DeviceFound(sender, args);
-                    };
-                    mapper.Map(gatewayAddress);                    
-                    break;
-                default:
-                    throw new InvalidOperationException("Unsuported type given");
-
-            }
-            searching.Reset();
-            
-        }
-
-        //So then why is it here? -Nick
-		[Obsolete ("This method serves no purpose and shouldn't be used")]
-		public static IPAddress[] GetLocalAddresses (bool includeIPv6)
-		{
-			List<IPAddress> addresses = new List<IPAddress> ();
-
-			IPHostEntry hostInfo = Dns.GetHostEntry (Dns.GetHostName ());
-			foreach (IPAddress address in hostInfo.AddressList) {
-				if (address.AddressFamily == AddressFamily.InterNetwork ||
-					(includeIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6)) {
-					addresses.Add (address);
-				}
-			}
-			
-			return addresses.ToArray ();
 		}
 		
 		//checks if an IP address is a private address space as defined by RFC 1918
@@ -239,7 +176,7 @@ namespace Mono.Nat
 	        switch (protocol)
 	        {
                 case NatProtocol.Upnp:
-	                UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
+	                //UpnpSearcher.Instance.Handle(localAddress, response, endpoint);
 	                break;
                 case NatProtocol.Pmp:
 	                PmpSearcher.Instance.Handle(localAddress, response, endpoint);
@@ -254,10 +191,20 @@ namespace Mono.Nat
             switch (protocol)
             {
                 case NatProtocol.Upnp:
-                    UpnpSearcher.Instance.Handle(localAddress, deviceInfo, endpoint);
+                    var searcher = new UpnpSearcher(Logger, HttpClient);
+                    searcher.DeviceFound += Searcher_DeviceFound;
+                    searcher.Handle(localAddress, deviceInfo, endpoint);
                     break;
                 default:
                     throw new ArgumentException("Unexpected protocol: " + protocol);
+            }
+        }
+
+        private static void Searcher_DeviceFound(object sender, DeviceEventArgs e)
+        {
+            if (DeviceFound != null)
+            {
+                DeviceFound(sender, e);
             }
         }
     }

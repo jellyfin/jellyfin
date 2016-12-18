@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Net
 {
@@ -31,11 +33,11 @@ namespace MediaBrowser.Controller.Net
     {
         public string Path { get; set; }
 
-        public FileShare FileShare { get; set; }
+        public FileShareMode FileShare { get; set; }
 
         public StaticFileResultOptions()
         {
-            FileShare = FileShare.Read;
+            FileShare = FileShareMode.Read;
         }
     }
 }

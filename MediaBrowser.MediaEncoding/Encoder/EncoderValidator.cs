@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using MediaBrowser.Model.Diagnostics;
 using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.MediaEncoding.Encoder
@@ -8,10 +10,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class EncoderValidator
     {
         private readonly ILogger _logger;
+        private readonly IProcessFactory _processFactory;
 
-        public EncoderValidator(ILogger logger)
+        public EncoderValidator(ILogger logger, IProcessFactory processFactory)
         {
             _logger = logger;
+            _processFactory = processFactory;
         }
 
         public Tuple<List<string>, List<string>> Validate(string encoderPath)
@@ -26,15 +30,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return new Tuple<List<string>, List<string>>(decoders, encoders);
         }
 
-        public bool ValidateVersion(string encoderAppPath)
+        public bool ValidateVersion(string encoderAppPath, bool logOutput)
         {
             string output = string.Empty;
             try
             {
                 output = GetProcessOutput(encoderAppPath, "-version");
             }
-            catch
+            catch (Exception ex)
             {
+                if (logOutput)
+                {
+                    _logger.ErrorException("Error validating encoder", ex);
+                }
             }
 
             if (string.IsNullOrWhiteSpace(output))
@@ -42,9 +50,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
+            if (logOutput)
+            {
+                _logger.Info("ffmpeg info: {0}", output);
+            }
+
             if (output.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
+            }
+
+            output = " " + output + " ";
+
+            for (var i = 2013; i <= 2015; i++)
+            {
+                var yearString = i.ToString(CultureInfo.InvariantCulture);
+                if (output.IndexOf(" " + yearString + " ", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -57,8 +81,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 output = GetProcessOutput(encoderAppPath, "-decoders");
             }
-            catch
+            catch (Exception )
             {
+                //_logger.ErrorException("Error detecting available decoders", ex);
             }
 
             var found = new List<string>();
@@ -140,19 +165,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string GetProcessOutput(string path, string arguments)
         {
-            var process = new Process
+            var process = _processFactory.Create(new ProcessOptions
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    FileName = path,
-                    Arguments = arguments,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    ErrorDialog = false,
-                    RedirectStandardOutput = true
-                }
-            };
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                FileName = path,
+                Arguments = arguments,
+                IsHidden = true,
+                ErrorDialog = false,
+                RedirectStandardOutput = true
+            });
 
             _logger.Info("Running {0} {1}", path, arguments);
 

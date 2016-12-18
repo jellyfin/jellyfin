@@ -8,7 +8,7 @@ using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Model.Dto
 {
@@ -728,6 +728,8 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series studio.</value>
         public string SeriesStudio { get; set; }
+
+        public StudioDto SeriesStudioInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the parent thumb item id.

@@ -7,7 +7,7 @@ using MediaBrowser.Model.LiveTv;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
+using MediaBrowser.Model.Serialization;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 
@@ -44,6 +44,15 @@ namespace MediaBrowser.Controller.LiveTv
         {
             get { return SourceType.LiveTV; }
             set { }
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPositionTicksResume
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>

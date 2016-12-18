@@ -19,7 +19,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Providers.TV;
 
@@ -116,7 +118,7 @@ namespace MediaBrowser.Providers.Movies
                 {
                     // No biggie. Don't blow up
                 }
-                catch (DirectoryNotFoundException)
+                catch (IOException)
                 {
                     // No biggie. Don't blow up
                 }
@@ -220,8 +222,7 @@ namespace MediaBrowser.Providers.Movies
             return _httpClient.GetResponse(new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = FanartArtistProvider.Current.FanArtResourcePool
+                Url = url
             });
         }
 
@@ -284,11 +285,12 @@ namespace MediaBrowser.Providers.Movies
                 {
                     Url = url,
                     ResourcePool = FanartArtistProvider.Current.FanArtResourcePool,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
+                    BufferContent = true
 
                 }).ConfigureAwait(false))
                 {
-                    using (var fileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
+                    using (var fileStream = _fileSystem.GetFileStream(path, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read, true))
                     {
                         await response.CopyToAsync(fileStream).ConfigureAwait(false);
                     }

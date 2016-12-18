@@ -6,7 +6,6 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Users;
 using System;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 

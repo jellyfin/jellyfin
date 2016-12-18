@@ -4,12 +4,12 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Session
 {
@@ -237,9 +237,6 @@ namespace MediaBrowser.Api.Session
         [ApiMember(Name = "SupportsMediaControl", Description = "Determines whether media can be played remotely.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsMediaControl { get; set; }
 
-        [ApiMember(Name = "SupportsContentUploading", Description = "Determines whether camera upload is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
-        public bool SupportsContentUploading { get; set; }
-
         [ApiMember(Name = "SupportsSync", Description = "Determines whether sync is supported.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "POST")]
         public bool SupportsSync { get; set; }
 
@@ -306,6 +303,7 @@ namespace MediaBrowser.Api.Session
         private readonly IAuthorizationContext _authContext;
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
+        private readonly ISessionContext _sessionContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionsService" /> class.
@@ -314,13 +312,14 @@ namespace MediaBrowser.Api.Session
         /// <param name="userManager">The user manager.</param>
         /// <param name="authContext">The authentication context.</param>
         /// <param name="authRepo">The authentication repo.</param>
-        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager)
+        public SessionsService(ISessionManager sessionManager, IUserManager userManager, IAuthorizationContext authContext, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionContext sessionContext)
         {
             _sessionManager = sessionManager;
             _userManager = userManager;
             _authContext = authContext;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
+            _sessionContext = sessionContext;
         }
 
         public void Delete(RevokeKey request)
@@ -419,7 +418,7 @@ namespace MediaBrowser.Api.Session
                 SeekPositionTicks = request.SeekPositionTicks
             };
 
-            var task = _sessionManager.SendPlaystateCommand(GetSession().Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlaystateCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -437,7 +436,7 @@ namespace MediaBrowser.Api.Session
                 ItemType = request.ItemType
             };
 
-            var task = _sessionManager.SendBrowseCommand(GetSession().Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendBrowseCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -456,7 +455,7 @@ namespace MediaBrowser.Api.Session
                 name = commandType.ToString();
             }
 
-            var currentSession = GetSession().Result;
+            var currentSession = GetSession(_sessionContext).Result;
 
             var command = new GeneralCommand
             {
@@ -482,7 +481,7 @@ namespace MediaBrowser.Api.Session
                 Text = request.Text
             };
 
-            var task = _sessionManager.SendMessageCommand(GetSession().Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendMessageCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
@@ -501,14 +500,14 @@ namespace MediaBrowser.Api.Session
                 StartPositionTicks = request.StartPositionTicks
             };
 
-            var task = _sessionManager.SendPlayCommand(GetSession().Result.Id, request.Id, command, CancellationToken.None);
+            var task = _sessionManager.SendPlayCommand(GetSession(_sessionContext).Result.Id, request.Id, command, CancellationToken.None);
 
             Task.WaitAll(task);
         }
 
         public void Post(SendGeneralCommand request)
         {
-            var currentSession = GetSession().Result;
+            var currentSession = GetSession(_sessionContext).Result;
 
             var command = new GeneralCommand
             {
@@ -523,7 +522,7 @@ namespace MediaBrowser.Api.Session
 
         public void Post(SendFullGeneralCommand request)
         {
-            var currentSession = GetSession().Result;
+            var currentSession = GetSession(_sessionContext).Result;
 
             request.ControllingUserId = currentSession.UserId.HasValue ? currentSession.UserId.Value.ToString("N") : null;
 
@@ -546,7 +545,7 @@ namespace MediaBrowser.Api.Session
         {
             if (string.IsNullOrWhiteSpace(request.Id))
             {
-                request.Id = GetSession().Result.Id;
+                request.Id = GetSession(_sessionContext).Result.Id;
             }
             _sessionManager.ReportCapabilities(request.Id, new ClientCapabilities
             {
@@ -558,8 +557,6 @@ namespace MediaBrowser.Api.Session
 
                 MessageCallbackUrl = request.MessageCallbackUrl,
 
-                SupportsContentUploading = request.SupportsContentUploading,
-
                 SupportsSync = request.SupportsSync,
 
                 SupportsPersistentIdentifier = request.SupportsPersistentIdentifier
@@ -570,7 +567,7 @@ namespace MediaBrowser.Api.Session
         {
             if (string.IsNullOrWhiteSpace(request.Id))
             {
-                request.Id = GetSession().Result.Id;
+                request.Id = GetSession(_sessionContext).Result.Id;
             }
             _sessionManager.ReportCapabilities(request.Id, request);
         }

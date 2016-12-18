@@ -2,11 +2,11 @@
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Movies
 {
@@ -51,16 +51,18 @@ namespace MediaBrowser.Api.Movies
     {
         private readonly ICollectionManager _collectionManager;
         private readonly IDtoService _dtoService;
+        private readonly IAuthorizationContext _authContext;
 
-        public CollectionService(ICollectionManager collectionManager, IDtoService dtoService)
+        public CollectionService(ICollectionManager collectionManager, IDtoService dtoService, IAuthorizationContext authContext)
         {
             _collectionManager = collectionManager;
             _dtoService = dtoService;
+            _authContext = authContext;
         }
 
         public async Task<object> Post(CreateCollection request)
         {
-            var userId = AuthorizationContext.GetAuthorizationInfo(Request).UserId;
+            var userId = _authContext.GetAuthorizationInfo(Request).UserId;
 
             var parentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
 
@@ -74,7 +76,7 @@ namespace MediaBrowser.Api.Movies
 
             }).ConfigureAwait(false);
 
-            var dtoOptions = GetDtoOptions(request);
+            var dtoOptions = GetDtoOptions(_authContext, request);
 
             var dto = _dtoService.GetBaseItemDto(item, dtoOptions);
 

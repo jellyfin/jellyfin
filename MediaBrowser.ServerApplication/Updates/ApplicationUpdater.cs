@@ -37,11 +37,6 @@ namespace MediaBrowser.ServerApplication.Updates
             logger.Info("Copying updater dependencies to temporary location");
             File.Copy(source, tempUpdaterDll, true);
             var product = "server";
-            // Our updater needs SS and ionic
-            source = Path.Combine(systemPath, "ServiceStack.Text.dll");
-            File.Copy(source, Path.Combine(tempPath, "ServiceStack.Text.dll"), true);
-            source = Path.Combine(systemPath, "SharpCompress.dll");
-            File.Copy(source, Path.Combine(tempPath, "SharpCompress.dll"), true);
 
             logger.Info("Starting updater process.");
 
@@ -49,10 +44,20 @@ namespace MediaBrowser.ServerApplication.Updates
             // startpath = executable to launch
             // systempath = folder containing installation
             var args = string.Format("product={0} archive=\"{1}\" caller={2} pismo=false version={3} service={4} installpath=\"{5}\" startpath=\"{6}\" systempath=\"{7}\"",
-                    product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath, appPaths.ApplicationPath, systemPath);
+                    product, archive, Process.GetCurrentProcess().Id, version, restartServiceName ?? string.Empty, appPaths.ProgramDataPath, MainStartup.ApplicationPath, systemPath);
 
             logger.Info("Args: {0}", args);
-            Process.Start(tempUpdater, args);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = tempUpdater,
+                Arguments = args,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                WorkingDirectory = Path.GetDirectoryName(tempUpdater)
+            });
 
             // That's it.  The installer will do the work once we exit
         }

@@ -1,11 +1,10 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.Events;
+﻿using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Threading;
 
 namespace MediaBrowser.Api.ScheduledTasks
 {
@@ -32,10 +31,8 @@ namespace MediaBrowser.Api.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTasksWebSocketListener" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="taskManager">The task manager.</param>
-        public ScheduledTasksWebSocketListener(ILogger logger, ITaskManager taskManager)
-            : base(logger)
+        public ScheduledTasksWebSocketListener(ILogger logger, ITaskManager taskManager, ITimerFactory timerFactory)
+            : base(logger, timerFactory)
         {
             TaskManager = taskManager;
 
@@ -85,7 +82,7 @@ namespace MediaBrowser.Api.ScheduledTasks
         {
             TaskManager.TaskExecuting -= TaskManager_TaskExecuting;
             TaskManager.TaskCompleted -= TaskManager_TaskCompleted;
-            
+
             base.Dispose(dispose);
         }
     }

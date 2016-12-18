@@ -6,39 +6,48 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Text.Controller;
-using ServiceStack.Web;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
     /// <summary>
     /// Class BaseApiService
     /// </summary>
-    public class BaseApiService : IHasResultFactory, IRestfulService, IHasSession
+    public class BaseApiService : IService, IRequiresRequest
     {
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
         /// <value>The logger.</value>
-        public ILogger Logger { get; set; }
+        public ILogger Logger
+        {
+            get
+            {
+                return ApiEntryPoint.Instance.Logger;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the HTTP result factory.
         /// </summary>
         /// <value>The HTTP result factory.</value>
-        public IHttpResultFactory ResultFactory { get; set; }
+        public IHttpResultFactory ResultFactory
+        {
+            get
+            {
+                return ApiEntryPoint.Instance.ResultFactory;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the request context.
         /// </summary>
         /// <value>The request context.</value>
         public IRequest Request { get; set; }
-
-        public ISessionContext SessionContext { get; set; }
-        public IAuthorizationContext AuthorizationContext { get; set; }
 
         public string GetHeader(string name)
         {
@@ -57,9 +66,9 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResult(Request, result);
         }
 
-        protected void AssertCanUpdateUser(IUserManager userManager, string userId)
+        protected void AssertCanUpdateUser(IAuthorizationContext authContext, IUserManager userManager, string userId)
         {
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var auth = authContext.GetAuthorizationInfo(Request);
 
             var authenticatedUser = userManager.GetUserById(auth.UserId);
 
@@ -96,9 +105,9 @@ namespace MediaBrowser.Api
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        protected async Task<SessionInfo> GetSession()
+        protected async Task<SessionInfo> GetSession(ISessionContext sessionContext)
         {
-            var session = await SessionContext.GetSession(Request).ConfigureAwait(false);
+            var session = await sessionContext.GetSession(Request).ConfigureAwait(false);
 
             if (session == null)
             {
@@ -108,26 +117,48 @@ namespace MediaBrowser.Api
             return session;
         }
 
-        /// <summary>
-        /// To the static file result.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>System.Object.</returns>
-        protected object ToStaticFileResult(string path)
-        {
-            return ResultFactory.GetStaticFileResult(Request, path).Result;
-        }
-
-        protected DtoOptions GetDtoOptions(object request)
+        protected DtoOptions GetDtoOptions(IAuthorizationContext authContext, object request)
         {
             var options = new DtoOptions();
 
-            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+            var authInfo = authContext.GetAuthorizationInfo(Request);
+
+            options.DeviceId = authInfo.DeviceId;
 
             var hasFields = request as IHasItemFields;
             if (hasFields != null)
             {
                 options.Fields = hasFields.GetItemFields().ToList();
+            }
+
+            var client = authInfo.Client ?? string.Empty;
+            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+                client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.RecursiveItemCount);
+            }
+
+            if (client.IndexOf("kodi", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("wmc", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("media center", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("classic", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("roku", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("samsung", StringComparison.OrdinalIgnoreCase) != -1 ||
+               client.IndexOf("androidtv", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
+            }
+
+            if (client.IndexOf("web", StringComparison.OrdinalIgnoreCase) == -1 &&
+
+                // covers both emby mobile and emby for android mobile
+                client.IndexOf("mobile", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("ios", StringComparison.OrdinalIgnoreCase) == -1 &&
+                client.IndexOf("theater", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                options.Fields.Add(Model.Querying.ItemFields.ChildCount);
             }
 
             var hasDtoOptions = request as IHasDtoOptions;
@@ -275,8 +306,8 @@ namespace MediaBrowser.Api
 
         protected string GetPathValue(int index)
         {
-            var pathInfo = PathInfo.Parse(Request.PathInfo);
-            var first = pathInfo.GetArgumentValue<string>(0);
+            var pathInfo = Parse(Request.PathInfo);
+            var first = pathInfo[0];
 
             // backwards compatibility
             if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
@@ -285,7 +316,24 @@ namespace MediaBrowser.Api
                 index++;
             }
 
-            return pathInfo.GetArgumentValue<string>(index);
+            return pathInfo[index];
+        }
+
+        private static List<string> Parse(string pathUri)
+        {
+            var actionParts = pathUri.Split(new[] { "://" }, StringSplitOptions.None);
+
+            var pathInfo = actionParts[actionParts.Length - 1];
+
+            var optionsPos = pathInfo.LastIndexOf('?');
+            if (optionsPos != -1)
+            {
+                pathInfo = pathInfo.Substring(0, optionsPos);
+            }
+
+            var args = pathInfo.Split('/');
+
+            return args.Skip(1).ToList();
         }
 
         /// <summary>

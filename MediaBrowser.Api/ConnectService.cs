@@ -3,11 +3,11 @@ using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Connect;
-using ServiceStack;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api
 {
@@ -78,11 +78,13 @@ namespace MediaBrowser.Api
     {
         private readonly IConnectManager _connectManager;
         private readonly ISessionManager _sessionManager;
+        private readonly IAuthorizationContext _authContext;
 
-        public ConnectService(IConnectManager connectManager, ISessionManager sessionManager)
+        public ConnectService(IConnectManager connectManager, ISessionManager sessionManager, IAuthorizationContext authContext)
         {
             _connectManager = connectManager;
             _sessionManager = sessionManager;
+            _authContext = authContext;
         }
 
         public object Post(CreateConnectLink request)
@@ -142,7 +144,7 @@ namespace MediaBrowser.Api
                 throw new ResourceNotFoundException();
             }
 
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var auth = _authContext.GetAuthorizationInfo(Request);
 
             if (string.IsNullOrWhiteSpace(auth.Client))
             {

@@ -2,17 +2,25 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
-using ServiceStack.Web;
 using System;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Controller.Net
 {
-    public class LoggedAttribute : Attribute, IHasRequestFilter
+    public class LoggedAttribute : IRequestFilter
     {
-        public ILogger Logger { get; set; }
-        public IUserManager UserManager { get; set; }
-        public ISessionManager SessionManager { get; set; }
-        public IAuthorizationContext AuthorizationContext { get; set; }
+        public LoggedAttribute(ILogger logger, IUserManager userManager, ISessionManager sessionManager, IAuthorizationContext authorizationContext)
+        {
+            Logger = logger;
+            UserManager = userManager;
+            SessionManager = sessionManager;
+            AuthorizationContext = authorizationContext;
+        }
+
+        public ILogger Logger { get; private set; }
+        public IUserManager UserManager { get; private set; }
+        public ISessionManager SessionManager { get; private set; }
+        public IAuthorizationContext AuthorizationContext { get; private set; }
 
         /// <summary>
         /// The request filter is executed before the service.
@@ -20,9 +28,9 @@ namespace MediaBrowser.Controller.Net
         /// <param name="request">The http request wrapper</param>
         /// <param name="response">The http response wrapper</param>
         /// <param name="requestDto">The request DTO</param>
-        public void RequestFilter(IRequest request, IResponse response, object requestDto)
+        public void Filter(IRequest request, IResponse response, object requestDto)
         {
-            var serviceRequest = new ServiceStackServiceRequest(request);
+            var serviceRequest = new ServiceRequest(request);
             
             //This code is executed before the service
             var auth = AuthorizationContext.GetAuthorizationInfo(serviceRequest);
@@ -50,26 +58,6 @@ namespace MediaBrowser.Controller.Net
                     SessionManager.LogSessionActivity(client, version, deviceId, device, remoteEndPoint, user);
                 }
             }
-        }
-
-        /// <summary>
-        /// A new shallow copy of this filter is used on every request.
-        /// </summary>
-        /// <returns>IHasRequestFilter.</returns>
-        public IHasRequestFilter Copy()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Order in which Request Filters are executed.
-        /// &lt;0 Executed before global request filters
-        /// &gt;0 Executed after global request filters
-        /// </summary>
-        /// <value>The priority.</value>
-        public int Priority
-        {
-            get { return 0; }
         }
     }
 }

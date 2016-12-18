@@ -8,15 +8,16 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using ServiceStack;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Images
 {
@@ -204,7 +205,6 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "POST")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
-    [Api(Description = "Posts an item image")]
     [Authenticated(Roles = "admin")]
     public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
@@ -236,11 +236,12 @@ namespace MediaBrowser.Api.Images
         private readonly IItemRepository _itemRepo;
         private readonly IImageProcessor _imageProcessor;
         private readonly IFileSystem _fileSystem;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageService" /> class.
         /// </summary>
-        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IProviderManager providerManager, IItemRepository itemRepo, IImageProcessor imageProcessor, IFileSystem fileSystem)
+        public ImageService(IUserManager userManager, ILibraryManager libraryManager, IProviderManager providerManager, IItemRepository itemRepo, IImageProcessor imageProcessor, IFileSystem fileSystem, IAuthorizationContext authContext)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -248,6 +249,7 @@ namespace MediaBrowser.Api.Images
             _itemRepo = itemRepo;
             _imageProcessor = imageProcessor;
             _fileSystem = fileSystem;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -320,7 +322,7 @@ namespace MediaBrowser.Api.Images
                 {
                     if (info.IsLocalFile)
                     {
-                        var fileInfo = new FileInfo(info.Path);
+                        var fileInfo = _fileSystem.GetFileInfo(info.Path);
                         length = fileInfo.Length;
 
                         var size = _imageProcessor.GetImageSize(info);
@@ -425,7 +427,7 @@ namespace MediaBrowser.Api.Images
         public void Post(PostUserImage request)
         {
             var userId = GetPathValue(1);
-            AssertCanUpdateUser(_userManager, userId);
+            AssertCanUpdateUser(_authContext, _userManager, userId);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
@@ -460,7 +462,7 @@ namespace MediaBrowser.Api.Images
         public void Delete(DeleteUserImage request)
         {
             var userId = request.Id;
-            AssertCanUpdateUser(_userManager, userId);
+            AssertCanUpdateUser(_authContext, _userManager, userId);
 
             var item = _userManager.GetUserById(userId);
 
@@ -622,6 +624,7 @@ namespace MediaBrowser.Api.Images
                 AddPlayedIndicator = request.AddPlayedIndicator,
                 PercentPlayed = request.PercentPlayed ?? 0,
                 UnplayedCount = request.UnplayedCount,
+                Blur = request.Blur,
                 BackgroundColor = request.BackgroundColor,
                 ForegroundLayer = request.ForegroundLayer,
                 SupportedOutputFormats = supportedFormats
@@ -642,7 +645,7 @@ namespace MediaBrowser.Api.Images
 
                 // Sometimes imagemagick keeps a hold on the file briefly even after it's done writing to it.
                 // I'd rather do this than add a delay after saving the file
-                FileShare = FileShare.ReadWrite
+                FileShare = FileShareMode.ReadWrite
 
             }).ConfigureAwait(false);
         }

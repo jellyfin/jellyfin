@@ -9,15 +9,16 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
-using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using CommonIO;
-using ServiceStack;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.IO;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.Playback.Progressive
 {
@@ -28,7 +29,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     {
         protected readonly IImageProcessor ImageProcessor;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer)
+        public BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, IAuthorizationContext authorizationContext, IImageProcessor imageProcessor) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer, authorizationContext)
         {
             ImageProcessor = imageProcessor;
         }
@@ -132,11 +133,10 @@ namespace MediaBrowser.Api.Playback.Progressive
                     // TODO: Don't hardcode this
                     outputHeaders["Content-Type"] = MediaBrowser.Model.Net.MimeTypes.GetMimeType("file.ts");
 
-                    var streamSource = new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
+                    return new ProgressiveFileCopier(state.DirectStreamProvider, outputHeaders, null, Logger, CancellationToken.None)
                     {
                         AllowEndOfFile = false
                     };
-                    return ResultFactory.GetAsyncStreamWriter(streamSource);
                 }
             }
 
@@ -177,11 +177,10 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                         outputHeaders["Content-Type"] = contentType;
 
-                        var streamSource = new ProgressiveFileCopier(FileSystem, state.MediaPath, outputHeaders, null, Logger, CancellationToken.None)
+                        return new ProgressiveFileCopier(FileSystem, state.MediaPath, outputHeaders, null, Logger, CancellationToken.None)
                         {
                             AllowEndOfFile = false
                         };
-                        return ResultFactory.GetAsyncStreamWriter(streamSource);
                     }
 
                     TimeSpan? cacheDuration = null;
@@ -221,7 +220,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             //            ContentType = contentType,
             //            IsHeadRequest = isHeadRequest,
             //            Path = outputPath,
-            //            FileShare = FileShare.ReadWrite,
+            //            FileShare = FileShareMode.ReadWrite,
             //            OnComplete = () =>
             //            {
             //                if (transcodingJob != null)
@@ -314,12 +313,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var result = new StaticRemoteStreamWriter(response);
 
-            result.Options["Content-Type"] = response.ContentType;
+            result.Headers["Content-Type"] = response.ContentType;
 
             // Add the response headers to the result object
             foreach (var header in responseHeaders)
             {
-                result.Options[header.Key] = header.Value;
+                result.Headers[header.Key] = header.Value;
             }
 
             return result;
@@ -356,18 +355,18 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var streamResult = ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
 
-                var hasOptions = streamResult as IHasOptions;
-                if (hasOptions != null)
+                var hasHeaders = streamResult as IHasHeaders;
+                if (hasHeaders != null)
                 {
                     if (contentLength.HasValue)
                     {
-                        hasOptions.Options["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
+                        hasHeaders.Headers["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        if (hasOptions.Options.ContainsKey("Content-Length"))
+                        if (hasHeaders.Headers.ContainsKey("Content-Length"))
                         {
-                            hasOptions.Options.Remove("Content-Length");
+                            hasHeaders.Headers.Remove("Content-Length");
                         }
                     }
                 }
@@ -401,9 +400,7 @@ namespace MediaBrowser.Api.Playback.Progressive
                     outputHeaders[item.Key] = item.Value;
                 }
 
-                var streamSource = new ProgressiveFileCopier(FileSystem, outputPath, outputHeaders, job, Logger, CancellationToken.None);
-
-                return ResultFactory.GetAsyncStreamWriter(streamSource);
+                return new ProgressiveFileCopier(FileSystem, outputPath, outputHeaders, job, Logger, CancellationToken.None);
             }
             finally
             {

@@ -4,10 +4,10 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
-using ServiceStack;
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Querying;
+using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Api.UserLibrary
 {
@@ -37,11 +37,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Authenticated]
     public class GameGenresService : BaseItemsByNameService<GameGenre>
     {
-        public GameGenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IDtoService dtoService)
-            : base(userManager, libraryManager, userDataRepository, itemRepo, dtoService)
-        {
-        }
-
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -63,8 +58,8 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var item = GetGameGenre(request.Name, LibraryManager);
 
-            var dtoOptions = GetDtoOptions(request);
-
+            var dtoOptions = GetDtoOptions(AuthorizationContext, request);
+            
             if (!string.IsNullOrWhiteSpace(request.UserId))
             {
                 var user = UserManager.GetUserById(request.UserId);
@@ -101,6 +96,10 @@ namespace MediaBrowser.Api.UserLibrary
         protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
             throw new NotImplementedException();
+        }
+
+        public GameGenresService(IUserManager userManager, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepository, IDtoService dtoService, IAuthorizationContext authorizationContext) : base(userManager, libraryManager, userDataRepository, itemRepository, dtoService, authorizationContext)
+        {
         }
     }
 }

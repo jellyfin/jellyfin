@@ -4,16 +4,13 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Xml;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
     public class BoxSetXmlParser : BaseItemXmlParser<BoxSet>
     {
-        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager)
-            : base(logger, providerManager)
-        {
-        }
-
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
             switch (reader.Name)
@@ -34,11 +31,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private void FetchFromCollectionItemsNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
-            reader.MoveToContent();
-
             var list = new List<LinkedChild>();
 
-            while (reader.Read())
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
@@ -58,15 +57,24 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                                 break;
                             }
-
                         default:
-                            reader.Skip();
-                            break;
+                            {
+                                reader.Skip();
+                                break;
+                            }
                     }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
 
             item.Item.LinkedChildren = list;
+        }
+
+        public BoxSetXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
+        {
         }
     }
 }

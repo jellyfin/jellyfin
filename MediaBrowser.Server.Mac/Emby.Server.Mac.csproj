@@ -87,24 +87,49 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="XamMac" />
-    <Reference Include="Mono.Posix">
+    <Reference Include="Mono.Posix, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Mono.Posix.4.0.0.0\lib\net40\Mono.Posix.dll</HintPath>
     </Reference>
-    <Reference Include="Patterns.Logging">
-      <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.0-betaV15\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="CommonIO">
-      <HintPath>..\packages\CommonIO.1.0.0.9\lib\net45\CommonIO.dll</HintPath>
+    <Reference Include="ServiceStack.Text, Version=4.5.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ServiceStack.Text.4.5.4\lib\net45\ServiceStack.Text.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>..\ThirdParty\System.Data.SQLite.ManagedOnly\1.0.94.0\System.Data.SQLite.dll</HintPath>
+    <Reference Include="SharpCompress, Version=0.14.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpCompress.0.14.0\lib\net45\SharpCompress.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=3.2.4.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.3.2.4\lib\net45\SimpleInjector.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="Emby.Common.Implementations">
+      <HintPath>..\ThirdParty\emby\Emby.Common.Implementations.dll</HintPath>
+    </Reference>
+    <Reference Include="Emby.Server.Core">
+      <HintPath>..\ThirdParty\emby\Emby.Server.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Nat">
+      <HintPath>..\ThirdParty\emby\Mono.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="TagLib.Portable">
+      <HintPath>..\ThirdParty\taglib\TagLib.Portable.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core">
+      <HintPath>..\packages\SQLitePCLRaw.core.1.1.1\lib\net45\SQLitePCLRaw.core.dll</HintPath>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.sqlite3">
+      <HintPath>..\packages\SQLitePCLRaw.provider.sqlite3.net45.1.1.1\lib\net45\SQLitePCLRaw.provider.sqlite3.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Native\" />
-    <Folder Include="Security\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppDelegate.cs" />
@@ -115,69 +140,14 @@
     <Compile Include="AppController.designer.cs">
       <DependentUpon>AppController.cs</DependentUpon>
     </Compile>
-    <Compile Include="Native\NativeApp.cs" />
-    <Compile Include="Native\BaseMonoApp.cs" />
-    <Compile Include="Native\NetworkManager.cs" />
     <Compile Include="..\SharedVersion.cs">
       <Link>SharedVersion.cs</Link>
     </Compile>
     <Compile Include="Main.cs" />
     <Compile Include="MenuBarIcon.cs" />
-    <Compile Include="..\MediaBrowser.Server.Mono\Networking\CertificateGenerator.cs">
-      <Link>Native\CertificateGenerator.cs</Link>
-    </Compile>
-    <Compile Include="Native\DbConnector.cs" />
-    <Compile Include="..\MediaBrowser.Server.Implementations\Persistence\SqliteExtensions.cs">
-      <Link>Native\SqliteExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1.cs">
-      <Link>Security\ASN1.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\ASN1Convert.cs">
-      <Link>Security\ASN1Convert.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\BitConverterLE.cs">
-      <Link>Security\BitConverterLE.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\CryptoConvert.cs">
-      <Link>Security\CryptoConvert.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS1.cs">
-      <Link>Security\PKCS1.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS12.cs">
-      <Link>Security\PKCS12.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS7.cs">
-      <Link>Security\PKCS7.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\PKCS8.cs">
-      <Link>Security\PKCS8.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X501Name.cs">
-      <Link>Security\X501Name.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Builder.cs">
-      <Link>Security\X509Builder.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Certificate.cs">
-      <Link>Security\X509Certificate.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateBuilder.cs">
-      <Link>Security\X509CertificateBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509CertificateCollection.cs">
-      <Link>Security\X509CertificateCollection.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extension.cs">
-      <Link>Security\X509Extension.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X509Extensions.cs">
-      <Link>Security\X509Extensions.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Server.Mono\Security\X520Attributes.cs">
-      <Link>Security\X520Attributes.cs</Link>
-    </Compile>
+    <Compile Include="MacAppHost.cs" />
+    <Compile Include="Native\MonoFileSystem.cs" />
+    <Compile Include="Native\PowerManagement.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainMenu.xib" />
@@ -207,17 +177,9 @@
       <Project>{9142EEFA-7570-41E1-BFCC-468BB571AF2F}</Project>
       <Name>MediaBrowser.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Common.Implementations\MediaBrowser.Common.Implementations.csproj">
-      <Project>{C4D2573A-3FD3-441F-81AF-174AC4CD4E1D}</Project>
-      <Name>MediaBrowser.Common.Implementations</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Server.Implementations\MediaBrowser.Server.Implementations.csproj">
       <Project>{2E781478-814D-4A48-9D80-BFF206441A65}</Project>
       <Name>MediaBrowser.Server.Implementations</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.Dlna\MediaBrowser.Dlna.csproj">
-      <Project>{734098EB-6DC1-4DD0-A1CA-3140DCD2737C}</Project>
-      <Name>MediaBrowser.Dlna</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj">
       <Project>{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}</Project>
@@ -247,134 +209,57 @@
       <Project>{4FD51AC5-2C16-4308-A993-C3A84F3B4582}</Project>
       <Name>MediaBrowser.Api</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj">
+      <Project>{E383961B-9356-4D5D-8233-9A1079D03055}</Project>
+      <Name>Emby.Server.Implementations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Photos\Emby.Photos.csproj">
+      <Project>{89AB4548-770D-41FD-A891-8DAFF44F452C}</Project>
+      <Name>Emby.Photos</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.Net\Emby.Drawing.Net.csproj">
+      <Project>{C97A239E-A96C-4D64-A844-CCF8CC30AECB}</Project>
+      <Name>Emby.Drawing.Net</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing.ImageMagick\Emby.Drawing.ImageMagick.csproj">
+      <Project>{6CFEE013-6E7C-432B-AC37-CABF0880C69A}</Project>
+      <Name>Emby.Drawing.ImageMagick</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj">
+      <Project>{08FFF49B-F175-4807-A2B5-73B0EBD9F716}</Project>
+      <Name>Emby.Drawing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj">
+      <Project>{805844AB-E92F-45E6-9D99-4F6D48D129A5}</Project>
+      <Name>Emby.Dlna</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DvdLib\DvdLib.csproj">
+      <Project>{713F42B5-878E-499D-A878-E4C652B1D5E8}</Project>
+      <Name>DvdLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BDInfo\BDInfo.csproj">
+      <Project>{88AE38DF-19D7-406F-A6A9-09527719A21E}</Project>
+      <Name>BDInfo</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SocketHttpListener.Portable\SocketHttpListener.Portable.csproj">
+      <Project>{4F26D5D8-A7B0-42B3-BA42-7CB7D245934E}</Project>
+      <Name>SocketHttpListener.Portable</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
+      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
+      <Name>ServiceStack</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RSSDP\RSSDP.csproj">
+      <Project>{21002819-C39A-4D3E-BE83-2A276A77FB1F}</Project>
+      <Name>RSSDP</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="statusicon.png" />
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-  </ItemGroup>
-  <ItemGroup>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
-      <Link>Resources\swagger-ui\index.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\o2c.html">
-      <Link>Resources\swagger-ui\o2c.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\patch.js">
-      <Link>Resources\swagger-ui\patch.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.js">
-      <Link>Resources\swagger-ui\swagger-ui.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\swagger-ui.min.js">
-      <Link>Resources\swagger-ui\swagger-ui.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\reset.css">
-      <Link>Resources\swagger-ui\css\reset.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\screen.css">
-      <Link>Resources\swagger-ui\css\screen.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\css\typography.css">
-      <Link>Resources\swagger-ui\css\typography.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.eot">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.eot</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.svg">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.ttf">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.ttf</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-700.woff2">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-700.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.eot">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.eot</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.svg">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.svg</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.ttf</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2">
-      <Link>Resources\swagger-ui\fonts\droid-sans-v6-latin-regular.woff2</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\explorer_icons.png">
-      <Link>Resources\swagger-ui\images\explorer_icons.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\logo_small.png">
-      <Link>Resources\swagger-ui\images\logo_small.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\pet_store_api.png">
-      <Link>Resources\swagger-ui\images\pet_store_api.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\throbber.gif">
-      <Link>Resources\swagger-ui\images\throbber.gif</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\images\wordnik_api.png">
-      <Link>Resources\swagger-ui\images\wordnik_api.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\backbone-min.js">
-      <Link>Resources\swagger-ui\lib\backbone-min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\handlebars-2.0.0.js">
-      <Link>Resources\swagger-ui\lib\handlebars-2.0.0.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\highlight.7.3.pack.js">
-      <Link>Resources\swagger-ui\lib\highlight.7.3.pack.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery-1.8.0.min.js">
-      <Link>Resources\swagger-ui\lib\jquery-1.8.0.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.ba-bbq.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.ba-bbq.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.slideto.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.slideto.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\jquery.wiggle.min.js">
-      <Link>Resources\swagger-ui\lib\jquery.wiggle.min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\marked.js">
-      <Link>Resources\swagger-ui\lib\marked.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred.bundle.js">
-      <Link>Resources\swagger-ui\lib\shred.bundle.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-client.js">
-      <Link>Resources\swagger-ui\lib\swagger-client.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\swagger-oauth.js">
-      <Link>Resources\swagger-ui\lib\swagger-oauth.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\underscore-min.js">
-      <Link>Resources\swagger-ui\lib\underscore-min.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\lib\shred\content.js">
-      <Link>Resources\swagger-ui\lib\shred\content.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
-      <Link>Resources\dashboard-ui\about.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\addplugin.html">
       <Link>Resources\dashboard-ui\addplugin.html</Link>
     </BundleResource>
@@ -483,9 +368,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\librarydisplay.html">
       <Link>Resources\dashboard-ui\librarydisplay.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\librarypathmapping.html">
-      <Link>Resources\dashboard-ui\librarypathmapping.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\librarysettings.html">
       <Link>Resources\dashboard-ui\librarysettings.html</Link>
     </BundleResource>
@@ -497,9 +379,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvitems.html">
       <Link>Resources\dashboard-ui\livetvitems.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvseriestimer.html">
-      <Link>Resources\dashboard-ui\livetvseriestimer.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvsettings.html">
       <Link>Resources\dashboard-ui\livetvsettings.html</Link>
@@ -1065,6 +944,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js</Link>
     </BundleResource>
@@ -1080,6 +962,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\contentuploader.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\contentuploader.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\filerepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\filerepository.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\itemrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\itemrepository.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\localsync.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\localsync.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\mediasync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\mediasync.js</Link>
     </BundleResource>
@@ -1091,6 +982,15 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\transfermanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\transfermanager.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\.bower.json</Link>
@@ -1119,6 +1019,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\datetime.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\datetime.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\deletehelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\deletehelper.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\dom.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\dom.js</Link>
     </BundleResource>
@@ -1136,6 +1039,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\globalize.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\globalize.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\idb.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\idb.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\inputmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\inputmanager.js</Link>
@@ -1506,12 +1412,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.template.html">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.template.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js</Link>
     </BundleResource>
@@ -1529,6 +1429,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\tvguide.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\imageeditor\imageeditor.js</Link>
@@ -1568,6 +1471,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\itemidentifier\itemidentifier.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\itemidentifier\itemidentifier.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-intersectionobserver.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\lazyloader\lazyloader-scroll.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\listview\listview.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\listview\listview.css</Link>
@@ -1616,6 +1525,15 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\multiselect\multiselect.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\README.md">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\README.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\test_adapter.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\test_adapter.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\lib\npo.src.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\native-promise-only\lib\npo.src.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\notifications\badge.png</Link>
@@ -1670,6 +1588,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingeditor.template.html">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingeditor.template.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.css">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\recordingcreator\recordingfields.js</Link>
@@ -1884,6 +1805,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css</Link>
     </BundleResource>
@@ -2054,6 +1978,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\API.md">
       <Link>Resources\dashboard-ui\bower_components\hlsjs\API.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\CONTRIBUTING.md">
+      <Link>Resources\dashboard-ui\bower_components\hlsjs\CONTRIBUTING.md</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\ISSUE_TEMPLATE.md">
+      <Link>Resources\dashboard-ui\bower_components\hlsjs\ISSUE_TEMPLATE.md</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\hlsjs\LICENSE">
       <Link>Resources\dashboard-ui\bower_components\hlsjs\LICENSE</Link>
@@ -2501,30 +2431,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\libjass\package.json">
       <Link>Resources\dashboard-ui\bower_components\libjass\package.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.bower.json">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.bower.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.gitignore">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.gitignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\.npmignore">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\.npmignore</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\README.md">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\README.md</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\build.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\build.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\package.json">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\package.json</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\test_adapter.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\test_adapter.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\native-promise-only\lib\npo.src.js">
-      <Link>Resources\dashboard-ui\bower_components\native-promise-only\lib\npo.src.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\query-string\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\query-string\.bower.json</Link>
@@ -3234,9 +3140,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\librarymenu.js">
       <Link>Resources\dashboard-ui\scripts\librarymenu.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\librarypathmapping.js">
-      <Link>Resources\dashboard-ui\scripts\librarypathmapping.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvchannel.js">
       <Link>Resources\dashboard-ui\scripts\livetvchannel.js</Link>
     </BundleResource>
@@ -3260,9 +3163,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvschedule.js">
       <Link>Resources\dashboard-ui\scripts\livetvschedule.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvseriestimer.js">
-      <Link>Resources\dashboard-ui\scripts\livetvseriestimer.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvseriestimers.js">
       <Link>Resources\dashboard-ui\scripts\livetvseriestimers.js</Link>
@@ -3534,6 +3434,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\da.json">
       <Link>Resources\dashboard-ui\strings\da.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\de-DE.json">
+      <Link>Resources\dashboard-ui\strings\de-DE.json</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\de.json">
       <Link>Resources\dashboard-ui\strings\de.json</Link>
     </BundleResource>
@@ -3548,6 +3451,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-AR.json">
       <Link>Resources\dashboard-ui\strings\es-AR.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-ES.json">
+      <Link>Resources\dashboard-ui\strings\es-ES.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\es-MX.json">
       <Link>Resources\dashboard-ui\strings\es-MX.json</Link>
@@ -3590,6 +3496,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\ko.json">
       <Link>Resources\dashboard-ui\strings\ko.json</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\lt-LT.json">
+      <Link>Resources\dashboard-ui\strings\lt-LT.json</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\strings\ms.json">
       <Link>Resources\dashboard-ui\strings\ms.json</Link>
@@ -3705,5 +3614,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree\themes\default\throbber.gif">
       <Link>Resources\dashboard-ui\thirdparty\jstree\themes\default\throbber.gif</Link>
     </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
   </ItemGroup>
 </Project>
