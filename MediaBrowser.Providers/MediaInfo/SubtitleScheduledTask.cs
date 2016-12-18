@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -16,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Tasks;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -88,6 +88,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }).OfType<Video>()
                 .ToList();
 
+            if (videos.Count == 0)
+            {
+                return;
+            }
+
             var numComplete = 0;
 
             foreach (var video in videos)
@@ -142,12 +147,18 @@ namespace MediaBrowser.Providers.MediaInfo
             return false;
         }
 
-        public IEnumerable<ITaskTrigger> GetDefaultTriggers()
+        public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new ITaskTrigger[]
-                {
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(8)}
-                };
+            return new[] { 
+            
+                // Every so often
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
+            };
+        }
+
+        public string Key
+        {
+            get { return "DownloadSubtitles"; }
         }
     }
 }

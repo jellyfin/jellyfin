@@ -1,4 +1,5 @@
-define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appSettings, userSettings, appStorage, datetime) {
+define(['appSettings', 'userSettings', 'datetime', 'browser'], function (appSettings, userSettings, datetime, browser) {
+    'use strict';
 
     function mediaPlayer() {
 
@@ -96,7 +97,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
             // Ease up with safari because it doesn't perform as well
-            if (browserInfo.safari) {
+            if (browser.safari) {
                 intervalTime = Math.max(intervalTime, 5000);
             }
             self.lastProgressReport = 0;
@@ -153,7 +154,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             if (!AppInfo.isNativeApp) {
                 var disableHlsVideoAudioCodecs = [];
 
-                if (!self.canPlayNativeHls() || (browserInfo.edge && !item.RunTimeTicks)) {
+                if (!self.canPlayNativeHls() || (browser.edge && !item.RunTimeTicks)) {
                     // hls.js does not support these
                     disableHlsVideoAudioCodecs.push('mp3');
                     disableHlsVideoAudioCodecs.push('ac3');
@@ -431,26 +432,26 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
             Dashboard.showLoadingMsg();
 
-            Dashboard.getCurrentUser().then(function (user) {
+            return Dashboard.getCurrentUser().then(function (user) {
 
                 if (options.items) {
 
-                    translateItemsForPlayback(options.items, true).then(function (items) {
+                    return translateItemsForPlayback(options.items, true).then(function (items) {
 
-                        self.playWithIntros(items, options, user);
+                        return self.playWithIntros(items, options, user);
                     });
 
                 } else {
 
-                    self.getItemsForPlayback({
+                    return self.getItemsForPlayback({
 
                         Ids: options.ids.join(',')
 
                     }).then(function (result) {
 
-                        translateItemsForPlayback(result.Items, true).then(function (items) {
+                        return translateItemsForPlayback(result.Items, true).then(function (items) {
 
-                            self.playWithIntros(items, options, user);
+                            return self.playWithIntros(items, options, user);
                         });
 
                     });
@@ -486,12 +487,14 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 });
 
             });
+            // Todo: rework above methods to use promises
+            return Promise.resolve();
         };
 
-        function getOptimalMediaSource(mediaType, versions) {
+        function getOptimalMediaSource(mediaType, itemType, versions) {
 
             var promises = versions.map(function (v) {
-                return MediaController.supportsDirectPlay(v);
+                return MediaController.supportsDirectPlay(v, itemType);
             });
 
             return Promise.all(promises).then(function (responses) {
@@ -667,8 +670,6 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
             });
         };
 
-        self.lastBitrateDetections = {};
-
         self.playInternal = function (item, startPosition, callback) {
 
             if (item == null) {
@@ -696,15 +697,12 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 });
             };
 
-            var bitrateDetectionKey = ApiClient.serverAddress();
-
-            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection() && (new Date().getTime() - (self.lastBitrateDetections[bitrateDetectionKey] || 0)) > 300000) {
+            if (item.MediaType == 'Video' && appSettings.enableAutomaticBitrateDetection()) {
 
                 Dashboard.showLoadingMsg();
 
                 ApiClient.detectBitrate().then(function (bitrate) {
                     console.log('Max bitrate auto detected to ' + bitrate);
-                    self.lastBitrateDetections[bitrateDetectionKey] = new Date().getTime();
                     appSettings.maxStreamingBitrate(bitrate);
 
                     onBitrateDetected();
@@ -727,14 +725,14 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-                    getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources).then(function (mediaSource) {
+                    getOptimalMediaSource(item.MediaType, item.Type, playbackInfoResult.MediaSources).then(function (mediaSource) {
                         if (mediaSource) {
 
                             if (mediaSource.RequiresOpening) {
 
                                 MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).then(function (openLiveStreamResult) {
 
-                                    MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource).then(function (result) {
+                                    MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource, item.Type).then(function (result) {
 
                                         openLiveStreamResult.MediaSource.enableDirectPlay = result;
                                         callback(openLiveStreamResult.MediaSource);
@@ -1092,13 +1090,13 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
         self.saveVolume = function (val) {
 
             if (val) {
-                appStorage.setItem("volume", val);
+                appSettings.set("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return appStorage.getItem("volume") || 0.5;
+            return appSettings.get("volume") || 0.5;
         };
 
         self.shuffle = function (id) {
@@ -1487,7 +1485,7 @@ define(['appSettings', 'userSettings', 'appStorage', 'datetime'], function (appS
                 return true;
             }
 
-            if (browserInfo.mobile) {
+            if (browser.mobile) {
                 return false;
             }
 
