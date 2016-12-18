@@ -871,7 +871,7 @@
 
                 var icon = cell.querySelector('.timerIcon');
                 if (!icon) {
-                    cell.insertAdjacentHTML('beforeend', '<i class="timerIcon md-icon">&#xE061;</i>');
+                    cell.insertAdjacentHTML('beforeend', '<i class="timerIcon md-icon programIcon">&#xE061;</i>');
                 }
 
                 if (newTimerId) {
