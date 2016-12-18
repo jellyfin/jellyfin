@@ -1100,7 +1100,7 @@ var AppInfo = {};
             return;
         }
 
-        if (month == 11 && day >= 21 && day <= 26) {
+        if (month == 11 && day >= 20 && day <= 25) {
             require(['themes/holiday/theme']);
             return;
         }

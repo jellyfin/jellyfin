@@ -15,7 +15,7 @@
     "ItemCount": "{0} items",
     "ReleaseYearValue": "Release year: {0}",
     "OriginalAirDateValue": "Original air date: {0}",
-    "EndsAtValue": "Ends at {0}",
+    "EndsAtValue": "V\u00e1rhat\u00f3 befejez\u00e9s {0}",
     "OptionSundayShort": "Sun",
     "OptionMondayShort": "Mon",
     "OptionTuesdayShort": "Tue",
@@ -354,5 +354,5 @@
     "HeaderDiscoverEmbyPremiere": "Discover Emby Premiere",
     "OneChannel": "One channel",
     "ConfirmRemoveDownload": "Remove download?",
-    "AddedOnValue": "Added {0}"
+    "AddedOnValue": "Hozz\u00e1adva {0}"
 }

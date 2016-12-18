@@ -13,7 +13,7 @@
 
     .background-theme-b .backgroundContainer.withBackdrop {
         background-color: rgba(6, 6, 6, .94) !important;
-        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .96), rgba(0, 0, 0, .64)) !important;
+        background: linear-gradient(to right, rgba(0, 0, 0, .99), rgba(0, 0, 0, .92), rgba(0, 0, 0, .5)) !important;
     }
 
 .ui-body-b {
@@ -250,7 +250,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 300px;
+    height: 50vh;
     position: relative;
 }
 
@@ -516,41 +516,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .viewControls, .listTopPaging {
     display: inline-block;
-}
-
-@media all and (max-height: 540px) {
-
-    .itemBackdrop {
-        height: 290px;
-    }
-}
-
-@media all and (max-height: 500px) {
-
-    .itemBackdrop {
-        height: 240px;
-    }
-}
-
-@media all and (max-height: 460px) {
-
-    .itemBackdrop {
-        height: 200px;
-    }
-}
-
-@media all and (max-height: 300px) {
-
-    .itemBackdrop {
-        height: 150px;
-    }
-}
-
-@media all and (max-height: 250px) {
-
-    .itemBackdrop {
-        height: 120px;
-    }
 }
 
 @media all and (max-width: 800px) {

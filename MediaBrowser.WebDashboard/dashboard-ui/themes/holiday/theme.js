@@ -1,4 +1,4 @@
-﻿(function () {
+﻿define(['appSettings', 'backdrop', 'browser', 'globalize', 'require', 'events', 'paper-icon-button-light'], function (appSettings, backdrop, browser, globalize, require, events) {
     'use strict';
 
     var lastSound = 0;
@@ -8,7 +8,7 @@
 
     function onPageShow() {
 
-        if (!browserInfo.mobile) {
+        if (!browser.mobile) {
 
             if (getHolidayTheme() == 'off') {
                 return;
@@ -16,7 +16,7 @@
 
             var page = this;
 
-            Dashboard.importCss('themes/holiday/style.css');
+            require(['css!./style.css']);
 
             if (!page.classList.contains('itemDetailPage')) {
                 setBackdrop(page);
@@ -59,8 +59,8 @@
             holidayInfoButton.parentNode.removeChild(holidayInfoButton);
         }
 
-        Dashboard.removeStylesheet('themes/holiday/style.css');
-        Backdrops.clear();
+        backdrop.clear();
+        window.location.reload(true);
     }
 
     var snowFlakesInitialized;
@@ -68,9 +68,9 @@
 
         if (!snowFlakesInitialized) {
             snowFlakesInitialized = true;
-            $(document.body).append('<div id="snowflakeContainer"><p class="snowflake">*</p></div>');
+            document.body.insertAdjacentHTML('beforeend', '<div id="snowflakeContainer"><p class="snowflake">*</p></div>');
             generateSnowflakes();
-            Events.on(MediaController, 'beforeplaybackstart', onPlaybackStart);
+            events.on(MediaController, 'beforeplaybackstart', onPlaybackStart);
         }
     }
 
@@ -88,20 +88,20 @@
         if (!page.classList.contains('itemDetailPage')) {
 
             if (getHolidayTheme() == 'christmas') {
-                Backdrops.setBackdropUrl(page, 'https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/themes/holiday/bgc.jpg');
+                backdrop.setBackdrop('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/themes/holiday/bgc.jpg');
             } else {
-                Backdrops.setBackdropUrl(page, 'https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/themes/holiday/bg.jpg');
+                backdrop.setBackdrop('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/themes/holiday/bg.jpg');
             }
         }
     }
 
-    var holidayThemeKey = 'holidaytheme5';
+    var holidayThemeKey = 'holidaytheme6';
     function getHolidayTheme() {
-        return appStorage.getItem(holidayThemeKey);
+        return appSettings.get(holidayThemeKey);
     }
 
     function setHolidayTheme(value) {
-        appStorage.setItem(holidayThemeKey, value);
+        appSettings.set(holidayThemeKey, value);
         setBodyClass();
         playThemeMusic();
     }
@@ -154,11 +154,11 @@
                             break;
                         case 'joy':
                             setHolidayTheme('');
-                            setBackdrop($($.mobile.activePage)[0]);
+                            setBackdrop($.mobile.activePage);
                             break;
                         case 'christmas':
                             setHolidayTheme('christmas');
-                            setBackdrop($($.mobile.activePage)[0]);
+                            setBackdrop($.mobile.activePage);
                             break;
                         default:
                             break;
@@ -177,15 +177,15 @@
 
         iconCreated = true;
 
-        var elem = document.createElement('paper-icon-button');
-        elem.icon = 'info';
-        elem.classList.add('holidayInfoButton');
-        elem.addEventListener('click', onIconClick);
-
         var viewMenuSecondary = document.querySelector('.viewMenuSecondary');
 
         if (viewMenuSecondary) {
-            viewMenuSecondary.insertBefore(elem, viewMenuSecondary.childNodes[0]);
+
+            var html = '<button is="paper-icon-button-light" class="holidayInfoButton"><i class="md-icon">info</i></button>';
+
+            viewMenuSecondary.insertAdjacentHTML('afterbegin', html);
+
+            viewMenuSecondary.querySelector('.holidayInfoButton').addEventListener('click', onIconClick);
         }
     }
 
@@ -206,7 +206,7 @@
         });
     }
 
-})();
+});
 
 (function () {
 

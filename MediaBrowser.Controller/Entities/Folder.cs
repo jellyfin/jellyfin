@@ -103,6 +103,16 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public override bool CanDelete()
+        {
+            if (IsRoot)
+            {
+                return false;
+            }
+
+            return base.CanDelete();
+        }
+
         public override bool RequiresRefresh()
         {
             var baseResult = base.RequiresRefresh();
