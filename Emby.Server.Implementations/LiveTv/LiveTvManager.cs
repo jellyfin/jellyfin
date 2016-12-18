@@ -2009,6 +2009,14 @@ namespace Emby.Server.Implementations.LiveTv
                     .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item2.Name, i.Item1.SeriesTimerId) == guid);
             }
 
+            if (!string.IsNullOrEmpty(query.Id))
+            {
+                var guid = new Guid(query.Id);
+
+                timers = timers
+                    .Where(i => _tvDtoService.GetInternalTimerId(i.Item2.Name, i.Item1.Id) == guid);
+            }
+
             var returnList = new List<TimerInfoDto>();
 
             foreach (var i in timers)
@@ -2143,7 +2151,11 @@ namespace Emby.Server.Implementations.LiveTv
 
         public async Task<TimerInfoDto> GetTimer(string id, CancellationToken cancellationToken)
         {
-            var results = await GetTimers(new TimerQuery(), cancellationToken).ConfigureAwait(false);
+            var results = await GetTimers(new TimerQuery
+            {
+                Id = id
+
+            }, cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
         }
