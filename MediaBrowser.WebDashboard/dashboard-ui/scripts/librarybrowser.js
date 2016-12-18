@@ -252,7 +252,8 @@
                 var id = item.Id || item.ItemId;
 
                 if (item.Type == "SeriesTimer") {
-                    return "livetvseriestimer.html?id=" + id;
+                    //return "livetvseriestimer.html?id=" + id;
+                    return "itemdetails.html?seriesTimerId=" + id;
                 }
 
                 if (item.CollectionType == 'livetv') {
@@ -733,6 +734,10 @@
 
             renderDetailImage: function (elem, item, editable, preferThumb, imageLoader, indicators) {
 
+                if (item.Type === 'SeriesTimer') {
+                    editable = false;
+                }
+
                 var imageTags = item.ImageTags || {};
 
                 if (item.PrimaryImageTag) {
@@ -807,6 +812,14 @@
                         type: "Primary",
                         maxHeight: imageHeight,
                         tag: item.SeriesPrimaryImageTag
+                    });
+                }
+                else if (item.ParentPrimaryImageItemId && item.ParentPrimaryImageTag) {
+
+                    url = ApiClient.getScaledImageUrl(item.ParentPrimaryImageItemId, {
+                        type: "Primary",
+                        maxHeight: imageHeight,
+                        tag: item.ParentPrimaryImageTag
                     });
                 }
 

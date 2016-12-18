@@ -8,7 +8,7 @@
 <div class="formDialogContent smoothScrollY">
     <div class="dialogContentInner dialog-content-centered" style="padding-top:2em;">
 
-        <form>
+        <form style="max-width: none;">
             <div class="selectContainer">
                 <select is="emby-select" class="selectShowType" label="${LabelRecord}">
                     <option value="new">${NewEpisodesOnly}</option>
@@ -18,7 +18,7 @@
 
             <div class="checkboxContainer checkboxContainer-withDescription">
                 <label>
-                    <input type="checkbox" is="emby-checkbox" class="chkSkipEpisodesInLibrary"/>
+                    <input type="checkbox" is="emby-checkbox" class="chkSkipEpisodesInLibrary" />
                     <span>${SkipEpisodesAlreadyInMyLibrary}</span>
                 </label>
                 <div class="fieldDescription checkboxFieldDescription">${SkipEpisodesAlreadyInMyLibraryHelp}</div>
@@ -39,8 +39,7 @@
             </div>
 
             <div class="selectContainer">
-                <select is="emby-select" class="selectKeepUpTo" label="${LabelKeepUpTo}">
-                </select>
+                <select is="emby-select" class="selectKeepUpTo" label="${LabelKeepUpTo}"></select>
             </div>
 
             <div class="inputContainer">
