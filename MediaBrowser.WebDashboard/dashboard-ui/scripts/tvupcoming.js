@@ -123,6 +123,7 @@
                 showDetailsMenu: true,
                 centerText: !supportsImageAnalysis,
                 showParentTitle: true,
+                overlayText: false,
                 allowBottomPadding: allowBottomPadding,
                 cardLayout: supportsImageAnalysis,
                 vibrant: supportsImageAnalysis

@@ -95,7 +95,7 @@
         }
     }
 
-    var holidayThemeKey = 'holidaytheme5';
+    var holidayThemeKey = 'holidaytheme6';
     function getHolidayTheme() {
         return appSettings.get(holidayThemeKey);
     }
