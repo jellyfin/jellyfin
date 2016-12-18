@@ -317,7 +317,7 @@
   "LabelStopWhenPossible": "Stop when possible:",
   "MinutesBefore": "minutes before",
   "MinutesAfter": "minutes after",
-  "SkipEpisodesAlreadyInMyLibrary": "Skip episodes that are already in my library",
+  "SkipEpisodesAlreadyInMyLibrary": "Don't record episodes that are already in my library",
   "SkipEpisodesAlreadyInMyLibraryHelp": "Episodes will be compared using season and episode numbers, when available.",
   "LabelKeepUpTo": "Keep up to:",
   "AsManyAsPossible": "As many as possible",
