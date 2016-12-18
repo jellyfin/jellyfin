@@ -238,7 +238,7 @@ namespace Emby.Server.Core.EntryPoints
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Error creating port map", ex);
+                _logger.Error("Error creating port map: " + ex.Message);
             }
         }
 

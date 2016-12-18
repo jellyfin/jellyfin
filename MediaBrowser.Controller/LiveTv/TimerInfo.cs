@@ -46,6 +46,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         public string Overview { get; set; }
 
+        public string SeriesId { get; set; }
+
         /// <summary>
         /// The start date of the recording, in UTC.
         /// </summary>

@@ -42,7 +42,8 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private ConcurrentBag<InstallationInfo> CompletedInstallationsInternal { get; set; }
 
-        public IEnumerable<InstallationInfo> CompletedInstallations {
+        public IEnumerable<InstallationInfo> CompletedInstallations
+        {
             get { return CompletedInstallationsInternal; }
         }
 
@@ -163,8 +164,8 @@ namespace Emby.Server.Implementations.Updates
         {
             var data = new Dictionary<string, string>
             {
-                { "key", _securityManager.SupporterKey }, 
-                { "mac", _applicationHost.SystemId }, 
+                { "key", _securityManager.SupporterKey },
+                { "mac", _applicationHost.SystemId },
                 { "systemid", _applicationHost.SystemId }
             };
 
@@ -655,6 +656,8 @@ namespace Emby.Server.Implementations.Updates
 
             // Remove it the quick way for now
             _applicationHost.RemovePlugin(plugin);
+
+            _logger.Info("Deleting plugin file {0}", plugin.AssemblyFilePath);
 
             _fileSystem.DeleteFile(plugin.AssemblyFilePath);
 
