@@ -258,21 +258,8 @@
     <Content Include="statusicon.png" />
   </ItemGroup>
   <ItemGroup>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-  </ItemGroup>
-  <ItemGroup>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
-      <Link>Resources\dashboard-ui\about.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\addplugin.html">
       <Link>Resources\dashboard-ui\addplugin.html</Link>
     </BundleResource>
@@ -960,6 +947,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\localassetmanager.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\nullassetmanager.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\serverdiscovery-chrome.js</Link>
     </BundleResource>
@@ -975,6 +965,12 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\contentuploader.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\contentuploader.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\filerepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\filerepository.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\itemrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\itemrepository.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\localsync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\localsync.js</Link>
     </BundleResource>
@@ -989,6 +985,15 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\serversync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\transfermanager.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\transfermanager.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\useractionrepository.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\sync\userrepository.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\.bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\.bower.json</Link>
@@ -1037,6 +1042,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\globalize.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\globalize.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\idb.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\idb.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\inputmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\inputmanager.js</Link>
@@ -1406,12 +1414,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\fullscreen\fullscreenmanager.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.js">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.template.html">
-      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-categories.template.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\guide\guide-settings.js</Link>
@@ -1805,6 +1807,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\toast\toast.css</Link>
@@ -3615,5 +3620,15 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree\themes\default\throbber.gif">
       <Link>Resources\dashboard-ui\thirdparty\jstree\themes\default\throbber.gif</Link>
     </BundleResource>
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
   </ItemGroup>
 </Project>
