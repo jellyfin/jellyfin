@@ -138,7 +138,23 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
             }
         }
 
-        if (item.StartDate && item.Type !== 'Program') {
+        if (item.Type === 'SeriesTimer') {
+            if (item.RecordAnyTime) {
+
+                miscInfo.push(globalize.translate('sharedcomponents#Anytime'));
+            } else {
+                miscInfo.push(datetime.getDisplayTime(item.StartDate));
+            }
+
+            if (item.RecordAnyChannel) {
+                miscInfo.push(globalize.translate('sharedcomponents#AllChannels'));
+            }
+            else {
+                miscInfo.push(item.ChannelName || globalize.translate('sharedcomponents#OneChannel'));
+            }
+        }
+
+        if (item.StartDate && item.Type !== 'Program' && item.Type !== 'SeriesTimer') {
 
             try {
                 date = datetime.parseISO8601Date(item.StartDate);

@@ -167,6 +167,21 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                     }
                 }
+                image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        dto.ParentBackdropImageTags = new List<string>
+                            {
+                                _imageProcessor.GetImageCacheTag(librarySeries, image)
+                            };
+                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N");
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(programSeriesId))
@@ -192,6 +207,25 @@ namespace Emby.Server.Implementations.LiveTv
                         }
                         catch (Exception ex)
                         {
+                        }
+                    }
+
+                    if (dto.ParentBackdropImageTags == null || dto.ParentBackdropImageTags.Count == 0)
+                    {
+                        image = program.GetImageInfo(ImageType.Backdrop, 0);
+                        if (image != null)
+                        {
+                            try
+                            {
+                                dto.ParentBackdropImageTags = new List<string>
+                            {
+                                _imageProcessor.GetImageCacheTag(program, image)
+                            };
+                                dto.ParentBackdropItemId = program.Id.ToString("N");
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         }
                     }
                 }
@@ -223,6 +257,21 @@ namespace Emby.Server.Implementations.LiveTv
                     {
                     }
                 }
+                image = librarySeries.GetImageInfo(ImageType.Backdrop, 0);
+                if (image != null)
+                {
+                    try
+                    {
+                        dto.ParentBackdropImageTags = new List<string>
+                            {
+                                _imageProcessor.GetImageCacheTag(librarySeries, image)
+                            };
+                        dto.ParentBackdropItemId = librarySeries.Id.ToString("N");
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(programSeriesId))
@@ -248,6 +297,25 @@ namespace Emby.Server.Implementations.LiveTv
                         }
                         catch (Exception ex)
                         {
+                        }
+                    }
+
+                    if (dto.ParentBackdropImageTags == null || dto.ParentBackdropImageTags.Count == 0)
+                    {
+                        image = program.GetImageInfo(ImageType.Backdrop, 0);
+                        if (image != null)
+                        {
+                            try
+                            {
+                                dto.ParentBackdropImageTags = new List<string>
+                            {
+                                _imageProcessor.GetImageCacheTag(program, image)
+                            };
+                                dto.ParentBackdropItemId = program.Id.ToString("N");
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         }
                     }
                 }

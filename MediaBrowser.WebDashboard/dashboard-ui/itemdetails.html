@@ -26,17 +26,15 @@
 
                 <div class="detailSection" style="margin-bottom: 0;">
 
-                    <div>
-                        <h1 class="parentName" style="margin: .25em 0;"></h1>
-                        <h1 class="itemName" style="margin: .5em 0;"></h1>
+                    <h1 class="parentName" style="margin: .25em 0;"></h1>
+                    <h1 class="itemName" style="margin: .5em 0;"></h1>
 
-                        <div class="itemMiscInfo itemMiscInfo-primary" style="margin: 1em 0;">
+                    <div class="itemMiscInfo itemMiscInfo-primary" style="margin: 1em 0;">
 
-                        </div>
+                    </div>
 
-                        <div class="itemMiscInfo itemMiscInfo-secondary" style="margin: 1em 0;">
+                    <div class="itemMiscInfo itemMiscInfo-secondary" style="margin: 1em 0;">
 
-                        </div>
                     </div>
 
                     <div class="mainDetailButtons">
@@ -47,6 +45,10 @@
                         <button is="emby-button" type="button" class="raised subdued btnPlayTrailer hide">
                             <i class="md-icon">videocam</i>
                             <span>${ButtonTrailer}</span>
+                        </button>
+                        <button is="emby-button" type="button" class="raised subdued btnCancelSeriesTimer hide">
+                            <i class="md-icon">cancel</i>
+                            <span>${ButtonCancelSeries}</span>
                         </button>
                         <button is="emby-button" type="button" class="raised subdued btnMoreCommands hide notext">
                             &nbsp;
@@ -60,7 +62,7 @@
                     <div class="syncLocalContainer hide" style="margin: 1em 0;">
                     </div>
 
-                    <div class="recordingFields hide" style="margin:  .5em 0 1.5em;">
+                    <div class="recordingFields hide" style="margin: .5em 0 1.5em;">
 
                     </div>
 
@@ -79,123 +81,132 @@
                         <p class="itemExternalLinks"></p>
                         <p class="itemStudios"></p>
                         <p class="itemTags"></p>
+
+                        <div class="seriesRecordingEditor">
+
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div>
-            <div class="collectionItems"></div>
-            <div class="nextUpSection detailSection hide">
-                <h1>
-                    ${HeaderNextUp}
-                </h1>
-                <div is="emby-itemscontainer" class="nextUpItems vertical-wrap"></div>
+        <div class="seriesTimerScheduleSection detailSection hide" style="margin-top:-3em;">
+            <h1>
+                ${HeaderSchedule}
+            </h1>
+            <div class="seriesTimerSchedule">
             </div>
-            <div id="childrenCollapsible" class="hide detailSection">
-                <h1 class="childrenSectionHeader">
-                    <span id="childrenTitle"></span>
-                </h1>
-                <div id="childrenContent">
-                    <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align: left;"></div>
-                </div>
+        </div>
+        <div class="collectionItems"></div>
+        <div class="nextUpSection detailSection hide">
+            <h1>
+                ${HeaderNextUp}
+            </h1>
+            <div is="emby-itemscontainer" class="nextUpItems vertical-wrap"></div>
+        </div>
+        <div id="childrenCollapsible" class="hide detailSection">
+            <h1 class="childrenSectionHeader">
+                <span id="childrenTitle"></span>
+            </h1>
+            <div id="childrenContent">
+                <div is="emby-itemscontainer" class="childrenItemsContainer itemsContainer" style="text-align: left;"></div>
             </div>
-            <div id="additionalPartsCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderAdditionalParts}
-                </h1>
-                <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
-            </div>
-            <div id="castCollapsible" class="detailSection hide">
-                <h1 id="peopleHeader">
-                    ${HeaderCastCrew}
-                </h1>
-                <div id="castContent" is="emby-itemscontainer" class="itemsContainer"></div>
-                <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
-            </div>
-            <div id="seriesScheduleSection" class="detailSection hide">
-                <h1>
-                    ${HeaderUpcomingOnTV}
-                </h1>
-                <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list"></div>
-            </div>
+        </div>
+        <div id="additionalPartsCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderAdditionalParts}
+            </h1>
+            <div id="additionalPartsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+        </div>
+        <div id="castCollapsible" class="detailSection hide">
+            <h1 id="peopleHeader">
+                ${HeaderCastCrew}
+            </h1>
+            <div id="castContent" is="emby-itemscontainer" class="itemsContainer"></div>
+            <button is="emby-button" type="button" class="raised more morePeople hide">${ButtonMore}</button>
+        </div>
+        <div id="seriesScheduleSection" class="detailSection hide">
+            <h1>
+                ${HeaderUpcomingOnTV}
+            </h1>
+            <div id="seriesScheduleList" is="emby-itemscontainer" class="itemsContainer vertical-list"></div>
+        </div>
 
-            <div class="detailSection photoInfo hide">
-                <h1>
-                    ${HeaderPhotoInfo}
-                </h1>
-                <div>
-                    <div class="photoInfoContent"></div>
-                </div>
+        <div class="detailSection photoInfo hide">
+            <h1>
+                ${HeaderPhotoInfo}
+            </h1>
+            <div>
+                <div class="photoInfoContent"></div>
             </div>
+        </div>
 
-            <div id="specialsCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderSpecialFeatures}
-                </h1>
-                <div id="specialsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
-            </div>
-            <div id="musicVideosCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderMusicVideos}
-                </h1>
-                <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
-            </div>
-            <div id="moreFromSection" class="detailSection hide">
-                <h1 class="moreFromHeader"></h1>
-                <div id="moreFromItems"></div>
-            </div>
-            <div id="similarCollapsible" class="detailSection hide">
-                <h1>${HeaderMoreLikeThis}</h1>
-                <div class="similarContent"></div>
-            </div>
-            <div id="criticReviewsCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderAwardsAndReviews}
-                </h1>
-                <div>
-                    <p id="awardSummary"></p>
-                    <div class="paperList" id="criticRatingSummary">
-                        <div class="listItem">
-                            <button is="emby-button" type="button" class="mini fab" style="flex-shrink: 0; width: 40px; height: 40px; background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);"></button>
-                            <div class="listItemBody three-line">
-                                <h3 class="listItemBodyText">TOMATOMETER®</h3>
-                                <div class="listItemBodyText criticRatingScore"></div>
-                                <div class="listItemBodyText criticRatingSummaryText secondary" style="white-space: normal;"></div>
-                            </div>
+        <div id="specialsCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderSpecialFeatures}
+            </h1>
+            <div id="specialsContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+        </div>
+        <div id="musicVideosCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderMusicVideos}
+            </h1>
+            <div id="musicVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+        </div>
+        <div id="moreFromSection" class="detailSection hide">
+            <h1 class="moreFromHeader"></h1>
+            <div id="moreFromItems"></div>
+        </div>
+        <div id="similarCollapsible" class="detailSection hide">
+            <h1>${HeaderMoreLikeThis}</h1>
+            <div class="similarContent"></div>
+        </div>
+        <div id="criticReviewsCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderAwardsAndReviews}
+            </h1>
+            <div>
+                <p id="awardSummary"></p>
+                <div class="paperList" id="criticRatingSummary">
+                    <div class="listItem">
+                        <button is="emby-button" type="button" class="mini fab" style="flex-shrink: 0; width: 40px; height: 40px; background-color: transparent; background-repeat: no-repeat; background-position: center center; background-size: cover; background-image: url(css/images/fresh.png);"></button>
+                        <div class="listItemBody three-line">
+                            <h3 class="listItemBodyText">TOMATOMETER®</h3>
+                            <div class="listItemBodyText criticRatingScore"></div>
+                            <div class="listItemBodyText criticRatingSummaryText secondary" style="white-space: normal;"></div>
                         </div>
                     </div>
-                    <div id="criticReviewsContent"></div>
                 </div>
+                <div id="criticReviewsContent"></div>
             </div>
+        </div>
 
-            <div id="scenesCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderScenes}
-                </h1>
-                <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer"></div>
-            </div>
-            <div id="themeSongsCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderThemeSongs}
-                </h1>
-                <div id="themeSongsContent" is="emby-itemscontainer"></div>
-            </div>
+        <div id="scenesCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderScenes}
+            </h1>
+            <div is="emby-itemscontainer" id="scenesContent" class="itemsContainer"></div>
+        </div>
+        <div id="themeSongsCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderThemeSongs}
+            </h1>
+            <div id="themeSongsContent" is="emby-itemscontainer"></div>
+        </div>
 
-            <div id="themeVideosCollapsible" class="detailSection hide">
-                <h1>
-                    ${HeaderThemeVideos}
-                </h1>
-                <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
-            </div>
+        <div id="themeVideosCollapsible" class="detailSection hide">
+            <h1>
+                ${HeaderThemeVideos}
+            </h1>
+            <div id="themeVideosContent" is="emby-itemscontainer" class="itemsContainer vertical-wrap"></div>
+        </div>
 
-            <div class="detailSection audioVideoMediaInfo hide">
-                <h1>${HeaderMediaInfo}</h1>
-                <div>
-                    <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
-                        <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
-                    </div>
-                    <div id="mediaInfoContent" class="mediaInfoContent"></div>
+        <div class="detailSection audioVideoMediaInfo hide">
+            <h1>${HeaderMediaInfo}</h1>
+            <div>
+                <div class="splitVersionContainer" style="border-bottom: 1px solid #444; padding: 1em 0;">
+                    <button is="emby-button" type="button" class="raised btnSplitVersions subdued">${ButtonSplitVersionsApart}</button>
                 </div>
+                <div id="mediaInfoContent" class="mediaInfoContent"></div>
             </div>
         </div>
     </div>
