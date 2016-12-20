@@ -48,18 +48,10 @@
         public const string MovieGenres = "MovieGenres";
         public const string MovieGenre = "MovieGenre";
 
-        public const string LatestGames = "LatestGames";
-        public const string RecentlyPlayedGames = "RecentlyPlayedGames";
-        public const string GameSystems = "GameSystems";
-        public const string GameGenres = "GameGenres";
-        public const string GameFavorites = "GameFavorites";
-        public const string GameGenre = "GameGenre";
-
         public const string MusicArtists = "MusicArtists";
         public const string MusicAlbumArtists = "MusicAlbumArtists";
         public const string MusicAlbums = "MusicAlbums";
         public const string MusicGenres = "MusicGenres";
-        public const string MusicGenre = "MusicGenre";
         public const string MusicLatest = "MusicLatest";
         public const string MusicPlaylists = "MusicPlaylists";
         public const string MusicSongs = "MusicSongs";

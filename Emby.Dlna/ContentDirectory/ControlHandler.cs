@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Xml;
@@ -492,29 +493,53 @@ namespace Emby.Dlna.ContentDirectory
                 return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
             }
 
-            var folder = (Folder)item;
-
-            var sortOrders = new List<string>();
-            if (!folder.IsPreSorted)
+            if (item is MusicGenre)
             {
-                sortOrders.Add(ItemSortBy.SortName);
+                return GetMusicGenreItems(item, null, user, sort, startIndex, limit);
             }
 
-            var queryResult = await folder.GetItems(new InternalItemsQuery
+            var folder = (Folder)item;
+
+            var query = new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                SortBy = sortOrders.ToArray(),
-                SortOrder = sort.SortOrder,
                 User = user,
                 IsMissing = false,
-                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music },
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                PresetViews = new[] {CollectionType.Movies, CollectionType.TvShows, CollectionType.Music},
+                ExcludeItemTypes = new[] {typeof (Game).Name, typeof (Book).Name},
                 IsPlaceHolder = false
+            };
 
-            }).ConfigureAwait(false);
+            SetSorting(query, sort, folder.IsPreSorted);
 
-            var serverItems = queryResult
+            var queryResult = await folder.GetItems(query).ConfigureAwait(false);
+
+            return ToResult(queryResult);
+        }
+
+        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parentId,
+                GenreIds = new[] {item.Id.ToString("N")},
+                IncludeItemTypes = new[] {typeof (MusicAlbum).Name},
+                Limit = limit,
+                StartIndex = startIndex
+            };
+
+            SetSorting(query, sort, false);
+
+            var result = _libraryManager.GetItemsResult(query);
+
+            return ToResult(result);
+        }
+
+        private QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
+        {
+            var serverItems = result
                 .Items
                 .Select(i => new ServerItem
                 {
@@ -524,9 +549,21 @@ namespace Emby.Dlna.ContentDirectory
 
             return new QueryResult<ServerItem>
             {
-                TotalRecordCount = queryResult.TotalRecordCount,
+                TotalRecordCount = result.TotalRecordCount,
                 Items = serverItems
             };
+        }
+
+        private void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
+        {
+            var sortOrders = new List<string>();
+            if (!isPreSorted)
+            {
+                sortOrders.Add(ItemSortBy.SortName);
+            }
+
+            query.SortBy = sortOrders.ToArray();
+            query.SortOrder = sort.SortOrder;
         }
 
         private QueryResult<ServerItem> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)

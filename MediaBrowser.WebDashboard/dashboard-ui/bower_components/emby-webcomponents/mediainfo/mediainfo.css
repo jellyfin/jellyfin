@@ -58,3 +58,10 @@
     border-radius: .15em;
     font-size: 80%;
 }
+
+.closedCaptionMediaInfoText {
+    /*padding: .24em .4em;*/
+    font-weight: 700;
+    /*font-size: inherit;*/
+    /*background: rgba(81, 81, 81, .7);*/
+}
