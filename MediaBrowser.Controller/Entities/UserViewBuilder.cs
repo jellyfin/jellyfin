@@ -1005,11 +1005,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Studios.Length > 0)
-            {
-                return false;
-            }
-
             if (request.StudioIds.Length > 0)
             {
                 return false;
@@ -1515,12 +1510,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply studio filter
-            if (query.Studios.Length > 0 && !query.Studios.Any(v => item.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-
-            // Apply studio filter
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
@@ -1733,14 +1722,14 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Artists
-            if (query.ArtistNames.Length > 0)
+            if (query.ArtistIds.Length > 0)
             {
                 var audio = item as IHasArtist;
 
-                if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
-                {
-                    return false;
-                }
+                //if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
+                //{
+                //    return false;
+                //}
             }
 
             // Albums

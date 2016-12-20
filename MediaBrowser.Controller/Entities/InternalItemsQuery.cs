@@ -83,7 +83,6 @@ namespace MediaBrowser.Controller.Entities
         public bool? HasTrailer { get; set; }
         public bool? HasParentalRating { get; set; }
 
-        public string[] Studios { get; set; }
         public string[] StudioIds { get; set; }
         public string[] GenreIds { get; set; }
         public ImageType[] ImageTypes { get; set; }
@@ -144,7 +143,7 @@ namespace MediaBrowser.Controller.Entities
         public string ExternalId { get; set; }
 
         public string[] AlbumNames { get; set; }
-        public string[] ArtistNames { get; set; }
+        public string[] ArtistIds { get; set; }
         public string[] ExcludeArtistIds { get; set; }
         public string AncestorWithPresentationUniqueKey { get; set; }
         public string SeriesPresentationUniqueKey { get; set; }
@@ -203,7 +202,7 @@ namespace MediaBrowser.Controller.Entities
 
             DtoOptions = new DtoOptions();
             AlbumNames = new string[] { };
-            ArtistNames = new string[] { };
+            ArtistIds = new string[] { };
             ExcludeArtistIds = new string[] { };
             ExcludeProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -216,7 +215,6 @@ namespace MediaBrowser.Controller.Entities
             IncludeItemTypes = new string[] { };
             ExcludeItemTypes = new string[] { };
             Genres = new string[] { };
-            Studios = new string[] { };
             StudioIds = new string[] { };
             GenreIds = new string[] { };
             ImageTypes = new ImageType[] { };
