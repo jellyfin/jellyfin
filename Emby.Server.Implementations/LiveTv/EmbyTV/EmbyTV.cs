@@ -326,7 +326,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     epgData = GetEpgDataForChannel(timer.ChannelId);
                 }
-                await UpdateTimersForSeriesTimer(epgData, timer, true).ConfigureAwait(false);
+                await UpdateTimersForSeriesTimer(epgData, timer, false, true).ConfigureAwait(false);
             }
         }
 
@@ -573,7 +573,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             _seriesTimerProvider.Add(info);
-            await UpdateTimersForSeriesTimer(epgData, info, false).ConfigureAwait(false);
+            await UpdateTimersForSeriesTimer(epgData, info, true, false).ConfigureAwait(false);
 
             return info.Id;
         }
@@ -614,7 +614,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     epgData = GetEpgDataForChannel(instance.ChannelId);
                 }
 
-                await UpdateTimersForSeriesTimer(epgData, instance, true).ConfigureAwait(false);
+                await UpdateTimersForSeriesTimer(epgData, instance, true, true).ConfigureAwait(false);
             }
         }
 
@@ -2159,7 +2159,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool deleteInvalidTimers)
+        private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer, bool updateTimerSettings, bool deleteInvalidTimers)
         {
             var allTimers = GetTimersForSeries(seriesTimer, epgData)
                 .ToList();
@@ -2204,12 +2204,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                                 enabledTimersForSeries.Add(existingTimer);
                             }
 
-                            existingTimer.KeepUntil = seriesTimer.KeepUntil;
-                            existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
-                            existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
-                            existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
-                            existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
-                            existingTimer.Priority = seriesTimer.Priority;
+                            if (updateTimerSettings)
+                            {
+                                existingTimer.KeepUntil = seriesTimer.KeepUntil;
+                                existingTimer.IsPostPaddingRequired = seriesTimer.IsPostPaddingRequired;
+                                existingTimer.IsPrePaddingRequired = seriesTimer.IsPrePaddingRequired;
+                                existingTimer.PostPaddingSeconds = seriesTimer.PostPaddingSeconds;
+                                existingTimer.PrePaddingSeconds = seriesTimer.PrePaddingSeconds;
+                                existingTimer.Priority = seriesTimer.Priority;
+                            }
 
                             existingTimer.SeriesTimerId = seriesTimer.Id;
                             _timerProvider.Update(existingTimer);
