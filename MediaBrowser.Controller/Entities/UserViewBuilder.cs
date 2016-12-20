@@ -203,9 +203,6 @@ namespace MediaBrowser.Controller.Entities
                 case SpecialFolder.MusicGenres:
                     return GetMusicGenres(queryParent, user, query);
 
-                case SpecialFolder.MusicGenre:
-                    return await GetMusicGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
-
                 case SpecialFolder.MusicLatest:
                     return GetMusicLatest(queryParent, user, query);
 
@@ -304,18 +301,6 @@ namespace MediaBrowser.Controller.Entities
                 TotalRecordCount = result.TotalRecordCount,
                 Items = result.Items.Select(i => i.Item1).ToArray()
             };
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.ParentId = queryParent.Id;
-            query.Genres = new[] { displayParent.Name };
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
-
-            return _libraryManager.GetItemsResult(query);
         }
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
