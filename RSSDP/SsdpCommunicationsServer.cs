@@ -183,6 +183,10 @@ namespace Rssdp.Infrastructure
             {
                 await socket.SendAsync(messageData, messageData.Length, destination).ConfigureAwait(false);
             }
+            catch (ObjectDisposedException)
+            {
+
+            }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error sending socket message from {0} to {1}", ex, socket.LocalIPAddress.ToString(), destination.ToString());
