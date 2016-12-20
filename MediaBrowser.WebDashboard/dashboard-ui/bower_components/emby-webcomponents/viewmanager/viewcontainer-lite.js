@@ -13,6 +13,9 @@ define(['browser', 'dom', 'css!./viewcontainer-lite'], function (browser, dom) {
         if (browser.tv) {
             return false;
         }
+        if (navigator.userAgent.toLowerCase().indexOf('embytheaterpi') !== -1) {
+            return false;
+        }
 
         return browser.supportsCssAnimation();
     }

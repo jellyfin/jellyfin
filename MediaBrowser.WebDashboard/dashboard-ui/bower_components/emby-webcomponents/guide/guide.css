@@ -307,8 +307,8 @@
 .programIcon {
     margin-left: auto;
     margin-right: .25em;
-    height: auto;
-    width: auto;
+    height: 1em;
+    width: 1em;
     font-size: 1.6em;
     color: #ddd;
     flex-shrink: 0;
@@ -423,10 +423,10 @@
 }
 
 .guide-date-tab-button {
-    font-weight: 500 !important;
+    font-weight: normal !important;
     color: inherit !important;
-    padding-top: .3em !important;
-    padding-bottom: .3em !important;
+    padding: .3em .7em !important;
+    margin: 0 .3em !important;
     opacity: .25;
 }
 
@@ -434,7 +434,7 @@
         color: #52B54B !important;
         border-color: transparent !important;
         opacity: 1;
-        font-weight: 500 !important;
+        font-weight: normal !important;
     }
 
     .guide-date-tab-button:focus {
@@ -444,14 +444,6 @@
 
 .layout-tv .guide-date-tab-button:focus {
     background-color: #52B54B !important;
-    border-radius: .25em !important;
+    border-radius: .15em !important;
     color: #fff !important;
-}
-
-@media all and (min-width: 1200px) {
-
-    .guide-date-tab-button {
-        padding-left: 1em !important;
-        padding-right: 1em !important;
-    }
 }

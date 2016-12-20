@@ -57,6 +57,24 @@ define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
         }
     }
 
+    function toStart(container, elem, horizontal) {
+        var pos = getPosition(container, elem, horizontal);
+
+        if (container.scrollTo) {
+            if (horizontal) {
+                container.scrollTo(pos.start, 0);
+            } else {
+                container.scrollTo(0, pos.start);
+            }
+        } else {
+            if (horizontal) {
+                container.scrollLeft = Math.round(pos.start);
+            } else {
+                container.scrollTop = Math.round(pos.start);
+            }
+        }
+    }
+
     function centerOnFocus(e, scrollSlider, horizontal) {
         var focused = focusManager.focusableParent(e.target);
 
@@ -102,6 +120,7 @@ define(['focusManager', 'dom', 'scrollStyles'], function (focusManager, dom) {
                 }
             }
         },
-        toCenter: toCenter
+        toCenter: toCenter,
+        toStart: toStart
     };
 });
