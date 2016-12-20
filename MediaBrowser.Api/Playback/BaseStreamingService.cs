@@ -818,7 +818,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.VideoStream != null && state.VideoStream.Width.HasValue && state.VideoStream.Height.HasValue)
             {
-                videoSizeParam = string.Format(",scale={0}:{1}", state.VideoStream.Width.Value.ToString(UsCulture), state.VideoStream.Height.Value.ToString(UsCulture));
+                videoSizeParam = string.Format("scale={0}:{1}", state.VideoStream.Width.Value.ToString(UsCulture), state.VideoStream.Height.Value.ToString(UsCulture));
             }
 
             var mapPrefix = state.SubtitleStream.IsExternal ?
@@ -829,7 +829,7 @@ namespace MediaBrowser.Api.Playback
                 ? 0
                 : state.SubtitleStream.Index;
 
-            return string.Format(" -filter_complex \"[{0}:{1}]format=yuva444p{4},lut=u=128:v=128:y=gammaval(.3)[sub] ; [0:{2}] [sub] overlay{3}\"",
+            return string.Format(" -filter_complex \"[{0}:{1}]{4}[sub] ; [0:{2}] [sub] overlay{3}\"",
                 mapPrefix.ToString(UsCulture),
                 subtitleStreamIndex.ToString(UsCulture),
                 state.VideoStream.Index.ToString(UsCulture),
