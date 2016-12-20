@@ -71,7 +71,10 @@ namespace SocketHttpListener.Net
             }
             catch (SocketCreateException ex)
             {
-                if (_enableDualMode && endpoint.IpAddress.Equals(IpAddressInfo.IPv6Any) && string.Equals(ex.ErrorCode, "AddressFamilyNotSupported", StringComparison.OrdinalIgnoreCase))
+                if (_enableDualMode && endpoint.IpAddress.Equals(IpAddressInfo.IPv6Any) && 
+                    (string.Equals(ex.ErrorCode, "AddressFamilyNotSupported", StringComparison.OrdinalIgnoreCase) || 
+                    // mono on bsd is throwing this
+                    string.Equals(ex.ErrorCode, "ProtocolNotSupported", StringComparison.OrdinalIgnoreCase)))
                 {
                     endpoint = new IpEndPointInfo(IpAddressInfo.Any, endpoint.Port);
                     _enableDualMode = false;

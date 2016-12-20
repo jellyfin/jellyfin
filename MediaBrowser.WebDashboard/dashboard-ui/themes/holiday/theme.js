@@ -95,7 +95,7 @@
         }
     }
 
-    var holidayThemeKey = 'holidaytheme6';
+    var holidayThemeKey = 'holidaytheme7';
     function getHolidayTheme() {
         return appSettings.get(holidayThemeKey);
     }
@@ -354,7 +354,11 @@
     window.generateSnowflakes = generateSnowflakes;
     window.stopSnowflakes = function () {
         stopped = true;
-        $('.snowflake').remove();
+
+        var elems = document.querySelectorAll('.snowflake');
+        for (var i = 0, length = elems.length; i < length; i++) {
+            elems[i].parentNode.removeChild(elems[i]);
+        }
     };
 
     //

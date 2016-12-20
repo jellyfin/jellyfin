@@ -3855,16 +3855,18 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.ArtistNames.Length > 0)
+            if (query.ArtistIds.Length > 0)
             {
                 var clauses = new List<string>();
                 var index = 0;
-                foreach (var artist in query.ArtistNames)
+                foreach (var artistId in query.ArtistIds)
                 {
-                    clauses.Add("@ArtistName" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type <= 1)");
+                    var paramName = "@ArtistIds" + index;
+
+                    clauses.Add("(select CleanName from TypedBaseItems where guid=" + paramName + ") in (select CleanValue from itemvalues where ItemId=Guid and Type<=1)");
                     if (statement != null)
                     {
-                        statement.TryBind("@ArtistName" + index, GetCleanValue(artist));
+                        statement.TryBind(paramName, artistId.ToGuidParamValue());
                     }
                     index++;
                 }
@@ -3956,23 +3958,6 @@ namespace Emby.Server.Implementations.Data
                     if (statement != null)
                     {
                         statement.TryBind(paramName, studioId.ToGuidParamValue());
-                    }
-                    index++;
-                }
-                var clause = "(" + string.Join(" OR ", clauses.ToArray()) + ")";
-                whereClauses.Add(clause);
-            }
-
-            if (query.Studios.Length > 0)
-            {
-                var clauses = new List<string>();
-                var index = 0;
-                foreach (var item in query.Studios)
-                {
-                    clauses.Add("@Studio" + index + " in (select CleanValue from itemvalues where ItemId=Guid and Type=3)");
-                    if (statement != null)
-                    {
-                        statement.TryBind("@Studio" + index, GetCleanValue(item));
                     }
                     index++;
                 }

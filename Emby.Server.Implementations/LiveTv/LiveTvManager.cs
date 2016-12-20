@@ -1681,7 +1681,7 @@ namespace Emby.Server.Implementations.LiveTv
                 return new QueryResult<BaseItem>();
             }
 
-            if (_services.Count == 1 && !(query.IsInProgress ?? false))
+            if (_services.Count == 1 && !(query.IsInProgress ?? false) && (!query.IsLibraryItem.HasValue || query.IsLibraryItem.Value))
             {
                 return GetEmbyRecordings(query, new DtoOptions(), user);
             }

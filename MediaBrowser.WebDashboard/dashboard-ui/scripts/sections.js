@@ -207,7 +207,7 @@
         html += '<h1>Try Emby Theater<button is="paper-icon-button-light" style="margin-left:1em;" onclick="this.parentNode.parentNode.remove();" class="autoSize"><i class="md-icon">close</i></button></h1>';
 
         var nameText = AppInfo.isNativeApp ? 'Emby Theater' : '<a href="https://emby.media/download" target="_blank">Emby Theater</a>';
-        html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Google Chrome, FireFox, Microsoft Edge and Opera.</p>';
+        html += '<p>A beautiful app for your TV and large screen tablet. ' + nameText + ' runs on Windows, Xbox One, Raspberry Pi, Samsung Smart TVs, Sony PS4, Web Browsers, and more.</p>';
         html += '<div class="itemsContainer vertical-wrap">';
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater1.png', 'https://emby.media/download');
         html += getCard('https://raw.githubusercontent.com/MediaBrowser/Emby.Resources/master/apps/theater2.png', 'https://emby.media/download');
@@ -650,7 +650,8 @@
             limit: 5,
             Fields: "PrimaryImageAspectRatio,BasicSyncInfo",
             IsInProgress: false,
-            EnableTotalRecordCount: false
+            EnableTotalRecordCount: false,
+            IsLibraryItem: false
 
         }).then(function (result) {
 
