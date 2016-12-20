@@ -180,6 +180,17 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     info.Video3DFormat = Video3DFormat.FullSideBySide;
                 }
+
+                var videoStreamsBitrate = info.MediaStreams.Where(i => i.Type == MediaStreamType.Video).Select(i => i.BitRate ?? 0).Sum();
+                // If ffprobe reported the container bitrate as being the same as the video stream bitrate, then it's wrong
+                if (videoStreamsBitrate == (info.Bitrate ?? 0))
+                {
+                    var streamBitrates = info.MediaStreams.Where(i => !i.IsExternal).Select(i => i.BitRate ?? 0).Sum();
+                    if (streamBitrates > (info.Bitrate ?? 0))
+                    {
+                        info.Bitrate = streamBitrates;
+                    }
+                }
             }
 
             return info;

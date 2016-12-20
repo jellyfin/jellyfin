@@ -124,7 +124,6 @@ namespace MediaBrowser.Api.UserLibrary
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
                 GenreIds = request.GetGenreIds(),
-                Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,
                 PersonIds = request.GetPersonIds(),
@@ -143,6 +142,22 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     query.ItemIds = new[] { request.ParentId };
                 }
+            }
+
+            // Studios
+            if (!string.IsNullOrEmpty(request.Studios))
+            {
+                query.StudioIds = request.Studios.Split('|').Select(i =>
+                {
+                    try
+                    {
+                        return LibraryManager.GetStudio(i);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
             }
 
             foreach (var filter in request.GetFilters())

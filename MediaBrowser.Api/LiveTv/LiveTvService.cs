@@ -202,6 +202,7 @@ namespace MediaBrowser.Api.LiveTv
         public bool? IsKids { get; set; }
         public bool? IsSports { get; set; }
         public bool? IsNews { get; set; }
+        public bool? IsLibraryItem { get; set; }
 
         public GetRecordings()
         {
@@ -1057,7 +1058,8 @@ namespace MediaBrowser.Api.LiveTv
                 IsNews = request.IsNews,
                 IsSeries = request.IsSeries,
                 IsKids = request.IsKids,
-                IsSports = request.IsSports
+                IsSports = request.IsSports,
+                IsLibraryItem = request.IsLibraryItem
 
             }, options, CancellationToken.None).ConfigureAwait(false);
 

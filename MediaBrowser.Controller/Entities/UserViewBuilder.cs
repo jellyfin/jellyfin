@@ -203,9 +203,6 @@ namespace MediaBrowser.Controller.Entities
                 case SpecialFolder.MusicGenres:
                     return GetMusicGenres(queryParent, user, query);
 
-                case SpecialFolder.MusicGenre:
-                    return await GetMusicGenreItems(queryParent, displayParent, user, query).ConfigureAwait(false);
-
                 case SpecialFolder.MusicLatest:
                     return GetMusicLatest(queryParent, user, query);
 
@@ -304,18 +301,6 @@ namespace MediaBrowser.Controller.Entities
                 TotalRecordCount = result.TotalRecordCount,
                 Items = result.Items.Select(i => i.Item1).ToArray()
             };
-        }
-
-        private async Task<QueryResult<BaseItem>> GetMusicGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.ParentId = queryParent.Id;
-            query.Genres = new[] { displayParent.Name };
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { typeof(MusicAlbum).Name };
-
-            return _libraryManager.GetItemsResult(query);
         }
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
@@ -1020,11 +1005,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.Studios.Length > 0)
-            {
-                return false;
-            }
-
             if (request.StudioIds.Length > 0)
             {
                 return false;
@@ -1530,12 +1510,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply studio filter
-            if (query.Studios.Length > 0 && !query.Studios.Any(v => item.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-
-            // Apply studio filter
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
@@ -1748,14 +1722,14 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Artists
-            if (query.ArtistNames.Length > 0)
+            if (query.ArtistIds.Length > 0)
             {
                 var audio = item as IHasArtist;
 
-                if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
-                {
-                    return false;
-                }
+                //if (!(audio != null && query.ArtistNames.Any(audio.HasAnyArtist)))
+                //{
+                //    return false;
+                //}
             }
 
             // Albums
