@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            query.Studios = new[] { Name };
+            query.StudioIds = new[] { Id.ToString("N") };
 
             return LibraryManager.GetItemList(query);
         }

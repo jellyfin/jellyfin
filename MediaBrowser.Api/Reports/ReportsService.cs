@@ -209,7 +209,6 @@ namespace MediaBrowser.Api.Reports
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
                 GenreIds = request.GetGenreIds(),
-                Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,
                 PersonIds = request.GetPersonIds(),
@@ -312,21 +311,6 @@ namespace MediaBrowser.Api.Reports
             if (!string.IsNullOrWhiteSpace(request.MaxOfficialRating))
             {
                 query.MaxParentalRating = _localization.GetRatingLevel(request.MaxOfficialRating);
-            }
-
-            // Artists
-            if (!string.IsNullOrEmpty(request.ArtistIds))
-            {
-                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
-
-                var artistItems = artistIds.Select(_libraryManager.GetItemById).Where(i => i != null).ToList();
-                query.ArtistNames = artistItems.Select(i => i.Name).ToArray();
-            }
-
-            // Artists
-            if (!string.IsNullOrEmpty(request.Artists))
-            {
-                query.ArtistNames = request.Artists.Split('|');
             }
 
             // Albums

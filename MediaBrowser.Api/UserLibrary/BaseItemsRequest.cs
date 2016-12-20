@@ -394,6 +394,11 @@ namespace MediaBrowser.Api.UserLibrary
             return (Studios ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        public string[] GetArtistIds()
+        {
+            return (ArtistIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public string[] GetStudioIds()
         {
             return (StudioIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);

@@ -230,8 +230,8 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
+                ArtistIds = request.GetArtistIds(),
                 GenreIds = request.GetGenreIds(),
-                Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,
                 PersonIds = request.GetPersonIds(),
@@ -339,18 +339,19 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Artists
-            if (!string.IsNullOrEmpty(request.ArtistIds))
-            {
-                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
-
-                var artistItems = artistIds.Select(_libraryManager.GetItemById).Where(i => i != null).ToList();
-                query.ArtistNames = artistItems.Select(i => i.Name).ToArray();
-            }
-
-            // Artists
             if (!string.IsNullOrEmpty(request.Artists))
             {
-                query.ArtistNames = request.Artists.Split('|');
+                query.ArtistIds = request.Artists.Split('|').Select(i =>
+                {
+                    try
+                    {
+                        return _libraryManager.GetArtist(i);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
             }
 
             // ExcludeArtistIds
@@ -363,6 +364,22 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.Albums))
             {
                 query.AlbumNames = request.Albums.Split('|');
+            }
+
+            // Studios
+            if (!string.IsNullOrEmpty(request.Studios))
+            {
+                query.StudioIds = request.Studios.Split('|').Select(i =>
+                {
+                    try
+                    {
+                        return _libraryManager.GetStudio(i);
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }).Where(i => i != null).Select(i => i.Id.ToString("N")).ToArray();
             }
 
             return query;
