@@ -68,6 +68,7 @@ namespace MediaBrowser.Model.LiveTv
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
         public bool? EnableImages { get; set; }
+        public bool? IsLibraryItem { get; set; }
         public bool? IsNews { get; set; }
         public bool? IsMovie { get; set; }
         public bool? IsSeries { get; set; }
