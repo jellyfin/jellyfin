@@ -14,7 +14,6 @@
     flex-shrink: 0;
     margin: 0;
     padding: 1.2em .9em;
-    transition: none !important;
     position: relative;
     text-transform: uppercase;
     font-weight: bold;

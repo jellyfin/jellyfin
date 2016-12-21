@@ -240,7 +240,7 @@ define(['browser'], function (browser) {
     return function (options) {
 
         options = options || {};
-        var physicalAudioChannels = options.audioChannels || (browser.tv || browser.xboxOne || browser.ps4 ? 6 : 2);
+        var physicalAudioChannels = options.audioChannels || (browser.tv || browser.xboxOne || browser.ps4 || !browser.mobile ? 6 : 2);
 
         var bitrateSetting = getMaxBitrate();
 
@@ -308,8 +308,8 @@ define(['browser'], function (browser) {
             videoAudioCodecs.push('dts');
         }
 
-        if (browser.edgeUwp) {
-            //videoAudioCodecs.push('truehd');
+        if (options.supportsTrueHd) {
+            videoAudioCodecs.push('truehd');
         }
 
         videoAudioCodecs = videoAudioCodecs.filter(function (c) {

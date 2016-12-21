@@ -1,4 +1,4 @@
-﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'events', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser, events) {
+﻿define(['layoutManager', 'cardBuilder', 'datetime', 'mediaInfo', 'backdrop', 'listView', 'itemContextMenu', 'itemHelper', 'userdataButtons', 'dom', 'indicators', 'apphost', 'imageLoader', 'libraryMenu', 'shell', 'globalize', 'browser', 'events', 'scrollHelper', 'scrollStyles', 'emby-itemscontainer', 'emby-checkbox'], function (layoutManager, cardBuilder, datetime, mediaInfo, backdrop, listView, itemContextMenu, itemHelper, userdataButtons, dom, indicators, appHost, imageLoader, libraryMenu, shell, globalize, browser, events, scrollHelper) {
     'use strict';
 
     function getPromise(params) {
@@ -79,7 +79,6 @@
             positionTo: button,
             cancelTimer: false,
             record: false,
-            editImages: false,
             deleteItem: item.IsFolder === true
         };
 
@@ -1354,6 +1353,13 @@
                 ];
 
                 renderCollectionItems(page, item, collectionItemTypes, result.Items);
+            }
+            else if (item.Type === 'Episode') {
+
+                var card = childrenItemsContainer.querySelector('.card[data-id="' + item.Id + '"]');
+                if (card) {
+                    scrollHelper.toStart(childrenItemsContainer, card.previousSibling || card, true);
+                }
             }
         });
 

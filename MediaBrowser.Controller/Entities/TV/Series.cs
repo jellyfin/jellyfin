@@ -249,18 +249,24 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public IEnumerable<Season> GetSeasons(User user)
         {
+            var query = new InternalItemsQuery(user);
+
+            SetSeasonQueryOptions(query, user);
+
+            return LibraryManager.GetItemList(query).Cast<Season>();
+        }
+
+        private void SetSeasonQueryOptions(InternalItemsQuery query, User user)
+        {
             var config = user.Configuration;
 
             var enableSeriesPresentationKey = ConfigurationManager.Configuration.EnableSeriesPresentationUniqueKey;
             var seriesKey = GetUniqueSeriesKey(this);
 
-            var query = new InternalItemsQuery(user)
-            {
-                AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey,
-                SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null,
-                IncludeItemTypes = new[] { typeof(Season).Name },
-                SortBy = new[] { ItemSortBy.SortName }
-            };
+            query.AncestorWithPresentationUniqueKey = enableSeriesPresentationKey ? null : seriesKey;
+            query.SeriesPresentationUniqueKey = enableSeriesPresentationKey ? seriesKey : null;
+            query.IncludeItemTypes = new[] { typeof(Season).Name };
+            query.SortBy = new[] {ItemSortBy.SortName};
 
             if (!config.DisplayMissingEpisodes && !config.DisplayUnairedEpisodes)
             {
@@ -274,8 +280,6 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 query.IsVirtualUnaired = false;
             }
-
-            return LibraryManager.GetItemList(query).Cast<Season>();
         }
 
         protected override Task<QueryResult<BaseItem>> GetItemsInternal(InternalItemsQuery query)
@@ -306,11 +310,9 @@ namespace MediaBrowser.Controller.Entities.TV
                 return Task.FromResult(LibraryManager.GetItemsResult(query));
             }
 
-            Func<BaseItem, bool> filter = i => UserViewBuilder.Filter(i, user, query, UserDataManager, LibraryManager);
+            SetSeasonQueryOptions(query, user);
 
-            var items = GetSeasons(user).Where(filter);
-            var result = PostFilterAndSort(items, query, false, true);
-            return Task.FromResult(result);
+            return Task.FromResult(LibraryManager.GetItemsResult(query));
         }
 
         public IEnumerable<Episode> GetEpisodes(User user)

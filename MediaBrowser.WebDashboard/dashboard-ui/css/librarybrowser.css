@@ -305,8 +305,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     width: 300px;
     height: 70px;
     position: absolute;
-    top: 10%;
-    right: 20%;
+    top: 13.5%;
+    right: 19.5%;
     background-repeat: no-repeat;
     background-position: center center;
     background-size: contain;
@@ -320,6 +320,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 @media all and (max-width: 1200px) {
+
+    .detailLogo {
+        right: 2%;
+    }
+}
+
+@media all and (max-width: 1100px) {
 
     .detailLogo {
         display: none;
@@ -791,7 +798,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .mediaInfoText {
     background: rgba(31,31,31,.7);
-    padding: .25em .5em;
+    padding: .3em .5em;
     border-radius: .25em;
     color: #ddd;
     margin-right: .5em;

@@ -49,10 +49,6 @@
     display: none;
 }
 
-h1, h1 a {
-    font-weight: 400 !important;
-}
-
 .libraryMenuButtonText {
     font-weight: 500 !important;
 }
@@ -63,10 +59,6 @@ h1, h1 a {
 
 .cardImageContainer {
     border-radius: 4px;
-}
-
-.noSecondaryNavPage .itemBackdrop {
-    margin-top: 0;
 }
 
 .sidebarLinkText {

@@ -306,7 +306,7 @@ define(['datetime', 'globalize', 'embyRouter', 'itemHelper', 'material-icons', '
         html += getStarIconsHtml(item);
 
         if (item.HasSubtitles && options.subtitles !== false) {
-            html += '<i class="md-icon mediaInfoItem closedCaptionIcon mediaInfoIconItem">&#xE01C;</i>';
+            html += '<div class="mediaInfoItem mediaInfoText closedCaptionMediaInfoText">CC</div>';
         }
 
         if (item.CriticRating && options.criticRating !== false) {

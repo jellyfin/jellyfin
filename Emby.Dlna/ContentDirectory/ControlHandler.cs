@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Xml;
@@ -464,6 +465,16 @@ namespace Emby.Dlna.ContentDirectory
 
         private async Task<QueryResult<ServerItem>> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
+            if (item is MusicGenre)
+            {
+                return GetMusicGenreItems(item, null, user, sort, startIndex, limit);
+            }
+
+            if (item is MusicArtist)
+            {
+                return GetMusicArtistItems(item, null, user, sort, startIndex, limit);
+            }
+
             if (stubType.HasValue)
             {
                 if (stubType.Value == StubType.People)
@@ -476,7 +487,7 @@ namespace Emby.Dlna.ContentDirectory
 
                     var result = new QueryResult<ServerItem>
                     {
-                        Items = items.Select(i => new ServerItem { Item = i, StubType = StubType.Folder }).ToArray(),
+                        Items = items.Select(i => new ServerItem(i)).ToArray(),
                         TotalRecordCount = items.Length
                     };
 
@@ -494,39 +505,86 @@ namespace Emby.Dlna.ContentDirectory
 
             var folder = (Folder)item;
 
-            var sortOrders = new List<string>();
-            if (!folder.IsPreSorted)
-            {
-                sortOrders.Add(ItemSortBy.SortName);
-            }
-
-            var queryResult = await folder.GetItems(new InternalItemsQuery
+            var query = new InternalItemsQuery
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                SortBy = sortOrders.ToArray(),
-                SortOrder = sort.SortOrder,
                 User = user,
                 IsMissing = false,
-                PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Music },
-                ExcludeItemTypes = new[] { typeof(Game).Name, typeof(Book).Name },
+                PresetViews = new[] {CollectionType.Movies, CollectionType.TvShows, CollectionType.Music},
+                ExcludeItemTypes = new[] {typeof (Game).Name, typeof (Book).Name},
                 IsPlaceHolder = false
+            };
 
-            }).ConfigureAwait(false);
+            SetSorting(query, sort, folder.IsPreSorted);
 
-            var serverItems = queryResult
+            var queryResult = await folder.GetItems(query).ConfigureAwait(false);
+
+            return ToResult(queryResult);
+        }
+
+        private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parentId,
+                ArtistIds = new[] { item.Id.ToString("N") },
+                IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                Limit = limit,
+                StartIndex = startIndex
+            };
+
+            SetSorting(query, sort, false);
+
+            var result = _libraryManager.GetItemsResult(query);
+
+            return ToResult(result);
+        }
+
+        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid? parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        {
+            var query = new InternalItemsQuery(user)
+            {
+                Recursive = true,
+                ParentId = parentId,
+                GenreIds = new[] {item.Id.ToString("N")},
+                IncludeItemTypes = new[] {typeof (MusicAlbum).Name},
+                Limit = limit,
+                StartIndex = startIndex
+            };
+
+            SetSorting(query, sort, false);
+
+            var result = _libraryManager.GetItemsResult(query);
+
+            return ToResult(result);
+        }
+
+        private QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
+        {
+            var serverItems = result
                 .Items
-                .Select(i => new ServerItem
-                {
-                    Item = i
-                })
+                .Select(i => new ServerItem(i))
                 .ToArray();
 
             return new QueryResult<ServerItem>
             {
-                TotalRecordCount = queryResult.TotalRecordCount,
+                TotalRecordCount = result.TotalRecordCount,
                 Items = serverItems
             };
+        }
+
+        private void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
+        {
+            var sortOrders = new List<string>();
+            if (!isPreSorted)
+            {
+                sortOrders.Add(ItemSortBy.SortName);
+            }
+
+            query.SortBy = sortOrders.ToArray();
+            query.SortOrder = sort.SortOrder;
         }
 
         private QueryResult<ServerItem> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
@@ -541,11 +599,7 @@ namespace Emby.Dlna.ContentDirectory
 
             });
 
-            var serverItems = itemsResult.Items.Select(i => new ServerItem
-            {
-                Item = i,
-                StubType = null
-            })
+            var serverItems = itemsResult.Items.Select(i => new ServerItem(i))
             .ToArray();
 
             return new QueryResult<ServerItem>
@@ -566,7 +620,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             return DidlBuilder.IsIdRoot(id)
 
-                 ? new ServerItem { Item = user.RootFolder }
+                 ? new ServerItem(user.RootFolder)
                  : ParseItemId(id, user);
         }
 
@@ -601,16 +655,15 @@ namespace Emby.Dlna.ContentDirectory
             {
                 var item = _libraryManager.GetItemById(itemId);
 
-                return new ServerItem
+                return new ServerItem(item)
                 {
-                    Item = item,
                     StubType = stubType
                 };
             }
 
             Logger.Error("Error parsing item Id: {0}. Returning user root folder.", id);
 
-            return new ServerItem { Item = user.RootFolder };
+            return new ServerItem(user.RootFolder);
         }
     }
 
@@ -618,6 +671,16 @@ namespace Emby.Dlna.ContentDirectory
     {
         public BaseItem Item { get; set; }
         public StubType? StubType { get; set; }
+
+        public ServerItem(BaseItem item)
+        {
+            Item = item;
+
+            if (item is IItemByName && !(item is Folder))
+            {
+                StubType = Dlna.ContentDirectory.StubType.Folder;
+            }
+        }
     }
 
     public enum StubType
