@@ -326,20 +326,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-width: 800px) and (max-width: 1100px) {
+@media all and (max-width: 1100px) {
 
     .detailLogo {
         display: none;
-    }
-}
-
-@media all and (max-width: 800px) {
-
-    .detailLogo {
-        top: 20%;
-        right: 2%;
-        height: 50px;
-        width: 250px;
     }
 }
 

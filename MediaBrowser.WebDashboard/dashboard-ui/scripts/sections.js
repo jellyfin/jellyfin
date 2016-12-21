@@ -461,7 +461,6 @@
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
-            MediaTypes: "Video",
             Filters: "IsResumable",
             Limit: limit,
             Recursive: true,

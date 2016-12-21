@@ -1100,10 +1100,10 @@ var AppInfo = {};
             return;
         }
 
-        if (month == 11 && day >= 20 && day <= 25) {
-            require(['themes/holiday/theme']);
-            return;
-        }
+        //if (month == 11 && day >= 20 && day <= 25) {
+        //    require(['themes/holiday/theme']);
+        //    return;
+        //}
     }
 
     function returnFirstDependency(obj) {
