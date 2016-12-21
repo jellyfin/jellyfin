@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             if (query.IncludeItemTypes.Length == 0)
             {
                 query.IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name };
-                query.ArtistNames = new[] { Name };
+                query.ArtistIds = new[] { Id.ToString("N") };
             }
 
             return LibraryManager.GetItemList(query);
