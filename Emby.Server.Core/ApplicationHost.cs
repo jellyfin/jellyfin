@@ -1592,7 +1592,7 @@ namespace Emby.Server.Core
             var process = ProcessFactory.Create(new ProcessOptions
             {
                 FileName = url,
-                EnableRaisingEvents = true,
+                //EnableRaisingEvents = true,
                 UseShellExecute = true,
                 ErrorDialog = false
             });
