@@ -95,6 +95,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             int defaultImageExtractionTimeoutMs,
             bool enableEncoderFontFile, IEnvironmentInfo environmentInfo)
         {
+            if (jsonSerializer == null)
+            {
+                throw new ArgumentNullException("jsonSerializer");
+            }
+
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             ConfigurationManager = configurationManager;
@@ -632,7 +637,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
 
-                    if (result.streams == null && result.format == null)
+                    if (result == null || (result.streams == null && result.format == null))
                     {
                         throw new Exception("ffprobe failed - streams and format are both null.");
                     }
