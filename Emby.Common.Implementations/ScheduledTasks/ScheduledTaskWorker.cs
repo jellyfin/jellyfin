@@ -282,9 +282,12 @@ namespace Emby.Common.Implementations.ScheduledTasks
                     throw new ArgumentNullException("value");
                 }
 
-                SaveTriggers(value);
+                // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
+                var triggerList = value.Where(i => i != null).ToArray();
 
-                InternalTriggers = value.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
+                SaveTriggers(triggerList);
+
+                InternalTriggers = triggerList.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
             }
         }
 
@@ -535,7 +538,8 @@ namespace Emby.Common.Implementations.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         private Tuple<TaskTriggerInfo, ITaskTrigger>[] LoadTriggers()
         {
-            var settings = LoadTriggerSettings();
+            // This null check is not great, but is needed to handle bad user input, or user mucking with the config file incorrectly
+            var settings = LoadTriggerSettings().Where(i => i != null).ToArray();
 
             return settings.Select(i => new Tuple<TaskTriggerInfo, ITaskTrigger>(i, GetTrigger(i))).ToArray();
         }
@@ -544,8 +548,12 @@ namespace Emby.Common.Implementations.ScheduledTasks
         {
             try
             {
-                return JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath())
-                .ToArray();
+                var list = JsonSerializer.DeserializeFromFile<IEnumerable<TaskTriggerInfo>>(GetConfigurationFilePath());
+
+                if (list != null)
+                {
+                    return list.ToArray();
+                }
             }
             catch (FileNotFoundException)
             {
@@ -555,8 +563,8 @@ namespace Emby.Common.Implementations.ScheduledTasks
             catch (DirectoryNotFoundException)
             {
                 // File doesn't exist. No biggie. Return defaults.
-                return ScheduledTask.GetDefaultTriggers().ToArray();
             }
+            return ScheduledTask.GetDefaultTriggers().ToArray();
         }
 
         /// <summary>
