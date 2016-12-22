@@ -1583,7 +1583,8 @@ namespace Emby.Server.Core
 
         public void LaunchUrl(string url)
         {
-            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows &&
+                EnvironmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.OSX)
             {
                 throw new NotImplementedException();
             }
@@ -1591,7 +1592,7 @@ namespace Emby.Server.Core
             var process = ProcessFactory.Create(new ProcessOptions
             {
                 FileName = url,
-                EnableRaisingEvents = true,
+                //EnableRaisingEvents = true,
                 UseShellExecute = true,
                 ErrorDialog = false
             });

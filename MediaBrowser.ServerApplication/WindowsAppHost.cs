@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using Emby.Server.Core;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.EntryPoints;
@@ -93,21 +94,30 @@ namespace MediaBrowser.ServerApplication
 
         protected override void ConfigureAutoRunInternal(bool autorun)
         {
-            var shortcutPath = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.StartMenu), "Emby", "Emby Server.lnk");
-
             var startupPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
 
-            if (autorun)
+            if (autorun && !MainStartup.IsRunningAsService)
             {
                 //Copy our shortut into the startup folder for this user
-                var targetPath = Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk");
-                FileSystemManager.CreateDirectory(Path.GetDirectoryName(targetPath));
-                File.Copy(shortcutPath, targetPath, true);
+                var targetPath = Path.Combine(startupPath, "Emby Server.lnk");
+
+                IShellLinkW link = (IShellLinkW)new ShellLink();
+
+                var appPath = Process.GetCurrentProcess().MainModule.FileName;
+
+                // setup shortcut information
+                link.SetDescription(Name);
+                link.SetPath(appPath);
+                link.SetWorkingDirectory(Path.GetDirectoryName(appPath));
+
+                // save it
+                IPersistFile file = (IPersistFile)link;
+                file.Save(targetPath, false);
             }
             else
             {
                 //Remove our shortcut from the startup folder for this user
-                FileSystemManager.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk"));
+                FileSystemManager.DeleteFile(Path.Combine(startupPath, "Emby Server.lnk"));
             }
         }
 

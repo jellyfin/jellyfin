@@ -422,7 +422,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             var showType = details.showType ?? string.Empty;
-
+            
             var info = new ProgramInfo
             {
                 ChannelId = channel,
@@ -440,9 +440,22 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
                 IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
-                ShowId = programInfo.programID,
                 Etag = programInfo.md5
             };
+
+            var showId = programInfo.programID ?? string.Empty;
+
+            // According to SchedulesDirect, these are generic, unidentified episodes
+            // SH005316560000
+            var hasUniqueShowId = !showId.StartsWith("SH", StringComparison.OrdinalIgnoreCase) ||
+                !showId.EndsWith("0000", StringComparison.OrdinalIgnoreCase);
+
+            if (!hasUniqueShowId)
+            {
+                showId = newID;
+            }
+
+            info.ShowId = showId;
 
             if (programInfo.videoProperties != null)
             {
