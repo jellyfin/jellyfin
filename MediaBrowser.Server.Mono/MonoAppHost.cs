@@ -51,14 +51,36 @@ namespace MediaBrowser.Server.Mono
             }
             else if (environment.OperatingSystem == Model.System.OperatingSystem.Linux)
             {
+                info.FFMpegFilename = "ffmpeg";
+                info.FFProbeFilename = "ffprobe";
                 info.ArchiveType = "7z";
                 info.Version = "20160215";
+                info.DownloadUrls = GetDownloadUrls();
             }
 
             // No version available - user requirement
             info.DownloadUrls = new string[] { };
 
             return info;
+        }
+
+        private string[] GetDownloadUrls()
+        {
+            switch (EnvironmentInfo.SystemArchitecture)
+            {
+                case Architecture.X64:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-64bit-static.7z"
+                    };
+                case Architecture.X86:
+                    return new[]
+                    {
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-git-20160215-32bit-static.7z"
+                    };
+            }
+
+            return new string[] { };
         }
 
         protected override void RestartInternal()
