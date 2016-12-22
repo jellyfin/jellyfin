@@ -15,8 +15,10 @@
 
             if (operatingSystem == 'windows') {
                 view.querySelector('.fldSelectEncoderPathType').classList.add('hide');
+                view.querySelector('.markExec').classList.add('hide');
             } else {
                 view.querySelector('.fldSelectEncoderPathType').classList.remove('hide');
+                view.querySelector('.markExec').classList.remove('hide');
             }
 
             if (operatingSystem == 'windows' && systemInfo.SystemArchitecture != 'Arm') {

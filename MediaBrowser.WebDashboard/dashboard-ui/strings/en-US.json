@@ -1894,6 +1894,7 @@
   "DownloadFFmpeg": "Download FFmpeg",
   "FFmpegSuggestedDownload": "Suggested download: {0}",
   "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+  "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
   "OptionUseSystemInstalledVersion": "Use system installed version",
   "OptionUseMyCustomVersion": "Use a custom version",
   "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
