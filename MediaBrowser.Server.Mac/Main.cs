@@ -142,7 +142,10 @@ namespace MediaBrowser.Server.Mac
 
         private static EnvironmentInfo GetEnvironmentInfo()
         {
-            var info = new EnvironmentInfo();
+            var info = new EnvironmentInfo()
+            {
+                CustomOperatingSystem = MediaBrowser.Model.System.OperatingSystem.OSX
+            };
 
             var uname = GetUnixName();
 
