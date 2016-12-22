@@ -38,6 +38,18 @@ namespace Emby.Server.Implementations.Sync
 
                 }
             }
+
+            if (item.Status == SyncJobItemStatus.Cancelled)
+            {
+                try
+                {
+                    await _sessionManager.SendMessageToUserDeviceSessions(item.TargetId, "SyncJobItemCancelled", item, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch
+                {
+
+                }
+            }
         }
 
         public void Dispose()

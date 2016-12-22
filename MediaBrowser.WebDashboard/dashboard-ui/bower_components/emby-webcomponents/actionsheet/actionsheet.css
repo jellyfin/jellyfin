@@ -54,6 +54,10 @@
     box-shadow: none;
 }
 
+    .actionSheetMenuItem:focus {
+        transform: none !important;
+    }
+
 .actionSheetMenuItem-noflex {
     display: block;
 }

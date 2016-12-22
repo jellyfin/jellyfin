@@ -1665,7 +1665,7 @@ var AppInfo = {};
             define("imageFetcher", [embyWebComponentsBowerPath + "/images/basicimagefetcher"], returnFirstDependency);
         }
 
-        var preferNativeAlerts = browser.tv || browser.xboxOne || browser.ps4;
+        var preferNativeAlerts = browser.tv;
         // use native alerts if preferred and supported (not supported in opera tv)
         if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -1681,7 +1681,8 @@ var AppInfo = {};
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
 
-        if (preferNativeAlerts && window.prompt) {
+        var preferNativePrompt = preferNativeAlerts || browser.xboxOne || browser.ps4;
+        if (preferNativePrompt && window.confirm) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);

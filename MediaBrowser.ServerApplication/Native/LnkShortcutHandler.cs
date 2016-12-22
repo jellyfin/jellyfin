@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security;
 using System.Text;
 using MediaBrowser.Model.IO;
@@ -52,7 +53,7 @@ namespace MediaBrowser.ServerApplication.Native
         /// <summary>
         /// The STG m_ READ
         /// </summary>
-        public const uint STGM_READ = 0;
+        public const int STGM_READ = 0;
     }
 
     /// <summary>
@@ -317,72 +318,6 @@ namespace MediaBrowser.ServerApplication.Native
         /// <param name="pszFile">The PSZ file.</param>
         void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
 
-    }
-
-    /// <summary>
-    /// Interface IPersist
-    /// </summary>
-    [ComImport, Guid("0000010c-0000-0000-c000-000000000046"),
-    InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IPersist
-    {
-        /// <summary>
-        /// Gets the class ID.
-        /// </summary>
-        /// <param name="pClassID">The p class ID.</param>
-        [PreserveSig]
-        void GetClassID(out Guid pClassID);
-    }
-
-    /// <summary>
-    /// Interface IPersistFile
-    /// </summary>
-    [ComImport, Guid("0000010b-0000-0000-C000-000000000046"),
-    InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IPersistFile : IPersist
-    {
-        /// <summary>
-        /// Gets the class ID.
-        /// </summary>
-        /// <param name="pClassID">The p class ID.</param>
-        new void GetClassID(out Guid pClassID);
-        /// <summary>
-        /// Determines whether this instance is dirty.
-        /// </summary>
-        [PreserveSig]
-        int IsDirty();
-
-        /// <summary>
-        /// Loads the specified PSZ file name.
-        /// </summary>
-        /// <param name="pszFileName">Name of the PSZ file.</param>
-        /// <param name="dwMode">The dw mode.</param>
-        [PreserveSig]
-        void Load([In, MarshalAs(UnmanagedType.LPWStr)]
-            string pszFileName, uint dwMode);
-
-        /// <summary>
-        /// Saves the specified PSZ file name.
-        /// </summary>
-        /// <param name="pszFileName">Name of the PSZ file.</param>
-        /// <param name="remember">if set to <c>true</c> [remember].</param>
-        [PreserveSig]
-        void Save([In, MarshalAs(UnmanagedType.LPWStr)] string pszFileName,
-            [In, MarshalAs(UnmanagedType.Bool)] bool remember);
-
-        /// <summary>
-        /// Saves the completed.
-        /// </summary>
-        /// <param name="pszFileName">Name of the PSZ file.</param>
-        [PreserveSig]
-        void SaveCompleted([In, MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
-
-        /// <summary>
-        /// Gets the cur file.
-        /// </summary>
-        /// <param name="ppszFileName">Name of the PPSZ file.</param>
-        [PreserveSig]
-        void GetCurFile([In, MarshalAs(UnmanagedType.LPWStr)] string ppszFileName);
     }
 
     // CLSID_ShellLink from ShlGuid.h 

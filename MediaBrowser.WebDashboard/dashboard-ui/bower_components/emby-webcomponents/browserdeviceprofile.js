@@ -240,7 +240,7 @@ define(['browser'], function (browser) {
     return function (options) {
 
         options = options || {};
-        var physicalAudioChannels = options.audioChannels || (browser.tv || browser.xboxOne || browser.ps4 || !browser.mobile ? 6 : 2);
+        var physicalAudioChannels = options.audioChannels || (browser.mobile ? 2 : 6);
 
         var bitrateSetting = getMaxBitrate();
 

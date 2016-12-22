@@ -258,6 +258,10 @@
     browser.web0s = userAgent.toLowerCase().indexOf('Web0S'.toLowerCase()) !== -1;
     browser.edgeUwp = browser.edge && userAgent.toLowerCase().indexOf('msapphost') !== -1;
 
+    if (browser.edgeUwp) {
+        browser.edge = true;
+    }
+
     browser.tv = isTv();
     browser.operaTv = browser.tv && userAgent.toLowerCase().indexOf('opr/') !== -1;
 

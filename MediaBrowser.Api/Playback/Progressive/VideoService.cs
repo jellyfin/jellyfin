@@ -153,7 +153,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 if (!state.RunTimeTicks.HasValue)
                 {
-                    args += " -fflags +genpts -flags +global_header";
+                    args += " -flags -global_header -fflags +genpts";
                 }
 
                 return args;

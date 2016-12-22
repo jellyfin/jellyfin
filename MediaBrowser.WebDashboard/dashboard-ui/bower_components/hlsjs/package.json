@@ -1,6 +1,6 @@
 {
   "name": "hls.js",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "license": "Apache-2.0",
   "description": "Media Source Extension - HLS library, by/for Dailymotion",
   "homepage": "https://github.com/dailymotion/hls.js",
@@ -44,7 +44,7 @@
     "browserify-derequire": "^0.9.4",
     "browserify-versionify": "^1.0.6",
     "bundle-collapser": "^1.2.1",
-    "chromedriver": "^2.24.1",
+    "chromedriver": "^2.26.1",
     "deep-strict-equal": "^0.2.0",
     "exorcist": "^0.4.0",
     "http-server": "^0.9.0",
@@ -57,7 +57,7 @@
     "rimraf": "^2.5.1",
     "uglify-js": "^2.7.5",
     "url-toolkit": "^1.0.4",
-    "selenium-webdriver": "^3.0.0",
+    "selenium-webdriver": "^2.52.0",
     "watchify": "^3.7.0",
     "webworkify": "^1.4.0"
   }
