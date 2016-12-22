@@ -1042,10 +1042,7 @@ namespace Emby.Server.Implementations.Sync
                 throw new ArgumentException("Operation is not valid for this job item");
             }
 
-            if (jobItem.Status != SyncJobItemStatus.Synced)
-            {
-                jobItem.Status = SyncJobItemStatus.Cancelled;
-            }
+            jobItem.Status = SyncJobItemStatus.Cancelled;
 
             jobItem.Progress = 0;
             jobItem.IsMarkedForRemoval = true;
@@ -1071,18 +1068,18 @@ namespace Emby.Server.Implementations.Sync
                 _logger.ErrorException("Error deleting directory {0}", ex, path);
             }
 
-            //var jobItemsResult = GetJobItems(new SyncJobItemQuery
-            //{
-            //    AddMetadata = false,
-            //    JobId = jobItem.JobId,
-            //    Limit = 0,
-            //    Statuses = new[] { SyncJobItemStatus.Converting, SyncJobItemStatus.Failed, SyncJobItemStatus.Queued, SyncJobItemStatus.ReadyToTransfer, SyncJobItemStatus.Synced, SyncJobItemStatus.Transferring }
-            //});
+            var jobItemsResult = GetJobItems(new SyncJobItemQuery
+            {
+                AddMetadata = false,
+                JobId = jobItem.JobId,
+                Limit = 0,
+                Statuses = new[] { SyncJobItemStatus.Converting, SyncJobItemStatus.Queued, SyncJobItemStatus.ReadyToTransfer, SyncJobItemStatus.Synced, SyncJobItemStatus.Transferring }
+            });
 
-            //if (jobItemsResult.TotalRecordCount == 0)
-            //{
-            //    await CancelJob(jobItem.JobId).ConfigureAwait(false);
-            //}
+            if (jobItemsResult.TotalRecordCount == 0)
+            {
+                await CancelJob(jobItem.JobId).ConfigureAwait(false);
+            }
         }
 
         public Task MarkJobItemForRemoval(string id)
