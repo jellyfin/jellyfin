@@ -2647,7 +2647,7 @@ namespace Emby.Server.Implementations.LiveTv
         public GuideInfo GetGuideInfo()
         {
             var startDate = DateTime.UtcNow;
-            var endDate = startDate.AddDays(14);
+            var endDate = startDate.AddDays(GetGuideDays());
 
             return new GuideInfo
             {
