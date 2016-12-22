@@ -209,7 +209,7 @@ namespace SocketHttpListener.Net
             // TODO: can we get this stream before reading the input?
             if (o_stream == null)
             {
-                context.Response.DetermineIfChunked();
+                //context.Response.DetermineIfChunked();
 
                 if (context.Response.SendChunked || isExpect100Continue || context.Request.IsWebSocketRequest || true)
                 {
@@ -508,7 +508,7 @@ namespace SocketHttpListener.Net
             {
                 force_close |= !context.Request.KeepAlive;
                 if (!force_close)
-                    force_close = (context.Response.Headers["connection"] == "close");
+                    force_close = (string.Equals(context.Response.Headers["connection"], "close", StringComparison.OrdinalIgnoreCase));
                 /*
 				if (!force_close) {
 //					bool conn_close = (status_code == 400 || status_code == 408 || status_code == 411 ||
