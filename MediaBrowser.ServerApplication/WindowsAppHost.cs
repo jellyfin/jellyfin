@@ -112,7 +112,7 @@ namespace MediaBrowser.ServerApplication
 
                 // save it
                 IPersistFile file = (IPersistFile)link;
-                file.Save(targetPath, false);
+                file.Save(targetPath, true);
             }
             else
             {
