@@ -346,6 +346,18 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
+        public static void TryBind(this IStatement statement, string name, double? value)
+        {
+            if (value.HasValue)
+            {
+                TryBind(statement, name, value.Value);
+            }
+            else
+            {
+                TryBindNull(statement, name);
+            }
+        }
+
         public static void TryBind(this IStatement statement, string name, int? value)
         {
             if (value.HasValue)
