@@ -351,10 +351,10 @@
         });
     }
 
-    function loadJobInfo(page, job, jobItems) {
+    function loadJobInfo(page, job, jobItems, apiClient) {
 
         //renderJob(page, job, _jobOptions);
-        renderJobItems(page, jobItems);
+        renderJobItems(page, jobItems, apiClient);
         loading.hide();
     }
 
@@ -399,8 +399,8 @@
             return false;
         });
 
-        function onSyncJobMessage(e, msg) {
-            loadJobInfo(view, msg.Data.Job, msg.Data.JobItems);
+        function onSyncJobMessage(e, apiClient, msg) {
+            loadJobInfo(view, msg.Job, msg.JobItems, apiClient);
         }
 
         function startListening(page) {
