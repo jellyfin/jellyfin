@@ -80,6 +80,12 @@
       </Conditions>
       <ApplyConditions />
     </CodecProfile>
+    <CodecProfile type="VideoAudio">
+      <Conditions>
+        <ProfileCondition condition="Equals" property="IsSecondaryAudio" value="false" isRequired="true" />
+      </Conditions>
+      <ApplyConditions />
+    </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
     <ResponseProfile container="mkv,ts" type="Video" mimeType="video/mp4">
