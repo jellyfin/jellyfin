@@ -81,7 +81,12 @@
 
         events.on(mySyncJobList, 'jobedit', function (e, jobId, serverId) {
 
-            Dashboard.navigate('mysyncjob.html?serverId=' + ApiClient.serverId() + '&id=' + jobId);
+            require(['syncJobEditor'], function (syncJobEditor) {
+                syncJobEditor.show({
+                    serverId: ApiClient.serverId(),
+                    jobId: jobId
+                });
+            });
         });
 
         view.addEventListener('viewbeforeshow', function () {

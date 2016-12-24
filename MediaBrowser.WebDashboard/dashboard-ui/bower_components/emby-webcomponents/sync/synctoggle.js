@@ -69,8 +69,10 @@
 
     syncToggle.prototype.refresh = function(item) {
 
-        this.options.item = item;
-        updateSyncStatus(this.options.container, item);
+        if (this.options) {
+            this.options.item = item;
+            updateSyncStatus(this.options.container, item);
+        }
     };
 
     syncToggle.prototype.destroy = function () {

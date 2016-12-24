@@ -16,6 +16,11 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
 
             var commands = [];
 
+            if (itemHelper.isLocalItem(item)) {
+
+                return commands;
+            }
+
             if (itemHelper.supportsAddingToCollection(item)) {
                 commands.push({
                     name: globalize.translate('sharedcomponents#AddToCollection'),

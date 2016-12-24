@@ -1,31 +1,17 @@
-﻿define(['connectionManager', 'serverNotifications', 'events', 'datetime', 'dom', 'imageLoader', 'loading', 'globalize', 'apphost', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (connectionManager, serverNotifications, events, datetime, dom, imageLoader, loading, globalize, appHost) {
+﻿define(['connectionManager', 'serverNotifications', 'events', 'datetime', 'dom', 'imageLoader', 'loading', 'globalize', 'apphost', 'layoutManager', 'scrollHelper', 'dialogHelper', 'shell', 'listViewStyle', 'paper-icon-button-light', 'emby-button', 'formDialogStyle'], function (connectionManager, serverNotifications, events, datetime, dom, imageLoader, loading, globalize, appHost, layoutManager, scrollHelper, dialogHelper, shell) {
     'use strict';
 
-    function renderJob(page, job, dialogOptions) {
-
-        var html = '';
-
-        html += '<div>';
-        html += globalize.translate('ValueDateCreated', datetime.parseISO8601Date(job.DateCreated, true).toLocaleString());
-        html += '</div>';
-        html += '<br/>';
-        html += '<div class="formFields"></div>';
-
-        html += '<br/>';
-        html += '<br/>';
-        html += '<button is="emby-button" type="submit" class="raised button-submit block"><span>' + globalize.translate('ButtonSave') + '</span></button>';
-
-        page.querySelector('.syncJobForm').innerHTML = html;
+    function renderJob(context, job, dialogOptions) {
 
         require(['syncDialog'], function (syncDialog) {
             syncDialog.renderForm({
-                elem: page.querySelector('.formFields'),
+                elem: context.querySelector('.syncJobFormContent'),
                 dialogOptions: dialogOptions,
                 dialogOptionsFn: getTargetDialogOptionsFn(dialogOptions),
                 showName: true,
                 readOnlySyncTarget: true
             }).then(function () {
-                fillJobValues(page, job, dialogOptions);
+                fillJobValues(context, job, dialogOptions);
             });
         });
     }
@@ -102,7 +88,7 @@
         return html;
     }
 
-    function renderJobItems(page, items, apiClient) {
+    function renderJobItems(context, items, apiClient) {
 
         var html = '';
 
@@ -119,7 +105,7 @@
 
         html += '</div>';
 
-        var elem = page.querySelector('.jobItems');
+        var elem = context.querySelector('.jobItems');
         elem.innerHTML = html;
         imageLoader.lazyChildren(elem);
     }
@@ -139,7 +125,7 @@
 
     function showJobItemMenu(elem, jobId, apiClient) {
 
-        var page = parentWithClass(elem, 'page');
+        var context = parentWithClass(elem, 'page');
         var listItem = parentWithClass(elem, 'listItem');
         var jobItemId = listItem.getAttribute('data-itemid');
         var status = listItem.getAttribute('data-status');
@@ -188,16 +174,16 @@
                     switch (id) {
 
                         case 'cancel':
-                            cancelJobItem(page, jobId, jobItemId, apiClient);
+                            cancelJobItem(context, jobId, jobItemId, apiClient);
                             break;
                         case 'retry':
-                            retryJobItem(page, jobId, jobItemId, apiClient);
+                            retryJobItem(context, jobId, jobItemId, apiClient);
                             break;
                         case 'markforremoval':
-                            markForRemoval(page, jobId, jobItemId, apiClient);
+                            markForRemoval(context, jobId, jobItemId, apiClient);
                             break;
                         case 'unmarkforremoval':
-                            unMarkForRemoval(page, jobId, jobItemId, apiClient);
+                            unMarkForRemoval(context, jobId, jobItemId, apiClient);
                             break;
                         default:
                             break;
@@ -208,7 +194,7 @@
         });
     }
 
-    function cancelJobItem(page, jobId, jobItemId, apiClient) {
+    function cancelJobItem(context, jobId, jobItemId, apiClient) {
 
         // Need a timeout because jquery mobile will not show a popup while another is in the act of closing
 
@@ -221,12 +207,12 @@
 
         }).then(function () {
 
-            loadJob(page, jobId, apiClient);
+            loadJob(context, jobId, apiClient);
         });
 
     }
 
-    function markForRemoval(page, jobId, jobItemId, apiClient) {
+    function markForRemoval(context, jobId, jobItemId, apiClient) {
 
         apiClient.ajax({
 
@@ -235,11 +221,11 @@
 
         }).then(function () {
 
-            loadJob(page, jobId, apiClient);
+            loadJob(context, jobId, apiClient);
         });
     }
 
-    function unMarkForRemoval(page, jobId, jobItemId, apiClient) {
+    function unMarkForRemoval(context, jobId, jobItemId, apiClient) {
 
         apiClient.ajax({
 
@@ -248,11 +234,11 @@
 
         }).then(function () {
 
-            loadJob(page, jobId, apiClient);
+            loadJob(context, jobId, apiClient);
         });
     }
 
-    function retryJobItem(page, jobId, jobItemId, apiClient) {
+    function retryJobItem(context, jobId, jobItemId, apiClient) {
 
         apiClient.ajax({
 
@@ -261,43 +247,43 @@
 
         }).then(function () {
 
-            loadJob(page, jobId, apiClient);
+            loadJob(context, jobId, apiClient);
         });
     }
 
-    function fillJobValues(page, job, editOptions) {
+    function fillJobValues(context, job, editOptions) {
 
-        var txtSyncJobName = page.querySelector('#txtSyncJobName');
+        var txtSyncJobName = context.querySelector('#txtSyncJobName');
         if (txtSyncJobName) {
             txtSyncJobName.value = job.Name;
         }
 
-        var selectProfile = page.querySelector('#selectProfile');
+        var selectProfile = context.querySelector('#selectProfile');
         if (selectProfile) {
             selectProfile.value = job.Profile || '';
         }
 
-        var selectQuality = page.querySelector('#selectQuality');
+        var selectQuality = context.querySelector('#selectQuality');
         if (selectQuality) {
             selectQuality.value = job.Quality || '';
         }
 
-        var chkUnwatchedOnly = page.querySelector('#chkUnwatchedOnly');
+        var chkUnwatchedOnly = context.querySelector('#chkUnwatchedOnly');
         if (chkUnwatchedOnly) {
             chkUnwatchedOnly.checked = job.UnwatchedOnly;
         }
 
-        var chkSyncNewContent = page.querySelector('#chkSyncNewContent');
+        var chkSyncNewContent = context.querySelector('#chkSyncNewContent');
         if (chkSyncNewContent) {
             chkSyncNewContent.checked = job.SyncNewContent;
         }
 
-        var txtItemLimit = page.querySelector('#txtItemLimit');
+        var txtItemLimit = context.querySelector('#txtItemLimit');
         if (txtItemLimit) {
             txtItemLimit.value = job.ItemLimit;
         }
 
-        var txtBitrate = page.querySelector('#txtBitrate');
+        var txtBitrate = context.querySelector('#txtBitrate');
         if (job.Bitrate) {
             txtBitrate.value = job.Bitrate / 1000000;
         } else {
@@ -309,14 +295,14 @@
         })[0];
         var targetName = target ? target.Name : '';
 
-        var selectSyncTarget = page.querySelector('#selectSyncTarget');
+        var selectSyncTarget = context.querySelector('#selectSyncTarget');
         if (selectSyncTarget) {
             selectSyncTarget.value = targetName;
         }
     }
 
     var _jobOptions;
-    function loadJob(page, id, apiClient) {
+    function loadJob(context, id, apiClient) {
 
         loading.show();
 
@@ -334,7 +320,7 @@
             })).then(function (options) {
 
                 _jobOptions = options;
-                renderJob(page, job, options);
+                renderJob(context, job, options);
                 loading.hide();
             });
         });
@@ -346,26 +332,26 @@
 
         })).then(function (result) {
 
-            renderJobItems(page, result.Items, apiClient);
+            renderJobItems(context, result.Items, apiClient);
             loading.hide();
         });
     }
 
-    function loadJobInfo(page, job, jobItems, apiClient) {
+    function loadJobInfo(context, job, jobItems, apiClient) {
 
         //renderJob(page, job, _jobOptions);
-        renderJobItems(page, jobItems, apiClient);
+        renderJobItems(context, jobItems, apiClient);
         loading.hide();
     }
 
-    function saveJob(page, id, apiClient) {
+    function saveJob(context, id, apiClient) {
 
         loading.show();
 
         apiClient.getJSON(apiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             require(['syncDialog'], function (syncDialog) {
-                syncDialog.setJobValues(job, page);
+                syncDialog.setJobValues(job, context);
 
                 apiClient.ajax({
 
@@ -377,75 +363,150 @@
                 }).then(function () {
 
                     loading.hide();
-                    require(['toast'], function (toast) {
-                        toast(globalize.translate('SettingsSaved'));
-                    });
+                    dialogHelper.close(context);
                 });
             });
         });
 
     }
 
-    return function (view, params) {
+    function onHelpLinkClick(e) {
 
-        function getApiClient() {
-            return connectionManager.getApiClient(params.serverId);
+        shell.openUrl(this.href);
+
+        e.preventDefault();
+        return false;
+    }
+
+    function startListening(apiClient, jobId) {
+
+        var startParams = "0,1500";
+
+        startParams += "," + jobId;
+
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("SyncJobStart", startParams);
+        }
+    }
+
+    function stopListening(apiClient) {
+
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("SyncJobStop", "");
         }
 
-        view.querySelector('.syncJobForm').addEventListener('submit', function (e) {
+    }
 
-            saveJob(view, params.id, getApiClient());
+    function bindEvents(context, jobId, apiClient) {
+        context.querySelector('.jobItems').addEventListener('click', function (e) {
+            var btnJobItemMenu = dom.parentWithClass(e.target, 'btnJobItemMenu');
+            if (btnJobItemMenu) {
+                showJobItemMenu(btnJobItemMenu, jobId, apiClient);
+            }
+        });
+    }
+
+    function showEditor(options) {
+        
+        var apiClient = connectionManager.getApiClient(options.serverId);
+        var id = options.jobId;
+
+        var dlgElementOptions = {
+            removeOnClose: true,
+            scrollY: false,
+            autoFocus: false
+        };
+
+        if (layoutManager.tv) {
+            dlgElementOptions.size = 'fullscreen';
+        } else {
+            dlgElementOptions.size = 'medium';
+        }
+
+        var dlg = dialogHelper.createDialog(dlgElementOptions);
+
+        dlg.classList.add('formDialog');
+
+        var html = '';
+        html += '<div class="formDialogHeader">';
+        html += '<button is="paper-icon-button-light" class="btnCancel autoSize" tabindex="-1"><i class="md-icon">&#xE5C4;</i></button>';
+        html += '<h3 class="formDialogHeaderTitle">';
+        html += globalize.translate('sharedcomponents#Sync');
+        html += '</h3>';
+
+        html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink lnkHelp" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:auto;"><button is="emby-button" type="button" class="button-accent-flat button-flat"><i class="md-icon">info</i><span>' + globalize.translate('sharedcomponents#Help') + '</span></button></a>';
+
+        html += '</div>';
+
+        html += '<div class="formDialogContent smoothScrollY" style="padding-top:2em;">';
+        html += '<div class="dialogContentInner dialog-content-centered">';
+
+        html += '<form class="syncJobForm" style="margin: auto;">';
+
+        html += '<div class="syncJobFormContent"></div>';
+
+        html += '<div class="jobItems"></div>';
+
+        html += '<div class="formDialogFooter">';
+        html += '<button is="emby-button" type="submit" class="raised button-submit block formDialogFooterItem"><span>' + globalize.translate('sharedcomponents#Save') + '</span></button>';
+        html += '</div>';
+
+        html += '</form>';
+
+        html += '</div>';
+        html += '</div>';
+
+        dlg.innerHTML = html;
+
+        dlg.querySelector('.lnkHelp').addEventListener('click', onHelpLinkClick);
+
+        var submitted = false;
+
+        dlg.querySelector('form').addEventListener('submit', function (e) {
+
+            saveJob(dlg, id, apiClient);
             e.preventDefault();
             return false;
         });
 
+        dlg.querySelector('.btnCancel').addEventListener('click', function () {
+            dialogHelper.close(dlg);
+        });
+
+        if (layoutManager.tv) {
+            scrollHelper.centerFocus.on(dlg.querySelector('.formDialogContent'), false);
+        }
+
         function onSyncJobMessage(e, apiClient, msg) {
-            loadJobInfo(view, msg.Job, msg.JobItems, apiClient);
+            loadJobInfo(dlg, msg.Job, msg.JobItems, apiClient);
         }
 
-        function startListening(page) {
+        loadJob(dlg, id, apiClient);
+        bindEvents(dlg, id, apiClient);
 
-            var startParams = "0,1500";
+        var promise = dialogHelper.open(dlg);
 
-            startParams += "," + params.id;
+        startListening(apiClient, id);
+        events.on(serverNotifications, "SyncJob", onSyncJobMessage);
 
-            var apiClient = getApiClient();
+        return promise.then(function () {
 
-            if (apiClient.isWebSocketOpen()) {
-                apiClient.sendWebSocketMessage("SyncJobStart", startParams);
-            }
-        }
-
-        function stopListening() {
-
-            var apiClient = getApiClient();
-
-            if (apiClient.isWebSocketOpen()) {
-                apiClient.sendWebSocketMessage("SyncJobStop", "");
-            }
-
-        }
-
-        view.querySelector('.jobItems').addEventListener('click', function (e) {
-            var btnJobItemMenu = dom.parentWithClass(e.target, 'btnJobItemMenu');
-            if (btnJobItemMenu) {
-                showJobItemMenu(btnJobItemMenu, params.id);
-            }
-        });
-
-        view.addEventListener('viewshow', function () {
-            var page = this;
-            loadJob(page, params.id, getApiClient());
-
-            startListening(page);
-            events.on(serverNotifications, "SyncJob", onSyncJobMessage);
-        });
-
-        view.addEventListener('viewbeforehide', function () {
-
-            stopListening();
+            stopListening(apiClient);
             events.off(serverNotifications, "SyncJob", onSyncJobMessage);
+
+            if (layoutManager.tv) {
+                scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
+            }
+
+            if (submitted) {
+                return Promise.resolve();
+            }
+            return Promise.reject();
         });
+    }
+
+    return {
+        show: showEditor
     };
 
 });

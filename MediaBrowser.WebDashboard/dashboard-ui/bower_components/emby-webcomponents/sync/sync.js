@@ -455,6 +455,10 @@
             });
 
             return promise.then(function () {
+                if (layoutManager.tv) {
+                    scrollHelper.centerFocus.off(dlg.querySelector('.formDialogContent'), false);
+                }
+
                 if (submitted) {
                     return Promise.resolve();
                 }

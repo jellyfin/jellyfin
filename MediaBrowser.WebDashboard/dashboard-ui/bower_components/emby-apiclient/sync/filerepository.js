@@ -15,6 +15,13 @@
 
     }
 
+    function getPathFromArray(pathArray) {
+
+        // TODO
+        return pathArray.join('/');
+
+    }
+
     function deleteFile(path) {
         return Promise.resolve();
     }
@@ -34,6 +41,7 @@
     return {
         getValidFileName: getValidFileName,
         getFullLocalPath: getFullLocalPath,
+        getPathFromArray: getPathFromArray,
         deleteFile: deleteFile,
         deleteDirectory: deleteDirectory,
         fileExists: fileExists,
