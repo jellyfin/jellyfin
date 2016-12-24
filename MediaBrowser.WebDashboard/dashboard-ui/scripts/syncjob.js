@@ -1,4 +1,4 @@
-﻿define(['datetime', 'dom', 'imageLoader', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (datetime, dom, imageLoader) {
+﻿define(['connectionManager', 'serverNotifications', 'events', 'datetime', 'dom', 'imageLoader', 'loading', 'globalize', 'apphost', 'listViewStyle', 'paper-icon-button-light', 'emby-button'], function (connectionManager, serverNotifications, events, datetime, dom, imageLoader, loading, globalize, appHost) {
     'use strict';
 
     function renderJob(page, job, dialogOptions) {
@@ -6,14 +6,14 @@
         var html = '';
 
         html += '<div>';
-        html += Globalize.translate('ValueDateCreated', datetime.parseISO8601Date(job.DateCreated, true).toLocaleString());
+        html += globalize.translate('ValueDateCreated', datetime.parseISO8601Date(job.DateCreated, true).toLocaleString());
         html += '</div>';
         html += '<br/>';
         html += '<div class="formFields"></div>';
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button is="emby-button" type="submit" class="raised button-submit block"><span>' + Globalize.translate('ButtonSave') + '</span></button>';
+        html += '<button is="emby-button" type="submit" class="raised button-submit block"><span>' + globalize.translate('ButtonSave') + '</span></button>';
 
         page.querySelector('.syncJobForm').innerHTML = html;
 
@@ -38,7 +38,7 @@
         };
     }
 
-    function getJobItemHtml(jobItem, index) {
+    function getJobItemHtml(jobItem, apiClient, index) {
 
         var html = '';
 
@@ -50,7 +50,7 @@
 
         if (jobItem.PrimaryImageItemId) {
 
-            imgUrl = ApiClient.getImageUrl(jobItem.PrimaryImageItemId, {
+            imgUrl = apiClient.getImageUrl(jobItem.PrimaryImageItemId, {
                 type: "Primary",
                 width: 80,
                 tag: jobItem.PrimaryImageTag,
@@ -76,10 +76,10 @@
         } else {
             html += '<div class="secondary">';
         }
-        html += Globalize.translate('SyncJobItemStatus' + jobItem.Status);
+        html += globalize.translate('SyncJobItemStatus' + jobItem.Status);
         if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
             html += '<br/>';
-            html += Globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
+            html += globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
         }
         html += '</div>';
 
@@ -89,29 +89,31 @@
 
         html += '</div>';
 
+        var moreIcon = appHost.moreIcon === 'dots-horiz' ? '&#xE5D3;' : '&#xE5D4;';
+
         if (hasActions) {
 
-            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize"><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize"><i class="md-icon">' + moreIcon + '</i></button>';
         } else {
-            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize" disabled><i class="md-icon">' + AppInfo.moreIcon.replace('-', '_') + '</i></button>';
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobItemMenu autoSize" disabled><i class="md-icon">' + moreIcon + '</i></button>';
         }
 
         html += '</div>';
         return html;
     }
 
-    function renderJobItems(page, items) {
+    function renderJobItems(page, items, apiClient) {
 
         var html = '';
 
-        html += '<h1>' + Globalize.translate('HeaderItems') + '</h1>';
+        html += '<h1>' + globalize.translate('HeaderItems') + '</h1>';
 
         html += '<div class="paperList">';
 
         var index = 0;
         html += items.map(function (i) {
 
-            return getJobItemHtml(i, index++);
+            return getJobItemHtml(i, apiClient, index++);
 
         }).join('');
 
@@ -135,7 +137,7 @@
         return elem;
     }
 
-    function showJobItemMenu(elem) {
+    function showJobItemMenu(elem, jobId, apiClient) {
 
         var page = parentWithClass(elem, 'page');
         var listItem = parentWithClass(elem, 'listItem');
@@ -147,31 +149,31 @@
 
         if (status == 'Failed') {
             menuItems.push({
-                name: Globalize.translate('ButtonQueueForRetry'),
+                name: globalize.translate('ButtonQueueForRetry'),
                 id: 'retry'
             });
         }
         else if (status == 'Cancelled') {
             menuItems.push({
-                name: Globalize.translate('ButtonReenable'),
+                name: globalize.translate('ButtonReenable'),
                 id: 'retry'
             });
         }
         else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
             menuItems.push({
-                name: Globalize.translate('ButtonCancelItem'),
+                name: globalize.translate('ButtonCancelItem'),
                 id: 'cancel'
             });
         }
         else if (status == 'Synced' && remove) {
             menuItems.push({
-                name: Globalize.translate('ButtonUnmarkForRemoval'),
+                name: globalize.translate('ButtonUnmarkForRemoval'),
                 id: 'unmarkforremoval'
             });
         }
         else if (status == 'Synced') {
             menuItems.push({
-                name: Globalize.translate('ButtonMarkForRemoval'),
+                name: globalize.translate('ButtonMarkForRemoval'),
                 id: 'markforremoval'
             });
         }
@@ -186,16 +188,16 @@
                     switch (id) {
 
                         case 'cancel':
-                            cancelJobItem(page, jobItemId);
+                            cancelJobItem(page, jobId, jobItemId, apiClient);
                             break;
                         case 'retry':
-                            retryJobItem(page, jobItemId);
+                            retryJobItem(page, jobId, jobItemId, apiClient);
                             break;
                         case 'markforremoval':
-                            markForRemoval(page, jobItemId);
+                            markForRemoval(page, jobId, jobItemId, apiClient);
                             break;
                         case 'unmarkforremoval':
-                            unMarkForRemoval(page, jobItemId);
+                            unMarkForRemoval(page, jobId, jobItemId, apiClient);
                             break;
                         default:
                             break;
@@ -206,60 +208,60 @@
         });
     }
 
-    function cancelJobItem(page, jobItemId) {
+    function cancelJobItem(page, jobId, jobItemId, apiClient) {
 
         // Need a timeout because jquery mobile will not show a popup while another is in the act of closing
 
-        Dashboard.showLoadingMsg();
+        loading.show();
 
-        ApiClient.ajax({
+        apiClient.ajax({
 
             type: "DELETE",
-            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId)
+            url: apiClient.getUrl('Sync/JobItems/' + jobItemId)
 
         }).then(function () {
 
-            loadJob(page);
+            loadJob(page, jobId, apiClient);
         });
 
     }
 
-    function markForRemoval(page, jobItemId) {
+    function markForRemoval(page, jobId, jobItemId, apiClient) {
 
-        ApiClient.ajax({
+        apiClient.ajax({
 
             type: "POST",
-            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/MarkForRemoval')
+            url: apiClient.getUrl('Sync/JobItems/' + jobItemId + '/MarkForRemoval')
 
         }).then(function () {
 
-            loadJob(page);
+            loadJob(page, jobId, apiClient);
         });
     }
 
-    function unMarkForRemoval(page, jobItemId) {
+    function unMarkForRemoval(page, jobId, jobItemId, apiClient) {
 
-        ApiClient.ajax({
+        apiClient.ajax({
 
             type: "POST",
-            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/UnmarkForRemoval')
+            url: apiClient.getUrl('Sync/JobItems/' + jobItemId + '/UnmarkForRemoval')
 
         }).then(function () {
 
-            loadJob(page);
+            loadJob(page, jobId, apiClient);
         });
     }
 
-    function retryJobItem(page, jobItemId) {
+    function retryJobItem(page, jobId, jobItemId, apiClient) {
 
-        ApiClient.ajax({
+        apiClient.ajax({
 
             type: "POST",
-            url: ApiClient.getUrl('Sync/JobItems/' + jobItemId + '/Enable')
+            url: apiClient.getUrl('Sync/JobItems/' + jobItemId + '/Enable')
 
         }).then(function () {
 
-            loadJob(page);
+            loadJob(page, jobId, apiClient);
         });
     }
 
@@ -314,14 +316,13 @@
     }
 
     var _jobOptions;
-    function loadJob(page) {
+    function loadJob(page, id, apiClient) {
 
-        Dashboard.showLoadingMsg();
-        var id = getParameterByName('id');
+        loading.show();
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
+        apiClient.getJSON(apiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
-            ApiClient.getJSON(ApiClient.getUrl('Sync/Options', {
+            apiClient.getJSON(apiClient.getUrl('Sync/Options', {
 
                 UserId: job.UserId,
                 ItemIds: (job.RequestedItemIds && job.RequestedItemIds.length ? job.RequestedItemIds.join('') : null),
@@ -334,19 +335,19 @@
 
                 _jobOptions = options;
                 renderJob(page, job, options);
-                Dashboard.hideLoadingMsg();
+                loading.hide();
             });
         });
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/JobItems', {
+        apiClient.getJSON(apiClient.getUrl('Sync/JobItems', {
 
             JobId: id,
             AddMetadata: true
 
         })).then(function (result) {
 
-            renderJobItems(page, result.Items);
-            Dashboard.hideLoadingMsg();
+            renderJobItems(page, result.Items, apiClient);
+            loading.hide();
         });
     }
 
@@ -354,31 +355,30 @@
 
         //renderJob(page, job, _jobOptions);
         renderJobItems(page, jobItems);
-        Dashboard.hideLoadingMsg();
+        loading.hide();
     }
 
-    function saveJob(page) {
+    function saveJob(page, id, apiClient) {
 
-        Dashboard.showLoadingMsg();
-        var id = getParameterByName('id');
+        loading.show();
 
-        ApiClient.getJSON(ApiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
+        apiClient.getJSON(apiClient.getUrl('Sync/Jobs/' + id)).then(function (job) {
 
             require(['syncDialog'], function (syncDialog) {
                 syncDialog.setJobValues(job, page);
 
-                ApiClient.ajax({
+                apiClient.ajax({
 
-                    url: ApiClient.getUrl('Sync/Jobs/' + id),
+                    url: apiClient.getUrl('Sync/Jobs/' + id),
                     type: 'POST',
                     data: JSON.stringify(job),
                     contentType: "application/json"
 
                 }).then(function () {
 
-                    Dashboard.hideLoadingMsg();
+                    loading.hide();
                     require(['toast'], function (toast) {
-                        toast(Globalize.translate('SettingsSaved'));
+                        toast(globalize.translate('SettingsSaved'));
                     });
                 });
             });
@@ -388,35 +388,40 @@
 
     return function (view, params) {
 
+        function getApiClient() {
+            return connectionManager.getApiClient(params.serverId);
+        }
+
         view.querySelector('.syncJobForm').addEventListener('submit', function (e) {
 
-            saveJob(view);
+            saveJob(view, params.id, getApiClient());
             e.preventDefault();
             return false;
         });
 
-        function onWebSocketMessage(e, msg) {
-
-            if (msg.MessageType == "SyncJob") {
-                loadJobInfo(view, msg.Data.Job, msg.Data.JobItems);
-            }
+        function onSyncJobMessage(e, msg) {
+            loadJobInfo(view, msg.Data.Job, msg.Data.JobItems);
         }
 
         function startListening(page) {
 
             var startParams = "0,1500";
 
-            startParams += "," + getParameterByName('id');
+            startParams += "," + params.id;
 
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SyncJobStart", startParams);
+            var apiClient = getApiClient();
+
+            if (apiClient.isWebSocketOpen()) {
+                apiClient.sendWebSocketMessage("SyncJobStart", startParams);
             }
         }
 
         function stopListening() {
 
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("SyncJobStop", "");
+            var apiClient = getApiClient();
+
+            if (apiClient.isWebSocketOpen()) {
+                apiClient.sendWebSocketMessage("SyncJobStop", "");
             }
 
         }
@@ -424,22 +429,22 @@
         view.querySelector('.jobItems').addEventListener('click', function (e) {
             var btnJobItemMenu = dom.parentWithClass(e.target, 'btnJobItemMenu');
             if (btnJobItemMenu) {
-                showJobItemMenu(btnJobItemMenu);
+                showJobItemMenu(btnJobItemMenu, params.id);
             }
         });
 
         view.addEventListener('viewshow', function () {
             var page = this;
-            loadJob(page);
+            loadJob(page, params.id, getApiClient());
 
             startListening(page);
-            Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
+            events.on(serverNotifications, "SyncJob", onSyncJobMessage);
         });
 
         view.addEventListener('viewbeforehide', function () {
 
             stopListening();
-            Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
+            events.off(serverNotifications, "SyncJob", onSyncJobMessage);
         });
     };
 

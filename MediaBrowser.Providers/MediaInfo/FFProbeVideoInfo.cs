@@ -328,6 +328,11 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <returns>VideoStream.</returns>
         private BlurayDiscInfo GetBDInfo(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             try
             {
                 return _blurayExaminer.GetDiscInfo(path);

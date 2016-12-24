@@ -77,6 +77,11 @@ namespace BDInfo
         public BDROM(
             string path, IFileSystem fileSystem, ITextEncoding textEncoding)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             _fileSystem = fileSystem;
             //
             // Locate BDMV directories.
@@ -326,15 +331,28 @@ namespace BDInfo
         private FileSystemMetadata GetDirectoryBDMV(
             string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             FileSystemMetadata dir = _fileSystem.GetDirectoryInfo(path);
 
             while (dir != null)
             {
-                if (dir.Name == "BDMV")
+                if (string.Equals(dir.Name, "BDMV", StringComparison.OrdinalIgnoreCase))
                 {
                     return dir;
                 }
-                dir = _fileSystem.GetDirectoryInfo(Path.GetDirectoryName(dir.FullName));
+                var parentFolder = Path.GetDirectoryName(dir.FullName);
+                if (string.IsNullOrEmpty(parentFolder))
+                {
+                    dir = null;
+                }
+                else
+                {
+                    dir = _fileSystem.GetDirectoryInfo(parentFolder);
+                }
             }
 
             return GetDirectory("BDMV", _fileSystem.GetDirectoryInfo(path), 0);
@@ -350,7 +368,7 @@ namespace BDInfo
                 FileSystemMetadata[] children = _fileSystem.GetDirectories(dir.FullName).ToArray();
                 foreach (FileSystemMetadata child in children)
                 {
-                    if (child.Name == name)
+                    if (string.Equals(child.Name, name, StringComparison.OrdinalIgnoreCase))
                     {
                         return child;
                     }

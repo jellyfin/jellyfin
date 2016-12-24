@@ -52,7 +52,7 @@
 
         events.on(mySyncJobList, 'jobedit', function (e, jobId, serverId) {
 
-            Dashboard.navigate('syncjob.html?id=' + jobId);
+            Dashboard.navigate('syncjob.html?serverId=' + ApiClient.serverId() + '&id=' + jobId);
         });
 
         view.addEventListener('viewshow', function () {
