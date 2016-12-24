@@ -1707,7 +1707,7 @@ var AppInfo = {};
     function init() {
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
+            define("nativedirectorychooser", ["cordova/nativedirectorychooser"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
