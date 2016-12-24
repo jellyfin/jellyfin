@@ -30,6 +30,11 @@ namespace MediaBrowser.MediaEncoding.BdInfo
         /// <returns>BlurayDiscInfo.</returns>
         public BlurayDiscInfo GetDiscInfo(string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException("path");
+            }
+
             var bdrom = new BDROM(path, _fileSystem, _textEncoding);
 
             bdrom.Scan();
