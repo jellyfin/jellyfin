@@ -99,6 +99,7 @@ namespace MediaBrowser.Api
             var path = item.ContainingFolderPath;
 
             var types = _config.Configuration.ContentTypes
+                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
                 .Where(i => !string.Equals(i.Name, path, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
