@@ -5267,11 +5267,19 @@ namespace Emby.Server.Implementations.Data
             {
                 foreach (var pair in values)
                 {
+                    var itemValue = pair.Item2;
+
+                    // Don't save if invalid
+                    if (string.IsNullOrWhiteSpace(itemValue))
+                    {
+                        continue;
+                    }
+
                     statement.Reset();
 
                     statement.TryBind("@ItemId", itemId.ToGuidParamValue());
                     statement.TryBind("@Type", pair.Item1);
-                    statement.TryBind("@Value", pair.Item2);
+                    statement.TryBind("@Value", itemValue);
 
                     if (pair.Item2 == null)
                     {
