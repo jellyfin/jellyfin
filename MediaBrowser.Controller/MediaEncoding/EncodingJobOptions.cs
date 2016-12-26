@@ -35,6 +35,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string VideoCodec { get; set; }
 
+        public int? TranscodingMaxAudioChannels { get; set; }
         public int? VideoBitRate { get; set; }
         public int? AudioStreamIndex { get; set; }
         public int? VideoStreamIndex { get; set; }
@@ -86,6 +87,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             MaxVideoBitDepth = info.MaxVideoBitDepth;
             SubtitleMethod = info.SubtitleDeliveryMethod;
             Context = info.Context;
+            TranscodingMaxAudioChannels = info.TranscodingMaxAudioChannels;
 
             if (info.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External)
             {
