@@ -1,4 +1,4 @@
-﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize) {
+﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'registrationServices', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize, registrationServices) {
     'use strict';
 
     function onSyncJobsUpdated(e, apiClient, data) {
@@ -20,10 +20,15 @@
         require(['confirm'], function (confirm) {
 
             var msg = listInstance.options.isLocalSync ?
-globalize.translate('ConfirmRemoveDownload') :
-globalize.translate('CancelSyncJobConfirmation');
+globalize.translate('sharedcomponents#ConfirmRemoveDownload') :
+globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
-            confirm(msg).then(function () {
+            confirm({
+
+                text: msg,
+                primary: 'cancel'
+
+            }).then(function () {
 
                 loading.show();
                 var apiClient = getApiClient(listInstance);
@@ -94,10 +99,10 @@ globalize.translate('CancelSyncJobConfirmation');
 
         textLines.push(job.Name);
 
-        if (job.ItemCount == 1) {
-            textLines.push(globalize.translate('ValueItemCount', job.ItemCount));
+        if (job.ItemCount === 1) {
+            textLines.push(globalize.translate('sharedcomponents#ValueOneItem'));
         } else {
-            textLines.push(globalize.translate('ValueItemCountPlural', job.ItemCount));
+            textLines.push(globalize.translate('sharedcomponents#ItemCount', job.ItemCount));
         }
 
         if (textLines >= 3) {
@@ -165,10 +170,10 @@ globalize.translate('CancelSyncJobConfirmation');
 
                     html += '<div class="detailSectionHeader">';
 
-                    html += '<div>' + targetName + '</div>';
+                    html += '<h1>' + targetName + '</h1>';
 
                     html += '</div>';
-                    html += '<div class="itemsContainer vertical-list">';
+                    html += '<div class="itemsContainer vertical-list paperList">';
                     hasOpenSection = true;
                 }
             }
@@ -180,13 +185,13 @@ globalize.translate('CancelSyncJobConfirmation');
             html += '</div>';
         }
 
-        var elem = listInstance.options.element;
+        var elem = listInstance.options.element.querySelector('.syncJobListContent');
 
         if (!html) {
             if (isLocalSync) {
-                html = '<div style="padding:1em .25em;">' + globalize.translate('MessageDownloadsFound') + '</div>';
+                html = '<div style="padding:1em .25em;">' + globalize.translate('sharedcomponents#MessageNoDownloadsFound') + '</div>';
             } else {
-                html = '<div style="padding:1em .25em;">' + globalize.translate('MessageNoSyncJobsFound') + '</div>';
+                html = '<div style="padding:1em .25em;">' + globalize.translate('sharedcomponents#MessageNoSyncJobsFound') + '</div>';
             }
         }
 
@@ -260,16 +265,16 @@ globalize.translate('CancelSyncJobConfirmation');
 
         if (status == 'Cancelled') {
             menuItems.push({
-                name: globalize.translate('ButtonDelete'),
+                name: globalize.translate('sharedcomponents#Delete'),
                 id: 'delete'
             });
         } else {
             var txt = listInstance.options.isLocalSync ?
-globalize.translate('RemoveDownload') :
-globalize.translate('ButtonCancelSyncJob');
+globalize.translate('sharedcomponents#RemoveDownload') :
+globalize.translate('sharedcomponents#ButtonCancelSyncJob');
 
             menuItems.push({
-                name: globalize.translate(txt),
+                name: txt,
                 id: 'cancel'
             });
         }
@@ -312,7 +317,14 @@ globalize.translate('ButtonCancelSyncJob');
         if (listItem) {
             var jobId = listItem.getAttribute('data-id');
             // edit job
-            events.trigger(listInstance, 'jobedit', [jobId, listInstance.options.serverId]);
+            require(['syncJobEditor'], function (syncJobEditor) {
+                syncJobEditor.show({
+                    serverId: listInstance.options.serverId,
+                    jobId: jobId
+                }).then(function () {
+                    fetchData(listInstance);
+                });
+            });
         }
     }
 
@@ -327,8 +339,47 @@ globalize.translate('ButtonCancelSyncJob');
         options.element.addEventListener('click', onClickHandler);
         this.onClickHandler = onClickHandler;
 
+        options.element.innerHTML = '<div class="syncJobListContent"></div>';
+
         fetchData(this);
         startListening(this);
+
+        initSupporterInfo(options.element, getApiClient(this));
+    }
+
+    function showSupporterInfo(context) {
+
+        var html = '<button is="emby-button" class="raised button-accent block btnSyncSupporter" style="margin:1em 0;">';
+
+        html += '<div>';
+        html += globalize.translate('sharedcomponents#HeaderSyncRequiresSub');
+        html += '</div>';
+        html += '<div style="margin-top:.5em;">';
+        html += globalize.translate('sharedcomponents#LearnMore');
+        html += '</div>';
+
+        html += '</button';
+
+        context.insertAdjacentHTML('afterbegin', html);
+
+        context.querySelector('.btnSyncSupporter').addEventListener('click', function () {
+
+            registrationServices.validateFeature('sync');
+        });
+
+    }
+
+    function initSupporterInfo(context, apiClient) {
+
+        apiClient.getPluginSecurityInfo().then(function (regInfo) {
+
+            if (!regInfo.IsMBSupporter) {
+                showSupporterInfo(context, apiClient);
+            }
+
+        }, function () {
+            showSupporterInfo(context, apiClient);
+        });
     }
 
     syncJobList.prototype.destroy = function () {

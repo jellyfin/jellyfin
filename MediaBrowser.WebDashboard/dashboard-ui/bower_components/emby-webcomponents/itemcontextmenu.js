@@ -71,6 +71,13 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                 }
             }
 
+            if (item.CanDownload && appHost.supports('filedownload')) {
+                commands.push({
+                    name: globalize.translate('sharedcomponents#Download'),
+                    id: 'download'
+                });
+            }
+
             if (itemHelper.canEdit(user, item)) {
 
                 if (options.edit !== false && item.Type !== 'SeriesTimer') {
@@ -104,13 +111,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         });
                     }
                 }
-            }
-
-            if (item.CanDownload && appHost.supports('filedownload')) {
-                commands.push({
-                    name: globalize.translate('sharedcomponents#Download'),
-                    id: 'download'
-                });
             }
 
             if (options.identify !== false) {

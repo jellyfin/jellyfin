@@ -62,10 +62,10 @@
         } else {
             html += '<div class="secondary">';
         }
-        html += globalize.translate('SyncJobItemStatus' + jobItem.Status);
+        html += globalize.translate('sharedcomponents#SyncJobItemStatus' + jobItem.Status);
         if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
             html += '<br/>';
-            html += globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
+            html += globalize.translate('sharedcomponents#RemovingFromDevice');
         }
         html += '</div>';
 
@@ -92,7 +92,7 @@
 
         var html = '';
 
-        html += '<h1>' + globalize.translate('HeaderItems') + '</h1>';
+        html += '<h1>' + globalize.translate('sharedcomponents#Items') + '</h1>';
 
         html += '<div class="paperList">';
 
@@ -133,33 +133,27 @@
 
         var menuItems = [];
 
-        if (status == 'Failed') {
+        if (status == 'Failed' || status == 'Cancelled') {
             menuItems.push({
-                name: globalize.translate('ButtonQueueForRetry'),
-                id: 'retry'
-            });
-        }
-        else if (status == 'Cancelled') {
-            menuItems.push({
-                name: globalize.translate('ButtonReenable'),
+                name: globalize.translate('sharedcomponents#Retry'),
                 id: 'retry'
             });
         }
         else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
             menuItems.push({
-                name: globalize.translate('ButtonCancelItem'),
+                name: globalize.translate('sharedcomponents#CancelDownload'),
                 id: 'cancel'
             });
         }
         else if (status == 'Synced' && remove) {
             menuItems.push({
-                name: globalize.translate('ButtonUnmarkForRemoval'),
+                name: globalize.translate('sharedcomponents#KeepOnDevice'),
                 id: 'unmarkforremoval'
             });
         }
         else if (status == 'Synced') {
             menuItems.push({
-                name: globalize.translate('ButtonMarkForRemoval'),
+                name: globalize.translate('sharedcomponents#RemoveFromDevice'),
                 id: 'markforremoval'
             });
         }
