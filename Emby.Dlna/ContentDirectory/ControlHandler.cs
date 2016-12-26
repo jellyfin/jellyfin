@@ -268,7 +268,7 @@ namespace Emby.Dlna.ContentDirectory
                     }
                     else
                     {
-                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, item, null, null, deviceId, filter);
+                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, item, user, null, null, deviceId, filter);
                     }
 
                     provided++;
@@ -294,7 +294,7 @@ namespace Emby.Dlna.ContentDirectory
                         }
                         else
                         {
-                            _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, childItem, item, serverItem.StubType, deviceId, filter);
+                            _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, childItem, user, item, serverItem.StubType, deviceId, filter);
                         }
                     }
                 }
@@ -390,7 +390,7 @@ namespace Emby.Dlna.ContentDirectory
                     }
                     else
                     {
-                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, i, item, serverItem.StubType, deviceId, filter);
+                        _didlBuilder.WriteItemElement(_config.GetDlnaConfiguration(), writer, i, user, item, serverItem.StubType, deviceId, filter);
                     }
                 }
 

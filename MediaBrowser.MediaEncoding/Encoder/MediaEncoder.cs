@@ -287,6 +287,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return;
             }
 
+            _logger.Info("Attempting to update encoder path to {0}. pathType: {1}", path ?? string.Empty, pathType ?? string.Empty);
+
             Tuple<string, string> newPaths;
 
             if (string.Equals(pathType, "system", StringComparison.OrdinalIgnoreCase))

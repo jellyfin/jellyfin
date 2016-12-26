@@ -87,6 +87,12 @@ namespace MediaBrowser.Providers.TV
 
             var seriesDataPath = TvdbSeriesProvider.GetSeriesDataPath(_config.ApplicationPaths, seriesProviderIds);
 
+            // Doesn't have required provider id's
+            if (string.IsNullOrWhiteSpace(seriesDataPath))
+            {
+                return;
+            }
+
             var episodeFiles = _fileSystem.GetFilePaths(seriesDataPath)
                 .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFileNameWithoutExtension)

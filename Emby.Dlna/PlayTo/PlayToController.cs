@@ -493,7 +493,7 @@ namespace Emby.Dlna.PlayTo
             playlistItem.StreamUrl = playlistItem.StreamInfo.ToDlnaUrl(_serverAddress, _accessToken);
 
             var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager, _logger, _libraryManager, _mediaEncoder)
-                .GetItemDidl(_config.GetDlnaConfiguration(), item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
+                .GetItemDidl(_config.GetDlnaConfiguration(), item, user, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
 
             playlistItem.Didl = itemXml;
 
