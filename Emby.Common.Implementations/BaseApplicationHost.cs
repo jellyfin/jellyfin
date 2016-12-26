@@ -795,6 +795,8 @@ return null;
         /// </summary>
         public void NotifyPendingRestart()
         {
+            Logger.Info("App needs to be restarted.");
+
             var changed = !HasPendingRestart;
 
             HasPendingRestart = true;

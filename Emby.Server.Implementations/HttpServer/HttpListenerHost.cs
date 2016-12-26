@@ -228,11 +228,14 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private void ErrorHandler(Exception ex, IRequest httpReq)
+        private void ErrorHandler(Exception ex, IRequest httpReq, bool logException = true)
         {
             try
             {
-                _logger.ErrorException("Error processing request", ex);
+                if (logException)
+                {
+                    _logger.ErrorException("Error processing request", ex);
+                }
 
                 var httpRes = httpReq.Response;
 
@@ -528,6 +531,10 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     ErrorHandler(new FileNotFoundException(), httpReq);
                 }
+            }
+            catch (OperationCanceledException ex)
+            {
+                ErrorHandler(ex, httpReq, false);
             }
             catch (Exception ex)
             {

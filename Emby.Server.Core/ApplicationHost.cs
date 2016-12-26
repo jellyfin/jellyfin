@@ -1083,6 +1083,8 @@ namespace Emby.Server.Core
 
             if (requiresRestart)
             {
+                Logger.Info("App needs to be restarted due to configuration change.");
+
                 NotifyPendingRestart();
             }
         }
@@ -1204,7 +1206,8 @@ namespace Emby.Server.Core
             var exclude = new[]
             {
                 "mbplus.dll",
-                "mbintros.dll"
+                "mbintros.dll",
+                "embytv.dll"
             };
 
             return !exclude.Contains(filename ?? string.Empty, StringComparer.OrdinalIgnoreCase);
