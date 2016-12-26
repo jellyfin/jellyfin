@@ -1192,6 +1192,7 @@ var AppInfo = {};
             apiclient: apiClientBowerPath + '/apiclient',
             connectionManagerFactory: bowerPath + '/emby-apiclient/connectionmanager',
             visibleinviewport: embyWebComponentsBowerPath + "/visibleinviewport",
+            filesystem: embyWebComponentsBowerPath + "/filesystem",
             browserdeviceprofile: embyWebComponentsBowerPath + "/browserdeviceprofile",
             browser: embyWebComponentsBowerPath + "/browser",
             inputManager: embyWebComponentsBowerPath + "/inputmanager",
