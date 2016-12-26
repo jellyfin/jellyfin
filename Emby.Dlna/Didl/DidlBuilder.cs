@@ -61,7 +61,7 @@ namespace Emby.Dlna.Didl
             _user = user;
         }
 
-        public string GetItemDidl(DlnaOptions options, BaseItem item, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
+        public string GetItemDidl(DlnaOptions options, BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
             {
@@ -86,7 +86,7 @@ namespace Emby.Dlna.Didl
 
                 WriteXmlRootAttributes(_profile, writer);
 
-                WriteItemElement(options, writer, item, context, null, deviceId, filter, streamInfo);
+                WriteItemElement(options, writer, item, user, context, null, deviceId, filter, streamInfo);
 
                 writer.WriteFullEndElement();
                 //writer.WriteEndDocument();
@@ -111,7 +111,15 @@ namespace Emby.Dlna.Didl
             }
         }
 
-        public void WriteItemElement(DlnaOptions options, XmlWriter writer, BaseItem item, BaseItem context, StubType? contextStubType, string deviceId, Filter filter, StreamInfo streamInfo = null)
+        public void WriteItemElement(DlnaOptions options, 
+            XmlWriter writer, 
+            BaseItem item, 
+            User user,
+            BaseItem context, 
+            StubType? contextStubType, 
+            string deviceId, 
+            Filter filter, 
+            StreamInfo streamInfo = null)
         {
             var clientId = GetClientId(item, null);
 
@@ -135,7 +143,7 @@ namespace Emby.Dlna.Didl
 
             AddGeneralProperties(item, null, context, writer, filter);
 
-            //AddBookmarkInfo(item, user, element);
+            AddSamsungBookmarkInfo(item, user, writer);
 
             // refID?
             // storeAttribute(itemNode, object, ClassProperties.REF_ID, false);
@@ -555,17 +563,37 @@ namespace Emby.Dlna.Didl
             writer.WriteFullEndElement();
         }
 
-        //private void AddBookmarkInfo(BaseItem item, User user, XmlElement element)
-        //{
-        //    var userdata = _userDataManager.GetUserData(user.Id, item.GetUserDataKey());
+        private void AddSamsungBookmarkInfo(BaseItem item, User user, XmlWriter writer)
+        {
+            if (!item.SupportsPositionTicksResume || item is Folder)
+            {
+                return;
+            }
 
-        //    if (userdata.PlaybackPositionTicks > 0)
-        //    {
-        //        var dcmInfo = element.OwnerDocument.CreateElement("sec", "dcmInfo", NS_SEC);
-        //        dcmInfo.InnerText = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds).ToString(_usCulture));
-        //        element.AppendChild(dcmInfo);
-        //    }
-        //}
+            XmlAttribute secAttribute = null;
+            foreach (var attribute in _profile.XmlRootAttributes)
+            {
+                if (string.Equals(attribute.Name, "xmlns:sec", StringComparison.OrdinalIgnoreCase))
+                {
+                    secAttribute = attribute;
+                    break;
+                }
+            }
+
+            // Not a samsung device
+            if (secAttribute == null)
+            {
+                return;
+            }
+
+            var userdata = _userDataManager.GetUserData(user.Id, item);
+
+            if (userdata.PlaybackPositionTicks > 0)
+            {
+                var elementValue = string.Format("BM={0}", Convert.ToInt32(TimeSpan.FromTicks(userdata.PlaybackPositionTicks).TotalSeconds).ToString(_usCulture));
+                AddValue(writer, "sec", "dcmInfo", elementValue, secAttribute.Value);
+            }
+        }
 
         /// <summary>
         /// Adds fields used by both items and folders
