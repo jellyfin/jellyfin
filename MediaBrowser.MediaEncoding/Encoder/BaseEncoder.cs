@@ -816,7 +816,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
 
                 // h264
-                return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
+                return string.Format(" -maxrate {0} -bufsize {1}",
                     bitrate.Value.ToString(UsCulture),
                     (bitrate.Value * 2).ToString(UsCulture));
             }

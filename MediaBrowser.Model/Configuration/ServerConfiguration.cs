@@ -462,11 +462,9 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Art
                         },
 
-                        // Don't download this by default
-                        // Generally not used
                         new ImageOption
                         {
-                            Limit = 0,
+                            Limit = 1,
                             Type = ImageType.Logo
                         }
                     },
@@ -556,7 +554,7 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Thumb
                         }
                     },
-                    DisabledMetadataFetchers = new []{ "The Open Movie Database", "TheMovieDb" }
+                    DisabledMetadataFetchers = new []{ "TheMovieDb" }
                 },
 
                 new MetadataOptions(0, 1280)
@@ -577,8 +575,8 @@ namespace MediaBrowser.Model.Configuration
                             Type = ImageType.Primary
                         }
                     },
-                    DisabledMetadataFetchers = new []{ "The Open Movie Database" },
-                    DisabledImageFetchers = new []{ "TheMovieDb" }
+                    DisabledMetadataFetchers = new []{ "The Open Movie Database", "TheMovieDb" },
+                    DisabledImageFetchers = new []{ "The Open Movie Database", "TheMovieDb" }
                 }
             };
         }

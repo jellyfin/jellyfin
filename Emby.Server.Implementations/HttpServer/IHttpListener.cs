@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// Gets or sets the error handler.
         /// </summary>
         /// <value>The error handler.</value>
-        Action<Exception, IRequest> ErrorHandler { get; set; }
+        Action<Exception, IRequest, bool> ErrorHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the request handler.

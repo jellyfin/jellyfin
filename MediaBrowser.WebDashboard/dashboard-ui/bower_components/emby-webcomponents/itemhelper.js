@@ -111,10 +111,20 @@ define(['apphost'], function (appHost) {
         return user.Policy.IsAdministrator;
     }
 
+    function isLocalItem(item) {
+
+        if (item && item.Id && item.Id.indexOf('local') === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
     return {
         getDisplayName: getDisplayName,
         supportsAddingToCollection: supportsAddingToCollection,
         supportsAddingToPlaylist: supportsAddingToPlaylist,
+        isLocalItem: isLocalItem,
 
         canIdentify: function (user, itemType) {
 

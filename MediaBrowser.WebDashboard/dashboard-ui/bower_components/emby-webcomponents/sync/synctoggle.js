@@ -10,6 +10,7 @@
 
         var self = this;
 
+        options = options || {};
         self.options = options;
 
         function resetSyncStatus() {
@@ -67,7 +68,7 @@
         }
     }
 
-    syncToggle.prototype.refresh = function(item) {
+    syncToggle.prototype.refresh = function (item) {
 
         this.options.item = item;
         updateSyncStatus(this.options.container, item);

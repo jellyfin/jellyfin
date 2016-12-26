@@ -765,11 +765,11 @@
             showElement('#fldParentIndexNumber');
 
             if (item.Type === "Episode") {
-                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelSeasonNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('sharedcomponents#LabelSeasonNumber'));
             } else if (item.Type === "Audio") {
-                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelDiscNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('sharedcomponents#LabelDiscNumber'));
             } else {
-                context.querySelector('#txtParentIndexNumber').label(globalize.translate('LabelParentNumber'));
+                context.querySelector('#txtParentIndexNumber').label(globalize.translate('sharedcomponents#LabelParentNumber'));
             }
         } else {
             hideElement('#fldParentIndexNumber', context);

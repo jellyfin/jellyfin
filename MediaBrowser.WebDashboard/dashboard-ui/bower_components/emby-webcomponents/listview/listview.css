@@ -104,9 +104,12 @@
     height: 1em !important;
     font-size: 143%;
     border-radius: 500px;
-    background-color: #52B54B;
     padding: .5em;
     color: #fff;
+}
+
+.listItemIcon:not(.listItemIcon-transparent) {
+    background-color: #52B54B;
 }
 
 .listItemProgressBar {
