@@ -490,38 +490,13 @@ namespace Emby.Common.Implementations.IO
             var temp1 = Path.GetTempFileName();
 
             // Copying over will fail against hidden files
-            RemoveHiddenAttribute(file1);
-            RemoveHiddenAttribute(file2);
+            SetHidden(file1, false);
+            SetHidden(file2, false);
 
             CopyFile(file1, temp1, true);
 
             CopyFile(file2, file1, true);
             CopyFile(temp1, file2, true);
-
-            DeleteFile(temp1);
-        }
-
-        /// <summary>
-        /// Removes the hidden attribute.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        private void RemoveHiddenAttribute(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            var currentFile = new FileInfo(path);
-
-            // This will fail if the file is hidden
-            if (currentFile.Exists)
-            {
-                if ((currentFile.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    currentFile.Attributes &= ~FileAttributes.Hidden;
-                }
-            }
         }
 
         public bool ContainsSubPath(string parentPath, string path)
