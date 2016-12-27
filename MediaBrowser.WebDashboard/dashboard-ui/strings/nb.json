@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Etterbehandling applikasjon:",
     "ErrorAddingXmlTvFile": "Det oppstod en feil tilgang til XmlTV filen. S\u00f8rg for at filen finnes og pr\u00f8v igjen.",
     "OptionAutomaticallyGroupSeries": "Fusjoner automatisk serier som er spredt ut over flere mapper",
-    "OptionAutomaticallyGroupSeriesHelp": "Hvis aktivert, vil serien som er spredt over flere mapper innenfor dette biblioteket sp\u00f8r automatisk sl\u00e5tt sammen til en enkelt serie."
+    "OptionAutomaticallyGroupSeriesHelp": "Hvis aktivert, vil serien som er spredt over flere mapper innenfor dette biblioteket sp\u00f8r automatisk sl\u00e5tt sammen til en enkelt serie.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

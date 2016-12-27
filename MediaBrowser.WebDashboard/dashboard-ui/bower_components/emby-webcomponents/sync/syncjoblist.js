@@ -113,7 +113,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
         for (var i = 0, length = textLines.length; i < length; i++) {
 
-            if (i == 0) {
+            if (i === 0) {
                 html += '<h3 class="listItemBodyText">';
                 html += textLines[i];
                 html += '</h3>';
@@ -156,7 +156,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
             if (showTargetName) {
                 var targetName = job.TargetName || 'Unknown';
 
-                if (targetName != lastTargetName) {
+                if (targetName !== lastTargetName) {
 
                     if (lastTargetName) {
                         html += '</div>';
@@ -263,7 +263,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
         var menuItems = [];
 
-        if (status == 'Cancelled') {
+        if (status === 'Cancelled') {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Delete'),
                 id: 'delete'

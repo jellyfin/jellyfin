@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Post-processing application:",
     "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
     "OptionAutomaticallyGroupSeries": "\u81ea\u52a8\u5408\u5e76\u5206\u5e03\u5728\u4e0d\u540c\u6587\u4ef6\u5939\u7684\u7cfb\u5217",
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series."
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

@@ -8,6 +8,12 @@
 
         var options = [];
 
+        if (maxAllowedWidth >= 3800) {
+            options.push({ name: '4K - 120Mbps', maxHeight: 2160, bitrate: 120000000 });
+            options.push({ name: '4K - 100Mbps', maxHeight: 2160, bitrate: 100000000 });
+            options.push({ name: '4K - 80Mbps', maxHeight: 2160, bitrate: 80000000 });
+        }
+
         // Some 1080- videos are reported as 1912?
         if (maxAllowedWidth >= 1900) {
 

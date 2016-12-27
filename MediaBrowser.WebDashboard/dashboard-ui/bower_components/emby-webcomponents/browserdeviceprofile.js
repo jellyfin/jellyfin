@@ -208,33 +208,7 @@ define(['browser'], function (browser) {
 
     function getMaxBitrate() {
 
-        if (browser.edgeUwp) {
-            return 40000000;
-        }
-
-        // 10mbps
-        if (browser.xboxOne) {
-            return 10000000;
-        }
-
-        if (browser.ps4) {
-            return 8000000;
-        }
-
-        var userAgent = navigator.userAgent.toLowerCase();
-
-        if (browser.tizen) {
-
-            // 2015 models
-            if (userAgent.indexOf('tizen 2.3') !== -1) {
-                return 20000000;
-            }
-
-            // 2016 models
-            return 40000000;
-        }
-
-        return 100000000;
+        return 120000000;
     }
 
     return function (options) {
@@ -580,6 +554,75 @@ define(['browser'], function (browser) {
                 Property: 'IsAVC',
                 Value: 'false',
                 IsRequired: false
+            });
+        }
+
+        var isTizenFhd = false;
+        var globalMaxVideoBitrate = browser.ps4 ? '8000000' :
+            (browser.xboxOne ? '10000000' :
+            (browser.edgeUwp ? '40000000' :
+            (browser.tizen && isTizenFhd ? '20000000' : '')));
+
+        var h264MaxVideoBitrate = globalMaxVideoBitrate;
+        if (browser.tizen && !isTizenFhd) {
+
+            h264MaxVideoBitrate = '60000000';
+        }
+
+        if (h264MaxVideoBitrate) {
+            profile.CodecProfiles[profile.CodecProfiles.length - 1].Conditions.push({
+                Condition: 'LessThanEqual',
+                Property: 'VideoBitrate',
+                Value: h264MaxVideoBitrate,
+                IsRequired: true
+            });
+        }
+
+        if (globalMaxVideoBitrate) {
+            profile.CodecProfiles.push({
+                Type: 'Video',
+                Conditions: [
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'VideoBitrate',
+                    Value: globalMaxVideoBitrate
+                }]
+            });
+        }
+
+        if (browser.tizen && !isTizenFhd) {
+            profile.CodecProfiles.push({
+                Type: 'Video',
+                Codec: 'vp9',
+                Conditions: [
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoBitrate',
+                        Value: '40000000'
+                    }
+                ]
+            });
+            profile.CodecProfiles.push({
+                Type: 'Video',
+                Codec: 'mpeg4,vc1,mpeg2video,mpeg1video,msmpeg4,h263,vp6,vp8',
+                Conditions: [
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoBitrate',
+                        Value: '20000000'
+                    }
+                ]
+            });
+            // All others fall here
+            profile.CodecProfiles.push({
+                Type: 'Video',
+                Conditions: [
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoBitrate',
+                        Value: '80000000'
+                    }
+                ]
             });
         }
 

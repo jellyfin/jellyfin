@@ -267,7 +267,7 @@
         var serverId = libraryItem.ServerId;
 
         // case 0
-        var mainImageTag = (libraryItem.ImageTags || {})['Primary'];
+        var mainImageTag = (libraryItem.ImageTags || {}).Primary;
 
         if (libraryItem.Id && mainImageTag) {
             p = p.then(function () {
@@ -276,7 +276,7 @@
         }
 
         // case 0a
-        var logoImageTag = (libraryItem.ImageTags || {})['Logo'];
+        var logoImageTag = (libraryItem.ImageTags || {}).Logo;
         if (libraryItem.Id && logoImageTag) {
             p = p.then(function () {
                 return downloadImage(localItem, apiClient, serverId, libraryItem.Id, logoImageTag, 'Logo');
@@ -284,7 +284,7 @@
         }
 
         // case 0b
-        var artImageTag = (libraryItem.ImageTags || {})['Art'];
+        var artImageTag = (libraryItem.ImageTags || {}).Art;
         if (libraryItem.Id && artImageTag) {
             p = p.then(function () {
                 return downloadImage(localItem, apiClient, serverId, libraryItem.Id, artImageTag, 'Art');
@@ -292,7 +292,7 @@
         }
 
         // case 0c
-        var bannerImageTag = (libraryItem.ImageTags || {})['Banner'];
+        var bannerImageTag = (libraryItem.ImageTags || {}).Banner;
         if (libraryItem.Id && bannerImageTag) {
             p = p.then(function () {
                 return downloadImage(localItem, apiClient, serverId, libraryItem.Id, bannerImageTag, 'Banner');
@@ -300,7 +300,7 @@
         }
 
         // case 0d
-        var thumbImageTag = (libraryItem.ImageTags || {})['Thumb'];
+        var thumbImageTag = (libraryItem.ImageTags || {}).Thumb;
         if (libraryItem.Id && thumbImageTag) {
             p = p.then(function () {
                 return downloadImage(localItem, apiClient, serverId, libraryItem.Id, thumbImageTag, 'Thumb');
@@ -308,19 +308,19 @@
         }
 
         // Backdrops
-        if (libraryItem.Id && libraryItem.BackdropImageTags) {
-            for (var i = 0; i < libraryItem.BackdropImageTags.length; i++) {
+        //if (libraryItem.Id && libraryItem.BackdropImageTags) {
+        //    for (var i = 0; i < libraryItem.BackdropImageTags.length; i++) {
 
-                var backdropImageTag = libraryItem.BackdropImageTags[i];
+        //        var backdropImageTag = libraryItem.BackdropImageTags[i];
 
-                // use self-invoking function to simulate block-level variable scope
-                (function (index, tag) {
-                    p = p.then(function () {
-                        return downloadImage(localItem, apiClient, serverId, libraryItem.Id, tag, 'backdrop', index);
-                    });
-                })(i, backdropImageTag);
-            }
-        }
+        //        // use self-invoking function to simulate block-level variable scope
+        //        (function (index, tag) {
+        //            p = p.then(function () {
+        //                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, tag, 'backdrop', index);
+        //            });
+        //        })(i, backdropImageTag);
+        //    }
+        //}
 
         // case 1/2:
         if (libraryItem.SeriesId && libraryItem.SeriesPrimaryImageTag) {
