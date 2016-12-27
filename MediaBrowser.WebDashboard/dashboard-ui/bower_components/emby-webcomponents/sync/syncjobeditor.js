@@ -30,7 +30,7 @@
 
         html += '<div class="listItem" data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
 
-        var hasActions = ['Queued', 'Cancelled', 'Failed', 'ReadyToTransfer', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
+        var hasActions = ['Queued', 'Cancelled', 'Failed', 'ReadyToTransfer', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) !== -1;
 
         var imgUrl;
 
@@ -57,13 +57,13 @@
         html += jobItem.ItemName;
         html += '</div>';
 
-        if (jobItem.Status == 'Failed') {
+        if (jobItem.Status === 'Failed') {
             html += '<div class="secondary" style="color:red;">';
         } else {
             html += '<div class="secondary">';
         }
         html += globalize.translate('sharedcomponents#SyncJobItemStatus' + jobItem.Status);
-        if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
+        if (jobItem.Status === 'Synced' && jobItem.IsMarkedForRemoval) {
             html += '<br/>';
             html += globalize.translate('sharedcomponents#RemovingFromDevice');
         }
@@ -129,29 +129,29 @@
         var listItem = parentWithClass(elem, 'listItem');
         var jobItemId = listItem.getAttribute('data-itemid');
         var status = listItem.getAttribute('data-status');
-        var remove = listItem.getAttribute('data-remove').toLowerCase() == 'true';
+        var remove = listItem.getAttribute('data-remove').toLowerCase() === 'true';
 
         var menuItems = [];
 
-        if (status == 'Failed' || status == 'Cancelled') {
+        if (status === 'Failed' || status === 'Cancelled') {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#Retry'),
                 id: 'retry'
             });
         }
-        else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
+        else if (status === 'Queued' || status === 'Transferring' || status === 'Converting' || status === 'ReadyToTransfer') {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#CancelDownload'),
                 id: 'cancel'
             });
         }
-        else if (status == 'Synced' && remove) {
+        else if (status === 'Synced' && remove) {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#KeepOnDevice'),
                 id: 'unmarkforremoval'
             });
         }
-        else if (status == 'Synced') {
+        else if (status === 'Synced') {
             menuItems.push({
                 name: globalize.translate('sharedcomponents#RemoveFromDevice'),
                 id: 'markforremoval'
@@ -285,7 +285,7 @@
         }
 
         var target = editOptions.Targets.filter(function (t) {
-            return t.Id == job.TargetId;
+            return t.Id === job.TargetId;
         })[0];
         var targetName = target ? target.Name : '';
 
