@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Application post-processeur\u00a0:",
     "ErrorAddingXmlTvFile": "Une erreur est survenue lors de l'acc\u00e8s au fichier XMLTV. Assurez-vous qu'il existe et r\u00e9essayez.",
     "OptionAutomaticallyGroupSeries": "Fusionner automatiquement les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers",
-    "OptionAutomaticallyGroupSeriesHelp": "Les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers dans la m\u00e9diath\u00e8que seront automatiquement fusionn\u00e9es en une seule s\u00e9rie."
+    "OptionAutomaticallyGroupSeriesHelp": "Les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers dans la m\u00e9diath\u00e8que seront automatiquement fusionn\u00e9es en une seule s\u00e9rie.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

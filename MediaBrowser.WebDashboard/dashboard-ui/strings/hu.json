@@ -414,7 +414,7 @@
     "HeaderSoundtracks": "Soundtracks",
     "HeaderMusicVideos": "Music Videos",
     "HeaderSpecialFeatures": "Special Features",
-    "HeaderCastCrew": "Szereposzt\u00e1s",
+    "HeaderCastCrew": "Szerepl\u0151k \u00e9s St\u00e1b",
     "HeaderAdditionalParts": "Additional Parts",
     "ButtonSplitVersionsApart": "Split Versions Apart",
     "ButtonPlayTrailer": "El\u0151zetes",
@@ -1623,7 +1623,7 @@
     "ValueStatus": "Status: {0}",
     "LabelLimit": "Limit:",
     "ValueLinks": "Linkek: {0}",
-    "HeaderCastAndCrew": "Szereposzt\u00e1s",
+    "HeaderCastAndCrew": "Szerepl\u0151k \u00e9s St\u00e1b",
     "ValueArtist": "Artist: {0}",
     "ValueArtists": "Artists: {0}",
     "MediaInfoCameraMake": "Camera make",
@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Post-processing application:",
     "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
     "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series."
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

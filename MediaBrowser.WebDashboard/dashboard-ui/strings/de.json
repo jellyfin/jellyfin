@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Nachbearbeitungs Anwendung:",
     "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal.",
     "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
-    "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt."
+    "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

@@ -1409,8 +1409,8 @@
     "LabelPlayMethodDirectPlay": "Direktuppspelning",
     "LabelAudioCodec": "Ljud: {0}",
     "LabelVideoCodec": "Video: {0}",
-    "LabelLocalAccessUrl": "Lokal \u00e5tkomst: {0}",
-    "LabelRemoteAccessUrl": "Fj\u00e4rr\u00e5tkomst: {0}",
+    "LabelLocalAccessUrl": "Hem-\u00e5tkomst(LAN): {0}",
+    "LabelRemoteAccessUrl": "Fj\u00e4rr\u00e5tkomst(WAN): {0}",
     "LabelRunningOnPort": "K\u00f6r http p\u00e5 port {0}",
     "LabelRunningOnPorts": "K\u00f6r http p\u00e5 port {0} och https p\u00e5 port {1}",
     "HeaderLatestFromChannel": "Senaste fr\u00e5n {0}",
@@ -1945,5 +1945,6 @@
     "LabelPostProcessor": "Post-processing application:",
     "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
     "OptionAutomaticallyGroupSeries": "Sl\u00e5 ihop serier automatiskt som ligger utspritt under flera kataloger",
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series."
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }
