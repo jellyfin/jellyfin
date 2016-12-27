@@ -24,101 +24,30 @@
 
         Dashboard.showLoadingMsg();
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels", {})).then(function (channelsResult) {
+        var shareExcludes = $(".chkShareFolder", dlg).get().filter(function (i) {
 
-            var shareExcludes = $(".chkShareFolder", dlg).get().filter(function (i) {
+            return i.checked;
 
-                return i.checked;
+        }).map(function (i) {
 
-            }).map(function (i) {
+            return i.getAttribute('data-folderid');
+        });
 
-                return i.getAttribute('data-folderid');
-            });
+        require(['connectHelper'], function (connectHelper) {
 
-            // Add/Update connect info
-            ApiClient.ajax({
-
-                type: "POST",
-                url: ApiClient.getUrl('Connect/Invite'),
-                dataType: 'json',
-                data: {
+            connectHelper.inviteGuest({
+                apiClient: ApiClient,
+                guestOptions: {
 
                     ConnectUsername: dlg.querySelector('#txtConnectUsername').value,
                     EnabledLibraries: shareExcludes.join(','),
                     SendingUserId: Dashboard.getCurrentUserId(),
                     EnableLiveTv: false
                 }
-
-            }).then(function (result) {
-
+            }).then(function() {
+                
                 dlg.submitted = true;
                 dialogHelper.close(dlg);
-
-                Dashboard.hideLoadingMsg();
-
-                showNewUserInviteMessage(dlg, result);
-
-            }, function (response) {
-
-                Dashboard.hideLoadingMsg();
-
-                if (!response.status) {
-                    // General error
-                    require(['alert'], function (alert) {
-                        alert({
-                            text: Globalize.translate('DefaultErrorMessage')
-                        });
-                    });
-                } else if (response.status == 404) {
-                    // User doesn't exist
-                    require(['alert'], function (alert) {
-                        alert({
-                            text: Globalize.translate('GuestUserNotFound')
-                        });
-                    });
-                } else {
-
-                    // status 400 = account not activated
-
-                    // General error
-                    showAccountErrorMessage();
-                }
-            });
-        });
-    }
-
-    function showAccountErrorMessage() {
-
-        var html = Globalize.translate('ErrorAddingGuestAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
-        html += '<br/><br/>' + Globalize.translate('ErrorAddingGuestAccount2', 'apps@emby.media');
-
-        var text = Globalize.translate('ErrorAddingGuestAccount1', 'https://emby.media/connect');
-        text += '\n\n' + Globalize.translate('ErrorAddingGuestAccount2', 'apps@emby.media');
-
-        require(['alert'], function (alert) {
-            alert({
-                text: text,
-                html: html
-            });
-        });
-    }
-
-    function showNewUserInviteMessage(page, result) {
-
-        if (!result.IsNewUserInvitation && !result.IsPending) {
-
-            // It was immediately approved
-            return;
-        }
-
-        var message = result.IsNewUserInvitation ?
-            Globalize.translate('MessageInvitationSentToNewUser', result.GuestDisplayName) :
-            Globalize.translate('MessageInvitationSentToUser', result.GuestDisplayName);
-
-        require(['alert'], function (alert) {
-            alert({
-                text: message,
-                title: Globalize.translate('HeaderInvitationSent')
             });
         });
     }
