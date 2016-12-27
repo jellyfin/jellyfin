@@ -424,6 +424,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Localization\Ratings\us.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Localization\Ratings\uk.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

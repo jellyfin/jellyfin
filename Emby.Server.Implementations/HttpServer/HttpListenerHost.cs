@@ -91,16 +91,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
             {
-                {typeof (InvalidOperationException), 500},
-                {typeof (NotImplementedException), 500},
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
                 //{typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
                 {typeof (PaymentRequiredException), 402},
-                {typeof (UnauthorizedAccessException), 500},
-                {typeof (PlatformNotSupportedException), 500},
-                {typeof (NotSupportedException), 500}
+                {typeof (ArgumentException), 400}
             };
 
         public override void Configure()
@@ -228,6 +224,22 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
+        private int GetStatusCode(Exception ex)
+        {
+            if (ex is ArgumentException)
+            {
+                return 400;
+            }
+
+            int statusCode;
+            if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
+            {
+                statusCode = 500;
+            }
+
+            return statusCode;
+        }
+
         private void ErrorHandler(Exception ex, IRequest httpReq, bool logException = true)
         {
             try
@@ -244,11 +256,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                int statusCode;
-                if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
-                {
-                    statusCode = 500;
-                }
+                var statusCode = GetStatusCode(ex);
                 httpRes.StatusCode = statusCode;
 
                 httpRes.ContentType = "text/html";

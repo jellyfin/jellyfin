@@ -870,33 +870,47 @@ namespace MediaBrowser.Api.Playback
                 inputChannels = null;
             }
 
-            int? resultChannels = null;
+            int? transcoderChannelLimit = null;
             var codec = outputAudioCodec ?? string.Empty;
 
             if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 // wmav2 currently only supports two channel output
-                resultChannels = Math.Min(2, inputChannels ?? 2);
+                transcoderChannelLimit = 2;
             }
 
-            else if (request.MaxAudioChannels.HasValue)
+            else if (codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1)
             {
-                var channelLimit = codec.IndexOf("mp3", StringComparison.OrdinalIgnoreCase) != -1
-                   ? 2
-                   : 6;
-
-                if (inputChannels.HasValue)
-                {
-                    channelLimit = Math.Min(channelLimit, inputChannels.Value);
-                }
-
-                // If we don't have any media info then limit it to 5 to prevent encoding errors due to asking for too many channels
-                resultChannels = Math.Min(request.MaxAudioChannels.Value, channelLimit);
+                // libmp3lame currently only supports two channel output
+                transcoderChannelLimit = 2;
+            }
+            else
+            {
+                // If we don't have any media info then limit it to 6 to prevent encoding errors due to asking for too many channels
+                transcoderChannelLimit = 6;
             }
 
-            if (request.TranscodingMaxAudioChannels.HasValue && !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+            var isTranscodingAudio = !string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase);
+
+            int? resultChannels = null;
+            if (isTranscodingAudio)
             {
-                resultChannels = Math.Min(request.TranscodingMaxAudioChannels.Value, resultChannels ?? inputChannels ?? request.TranscodingMaxAudioChannels.Value);
+                resultChannels = request.TranscodingMaxAudioChannels;
+            }
+            resultChannels = resultChannels ?? request.MaxAudioChannels ?? request.AudioChannels;
+
+            if (inputChannels.HasValue)
+            {
+                resultChannels = resultChannels.HasValue
+                    ? Math.Min(resultChannels.Value, inputChannels.Value)
+                    : inputChannels.Value;
+            }
+
+            if (isTranscodingAudio && transcoderChannelLimit.HasValue)
+            {
+                resultChannels = resultChannels.HasValue
+                    ? Math.Min(resultChannels.Value, transcoderChannelLimit.Value)
+                    : transcoderChannelLimit.Value;
             }
 
             return resultChannels ?? request.AudioChannels;
@@ -1054,7 +1068,19 @@ namespace MediaBrowser.Api.Playback
 
                         arg += string.Format(" -canvas_size {0}:{1}", state.VideoStream.Width.Value.ToString(CultureInfo.InvariantCulture), Convert.ToInt32(height).ToString(CultureInfo.InvariantCulture));
                     }
-                    arg += " -i \"" + state.SubtitleStream.Path + "\"";
+
+                    var subtitlePath = state.SubtitleStream.Path;
+
+                    if (string.Equals(Path.GetExtension(subtitlePath), ".sub", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var idxFile = Path.ChangeExtension(subtitlePath, ".idx");
+                        if (FileSystem.FileExists(idxFile))
+                        {
+                            subtitlePath = idxFile;
+                        }
+                    }
+
+                    arg += " -i \"" + subtitlePath + "\"";
                 }
             }
 
