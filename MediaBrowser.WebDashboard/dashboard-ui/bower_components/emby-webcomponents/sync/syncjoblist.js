@@ -218,7 +218,7 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
             options.ExcludeTargetIds = apiClient.deviceId();
         }
 
-        return apiClient.getJSON(ApiClient.getUrl('Sync/Jobs', options)).then(function (response) {
+        return apiClient.getJSON(apiClient.getUrl('Sync/Jobs', options)).then(function (response) {
 
             renderList(listInstance, response.Items);
             loading.hide();

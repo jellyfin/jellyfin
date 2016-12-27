@@ -1,4 +1,4 @@
-﻿define(['localassetmanager'], function (localAssetManager) {
+﻿define(['localassetmanager', 'cameraRoll'], function (localAssetManager, cameraRoll) {
     'use strict';
 
     return function (connectionManager) {
@@ -7,7 +7,7 @@
 
         self.uploadImages = function (server) {
 
-            return LocalAssetManager.getCameraPhotos().then(function (photos) {
+            return cameraRoll.getFiles().then(function (photos) {
 
                 if (!photos.length) {
                     return Promise.resolve();

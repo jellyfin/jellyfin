@@ -17,10 +17,6 @@
         return Promise.resolve();
     }
 
-    function getCameraPhotos() {
-        return Promise.resolve([]);
-    }
-
     function recordUserAction(action) {
         return Promise.resolve();
     }
@@ -110,7 +106,6 @@
         getLocalItem: getLocalItem,
         saveOfflineUser: saveOfflineUser,
         deleteOfflineUser: deleteOfflineUser,
-        getCameraPhotos: getCameraPhotos,
         recordUserAction: recordUserAction,
         getUserActions: getUserActions,
         deleteUserAction: deleteUserAction,

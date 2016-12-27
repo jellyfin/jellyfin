@@ -23,11 +23,6 @@
         return userrepository.remove(id);
     }
 
-    //TODO:
-    function getCameraPhotos() {
-        return Promise.resolve([]);
-    }
-
     function recordUserAction(action) {
 
         action.Id = createGuid();
@@ -454,7 +449,6 @@
         getLocalItem: getLocalItem,
         saveOfflineUser: saveOfflineUser,
         deleteOfflineUser: deleteOfflineUser,
-        getCameraPhotos: getCameraPhotos,
         recordUserAction: recordUserAction,
         getUserActions: getUserActions,
         deleteUserAction: deleteUserAction,
