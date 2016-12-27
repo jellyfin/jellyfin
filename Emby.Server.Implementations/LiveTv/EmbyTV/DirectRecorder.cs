@@ -34,7 +34,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var httpRequestOptions = new HttpRequestOptions
             {
                 Url = mediaSource.Path,
-                BufferContent = false
+                BufferContent = false,
+
+                // Some remote urls will expect a user agent to be supplied
+                UserAgent = "Emby/3.0",
+
+                // Shouldn't matter but may cause issues
+                EnableHttpCompression = false
             };
 
             using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET").ConfigureAwait(false))
