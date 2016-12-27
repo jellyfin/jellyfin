@@ -12,8 +12,7 @@
 
             var id = 'chkGroupFolder' + i.Id;
 
-            var isChecked = (user.Configuration.ExcludeFoldersFromGrouping != null && user.Configuration.ExcludeFoldersFromGrouping.indexOf(i.Id) == -1) ||
-                user.Configuration.GroupedFolders.indexOf(i.Id) != -1;
+            var isChecked = user.Configuration.GroupedFolders.indexOf(i.Id) != -1;
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
@@ -165,8 +164,6 @@
 
             return i.getAttribute('data-folderid');
         });
-
-        user.Configuration.ExcludeFoldersFromGrouping = null;
 
         user.Configuration.GroupedFolders = getCheckboxItems(".chkGroupFolder", page, true).map(function (i) {
 
