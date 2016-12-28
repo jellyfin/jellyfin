@@ -1049,11 +1049,6 @@ namespace Emby.Server.Implementations.Sync
         {
             var jobItem = _repo.GetJobItem(id);
 
-            if (jobItem.Status != SyncJobItemStatus.Queued && jobItem.Status != SyncJobItemStatus.ReadyToTransfer && jobItem.Status != SyncJobItemStatus.Converting && jobItem.Status != SyncJobItemStatus.Failed && jobItem.Status != SyncJobItemStatus.Synced && jobItem.Status != SyncJobItemStatus.Transferring)
-            {
-                throw new ArgumentException("Operation is not valid for this job item");
-            }
-
             jobItem.Status = SyncJobItemStatus.Cancelled;
 
             jobItem.Progress = 0;
