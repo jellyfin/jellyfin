@@ -10,11 +10,17 @@ namespace Emby.Common.Implementations.EnvironmentInfo
     public class EnvironmentInfo : IEnvironmentInfo
     {
         public MediaBrowser.Model.System.Architecture? CustomArchitecture { get; set; }
+        public MediaBrowser.Model.System.OperatingSystem? CustomOperatingSystem { get; set; }
 
         public MediaBrowser.Model.System.OperatingSystem OperatingSystem
         {
             get
             {
+                if (CustomOperatingSystem.HasValue)
+                {
+                    return CustomOperatingSystem.Value;
+                }
+
 #if NET46
                 switch (Environment.OSVersion.Platform)
                 {

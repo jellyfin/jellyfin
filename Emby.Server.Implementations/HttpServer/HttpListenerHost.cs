@@ -91,16 +91,12 @@ namespace Emby.Server.Implementations.HttpServer
 
         readonly Dictionary<Type, int> _mapExceptionToStatusCode = new Dictionary<Type, int>
             {
-                {typeof (InvalidOperationException), 500},
-                {typeof (NotImplementedException), 500},
                 {typeof (ResourceNotFoundException), 404},
                 {typeof (FileNotFoundException), 404},
                 //{typeof (DirectoryNotFoundException), 404},
                 {typeof (SecurityException), 401},
                 {typeof (PaymentRequiredException), 402},
-                {typeof (UnauthorizedAccessException), 500},
-                {typeof (PlatformNotSupportedException), 500},
-                {typeof (NotSupportedException), 500}
+                {typeof (ArgumentException), 400}
             };
 
         public override void Configure()
@@ -228,11 +224,30 @@ namespace Emby.Server.Implementations.HttpServer
             }
         }
 
-        private void ErrorHandler(Exception ex, IRequest httpReq)
+        private int GetStatusCode(Exception ex)
+        {
+            if (ex is ArgumentException)
+            {
+                return 400;
+            }
+
+            int statusCode;
+            if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
+            {
+                statusCode = 500;
+            }
+
+            return statusCode;
+        }
+
+        private void ErrorHandler(Exception ex, IRequest httpReq, bool logException = true)
         {
             try
             {
-                _logger.ErrorException("Error processing request", ex);
+                if (logException)
+                {
+                    _logger.ErrorException("Error processing request", ex);
+                }
 
                 var httpRes = httpReq.Response;
 
@@ -241,11 +256,7 @@ namespace Emby.Server.Implementations.HttpServer
                     return;
                 }
 
-                int statusCode;
-                if (!_mapExceptionToStatusCode.TryGetValue(ex.GetType(), out statusCode))
-                {
-                    statusCode = 500;
-                }
+                var statusCode = GetStatusCode(ex);
                 httpRes.StatusCode = statusCode;
 
                 httpRes.ContentType = "text/html";
@@ -264,7 +275,9 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (_listener != null)
             {
+                _logger.Info("Stopping HttpListener...");
                 _listener.Stop();
+                _logger.Info("HttpListener stopped");
             }
         }
 
@@ -529,6 +542,10 @@ namespace Emby.Server.Implementations.HttpServer
                     ErrorHandler(new FileNotFoundException(), httpReq);
                 }
             }
+            catch (OperationCanceledException ex)
+            {
+                ErrorHandler(ex, httpReq, false);
+            }
             catch (Exception ex)
             {
                 ErrorHandler(ex, httpReq);
@@ -698,19 +715,19 @@ namespace Emby.Server.Implementations.HttpServer
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
+
             base.Dispose();
 
             lock (_disposeLock)
             {
                 if (_disposed) return;
 
+                _disposed = true;
+
                 if (disposing)
                 {
                     Stop();
                 }
-
-                //release unmanaged resources here...
-                _disposed = true;
             }
         }
 

@@ -79,21 +79,6 @@ namespace Emby.Server.Implementations.Channels
             _channels = channels.ToArray();
         }
 
-        public string ChannelDownloadPath
-        {
-            get
-            {
-                var options = _config.GetChannelsConfiguration();
-
-                if (!string.IsNullOrWhiteSpace(options.DownloadPath))
-                {
-                    return options.DownloadPath;
-                }
-
-                return Path.Combine(_config.ApplicationPaths.ProgramDataPath, "channels");
-            }
-        }
-
         private IEnumerable<IChannel> GetAllChannels()
         {
             return _channels
@@ -288,7 +273,7 @@ namespace Emby.Server.Implementations.Channels
             _jsonSerializer.SerializeToFile(mediaSources, path);
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, bool includeCachedVersions, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken)
         {
             IEnumerable<ChannelMediaInfo> results = new List<ChannelMediaInfo>();
             var video = item as Video;
@@ -302,17 +287,9 @@ namespace Emby.Server.Implementations.Channels
                 results = audio.ChannelMediaSources ?? GetSavedMediaSources(audio);
             }
 
-            var sources = SortMediaInfoResults(results)
+            return SortMediaInfoResults(results)
                 .Select(i => GetMediaSource(item, i))
                 .ToList();
-
-            if (includeCachedVersions)
-            {
-                var cachedVersions = GetCachedChannelItemMediaSources(item);
-                sources.InsertRange(0, cachedVersions);
-            }
-
-            return sources;
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(BaseItem item, CancellationToken cancellationToken)
@@ -334,14 +311,9 @@ namespace Emby.Server.Implementations.Channels
                 results = new List<ChannelMediaInfo>();
             }
 
-            var list = SortMediaInfoResults(results)
+            return SortMediaInfoResults(results)
                 .Select(i => GetMediaSource(item, i))
                 .ToList();
-
-            var cachedVersions = GetCachedChannelItemMediaSources(item);
-            list.InsertRange(0, cachedVersions);
-
-            return list;
         }
 
         private readonly ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>> _channelItemMediaInfo =
@@ -367,55 +339,6 @@ namespace Emby.Server.Implementations.Channels
             _channelItemMediaInfo.AddOrUpdate(id, item2, (key, oldValue) => item2);
 
             return list;
-        }
-
-        private IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(BaseItem item)
-        {
-            var filenamePrefix = item.Id.ToString("N");
-            var parentPath = Path.Combine(ChannelDownloadPath, item.ChannelId);
-
-            try
-            {
-                var files = _fileSystem.GetFiles(parentPath);
-
-                if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-                {
-                    files = files.Where(i => _libraryManager.IsVideoFile(i.FullName));
-                }
-                else
-                {
-                    files = files.Where(i => _libraryManager.IsAudioFile(i.FullName));
-                }
-
-                var file = files
-                    .FirstOrDefault(i => i.Name.StartsWith(filenamePrefix, StringComparison.OrdinalIgnoreCase));
-
-                if (file != null)
-                {
-                    var cachedItem = _libraryManager.ResolvePath(file);
-
-                    if (cachedItem != null)
-                    {
-                        var hasMediaSources = _libraryManager.GetItemById(cachedItem.Id) as IHasMediaSources;
-
-                        if (hasMediaSources != null)
-                        {
-                            var source = hasMediaSources.GetMediaSources(true).FirstOrDefault();
-
-                            if (source != null)
-                            {
-                                return new[] { source };
-                            }
-                        }
-                    }
-                }
-            }
-            catch (IOException)
-            {
-
-            }
-
-            return new List<MediaSourceInfo>();
         }
 
         private MediaSourceInfo GetMediaSource(BaseItem item, ChannelMediaInfo info)

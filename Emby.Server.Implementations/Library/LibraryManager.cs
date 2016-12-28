@@ -3084,7 +3084,11 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var contentType in ConfigurationManager.Configuration.ContentTypes)
             {
-                if (string.Equals(path, contentType.Name, StringComparison.OrdinalIgnoreCase)
+                if (string.IsNullOrWhiteSpace(contentType.Name))
+                {
+                    removeList.Add(contentType);
+                }
+                else if (string.Equals(path, contentType.Name, StringComparison.OrdinalIgnoreCase)
                     || _fileSystem.ContainsSubPath(path, contentType.Name))
                 {
                     removeList.Add(contentType);

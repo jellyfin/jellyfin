@@ -46,7 +46,7 @@ namespace MediaBrowser.Providers.Omdb
 
             T item = itemResult.Item;
 
-            var result = await GetRootObject(imdbId, cancellationToken);
+            var result = await GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
 
             // Only take the name and rating if the user's language is set to english, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
@@ -221,7 +221,7 @@ namespace MediaBrowser.Providers.Omdb
 
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
-            var path = await EnsureItemInfo(imdbId, cancellationToken);
+            var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
 
             string resultString;
 
@@ -240,7 +240,7 @@ namespace MediaBrowser.Providers.Omdb
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
-            var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken);
+            var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
 
             string resultString;
 

@@ -570,9 +570,9 @@ namespace Emby.Server.Implementations.Connect
             }
             catch (HttpException ex)
             {
-                if (!ex.StatusCode.HasValue)
+                if (!ex.StatusCode.HasValue || ex.IsTimedOut)
                 {
-                    throw;
+                    throw new Exception("Unable to invite guest, " + ex.Message, ex);
                 }
 
                 // If they entered a username, then whatever the error is just throw it, for example, user not found
