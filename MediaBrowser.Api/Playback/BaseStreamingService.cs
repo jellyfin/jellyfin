@@ -1967,10 +1967,15 @@ namespace MediaBrowser.Api.Playback
                 state.OutputVideoCodec = state.VideoRequest.VideoCodec;
                 state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec);
 
-                if (state.OutputVideoBitrate.HasValue)
+                if (videoRequest != null)
+                {
+                    TryStreamCopy(state, videoRequest);
+                }
+
+                if (state.OutputVideoBitrate.HasValue && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
+                        state.VideoStream == null ? (int?) null : state.VideoStream.BitRate,
                         state.OutputVideoBitrate.Value,
                         state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
@@ -1980,13 +1985,12 @@ namespace MediaBrowser.Api.Playback
                     videoRequest.MaxWidth = resolution.MaxWidth;
                     videoRequest.MaxHeight = resolution.MaxHeight;
                 }
+
+                ApplyDeviceProfileSettings(state);
             }
-
-            ApplyDeviceProfileSettings(state);
-
-            if (videoRequest != null)
+            else
             {
-                TryStreamCopy(state, videoRequest);
+                ApplyDeviceProfileSettings(state);
             }
 
             state.OutputFilePath = GetOutputFilePath(state);
