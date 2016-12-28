@@ -360,6 +360,11 @@ namespace Emby.Server.Implementations.Sync
                         whereClauses.Add("UserId=?");
                         paramList.Add(query.UserId);
                     }
+                    if (!string.IsNullOrWhiteSpace(query.ItemId))
+                    {
+                        whereClauses.Add("ItemIds like ?");
+                        paramList.Add("%" + query.ItemId + "%");
+                    }
                     if (query.SyncNewContent.HasValue)
                     {
                         whereClauses.Add("SyncNewContent=?");
