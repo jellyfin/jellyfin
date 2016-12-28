@@ -275,7 +275,9 @@ namespace Emby.Server.Implementations.HttpServer
         {
             if (_listener != null)
             {
+                _logger.Info("Stopping HttpListener...");
                 _listener.Stop();
+                _logger.Info("HttpListener stopped");
             }
         }
 
@@ -713,19 +715,19 @@ namespace Emby.Server.Implementations.HttpServer
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
+
             base.Dispose();
 
             lock (_disposeLock)
             {
                 if (_disposed) return;
 
+                _disposed = true;
+
                 if (disposing)
                 {
                     Stop();
                 }
-
-                //release unmanaged resources here...
-                _disposed = true;
             }
         }
 
