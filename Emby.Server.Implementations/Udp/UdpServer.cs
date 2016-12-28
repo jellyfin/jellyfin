@@ -154,6 +154,9 @@ namespace Emby.Server.Implementations.Udp
                 catch (ObjectDisposedException)
                 {
                 }
+                catch (OperationCanceledException)
+                {
+                }
                 catch (Exception ex)
                 {
                     _logger.ErrorException("Error receiving udp message", ex);
@@ -167,6 +170,11 @@ namespace Emby.Server.Implementations.Udp
         /// <param name="message">The message.</param>
         private void OnMessageReceived(SocketReceiveResult message)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             if (message.RemoteEndPoint.Port == 0)
             {
                 return;
@@ -221,6 +229,11 @@ namespace Emby.Server.Implementations.Udp
 
         public async Task SendAsync(byte[] bytes, IpEndPointInfo remoteEndPoint)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
             if (bytes == null)
             {
                 throw new ArgumentNullException("bytes");

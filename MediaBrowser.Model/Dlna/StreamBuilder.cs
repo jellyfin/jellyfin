@@ -480,7 +480,6 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
                 playlistItem.CopyTimestamps = transcodingProfile.CopyTimestamps;
                 playlistItem.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
-                playlistItem.EnableSplittingOnNonKeyFrames = transcodingProfile.EnableSplittingOnNonKeyFrames;
 
                 if (!string.IsNullOrEmpty(transcodingProfile.MaxAudioChannels))
                 {

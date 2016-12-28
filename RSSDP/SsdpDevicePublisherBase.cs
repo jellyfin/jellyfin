@@ -359,7 +359,7 @@ namespace Rssdp.Infrastructure
                 
             }
 
-            WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
+            //WriteTrace(String.Format("Sent search response to " + endPoint.ToString()), device);
         }
 
         private bool IsDuplicateSearchRequest(string searchTarget, IpEndPointInfo endPoint)
@@ -485,7 +485,7 @@ namespace Rssdp.Infrastructure
 
             _CommsServer.SendMulticastMessage(message);
 
-            WriteTrace(String.Format("Sent alive notification"), device);
+            //WriteTrace(String.Format("Sent alive notification"), device);
         }
 
         #endregion
