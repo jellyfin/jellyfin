@@ -1782,13 +1782,6 @@ namespace MediaBrowser.Api.Playback
                 {
                     if (videoRequest != null)
                     {
-                        videoRequest.EnableSplittingOnNonKeyFrames = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                    }
-                }
-                else if (i == 30)
-                {
-                    if (videoRequest != null)
-                    {
                         videoRequest.RequireAvc = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
                 }
@@ -2122,7 +2115,7 @@ namespace MediaBrowser.Api.Playback
             state.MediaSource = mediaSource;
         }
 
-        protected virtual bool CanStreamCopyVideo(StreamState state)
+        protected bool CanStreamCopyVideo(StreamState state)
         {
             var request = state.VideoRequest;
             var videoStream = state.VideoStream;
@@ -2407,7 +2400,6 @@ namespace MediaBrowser.Api.Playback
                     {
                         state.VideoRequest.CopyTimestamps = transcodingProfile.CopyTimestamps;
                         state.VideoRequest.EnableSubtitlesInManifest = transcodingProfile.EnableSubtitlesInManifest;
-                        state.VideoRequest.EnableSplittingOnNonKeyFrames = transcodingProfile.EnableSplittingOnNonKeyFrames;
                     }
                 }
             }

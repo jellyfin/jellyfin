@@ -42,7 +42,7 @@ define(['globalize', 'loading', 'alert'], function (globalize, loading, alert) {
 
             loading.hide();
 
-            if (response.status == 404) {
+            if (response.status === 404) {
                 // User doesn't exist
                 alert({
                     text: globalize.translate('GuestUserNotFound')
@@ -138,7 +138,7 @@ define(['globalize', 'loading', 'alert'], function (globalize, loading, alert) {
             });
 
         }
-        else if (currentConnectUsername != enteredConnectUsername) {
+        else if (currentConnectUsername !== enteredConnectUsername) {
 
             // Add/Update connect info
             return apiClient.ajax({

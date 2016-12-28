@@ -244,14 +244,7 @@ namespace Emby.Server.Implementations.Sync
                             statement.TryBind("@Progress", job.Progress);
                             statement.TryBind("@UserId", job.UserId);
 
-                            if (job.RequestedItemIds.Count > 0)
-                            {
-                                statement.TryBind("@ItemIds", string.Join(",", job.RequestedItemIds.ToArray()));
-                            }
-                            else
-                            {
-                                statement.TryBindNull("@ItemIds");
-                            }
+                            statement.TryBind("@ItemIds", string.Join(",", job.RequestedItemIds.ToArray()));
 
                             if (job.Category.HasValue)
                             {

@@ -9,6 +9,7 @@ using System.Linq;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -19,6 +20,7 @@ namespace Emby.Server.Implementations.Library
     {
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Any folder named in this list will be ignored - can be added to at runtime for extensibility
@@ -40,10 +42,11 @@ namespace Emby.Server.Implementations.Library
 
         };
         
-        public CoreResolutionIgnoreRule(IFileSystem fileSystem, ILibraryManager libraryManager)
+        public CoreResolutionIgnoreRule(IFileSystem fileSystem, ILibraryManager libraryManager, ILogger logger)
         {
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -54,6 +57,12 @@ namespace Emby.Server.Implementations.Library
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         public bool ShouldIgnore(FileSystemMetadata fileInfo, BaseItem parent)
         {
+            // Don't ignore top level folders
+            if (fileInfo.IsDirectory && parent is AggregateFolder)
+            {
+                return false;
+            }
+
             var filename = fileInfo.Name;
             var isHidden = fileInfo.IsHidden;
             var path = fileInfo.FullName;
