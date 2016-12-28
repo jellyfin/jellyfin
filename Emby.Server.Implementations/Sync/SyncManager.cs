@@ -1030,6 +1030,18 @@ namespace Emby.Server.Implementations.Sync
                 {
                     await CancelJobItem(jobItem.Id).ConfigureAwait(false);
                 }
+
+                var syncJobResult = await GetJobs(new SyncJobQuery
+                {
+                    ItemId = item,
+                    TargetId = targetId
+
+                }).ConfigureAwait(false);
+
+                foreach (var job in syncJobResult.Items)
+                {
+                    await CancelJob(job.Id).ConfigureAwait(false);
+                }
             }
         }
 
