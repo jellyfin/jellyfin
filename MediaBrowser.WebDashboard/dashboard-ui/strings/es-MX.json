@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "Si se habilita, las series que se reparten a trav\u00e9s de m\u00faltiples carpetas dentro de esta biblioteca ser\u00e1n fusionadas en una sola serie.",
-    "OptionAutomaticallyGroupSeries": "Fusionar autom\u00e1ticamente series esparcidas a trav\u00e9s de m\u00faltiples carpetas.",
     "LabelPrevious": "Anterior",
     "LabelFinish": "Terminar",
     "LabelNext": "Siguiente",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Contador",
     "OptionDatePlayed": "Fecha de Reproducci\u00f3n",
     "OptionDateAdded": "Fecha de Adici\u00f3n",
-    "DateAddedValue": "Fecha de adici\u00f3n: {0}",
     "OptionAlbumArtist": "Artista del \u00c1lbum",
     "OptionArtist": "Artista",
     "OptionAlbum": "\u00c1lbum",
@@ -1210,7 +1207,7 @@
     "OptionPlayNextEpisodeAutomatically": "Reproducir el siguiente episodio autom\u00e1ticamente",
     "OptionDownloadImagesInAdvance": "Descargar las im\u00e1genes desde el inicio.",
     "SettingsSaved": "Configuraci\u00f3n guardada.",
-    "OptionDownloadImagesInAdvanceHelp": "Por defecto, la mayor\u00eda de las im\u00e1genes son descargadas solo cuando son solicitadas por alguna aplicaci\u00f3n Emby. Habilitar esta opci\u00f3n descargara todas las im\u00e1genes desde el inicio, conforme se vayan agregando mas medios.",
+    "OptionDownloadImagesInAdvanceHelp": "Por defecto, la mayor\u00eda de las im\u00e1genes son descargadas solo cuando son solicitadas por alguna aplicaci\u00f3n Emby. Habilite esta opci\u00f3n para descargar todas las im\u00e1genes desde por adelantado, conforme se vayan agregando mas medios. Esto podr\u00eda causar escaneos de bibliotecas mas largos.",
     "Users": "Usuarios",
     "Delete": "Eliminar",
     "Password": "Contrase\u00f1a",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Cancelar Sinc.",
     "CancelSyncJobConfirmation": "Cancelando el trabajo de sincronizaci\u00f3n eliminara los medios sincronizados del dispositivo durante el pr\u00f3ximo proceso de sincronizaci\u00f3n. \u00bfEsta seguro de que desea continuar?",
     "LabelQuality": "Calidad:",
-    "MessageBookPluginRequired": "Requiere instalaci\u00f3n del complemento Bookshelf",
+    "BookLibraryHelp": "Los libros de texto y audio libros son soportados.",
     "MessageGamePluginRequired": "Requiere instalaci\u00f3n del complemento de GameBrowser",
     "MessageUnsetContentHelp": "El contenido ser\u00e1 mostrado como carpetas simples. Para mejores resultados utilice el administrador de metadatos para establecer los tipos de contenido para las sub-carpetas.",
     "SyncJobItemStatusQueued": "En cola",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Descargar FFmpeg",
     "FFmpegSuggestedDownload": "Descarga sugerida: {0}",
     "UnzipFFmpegFile": "Descomprimir el archivo descargado a una carpeta de su elecci\u00f3n.",
+    "MarkFFmpegExec": "Si esta corriendo Linux o OSX, necesitara localizar los archivos ffmpeg y ffprobe y marcarlos como ejecutables. Esta es necesario para concederle permisos a Emby para ejecutarlos.",
     "OptionUseSystemInstalledVersion": "Usar una versi\u00f3n instalada en el sistema",
     "OptionUseMyCustomVersion": "Usar una versi\u00f3n personalizada",
     "FFmpegSavePathNotFound": "No fue posible localizar FFmpeg usando la ruta que introdujo. FFprobe tambi\u00e9n es requerido y debe de estar en la misma carpeta. Estos componentes normalmente est\u00e1n empaquetados en la misma descarga. Por favor verifique la ruta e intente de nuevo.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Argumentos de linea de comando para el post-procesador:",
     "LabelPostProcessorArgumentsHelp": "Use {path} como la ruta a el archivo de grabado.",
     "LabelPostProcessor": "Aplicaci\u00f3n de Post Procesado:",
-    "ErrorAddingXmlTvFile": "Hubo un error accediendo al archivo XmlTV. Por favor aseg\u00farese de que el archivo existe e intente de nuevo."
+    "ErrorAddingXmlTvFile": "Hubo un error accediendo al archivo XmlTV. Por favor aseg\u00farese de que el archivo existe e intente de nuevo.",
+    "OptionAutomaticallyGroupSeries": "Fusionar autom\u00e1ticamente series esparcidas a trav\u00e9s de m\u00faltiples carpetas.",
+    "OptionAutomaticallyGroupSeriesHelp": "Si se habilita, las series que se reparten a trav\u00e9s de m\u00faltiples carpetas dentro de esta biblioteca ser\u00e1n fusionadas en una sola serie.",
+    "ErrorReachingEmbyConnect": "Hubo un error al tratar de contactar el servidor de Emby Connect. Por favor aseg\u00farese de que tiene una conexi\u00f3n activa de internet e intente de nuevo."
 }

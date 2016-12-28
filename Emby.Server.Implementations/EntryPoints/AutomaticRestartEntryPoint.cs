@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             if (_appHost.HasPendingRestart)
             {
-                _timer = _timerFactory.Create(TimerCallback, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+                _timer = _timerFactory.Create(TimerCallback, null, TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(15));
             }
         }
 
@@ -64,6 +64,8 @@ namespace Emby.Server.Implementations.EntryPoints
                 if (isIdle)
                 {
                     DisposeTimer();
+
+                    _logger.Info("Automatically restarting the system because it is idle and a restart is required.");
 
                     try
                     {

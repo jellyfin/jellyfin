@@ -221,48 +221,70 @@ namespace Emby.Server.Implementations.Sync
                 using (var connection = CreateConnection())
                 {
                     string commandText;
-                    var paramList = new List<object>();
 
                     if (insert)
                     {
-                        commandText = "insert into SyncJobs (Id, TargetId, Name, Profile, Quality, Bitrate, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        commandText = "insert into SyncJobs (Id, TargetId, Name, Profile, Quality, Bitrate, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Profile, @Quality, @Bitrate, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
                     }
                     else
                     {
-                        commandText = "update SyncJobs set TargetId=?,Name=?,Profile=?,Quality=?,Bitrate=?,Status=?,Progress=?,UserId=?,ItemIds=?,Category=?,ParentId=?,UnwatchedOnly=?,ItemLimit=?,SyncNewContent=?,DateCreated=?,DateLastModified=?,ItemCount=? where Id=?";
-                    }
-
-                    paramList.Add(job.TargetId);
-                    paramList.Add(job.Name);
-                    paramList.Add(job.Profile);
-                    paramList.Add(job.Quality);
-                    paramList.Add(job.Bitrate);
-                    paramList.Add(job.Status.ToString());
-                    paramList.Add(job.Progress);
-                    paramList.Add(job.UserId);
-
-                    paramList.Add(string.Join(",", job.RequestedItemIds.ToArray()));
-                    paramList.Add(job.Category);
-                    paramList.Add(job.ParentId);
-                    paramList.Add(job.UnwatchedOnly);
-                    paramList.Add(job.ItemLimit);
-                    paramList.Add(job.SyncNewContent);
-                    paramList.Add(job.DateCreated.ToDateTimeParamValue());
-                    paramList.Add(job.DateLastModified.ToDateTimeParamValue());
-                    paramList.Add(job.ItemCount);
-
-                    if (insert)
-                    {
-                        paramList.Insert(0, job.Id.ToGuidParamValue());
-                    }
-                    else
-                    {
-                        paramList.Add(job.Id.ToGuidParamValue());
+                        commandText = "update SyncJobs set TargetId=@TargetId,Name=@Name,Profile=@Profile,Quality=@Quality,Bitrate=@Bitrate,Status=@Status,Progress=@Progress,UserId=@UserId,ItemIds=@ItemIds,Category=@Category,ParentId=@ParentId,UnwatchedOnly=@UnwatchedOnly,ItemLimit=@ItemLimit,SyncNewContent=@SyncNewContent,DateCreated=@DateCreated,DateLastModified=@DateLastModified,ItemCount=@ItemCount where Id=@Id";
                     }
 
                     connection.RunInTransaction(conn =>
                     {
-                        conn.Execute(commandText, paramList.ToArray());
+                        using (var statement = PrepareStatementSafe(connection, commandText))
+                        {
+                            statement.TryBind("@TargetId", job.TargetId);
+                            statement.TryBind("@Name", job.Name);
+                            statement.TryBind("@Profile", job.Profile);
+                            statement.TryBind("@Quality", job.Quality);
+                            statement.TryBind("@Bitrate", job.Bitrate);
+                            statement.TryBind("@Status", job.Status.ToString());
+                            statement.TryBind("@Progress", job.Progress);
+                            statement.TryBind("@UserId", job.UserId);
+
+                            statement.TryBind("@ItemIds", string.Join(",", job.RequestedItemIds.ToArray()));
+
+                            if (job.Category.HasValue)
+                            {
+                                statement.TryBind("@Category", job.Category.Value.ToString());
+                            }
+                            else
+                            {
+                                statement.TryBindNull("@Category");
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(job.ParentId))
+                            {
+                                statement.TryBind("@ParentId", job.ParentId);
+                            }
+                            else
+                            {
+                                statement.TryBindNull("@ParentId");
+                            }
+
+                            statement.TryBind("@UnwatchedOnly", job.UnwatchedOnly);
+
+                            if (job.ItemLimit.HasValue)
+                            {
+                                statement.TryBind("@ItemLimit", job.ItemLimit);
+                            }
+                            else
+                            {
+                                statement.TryBindNull("@ItemLimit");
+                            }
+
+                            statement.TryBind("@SyncNewContent", job.SyncNewContent);
+
+                            statement.TryBind("@DateCreated", job.DateCreated.ToDateTimeParamValue());
+                            statement.TryBind("@DateLastModified", job.DateLastModified.ToDateTimeParamValue());
+
+                            statement.TryBind("@ItemCount", job.ItemCount);
+                            statement.TryBind("@Id", job.Id.ToGuidParamValue());
+
+                            statement.MoveNext();
+                        }
                     }, TransactionMode);
                 }
             }
@@ -337,6 +359,11 @@ namespace Emby.Server.Implementations.Sync
                     {
                         whereClauses.Add("UserId=?");
                         paramList.Add(query.UserId);
+                    }
+                    if (!string.IsNullOrWhiteSpace(query.ItemId))
+                    {
+                        whereClauses.Add("ItemIds like ?");
+                        paramList.Add("%" + query.ItemId + "%");
                     }
                     if (query.SyncNewContent.HasValue)
                     {

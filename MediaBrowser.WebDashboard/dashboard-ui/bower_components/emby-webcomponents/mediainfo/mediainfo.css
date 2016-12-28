@@ -2,6 +2,18 @@
     margin: 0 1em 0 0;
 }
 
+.mediaInfoText {
+    background: rgba(31,31,31,.7);
+    padding: .2em .5em;
+    border-radius: .25em;
+    color: #ddd;
+    font-size: 84%;
+    background: rgba(170,170,190, .2);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
 .mediaInfoIconItem {
     width: auto;
     height: auto;

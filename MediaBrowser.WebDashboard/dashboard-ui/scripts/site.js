@@ -1234,7 +1234,6 @@ var AppInfo = {};
             define("lazyLoader", [embyWebComponentsBowerPath + "/lazyloader/lazyloader-scroll"], returnFirstDependency);
         }
         define("imageLoader", [embyWebComponentsBowerPath + "/images/imagehelper"], returnFirstDependency);
-        define("syncJobList", ["components/syncjoblist/syncjoblist"], returnFirstDependency);
         define("appfooter", ["components/appfooter/appfooter"], returnFirstDependency);
         define("dockedtabs", ["components/dockedtabs/dockedtabs"], returnFirstDependency);
         define("directorybrowser", ["components/directorybrowser/directorybrowser"], returnFirstDependency);
@@ -1251,6 +1250,8 @@ var AppInfo = {};
         define("multiSelect", [embyWebComponentsBowerPath + "/multiselect/multiselect"], returnFirstDependency);
         define("alphaPicker", [embyWebComponentsBowerPath + "/alphapicker/alphapicker"], returnFirstDependency);
         define("paper-icon-button-light", [embyWebComponentsBowerPath + "/emby-button/paper-icon-button-light"]);
+
+        define("connectHelper", [embyWebComponentsBowerPath + "/emby-connect/connecthelper"], returnFirstDependency);
 
         define("emby-input", [embyWebComponentsBowerPath + "/emby-input/emby-input"], returnFirstDependency);
         define("emby-select", [embyWebComponentsBowerPath + "/emby-select/emby-select"], returnFirstDependency);
@@ -1290,6 +1291,8 @@ var AppInfo = {};
         define("guide-settings-dialog", [embyWebComponentsBowerPath + "/guide/guide-settings"], returnFirstDependency);
         define("syncDialog", [embyWebComponentsBowerPath + "/sync/sync"], returnFirstDependency);
         define("syncToggle", [embyWebComponentsBowerPath + "/sync/synctoggle"], returnFirstDependency);
+        define("syncJobEditor", [embyWebComponentsBowerPath + "/sync/syncjobeditor"], returnFirstDependency);
+        define("syncJobList", [embyWebComponentsBowerPath + "/sync/syncjoblist"], returnFirstDependency);
         define("voiceDialog", [embyWebComponentsBowerPath + "/voice/voicedialog"], returnFirstDependency);
         define("voiceReceiver", [embyWebComponentsBowerPath + "/voice/voicereceiver"], returnFirstDependency);
         define("voiceProcessor", [embyWebComponentsBowerPath + "/voice/voiceprocessor"], returnFirstDependency);
@@ -1318,8 +1321,10 @@ var AppInfo = {};
         // hack for an android test before browserInfo is loaded
         if (Dashboard.isRunningInCordova() && window.MainActivity) {
             paths.appStorage = "cordova/android/appstorage";
+            paths.filesystem = 'cordova/filesystem';
         } else {
             paths.appStorage = getAppStorage(apiClientBowerPath);
+            paths.filesystem = embyWebComponentsBowerPath + '/filesystem';
         }
 
         var sha1Path = bowerPath + "/cryptojslib/components/sha1-min";
@@ -1388,15 +1393,14 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova()) {
             define("iapManager", ["cordova/iap"], returnFirstDependency);
-            define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
             define("fileupload", ["cordova/fileupload"], returnFirstDependency);
         } else {
             define("iapManager", ["components/iap"], returnFirstDependency);
-            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
             define("fileupload", [apiClientBowerPath + "/fileupload"], returnFirstDependency);
         }
         define("connectionmanager", [apiClientBowerPath + "/connectionmanager"]);
 
+        define("cameraRoll", [apiClientBowerPath + "/cameraroll"], returnFirstDependency);
         define("contentuploader", [apiClientBowerPath + "/sync/contentuploader"]);
         define("serversync", [apiClientBowerPath + "/sync/serversync"]);
         define("multiserversync", [apiClientBowerPath + "/sync/multiserversync"]);
@@ -1636,7 +1640,7 @@ var AppInfo = {};
     function initRequireWithBrowser(browser) {
 
         var bowerPath = getBowerPath();
-
+        var apiClientBowerPath = bowerPath + "/emby-apiclient";
         var embyWebComponentsBowerPath = bowerPath + '/emby-webcomponents';
 
         if (Dashboard.isRunningInCordova()) {
@@ -1660,12 +1664,12 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && browser.safari) {
-            define("imageFetcher", ['cordova/ios/imagestore'], returnFirstDependency);
+            define("imageFetcher", ['cordova/imagestore'], returnFirstDependency);
         } else {
             define("imageFetcher", [embyWebComponentsBowerPath + "/images/basicimagefetcher"], returnFirstDependency);
         }
 
-        var preferNativeAlerts = browser.tv || browser.xboxOne || browser.ps4;
+        var preferNativeAlerts = browser.tv;
         // use native alerts if preferred and supported (not supported in opera tv)
         if (preferNativeAlerts && window.alert) {
             define("alert", [embyWebComponentsBowerPath + "/alert/nativealert"], returnFirstDependency);
@@ -1681,7 +1685,8 @@ var AppInfo = {};
             define("confirm", [embyWebComponentsBowerPath + "/confirm/confirm"], returnFirstDependency);
         }
 
-        if (preferNativeAlerts && window.prompt) {
+        var preferNativePrompt = preferNativeAlerts || browser.xboxOne || browser.ps4;
+        if (preferNativePrompt && window.confirm) {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/nativeprompt"], returnFirstDependency);
         } else {
             define("prompt", [embyWebComponentsBowerPath + "/prompt/prompt"], returnFirstDependency);
@@ -1698,15 +1703,17 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && browser.android) {
             define("fileDownloader", ['cordova/android/filedownloader'], returnFirstDependency);
+            define("localassetmanager", ["cordova/localassetmanager"], returnFirstDependency);
         } else {
             define("fileDownloader", [embyWebComponentsBowerPath + '/filedownloader'], returnFirstDependency);
+            define("localassetmanager", [apiClientBowerPath + "/localassetmanager"], returnFirstDependency);
         }
     }
 
     function init() {
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
-            define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
+            define("nativedirectorychooser", ["cordova/nativedirectorychooser"]);
         }
 
         if (Dashboard.isRunningInCordova() && browserInfo.android) {
@@ -1717,7 +1724,7 @@ var AppInfo = {};
             define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else if (Dashboard.isRunningInCordova() && browserInfo.safari) {
-            define("audiorenderer", ["cordova/ios/audioplayer"]);
+            define("audiorenderer", ["cordova/audioplayer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {
@@ -2490,14 +2497,6 @@ var AppInfo = {};
         });
 
         defineRoute({
-            path: '/syncjob.html',
-            dependencies: [],
-            autoFocus: false,
-            transition: 'fade',
-            controller: 'scripts/syncjob'
-        });
-
-        defineRoute({
             path: '/syncsettings.html',
             dependencies: [],
             autoFocus: false
@@ -2700,12 +2699,12 @@ var AppInfo = {};
 
                 } else if (browserInfo.safari) {
 
-                    postInitDependencies.push('cordova/ios/volume');
-                    postInitDependencies.push('cordova/ios/chromecast');
-                    postInitDependencies.push('cordova/ios/orientation');
-                    postInitDependencies.push('cordova/ios/remotecontrols');
+                    postInitDependencies.push('cordova/volume');
+                    postInitDependencies.push('cordova/chromecast');
+                    postInitDependencies.push('cordova/orientation');
+                    postInitDependencies.push('cordova/remotecontrols');
 
-                    //postInitDependencies.push('cordova/ios/backgroundfetch');
+                    //postInitDependencies.push('cordova/backgroundfetch');
                 }
 
             } else if (browserInfo.chrome) {

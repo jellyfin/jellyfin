@@ -1,4 +1,4 @@
-define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize, dom) {
+define(['connectionManager', 'globalize', 'dom', 'itemHelper', 'paper-icon-button-light', 'material-icons', 'emby-button', 'css!./userdatabuttons'], function (connectionManager, globalize, dom, itemHelper) {
     'use strict';
 
     var userDataMethods = {
@@ -85,6 +85,10 @@ define(['connectionManager', 'globalize', 'dom', 'paper-icon-button-light', 'mat
         var userData = item.UserData || {};
 
         var itemId = item.Id;
+
+        if (itemHelper.isLocalItem(item)) {
+            return html;
+        }
 
         var btnCssClass = "btnUserData";
 

@@ -55,111 +55,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function updateUserInfo(user, newConnectUsername, actionCallback, noActionCallback) {
-        var currentConnectUsername = user.ConnectUserName || '';
-        var enteredConnectUsername = newConnectUsername;
-
-        var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
-
-        if (currentConnectUsername && !enteredConnectUsername) {
-
-            // Remove connect info
-            // Add/Update connect info
-            ApiClient.ajax({
-
-                type: "DELETE",
-                url: linkUrl
-
-            }).then(function () {
-
-                Dashboard.alert({
-
-                    message: Globalize.translate('MessageEmbyAccontRemoved'),
-                    title: Globalize.translate('HeaderEmbyAccountRemoved'),
-
-                    callback: actionCallback
-
-                });
-            }, function () {
-
-                Dashboard.alert({
-
-                    message: Globalize.translate('ErrorRemovingEmbyConnectAccount')
-
-                });
-            });
-
-        }
-        else if (currentConnectUsername != enteredConnectUsername) {
-
-            // Add/Update connect info
-            ApiClient.ajax({
-                type: "POST",
-                url: linkUrl,
-                data: {
-                    ConnectUsername: enteredConnectUsername
-                },
-                dataType: 'json'
-
-            }).then(function (result) {
-
-                var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
-
-                Dashboard.alert({
-                    message: Globalize.translate(msgKey),
-                    title: Globalize.translate('HeaderEmbyAccountAdded'),
-
-                    callback: actionCallback
-
-                });
-
-            }, function (response) {
-
-                if (response.status == 500) {
-
-                    Dashboard.alert({
-
-                        message: Globalize.translate('ErrorAddingEmbyConnectAccount3')
-
-                    });
-
-                } else {
-                    showEmbyConnectErrorMessage('.');
-                }
-            });
-
-        } else {
-            if (noActionCallback) {
-                noActionCallback();
-            }
-        }
-    }
-
-    function showEmbyConnectErrorMessage(username) {
-
-        var html;
-        var text;
-
-        if (username) {
-
-            html = Globalize.translate('ErrorAddingEmbyConnectAccount1', '<a href="https://emby.media/connect" target="_blank">https://emby.media/connect</a>');
-            html += '<br/><br/>' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
-
-            text = Globalize.translate('ErrorAddingEmbyConnectAccount1', 'https://emby.media/connect');
-            text += '\n\n' + Globalize.translate('ErrorAddingEmbyConnectAccount2', 'apps@emby.media');
-
-        } else {
-            html = text = Globalize.translate('DefaultErrorMessage');
-        }
-
-        require(['alert'], function (alert) {
-            alert({
-                text: text,
-                html: html
-            });
-        });
-    }
-
     function onSaveComplete(page, user) {
 
         Dashboard.hideLoadingMsg();
@@ -173,9 +68,11 @@
             });
         } else {
 
-            updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
+            require(['connectHelper'], function (connectHelper) {
+                connectHelper.updateUserLink(ApiClient, user, $('#txtConnectUserName', page).val()).then(function () {
 
-                loadData(page);
+                    loadData(page);
+                });
             });
         }
     }

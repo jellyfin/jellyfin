@@ -889,25 +889,26 @@
 
             return new Promise(function (resolve, reject) {
 
-                require(['localassetmanager'], function (LocalAssetManager) {
+                require([], function () {
+                    //require(['localassetmanager'], function (LocalAssetManager) {
 
                     var serverInfo = ApiClient.serverInfo();
 
-                    if (serverInfo.Id) {
-                        LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).then(function (localMediaSource) {
-                            // Use the local media source if a specific one wasn't requested, or the smae one was requested
-                            if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
+                    //if (serverInfo.Id) {
+                    //    LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId).then(function (localMediaSource) {
+                    //        // Use the local media source if a specific one wasn't requested, or the smae one was requested
+                    //        if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
 
-                                var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
+                    //            var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
 
-                                resolve(playbackInfo);
-                                return;
-                            }
+                    //            resolve(playbackInfo);
+                    //            return;
+                    //        }
 
-                            getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, resolve, reject);
-                        });
-                        return;
-                    }
+                    //        getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, resolve, reject);
+                    //    });
+                    //    return;
+                    //}
 
                     getPlaybackInfoWithoutLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId, resolve, reject);
                 });
@@ -1003,11 +1004,14 @@
 
                     if (mediaSource.Protocol == 'File') {
 
-                        require(['localassetmanager'], function (LocalAssetManager) {
+                        require(['filesystem'], function (fileSystem) {
 
-                            LocalAssetManager.fileExists(mediaSource.Path).then(function (exists) {
-                                console.log('LocalAssetManager.fileExists: path: ' + mediaSource.Path + ' result: ' + exists);
-                                resolve(exists);
+                            fileSystem.fileExists(mediaSource.Path).then(function () {
+                                console.log('fileSystem.fileExists: path: ' + mediaSource.Path + ' result: ' + true);
+                                resolve(true);
+                            }, function () {
+                                console.log('fileSystem.fileExists: path: ' + mediaSource.Path + ' result: ' + false);
+                                resolve(false);
                             });
                         });
                     }

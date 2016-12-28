@@ -37,7 +37,9 @@ namespace OpenSubtitlesHandler
         public static IHttpClient HttpClient { get; set; }
         public static ITextEncoding EncodingHelper { get; set; }
 
-        private const string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
+        //private static string XML_RPC_SERVER = "https://api.opensubtitles.org/xml-rpc";
+        private static string XML_RPC_SERVER = "https://92.240.234.122/xml-rpc";
+        private static string HostHeader = "api.opensubtitles.org:443";
 
         /// <summary>
         /// Compute movie hash
@@ -142,32 +144,6 @@ namespace OpenSubtitlesHandler
         public static Stream SendRequest(byte[] request, string userAgent)
         {
             return SendRequestAsync(request, userAgent, CancellationToken.None).Result;
-
-            //HttpWebRequest req = (HttpWebRequest)WebRequest.Create(XML_RPC_SERVER);
-            //req.ContentType = "text/xml";
-            //req.Host = "api.opensubtitles.org:80";
-            //req.Method = "POST";
-            //req.UserAgent = "xmlrpc-epi-php/0.2 (PHP)";
-            //req.ContentLength = request.Length;
-            //ServicePointManager.Expect100Continue = false;
-            //try
-            //{
-            //    using (Stream stm = req.GetRequestStream())
-            //    {
-            //        stm.Write(request, 0, request.Length);
-            //    }
-
-            //    WebResponse response = req.GetResponse();
-            //    return response.GetResponseStream();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Stream errorStream = new MemoryStream();
-            //    byte[] dd = Encoding.ASCII.GetBytes("ERROR: " + ex.Message);
-            //    errorStream.Write(dd, 0, dd.Length);
-            //    errorStream.Position = 0;
-            //    return errorStream;
-            //}
         }
 
         public static async Task<Stream> SendRequestAsync(byte[] request, string userAgent, CancellationToken cancellationToken)
@@ -177,7 +153,7 @@ namespace OpenSubtitlesHandler
                 RequestContentBytes = request,
                 RequestContentType = "text/xml",
                 UserAgent = userAgent,
-                Host = "api.opensubtitles.org:443",
+                Host = HostHeader,
                 Url = XML_RPC_SERVER,
 
                 // Response parsing will fail with this enabled
@@ -195,32 +171,6 @@ namespace OpenSubtitlesHandler
             var result = await HttpClient.Post(options).ConfigureAwait(false);
 
             return result.Content;
-
-            //HttpWebRequest req = (HttpWebRequest)WebRequest.Create(XML_RPC_SERVER);
-            //req.ContentType = "text/xml";
-            //req.Host = "api.opensubtitles.org:80";
-            //req.Method = "POST";
-            //req.UserAgent = "xmlrpc-epi-php/0.2 (PHP)";
-            //req.ContentLength = request.Length;
-            //ServicePointManager.Expect100Continue = false;
-            //try
-            //{
-            //    using (Stream stm = req.GetRequestStream())
-            //    {
-            //        stm.Write(request, 0, request.Length);
-            //    }
-
-            //    WebResponse response = req.GetResponse();
-            //    return response.GetResponseStream();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Stream errorStream = new MemoryStream();
-            //    byte[] dd = Encoding.ASCII.GetBytes("ERROR: " + ex.Message);
-            //    errorStream.Write(dd, 0, dd.Length);
-            //    errorStream.Position = 0;
-            //    return errorStream;
-            //}
         }
 
     }

@@ -1,8 +1,12 @@
 ﻿define([], function () {
     'use strict';
 
-    function getLocalMediaSource(serverId, itemId) {
-        return Promise.resolve(null);
+    function getLocalItem(serverId, itemId) {
+        return Promise.resolve();
+    }
+
+    function getLocalItemById(id) {
+        return Promise.resolve();
     }
 
     function saveOfflineUser(user) {
@@ -11,10 +15,6 @@
 
     function deleteOfflineUser(id) {
         return Promise.resolve();
-    }
-
-    function getCameraPhotos() {
-        return Promise.resolve([]);
     }
 
     function recordUserAction(action) {
@@ -30,7 +30,6 @@
     }
 
     function deleteUserActions(actions) {
-        //TODO: 
         return Promise.resolve();
     }
 
@@ -38,11 +37,19 @@
         return Promise.resolve([]);
     }
 
-    function removeLocalItem(localItem) {
-        return Promise.resolve();
+    function getServerItems(serverId) {
+        return Promise.resolve([]);
     }
 
-    function getLocalItem(itemId, serverId) {
+    function getViews(serverId, userId) {
+        return Promise.resolve([]);
+    }
+
+    function getViewItems(serverId, userId, parentId) {
+        return Promise.resolve([]);
+    }
+
+    function removeLocalItem(localItem) {
         return Promise.resolve();
     }
 
@@ -51,49 +58,54 @@
     }
 
     function createLocalItem(libraryItem, serverInfo, jobItem) {
-
-        return Promise.resolve({});
-    }
-
-    function downloadFile(url, localPath) {
-
         return Promise.resolve();
     }
 
-    function downloadSubtitles(url, localItem, subtitleStreamh) {
-
-        return Promise.resolve('');
+    function getSubtitleSaveFileName(localItem, mediaPath, language, isForced, format) {
+        return null;
     }
 
-    function hasImage(serverId, itemId, imageTag) {
-        return Promise.resolve(false);
+    function getItemFileSize(path) {
+        return Promise.resolve();
     }
 
-    function downloadImage(url, serverId, itemId, imageTag) {
-        return Promise.resolve(false);
+    function downloadFile(url, localItem) {
+        return Promise.resolve();
     }
 
-    function fileExists(path) {
-        return Promise.resolve(false);
+    function downloadSubtitles(url, fileName) {
+        return Promise.resolve();
+    }
+
+    function getImageUrl(serverId, itemId, imageType, index) {
+        return null;
+    }
+
+    function hasImage(serverId, itemId, imageType, index) {
+        return Promise.resolve();
+    }
+
+    function downloadImage(localItem, url, serverId, itemId, imageType, index) {
+        return Promise.resolve();
+    }
+
+    function isDownloadFileInQueue(path) {
+        return Promise.resolve();
     }
 
     function translateFilePath(path) {
         return Promise.resolve(path);
     }
 
-    function getLocalFilePath(path) {
-        return null;
-    }
-
-    function getLocalItemById(id) {
-        return null;
+    function resyncTransfers() {
+        return Promise.resolve();
     }
 
     return {
+
         getLocalItem: getLocalItem,
         saveOfflineUser: saveOfflineUser,
         deleteOfflineUser: deleteOfflineUser,
-        getCameraPhotos: getCameraPhotos,
         recordUserAction: recordUserAction,
         getUserActions: getUserActions,
         deleteUserAction: deleteUserAction,
@@ -106,9 +118,15 @@
         downloadSubtitles: downloadSubtitles,
         hasImage: hasImage,
         downloadImage: downloadImage,
-        fileExists: fileExists,
+        getImageUrl: getImageUrl,
         translateFilePath: translateFilePath,
-        getLocalFilePath: getLocalFilePath,
-        getLocalItemById: getLocalItemById
+        getSubtitleSaveFileName: getSubtitleSaveFileName,
+        getLocalItemById: getLocalItemById,
+        getServerItems: getServerItems,
+        getItemFileSize: getItemFileSize,
+        isDownloadFileInQueue: isDownloadFileInQueue,
+        getViews: getViews,
+        getViewItems: getViewItems,
+        resyncTransfers: resyncTransfers
     };
 });

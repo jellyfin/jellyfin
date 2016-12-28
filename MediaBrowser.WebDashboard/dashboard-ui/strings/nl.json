@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Vorige",
     "LabelFinish": "Voltooien",
     "LabelNext": "Volgende",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Afspeel telling",
     "OptionDatePlayed": "Datum afgespeeld",
     "OptionDateAdded": "Datum toegevoegd",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumartiest",
     "OptionArtist": "Artiest",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Annuleer synchronisatie",
     "CancelSyncJobConfirmation": "Als u de synchroniseertaak annuleert wordt de gesynchroniseerde media bij de volgende synchroniseertaak van het apparaat verwijderd. Weet u zeker dat u door wilt gaan?",
     "LabelQuality": "Kwaliteit",
-    "MessageBookPluginRequired": "Vereist installatie van de Bookshelf plugin",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Vereist installatie van de GameBrowser plugin",
     "MessageUnsetContentHelp": "Inhoud zal als gewone folders worden getoond. Gebruik voor het beste resultaat de Metadata Manager om de inhoud types voor subfolders in te stellen.",
     "SyncJobItemStatusQueued": "In wachtrij",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Voorgestelde download: {0}",
     "UnzipFFmpegFile": "Pak het gedownloade bestand uit naar een map van uw keuze.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Gebruik door systeem ge\u00efnstalleerde versie",
     "OptionUseMyCustomVersion": "Gebruik een aangepaste versie",
     "FFmpegSavePathNotFound": "We zijn niet in staat om FFmpeg te lokaliseren met behulp van het pad dat u hebt ingevoerd. FFprobe is ook nodig en moet \u200b\u200bin dezelfde map staan. Deze componenten worden gewoonlijk gebundeld in dezelfde download. Controleer het pad en probeer het opnieuw.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Nabewerkings command line argumenten:",
     "LabelPostProcessorArgumentsHelp": "Gebruik {path} als het pad naar het opnamebestand.",
     "LabelPostProcessor": "Nabewerkings toepassing:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

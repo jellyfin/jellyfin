@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
-    "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
     "LabelPrevious": "Vorheriges",
     "LabelFinish": "Fertig",
     "LabelNext": "N\u00e4chstes",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Z\u00e4hler",
     "OptionDatePlayed": "Abgespielt am",
     "OptionDateAdded": "Hinzugef\u00fcgt am",
-    "DateAddedValue": "Hinzugef\u00fcgt am: {0}",
     "OptionAlbumArtist": "Album-Interpret",
     "OptionArtist": "Interpret",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Synchronisierung abbrechen",
     "CancelSyncJobConfirmation": "Der Abbruch der Synchronisation wird bereits synchronisierte Medien bei der n\u00e4chsten Synchronisation vom Ger\u00e4t l\u00f6schen. M\u00f6chten Sie wirklich fortfahren?",
     "LabelQuality": "Qualit\u00e4t:",
-    "MessageBookPluginRequired": "Setzt die Installation des Bookshelf-Plugins voraus.",
+    "BookLibraryHelp": "H\u00f6rb\u00fccher und E-Books werden unterst\u00fctzt",
     "MessageGamePluginRequired": "Setzt die Installation des GameBrowser-Plugins voraus.",
     "MessageUnsetContentHelp": "Inhalte werden als Verzeichnisse dargestellt. F\u00fcr eine besser Anzeige nutzen Sie nach M\u00f6glichkeit den Meta-Data Manager und w\u00e4hlen Sie einen Medien-Typen f\u00fcr Unterverzeichnisse.",
     "SyncJobItemStatusQueued": "in Warteschlange",
@@ -1829,7 +1826,7 @@
     "ErrorAddingListingsToSchedulesDirect": "Ein Fehler trat beim hinzuf\u00fcgen Ihrer Zusammenstellung zu Ihrem Schedules Direct Konto auf. Schedules Direct erlaubt nur eine begrenzte Anzahl von Zusammenstellungen je Account.  Sie sollten sich auf der Website in Ihrem Schedules-Direct Konto einloggen und ein paar Zusammenstellungen von Ihrem Konto l\u00f6schen bevor Sie fortfahren.",
     "PleaseAddAtLeastOneFolder": "Bitte f\u00fcgen Sie mindestens ein Verzeichniss zur Bibliothek durch Klicken der \"Hinzuf\u00fcgen\"-Schaltfl\u00e4che hinzu.",
     "ErrorAddingMediaPathToVirtualFolder": "Ein Fehler trat beim Hinzuf\u00fcgen eines Medienverzeichnisses auf. Bitte stellen Sie sicher, dass der Pfad g\u00fcltig ist und der Emby Server Prozess die notwendigen Zugriffsrechte besitzt.",
-    "ErrorRemovingEmbyConnectAccount": "Ein Fehler trat beim entfernen des Empy Connect Kontos auf. Bitte stellen Sie sicher, dass Sie \u00fcber eine aktive Internetverbindung verf\u00fcgen und versuchen Sie es erneut.",
+    "ErrorRemovingEmbyConnectAccount": "Fehler beim Entfernen des Emby Connect Kontos. Bitte stelle sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
     "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Haben Sie bereits ein Emby Konto? Melden Sie sich hier an: {0}.",
     "ErrorAddingEmbyConnectAccount2": "Bitte stellen Sie sicher, dass Ihr Emby Konto nach den Anweisungen aus der Email, die Sie nach Erstellung des Kontos erhielten, aktiviert wurde. Wenn Sie keine Email erhalten haben, so senden Sie und bitte eine email an {0}. Benutzen Sie dazu bitte die Email-Adresse, die Sie bereits zur Erstellung Ihres Emby Kontos verwendet haben.",
     "ErrorAddingEmbyConnectAccount3": "Der Emby Account ist schon mit einem existierenden lokalen Nutzer verkn\u00fcpft. Ein Emby Account kann nur mit einem lokelen Nutzer gleichzeitig verbunden sein.",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Empfohlener download: {0}",
     "UnzipFFmpegFile": "Entpacke den Download in ein Verzeichnis Deiner Wahl.",
+    "MarkFFmpegExec": "Wenn du Linux oder OSX benutzt, musst du zu ffmpeg und ffprobe navigieren und sie als ausf\u00fchrbar machen. Dieser Schritt wird ben\u00f6tigt, um Emby die Rechte zur Ausf\u00fchrung zu geben.",
     "OptionUseSystemInstalledVersion": "Systeminstallierte Version verwenden",
     "OptionUseMyCustomVersion": "Eigene Version verwenden",
     "FFmpegSavePathNotFound": "Wir konnten kein FFmpeg in dem von Dir erfassten Verzeichnis finden. FFprobe wird ebenso ben\u00f6tigt und muss sich im gleichen Verzeichnis befinden. Diese Komponenten sind normalerweise in einem Paket vorhanden um kommen zusammen mit einem Download. Bitte pr\u00fcfe das Verzeichnis und probiere es erneut.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Nachbearbeitung Kommandozeilen-Argumente:",
     "LabelPostProcessorArgumentsHelp": "Verwende {path} als das Verzeichnis f\u00fcr Aufnahmen.",
     "LabelPostProcessor": "Nachbearbeitungs Anwendung:",
-    "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal."
+    "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal.",
+    "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
+    "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
+    "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut."
 }

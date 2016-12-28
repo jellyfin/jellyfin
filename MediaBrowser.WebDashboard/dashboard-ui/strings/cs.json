@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "P\u0159edchoz\u00ed",
     "LabelFinish": "Dokon\u010dit",
     "LabelNext": "Dal\u0161\u00ed",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Po\u010det p\u0159ehr\u00e1n\u00ed",
     "OptionDatePlayed": "Datum p\u0159ehr\u00e1n\u00ed",
     "OptionDateAdded": "Datum p\u0159id\u00e1n\u00ed",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Um\u011blec Alba",
     "OptionArtist": "Um\u011blec",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Zru\u0161it synchronizaci",
     "CancelSyncJobConfirmation": "Zru\u0161en\u00edm synchroniza\u010dn\u00edch \u00faloh budou odstran\u011bna synchronizovan\u00e1 m\u00e9dia ze za\u0159\u00edzen\u00ed b\u011bhem p\u0159\u00ed\u0161t\u00edho synchroniza\u010dn\u00edho procesu. Jste si jisti, \u017ee chcete pokra\u010dovat?",
     "LabelQuality": "Kvalita:",
-    "MessageBookPluginRequired": "Vy\u017eaduje instalaci Bookshelf z\u00e1suvn\u00e9ho modulu",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Vy\u017eaduje instalaci z\u00e1suvn\u00e9ho modulu GameBrowser",
     "MessageUnsetContentHelp": "Obsah je zobrazen pomoc\u00ed prost\u00fdch slo\u017eek. Pro dosa\u017een\u00ed nejlep\u0161\u00edch v\u00fdsledk\u016f pomoc\u00ed spr\u00e1vce metadat nastavte typy obsahu pod-slo\u017eek.",
     "SyncJobItemStatusQueued": "P\u0159id\u00e1no do fronty",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "St\u00e1hni FFmpeg",
     "FFmpegSuggestedDownload": "Doporu\u010den\u00e9 sta\u017een\u00ed: {0}",
     "UnzipFFmpegFile": "Rozbalte sta\u017een\u00fd soubor do slo\u017eky dle vlastn\u00edho v\u00fdb\u011bru.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Pou\u017eit\u00ed syst\u00e9movou verzi",
     "OptionUseMyCustomVersion": "Pou\u017e\u00edt vlastn\u00ed verzi",
     "FFmpegSavePathNotFound": "Nepoda\u0159ilo se n\u00e1m naj\u00edt FFmpeg pomoc\u00ed cesty, kterou jste zadali. FFprobe je tak\u00e9 zapot\u0159eb\u00ed a mus\u00ed existovat ve stejn\u00e9 slo\u017ece. Tyto aplikace jsou obvykle instalov\u00e1ny spole\u010dn\u011b ve stejn\u00e9 slo\u017ece. Zkontrolujte cestu a zkuste to znovu.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

@@ -1367,7 +1367,7 @@
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderEpisodes');
         }
         else if (item.Type == "Episode") {
-            page.querySelector('#childrenTitle').innerHTML = item.SeasonName;
+            page.querySelector('#childrenTitle').innerHTML = globalize.translate('MoreFromValue', item.SeasonName);
         }
         else if (item.Type == "Series") {
             page.querySelector('#childrenTitle').innerHTML = globalize.translate('HeaderSeasons');

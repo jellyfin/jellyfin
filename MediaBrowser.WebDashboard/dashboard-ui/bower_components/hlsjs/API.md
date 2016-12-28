@@ -402,16 +402,6 @@ Enable WebWorker (if available on browser) for TS demuxing/MP4 remuxing, to impr
 
 Enable to use JavaScript version AES decryption for fallback of WebCrypto API.
 
-
-#### `enableLazyURLResolve`
-
-(default: `false`)
-
-Enable lazy URL resolving in fragment/key object.
-Instead of resolving relative fragment/key URL on playlist parsing, URL are resolved on `FRAG_LOADING` / `KEY_LOADING`
-this improves manifest parsing performance.
-the drawback is that `frag.url` is not set in frag object, instead it is replaced by `frag.baseurl and `frag.relurl`
-
 #### `startLevel`
 
 (default: `undefined`)
@@ -711,7 +701,7 @@ If `abrBandWidthUpFactor * bandwidth average < level.bitrate` then ABR can switc
 (default: `0`)
 
 Return the capping/min bandwidth value that could be used by automatic level selection algorithm.
-Useful when browser or tab of the browser is not in the focus and bandwidth drops 
+Useful when browser or tab of the browser is not in the focus and bandwidth drops
 
 
 ## Video Binding/Unbinding API

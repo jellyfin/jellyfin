@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Slut",
     "LabelNext": "N\u00e6ste",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Gange afspillet",
     "OptionDatePlayed": "Dato for afspilning",
     "OptionDateAdded": "Dato for tilf\u00f8jelse",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Album-artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Afbryd synkronisering",
     "CancelSyncJobConfirmation": "Afbrydelse af synkroniseringen vil fjerne medier fra enheden under n\u00e6ste synkroniseringsproces. Er du sikker p\u00e5 du \u00f8nsker at forts\u00e6tte?",
     "LabelQuality": "Kvalitet:",
-    "MessageBookPluginRequired": "Kr\u00e6ver installation af Bookshelf tilf\u00f8jelsen",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Kr\u00e6ver installation af GameBrowser tilf\u00f8jelsen",
     "MessageUnsetContentHelp": "Indhold vil blive vist som almindelige mapper. For det bedste resultat benyt metadata manageren til at v\u00e6lge indholdstypen i undermapper.",
     "SyncJobItemStatusQueued": "Sat i k\u00f8",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

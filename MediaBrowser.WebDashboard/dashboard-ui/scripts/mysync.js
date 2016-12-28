@@ -1,32 +1,6 @@
 ﻿define(['apphost', 'globalize', 'syncJobList', 'events', 'localsync', 'emby-button', 'paper-icon-button-light'], function (appHost, globalize, syncJobList, events, localSync) {
     'use strict';
 
-    function initSupporterInfo(view, params) {
-
-        view.querySelector('.btnSyncSupporter').addEventListener('click', function () {
-
-            requirejs(["registrationServices"], function (registrationServices) {
-                registrationServices.validateFeature('sync');
-            });
-        });
-
-        view.querySelector('.supporterPromotion .mainText').innerHTML = globalize.translate('HeaderSyncRequiresSupporterMembership');
-
-        var apiClient = ApiClient;
-        apiClient.getPluginSecurityInfo().then(function (regInfo) {
-
-            if (regInfo.IsMBSupporter) {
-                view.querySelector('.supporterPromotionContainer').classList.add('hide');
-            } else {
-                view.querySelector('.supporterPromotionContainer').classList.remove('hide');
-            }
-
-        }, function () {
-
-            view.querySelector('.supporterPromotionContainer').classList.remove('hide');
-        });
-    }
-
     return function (view, params) {
 
         var interval;
@@ -71,17 +45,12 @@
             view.querySelector('.localSyncStatus').classList.add('hide');
         }
 
-        initSupporterInfo(view, params);
         var mySyncJobList = new syncJobList({
             isLocalSync: params.mode === 'offline',
             serverId: ApiClient.serverId(),
             userId: params.mode === 'offline' ? null : ApiClient.getCurrentUserId(),
-            element: view.querySelector('.syncActivity')
-        });
-
-        events.on(mySyncJobList, 'jobedit', function (e, jobId, serverId) {
-
-            Dashboard.navigate('mysyncjob.html?id=' + jobId);
+            element: view.querySelector('.syncActivity'),
+            mode: params.mode
         });
 
         view.addEventListener('viewbeforeshow', function () {

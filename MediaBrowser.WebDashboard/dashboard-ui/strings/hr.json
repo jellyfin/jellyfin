@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Prethodni",
     "LabelFinish": "Kraj",
     "LabelNext": "Sljede\u0107i",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Broju izvo\u0111enja",
     "OptionDatePlayed": "Datumu izvo\u0111enja",
     "OptionDateAdded": "Datumu dodavanja",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Albumu izvo\u0111a\u010da",
     "OptionArtist": "Izvo\u0111a\u010du",
     "OptionAlbum": "Albumu",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Odustani od sink.",
     "CancelSyncJobConfirmation": "Poni\u0161tavanje sinkronizacije ukloniti \u0107e sinkronizirane medije iz ure\u0111aja tijekom sljede\u0107eg procesa sinkronizacije. Jeste li sigurni da \u017eelite nastaviti?",
     "LabelQuality": "Kvaliteta:",
-    "MessageBookPluginRequired": "Zahtijeva instalaciju Bookshelf dodatka",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Zahtijeva instalaciju GameBrowser dodatka",
     "MessageUnsetContentHelp": "Sadr\u017eaj \u0107e biti prikazan kao obi\u010dne mape. Za najbolje rezultate upotrijebite upravitelj meta-podataka za postavljanje vrste sadr\u017eaja pod-mapa.",
     "SyncJobItemStatusQueued": "Na \u010dekanju",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Preuzimanje FFmpeg",
     "FFmpegSuggestedDownload": "Preporu\u010deno preuzimanje: {0}",
     "UnzipFFmpegFile": "Raspakirajte preuzetu datoteku u mapu po va\u0161em izboru.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Koristite sistemsku instaliranu verziju",
     "OptionUseMyCustomVersion": "Koristite prilago\u0111enu verziju",
     "FFmpegSavePathNotFound": "Nismo mogli locirati FFmpeg kori\u0161tenjem putanje koju ste unijeli. FFprobe je tako\u0111er potreban i mora postojati u istoj mapi. Te komponente su obi\u010dno u paketu zajedno u istom preuzimanju. Provjerite putanju i poku\u0161ajte ponovno.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

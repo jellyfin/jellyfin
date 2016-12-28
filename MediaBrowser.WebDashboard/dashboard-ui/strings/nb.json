@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "Hvis aktivert, vil serien som er spredt over flere mapper innenfor dette biblioteket sp\u00f8r automatisk sl\u00e5tt sammen til en enkelt serie.",
-    "OptionAutomaticallyGroupSeries": "Fusjoner automatisk serier som er spredt ut over flere mapper",
     "LabelPrevious": "Forrige",
     "LabelFinish": "Ferdig",
     "LabelNext": "Neste",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Antall avspillinger",
     "OptionDatePlayed": "Dato spilt",
     "OptionDateAdded": "Dato lagt til",
-    "DateAddedValue": "Dato tilf\u00f8rt: {0}",
     "OptionAlbumArtist": "Album Artist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Avbryt synkronisering",
     "CancelSyncJobConfirmation": "Avbryte synkronisering jobben vil fjerne synkronisert media fra enheten ved neste synkronisering prosess. Er du sikker p\u00e5 at du vil fortsette?",
     "LabelQuality": "Kvalitet:",
-    "MessageBookPluginRequired": "Forutsetter at programtillegget bokhylle er installert",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Forutsetter at programtillegget GameBrowser er installert",
     "MessageUnsetContentHelp": "Innhold vises som enkle mapper. For beste resultat, bruk metadata for \u00e5 sette innholdstype for mapper.",
     "SyncJobItemStatusQueued": "I k\u00f8",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Last ned FFmpeg",
     "FFmpegSuggestedDownload": "Foresl\u00e5tte nedlasting: {0}",
     "UnzipFFmpegFile": "Pakku ut den nedlastede zip-filen til en mappe av ditt valg.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Bruk system installert versjonen",
     "OptionUseMyCustomVersion": "Bruk en egen definert versjon",
     "FFmpegSavePathNotFound": "Vi kan dessverre ikke finne FFmpeg bruke banen du har angitt. FFprobe er ogs\u00e5 n\u00f8dvendig og m\u00e5 ligge i samme mappe. Disse komponentene er vanligvis buntet sammen i samme nedlastning. Kontroller banen og pr\u00f8v igjen.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-prosessering kommandolinjeargumenter:",
     "LabelPostProcessorArgumentsHelp": "Bruk {path} som banen til opptaksfilen.",
     "LabelPostProcessor": "Etterbehandling applikasjon:",
-    "ErrorAddingXmlTvFile": "Det oppstod en feil tilgang til XmlTV filen. S\u00f8rg for at filen finnes og pr\u00f8v igjen."
+    "ErrorAddingXmlTvFile": "Det oppstod en feil tilgang til XmlTV filen. S\u00f8rg for at filen finnes og pr\u00f8v igjen.",
+    "OptionAutomaticallyGroupSeries": "Fusjoner automatisk serier som er spredt ut over flere mapper",
+    "OptionAutomaticallyGroupSeriesHelp": "Hvis aktivert, vil serien som er spredt over flere mapper innenfor dette biblioteket sp\u00f8r automatisk sl\u00e5tt sammen til en enkelt serie.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

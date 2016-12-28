@@ -201,6 +201,21 @@ namespace Emby.Dlna.Profiles
                             IsRequired = true
                         }
                     }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.VideoAudio,
+                    Conditions = new []
+                    {
+                        // The device does not have any audio switching capabilities
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.IsSecondaryAudio,
+                            Value = "false"
+                        }
+                    }
                 }
             };
 

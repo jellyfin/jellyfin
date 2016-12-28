@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "\u03a0\u03c1\u03bf\u03b7\u03b3\u03bf\u03cd\u03bc\u03b5\u03bd\u03bf\u03c2",
     "LabelFinish": "\u03a4\u03ad\u03bb\u03bf\u03c2",
     "LabelNext": "\u0395\u03c0\u03cc\u03bc\u03b5\u03bd\u03bf",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "\u03a6\u03bf\u03c1\u03ad\u03c2 \u0391\u03bd\u03b1\u03c0\u03b1\u03c1\u03b1\u03b3\u03c9\u03b3\u03ae\u03c2",
     "OptionDatePlayed": "\u0397\u03bc\u03b5\u03c1\u03bf\u03bc\u03b7\u03bd\u03af\u03b1 \u0391\u03bd\u03b1\u03c0\u03b1\u03c1\u03b1\u03b3\u03c9\u03b3\u03ae\u03c2",
     "OptionDateAdded": "\u0397\u03bc\u03b5\u03c1\u03bf\u03bc\u03b7\u03bd\u03af\u03b1 \u03c0\u03c1\u03bf\u03c3\u03b8\u03ae\u03ba\u03b7\u03c2",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "\u03ac\u03bb\u03bc\u03c0\u03bf\u03c5\u03bc \u039a\u03b1\u03bb\u03bb\u03b9\u03c4\u03ad\u03c7\u03bd\u03b5\u03c2",
     "OptionArtist": " \u039a\u03b1\u03bb\u03bb\u03b9\u03c4\u03ad\u03c7\u03bd\u03b5\u03c2",
     "OptionAlbum": "\u0386\u03bb\u03bc\u03c0\u03bf\u03c5\u03bc",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Cancel Sync",
     "CancelSyncJobConfirmation": "Cancelling the sync job will remove synced media from the device during the next sync process. Are you sure you wish to proceed?",
     "LabelQuality": "Quality:",
-    "MessageBookPluginRequired": "Requires installation of the Bookshelf plugin",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Requires installation of the GameBrowser plugin",
     "MessageUnsetContentHelp": "Content will be displayed as plain folders. For best results use the metadata manager to set the content types of sub-folders.",
     "SyncJobItemStatusQueued": "Queued",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Download FFmpeg",
     "FFmpegSuggestedDownload": "Suggested download: {0}",
     "UnzipFFmpegFile": "Unzip the downloaded file to a folder of your choice.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Use system installed version",
     "OptionUseMyCustomVersion": "Use a custom version",
     "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

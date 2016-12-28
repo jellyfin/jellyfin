@@ -5,27 +5,30 @@
 
         console.log('[mediasync] Begin processDownloadStatus');
 
-        return localassetmanager.getServerItems(serverInfo.Id).then(function (items) {
+        return localassetmanager.resyncTransfers().then(function () {
 
-            console.log('[mediasync] Begin processDownloadStatus getServerItems completed');
+            return localassetmanager.getServerItems(serverInfo.Id).then(function (items) {
 
-            var progressItems = items.filter(function (item) {
-                return item.SyncStatus === 'transferring' || item.SyncStatus === 'queued';
-            });
+                console.log('[mediasync] Begin processDownloadStatus getServerItems completed');
 
-            var p = Promise.resolve();
-            var cnt = 0;
-
-            progressItems.forEach(function (item) {
-                p = p.then(function () {
-                    return reportTransfer(apiClient, item);
+                var progressItems = items.filter(function (item) {
+                    return item.SyncStatus === 'transferring' || item.SyncStatus === 'queued';
                 });
-                cnt++;
-            });
 
-            return p.then(function () {
-                console.log('[mediasync] Exit processDownloadStatus. Items reported: ' + cnt.toString());
-                return Promise.resolve();
+                var p = Promise.resolve();
+                var cnt = 0;
+
+                progressItems.forEach(function (item) {
+                    p = p.then(function () {
+                        return reportTransfer(apiClient, item);
+                    });
+                    cnt++;
+                });
+
+                return p.then(function () {
+                    console.log('[mediasync] Exit processDownloadStatus. Items reported: ' + cnt.toString());
+                    return Promise.resolve();
+                });
             });
         });
     }
@@ -40,23 +43,23 @@
                     item.SyncStatus = 'synced';
                     return localassetmanager.addOrUpdateLocalItem(item);
                 }, function (error) {
-                    console.error("[mediasync] Mediasync error on reportSyncJobItemTransferred", error);
+                    console.error('[mediasync] Mediasync error on reportSyncJobItemTransferred', error);
                     item.SyncStatus = 'error';
                     return localassetmanager.addOrUpdateLocalItem(item);
                 });
             } else {
-                return localassetmanager.isDownloadInQueue(item.SyncJobItemId).then(function (result) {
+                return localassetmanager.isDownloadFileInQueue(item.LocalPath).then(function (result) {
                     if (result) {
                         // just wait for completion
                         return Promise.resolve();
                     }
 
-                    console.log("[mediasync] reportTransfer: Size is 0 and download no longer in queue. Deleting item.");
+                    console.log('[mediasync] reportTransfer: Size is 0 and download no longer in queue. Deleting item.');
                     return localassetmanager.removeLocalItem(item).then(function () {
                         console.log('[mediasync] reportTransfer: Item deleted.');
                         return Promise.resolve();
                     }, function (err2) {
-                        console.log('[mediasync] reportTransfer: Failed to delete item.', error);
+                        console.log('[mediasync] reportTransfer: Failed to delete item.', err2);
                         return Promise.resolve();
                     });
                 });
@@ -123,8 +126,10 @@
             return apiClient.syncData(request).then(function (result) {
 
                 return afterSyncData(apiClient, serverInfo, syncUserItemAccess, result).then(function () {
+                    console.log('[mediasync] Exit syncData');
                     return Promise.resolve();
-                }, function () {
+                }, function (err) {
+                    console.error('[mediasync] Error in syncData: ' + err.toString());
                     return Promise.resolve();
                 });
 
@@ -202,20 +207,21 @@
 
         return localassetmanager.getLocalItem(serverInfo.Id, libraryItem.Id).then(function (existingItem) {
 
-            console.log('[mediasync] getNewItem.getLocalItem completed');
-
             if (existingItem) {
                 if (existingItem.SyncStatus === 'queued' || existingItem.SyncStatus === 'transferring' || existingItem.SyncStatus === 'synced') {
-                    console.log('[mediasync] getNewItem.getLocalItem found existing item');
+                    console.log('[mediasync] getNewItem: getLocalItem found existing item');
                     return Promise.resolve();
                 }
             }
 
-            console.log('[mediasync] getNewItem.getLocalItem no existing item found');
+            libraryItem.CanDelete = false;
+            libraryItem.CanDownload = false;
+            libraryItem.People = [];
+            libraryItem.SpecialFeatureCount = null;
 
             return localassetmanager.createLocalItem(libraryItem, serverInfo, jobItem).then(function (localItem) {
 
-                console.log('[mediasync] getNewItem.createLocalItem completed');
+                console.log('[mediasync] getNewItem: createLocalItem completed');
 
                 localItem.SyncStatus = 'queued';
 
@@ -233,9 +239,7 @@
 
     function downloadMedia(apiClient, jobItem, localItem, options) {
 
-        console.log('[mediasync] Begin downloadMedia');
-
-        var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/File", {
+        var url = apiClient.getUrl('Sync/JobItems/' + jobItem.SyncJobItemId + '/File', {
             api_key: apiClient.accessToken()
         });
 
@@ -256,88 +260,117 @@
 
         console.log('[mediasync] Begin getImages');
 
-        return getNextImage(0, apiClient, localItem);
+        var p = Promise.resolve();
+
+        var libraryItem = localItem.Item;
+
+        var serverId = libraryItem.ServerId;
+
+        // case 0
+        var mainImageTag = (libraryItem.ImageTags || {}).Primary;
+
+        if (libraryItem.Id && mainImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, mainImageTag, 'Primary');
+            });
+        }
+
+        // case 0a
+        var logoImageTag = (libraryItem.ImageTags || {}).Logo;
+        if (libraryItem.Id && logoImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, logoImageTag, 'Logo');
+            });
+        }
+
+        // case 0b
+        var artImageTag = (libraryItem.ImageTags || {}).Art;
+        if (libraryItem.Id && artImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, artImageTag, 'Art');
+            });
+        }
+
+        // case 0c
+        var bannerImageTag = (libraryItem.ImageTags || {}).Banner;
+        if (libraryItem.Id && bannerImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, bannerImageTag, 'Banner');
+            });
+        }
+
+        // case 0d
+        var thumbImageTag = (libraryItem.ImageTags || {}).Thumb;
+        if (libraryItem.Id && thumbImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, thumbImageTag, 'Thumb');
+            });
+        }
+
+        // Backdrops
+        //if (libraryItem.Id && libraryItem.BackdropImageTags) {
+        //    for (var i = 0; i < libraryItem.BackdropImageTags.length; i++) {
+
+        //        var backdropImageTag = libraryItem.BackdropImageTags[i];
+
+        //        // use self-invoking function to simulate block-level variable scope
+        //        (function (index, tag) {
+        //            p = p.then(function () {
+        //                return downloadImage(localItem, apiClient, serverId, libraryItem.Id, tag, 'backdrop', index);
+        //            });
+        //        })(i, backdropImageTag);
+        //    }
+        //}
+
+        // case 1/2:
+        if (libraryItem.SeriesId && libraryItem.SeriesPrimaryImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, 'Primary');
+            });
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.SeriesId, libraryItem.SeriesPrimaryImageTag, 'Thumb');
+            });
+        }
+
+        // case 3:
+        if (libraryItem.AlbumId && libraryItem.AlbumPrimaryImageTag) {
+            p = p.then(function () {
+                return downloadImage(localItem, apiClient, serverId, libraryItem.AlbumId, libraryItem.AlbumPrimaryImageTag, 'Primary');
+            });
+        }
+
+        return p.then(function () {
+            console.log('[mediasync] Finished getImages');
+            return localassetmanager.addOrUpdateLocalItem(localItem);
+        }, function (err) {
+            console.log('[mediasync] Error getImages: ' + err.toString());
+        });
     }
 
-    function getNextImage(index, apiClient, localItem) {
+    function downloadImage(localItem, apiClient, serverId, itemId, imageTag, imageType, index) {
 
-        console.log('[mediasync] Begin getNextImage');
 
-        //if (index >= 4) {
+        index = index || 0;
 
-        //    deferred.resolve();
-        //    return;
-        //}
-
-        // Just for now while media syncing gets worked out
-        return Promise.resolve();
-
-        //var libraryItem = localItem.Item;
-
-        //var serverId = libraryItem.ServerId;
-        //var itemId = null;
-        //var imageTag = null;
-        //var imageType = "Primary";
-
-        //switch (index) {
-
-        //    case 0:
-        //        itemId = libraryItem.Id;
-        //        imageType = "Primary";
-        //        imageTag = (libraryItem.ImageTags || {})["Primary"];
-        //        break;
-        //    case 1:
-        //        itemId = libraryItem.SeriesId;
-        //        imageType = "Primary";
-        //        imageTag = libraryItem.SeriesPrimaryImageTag;
-        //        break;
-        //    case 2:
-        //        itemId = libraryItem.SeriesId;
-        //        imageType = "Thumb";
-        //        imageTag = libraryItem.SeriesPrimaryImageTag;
-        //        break;
-        //    case 3:
-        //        itemId = libraryItem.AlbumId;
-        //        imageType = "Primary";
-        //        imageTag = libraryItem.AlbumPrimaryImageTag;
-        //        break;
-        //    default:
-        //        break;
-        //}
-
-        //if (!itemId || !imageTag) {
-        //    getNextImage(index + 1, apiClient, localItem, deferred);
-        //    return;
-        //}
-
-        //downloadImage(apiClient, serverId, itemId, imageTag, imageType).then(function () {
-
-        //    // For the sake of simplicity, limit to one image
-        //    deferred.resolve();
-        //    return;
-
-        //    getNextImage(index + 1, apiClient, localItem, deferred);
-
-        //}, getOnFail(deferred));
-    }
-
-    function downloadImage(apiClient, serverId, itemId, imageTag, imageType) {
-
-        console.log('[mediasync] Begin downloadImage');
-
-        return localassetmanager.hasImage(serverId, itemId, imageTag).then(function (hasImage) {
+        return localassetmanager.hasImage(serverId, itemId, imageType, index).then(function (hasImage) {
 
             if (hasImage) {
+                console.log('[mediasync] downloadImage - skip existing: ' + itemId + ' ' + imageType + '_' + index.toString());
                 return Promise.resolve();
             }
 
             var imageUrl = apiClient.getImageUrl(itemId, {
                 tag: imageTag,
                 type: imageType,
+                format: 'png',
                 api_key: apiClient.accessToken()
             });
 
-            return localassetmanager.downloadImage(imageUrl, serverId, itemId, imageTag);
+            console.log('[mediasync] downloadImage ' + itemId + ' ' + imageType + '_' + index.toString());
+
+            return localassetmanager.downloadImage(localItem, imageUrl, serverId, itemId, imageType, index);
+        }, function (err) {
+            console.log('[mediasync] Error downloadImage: ' + err.toString());
         });
     }
 
@@ -346,7 +379,7 @@
         console.log('[mediasync] Begin getSubtitles');
 
         if (!jobItem.Item.MediaSources.length) {
-            console.log("[mediasync] Cannot download subtitles because video has no media source info.");
+            console.log('[mediasync] Cannot download subtitles because video has no media source info.');
             return Promise.resolve();
         }
 
@@ -381,19 +414,26 @@
         if (!subtitleStream) {
 
             // We shouldn't get in here, but let's just be safe anyway
-            console.log("[mediasync] Cannot download subtitles because matching stream info wasn't found.");
+            console.log('[mediasync] Cannot download subtitles because matching stream info was not found.');
             return Promise.resolve();
         }
 
-        var url = apiClient.getUrl("Sync/JobItems/" + jobItem.SyncJobItemId + "/AdditionalFiles", {
+        var url = apiClient.getUrl('Sync/JobItems/' + jobItem.SyncJobItemId + '/AdditionalFiles', {
             Name: file.Name,
             api_key: apiClient.accessToken()
         });
 
-        var fileName = localassetmanager.getSubtitleSaveFileName(jobItem.OriginalFileName, subtitleStream.Language, subtitleStream.IsForced, subtitleStream.Codec);
-        var localFilePath = localassetmanager.getLocalFilePath(localItem, fileName);
+        var fileName = localassetmanager.getSubtitleSaveFileName(localItem, jobItem.OriginalFileName, subtitleStream.Language, subtitleStream.IsForced, subtitleStream.Codec);
 
-        return localassetmanager.downloadSubtitles(url, localFilePath).then(function (subtitlePath) {
+        return localassetmanager.downloadSubtitles(url, fileName).then(function (subtitlePath) {
+
+            if (localItem.AdditionalFiles) {
+                localItem.AdditionalFiles.forEach(function (item) {
+                    if (item.Name === file.Name) {
+                        item.Path = subtitlePath;
+                    }
+                });
+            }
 
             subtitleStream.Path = subtitlePath;
             return localassetmanager.addOrUpdateLocalItem(localItem);
@@ -406,9 +446,13 @@
 
         self.sync = function (apiClient, serverInfo, options) {
 
-            console.log("[mediasync]************************************* Start sync");
+            console.log('[mediasync]************************************* Start sync');
 
             return processDownloadStatus(apiClient, serverInfo, options).then(function () {
+
+                if (options.syncCheckProgressOnly === true) {
+                    return Promise.resolve();
+                }
 
                 return reportOfflineActions(apiClient, serverInfo).then(function () {
 
@@ -420,7 +464,8 @@
 
                         // Do the second data sync
                         return syncData(apiClient, serverInfo, false).then(function () {
-                            console.log("[mediasync]************************************* Exit sync");
+                            console.log('[mediasync]************************************* Exit sync');
+                            return Promise.resolve();
                         });
                     });
                     //});

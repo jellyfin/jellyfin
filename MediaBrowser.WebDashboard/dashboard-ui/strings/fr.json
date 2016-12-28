@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "Les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers dans la m\u00e9diath\u00e8que seront automatiquement fusionn\u00e9es en une seule s\u00e9rie.",
-    "OptionAutomaticallyGroupSeries": "Fusionner automatiquement les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers",
     "LabelPrevious": "Pr\u00e9c\u00e9dent",
     "LabelFinish": "Terminer",
     "LabelNext": "Suivant",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Nombre de lectures",
     "OptionDatePlayed": "Date de lecture",
     "OptionDateAdded": "Date d'ajout",
-    "DateAddedValue": "Date d'ajout\u00a0: {0}",
     "OptionAlbumArtist": "Artiste de l'album",
     "OptionArtist": "Artiste",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Annuler la sync.",
     "CancelSyncJobConfirmation": "L'annulation d'une t\u00e2che de synchronisation provoquera la suppression des m\u00e9dias synchronis\u00e9s sur l'appareil lors la prochaine ex\u00e9cution de la synchronisation. \u00cates-vous s\u00fbr de vouloir continuer ?",
     "LabelQuality": "Qualit\u00e9:",
-    "MessageBookPluginRequired": "N\u00e9cessite l'installation de l'extension Bookshelf",
+    "BookLibraryHelp": "Les livres audios et num\u00e9riques sont support\u00e9s",
     "MessageGamePluginRequired": "N\u00e9cessite l'installation de l'extension GameBrowser",
     "MessageUnsetContentHelp": "Le contenu sera affich\u00e9 sous forme de dossiers. Pour un r\u00e9sultat optimal, utilisez le gestionnaire de m\u00e9tadonn\u00e9es pour d\u00e9finir le type de contenu des sous-dossiers.",
     "SyncJobItemStatusQueued": "Mis en file d'attente",
@@ -1829,7 +1826,7 @@
     "ErrorAddingListingsToSchedulesDirect": "Une erreur est survenue pendant l'ajout de la programmation avec votre compte Schedules Direct. Schedules Direct autorise uniquement un nombre limit\u00e9 de programmations par compte. Vous devez vous connecter au site Schedules Direct et supprimer d'autres programmations depuis votre compte avant de pouvoir r\u00e9essayer.",
     "PleaseAddAtLeastOneFolder": "Veuillez ajouter au moins un dossier \u00e0 cette m\u00e9diath\u00e8que en cliquant sur le bouton Ajouter.",
     "ErrorAddingMediaPathToVirtualFolder": "Une erreur est survenue pendant l'ajout du chemin des m\u00e9dias. Veuillez v\u00e9rifier que le chemin est valide et que le processus du serveur Emby peut y acc\u00e9der.",
-    "ErrorRemovingEmbyConnectAccount": "Une erreur est survenue pendant la suppression du compte Emby Connect. Veuillez vous assurer que vous avez une connection internet active puis r\u00e9\u00e9ssayez.",
+    "ErrorRemovingEmbyConnectAccount": "Une erreur est survenue pendant la suppression du compte Emby Connect. Veuillez vous assurer que vous avez une connexion internet active puis r\u00e9essayez.",
     "ErrorAddingEmbyConnectAccount1": "Une erreur est survenue lors de l'ajout du compte Emby Connect. Avez-vous cr\u00e9\u00e9 un compte Emby\u00a0? Inscrivez-vous sur {0}.",
     "ErrorAddingEmbyConnectAccount2": "Veuillez vous assurez que votre compte Emby a bien \u00e9t\u00e9 activ\u00e9 avec les instructions fournies dans le courriel envoy\u00e9 apr\u00e8s la cr\u00e9ation de votre compte. Si vous n'avez pas re\u00e7u ce courriel veuillez envoyer un courriel \u00e0 {0} avec l'adresse utilis\u00e9e lors de la cr\u00e9ation de votre compte Emby.",
     "ErrorAddingEmbyConnectAccount3": "Le compte Emby  est d\u00e9j\u00e0 li\u00e9 \u00e0 un utilisateur local existant. Un compte Emby ne peut \u00eatre li\u00e9 qu'\u00e0 un seul utilisateur local \u00e0 la fois.",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "T\u00e9l\u00e9charger FFmpeg",
     "FFmpegSuggestedDownload": "T\u00e9l\u00e9chargement sugg\u00e9r\u00e9\u00a0: {0}",
     "UnzipFFmpegFile": "D\u00e9compresser le fichier t\u00e9l\u00e9charg\u00e9 dans le dossier de votre choix.",
+    "MarkFFmpegExec": "Si vous utilisez Linux ou OSX, vous devrez trouver les fichiers ffmpeg et ffprobe et les rendre ex\u00e9cutables. C'est n\u00e9cessaire pour qu'Emby puisse les ex\u00e9cuter.",
     "OptionUseSystemInstalledVersion": "Utiliser la version install\u00e9e sur le syst\u00e8me",
     "OptionUseMyCustomVersion": "Utiliser une version personnalis\u00e9e",
     "FFmpegSavePathNotFound": "Nous ne pouvons pas localiser FFmpeg en utilisant le chemin que vous avez saisi. FFprobe est \u00e9galement n\u00e9cessaire et doit exister dans le m\u00eame dossier. Ces composants sont g\u00e9n\u00e9ralement regroup\u00e9s dans le m\u00eame t\u00e9l\u00e9chargement. Veuillez v\u00e9rifier le chemin et essayer \u00e0 nouveau.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Arguments en ligne de commande du post-processeur\u00a0:",
     "LabelPostProcessorArgumentsHelp": "Utiliser {path} comme chemin d'acc\u00e8s au fichier d'enregistrement.",
     "LabelPostProcessor": "Application post-processeur\u00a0:",
-    "ErrorAddingXmlTvFile": "Une erreur est survenue lors de l'acc\u00e8s au fichier XMLTV. Assurez-vous qu'il existe et r\u00e9essayez."
+    "ErrorAddingXmlTvFile": "Une erreur est survenue lors de l'acc\u00e8s au fichier XMLTV. Assurez-vous qu'il existe et r\u00e9essayez.",
+    "OptionAutomaticallyGroupSeries": "Fusionner automatiquement les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers",
+    "OptionAutomaticallyGroupSeriesHelp": "Les s\u00e9ries qui sont r\u00e9parties en plusieurs dossiers dans la m\u00e9diath\u00e8que seront automatiquement fusionn\u00e9es en une seule s\u00e9rie.",
+    "ErrorReachingEmbyConnect": "Une erreur est survenue pendant la connexion au serveur Emby Connect. Veuillez vous assurer que vous avez une connexion internet active puis r\u00e9essayez."
 }

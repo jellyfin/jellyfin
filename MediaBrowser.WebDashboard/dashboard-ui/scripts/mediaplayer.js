@@ -653,15 +653,16 @@ define(['appSettings', 'userSettings', 'datetime', 'browser'], function (appSett
 
                 if (playMethod == 'DirectPlay' && mediaSource.Protocol == 'File') {
 
-                    require(['localassetmanager'], function (LocalAssetManager) {
+                    //require(['localassetmanager'], function (LocalAssetManager) {
 
-                        LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
+                    //    LocalAssetManager.translateFilePath(resultInfo.url).then(function (path) {
 
-                            resultInfo.url = path;
-                            console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
-                            resolve(resultInfo);
-                        });
-                    });
+                    //        resultInfo.url = path;
+                    //        console.log('LocalAssetManager.translateFilePath: path: ' + resultInfo.url + ' result: ' + path);
+                    //        resolve(resultInfo);
+                    //    });
+                    //});
+                    resolve(resultInfo);
 
                 }
                 else {

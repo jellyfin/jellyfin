@@ -68,7 +68,7 @@ namespace Emby.Server.Implementations.Sync
                         },
                         new ProfileCondition
                         {
-                            Condition = ProfileConditionType.EqualsAny,
+                            Condition = ProfileConditionType.Equals,
                             Property = ProfileConditionValue.NumVideoStreams,
                             Value = "1",
                             IsRequired = false
@@ -230,20 +230,6 @@ namespace Emby.Server.Implementations.Sync
                 Codec = "aac,mp3",
                 Conditions = new[]
                     {
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioChannels,
-                            Value = "2",
-                            IsRequired = true
-                        },
-                        new ProfileCondition
-                        {
-                            Condition = ProfileConditionType.LessThanEqual,
-                            Property = ProfileConditionValue.AudioBitrate,
-                            Value = "320000",
-                            IsRequired = true
-                        },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.Equals,

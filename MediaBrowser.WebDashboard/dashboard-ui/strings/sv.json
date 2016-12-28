@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Sl\u00e5 ihop serier automatiskt som ligger utspritt under flera kataloger",
     "LabelPrevious": "F\u00f6reg\u00e5ende",
     "LabelFinish": "Klart",
     "LabelNext": "N\u00e4sta",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Antal visningar",
     "OptionDatePlayed": "Senast visad",
     "OptionDateAdded": "Inlagd den",
-    "DateAddedValue": "Datum tillagt: {0}",
     "OptionAlbumArtist": "Albumartist",
     "OptionArtist": "Artist",
     "OptionAlbum": "Album",
@@ -1412,8 +1409,8 @@
     "LabelPlayMethodDirectPlay": "Direktuppspelning",
     "LabelAudioCodec": "Ljud: {0}",
     "LabelVideoCodec": "Video: {0}",
-    "LabelLocalAccessUrl": "Lokal \u00e5tkomst: {0}",
-    "LabelRemoteAccessUrl": "Fj\u00e4rr\u00e5tkomst: {0}",
+    "LabelLocalAccessUrl": "Hem-\u00e5tkomst(LAN): {0}",
+    "LabelRemoteAccessUrl": "Fj\u00e4rr\u00e5tkomst(WAN): {0}",
     "LabelRunningOnPort": "K\u00f6r http p\u00e5 port {0}",
     "LabelRunningOnPorts": "K\u00f6r http p\u00e5 port {0} och https p\u00e5 port {1}",
     "HeaderLatestFromChannel": "Senaste fr\u00e5n {0}",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Avbryt synkronisering",
     "CancelSyncJobConfirmation": "Om synkroniseringen avbryts kommer synkad media tas bort under n\u00e4sta synkprocess. \u00c4r du s\u00e4ker p\u00e5 att du vill forts\u00e4tta?",
     "LabelQuality": "Kvalitet",
-    "MessageBookPluginRequired": "Kr\u00e4ver installation av tj\u00e4nsten 'Bookshelf'",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Kr\u00e4ver installation av tj\u00e4nsten 'GameBrowser'",
     "MessageUnsetContentHelp": "Inneh\u00e5ll kommer visas som enkla mappar. F\u00f6r b\u00e4sta resultat, anv\u00e4nd en metadata-hanterare f\u00f6r att st\u00e4lla in typ av inneh\u00e5ll f\u00f6r undermapparna.",
     "SyncJobItemStatusQueued": "K\u00f6as",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Ladda ner FFmpeg",
     "FFmpegSuggestedDownload": "Rekommenderad nedladdning: {0}",
     "UnzipFFmpegFile": "Packa upp den nedladdade filen till en valfri katalog.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "Anv\u00e4nd systemversionen",
     "OptionUseMyCustomVersion": "Anv\u00e4nd en anpassad version",
     "FFmpegSavePathNotFound": "We're unable to locate FFmpeg using the path you've entered. FFprobe is also required and must exist in the same folder. These components are normally bundled together in the same download. Please check the path and try again.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Sl\u00e5 ihop serier automatiskt som ligger utspritt under flera kataloger",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }

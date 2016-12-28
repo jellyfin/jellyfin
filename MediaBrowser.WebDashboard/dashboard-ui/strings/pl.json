@@ -1,6 +1,4 @@
 {
-    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
-    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
     "LabelPrevious": "Wstecz",
     "LabelFinish": "Koniec",
     "LabelNext": "Dalej",
@@ -173,7 +171,6 @@
     "OptionPlayCount": "Ilo\u015b\u0107 odtworze\u0144",
     "OptionDatePlayed": "Data odtworzenia",
     "OptionDateAdded": "Data dodania",
-    "DateAddedValue": "Date added: {0}",
     "OptionAlbumArtist": "Artysta albumu",
     "OptionArtist": "Artysta",
     "OptionAlbum": "Album",
@@ -1751,7 +1748,7 @@
     "HeaderCancelSyncJob": "Anuluj synchronizacj\u0119",
     "CancelSyncJobConfirmation": "Anulowanie synchronizacji spowoduje usuni\u0119cie medi\u00f3w z urz\u0105dzenia podczas kolejnej synchronizacji. Czy jeste\u015b pewien, \u017ce chcesz kontynuowa\u0107?",
     "LabelQuality": "Jako\u015b\u0107:",
-    "MessageBookPluginRequired": "Wymaga instalacji wtyczki Bookshelf",
+    "BookLibraryHelp": "Audio and text books are supported",
     "MessageGamePluginRequired": "Wymaga instalacji wtyczki GameBrowser",
     "MessageUnsetContentHelp": "Zawarto\u015b\u0107 zostanie wy\u015bwietlona jako p\u0142askie foldery, dla najlepszych wynik\u00f3w u\u017cyj menad\u017cera metadanych dla ustawienia typu zawarto\u015bci sub folder\u00f3w.",
     "SyncJobItemStatusQueued": "Zakolejkowano",
@@ -1897,6 +1894,7 @@
     "DownloadFFmpeg": "Pobierz FFmpeg",
     "FFmpegSuggestedDownload": "Sugerowane pobieranie: {0}",
     "UnzipFFmpegFile": "Rozpakuj pobrany plik do wybranego folderu.",
+    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
     "OptionUseSystemInstalledVersion": "U\u017cyj wersji systemowej",
     "OptionUseMyCustomVersion": "U\u017cyj wersji niestandardowej",
     "FFmpegSavePathNotFound": "Nie Jeste\u015bmy w stanie zlokalizowa\u0107 FFmpeg przy u\u017cyciu wprowadzonej \u015bcie\u017cki. FFprobe jest r\u00f3wnie\u017c wymagane i musi znajdowa\u0107 si\u0119 w tym samym folderze. Elementy te s\u0105 zwykle w tej samej paczce. Prosz\u0119 sprawdzi\u0107 \u015bcie\u017ck\u0119 i spr\u00f3buj ponownie.",
@@ -1945,5 +1943,8 @@
     "LabelPostProcessorArguments": "Post-processor command line arguments:",
     "LabelPostProcessorArgumentsHelp": "Use {path} as the path to the recording file.",
     "LabelPostProcessor": "Post-processing application:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again."
+    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "OptionAutomaticallyGroupSeries": "Automatically merge series that are spread across multiple folders",
+    "OptionAutomaticallyGroupSeriesHelp": "If enabled, series that are spread across multiple folders within this library will be automatically merged into a single series.",
+    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
 }
