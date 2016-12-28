@@ -512,9 +512,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncactivity.html">
       <Link>Resources\dashboard-ui\syncactivity.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncjob.html">
-      <Link>Resources\dashboard-ui\syncjob.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\syncsettings.html">
       <Link>Resources\dashboard-ui\syncsettings.html</Link>
     </BundleResource>
@@ -929,6 +926,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\bower.json">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\bower.json</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\cameraroll.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-apiclient\cameraroll.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-apiclient\connectionmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-apiclient\connectionmanager.js</Link>
     </BundleResource>
@@ -1030,6 +1030,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\filedownloader.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\filedownloader.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\filesystem.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\filesystem.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\focusmanager.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\focusmanager.js</Link>
@@ -1171,6 +1174,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-collapse\emby-collapse.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-connect\connecthelper.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-connect\connecthelper.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\emby-input\emby-input.css">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\emby-input\emby-input.css</Link>
@@ -1804,6 +1810,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\sync.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\syncjobeditor.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\syncjobeditor.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\syncjoblist.js">
+      <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\syncjoblist.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js">
       <Link>Resources\dashboard-ui\bower_components\emby-webcomponents\sync\synctoggle.js</Link>
@@ -2684,9 +2696,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\navdrawer\navdrawer.js">
       <Link>Resources\dashboard-ui\components\navdrawer\navdrawer.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\syncjoblist\syncjoblist.js">
-      <Link>Resources\dashboard-ui\components\syncjoblist\syncjoblist.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\components\tvproviders\schedulesdirect.js">
       <Link>Resources\dashboard-ui\components\tvproviders\schedulesdirect.js</Link>
     </BundleResource>
@@ -3346,9 +3355,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncactivity.js">
       <Link>Resources\dashboard-ui\scripts\syncactivity.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncjob.js">
-      <Link>Resources\dashboard-ui\scripts\syncjob.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\syncsettings.js">
       <Link>Resources\dashboard-ui\scripts\syncsettings.js</Link>
