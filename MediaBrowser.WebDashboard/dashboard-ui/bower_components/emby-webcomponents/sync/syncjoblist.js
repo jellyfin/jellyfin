@@ -161,8 +161,6 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
                     if (lastTargetName) {
                         html += '</div>';
                         html += '<br/>';
-                        html += '<br/>';
-                        html += '<br/>';
                         hasOpenSection = false;
                     }
 

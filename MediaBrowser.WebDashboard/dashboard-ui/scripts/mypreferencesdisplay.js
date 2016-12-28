@@ -35,7 +35,11 @@
             user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
 
             if (userSettingsLoaded) {
-                userSettingsInstance.language(page.querySelector('#selectLanguage').value);
+
+                if (AppInfo.supportsUserDisplayLanguageSetting) {
+                    userSettingsInstance.language(page.querySelector('#selectLanguage').value);
+                }
+
                 userSettingsInstance.enableThemeSongs(page.querySelector('#chkThemeSong').checked);
 
                 if (userId === Dashboard.getCurrentUserId()) {
