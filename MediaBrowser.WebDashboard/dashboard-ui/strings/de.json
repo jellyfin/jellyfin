@@ -1826,7 +1826,7 @@
     "ErrorAddingListingsToSchedulesDirect": "Ein Fehler trat beim hinzuf\u00fcgen Ihrer Zusammenstellung zu Ihrem Schedules Direct Konto auf. Schedules Direct erlaubt nur eine begrenzte Anzahl von Zusammenstellungen je Account.  Sie sollten sich auf der Website in Ihrem Schedules-Direct Konto einloggen und ein paar Zusammenstellungen von Ihrem Konto l\u00f6schen bevor Sie fortfahren.",
     "PleaseAddAtLeastOneFolder": "Bitte f\u00fcgen Sie mindestens ein Verzeichniss zur Bibliothek durch Klicken der \"Hinzuf\u00fcgen\"-Schaltfl\u00e4che hinzu.",
     "ErrorAddingMediaPathToVirtualFolder": "Ein Fehler trat beim Hinzuf\u00fcgen eines Medienverzeichnisses auf. Bitte stellen Sie sicher, dass der Pfad g\u00fcltig ist und der Emby Server Prozess die notwendigen Zugriffsrechte besitzt.",
-    "ErrorRemovingEmbyConnectAccount": "Ein Fehler trat beim entfernen des Empy Connect Kontos auf. Bitte stellen Sie sicher, dass Sie \u00fcber eine aktive Internetverbindung verf\u00fcgen und versuchen Sie es erneut.",
+    "ErrorRemovingEmbyConnectAccount": "Fehler beim Entfernen des Emby Connect Kontos. Bitte stelle sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut.",
     "ErrorAddingEmbyConnectAccount1": "Ein Fehler trat beim hinzuf\u00fcgen des Emby-Connect Kontos auf. Haben Sie bereits ein Emby Konto? Melden Sie sich hier an: {0}.",
     "ErrorAddingEmbyConnectAccount2": "Bitte stellen Sie sicher, dass Ihr Emby Konto nach den Anweisungen aus der Email, die Sie nach Erstellung des Kontos erhielten, aktiviert wurde. Wenn Sie keine Email erhalten haben, so senden Sie und bitte eine email an {0}. Benutzen Sie dazu bitte die Email-Adresse, die Sie bereits zur Erstellung Ihres Emby Kontos verwendet haben.",
     "ErrorAddingEmbyConnectAccount3": "Der Emby Account ist schon mit einem existierenden lokalen Nutzer verkn\u00fcpft. Ein Emby Account kann nur mit einem lokelen Nutzer gleichzeitig verbunden sein.",
@@ -1946,5 +1946,5 @@
     "ErrorAddingXmlTvFile": "Fehler beim Zugriff auf die XmlTV Datei. Stelle bitte sicher, dass die Datei existiert und versuche es nochmal.",
     "OptionAutomaticallyGroupSeries": "Vermische Serieninhalte, die in verschiedenen Ordnern abgelegt sind.",
     "OptionAutomaticallyGroupSeriesHelp": "Wenn aktiviert, werden Inhalte einer Serie in verschiedenen Ordnern innerhalb einer Bibliothek als eine Serie angezeigt.",
-    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
+    "ErrorReachingEmbyConnect": "Fehler bei der Verbindung zum Emby Connect Server. Stelle bitte sicher, dass du \u00fcber eine aktive Internetverbindung verf\u00fcgst und versuche es erneut."
 }

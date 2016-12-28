@@ -1748,7 +1748,7 @@
     "HeaderCancelSyncJob": "Cancelar sincronizaci\u00f3n",
     "CancelSyncJobConfirmation": "Cancelar el trabajo de sincronizaci\u00f3n eliminar\u00e1 los medios sincronizados del dispositivo durante el siguiente proceso de sincronizaci\u00f3n. \u00bfEst\u00e1s seguro de que quieres continuar?",
     "LabelQuality": "Calidad:",
-    "BookLibraryHelp": "Audio and text books are supported",
+    "BookLibraryHelp": "Los libros de texto y audio est\u00e1n soportados",
     "MessageGamePluginRequired": "Necesita de la instalaci\u00f3n del plugin GameBrowser",
     "MessageUnsetContentHelp": "El contenido se mostrar\u00e1 como carpetas planas. Para tener mejores resultados utiliza el gestor de metadatos para establecer los tipos de contenidos de las sub-carpetas.",
     "SyncJobItemStatusQueued": "En cola",
@@ -1894,7 +1894,7 @@
     "DownloadFFmpeg": "Descargar FFmpeg",
     "FFmpegSuggestedDownload": "Descarga sugerida: {0}",
     "UnzipFFmpegFile": "Descomprima el archivo descargado en una carpeta de su elecci\u00f3n.",
-    "MarkFFmpegExec": "If you are running Linux or OSX, you will need to locate the ffmpeg and ffprobe files and mark them as executable. This is needed to grant Emby permission to execute them.",
+    "MarkFFmpegExec": "Si est\u00e1s en Linux o OSX tienes que localizar los archivos del ffmpeg y ffprobe y marcarlos como ejecutables. Esto permitir\u00e1 al Emby ejecutarlos.",
     "OptionUseSystemInstalledVersion": "Usar la versi\u00f3n instalada del sistema",
     "OptionUseMyCustomVersion": "Utilizar una versi\u00f3n personalizada",
     "FFmpegSavePathNotFound": "No podemos localizar FFmpeg usando la ruta que has ingresado. FFprobe tambi\u00e9n es necesario y debe existir en la misma carpeta. Estos componentes normalmente se agrupan juntos en la misma descarga. Compruebe la ruta y vuelva a intentarlo.",
@@ -1943,8 +1943,8 @@
     "LabelPostProcessorArguments": "Argumentos de l\u00ednea de comandos posprocesador:",
     "LabelPostProcessorArgumentsHelp": "Utilice {path} como ruta del archivo de grabaci\u00f3n.",
     "LabelPostProcessor": "Aplicaci\u00f3n de post-procesamiento:",
-    "ErrorAddingXmlTvFile": "There was an error accessing the XmlTV file. Please ensure the file exists and try again.",
+    "ErrorAddingXmlTvFile": "Ha habido un error accediendo al archivo XmlTV. Por favor, aseg\u00farate de que existe e int\u00e9ntalo de nuevo.",
     "OptionAutomaticallyGroupSeries": "Combinar autom\u00e1ticamente series que se distribuyen en varias carpetas",
     "OptionAutomaticallyGroupSeriesHelp": "Si est\u00e1 activada, las series que se distribuyen entre varias carpetas dentro de esta biblioteca se fusionar\u00e1n autom\u00e1ticamente en una sola serie.",
-    "ErrorReachingEmbyConnect": "There was an error reaching the Emby Connect server. Please ensure you have an active internet connection and try again."
+    "ErrorReachingEmbyConnect": "Ha habido un error accediendo al servidor Emby Connect. Por favor, aseg\u00farate de que tienes conexi\u00f3n a internet e int\u00e9ntalo de nuevo."
 }
