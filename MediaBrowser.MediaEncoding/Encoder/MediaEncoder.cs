@@ -533,8 +533,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             probeSize = probeSize + " " + analyzeDuration;
             probeSize = probeSize.Trim();
 
+            var forceEnableLogging = request.Protocol != MediaProtocol.File;
+
             return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
-                probeSize, request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
+                probeSize, request.MediaType == DlnaProfileType.Audio, request.VideoType, forceEnableLogging, cancellationToken);
         }
 
         /// <summary>
@@ -577,14 +579,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the media info internal.
         /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="primaryPath">The primary path.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
-        /// <param name="probeSizeArgument">The probe size argument.</param>
-        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
-        /// <param name="videoType">Type of the video.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         private async Task<MediaInfo> GetMediaInfoInternal(string inputPath,
             string primaryPath,
@@ -593,6 +587,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string probeSizeArgument,
             bool isAudio,
             VideoType videoType,
+            bool forceEnableLogging,
             CancellationToken cancellationToken)
         {
             var args = extractChapters
@@ -614,7 +609,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 EnableRaisingEvents = true
             });
 
-            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            if (forceEnableLogging)
+            {
+                _logger.Info("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            }
+            else
+            {
+                _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            }
 
             using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
