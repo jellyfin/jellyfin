@@ -2691,6 +2691,18 @@ namespace MediaBrowser.Api.Playback
                 {
                     //inputModifier += " -noaccurate_seek";
                 }
+
+                var videoStream = state.VideoStream;
+                if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
+                {
+                    inputModifier += "  -codec:0 " + videoStream.Codec;
+
+                    var audioStream = state.AudioStream;
+                    if (audioStream != null && !string.IsNullOrWhiteSpace(audioStream.Codec))
+                    {
+                        inputModifier += "  -codec:1 " + audioStream.Codec;
+                    }
+                }
             }
 
             return inputModifier;
