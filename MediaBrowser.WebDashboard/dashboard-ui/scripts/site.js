@@ -1204,6 +1204,7 @@ var AppInfo = {};
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
             serverNotifications: embyWebComponentsBowerPath + '/servernotifications',
+            pluginManager: embyWebComponentsBowerPath + '/pluginmanager',
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
