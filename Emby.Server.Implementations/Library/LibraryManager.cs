@@ -1956,30 +1956,6 @@ namespace Emby.Server.Implementations.Library
 
             var options = collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
 
-            if (options.SchemaVersion < 3)
-            {
-                options.SaveLocalMetadata = ConfigurationManager.Configuration.SaveLocalMeta;
-                options.EnableInternetProviders = ConfigurationManager.Configuration.EnableInternetProviders;
-            }
-
-            if (options.SchemaVersion < 2)
-            {
-                var chapterOptions = ConfigurationManager.GetConfiguration<ChapterOptions>("chapters");
-                options.ExtractChapterImagesDuringLibraryScan = chapterOptions.ExtractDuringLibraryScan;
-
-                if (collectionFolder != null)
-                {
-                    if (string.Equals(collectionFolder.CollectionType, "movies", StringComparison.OrdinalIgnoreCase))
-                    {
-                        options.EnableChapterImageExtraction = chapterOptions.EnableMovieChapterImageExtraction;
-                    }
-                    else if (string.Equals(collectionFolder.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
-                    {
-                        options.EnableChapterImageExtraction = chapterOptions.EnableEpisodeChapterImageExtraction;
-                    }
-                }
-            }
-
             return options;
         }
 
