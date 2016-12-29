@@ -43,25 +43,5 @@ namespace MediaBrowser.Providers.Chapters
         {
             return _itemRepo.SaveChapters(new Guid(itemId), chapters, cancellationToken);
         }
-
-        public ChapterOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<ChapterOptions>("chapters");
-        }
-    }
-
-    public class ChapterConfigurationStore : IConfigurationFactory
-    {
-        public IEnumerable<ConfigurationStore> GetConfigurations()
-        {
-            return new List<ConfigurationStore>
-            {
-                new ConfigurationStore
-                {
-                    Key = "chapters",
-                    ConfigurationType = typeof (ChapterOptions)
-                }
-            };
-        }
     }
 }
