@@ -113,9 +113,11 @@
                 itemId = itemId.toString();
             }
 
+            var serverInfo;
+
             if (startsWith(itemId, localViewPrefix)) {
 
-                var serverInfo = apiclientcore.serverInfo();
+                serverInfo = apiclientcore.serverInfo();
 
                 if (serverInfo) {
                     return localassetmanager.getViews(serverInfo.Id, userId).then(function (items) {
@@ -136,7 +138,7 @@
 
             if (startsWith(itemId, localPrefix)) {
 
-                var serverInfo = apiclientcore.serverInfo();
+                serverInfo = apiclientcore.serverInfo();
 
                 if (serverInfo) {
                     return localassetmanager.getLocalItem(serverInfo.Id, stripStart(itemId, localPrefix)).then(function (item) {
@@ -220,9 +222,9 @@
 
         function createEmptyList() {
             var result = {
-                Items: new Array(),
+                Items: [],
                 TotalRecordCount: 0
-            }
+            };
 
             return result;
         }
@@ -445,6 +447,6 @@
         self.getPinStatus = apiclientcore.getPinStatus;
         self.exchangePin = apiclientcore.exchangePin;
 
-    }
+    };
 
 });
