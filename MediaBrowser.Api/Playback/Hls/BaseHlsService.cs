@@ -223,6 +223,7 @@ namespace MediaBrowser.Api.Playback.Hls
         protected Stream GetPlaylistFileStream(string path)
         {
             var tmpPath = path + ".tmp";
+            tmpPath = path;
 
             try
             {
