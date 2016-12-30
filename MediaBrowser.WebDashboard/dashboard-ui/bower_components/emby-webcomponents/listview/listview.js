@@ -234,8 +234,12 @@ define(['itemHelper', 'mediaInfo', 'indicators', 'connectionManager', 'layoutMan
 
                 var imageClass = isLargeStyle ? 'listItemImage listItemImage-large' : 'listItemImage';
 
+                if (!clickEntireItem) {
+                    imageClass += ' itemAction';
+                }
+
                 if (imgUrl) {
-                    html += '<div class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
+                    html += '<div data-action="link" class="' + imageClass + ' lazy" data-src="' + imgUrl + '" item-icon>';
                 } else {
                     html += '<div class="' + imageClass + '">';
                 }

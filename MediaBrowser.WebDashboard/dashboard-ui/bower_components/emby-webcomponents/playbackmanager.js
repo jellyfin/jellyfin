@@ -5,8 +5,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         var self = this;
 
+        var players = [];
         var currentPlayer;
+        var currentTargetInfo;
         var lastLocalPlayer;
+        var currentPairingId = null;
+
         var repeatMode = 'RepeatNone';
         var playlist = [];
         var currentPlaylistIndex;
@@ -22,6 +26,200 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.currentMediaSource = function (player) {
             var data = getPlayerData(player);
             return data.streamInfo ? data.streamInfo.mediaSource : null;
+        };
+
+        function triggerPlayerChange(newPlayer, newTarget, previousPlayer) {
+
+            events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
+        }
+
+        self.setActivePlayer = function (player, targetInfo) {
+
+            if (typeof (player) === 'string') {
+                player = players.filter(function (p) {
+                    return p.name == player;
+                })[0];
+            }
+
+            if (!player) {
+                throw new Error('null player');
+            }
+
+            var previousPlayer = currentPlayer;
+
+            currentPairingId = null;
+            currentPlayer = player;
+            currentTargetInfo = targetInfo;
+
+            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+
+            triggerPlayerChange(player, targetInfo, previousPlayer);
+        };
+
+        self.trySetActivePlayer = function (player, targetInfo) {
+
+            if (typeof (player) === 'string') {
+                player = players.filter(function (p) {
+                    return p.name == player;
+                })[0];
+            }
+
+            if (!player) {
+                throw new Error('null player');
+            }
+
+            if (currentPairingId == targetInfo.id) {
+                return;
+            }
+
+            currentPairingId = targetInfo.id;
+
+            player.tryPair(targetInfo).then(function () {
+
+                var previousPlayer = currentPlayer;
+
+                currentPlayer = player;
+                currentTargetInfo = targetInfo;
+
+                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+
+                triggerPlayerChange(player, targetInfo, previousPlayer);
+            }, function () {
+
+                if (currentPairingId == targetInfo.id) {
+                    currentPairingId = null;
+                }
+            });
+        };
+
+        self.trySetActiveDeviceName = function (name) {
+
+            function normalizeName(t) {
+                return t.toLowerCase().replace(' ', '');
+            }
+
+            name = normalizeName(name);
+
+            self.getTargets().then(function (result) {
+
+                var target = result.filter(function (p) {
+                    return normalizeName(p.name) == name;
+                })[0];
+
+                if (target) {
+                    self.trySetActivePlayer(target.playerName, target);
+                }
+
+            });
+        };
+
+        self.setDefaultPlayerActive = function () {
+
+            var player = self.getDefaultPlayer();
+
+            player.getTargets().then(function (targets) {
+
+                self.setActivePlayer(player, targets[0]);
+            });
+        };
+
+        self.removeActivePlayer = function (name) {
+
+            if (self.getPlayerInfo().name == name) {
+                self.setDefaultPlayerActive();
+            }
+
+        };
+
+        self.removeActiveTarget = function (id) {
+
+            if (self.getPlayerInfo().id == id) {
+                self.setDefaultPlayerActive();
+            }
+        };
+
+        self.disconnectFromPlayer = function () {
+
+            var playerInfo = self.getPlayerInfo();
+
+            if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
+
+                require(['dialog'], function (dialog) {
+
+                    var menuItems = [];
+
+                    menuItems.push({
+                        name: Globalize.translate('ButtonYes'),
+                        id: 'yes'
+                    });
+                    menuItems.push({
+                        name: Globalize.translate('ButtonNo'),
+                        id: 'no'
+                    });
+
+                    dialog({
+                        buttons: menuItems,
+                        //positionTo: positionTo,
+                        text: Globalize.translate('ConfirmEndPlayerSession')
+
+                    }).then(function (id) {
+                        switch (id) {
+
+                            case 'yes':
+                                MediaController.getCurrentPlayer().endSession();
+                                self.setDefaultPlayerActive();
+                                break;
+                            case 'no':
+                                self.setDefaultPlayerActive();
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+
+                });
+
+
+            } else {
+
+                self.setDefaultPlayerActive();
+            }
+        };
+
+        self.getTargets = function () {
+
+            var promises = players.map(function (p) {
+                return p.getTargets();
+            });
+
+            return Promise.all(promises).then(function (responses) {
+
+                var targets = [];
+
+                for (var i = 0; i < responses.length; i++) {
+
+                    var subTargets = responses[i];
+
+                    for (var j = 0; j < subTargets.length; j++) {
+
+                        targets.push(subTargets[j]);
+                    }
+
+                }
+
+                targets = targets.sort(function (a, b) {
+
+                    var aVal = a.isLocalPlayer ? 0 : 1;
+                    var bVal = b.isLocalPlayer ? 0 : 1;
+
+                    aVal = aVal.toString() + a.name;
+                    bVal = bVal.toString() + b.name;
+
+                    return aVal.localeCompare(bVal);
+                });
+
+                return targets;
+            });
         };
 
         function getCurrentSubtitleStream(player) {
@@ -101,13 +299,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.getPlayers = function () {
 
-            var players = pluginManager.ofType('mediaplayer');
-
-            players.sort(function (a, b) {
-
-                return (a.priority || 0) - (b.priority || 0);
-            });
-
             return players;
         };
 
@@ -175,8 +366,14 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.toggleMute = function (mute) {
 
+            var player = currentPlayer;
             if (currentPlayer) {
-                self.setMute(!self.isMuted());
+
+                if (player.toggleMute) {
+                    player.toggleMute();
+                } else {
+                    player.setMute(!player.isMuted());
+                }
             }
         };
 
@@ -1943,6 +2140,17 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         }
 
         function initMediaPlayer(plugin) {
+
+            players.push(player);
+            players.sort(function (a, b) {
+
+                return (a.priority || 0) - (b.priority || 0);
+            });
+
+            if (player.isLocalPlayer !== false) {
+                player.isLocalPlayer = true;
+            }
+
             plugin.currentState = {};
 
             events.on(plugin, 'error', onPlaybackError);
