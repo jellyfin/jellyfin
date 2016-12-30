@@ -181,7 +181,7 @@ namespace Emby.Server.Implementations.Sync
 
             await _repo.Create(job).ConfigureAwait(false);
 
-            await processor.EnsureJobItems(job).ConfigureAwait(false);
+            await processor.EnsureJobItems(job, user).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
             var jobItemsResult = GetJobItems(new SyncJobItemQuery
