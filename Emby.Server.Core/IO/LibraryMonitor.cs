@@ -288,6 +288,13 @@ namespace Emby.Server.Core.IO
             {
                 try
                 {
+                    if (!_fileSystem.DirectoryExists(path))
+                    {
+                        // Seeing a crash in the mono runtime due to an exception being thrown on a different thread
+                        Logger.Info("Skipping realtime monitor for {0} because the path does not exist", path);
+                        return;
+                    }
+
                     var newWatcher = new FileSystemWatcher(path, "*")
                     {
                         IncludeSubdirectories = true
