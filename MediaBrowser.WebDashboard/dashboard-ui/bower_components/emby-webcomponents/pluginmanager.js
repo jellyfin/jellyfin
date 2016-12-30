@@ -1,4 +1,4 @@
-define(['events'], function (Events) {
+define(['events'], function (events) {
     'use strict';
 
     function pluginManager() {
@@ -13,7 +13,7 @@ define(['events'], function (Events) {
         self.register = function (obj) {
 
             plugins.push(obj);
-            Events.trigger(self, 'registered', [obj]);
+            events.trigger(self, 'registered', [obj]);
         };
 
         self.ofType = function (type) {
@@ -87,7 +87,7 @@ define(['events'], function (Events) {
 
             return new Promise(function (resolve, reject) {
 
-                require([url, 'globalize'], function (pluginFactory, globalize) {
+                require([url, 'globalize', 'embyRouter'], function (pluginFactory, globalize, embyRouter) {
 
                     var plugin = new pluginFactory();
 
@@ -105,9 +105,9 @@ define(['events'], function (Events) {
 
                     var urlLower = url.toLowerCase();
                     if (urlLower.indexOf('http:') === -1 && urlLower.indexOf('https:') === -1 && urlLower.indexOf('file:') === -1) {
-                        if (url.indexOf(Emby.Page.baseUrl()) !== 0) {
+                        if (url.indexOf(embyRouter.baseUrl()) !== 0) {
 
-                            url = Emby.Page.baseUrl() + '/' + url;
+                            url = embyRouter.baseUrl() + '/' + url;
                         }
                     }
 

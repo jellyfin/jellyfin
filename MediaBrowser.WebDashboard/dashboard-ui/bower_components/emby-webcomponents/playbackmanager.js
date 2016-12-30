@@ -1,6 +1,16 @@
 define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'globalize', 'connectionManager', 'loading', 'serverNotifications'], function (events, datetime, appSettings, pluginManager, userSettings, globalize, connectionManager, loading, serverNotifications) {
     'use strict';
 
+    function enableLocalPlaylistManagement(player) {
+
+        if (player.isLocalPlayer) {
+
+            return true;
+        }
+
+        return false;
+    }
+
     function playbackManager() {
 
         var self = this;
@@ -95,7 +105,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             currentPairingId = targetInfo.id;
 
-            player.tryPair(targetInfo).then(function () {
+            var promise = player.tryPair ? 
+                player.tryPair(targetInfo) :
+                Promise.resolve();
+
+            promise.then(function () {
 
                 var previousPlayer = currentPlayer;
 
@@ -134,11 +148,36 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         };
 
+        function getSupportedCommands(player) {
+
+            if (player.isLocalPlayer) {
+                return Dashboard.getSupportedRemoteCommands();
+            }
+
+            throw new Error('player must define supported commands');
+        }
+
+        function getPlayerTargets(player) {
+            if (player.getTargets) {
+                return player.getTargets();
+            }
+
+            return Promise.resolve([{
+
+                name: player.name,
+                id: player.id,
+                playerName: player.name,
+                playableMediaTypes: ['Audio', 'Video', 'Game'].map(player.canPlayMediaType),
+                isLocalPlayer: player.isLocalPlayer,
+                supportedCommands: getSupportedCommands(player)
+            }]);
+        }
+
         self.setDefaultPlayerActive = function () {
 
             var player = self.getDefaultPlayer();
 
-            player.getTargets().then(function (targets) {
+            getPlayerTargets(player).then(function (targets) {
 
                 self.setActivePlayer(player, targets[0]);
             });
@@ -209,9 +248,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.getTargets = function () {
 
-            var promises = players.map(function (p) {
-                return p.getTargets();
-            });
+            var promises = players.map(getPlayerTargets);
 
             return Promise.all(promises).then(function (responses) {
 
@@ -2161,7 +2198,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         }
 
-        function initMediaPlayer(plugin) {
+        function initMediaPlayer(player) {
 
             players.push(player);
             players.sort(function (a, b) {
@@ -2173,10 +2210,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 player.isLocalPlayer = true;
             }
 
-            plugin.currentState = {};
+            player.currentState = {};
 
-            events.on(plugin, 'error', onPlaybackError);
-            events.on(plugin, 'stopped', onPlaybackStopped);
+            if (enableLocalPlaylistManagement(player)) {
+                events.on(player, 'error', onPlaybackError);
+                events.on(player, 'stopped', onPlaybackStopped);
+            }
         }
 
         events.on(pluginManager, 'registered', function (e, plugin) {
