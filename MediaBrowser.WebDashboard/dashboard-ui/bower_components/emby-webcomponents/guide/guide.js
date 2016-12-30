@@ -623,7 +623,7 @@
                 html += '</button>';
             }
 
-            var channelList = context.querySelector('.channelList');
+            var channelList = context.querySelector('.channelsContainer');
             channelList.innerHTML = html;
             imageLoader.lazyChildren(channelList);
         }

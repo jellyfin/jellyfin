@@ -1204,6 +1204,7 @@ var AppInfo = {};
             itemHelper: embyWebComponentsBowerPath + '/itemhelper',
             itemShortcuts: embyWebComponentsBowerPath + "/shortcuts",
             serverNotifications: embyWebComponentsBowerPath + '/servernotifications',
+            pluginManager: embyWebComponentsBowerPath + '/pluginmanager',
             webAnimations: bowerPath + '/web-animations-js/web-animations-next-lite.min'
         };
 
@@ -1239,6 +1240,7 @@ var AppInfo = {};
         define("directorybrowser", ["components/directorybrowser/directorybrowser"], returnFirstDependency);
         define("metadataEditor", [embyWebComponentsBowerPath + "/metadataeditor/metadataeditor"], returnFirstDependency);
         define("personEditor", [embyWebComponentsBowerPath + "/metadataeditor/personeditor"], returnFirstDependency);
+        define("playerSelectionMenu", ["components/playerselection"], returnFirstDependency);
 
         define("libraryMenu", ["scripts/librarymenu"], returnFirstDependency);
 
@@ -2730,6 +2732,8 @@ var AppInfo = {};
                     postInitDependencies.push('bower_components/emby-webcomponents/notifications/notifications');
                 }
             }
+
+            postInitDependencies.push('playerSelectionMenu');
 
             require(postInitDependencies);
             upgradeLayouts();

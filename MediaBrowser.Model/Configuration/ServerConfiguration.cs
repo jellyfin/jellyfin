@@ -55,12 +55,6 @@ namespace MediaBrowser.Model.Configuration
         public string CertificatePath { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable internet providers].
-        /// </summary>
-        /// <value><c>true</c> if [enable internet providers]; otherwise, <c>false</c>.</value>
-        public bool EnableInternetProviders { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is port authorized.
         /// </summary>
         /// <value><c>true</c> if this instance is port authorized; otherwise, <c>false</c>.</value>
@@ -86,12 +80,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The display name of the season zero.</value>
         public string SeasonZeroDisplayName { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [save local meta].
-        /// </summary>
-        /// <value><c>true</c> if [save local meta]; otherwise, <c>false</c>.</value>
-        public bool SaveLocalMeta { get; set; }
 
         /// <summary>
         /// Gets or sets the preferred metadata language.
@@ -242,8 +230,6 @@ namespace MediaBrowser.Model.Configuration
             MinResumeDurationSeconds = 300;
 
             LibraryMonitorDelay = 60;
-
-            EnableInternetProviders = true;
 
             PathSubstitutions = new PathSubstitution[] { };
             ContentTypes = new NameValuePair[] { };

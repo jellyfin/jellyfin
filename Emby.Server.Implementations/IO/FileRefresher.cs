@@ -261,10 +261,11 @@ namespace Emby.Server.Implementations.IO
             // In order to determine if the file is being written to, we have to request write access
             // But if the server only has readonly access, this is going to cause this entire algorithm to fail
             // So we'll take a best guess about our access level
-            var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
-                ? FileAccessMode.ReadWrite
-                : FileAccessMode.Read;
+            //var requestedFileAccess = ConfigurationManager.Configuration.SaveLocalMeta
+            //    ? FileAccessMode.ReadWrite
+            //    : FileAccessMode.Read;
 
+            var requestedFileAccess = FileAccessMode.Read;
             try
             {
                 using (_fileSystem.GetFileStream(path, FileOpenMode.Open, requestedFileAccess, FileShareMode.ReadWrite))

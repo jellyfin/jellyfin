@@ -1,4 +1,4 @@
-﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'registrationServices', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize, registrationServices) {
+﻿define(['serverNotifications', 'events', 'loading', 'connectionManager', 'imageLoader', 'dom', 'globalize', 'registrationServices', 'layoutManager', 'listViewStyle'], function (serverNotifications, events, loading, connectionManager, imageLoader, dom, globalize, registrationServices, layoutManager) {
     'use strict';
 
     function onSyncJobsUpdated(e, apiClient, data) {
@@ -79,7 +79,16 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
         var html = '';
 
-        html += '<div class="listItem" data-id="' + job.Id + '" data-status="' + job.Status + '">';
+        var tagName = layoutManager.tv ? 'button' : 'div';
+        var typeAttribute = tagName === 'button' ? ' type="button"' : '';
+
+        var listItemClass = 'listItem';
+
+        if (layoutManager.tv) {
+            listItemClass += ' listItem-button listItem-focusscale';
+        }
+
+        html += '<' + tagName + typeAttribute + ' class="' + listItemClass + '" data-id="' + job.Id + '" data-status="' + job.Status + '">';
 
         var progress = job.Progress || 0;
 
@@ -126,9 +135,11 @@ globalize.translate('sharedcomponents#CancelSyncJobConfirmation');
 
         html += '</div>';
 
-        html += '<button type="button" is="paper-icon-button-light" class="btnJobMenu listItemButton"><i class="md-icon">more_vert</i></button>';
+        if (!layoutManager.tv) {
+            html += '<button type="button" is="paper-icon-button-light" class="btnJobMenu listItemButton"><i class="md-icon">more_vert</i></button>';
+        }
 
-        html += '</div>';
+        html += '</' + tagName + '>';
 
         return html;
     }

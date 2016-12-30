@@ -748,7 +748,9 @@
             context.querySelector('.typeTextForm').addEventListener('submit', onSendStringSubmit);
 
             context.querySelector('.nowPlayingCastIcon').addEventListener('click', function () {
-                MediaController.showPlayerSelection();
+                require(['playerSelectionMenu'], function (playerSelectionMenu) {
+                    playerSelectionMenu.show();
+                });
             });
 
             context.querySelector('.btnExitRemoteControl').addEventListener('click', function () {

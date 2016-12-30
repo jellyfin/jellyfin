@@ -510,25 +510,19 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
-            if (item.IsInternetMetadataEnabled())
+            // Fetchers
+            list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
             {
-                // Fetchers
-                list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
-                {
-                    Name = i.Name,
-                    Type = MetadataPluginType.MetadataFetcher
-                }));
-            }
+                Name = i.Name,
+                Type = MetadataPluginType.MetadataFetcher
+            }));
 
-            if (item.IsSaveLocalMetadataEnabled())
+            // Savers
+            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit, true)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
             {
-                // Savers
-                list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, ItemUpdateType.MetadataEdit, true)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
-                {
-                    Name = i.Name,
-                    Type = MetadataPluginType.MetadataSaver
-                }));
-            }
+                Name = i.Name,
+                Type = MetadataPluginType.MetadataSaver
+            }));
         }
 
         private void AddImagePlugins<T>(List<MetadataPlugin> list, T item, List<IImageProvider> imageProviders)

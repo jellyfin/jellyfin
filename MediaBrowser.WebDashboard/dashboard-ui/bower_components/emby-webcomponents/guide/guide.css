@@ -79,7 +79,7 @@
     width: 100%;
     height: 2px;
     display: flex;
-    margin-left: .65vh;
+    margin-left: .25em;
     background-color: #52B54B;
     height: 2px;
     transform-origin: left;
@@ -88,10 +88,10 @@
 
 .currentTimeIndicatorArrowContainer {
     position: absolute;
-    bottom: -1vh;
+    bottom: -.4em;
     width: 100%;
     color: #52B54B;
-    margin-left: .65vh;
+    margin-left: .25em;
     transform-origin: left;
     transition: transform 500ms ease-out;
 }
@@ -102,11 +102,11 @@
 }
 
 .currentTimeIndicatorArrow {
-    width: 3vh;
-    height: 3vh;
-    font-size: 3vh;
+    width: 1em;
+    height: 1em;
+    font-size: 1.2em;
     color: #52B54B;
-    margin-left: -1.5vh;
+    margin-left: -.52em;
 }
 
 .channelPrograms, .timeslotHeadersInner {
@@ -196,7 +196,7 @@
 }
 
 .channelHeaderCell {
-    border-bottom: .65vh solid #121212 !important;
+    border-bottom: .25em solid #121212 !important;
     background-size: auto 70%;
     background-position: 92% center;
     background-repeat: no-repeat;
@@ -255,8 +255,8 @@
     position: absolute;
     top: 0;
     /* Unfortunately the borders using vh get rounded while the bottom property doesn't. So this is a little hack to try and make them even*/
-    bottom: .59vh;
-    border-left: .65vh solid #121212 !important;
+    bottom: .236em;
+    border-left: .25em solid #121212 !important;
     background-color: rgba(32, 32, 32, .95);
     display: flex;
     text-decoration: none;
@@ -364,14 +364,10 @@
 .channelsContainer {
     display: flex;
     flex-shrink: 0;
-}
-
-.channelList {
-    display: flex;
     flex-direction: column;
 }
 
-.channelList, .programGrid {
+.channelsContainer, .programGrid {
     contain: layout style;
 }
 

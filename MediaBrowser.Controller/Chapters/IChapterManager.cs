@@ -26,11 +26,5 @@ namespace MediaBrowser.Controller.Chapters
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveChapters(string itemId, List<ChapterInfo> chapters, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the configuration.
-        /// </summary>
-        /// <returns>ChapterOptions.</returns>
-        ChapterOptions GetConfiguration();
     }
 }
