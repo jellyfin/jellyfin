@@ -78,7 +78,6 @@
     <Compile Include="Collections\CollectionCreationResult.cs" />
     <Compile Include="Configuration\AccessSchedule.cs" />
     <Compile Include="Configuration\ChannelOptions.cs" />
-    <Compile Include="Configuration\ChapterOptions.cs" />
     <Compile Include="Configuration\CinemaModeConfiguration.cs" />
     <Compile Include="Configuration\EncodingOptions.cs" />
     <Compile Include="Configuration\FanartOptions.cs" />

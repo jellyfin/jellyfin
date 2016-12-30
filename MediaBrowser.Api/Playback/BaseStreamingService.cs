@@ -1975,7 +1975,7 @@ namespace MediaBrowser.Api.Playback
                 if (state.OutputVideoBitrate.HasValue && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
                 {
                     var resolution = ResolutionNormalizer.Normalize(
-                        state.VideoStream == null ? (int?) null : state.VideoStream.BitRate,
+                        state.VideoStream == null ? (int?)null : state.VideoStream.BitRate,
                         state.OutputVideoBitrate.Value,
                         state.VideoStream == null ? null : state.VideoStream.Codec,
                         state.OutputVideoCodec,
@@ -2691,6 +2691,28 @@ namespace MediaBrowser.Api.Playback
                 {
                     //inputModifier += " -noaccurate_seek";
                 }
+
+                foreach (var stream in state.MediaSource.MediaStreams)
+                {
+                    if (!stream.IsExternal && stream.Type != MediaStreamType.Subtitle)
+                    {
+                        if (!string.IsNullOrWhiteSpace(stream.Codec) && stream.Index != -1)
+                        {
+                            inputModifier += " -codec:" + stream.Index.ToString(UsCulture) + " " + stream.Codec;
+                        }
+                    }
+                }
+                //var videoStream = state.VideoStream;
+                //if (videoStream != null && !string.IsNullOrWhiteSpace(videoStream.Codec))
+                //{
+                //    inputModifier += "  -codec:0 " + videoStream.Codec;
+
+                //    var audioStream = state.AudioStream;
+                //    if (audioStream != null && !string.IsNullOrWhiteSpace(audioStream.Codec))
+                //    {
+                //        inputModifier += "  -codec:1 " + audioStream.Codec;
+                //    }
+                //}
             }
 
             return inputModifier;
