@@ -33,11 +33,32 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
         }
 
+        self.getPlayerInfo = function () {
+
+            var player = currentPlayer;
+
+            if (!player) {
+                return null;
+            }
+
+            var target = currentTargetInfo || {};
+
+            return {
+
+                name: player.name,
+                isLocalPlayer: player.isLocalPlayer,
+                id: target.id,
+                deviceName: target.deviceName,
+                playableMediaTypes: target.playableMediaTypes,
+                supportedCommands: target.supportedCommands
+            };
+        };
+
         self.setActivePlayer = function (player, targetInfo) {
 
             if (typeof (player) === 'string') {
                 player = players.filter(function (p) {
-                    return p.name == player;
+                    return p.name === player;
                 })[0];
             }
 
@@ -60,7 +81,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (typeof (player) === 'string') {
                 player = players.filter(function (p) {
-                    return p.name == player;
+                    return p.name === player;
                 })[0];
             }
 
@@ -68,7 +89,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 throw new Error('null player');
             }
 
-            if (currentPairingId == targetInfo.id) {
+            if (currentPairingId === targetInfo.id) {
                 return;
             }
 
@@ -86,7 +107,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 triggerPlayerChange(player, targetInfo, previousPlayer);
             }, function () {
 
-                if (currentPairingId == targetInfo.id) {
+                if (currentPairingId === targetInfo.id) {
                     currentPairingId = null;
                 }
             });
@@ -103,7 +124,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             self.getTargets().then(function (result) {
 
                 var target = result.filter(function (p) {
-                    return normalizeName(p.name) == name;
+                    return normalizeName(p.name) === name;
                 })[0];
 
                 if (target) {
@@ -125,7 +146,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.removeActivePlayer = function (name) {
 
-            if (self.getPlayerInfo().name == name) {
+            if (self.getPlayerInfo().name === name) {
                 self.setDefaultPlayerActive();
             }
 
@@ -133,7 +154,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.removeActiveTarget = function (id) {
 
-            if (self.getPlayerInfo().id == id) {
+            if (self.getPlayerInfo().id === id) {
                 self.setDefaultPlayerActive();
             }
         };
@@ -142,7 +163,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             var playerInfo = self.getPlayerInfo();
 
-            if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
+            if (playerInfo.supportedCommands.indexOf('EndSession') !== -1) {
 
                 require(['dialog'], function (dialog) {
 
@@ -166,7 +187,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                         switch (id) {
 
                             case 'yes':
-                                MediaController.getCurrentPlayer().endSession();
+                                self.getCurrentPlayer().endSession();
                                 self.setDefaultPlayerActive();
                                 break;
                             case 'no':
@@ -261,7 +282,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return playlist.slice(0);
         };
 
-        self.currentPlayer = function () {
+        self.getCurrentPlayer = function () {
             return currentPlayer;
         };
 
@@ -481,7 +502,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return;
             }
 
-            return (appSettings.get('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
+            return (appSettings.get('displaymirror--' + Dashboard.getCurrentUserId()) || '') !== '0';
         };
 
         self.stop = function () {
@@ -523,14 +544,14 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.seek = function (ticks) {
 
-            var player = self.currentPlayer();
+            var player = currentPlayer;
 
             changeStream(player, ticks);
         };
 
         self.nextChapter = function () {
 
-            var player = self.currentPlayer();
+            var player = currentPlayer;
             var item = self.currentItem(player);
 
             var ticks = getCurrentTicks(player);
@@ -549,7 +570,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         };
 
         self.previousChapter = function () {
-            var player = self.currentPlayer();
+
+            var player = currentPlayer;
             var item = self.currentItem(player);
 
             var ticks = getCurrentTicks(player);
@@ -571,7 +593,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.fastForward = function () {
 
-            var player = self.currentPlayer();
+            var player = currentPlayer;
 
             if (player.fastForward != null) {
                 player.fastForward(userSettings.skipForwardLength());
@@ -597,7 +619,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.rewind = function () {
 
-            var player = self.currentPlayer();
+            var player = currentPlayer;
 
             if (player.rewind != null) {
                 player.rewind(userSettings.skipBackLength());
