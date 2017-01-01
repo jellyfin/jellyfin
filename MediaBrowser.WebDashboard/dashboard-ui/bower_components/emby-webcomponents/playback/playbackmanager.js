@@ -2430,6 +2430,15 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             events.off(player, 'stopped', onPlaybackStopped);
         }
 
+        function initLegacyVolumeMethods(player) {
+            player.getVolume = function() {
+                return player.volume();
+            };
+            player.setVolume = function (val) {
+                return player.volume(val);
+            };
+        }
+
         function initMediaPlayer(player) {
 
             players.push(player);
@@ -2443,6 +2452,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
 
             player.currentState = {};
+
+            if (!player.getVolume || !player.setVolume) {
+                initLegacyVolumeMethods(player);
+            }
 
             if (enableLocalPlaylistManagement(player)) {
                 events.on(player, 'error', onPlaybackError);
