@@ -27,7 +27,6 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
                 require(['browserdeviceprofile'], function (profileBuilder) {
 
                     var profile = profileBuilder({
-                        supportsCustomSeeking: true
                     });
                     resolve(profile);
                 });
@@ -110,7 +109,7 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
             return true;
         }
 
-        self.stop = function (destroyPlayer, reportEnded) {
+        self.stop = function (destroyPlayer) {
 
             cancelFadeTimeout();
 
@@ -127,7 +126,7 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
                     elem.src = '';
                     elem.innerHTML = '';
                     elem.removeAttribute("src");
-                    onEndedInternal(reportEnded);
+                    onEnded();
                     return Promise.resolve();
                 }
 
@@ -144,7 +143,7 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
                     elem.removeAttribute("src");
 
                     elem.volume = originalVolume;
-                    onEndedInternal(reportEnded);
+                    onEnded();
                 });
             }
             return Promise.resolve();
@@ -212,56 +211,47 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
             return false;
         };
 
-        self.volume = function (val) {
+        self.setVolume = function (val) {
             if (mediaElement) {
-                if (val != null) {
-                    mediaElement.volume = val / 100;
-                    return;
-                }
+                mediaElement.volume = val / 100;
+            }
+        };
 
+        self.getVolume = function () {
+            if (mediaElement) {
                 return mediaElement.volume * 100;
             }
         };
 
         self.volumeUp = function () {
-            self.volume(Math.min(self.volume() + 2, 100));
+            self.setVolume(Math.min(self.getVolume() + 2, 100));
         };
 
         self.volumeDown = function () {
-            self.volume(Math.max(self.volume() - 2, 0));
+            self.setVolume(Math.max(self.getVolume() - 2, 0));
         };
 
         self.setMute = function (mute) {
 
-            if (mute) {
-                self.volume(0);
-            } else {
-
-                if (self.isMuted()) {
-                    self.volume(50);
-                }
+            if (mediaElement) {
+                mediaElement.muted = mute;
             }
         };
 
         self.isMuted = function () {
-            return self.volume() === 0;
+            if (mediaElement) {
+                return mediaElement.muted;
+            }
+            return false;
         };
 
         function onEnded() {
 
-            onEndedInternal(true);
-        }
+            var stopInfo = {
+                src: currentSrc
+            };
 
-        function onEndedInternal(triggerEnded) {
-
-            if (triggerEnded) {
-                var stopInfo = {
-                    src: currentSrc
-                };
-
-                events.trigger(self, 'stopped', [stopInfo]);
-            }
-
+            events.trigger(self, 'stopped', [stopInfo]);
             currentSrc = null;
         }
 

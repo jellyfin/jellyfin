@@ -240,7 +240,10 @@ define(['playbackManager', 'inputManager', 'connectionManager', 'embyRouter', 'g
         }
 
         else if (action === 'instantmix') {
-            playbackManager.instantMix(playableItemId, serverId);
+            playbackManager.instantMix({
+                Id: playableItemId,
+                ServerId: serverId
+            });
         }
 
         else if (action === 'play') {

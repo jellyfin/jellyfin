@@ -98,7 +98,9 @@ define(['actionsheet', 'datetime', 'playbackManager', 'globalize', 'appSettings'
                     });
                     break;
                 case 'queue':
-                    playbackManager.queue(item);
+                    playbackManager.queue({
+                        items: [item]
+                    });
                     break;
                 case 'instantmix':
                     playbackManager.instantMix(item);

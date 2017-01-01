@@ -11,7 +11,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         return false;
     }
 
-    function playbackManager() {
+    function PlaybackManager() {
 
         var self = this;
 
@@ -38,10 +38,33 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return data.streamInfo ? data.streamInfo.mediaSource : null;
         };
 
-        function triggerPlayerChange(newPlayer, newTarget, previousPlayer) {
+        function triggerPlayerChange(newPlayer, newTarget, previousPlayer, previousTargetInfo) {
+
+            if (!newPlayer && !previousPlayer) {
+                return;
+            }
+
+            if (newTarget && previousTargetInfo) {
+
+                if (newTarget.id === previousTargetInfo.id) {
+                    return;
+                }
+            }
 
             events.trigger(self, 'playerchange', [newPlayer, newTarget, previousPlayer]);
         }
+
+        self.beginPlayerUpdates = function (player) {
+            if (player.beginPlayerUpdates) {
+                player.beginPlayerUpdates();
+            }
+        };
+
+        self.endPlayerUpdates = function (player) {
+            if (player.endPlayerUpdates) {
+                player.endPlayerUpdates();
+            }
+        };
 
         self.getPlayerInfo = function () {
 
@@ -66,6 +89,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.setActivePlayer = function (player, targetInfo) {
 
+            if (player === 'localplayer' || player.name === 'localplayer') {
+                setCurrentPlayerInternal(null, null);
+                return;
+            }
+
             if (typeof (player) === 'string') {
                 player = players.filter(function (p) {
                     return p.name === player;
@@ -76,18 +104,20 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 throw new Error('null player');
             }
 
-            var previousPlayer = currentPlayer;
-
-            currentPairingId = null;
-            currentPlayer = player;
-            currentTargetInfo = targetInfo;
-
-            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
-
-            triggerPlayerChange(player, targetInfo, previousPlayer);
+            setCurrentPlayerInternal(player, targetInfo);
         };
 
+        function displayPlayerInLocalGroup(player) {
+
+            return player.isLocalPlayer;
+        }
+
         self.trySetActivePlayer = function (player, targetInfo) {
+
+            if (player === 'localplayer' || player.name === 'localplayer') {
+                setCurrentPlayerInternal(null, null);
+                return;
+            }
 
             if (typeof (player) === 'string') {
                 player = players.filter(function (p) {
@@ -105,20 +135,13 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             currentPairingId = targetInfo.id;
 
-            var promise = player.tryPair ? 
+            var promise = player.tryPair ?
                 player.tryPair(targetInfo) :
                 Promise.resolve();
 
             promise.then(function () {
 
-                var previousPlayer = currentPlayer;
-
-                currentPlayer = player;
-                currentTargetInfo = targetInfo;
-
-                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
-
-                triggerPlayerChange(player, targetInfo, previousPlayer);
+                setCurrentPlayerInternal(player, targetInfo);
             }, function () {
 
                 if (currentPairingId === targetInfo.id) {
@@ -151,10 +174,38 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         function getSupportedCommands(player) {
 
             if (player.isLocalPlayer) {
-                return Dashboard.getSupportedRemoteCommands();
+                // Full list
+                // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs
+                return [
+                    "GoHome",
+                    "GoToSettings",
+                    "VolumeUp",
+                    "VolumeDown",
+                    "Mute",
+                    "Unmute",
+                    "ToggleMute",
+                    "SetVolume",
+                    "SetAudioStreamIndex",
+                    "SetSubtitleStreamIndex",
+                    "DisplayContent",
+                    "GoToSearch",
+                    "DisplayMessage",
+                    "SetRepeatMode"
+                ];
             }
 
             throw new Error('player must define supported commands');
+        }
+
+        function createTarget(player) {
+            return {
+                name: player.name,
+                id: player.id,
+                playerName: player.name,
+                playableMediaTypes: ['Audio', 'Video', 'Game'].map(player.canPlayMediaType),
+                isLocalPlayer: player.isLocalPlayer,
+                supportedCommands: getSupportedCommands(player)
+            };
         }
 
         function getPlayerTargets(player) {
@@ -162,25 +213,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return player.getTargets();
             }
 
-            return Promise.resolve([{
-
-                name: player.name,
-                id: player.id,
-                playerName: player.name,
-                playableMediaTypes: ['Audio', 'Video', 'Game'].map(player.canPlayMediaType),
-                isLocalPlayer: player.isLocalPlayer,
-                supportedCommands: getSupportedCommands(player)
-            }]);
+            return Promise.resolve([createTarget(player)]);
         }
 
         self.setDefaultPlayerActive = function () {
 
-            var player = self.getDefaultPlayer();
-
-            getPlayerTargets(player).then(function (targets) {
-
-                self.setActivePlayer(player, targets[0]);
-            });
+            self.setActivePlayer('localplayer');
         };
 
         self.removeActivePlayer = function (name) {
@@ -209,18 +247,18 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     var menuItems = [];
 
                     menuItems.push({
-                        name: Globalize.translate('ButtonYes'),
+                        name: globalize.translate('ButtonYes'),
                         id: 'yes'
                     });
                     menuItems.push({
-                        name: Globalize.translate('ButtonNo'),
+                        name: globalize.translate('ButtonNo'),
                         id: 'no'
                     });
 
                     dialog({
                         buttons: menuItems,
                         //positionTo: positionTo,
-                        text: Globalize.translate('ConfirmEndPlayerSession')
+                        text: globalize.translate('ConfirmEndPlayerSession')
 
                     }).then(function (id) {
                         switch (id) {
@@ -248,11 +286,24 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.getTargets = function () {
 
-            var promises = players.map(getPlayerTargets);
+            var promises = players.filter(function (p) {
+                return !displayPlayerInLocalGroup(p);
+            }).map(getPlayerTargets);
 
             return Promise.all(promises).then(function (responses) {
 
                 var targets = [];
+
+                targets.push({
+                    name: globalize.translate('sharedcomponents#MyDevice'),
+                    id: 'localplayer',
+                    playerName: 'localplayer',
+                    playableMediaTypes: ['Audio', 'Video', 'Game'],
+                    isLocalPlayer: true,
+                    supportedCommands: getSupportedCommands({
+                        isLocalPlayer: true
+                    })
+                });
 
                 for (var i = 0; i < responses.length; i++) {
 
@@ -278,6 +329,60 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                 return targets;
             });
+        };
+
+        self.displayContent = function (options, player) {
+            player = player || currentPlayer;
+            if (player && player.displayContent) {
+                player.displayContent(options);
+            }
+        }
+
+        self.sendCommand = function (cmd, player) {
+
+            // Full list
+            // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
+            console.log('MediaController received command: ' + cmd.Name);
+            switch (cmd.Name) {
+
+                case 'SetRepeatMode':
+                    self.setRepeatMode(cmd.Arguments.RepeatMode, player);
+                    break;
+                case 'VolumeUp':
+                    self.volumeUp(player);
+                    break;
+                case 'VolumeDown':
+                    self.volumeDown(player);
+                    break;
+                case 'Mute':
+                    self.setMute(true, player);
+                    break;
+                case 'Unmute':
+                    self.setMute(false, player);
+                    break;
+                case 'ToggleMute':
+                    self.toggleMute(player);
+                    break;
+                case 'SetVolume':
+                    self.setVolume(cmd.Arguments.Volume, player);
+                    break;
+                case 'SetAudioStreamIndex':
+                    self.setAudioStreamIndex(parseInt(cmd.Arguments.Index), player);
+                    break;
+                case 'SetSubtitleStreamIndex':
+                    self.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index), player);
+                    break;
+                case 'ToggleFullscreen':
+                    self.toggleFullscreen(player);
+                    break;
+                default:
+                    {
+                        if (player.sendCommand) {
+                            player.sendCommand(cmd);
+                        }
+                        break;
+                    }
+            }
         };
 
         function getCurrentSubtitleStream(player) {
@@ -323,11 +428,32 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return currentPlayer;
         };
 
-        function setCurrentPlayer(player) {
+        function setCurrentPlayerInternal(player, targetInfo) {
+
+            var previousPlayer = currentPlayer;
+            var previousTargetInfo = currentTargetInfo;
+
+            if (player && !targetInfo && player.isLocalPlayer) {
+                targetInfo = createTarget(player);
+            }
+
+            if (player && !targetInfo) {
+                throw new Error('targetInfo cannot be null');
+            }
+
+            currentPairingId = null;
             currentPlayer = player;
+            currentTargetInfo = targetInfo;
+
+            if (targetInfo) {
+                console.log('Active player: ' + JSON.stringify(targetInfo));
+            }
+
             if (player && player.isLocalPlayer) {
                 lastLocalPlayer = player;
             }
+
+            triggerPlayerChange(player, targetInfo, previousPlayer, previousTargetInfo);
         }
 
         self.isPlaying = function () {
@@ -360,6 +486,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return players;
         };
 
+        function getAutomaticPlayers() {
+
+            var player = currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return [player];
+            }
+
+            return self.getPlayers().filter(enableLocalPlaylistManagement);
+        }
+
         self.canPlay = function (item) {
 
             var itemType = item.Type;
@@ -382,7 +518,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 }
             }
 
-            return self.getPlayers().filter(function (p) {
+            return getAutomaticPlayers().filter(function (p) {
 
                 return p.canPlayMediaType(mediaType);
 
@@ -406,26 +542,30 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return false;
         };
 
-        self.isMuted = function () {
+        self.isMuted = function (player) {
 
-            if (currentPlayer) {
-                return currentPlayer.isMuted();
+            player = player || currentPlayer;
+
+            if (player) {
+                return player.isMuted();
             }
 
             return false;
         };
 
-        self.setMute = function (mute) {
+        self.setMute = function (mute, player) {
 
-            if (currentPlayer) {
-                currentPlayer.setMute(mute);
+            player = player || currentPlayer;
+
+            if (player) {
+                player.setMute(mute);
             }
         };
 
-        self.toggleMute = function (mute) {
+        self.toggleMute = function (mute, player) {
 
-            var player = currentPlayer;
-            if (currentPlayer) {
+            player = player || currentPlayer;
+            if (player) {
 
                 if (player.toggleMute) {
                     player.toggleMute();
@@ -435,30 +575,48 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.volume = function (val) {
+        self.setVolume = function (val, player) {
 
-            if (currentPlayer) {
-                return currentPlayer.volume(val);
+            player = player || currentPlayer;
+
+            if (player) {
+                player.setVolume(val);
             }
         };
 
-        self.volumeUp = function () {
+        self.getVolume = function (player) {
 
-            if (currentPlayer) {
-                currentPlayer.volumeUp();
+            player = player || currentPlayer;
+
+            if (player) {
+                return player.getVolume();
             }
         };
 
-        self.volumeDown = function () {
+        self.volumeUp = function (player) {
 
-            if (currentPlayer) {
-                currentPlayer.volumeDown();
+            player = player || currentPlayer;
+
+            if (player) {
+                player.volumeUp();
             }
         };
 
-        self.setAudioStreamIndex = function (index) {
+        self.volumeDown = function (player) {
 
-            var player = currentPlayer;
+            player = player || currentPlayer;
+
+            if (player) {
+                player.volumeDown();
+            }
+        };
+
+        self.setAudioStreamIndex = function (index, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setAudioStreamIndex(index);
+            }
 
             if (getPlayerData(player).streamInfo.playMethod === 'Transcode' || !player.canSetAudioStreamIndex()) {
 
@@ -471,9 +629,13 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.setSubtitleStreamIndex = function (index) {
+        self.setSubtitleStreamIndex = function (index, player) {
 
-            var player = currentPlayer;
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setSubtitleStreamIndex(index);
+            }
+
             var currentStream = getCurrentSubtitleStream(player);
 
             var newStream = getSubtitleStream(player, index);
@@ -531,7 +693,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             if (enabled != null) {
 
                 var val = enabled ? '1' : '0';
-                appSettings.set('displaymirror--' + Dashboard.getCurrentUserId(), val);
+                appSettings.set('displaymirror', val);
 
                 if (enabled) {
                     mirrorIfEnabled();
@@ -539,13 +701,17 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return;
             }
 
-            return (appSettings.get('displaymirror--' + Dashboard.getCurrentUserId()) || '') !== '0';
+            return (appSettings.get('displaymirror') || '') !== '0';
         };
 
-        self.stop = function () {
-            if (currentPlayer) {
+        self.stop = function (player) {
+
+            player = player || currentPlayer;
+
+            if (player) {
                 playNextAfterEnded = false;
-                currentPlayer.stop(true, true);
+                // TODO: remove second param
+                player.stop(true, true);
             }
         };
 
@@ -579,9 +745,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.seek = function (ticks) {
+        self.seek = function (ticks, player) {
 
-            var player = currentPlayer;
+            player = player || currentPlayer;
+            if (currentPlayer && !enableLocalPlaylistManagement(player)) {
+                return player.seek(ticks);
+            }
 
             changeStream(player, ticks);
         };
@@ -818,19 +987,55 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.play = function (options) {
 
-            if (typeof (options) === 'string') {
-                options = { ids: [options] };
+            normalizePlayOptions(options);
+
+            if (currentPlayer) {
+                if (options.enableRemotePlayers === false && !currentPlayer.isLocalPlayer) {
+                    return Promise.reject();
+                }
+
+                if (!enableLocalPlaylistManagement(currentPlayer)) {
+                    return currentPlayer.play(options);
+                }
             }
 
-            return playItems(options);
+            if (options.fullscreen) {
+                loading.show();
+            }
+
+            if (options.items) {
+
+                return translateItemsForPlayback(options.items, options).then(function (items) {
+
+                    return playWithIntros(items, options);
+                });
+
+            } else {
+
+                if (!options.serverId) {
+                    throw new Error('serverId required!');
+                }
+
+                return getItemsForPlayback(options.serverId, {
+
+                    Ids: options.ids.join(',')
+
+                }).then(function (result) {
+
+                    return translateItemsForPlayback(result.Items, options).then(function (items) {
+
+                        return playWithIntros(items, options);
+                    });
+
+                });
+            }
         };
 
-        self.instantMix = function (id, serverId) {
+        self.instantMix = function (item, player) {
 
-            if (typeof id !== 'string') {
-                var item = id;
-                id = item.Id;
-                serverId = item.ServerId;
+            player = player || currentPlayer;
+            if (!enableLocalPlaylistManagement(player)) {
+                return player.instantMix(item);
             }
 
             var apiClient = connectionManager.getApiClient(serverId);
@@ -839,24 +1044,23 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             options.UserId = apiClient.getCurrentUserId();
             options.Fields = 'MediaSources';
 
-            apiClient.getInstantMixFromItem(id, options).then(function (result) {
+            apiClient.getInstantMixFromItem(id, item).then(function (result) {
                 self.play({
                     items: result.Items
                 });
             });
         };
 
-        self.shuffle = function (id, serverId) {
+        self.shuffle = function (shuffleItem, player) {
 
-            if (typeof id !== 'string') {
-                var item = id;
-                id = item.Id;
-                serverId = item.ServerId;
+            player = player || currentPlayer;
+            if (!enableLocalPlaylistManagement(player)) {
+                return player.shuffle(shuffleItem);
             }
 
-            var apiClient = connectionManager.getApiClient(serverId);
+            var apiClient = connectionManager.getApiClient(shuffleItem.ServerId);
 
-            apiClient.getItem(apiClient.getCurrentUserId(), id).then(function (item) {
+            apiClient.getItem(apiClient.getCurrentUserId(), shuffleItem.Id).then(function (item) {
 
                 var query = {
                     Fields: "MediaSources,Chapters",
@@ -915,9 +1119,15 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.getPlayerState = function (player) {
 
             player = player || currentPlayer;
+
+            if (!enableLocalPlaylistManagement(player)) {
+                return player.getPlayerState();
+            }
+
             var playerData = getPlayerData(player);
-            var item = playerData.streamInfo.item;
-            var mediaSource = playerData.streamInfo.mediaSource;
+            var streamInfo = playerData.streamInfo;
+            var item = streamInfo ? streamInfo.item : null;
+            var mediaSource = streamInfo ? streamInfo.mediaSource : null;
 
             var state = {
                 PlayState: {}
@@ -925,15 +1135,13 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (player) {
 
-                state.PlayState.VolumeLevel = player.volume();
+                state.PlayState.VolumeLevel = player.getVolume();
                 state.PlayState.IsMuted = player.isMuted();
                 state.PlayState.IsPaused = player.paused();
-                state.PlayState.PositionTicks = getCurrentTicks(player);
                 state.PlayState.RepeatMode = self.getRepeatMode();
 
-                var currentSrc = player.currentSrc();
-
-                if (currentSrc) {
+                if (streamInfo) {
+                    state.PlayState.PositionTicks = getCurrentTicks(player);
 
                     state.PlayState.SubtitleStreamIndex = playerData.subtitleStreamIndex;
                     state.PlayState.AudioStreamIndex = playerData.audioStreamIndex;
@@ -963,10 +1171,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 state.NowPlayingItem = getNowPlayingItemForReporting(player, item, mediaSource);
             }
 
-            return state;
+            return Promise.resolve(state);
         };
 
         self.currentTime = function (player) {
+
+            player = player || currentPlayer;
+            if (currentPlayer && !enableLocalPlaylistManagement(player)) {
+                return player.currentTime();
+            }
+
             return getCurrentTicks(player);
         };
 
@@ -1000,7 +1214,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             nowPlayingItem.PremiereDate = item.PremiereDate;
             nowPlayingItem.SeriesName = item.SeriesName;
             nowPlayingItem.Album = item.Album;
-            nowPlayingItem.Artists = item.ArtistItems;
+            nowPlayingItem.AlbumId = item.AlbumId;
+            nowPlayingItem.Artists = item.Artists;
+            nowPlayingItem.ArtistItems = item.ArtistItems;
 
             var imageTags = item.ImageTags || {};
 
@@ -1053,42 +1269,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
 
             return nowPlayingItem;
-        }
-
-        function playItems(options, method) {
-
-            normalizePlayOptions(options);
-
-            if (options.fullscreen) {
-                loading.show();
-            }
-
-            if (options.items) {
-
-                return translateItemsForPlayback(options.items, options).then(function (items) {
-
-                    return playWithIntros(items, options);
-                });
-
-            } else {
-
-                if (!options.serverId) {
-                    throw new Error();
-                }
-
-                return getItemsForPlayback(options.serverId, {
-
-                    Ids: options.ids.join(',')
-
-                }).then(function (result) {
-
-                    return translateItemsForPlayback(result.Items, options).then(function (items) {
-
-                        return playWithIntros(items, options);
-                    });
-
-                });
-            }
         }
 
         function translateItemsForPlayback(items, options) {
@@ -1281,7 +1461,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 if (player) {
                     player.destroy();
                 }
-                setCurrentPlayer(null);
+                setCurrentPlayerInternal(null);
 
                 events.trigger(self, 'playbackcancelled');
 
@@ -1874,11 +2054,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         function getPlayer(item, playOptions) {
 
-            var players = self.getPlayers();
-
             var serverItem = isServerItem(item);
 
-            return self.getPlayers().filter(function (p) {
+            return getAutomaticPlayers().filter(function (p) {
 
                 if (p.canPlayMediaType(item.MediaType)) {
 
@@ -1943,12 +2121,24 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             });
         };
 
-        self.setRepeatMode = function (value) {
+        self.setRepeatMode = function (value, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setRepeatMode(value);
+            }
+
             repeatMode = value;
             events.trigger(self, 'repeatmodechange');
         };
 
-        self.getRepeatMode = function () {
+        self.getRepeatMode = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getRepeatMode();
+            }
+
             return repeatMode;
         };
 
@@ -1989,7 +2179,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             };
         }
 
-        self.nextTrack = function () {
+        self.nextTrack = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.nextTrack();
+            }
 
             var newItemInfo = getNextItemInfo();
 
@@ -2007,7 +2202,13 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.previousTrack = function () {
+        self.previousTrack = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.previousTrack();
+            }
+
             var newIndex = currentPlaylistIndex - 1;
             if (newIndex >= 0) {
                 var newItem = playlist[newIndex];
@@ -2025,23 +2226,28 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.queue = function (options) {
-            queue(options);
+        self.queue = function (options, player) {
+            queue(options, '', player);
         };
 
-        self.queueNext = function (options) {
-            queue(options, 'next');
+        self.queueNext = function (options, player) {
+            queue(options, 'next', player);
         };
 
-        function queue(options, mode) {
+        function queue(options, mode, player) {
 
-            if (!currentPlayer) {
-                self.play(options);
-                return;
+            player = player || currentPlayer;
+
+            if (!player) {
+                return self.play(options);
             }
 
-            if (typeof (options) === 'string') {
-                options = { ids: [options] };
+            if (!enableLocalPlaylistManagement(player)) {
+
+                if (mode === 'next') {
+                    return player.queueNext(item);
+                }
+                return player.queue(item);
             }
 
             // TODO
@@ -2049,7 +2255,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         function onPlaybackStarted(player, streamInfo, mediaSource) {
 
-            setCurrentPlayer(player);
+            setCurrentPlayerInternal(player);
             getPlayerData(player).streamInfo = streamInfo;
 
             if (mediaSource) {
@@ -2062,13 +2268,15 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             playNextAfterEnded = true;
 
-            var state = self.getPlayerState(player);
+            self.getPlayerState(player).then(function (state) {
 
-            reportPlayback(state, getPlayerData(player).streamInfo.item.ServerId, 'reportPlaybackStart');
+                reportPlayback(state, getPlayerData(player).streamInfo.item.ServerId, 'reportPlaybackStart');
 
-            startProgressInterval(player);
+                startProgressInterval(player);
 
-            events.trigger(self, 'playbackstart', [player]);
+                events.trigger(player, 'playbackstart', [state]);
+                events.trigger(self, 'playbackstart', [player]);
+            });
         }
 
         function onPlaybackError(e, error) {
@@ -2126,76 +2334,100 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
 
             // User clicked stop or content ended
-            var state = self.getPlayerState(player);
-            var streamInfo = getPlayerData(player).streamInfo;
+            self.getPlayerState(player).then(function (state) {
 
-            if (isServerItem(streamInfo.item)) {
+                var streamInfo = getPlayerData(player).streamInfo;
 
-                if (player.supportsProgress === false && state.PlayState && !state.PlayState.PositionTicks) {
-                    state.PlayState.PositionTicks = streamInfo.item.RunTimeTicks;
+                if (isServerItem(streamInfo.item)) {
+
+                    if (player.supportsProgress === false && state.PlayState && !state.PlayState.PositionTicks) {
+                        state.PlayState.PositionTicks = streamInfo.item.RunTimeTicks;
+                    }
+
+                    reportPlayback(state, streamInfo.item.ServerId, 'reportPlaybackStopped');
                 }
 
-                reportPlayback(state, streamInfo.item.ServerId, 'reportPlaybackStopped');
-            }
+                clearProgressInterval(player);
 
-            clearProgressInterval(player);
+                var nextItem = playNextAfterEnded ? getNextItemInfo() : null;
 
-            var nextItem = playNextAfterEnded ? getNextItemInfo() : null;
+                var nextMediaType = (nextItem ? nextItem.item.MediaType : null);
 
-            var nextMediaType = (nextItem ? nextItem.item.MediaType : null);
+                var playbackStopInfo = {
+                    player: player,
+                    state: state,
+                    nextItem: (nextItem ? nextItem.item : null),
+                    nextMediaType: nextMediaType
+                };
 
-            var playbackStopInfo = {
-                player: player,
-                state: state,
-                nextItem: (nextItem ? nextItem.item : null),
-                nextMediaType: nextMediaType
-            };
+                events.trigger(player, 'playbackstop', [state]);
+                events.trigger(self, 'playbackstop', [playbackStopInfo]);
 
-            events.trigger(self, 'playbackstop', [playbackStopInfo]);
+                var newPlayer = nextItem ? getPlayer(nextItem.item, currentPlayOptions) : null;
 
-            var newPlayer = nextItem ? getPlayer(nextItem.item, currentPlayOptions) : null;
+                if (newPlayer !== player) {
+                    player.destroy();
+                    setCurrentPlayerInternal(null);
+                }
 
-            if (newPlayer !== player) {
-                player.destroy();
-                setCurrentPlayer(null);
-            }
-
-            if (nextItem) {
-                self.nextTrack();
-            }
+                if (nextItem) {
+                    self.nextTrack();
+                }
+            });
         }
 
         function onPlaybackChanging(activePlayer, newPlayer, newItem) {
 
-            var state = self.getPlayerState(activePlayer);
-            var serverId = getPlayerData(activePlayer).streamInfo.item.ServerId;
+            return self.getPlayerState(activePlayer).then(function (state) {
+                var serverId = getPlayerData(activePlayer).streamInfo.item.ServerId;
 
-            // User started playing something new while existing content is playing
-            var promise;
+                // User started playing something new while existing content is playing
+                var promise;
 
-            if (activePlayer === newPlayer) {
+                unbindStopped(activePlayer);
 
-                // If we're staying with the same player, stop it
-                promise = activePlayer.stop(false, false);
+                if (activePlayer === newPlayer) {
 
-            } else {
+                    // If we're staying with the same player, stop it
+                    // TODO: remove second param
+                    promise = activePlayer.stop(false, true);
 
-                // If we're switching players, tear down the current one
-                promise = activePlayer.stop(true, false);
-            }
+                } else {
 
-            return promise.then(function () {
-                reportPlayback(state, serverId, 'reportPlaybackStopped');
+                    // If we're switching players, tear down the current one
+                    // TODO: remove second param
+                    promise = activePlayer.stop(true, true);
+                }
 
-                clearProgressInterval(activePlayer);
+                return promise.then(function () {
 
-                events.trigger(self, 'playbackstop', [{
-                    player: activePlayer,
-                    state: state,
-                    nextItem: newItem,
-                    nextMediaType: newItem.MediaType
-                }]);
+                    bindStopped(activePlayer);
+
+                    reportPlayback(state, serverId, 'reportPlaybackStopped');
+
+                    clearProgressInterval(activePlayer);
+
+                    events.trigger(self, 'playbackstop', [{
+                        player: activePlayer,
+                        state: state,
+                        nextItem: newItem,
+                        nextMediaType: newItem.MediaType
+                    }]);
+                });
             });
+        }
+
+        function bindStopped(player) {
+
+            if (enableLocalPlaylistManagement(player)) {
+                events.off(player, 'stopped', onPlaybackStopped);
+                events.on(player, 'stopped', onPlaybackStopped);
+            }
+        }
+
+        function unbindStopped(player) {
+
+            events.off(player, 'stopped', onPlaybackStopped);
         }
 
         function initMediaPlayer(player) {
@@ -2214,8 +2446,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (enableLocalPlaylistManagement(player)) {
                 events.on(player, 'error', onPlaybackError);
-                events.on(player, 'stopped', onPlaybackStopped);
             }
+            bindStopped(player);
         }
 
         events.on(pluginManager, 'registered', function (e, plugin) {
@@ -2249,9 +2481,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             player.lastProgressReport = new Date().getTime();
 
-            var state = self.getPlayerState(player);
-            var currentItem = getPlayerData(player).streamInfo.item;
-            reportPlayback(state, currentItem.ServerId, 'reportPlaybackProgress');
+            self.getPlayerState(player).then(function (state) {
+                var currentItem = getPlayerData(player).streamInfo.item;
+                reportPlayback(state, currentItem.ServerId, 'reportPlaybackProgress');
+            });
         }
 
         function reportPlayback(state, serverId, method) {
@@ -2303,5 +2536,5 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         });
     }
 
-    return new playbackManager();
+    return new PlaybackManager();
 });
