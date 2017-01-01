@@ -896,7 +896,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                args += "-map -0:v";
+                // No known video stream
+                args += "-vn";
             }
 
             if (state.AudioStream != null)
