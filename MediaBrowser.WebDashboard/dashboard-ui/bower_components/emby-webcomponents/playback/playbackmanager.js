@@ -748,7 +748,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.seek = function (ticks, player) {
 
             player = player || currentPlayer;
-            if (currentPlayer && !enableLocalPlaylistManagement(player)) {
+            if (player && !enableLocalPlaylistManagement(player)) {
                 return player.seek(ticks);
             }
 
@@ -1034,17 +1034,17 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.instantMix = function (item, player) {
 
             player = player || currentPlayer;
-            if (!enableLocalPlaylistManagement(player)) {
+            if (player && !enableLocalPlaylistManagement(player)) {
                 return player.instantMix(item);
             }
 
-            var apiClient = connectionManager.getApiClient(serverId);
+            var apiClient = connectionManager.getApiClient(item.ServerId);
 
             var options = {};
             options.UserId = apiClient.getCurrentUserId();
             options.Fields = 'MediaSources';
 
-            apiClient.getInstantMixFromItem(id, item).then(function (result) {
+            apiClient.getInstantMixFromItem(item.Id, options).then(function (result) {
                 self.play({
                     items: result.Items
                 });
@@ -1054,7 +1054,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.shuffle = function (shuffleItem, player) {
 
             player = player || currentPlayer;
-            if (!enableLocalPlaylistManagement(player)) {
+            if (player && !enableLocalPlaylistManagement(player)) {
                 return player.shuffle(shuffleItem);
             }
 
@@ -1177,7 +1177,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.currentTime = function (player) {
 
             player = player || currentPlayer;
-            if (currentPlayer && !enableLocalPlaylistManagement(player)) {
+            if (player && !enableLocalPlaylistManagement(player)) {
                 return player.currentTime();
             }
 
