@@ -1,4 +1,4 @@
-define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager'], function (browser, pluginManager, events, appHost, loading, playbackManager) {
+define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager', 'embyRouter'], function (browser, pluginManager, events, appHost, loading, playbackManager, embyRouter) {
     "use strict";
 
     return function () {
@@ -373,7 +373,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
         self.destroy = function () {
 
             destroyHlsPlayer();
-            Emby.Page.setTransparency('none');
+            embyRouter.setTransparency('none');
 
             var videoElement = mediaElement;
 
@@ -555,10 +555,10 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 if (currentPlayOptions.fullscreen) {
 
-                    Emby.Page.showVideoOsd().then(onNavigatedToOsd);
+                    embyRouter.showVideoOsd().then(onNavigatedToOsd);
 
                 } else {
-                    Emby.Page.setTransparency('backdrop');
+                    embyRouter.setTransparency('backdrop');
                     videoDialog.classList.remove('videoPlayerContainer-withBackdrop');
                     videoDialog.classList.remove('videoPlayerContainer-onTop');
                 }
