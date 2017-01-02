@@ -607,6 +607,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
+        self.getAudioStreamIndex = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getAudioStreamIndex();
+            }
+
+            return getPlayerData(player).audioStreamIndex;
+        };
+
         self.setAudioStreamIndex = function (index, player) {
 
             player = player || currentPlayer;
@@ -623,6 +633,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 player.setAudioStreamIndex(index);
                 getPlayerData(player).audioStreamIndex = index;
             }
+        };
+
+        self.getSubtitleStreamIndex = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getSubtitleStreamIndex();
+            }
+
+            return getPlayerData(player).subtitleStreamIndex;
         };
 
         self.setSubtitleStreamIndex = function (index, player) {
