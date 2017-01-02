@@ -336,7 +336,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             if (player && player.displayContent) {
                 player.displayContent(options);
             }
-        }
+        };
 
         self.sendCommand = function (cmd, player) {
 
@@ -711,10 +711,13 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.playPause = function () {
-            if (currentPlayer) {
+        self.playPause = function (player) {
 
-                if (currentPlayer.paused()) {
+            player = player || currentPlayer;
+
+            if (player) {
+
+                if (player.paused()) {
                     self.unpause();
                 } else {
                     self.pause();
@@ -722,22 +725,28 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
-        self.paused = function () {
+        self.paused = function (player) {
 
-            if (currentPlayer) {
-                return currentPlayer.paused();
+            player = player || currentPlayer;
+
+            if (player) {
+                return player.paused();
             }
         };
 
-        self.pause = function () {
-            if (currentPlayer) {
-                currentPlayer.pause();
+        self.pause = function (player) {
+            player = player || currentPlayer;
+
+            if (player) {
+                player.pause();
             }
         };
 
-        self.unpause = function () {
-            if (currentPlayer) {
-                currentPlayer.unpause();
+        self.unpause = function (player) {
+            player = player || currentPlayer;
+
+            if (player) {
+                player.unpause();
             }
         };
 
@@ -1190,78 +1199,12 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         function getNowPlayingItemForReporting(player, item, mediaSource) {
 
-            var nowPlayingItem = {};
+            var nowPlayingItem = Object.assign({}, item);
 
             if (mediaSource) {
                 nowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
             } else {
                 nowPlayingItem.RunTimeTicks = player.duration() * 10000;
-            }
-
-            nowPlayingItem.Id = item.Id;
-            nowPlayingItem.MediaType = item.MediaType;
-            nowPlayingItem.Type = item.Type;
-            nowPlayingItem.Name = item.Name;
-
-            nowPlayingItem.IndexNumber = item.IndexNumber;
-            nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
-            nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
-            nowPlayingItem.ProductionYear = item.ProductionYear;
-            nowPlayingItem.PremiereDate = item.PremiereDate;
-            nowPlayingItem.SeriesName = item.SeriesName;
-            nowPlayingItem.Album = item.Album;
-            nowPlayingItem.AlbumId = item.AlbumId;
-            nowPlayingItem.Artists = item.Artists;
-            nowPlayingItem.ArtistItems = item.ArtistItems;
-
-            var imageTags = item.ImageTags || {};
-
-            if (item.SeriesPrimaryImageTag) {
-
-                nowPlayingItem.PrimaryImageItemId = item.SeriesId;
-                nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
-            }
-            else if (imageTags.Primary) {
-
-                nowPlayingItem.PrimaryImageItemId = item.Id;
-                nowPlayingItem.PrimaryImageTag = imageTags.Primary;
-            }
-            else if (item.AlbumPrimaryImageTag) {
-
-                nowPlayingItem.PrimaryImageItemId = item.AlbumId;
-                nowPlayingItem.PrimaryImageTag = item.AlbumPrimaryImageTag;
-            }
-            else if (item.SeriesPrimaryImageTag) {
-
-                nowPlayingItem.PrimaryImageItemId = item.SeriesId;
-                nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
-            }
-
-            if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                nowPlayingItem.BackdropItemId = item.Id;
-                nowPlayingItem.BackdropImageTag = item.BackdropImageTags[0];
-            }
-            else if (item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-                nowPlayingItem.BackdropItemId = item.ParentBackdropItemId;
-                nowPlayingItem.BackdropImageTag = item.ParentBackdropImageTags[0];
-            }
-
-            if (imageTags.Thumb) {
-
-                nowPlayingItem.ThumbItemId = item.Id;
-                nowPlayingItem.ThumbImageTag = imageTags.Thumb;
-            }
-
-            if (imageTags.Logo) {
-
-                nowPlayingItem.LogoItemId = item.Id;
-                nowPlayingItem.LogoImageTag = imageTags.Logo;
-            }
-            else if (item.ParentLogoImageTag) {
-
-                nowPlayingItem.LogoItemId = item.ParentLogoItemId;
-                nowPlayingItem.LogoImageTag = item.ParentLogoImageTag;
             }
 
             return nowPlayingItem;
@@ -2427,7 +2370,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         }
 
         function initLegacyVolumeMethods(player) {
-            player.getVolume = function() {
+            player.getVolume = function () {
                 return player.volume();
             };
             player.setVolume = function (val) {

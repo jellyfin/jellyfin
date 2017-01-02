@@ -583,7 +583,7 @@ define(['datetime', 'imageLoader', 'connectionManager', 'itemHelper', 'focusMana
 
                 height = width && primaryImageAspectRatio ? Math.round(width / primaryImageAspectRatio) : null;
 
-                imgUrl = apiClient.getScaledImageUrl(item.Id || item.ItemId, {
+                imgUrl = apiClient.getScaledImageUrl(item.PrimaryImageItemId || item.Id || item.ItemId, {
                     type: "Primary",
                     maxHeight: height,
                     maxWidth: width,

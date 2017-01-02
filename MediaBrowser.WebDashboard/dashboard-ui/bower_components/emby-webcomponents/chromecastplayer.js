@@ -169,7 +169,7 @@
             message = JSON.parse(message);
         }
 
-        if (message.type == 'playbackerror') {
+        if (message.type === 'playbackerror') {
 
             var errorCode = message.data;
 
@@ -178,7 +178,7 @@
             }, 300);
 
         }
-        else if (message.type == 'connectionerror') {
+        else if (message.type === 'connectionerror') {
 
             setTimeout(function () {
                 alertText(globalize.translate('MessageChromecastConnectionError'), globalize.translate('HeaderError'));
@@ -399,11 +399,11 @@
         console.log("chromecast new media session ID:" + mediaSession.mediaSessionId + ' (' + how + ')');
         this.currentMediaSession = mediaSession;
 
-        if (how == 'loadMedia') {
+        if (how === 'loadMedia') {
             this.castPlayerState = PLAYER_STATE.PLAYING;
         }
 
-        if (how == 'activeSession') {
+        if (how === 'activeSession') {
             this.castPlayerState = mediaSession.playerState;
         }
 
@@ -416,7 +416,7 @@
      */
     CastPlayer.prototype.onMediaStatusUpdate = function (e) {
 
-        if (e == false) {
+        if (e === false) {
             this.castPlayerState = PLAYER_STATE.IDLE;
         }
         console.log("chromecast updating media: " + e);
@@ -476,7 +476,7 @@
 
             var userId = ApiClient.getCurrentUserId();
 
-            if (query.Ids && query.Ids.split(',').length == 1) {
+            if (query.Ids && query.Ids.split(',').length === 1) {
                 return ApiClient.getItem(userId, query.Ids.split(',')).then(function (item) {
                     return {
                         Items: [item],
@@ -901,7 +901,7 @@
 
         self.tryPair = function (target) {
 
-            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+            if (castPlayer.deviceState !== DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
 
                 return new Promise(function (resolve, reject) {
                     currentResolve = resolve;

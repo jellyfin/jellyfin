@@ -7,7 +7,7 @@ define([], function () {
         var bottomItem = null;
         var topText = nowPlayingItem.Name;
 
-        if (nowPlayingItem.AlbumId && nowPlayingItem.MediaType == 'Audio') {
+        if (nowPlayingItem.AlbumId && nowPlayingItem.MediaType === 'Audio') {
             topItem = {
                 Id: nowPlayingItem.AlbumId,
                 Name: nowPlayingItem.Album,
@@ -16,7 +16,7 @@ define([], function () {
             };
         }
 
-        if (nowPlayingItem.MediaType == 'Video') {
+        if (nowPlayingItem.MediaType === 'Video') {
             if (nowPlayingItem.IndexNumber != null) {
                 topText = nowPlayingItem.IndexNumber + " - " + topText;
             }

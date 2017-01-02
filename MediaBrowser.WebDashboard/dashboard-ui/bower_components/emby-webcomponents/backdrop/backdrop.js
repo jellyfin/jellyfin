@@ -201,7 +201,7 @@
 
             return item.BackdropImageTags.map(function (imgTag, index) {
 
-                return apiClient.getScaledImageUrl(item.Id, Object.assign(imageOptions, {
+                return apiClient.getScaledImageUrl(item.BackdropItemId || item.Id, Object.assign(imageOptions, {
                     type: "Backdrop",
                     tag: imgTag,
                     maxWidth: getBackdropMaxWidth(),

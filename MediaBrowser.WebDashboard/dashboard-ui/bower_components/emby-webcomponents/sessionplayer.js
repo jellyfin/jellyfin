@@ -85,7 +85,7 @@
 
         self.canQueueMediaType = function (mediaType) {
 
-            return mediaType == 'Audio' || mediaType == 'Video';
+            return mediaType === 'Audio' || mediaType === 'Video';
         };
 
         self.stop = function () {
@@ -182,7 +182,7 @@
                     // Update existing data
                     //updateSessionInfo(popup, msg.Data);
                     var session = sessions.filter(function (s) {
-                        return s.Id == currentTargetId;
+                        return s.Id === currentTargetId;
                     })[0];
 
                     if (session) {
@@ -274,7 +274,7 @@
                 return apiClient.getSessions(sessionQuery).then(function (sessions) {
 
                     return sessions.filter(function (s) {
-                        return s.DeviceId != apiClient.deviceId();
+                        return s.DeviceId !== apiClient.deviceId();
 
                     }).map(function (s) {
                         return {
@@ -326,7 +326,7 @@
             // Update existing data
             //updateSessionInfo(popup, msg.Data);
             var session = sessions.filter(function (s) {
-                return s.Id == currentTargetId;
+                return s.Id === currentTargetId;
             })[0];
 
             if (session) {
@@ -342,22 +342,22 @@
         events.on(serverNotifications, 'SessionEnded', function (e, apiClient, data) {
             console.log("Server reports another session ended");
 
-            if (playbackManager.getPlayerInfo().id == data.Id) {
+            if (playbackManager.getPlayerInfo().id === data.Id) {
                 playbackManager.setDefaultPlayerActive();
             }
         });
 
         events.on(serverNotifications, 'PlaybackStart', function (e, apiClient, data) {
-            if (data.DeviceId != apiClient.deviceId()) {
-                if (playbackManager.getPlayerInfo().id == data.Id) {
+            if (data.DeviceId !== apiClient.deviceId()) {
+                if (playbackManager.getPlayerInfo().id === data.Id) {
                     firePlaybackEvent('playbackstart', data);
                 }
             }
         });
 
         events.on(serverNotifications, 'PlaybackStopped', function (e, apiClient, data) {
-            if (data.DeviceId != apiClient.deviceId()) {
-                if (playbackManager.getPlayerInfo().id == data.Id) {
+            if (data.DeviceId !== apiClient.deviceId()) {
+                if (playbackManager.getPlayerInfo().id === data.Id) {
                     firePlaybackEvent('playbackstop', data);
                 }
             }
