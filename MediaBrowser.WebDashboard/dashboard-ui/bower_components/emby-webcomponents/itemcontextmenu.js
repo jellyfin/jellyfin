@@ -1,8 +1,6 @@
 define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter', 'playbackManager', 'loading', 'appSettings'], function (appHost, globalize, connectionManager, itemHelper, embyRouter, playbackManager, loading, appSettings) {
     'use strict';
 
-    var isMobileApp = window.Dashboard != null;
-
     function getCommands(options) {
 
         var item = options.item;
@@ -146,13 +144,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         name: globalize.translate('sharedcomponents#Play'),
                         id: 'resume'
                     });
-
-                    if (isMobileApp && appSettings.enableExternalPlayers()) {
-                        commands.push({
-                            name: globalize.translate('ButtonPlayExternalPlayer'),
-                            id: 'externalplayer'
-                        });
-                    }
                 }
 
                 if (options.playAllFromHere && item.Type !== 'Program' && item.Type !== 'TvChannel') {

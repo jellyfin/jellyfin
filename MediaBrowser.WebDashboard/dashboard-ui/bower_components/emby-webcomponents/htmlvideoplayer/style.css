@@ -1,0 +1,58 @@
+.videoPlayerContainer {
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    background: #000 !important;
+}
+
+.videoPlayerContainer-withBackdrop {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.videoPlayerContainer-onTop {
+    z-index: 1000;
+}
+
+.htmlvideoplayer {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+}
+
+.videoSubtitles {
+    position: fixed;
+    bottom: 10%;
+    text-align: center;
+    left: 0;
+    right: 0;
+    color: #fff;
+    font-size: 150%;
+}
+
+.videoSubtitlesInner {
+    max-width: 70%;
+    background-color: rgba(0,0,0,.8);
+    padding: .25em;
+    margin: auto;
+    display: inline-block;
+}
+
+.htmlvideoplayer-nocontrols::-webkit-media-text-track-display {
+    /*Style the text itself*/
+    margin-top: -2.5em;
+}
+
+::cue {
+    background-color: transparent;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 1);
+    -webkit-font-smoothing: antialiased;
+    font-family: inherit;
+}
