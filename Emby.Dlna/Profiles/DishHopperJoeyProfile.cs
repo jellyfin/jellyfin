@@ -63,22 +63,7 @@ namespace Emby.Dlna.Profiles
 
                 new DirectPlayProfile
                 {
-                    Container = "mp3",
-                    AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
-                },
-
-                new DirectPlayProfile
-                {
-                    Container = "alac",
-                    AudioCodec = "alac",
-                    Type = DlnaProfileType.Audio
-                },
-
-                new DirectPlayProfile
-                {
-                    Container = "flac",
-                    AudioCodec = "flac",
+                    Container = "mp3,alac,flac",
                     Type = DlnaProfileType.Audio
                 },
 

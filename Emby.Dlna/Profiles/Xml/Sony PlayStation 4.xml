@@ -45,7 +45,7 @@
     <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
-    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
+    <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Bytes" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
     <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" copyTimestamps="false" context="Streaming" enableSubtitlesInManifest="false" />
   </TranscodingProfiles>
