@@ -106,6 +106,11 @@ namespace Emby.Server.Core.EntryPoints
 
         private async void _deviceDiscovery_DeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             var info = e.Argument;
 
             string usn;
@@ -169,6 +174,11 @@ namespace Emby.Server.Core.EntryPoints
                     return;
                 }
 
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _logger.Debug("Calling Nat.Handle on " + identifier);
                 NatUtility.Handle(localAddress, info, endpoint, NatProtocol.Upnp);
             }
@@ -185,6 +195,11 @@ namespace Emby.Server.Core.EntryPoints
 
         void NatUtility_DeviceFound(object sender, DeviceEventArgs e)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             try
             {
                 var device = e.Device;
@@ -210,6 +225,11 @@ namespace Emby.Server.Core.EntryPoints
         private List<string> _usnsHandled = new List<string>();
         private void CreateRules(INatDevice device)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("PortMapper");
+            }
+
             // On some systems the device discovered event seems to fire repeatedly
             // This check will help ensure we're not trying to port map the same device over and over
 
@@ -249,8 +269,10 @@ namespace Emby.Server.Core.EntryPoints
             _logger.Debug("NAT device lost: {0}", device.LocalAddress.ToString());
         }
 
+        private bool _disposed = false;
         public void Dispose()
         {
+            _disposed = true;
             DisposeNat();
         }
 
