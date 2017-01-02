@@ -1,4 +1,4 @@
-define(['events', 'browser', 'pluginManager', 'apphost'], function (events, browser, pluginManager, appHost) {
+define(['events', 'browser', 'pluginManager', 'apphost', 'appSettings'], function (events, browser, pluginManager, appHost, appSettings) {
     "use strict";
 
     return function () {
@@ -14,6 +14,16 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
 
         var mediaElement;
         var currentSrc;
+
+        function getSavedVolume() {
+            return appSettings.get("volume") || 1;
+        }
+
+        function saveVolume(value) {
+            if (value) {
+                appSettings.set("volume", value);
+            }
+        }
 
         self.canPlayMediaType = function (mediaType) {
 
@@ -263,6 +273,7 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
         function onVolumeChange() {
 
             if (!fadeTimeout) {
+                saveVolume(this.volume);
                 events.trigger(self, 'volumechange');
             }
         }
@@ -317,6 +328,8 @@ define(['events', 'browser', 'pluginManager', 'apphost'], function (events, brow
                 elem.classList.add('hide');
 
                 document.body.appendChild(elem);
+
+                elem.volume = getSavedVolume();
 
                 elem.addEventListener('timeupdate', onTimeUpdate);
                 elem.addEventListener('ended', onEnded);

@@ -1,4 +1,4 @@
-define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager', 'embyRouter'], function (browser, pluginManager, events, appHost, loading, playbackManager, embyRouter) {
+define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackManager', 'embyRouter', 'appSettings'], function (browser, pluginManager, events, appHost, loading, playbackManager, embyRouter, appSettings) {
     "use strict";
 
     return function () {
@@ -30,6 +30,16 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
             return (mediaType || '').toLowerCase() === 'video';
         };
+
+        function getSavedVolume() {
+            return appSettings.get("volume") || 1;
+        }
+
+        function saveVolume(value) {
+            if (value) {
+                appSettings.set("volume", value);
+            }
+        }
 
         function getBaseProfileOptions(item) {
             
@@ -446,39 +456,38 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             return false;
         };
 
-        self.volume = function (val) {
+        self.setVolume = function (val) {
             if (mediaElement) {
-                if (val != null) {
-                    mediaElement.volume = val / 100;
-                    return;
-                }
+                mediaElement.volume = val / 100;
+            }
+        };
 
+        self.getVolume = function () {
+            if (mediaElement) {
                 return mediaElement.volume * 100;
             }
         };
 
         self.volumeUp = function () {
-            self.volume(Math.min(self.volume() + 2, 100));
+            self.setVolume(Math.min(self.getVolume() + 2, 100));
         };
 
         self.volumeDown = function () {
-            self.volume(Math.max(self.volume() - 2, 0));
+            self.setVolume(Math.max(self.getVolume() - 2, 0));
         };
 
         self.setMute = function (mute) {
 
-            if (mute) {
-                self.volume(0);
-            } else {
-
-                if (self.isMuted()) {
-                    self.volume(50);
-                }
+            if (mediaElement) {
+                mediaElement.muted = mute;
             }
         };
 
         self.isMuted = function () {
-            return self.volume() === 0;
+            if (mediaElement) {
+                return mediaElement.muted;
+            }
+            return false;
         };
 
         function onEnded() {
@@ -523,6 +532,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function onVolumeChange() {
 
+            saveVolume(this.volume);
             events.trigger(self, 'volumechange');
         }
 
@@ -1066,6 +1076,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                         dlg.innerHTML = html;
                         var videoElement = dlg.querySelector('video');
 
+                        videoElement.volume = getSavedVolume();
                         videoElement.addEventListener('timeupdate', onTimeUpdate);
                         videoElement.addEventListener('ended', onEnded);
                         videoElement.addEventListener('volumechange', onVolumeChange);
