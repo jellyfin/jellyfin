@@ -500,7 +500,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             var itemType = item.Type;
             var locationType = item.LocationType;
-            var mediaType = item.MediaType;
 
             if (itemType === "MusicGenre" || itemType === "Season" || itemType === "Series" || itemType === "BoxSet" || itemType === "MusicAlbum" || itemType === "MusicArtist" || itemType === "Playlist") {
                 return true;
@@ -518,11 +517,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 }
             }
 
-            return getAutomaticPlayers().filter(function (p) {
-
-                return p.canPlayMediaType(mediaType);
-
-            }).length;
+            //var mediaType = item.MediaType;
+            return getPlayer(item, {}) != null;
         };
 
         self.canQueue = function (item) {
