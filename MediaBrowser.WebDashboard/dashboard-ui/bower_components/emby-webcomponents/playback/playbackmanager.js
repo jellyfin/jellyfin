@@ -1176,6 +1176,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 state.NowPlayingItem = getNowPlayingItemForReporting(player, item, mediaSource);
             }
 
+            state.MediaSource = mediaSource;
+
             return Promise.resolve(state);
         };
 
