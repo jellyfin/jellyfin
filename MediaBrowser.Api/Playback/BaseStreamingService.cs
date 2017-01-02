@@ -1496,8 +1496,16 @@ namespace MediaBrowser.Api.Playback
                     return string.Format(" -b:v {0}", bitrate.Value.ToString(UsCulture));
                 }
 
+                if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
+                {
+                    // h264
+                    return string.Format(" -maxrate {0} -bufsize {1}",
+                        bitrate.Value.ToString(UsCulture),
+                        (bitrate.Value * 2).ToString(UsCulture));
+                }
+
                 // h264
-                return string.Format(" -maxrate {0} -bufsize {1}",
+                return string.Format(" -b:v {0} -maxrate {0} -bufsize {1}",
                     bitrate.Value.ToString(UsCulture),
                     (bitrate.Value * 2).ToString(UsCulture));
             }
