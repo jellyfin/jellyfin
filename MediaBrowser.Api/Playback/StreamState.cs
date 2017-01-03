@@ -93,13 +93,9 @@ namespace MediaBrowser.Api.Playback
                     {
                         return 3;
                     }
-                    return 6;
-                }
-
-                if (!RunTimeTicks.HasValue)
-                {
                     return 3;
                 }
+
                 return 3;
             }
         }

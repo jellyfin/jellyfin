@@ -227,7 +227,7 @@ namespace MediaBrowser.Api.Playback
             PlaybackInfoResponse result,
             DeviceProfile profile,
             AuthorizationInfo auth,
-            int? maxBitrate,
+            long? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
@@ -249,7 +249,7 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource,
             DeviceProfile profile,
             AuthorizationInfo auth,
-            int? maxBitrate,
+            long? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
@@ -383,7 +383,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private int? GetMaxBitrate(int? clientMaxBitrate)
+        private long? GetMaxBitrate(long? clientMaxBitrate)
         {
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
@@ -425,7 +425,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void SortMediaSources(PlaybackInfoResponse result, int? maxBitrate)
+        private void SortMediaSources(PlaybackInfoResponse result, long? maxBitrate)
         {
             var originalList = result.MediaSources.ToList();
 
