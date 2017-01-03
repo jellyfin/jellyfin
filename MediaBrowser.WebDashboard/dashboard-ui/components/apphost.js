@@ -153,6 +153,14 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             features.push('imageanalysis');
         }
 
+        if (Dashboard.isConnectMode()) {
+            features.push('multiserver');
+        }
+
+        if (browser.tv || browser.xboxOne || browser.ps4 || browser.mobile) {
+            features.push('physicalvolumecontrol');
+        }
+
         return features;
     }();
 

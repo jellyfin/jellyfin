@@ -1,4 +1,4 @@
-﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'scrollStyles'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost) {
+﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'scrollStyles', 'emby-slider'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost) {
     'use strict';
 
     function seriesImageUrl(item, options) {
@@ -174,11 +174,11 @@
 
             if (url) {
 
-                var pageTitle = document.querySelector('.pageTitle');
-                pageTitle.style.backgroundImage = "url('" + url + "')";
-                pageTitle.classList.add('pageTitleWithLogo');
-                pageTitle.innerHTML = '';
-                document.querySelector('.headerLogo').classList.add('hide');
+                //var pageTitle = document.querySelector('.pageTitle');
+                //pageTitle.style.backgroundImage = "url('" + url + "')";
+                //pageTitle.classList.add('pageTitleWithLogo');
+                //pageTitle.innerHTML = '';
+                //document.querySelector('.headerLogo').classList.add('hide');
             } else {
                 Emby.Page.setTitle('');
             }
@@ -739,11 +739,14 @@
                 return opt;
             });
 
+            var positionTo = this;
+
             require(['actionsheet'], function (actionsheet) {
 
                 actionsheet.show({
                     items: menuItems,
-                    title: globalize.translate('Audio')
+                    title: globalize.translate('Audio'),
+                    positionTo: positionTo
                 }).then(function (id) {
                     var index = parseInt(id);
                     if (index !== currentIndex) {
@@ -785,11 +788,14 @@
                 return opt;
             });
 
+            var positionTo = this;
+
             require(['actionsheet'], function (actionsheet) {
 
                 actionsheet.show({
                     title: globalize.translate('Subtitles'),
-                    items: menuItems
+                    items: menuItems,
+                    positionTo: positionTo
                 }).then(function (id) {
                     var index = parseInt(id);
                     if (index !== currentIndex) {

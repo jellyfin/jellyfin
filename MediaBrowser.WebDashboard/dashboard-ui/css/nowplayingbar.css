@@ -54,6 +54,11 @@
     will-change: transform;
     contain: layout style;
     font-size: 90%;
+    transition: transform 200ms ease-out;
+}
+
+.nowPlayingBar-hidden {
+    transform: translate3d(0,100%,0);
 }
 
 .hiddenNowPlayingBar .nowPlayingBar {

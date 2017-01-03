@@ -1,7 +1,8 @@
-﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'imageLoader', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser, imageLoader) {
+﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'apphost', 'dom', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser, imageLoader, playbackManager, nowPlayingHelper, appHost, dom) {
     'use strict';
 
     var currentPlayer;
+    var currentPlayerSupportedCommands = [];
 
     var currentTimeElement;
     var nowPlayingImageElement;
@@ -17,13 +18,16 @@
     var toggleRepeatButton;
     var toggleRepeatButtonIcon;
 
-    var lastPlayerState;
+    var lastUpdateTime = 0;
+    var lastPlayerState = {};
+    var isEnabled;
+    var currentRuntimeTicks = 0;
 
     function getNowPlayingBarHtml() {
 
         var html = '';
 
-        html += '<div class="nowPlayingBar hide">';
+        html += '<div class="nowPlayingBar hide nowPlayingBar-hidden">';
 
         html += '<div class="nowPlayingBarTop">';
         html += '<div class="nowPlayingBarPositionContainer sliderContainer">';
@@ -76,49 +80,39 @@
         return html;
     }
 
+    function onSlideDownComplete() {
+        this.classList.add('hide');
+    }
+
     function slideDown(elem) {
 
-        if (elem.classList.contains('hide')) {
-            return;
-        }
-
-        var onfinish = function () {
-            elem.classList.add('hide');
-        };
-
-        if (!browser.animate || browser.slow) {
-            onfinish();
-            return;
-        }
-
         requestAnimationFrame(function () {
-            var keyframes = [
-              { transform: 'none', offset: 0 },
-              { transform: 'translateY(100%)', offset: 1 }];
-            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
-            elem.animate(keyframes, timing).onfinish = onfinish;
+
+            // trigger reflow
+            void elem.offsetWidth;
+
+            elem.classList.add('nowPlayingBar-hidden');
+
+            dom.addEventListener(elem, dom.whichTransitionEvent(), onSlideDownComplete, {
+                once: true
+            });
         });
     }
 
     function slideUp(elem) {
 
-        if (!elem.classList.contains('hide')) {
-            return;
-        }
-
         elem.classList.remove('hide');
 
-        if (!browser.animate || browser.slow) {
-            return;
-        }
+        dom.removeEventListener(elem, dom.whichTransitionEvent(), onSlideDownComplete, {
+            once: true
+        });
 
         requestAnimationFrame(function () {
 
-            var keyframes = [
-              { transform: 'translateY(100%)', offset: 0 },
-              { transform: 'none', offset: 1 }];
-            var timing = { duration: 200, iterations: 1, fill: 'both', easing: 'ease-out' };
-            elem.animate(keyframes, timing);
+            // trigger reflow
+            void elem.offsetWidth;
+
+            elem.classList.remove('nowPlayingBar-hidden');
         });
     }
 
@@ -167,7 +161,7 @@
         unmuteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.unMute();
+                currentPlayer.setMute(false);
             }
 
         });
@@ -176,7 +170,7 @@
         muteButton.addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.mute();
+                currentPlayer.setMute(true);
             }
 
         });
@@ -184,7 +178,7 @@
         elem.querySelector('.stopButton').addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.stop();
+                playbackManager.stop(currentPlayer);
             }
         });
 
@@ -201,14 +195,14 @@
         elem.querySelector('.nextTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.nextTrack();
+                playbackManager.nextTrack(currentPlayer);
             }
         });
 
         elem.querySelector('.previousTrackButton').addEventListener('click', function () {
 
             if (currentPlayer) {
-                currentPlayer.previousTrack();
+                playbackManager.previousTrack(currentPlayer);
             }
         });
 
@@ -230,13 +224,13 @@
 
                 switch ((state.PlayState || {}).RepeatMode) {
                     case 'RepeatAll':
-                        currentPlayer.setRepeatMode('RepeatOne');
+                        playbackManager.setRepeatMode('RepeatOne', currentPlayer);
                         break;
                     case 'RepeatOne':
-                        currentPlayer.setRepeatMode('RepeatNone');
+                        playbackManager.setRepeatMode('RepeatNone', currentPlayer);
                         break;
                     default:
-                        currentPlayer.setRepeatMode('RepeatAll');
+                        playbackManager.setRepeatMode('RepeatAll', currentPlayer);
                         break;
                 }
             }
@@ -247,7 +241,7 @@
         volumeSlider = elem.querySelector('.nowPlayingBarVolumeSlider');
         volumeSliderContainer = elem.querySelector('.nowPlayingBarVolumeSliderContainer');
 
-        if (AppInfo.hasPhysicalVolumeButtons) {
+        if (appHost.supports('physicalvolumecontrol')) {
             volumeSliderContainer.classList.add('hide');
         } else {
             volumeSliderContainer.classList.remove('hide');
@@ -264,12 +258,11 @@
         positionSlider = elem.querySelector('.nowPlayingBarPositionSlider');
         positionSlider.addEventListener('change', function () {
 
-            if (currentPlayer && lastPlayerState) {
+            if (currentPlayer) {
 
                 var newPercent = parseFloat(this.value);
-                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
 
-                currentPlayer.seek(Math.floor(newPositionTicks));
+                playbackManager.seekPercent(newPercent, currentPlayer);
             }
 
         });
@@ -278,11 +271,11 @@
 
             var state = lastPlayerState;
 
-            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+            if (!state || !state.NowPlayingItem || !currentRuntimeTicks) {
                 return '--:--';
             }
 
-            var ticks = state.NowPlayingItem.RunTimeTicks;
+            var ticks = currentRuntimeTicks;
             ticks /= 100;
             ticks *= value;
 
@@ -342,47 +335,11 @@
         button.classList.add('hide');
     }
 
-    var lastUpdateTime = 0;
+    function updatePlayPauseState(isPaused) {
 
-    function updatePlayerState(event, state) {
-
-        if (!state.NowPlayingItem) {
-            hideNowPlayingBar();
-            return;
-        }
-
-        if (nowPlayingBarElement) {
-            updatePlayerStateInternal(event, state);
-            return;
-        }
-
-        getNowPlayingBar().then(function () {
-            updatePlayerStateInternal(event, state);
-        });
-    }
-
-    function updatePlayerStateInternal(event, state) {
-
-        showNowPlayingBar();
-
-        if (event.type == 'positionchange') {
-            // Try to avoid hammering the document with changes
-            var now = new Date().getTime();
-            if ((now - lastUpdateTime) < 700) {
-
-                return;
-            }
-            lastUpdateTime = now;
-        }
-
-        lastPlayerState = state;
-
-        var playerInfo = MediaController.getPlayerInfo();
-
-        var playState = state.PlayState || {};
         var i, length;
 
-        if (playState.IsPaused) {
+        if (isPaused) {
 
             for (i = 0, length = pauseButtons.length; i < length; i++) {
                 hideButton(pauseButtons[i]);
@@ -400,70 +357,22 @@
                 hideButton(unpauseButtons[i]);
             }
         }
-
-        updatePlayerVolumeState(state, playerInfo);
-
-        var nowPlayingItem = state.NowPlayingItem || {};
-
-        // See bindEvents for why this is necessary
-        if (positionSlider) {
-            if (!positionSlider.dragging) {
-
-                if (nowPlayingItem.RunTimeTicks) {
-
-                    var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
-                    pct *= 100;
-
-                    positionSlider.value = pct;
-
-                } else {
-
-                    positionSlider.value = 0;
-                }
-
-                positionSlider.disabled = !playState.CanSeek;
-            }
-        }
-
-        var timeText = playState.PositionTicks == null ? '--:--' : datetime.getDisplayRunningTime(playState.PositionTicks);
-
-        if (nowPlayingItem.RunTimeTicks) {
-
-            timeText += " / " + datetime.getDisplayRunningTime(nowPlayingItem.RunTimeTicks);
-
-        }
-
-        currentTimeElement.innerHTML = timeText;
-
-        updateNowPlayingInfo(state);
     }
 
-    function updatePlayerVolumeState(state, playerInfo) {
+    function updatePlayerStateInternal(event, state) {
 
-        playerInfo = playerInfo || MediaController.getPlayerInfo();
+        showNowPlayingBar();
+
+        lastPlayerState = state;
+
+        var playerInfo = playbackManager.getPlayerInfo();
 
         var playState = state.PlayState || {};
+
+        updatePlayPauseState(playState.IsPaused);
+
         var supportedCommands = playerInfo.supportedCommands;
-
-        var showMuteButton = true;
-        var showUnmuteButton = true;
-        var showVolumeSlider = true;
-
-        if (supportedCommands.indexOf('Mute') == -1) {
-            showMuteButton = false;
-        }
-
-        if (supportedCommands.indexOf('Unmute') == -1) {
-            showUnmuteButton = false;
-        }
-
-        if (playState.IsMuted) {
-
-            showMuteButton = false;
-        } else {
-
-            showUnmuteButton = false;
-        }
+        currentPlayerSupportedCommands = supportedCommands;
 
         if (supportedCommands.indexOf('SetRepeatMode') == -1) {
             toggleRepeatButton.classList.add('hide');
@@ -483,11 +392,73 @@
             toggleRepeatButton.classList.remove('repeatActive');
         }
 
+        updatePlayerVolumeState(playState.IsMuted, playState.VolumeLevel);
+
+        if (positionSlider && !positionSlider.dragging) {
+            positionSlider.disabled = !playState.CanSeek;
+        }
+
+        var nowPlayingItem = state.NowPlayingItem || {};
+        updateTimeDisplay(playState.PositionTicks, nowPlayingItem.RunTimeTicks);
+
+        updateNowPlayingInfo(state);
+    }
+
+    function updateTimeDisplay(positionTicks, runtimeTicks) {
+
+        // See bindEvents for why this is necessary
+        if (positionSlider && !positionSlider.dragging) {
+            if (runtimeTicks) {
+
+                var pct = positionTicks / runtimeTicks;
+                pct *= 100;
+
+                positionSlider.value = pct;
+
+            } else {
+
+                positionSlider.value = 0;
+            }
+        }
+
+        var timeText = positionTicks == null ? '--:--' : datetime.getDisplayRunningTime(positionTicks);
+
+        if (runtimeTicks) {
+            timeText += " / " + datetime.getDisplayRunningTime(runtimeTicks);
+        }
+
+        currentTimeElement.innerHTML = timeText;
+    }
+
+    function updatePlayerVolumeState(isMuted, volumeLevel) {
+
+        var supportedCommands = currentPlayerSupportedCommands;
+
+        var showMuteButton = true;
+        var showUnmuteButton = true;
+        var showVolumeSlider = true;
+
+        if (supportedCommands.indexOf('Mute') == -1) {
+            showMuteButton = false;
+        }
+
+        if (supportedCommands.indexOf('Unmute') == -1) {
+            showUnmuteButton = false;
+        }
+
+        if (isMuted) {
+
+            showMuteButton = false;
+        } else {
+
+            showUnmuteButton = false;
+        }
+
         if (supportedCommands.indexOf('SetVolume') == -1) {
             showVolumeSlider = false;
         }
 
-        if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
+        if (currentPlayer.isLocalPlayer && appHost.supports('physicalvolumecontrol')) {
             showMuteButton = false;
             showUnmuteButton = false;
             showVolumeSlider = false;
@@ -515,7 +486,7 @@
             }
 
             if (!volumeSlider.dragging) {
-                volumeSlider.value = playState.VolumeLevel || 0;
+                volumeSlider.value = volumeLevel || 0;
             }
         }
     }
@@ -536,7 +507,7 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        nowPlayingTextElement.innerHTML = MediaController.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
+        nowPlayingTextElement.innerHTML = nowPlayingHelper.getNowPlayingNames(state.NowPlayingItem).map(function (nowPlayingName) {
 
             if (nowPlayingName.item) {
                 return '<div>' + getTextActionButton(nowPlayingName.item, nowPlayingName.text) + '</div>';
@@ -616,8 +587,6 @@
 
         var player = this;
 
-        player.beginPlayerUpdates();
-
         onStateChanged.call(player, e, state);
     }
 
@@ -627,6 +596,8 @@
     }
 
     function hideNowPlayingBar() {
+
+        isEnabled = false;
 
         // Use a timeout to prevent the bar from hiding and showing quickly
         // in the event of a stop->play command
@@ -643,67 +614,114 @@
         console.log('nowplaying event: ' + e.type);
         var player = this;
 
-        player.endPlayerUpdates();
+        playbackManager.endPlayerUpdates(player);
 
         hideNowPlayingBar();
     }
 
-    function onStateChanged(e, state) {
+    function onPlayPauseStateChanged(e) {
+
+        if (!isEnabled) {
+            return;
+        }
+
+        var player = this;
+        updatePlayPauseState(player.paused());
+    }
+
+    function onStateChanged(event, state) {
 
         //console.log('nowplaying event: ' + e.type);
         var player = this;
 
-        if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+        if (!state.NowPlayingItem) {
+            hideNowPlayingBar();
             return;
         }
 
-        updatePlayerState(e, state);
+        if (player.isLocalPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
+            hideNowPlayingBar();
+            return;
+        }
+
+        isEnabled = true;
+        playbackManager.beginPlayerUpdates(player);
+
+        if (nowPlayingBarElement) {
+            updatePlayerStateInternal(event, state);
+            return;
+        }
+
+        getNowPlayingBar().then(function () {
+            updatePlayerStateInternal(event, state);
+        });
+    }
+
+    function onTimeUpdate(e) {
+
+        if (!isEnabled) {
+            return;
+        }
+
+        // Try to avoid hammering the document with changes
+        var now = new Date().getTime();
+        if ((now - lastUpdateTime) < 700) {
+
+            return;
+        }
+        lastUpdateTime = now;
+
+        var player = this;
+        var state = lastPlayerState;
+        var nowPlayingItem = state.NowPlayingItem || {};
+        currentRuntimeTicks = playbackManager.duration(player);
+        updateTimeDisplay(playbackManager.currentTime(player), currentRuntimeTicks);
     }
 
     function releaseCurrentPlayer() {
 
-        if (currentPlayer) {
+        var player = currentPlayer;
 
-            events.off(currentPlayer, 'playbackstart', onPlaybackStart);
-            events.off(currentPlayer, 'playbackstop', onPlaybackStopped);
-            events.off(currentPlayer, 'volumechange', onVolumeChanged);
-            events.off(currentPlayer, 'playstatechange', onStateChanged);
-            events.off(currentPlayer, 'positionchange', onStateChanged);
+        if (player) {
+            events.off(player, 'playbackstart', onPlaybackStart);
+            events.off(player, 'playbackstop', onPlaybackStopped);
+            events.off(player, 'volumechange', onVolumeChanged);
+            events.off(player, 'pause', onPlayPauseStateChanged);
+            events.off(player, 'playing', onPlayPauseStateChanged);
+            events.off(player, 'timeupdate', onTimeUpdate);
 
-            currentPlayer.endPlayerUpdates();
+            playbackManager.endPlayerUpdates(player);
             currentPlayer = null;
-
             hideNowPlayingBar();
         }
     }
 
     function onVolumeChanged(e) {
 
+        if (!isEnabled) {
+            return;
+        }
+
         var player = this;
 
-        Promise.all([player.getPlayerState(), getNowPlayingBar()]).then(function (responses) {
-
-            var state = responses[0];
-
-            if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-                return;
-            }
-
-            updatePlayerVolumeState(state);
-        });
+        updatePlayerVolumeState(player.isMuted(), player.getVolume());
     }
 
     function bindToPlayer(player) {
+
+        if (player === currentPlayer) {
+            return;
+        }
 
         releaseCurrentPlayer();
 
         currentPlayer = player;
 
-        player.getPlayerState().then(function (state) {
+        if (!player) {
+            return;
+        }
 
-            if (state.NowPlayingItem) {
-                player.beginPlayerUpdates();
-            }
+        playbackManager.getPlayerState(player).then(function (state) {
 
             onStateChanged.call(player, { type: 'init' }, state);
         });
@@ -711,15 +729,15 @@
         events.on(player, 'playbackstart', onPlaybackStart);
         events.on(player, 'playbackstop', onPlaybackStopped);
         events.on(player, 'volumechange', onVolumeChanged);
-        events.on(player, 'playstatechange', onStateChanged);
-        events.on(player, 'positionchange', onStateChanged);
+        events.on(player, 'pause', onPlayPauseStateChanged);
+        events.on(player, 'playing', onPlayPauseStateChanged);
+        events.on(player, 'timeupdate', onTimeUpdate);
     }
 
-    events.on(MediaController, 'playerchange', function () {
-
-        bindToPlayer(MediaController.getCurrentPlayer());
+    events.on(playbackManager, 'playerchange', function () {
+        bindToPlayer(playbackManager.getCurrentPlayer());
     });
 
-    bindToPlayer(MediaController.getCurrentPlayer());
+    bindToPlayer(playbackManager.getCurrentPlayer());
 
 });

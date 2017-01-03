@@ -1,4 +1,4 @@
-﻿define(['libraryBrowser', 'dom', 'components/categorysyncbuttons', 'cardBuilder', 'apphost', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, dom, categorysyncbuttons, cardBuilder, appHost) {
+﻿define(['libraryBrowser', 'dom', 'components/categorysyncbuttons', 'cardBuilder', 'apphost', 'playbackManager', 'scrollStyles', 'emby-itemscontainer', 'emby-tabs', 'emby-button'], function (libraryBrowser, dom, categorysyncbuttons, cardBuilder, appHost, playbackManager) {
     'use strict';
 
     return function (view, params) {
@@ -274,13 +274,13 @@
                 }
             }
 
-            Events.on(MediaController, 'playbackstop', onPlaybackStop);
+            Events.on(playbackManager, 'playbackstop', onPlaybackStop);
             Events.on(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
         view.addEventListener('viewbeforehide', function (e) {
 
-            Events.off(MediaController, 'playbackstop', onPlaybackStop);
+            Events.off(playbackManager, 'playbackstop', onPlaybackStop);
             Events.off(ApiClient, "websocketmessage", onWebSocketMessage);
         });
 
