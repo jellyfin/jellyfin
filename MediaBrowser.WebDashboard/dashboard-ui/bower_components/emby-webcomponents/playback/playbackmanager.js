@@ -875,8 +875,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return true;
 
             } else {
-                var duration = player.duration();
-                return duration && !isNaN(duration) && duration !== Number.POSITIVE_INFINITY && duration !== Number.NEGATIVE_INFINITY;
+                return player.duration();
             }
         }
 
@@ -967,16 +966,11 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
         self.seekPercent = function (percent, player) {
 
-            var data = getPlayerData(player).streamInfo;
-            var mediaSource = data.mediaSource;
+            var ticks = self.duration(player) || 0;
 
-            if (mediaSource) {
-                var ticks = mediaSource.RunTimeTicks || 0;
-
-                percent /= 100;
-                ticks *= percent;
-                self.seek(parseInt(ticks));
-            }
+            percent /= 100;
+            ticks *= percent;
+            self.seek(parseInt(ticks));
         };
 
         self.playTrailers = function (item) {
@@ -1211,6 +1205,16 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             return getCurrentTicks(player);
         };
 
+        self.duration = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.duration();
+            }
+
+            return getPlayerData(player).streamInfo.mediaSource.RunTimeTicks || ((player.duration() || 0) * 10000);
+        };
+
         function getCurrentTicks(player) {
 
             var playerTime = Math.floor(10000 * (player || currentPlayer).currentTime());
@@ -1225,9 +1229,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             if (mediaSource) {
                 nowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
-            } else {
-                nowPlayingItem.RunTimeTicks = player.duration() * 10000;
             }
+
+            nowPlayingItem.RunTimeTicks = nowPlayingItem.RunTimeTicks || player.duration() * 10000;
 
             return nowPlayingItem;
         }

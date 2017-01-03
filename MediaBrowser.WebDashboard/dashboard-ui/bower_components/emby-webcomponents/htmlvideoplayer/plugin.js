@@ -347,7 +347,10 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
         self.duration = function (val) {
 
             if (mediaElement) {
-                return mediaElement.duration * 1000;
+                var duration = mediaElement.duration;
+                if (duration && !isNaN(duration) && duration !== Number.POSITIVE_INFINITY && duration !== Number.NEGATIVE_INFINITY) {
+                    return duration * 1000;
+                }
             }
 
             return null;
