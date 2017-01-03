@@ -616,6 +616,12 @@
             updateTimeDisplay(playState.PositionTicks, nowPlayingItem.RunTimeTicks);
 
             updateNowPlayingInfo(state);
+
+            if (state.MediaSource && state.MediaSource.SupportsTranscoding) {
+                view.querySelector('.btnSettings').classList.remove('hide');
+            } else {
+                view.querySelector('.btnSettings').classList.add('hide');
+            }
         }
 
         function updateTimeDisplay(positionTicks, runtimeTicks) {
