@@ -407,10 +407,6 @@ define(['apphost', 'globalize', 'connectionManager', 'itemHelper', 'embyRouter',
                         });
                         break;
                     }
-                case 'externalplayer':
-                    LibraryBrowser.playInExternalPlayer(itemId);
-                    getResolveFunction(resolve, id)();
-                    break;
                 case 'album':
                     {
                         embyRouter.showItem(item.AlbumId, item.ServerId);

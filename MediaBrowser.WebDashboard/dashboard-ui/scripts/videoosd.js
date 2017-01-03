@@ -838,7 +838,10 @@
 
         view.querySelector('.pageContainer').addEventListener('click', function () {
 
-            playbackManager.playPause(currentPlayer);
+            // TODO: Replace this check with click vs tap detection
+            if (!browser.touch) {
+                playbackManager.playPause(currentPlayer);
+            }
             showOsd();
         });
 

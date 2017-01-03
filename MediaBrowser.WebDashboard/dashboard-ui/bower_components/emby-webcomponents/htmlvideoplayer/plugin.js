@@ -17,6 +17,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
         var currentSrc;
         var started = false;
         var hlsPlayer;
+        var enableCustomControls;
 
         var winJsPlaybackItem;
         var currentPlayOptions;
@@ -564,11 +565,12 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 setCurrentTrackElement(subtitleTrackIndexToSetOnPlaying);
 
-                //var requiresNativeControls = !self.enableCustomVideoControls();
+                if (enableCustomControls) {
+                    this.removeAttribute('controls');
+                } else {
+                    this.setAttribute('controls', 'controls');
+                }
 
-                //if (requiresNativeControls) {
-                //    $(element).attr('controls', 'controls');
-                //}
                 seekOnPlaybackStart(e.target);
 
                 if (currentPlayOptions.fullscreen) {
@@ -715,8 +717,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
             //    return true;
             //}
-
-            //return self.canAutoPlayVideo();
 
             return true;
         }
@@ -1046,11 +1046,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                         loading.show();
 
-                        var requiresNativeControls = !enableCustomVideoControls();
-
-                        // Safari often displays the poster under the video and it doesn't look good
-                        var poster = /*!$.browser.safari &&*/ options.poster ? (' poster="' + options.poster + '"') : '';
-                        poster = '';
+                        enableCustomControls = enableCustomVideoControls();
 
                         var dlg = document.createElement('div');
 
@@ -1071,12 +1067,12 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                         var html = '';
                         // Can't autoplay in these browsers so we need to use the full controls
-                        if (requiresNativeControls) {
-                            html += '<video class="htmlvideoplayer" preload="metadata" autoplay="autoplay"' + poster + ' controls="controls" webkit-playsinline playsinline>';
+                        if (!enableCustomControls || !appHost.supports('htmlvideoautoplay')) {
+                            html += '<video class="htmlvideoplayer" preload="metadata" autoplay="autoplay" controls="controls" webkit-playsinline playsinline>';
                         } else {
 
                             // Chrome 35 won't play with preload none
-                            html += '<video class="htmlvideoplayer htmlvideoplayer-nocontrols" preload="metadata" autoplay="autoplay"' + poster + ' webkit-playsinline playsinline>';
+                            html += '<video class="htmlvideoplayer htmlvideoplayer-nocontrols" preload="metadata" autoplay="autoplay" webkit-playsinline playsinline>';
                         }
 
                         html += '</video>';
