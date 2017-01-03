@@ -100,7 +100,7 @@
 
         function savePassword() {
 
-            var userId = getParameterByName("userId");
+            var userId = params.userId;
 
             var currentPassword = view.querySelector('#txtCurrentPassword').value;
             var newPassword = view.querySelector('#txtNewPassword').value;
@@ -166,7 +166,7 @@
 
                 confirm(msg, Globalize.translate('PasswordResetHeader')).then(function () {
 
-                    var userId = getParameterByName("userId");
+                    var userId = params.userId;
 
                     Dashboard.showLoadingMsg();
 
@@ -194,7 +194,7 @@
 
                 confirm(msg, Globalize.translate('HeaderPinCodeReset')).then(function () {
 
-                    var userId = getParameterByName("userId");
+                    var userId = params.userId;
 
                     Dashboard.showLoadingMsg();
 
