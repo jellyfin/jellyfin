@@ -6,14 +6,18 @@
     right: 0;
     display: flex;
     align-items: center;
-    background: #000 !important;
 }
+
+    .videoPlayerContainer:not(.videoPlayerContainer-withBackdrop) {
+        background: #000 !important;
+    }
 
 .videoPlayerContainer-withBackdrop {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
     background-attachment: fixed;
+    background-color: #000;
 }
 
 .videoPlayerContainer-onTop {

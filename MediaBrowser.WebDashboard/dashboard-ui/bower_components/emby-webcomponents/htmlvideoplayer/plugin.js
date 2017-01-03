@@ -42,7 +42,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
         }
 
         function getBaseProfileOptions(item) {
-            
+
             var disableHlsVideoAudioCodecs = [];
             if (!canPlayNativeHls() || (browser.edge && !item.RunTimeTicks)) {
                 // hls.js does not support these
@@ -196,7 +196,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                     requireHlsPlayer(function () {
                         var hls = new Hls({
-                            manifestLoadingTimeOut: 20000
+                            manifestLoadingTimeOut: 20000,
+                            //appendErrorMaxRetry: 6,
+                            //debug: true
                         });
                         hls.loadSource(val);
                         hls.attachMedia(elem);
@@ -205,6 +207,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                         });
 
                         hls.on(Hls.Events.ERROR, function (event, data) {
+
+                            console.log('HLS Error: Type: ' + data.type + ' Details: ' + (data.details || '') + ' Fatal: ' + data.fatal);
+
                             if (data.fatal) {
                                 switch (data.type) {
                                     case Hls.ErrorTypes.NETWORK_ERROR:

@@ -2695,7 +2695,7 @@ var AppInfo = {};
 
             postInitDependencies.push('scripts/nowplayingbar');
 
-            postInitDependencies.push('components/remotecontrolautoplay');
+            postInitDependencies.push('bower_components/emby-webcomponents/playback/remotecontrolautoplay');
 
             // Prefer custom font over Segoe if on desktop windows
             if (!browserInfo.mobile && navigator.userAgent.toLowerCase().indexOf('windows') != -1) {
