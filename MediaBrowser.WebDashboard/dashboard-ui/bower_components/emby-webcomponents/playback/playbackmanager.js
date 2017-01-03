@@ -2325,6 +2325,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     nextMediaType: nextMediaType
                 };
 
+                state.nextMediaType = nextMediaType;
+                state.nextItem = playbackStopInfo.nextItem;
+
                 events.trigger(player, 'playbackstop', [state]);
                 events.trigger(self, 'playbackstop', [playbackStopInfo]);
 

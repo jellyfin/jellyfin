@@ -1258,6 +1258,10 @@ var AppInfo = {};
         define("itemContextMenu", [embyWebComponentsBowerPath + "/itemcontextmenu"], returnFirstDependency);
         define("imageEditor", [embyWebComponentsBowerPath + "/imageeditor/imageeditor"], returnFirstDependency);
         define("dom", [embyWebComponentsBowerPath + "/dom"], returnFirstDependency);
+
+        define("fullscreen-doubleclick", [embyWebComponentsBowerPath + "/fullscreen/fullscreen-doubleclick"], returnFirstDependency);
+        define("fullscreenManager", [embyWebComponentsBowerPath + "/fullscreen/fullscreenmanager"], returnFirstDependency);
+
         define("layoutManager", [embyWebComponentsBowerPath + "/layoutmanager"], getLayoutManager);
         define("playMenu", [embyWebComponentsBowerPath + "/playmenu"], returnFirstDependency);
         define("refreshDialog", [embyWebComponentsBowerPath + "/refreshdialog/refreshdialog"], returnFirstDependency);
@@ -2715,6 +2719,10 @@ var AppInfo = {};
             }
 
             postInitDependencies.push('playerSelectionMenu');
+
+            //if (appHost.supports('fullscreen')) {
+                require(['fullscreen-doubleclick']);
+            //}
 
             require(postInitDependencies);
             upgradeLayouts();

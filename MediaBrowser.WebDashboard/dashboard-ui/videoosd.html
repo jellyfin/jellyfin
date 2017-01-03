@@ -8,10 +8,10 @@
             z-index: 1;
         }
 
-        .osdHeader .viewMenuBar {
-            background-color: rgba(0, 0, 0, .3);
-            background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
-        }
+            .osdHeader .viewMenuBar {
+                background-color: rgba(0, 0, 0, .3);
+                background: linear-gradient(rgba(0, 0, 0, .6), rgba(0, 0, 0, 0));
+            }
 
         .osdHeader-hidden {
             transform: translate3d(0,-100%,0);
@@ -148,6 +148,14 @@
         .osdTextContainer {
             display: flex;
             align-items: baseline;
+        }
+
+        .pageContainer {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            position: fixed;
         }
     </style>
     <div class="pageContainer flex">
