@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.MediaInfo
 
         public string UserId { get; set; }
 
-        public int? MaxStreamingBitrate { get; set; }
+        public long? MaxStreamingBitrate { get; set; }
 
         public long? StartTimeTicks { get; set; }
 

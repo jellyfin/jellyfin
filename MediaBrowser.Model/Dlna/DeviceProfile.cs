@@ -51,8 +51,8 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxIconWidth { get; set; }
         public int? MaxIconHeight { get; set; }
 
-        public int? MaxStreamingBitrate { get; set; }
-        public int? MaxStaticBitrate { get; set; }
+        public long? MaxStreamingBitrate { get; set; }
+        public long? MaxStaticBitrate { get; set; }
 
         public int? MusicStreamingTranscodingBitrate { get; set; }
         public int? MaxStaticMusicBitrate { get; set; }
