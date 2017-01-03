@@ -265,9 +265,15 @@ namespace MediaBrowser.Api.Playback.Hls
             double startSeconds = 0;
             var lengths = GetSegmentLengths(state);
 
+            if (requestedIndex >= lengths.Length)
+            {
+                var msg = string.Format("Invalid segment index requested: {0} - Segment count: {1}", requestedIndex, lengths.Length);
+                throw new ArgumentException(msg);
+            }
+
             for (var i = 0; i < requestedIndex; i++)
             {
-                startSeconds += lengths[requestedIndex];
+                startSeconds += lengths[i];
             }
 
             var position = TimeSpan.FromSeconds(startSeconds).Ticks;
@@ -279,9 +285,15 @@ namespace MediaBrowser.Api.Playback.Hls
             double startSeconds = 0;
             var lengths = GetSegmentLengths(state);
 
+            if (requestedIndex >= lengths.Length)
+            {
+                var msg = string.Format("Invalid segment index requested: {0} - Segment count: {1}", requestedIndex, lengths.Length);
+                throw new ArgumentException(msg);
+            }
+
             for (var i = 0; i <= requestedIndex; i++)
             {
-                startSeconds += lengths[requestedIndex];
+                startSeconds += lengths[i];
             }
 
             var position = TimeSpan.FromSeconds(startSeconds).Ticks;
