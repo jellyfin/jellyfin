@@ -32,7 +32,7 @@
         }
     }
 
-    function showPlayerSelection(button, enableHistory) {
+    function showPlayerSelection(button) {
 
         var currentPlayerInfo = playbackManager.getPlayerInfo();
 
@@ -80,7 +80,7 @@
 
                 // Unfortunately we can't allow the url to change or chromecast will throw a security error
                 // Might be able to solve this in the future by moving the dialogs to hashbangs
-                if (!((enableHistory !== false && !browser.chrome) || AppInfo.isNativeApp)) {
+                if (!((!browser.chrome) || AppInfo.isNativeApp)) {
                     menuOptions.enableHistory = false;
                 }
 

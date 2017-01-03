@@ -161,6 +161,10 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
             features.push('physicalvolumecontrol');
         }
 
+        if (!browser.tv && !browser.xboxOne && !browser.ps4) {
+            features.push('remotecontrol');
+        }
+
         return features;
     }();
 

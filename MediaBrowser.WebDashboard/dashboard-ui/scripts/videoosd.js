@@ -410,8 +410,27 @@
             releaseCurrentPlayer();
         });
 
+        if (appHost.supports('remotecontrol')) {
+            view.querySelector('.btnCast').classList.remove('hide');
+        }
+
+        view.querySelector('.btnCast').addEventListener('click', function() {
+            var btn = this;
+            require(['playerSelectionMenu'], function (playerSelectionMenu) {
+                playerSelectionMenu.show(btn);
+            });
+        });
+
         function onPlayerChange() {
-            bindToPlayer(playbackManager.getCurrentPlayer());
+
+            var currentPlayer = playbackManager.getCurrentPlayer();
+
+            if (currentPlayer && !currentPlayer.isLocalPlayer) {
+                view.querySelector('.btnCast i').innerHTML = '&#xE308;';
+            } else {
+                view.querySelector('.btnCast i').innerHTML = '&#xE307;';
+            }
+            bindToPlayer(currentPlayer);
         }
 
         function onStateChanged(event, state) {
@@ -719,9 +738,7 @@
 
             var player = currentPlayer;
 
-            var audioTracks = lastPlayerState.MediaSource.MediaStreams.filter(function (s) {
-                return s.Type === 'Audio';
-            });
+            var audioTracks = playbackManager.audioTracks(player);
 
             var currentIndex = playbackManager.getAudioStreamIndex(player);
 
@@ -760,9 +777,7 @@
 
             var player = currentPlayer;
 
-            var streams = lastPlayerState.MediaSource.MediaStreams.filter(function (s) {
-                return s.Type === 'Subtitle';
-            });
+            var streams = playbackManager.subtitleTracks(player);
 
             var currentIndex = playbackManager.getSubtitleStreamIndex(player);
             if (currentIndex == null) {

@@ -1,4 +1,4 @@
-﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'apphost', 'dom', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser, imageLoader, playbackManager, nowPlayingHelper, appHost, dom) {
+﻿define(['datetime', 'userdataButtons', 'itemHelper', 'events', 'browser', 'imageLoader', 'playbackManager', 'nowPlayingHelper', 'apphost', 'dom', 'connectionManager', 'paper-icon-button-light'], function (datetime, userdataButtons, itemHelper, events, browser, imageLoader, playbackManager, nowPlayingHelper, appHost, dom, connectionManager) {
     'use strict';
 
     var currentPlayer;
@@ -504,6 +504,66 @@
         return html;
     }
 
+    function seriesImageUrl(item, options) {
+
+        if (item.Type !== 'Episode') {
+            return null;
+        }
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (options.type === 'Primary') {
+
+            if (item.SeriesPrimaryImageTag) {
+
+                options.tag = item.SeriesPrimaryImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+        }
+
+        if (options.type === 'Thumb') {
+
+            if (item.SeriesThumbImageTag) {
+
+                options.tag = item.SeriesThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.SeriesId, options);
+            }
+            if (item.ParentThumbImageTag) {
+
+                options.tag = item.ParentThumbImageTag;
+
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.ParentThumbItemId, options);
+            }
+        }
+
+        return null;
+    }
+
+    function imageUrl(item, options) {
+
+        options = options || {};
+        options.type = options.type || "Primary";
+
+        if (item.ImageTags && item.ImageTags[options.type]) {
+
+            options.tag = item.ImageTags[options.type];
+            return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.Id, options);
+        }
+
+        if (options.type === 'Primary') {
+            if (item.AlbumId && item.AlbumPrimaryImageTag) {
+
+                options.tag = item.AlbumPrimaryImageTag;
+                return connectionManager.getApiClient(item.ServerId).getScaledImageUrl(item.AlbumId, options);
+            }
+        }
+
+        return null;
+    }
+
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
@@ -517,46 +577,14 @@
 
         }).join('');
 
-        var url;
         var imgHeight = 70;
-
         var nowPlayingItem = state.NowPlayingItem;
 
-        if (nowPlayingItem.PrimaryImageTag) {
-
-            url = ApiClient.getScaledImageUrl(nowPlayingItem.PrimaryImageItemId, {
-                type: "Primary",
-                height: imgHeight,
-                tag: nowPlayingItem.PrimaryImageTag
-            });
-        }
-        else if (nowPlayingItem.BackdropImageTag) {
-
-            url = ApiClient.getScaledImageUrl(nowPlayingItem.BackdropItemId, {
-                type: "Backdrop",
-                height: imgHeight,
-                tag: nowPlayingItem.BackdropImageTag,
-                index: 0
-            });
-
-        } else if (nowPlayingItem.ThumbImageTag) {
-
-            url = ApiClient.getScaledImageUrl(nowPlayingItem.ThumbImageItemId, {
-                type: "Thumb",
-                height: imgHeight,
-                tag: nowPlayingItem.ThumbImageTag
-            });
-        }
-
-        else if (nowPlayingItem.Type == "TvChannel" || nowPlayingItem.Type == "Recording") {
-            url = "css/images/items/detail/tv.png";
-        }
-        else if (nowPlayingItem.MediaType == "Audio") {
-            url = "css/images/items/detail/audio.png";
-        }
-        else {
-            url = "css/images/items/detail/video.png";
-        }
+        var url = seriesImageUrl(nowPlayingItem, {
+            height: imgHeight
+        }) || imageUrl(nowPlayingItem, {
+            height: imgHeight
+        });
 
         if (url == currentImgUrl) {
             return;

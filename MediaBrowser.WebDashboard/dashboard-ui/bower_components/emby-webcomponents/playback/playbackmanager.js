@@ -997,7 +997,8 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                             Name: t.Name || (item.Name + ' Trailer'),
                             Url: t.Url,
                             MediaType: 'Video',
-                            Type: 'Trailer'
+                            Type: 'Trailer',
+                            ServerId: apiClient.serverId()
                         };
                     })
                 });
@@ -1212,7 +1213,19 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 return player.duration();
             }
 
-            return getPlayerData(player).streamInfo.mediaSource.RunTimeTicks || ((player.duration() || 0) * 10000);
+            var streamInfo = getPlayerData(player).streamInfo;
+
+            if (streamInfo && streamInfo.mediaSource && streamInfo.mediaSource.RunTimeTicks) {
+                return streamInfo.mediaSource.RunTimeTicks;
+            }
+
+            var playerDuration = player.duration();
+
+            if (playerDuration) {
+                playerDuration *= 10000;
+            }
+
+            return playerDuration;
         };
 
         function getCurrentTicks(player) {

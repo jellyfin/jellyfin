@@ -796,6 +796,10 @@
             });
         };
 
+        self.audioTracks = function () {
+            return [];
+        };
+
         self.setAudioStreamIndex = function (index) {
             castPlayer.sendMessage({
                 options: {
@@ -803,6 +807,10 @@
                 },
                 command: 'SetAudioStreamIndex'
             });
+        };
+
+        self.subtitleTracks = function () {
+            return [];
         };
 
         self.setSubtitleStreamIndex = function (index) {

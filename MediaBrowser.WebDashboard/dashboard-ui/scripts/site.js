@@ -1521,6 +1521,9 @@ var AppInfo = {};
                 Dashboard.navigate('mypreferencesmenu.html');
             };
 
+            embyRouter.setTitle = function () {
+            };
+
             function showItem(item, serverId, options) {
                 if (typeof (item) === 'string') {
                     require(['connectionManager'], function (connectionManager) {
@@ -2629,6 +2632,24 @@ var AppInfo = {};
         });
     }
 
+    function enableNativeGamepadKeyMapping() {
+
+        // On Windows UWP, this will tell the platform to make the gamepad emit normal keyboard events
+        if (window.navigator && typeof window.navigator.gamepadInputEmulation === "string") {
+            // We want the gamepad to provide gamepad VK keyboard events rather than moving a
+            // mouse like cursor. Set to "keyboard", the gamepad will provide such keyboard events
+            // and provide input to the DOM navigator.getGamepads API.
+            window.navigator.gamepadInputEmulation = "keyboard";
+            return true;
+        }
+
+        return false;
+    }
+
+    function isGamepadSupported() {
+        return 'ongamepadconnected' in window || navigator.getGamepads || navigator.webkitGetGamepads;
+    }
+
     function onAppReady() {
 
         console.log('Begin onAppReady');
@@ -2675,6 +2696,10 @@ var AppInfo = {};
             });
 
             var postInitDependencies = [];
+
+            if (!enableNativeGamepadKeyMapping() && isGamepadSupported()) {
+                postInitDependencies.push('bower_components/emby-webcomponents/input/gamepadtokey');
+            }
 
             postInitDependencies.push('bower_components/emby-webcomponents/thememediaplayer');
             postInitDependencies.push('css!css/chromecast.css');

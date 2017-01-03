@@ -766,8 +766,9 @@
             context.querySelector('.typeTextForm').addEventListener('submit', onSendStringSubmit);
 
             context.querySelector('.nowPlayingCastIcon').addEventListener('click', function () {
+                var btn = this;
                 require(['playerSelectionMenu'], function (playerSelectionMenu) {
-                    playerSelectionMenu.show();
+                    playerSelectionMenu.show(btn);
                 });
             });
 

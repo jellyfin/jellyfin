@@ -146,10 +146,18 @@
             sendCommandByName('ToggleFullscreen');
         };
 
+        self.audioTracks = function () {
+            return [];
+        };
+
         self.setAudioStreamIndex = function (index) {
             sendCommandByName('SetAudioStreamIndex', {
                 Index: index
             });
+        };
+
+        self.subtitleTracks = function () {
+            return [];
         };
 
         self.setSubtitleStreamIndex = function (index) {
