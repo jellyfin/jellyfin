@@ -377,5 +377,5 @@
   "SyncJobItemStatusRemovedFromDevice": "Removed from device",
   "SyncJobItemStatusCancelled": "Cancelled",
   "Retry": "Retry",
-  "MyDevice": "My device"
+  "HeaderMyDevice": "My Device"
 }

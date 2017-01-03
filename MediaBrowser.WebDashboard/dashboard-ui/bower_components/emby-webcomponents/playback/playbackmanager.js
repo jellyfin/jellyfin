@@ -295,7 +295,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 var targets = [];
 
                 targets.push({
-                    name: globalize.translate('sharedcomponents#MyDevice'),
+                    name: globalize.translate('sharedcomponents#HeaderMyDevice'),
                     id: 'localplayer',
                     playerName: 'localplayer',
                     playableMediaTypes: ['Audio', 'Video', 'Game'],
