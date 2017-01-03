@@ -1,0 +1,62 @@
+﻿<div id="videoOsdPage" data-role="page" class="page libraryPage">
+    <div class="pageContainer flex">
+
+    </div>
+    <div class="scenePicker hide hiddenScrollX">
+    </div>
+    <div class="videoOsdBottom">
+
+        <div class="osdPoster">
+
+        </div>
+        <div class="osdControls">
+            <div class="osdTextContainer">
+                <h2 class="osdTitle"></h2>
+                <div class="osdMediaInfo"></div>
+            </div>
+            <div class="sliderContainer" style="margin: .25em .5em;">
+                <input type="range" step=".1" min="0" max="100" value="0" is="emby-slider" class="osdPositionSlider" />
+            </div>
+
+            <div class="buttons">
+                <button is="paper-icon-button-light" class="btnPreviousTrack autoSize hide">
+                    <i class="xlargePaperIconButton md-icon">&#xE045;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnRewind">
+                    <i class="xlargePaperIconButton md-icon">&#xE020;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnPause autoSize" autofocus>
+                    <i class="xlargePaperIconButton md-icon">&#xE034;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnFastForward">
+                    <i class="xlargePaperIconButton md-icon">&#xE01F;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnNextTrack autoSize hide">
+                    <i class="xlargePaperIconButton md-icon">&#xE044;</i>
+                </button>
+
+                <button is="paper-icon-button-light" class="btnAudio autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE3A1;</i>
+                </button>
+                <button is="paper-icon-button-light" class="btnSubtitles autoSize">
+                    <i class="xlargePaperIconButton md-icon">&#xE01C;</i>
+                </button>
+
+                <div class="osdTimeText"><span class="osdPositionText"></span><span class="osdDurationText"></span><span class="endsAtText"></span></div>
+
+                <div class="volumeButtons">
+                    <button is="paper-icon-button-light" class="buttonMute autoSize">
+                        <i class="xlargePaperIconButton md-icon">&#xE050;</i>
+                    </button>
+                    <div class="sliderContainer osdVolumeSliderContainer">
+                        <input is="emby-slider" type="range" step="1" min="0" max="100" value="0" class="osdVolumeSlider" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
