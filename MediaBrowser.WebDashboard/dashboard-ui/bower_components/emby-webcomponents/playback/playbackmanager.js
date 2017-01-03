@@ -90,8 +90,10 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.setActivePlayer = function (player, targetInfo) {
 
             if (player === 'localplayer' || player.name === 'localplayer') {
+                if (currentPlayer && currentPlayer.isLocalPlayer) {
+                    return;
+                }
                 setCurrentPlayerInternal(null, null);
-                return;
             }
 
             if (typeof (player) === 'string') {
@@ -115,7 +117,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
         self.trySetActivePlayer = function (player, targetInfo) {
 
             if (player === 'localplayer' || player.name === 'localplayer') {
-                setCurrentPlayerInternal(null, null);
+                if (currentPlayer && currentPlayer.isLocalPlayer) {
+                    return;
+                }
                 return;
             }
 

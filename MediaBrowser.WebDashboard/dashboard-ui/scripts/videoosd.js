@@ -423,14 +423,14 @@
 
         function onPlayerChange() {
 
-            var currentPlayer = playbackManager.getCurrentPlayer();
+            var player = playbackManager.getCurrentPlayer();
 
-            if (currentPlayer && !currentPlayer.isLocalPlayer) {
+            if (player && !player.isLocalPlayer) {
                 view.querySelector('.btnCast i').innerHTML = '&#xE308;';
             } else {
                 view.querySelector('.btnCast i').innerHTML = '&#xE307;';
             }
-            bindToPlayer(currentPlayer);
+            bindToPlayer(player);
         }
 
         function onStateChanged(event, state) {
