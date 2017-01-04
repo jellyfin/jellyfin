@@ -414,12 +414,14 @@
             view.querySelector('.btnCast').classList.remove('hide');
         }
 
-        view.querySelector('.btnCast').addEventListener('click', function() {
+        view.querySelector('.btnCast').addEventListener('click', function () {
             var btn = this;
             require(['playerSelectionMenu'], function (playerSelectionMenu) {
                 playerSelectionMenu.show(btn);
             });
         });
+
+        view.querySelector('.btnSettings').addEventListener('click', onSettingsButtonClick);
 
         function onPlayerChange() {
 
@@ -738,6 +740,60 @@
             }
 
             elem.innerHTML = html;
+        }
+
+        function onSettingsButtonClick(e) {
+
+            var btn = this;
+            require(['qualityoptions', 'actionsheet'], function (qualityoptions, actionsheet) {
+
+                //var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
+                //var isStatic = currentSrc.indexOf('static=true') != -1;
+
+                var videoStream = lastPlayerState.MediaSource.MediaStreams.filter(function (stream) {
+                    return stream.Type == "Video";
+                })[0];
+                var videoWidth = videoStream ? videoStream.Width : null;
+
+                var options = qualityoptions.getVideoQualityOptions(lastPlayerState.MaxStreamingBitrate, videoWidth);
+
+                //if (isStatic) {
+                //    options[0].name = "Direct";
+                //}
+
+                var menuItems = options.map(function (o) {
+
+                    var opt = {
+                        name: o.name,
+                        id: o.bitrate
+                    };
+
+                    if (o.selected) {
+                        opt.selected = true;
+                    }
+
+                    return opt;
+                });
+
+                var selectedId = options.filter(function (o) {
+                    return o.selected;
+                });
+                selectedId = selectedId.length ? selectedId[0].bitrate : null;
+                actionsheet.show({
+                    items: menuItems,
+                    // history.back() will cause the video player to stop
+                    enableHistory: false,
+                    positionTo: btn,
+                    callback: function (id) {
+
+                        var bitrate = parseInt(id);
+                        if (bitrate != selectedId) {
+                            //self.onQualityOptionSelected(bitrate);
+                        }
+                    }
+                });
+
+            });
         }
 
         function showAudioTrackSelection() {

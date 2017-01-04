@@ -135,76 +135,74 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function setCurrentSrc(elem, options) {
 
-            return new Promise(function (resolve, reject) {
+            //if (!elem) {
+            //    currentSrc = null;
+            //    resolve();
+            //    return;
+            //}
 
-                //if (!elem) {
-                //    currentSrc = null;
-                //    resolve();
-                //    return;
-                //}
+            //if (!options) {
+            //    currentSrc = null;
+            //    elem.src = null;
+            //    elem.src = "";
 
-                //if (!options) {
-                //    currentSrc = null;
-                //    elem.src = null;
-                //    elem.src = "";
+            //    // When the browser regains focus it may start auto-playing the last video
+            //    //if ($.browser.safari) {
+            //    //    elem.src = 'files/dummy.mp4';
+            //    //    elem.play();
+            //    //}
 
-                //    // When the browser regains focus it may start auto-playing the last video
-                //    //if ($.browser.safari) {
-                //    //    elem.src = 'files/dummy.mp4';
-                //    //    elem.play();
-                //    //}
+            //    resolve();
+            //    return;
+            //}
 
-                //    resolve();
-                //    return;
-                //}
+            var val = options.url;
 
-                var val = options.url;
+            console.log('playing url: ' + val);
 
-                console.log('playing url: ' + val);
+            //if (AppInfo.isNativeApp && $.browser.safari) {
+            //    val = val.replace('file://', '');
+            //}
 
-                //if (AppInfo.isNativeApp && $.browser.safari) {
-                //    val = val.replace('file://', '');
-                //}
+            // Convert to seconds
+            var seconds = (options.playerStartPositionTicks || 0) / 10000000;
+            if (seconds) {
+                val += '#t=' + seconds;
+            }
 
-                // Convert to seconds
-                var seconds = (options.playerStartPositionTicks || 0) / 10000000;
-                if (seconds) {
-                    val += '#t=' + seconds;
+            destroyHlsPlayer();
+
+            var tracks = getMediaStreamTextTracks(options.mediaSource);
+
+            var currentTrackIndex = -1;
+            for (var i = 0, length = tracks.length; i < length; i++) {
+                if (tracks[i].Index === options.mediaSource.DefaultSubtitleStreamIndex) {
+                    currentTrackIndex = tracks[i].Index;
+                    break;
                 }
+            }
+            subtitleTrackIndexToSetOnPlaying = currentTrackIndex;
 
-                var playNow = false;
+            currentPlayOptions = options;
 
-                destroyHlsPlayer();
+            elem.crossOrigin = getCrossOriginValue(options.mediaSource);
 
-                var tracks = getMediaStreamTextTracks(options.mediaSource);
+            if (enableHlsPlayer(val, options.item, options.mediaSource)) {
 
-                var currentTrackIndex = -1;
-                for (var i = 0, length = tracks.length; i < length; i++) {
-                    if (tracks[i].Index === options.mediaSource.DefaultSubtitleStreamIndex) {
-                        currentTrackIndex = tracks[i].Index;
-                        break;
-                    }
-                }
-                subtitleTrackIndexToSetOnPlaying = currentTrackIndex;
+                setTracks(elem, tracks, options.mediaSource, options.item.ServerId);
 
-                currentPlayOptions = options;
-
-                elem.crossOrigin = getCrossOriginValue(options.mediaSource);
-
-                if (enableHlsPlayer(val, options.item, options.mediaSource)) {
-
-                    setTracks(elem, tracks, options.mediaSource, options.item.ServerId);
+                return new Promise(function (resolve, reject) {
 
                     requireHlsPlayer(function () {
                         var hls = new Hls({
-                            manifestLoadingTimeOut: 20000,
+                            manifestLoadingTimeOut: 20000
                             //appendErrorMaxRetry: 6,
                             //debug: true
                         });
                         hls.loadSource(val);
                         hls.attachMedia(elem);
                         hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                            playAndResolve(elem, resolve, reject);
+                            playWithPromise(elem).then(resolve, reject);
                         });
 
                         hls.on(Hls.Events.ERROR, function (event, data) {
@@ -231,45 +229,46 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                         });
 
                         hlsPlayer = hls;
+
+                        // This is needed in setCurrentTrackElement
+                        currentSrc = val;
+
+                        setCurrentTrackElement(currentTrackIndex);
                     });
+                });
 
-                } else {
+            } else {
 
-                    elem.autoplay = true;
-                    var mimeType = options.mimeType;
+                elem.autoplay = true;
+                var mimeType = options.mimeType;
 
-                    // Opera TV guidelines suggest using source elements, so let's do that if we have a valid mimeType
-                    if (mimeType && browser.operaTv) {
+                // Opera TV guidelines suggest using source elements, so let's do that if we have a valid mimeType
+                if (mimeType && browser.operaTv) {
 
-                        if (browser.chrome && mimeType === 'video/x-matroska') {
-                            mimeType = 'video/webm';
-                        }
-
-                        // Need to do this or we won't be able to restart a new stream
-                        if (elem.currentSrc) {
-                            elem.src = '';
-                            elem.removeAttribute('src');
-                        }
-
-                        elem.innerHTML = '<source src="' + val + '" type="' + mimeType + '">' + getTracksHtml(tracks, options.mediaSource, options.item.ServerId);
-                    } else {
-                        applySrc(elem, val);
-                        setTracks(elem, tracks, options.mediaSource, options.item.ServerId);
+                    if (browser.chrome && mimeType === 'video/x-matroska') {
+                        mimeType = 'video/webm';
                     }
 
+                    // Need to do this or we won't be able to restart a new stream
+                    if (elem.currentSrc) {
+                        elem.src = '';
+                        elem.removeAttribute('src');
+                    }
+
+                    elem.innerHTML = '<source src="' + val + '" type="' + mimeType + '">' + getTracksHtml(tracks, options.mediaSource, options.item.ServerId);
+
                     elem.addEventListener('loadedmetadata', onLoadedMetadata);
-                    playNow = true;
+                } else {
+                    applySrc(elem, val);
+                    setTracks(elem, tracks, options.mediaSource, options.item.ServerId);
                 }
 
                 // This is needed in setCurrentTrackElement
                 currentSrc = val;
 
                 setCurrentTrackElement(currentTrackIndex);
-
-                if (playNow) {
-                    playAndResolve(elem, resolve, reject);
-                }
-            });
+                return playWithPromise(elem);
+            }
         }
 
         function applySrc(elem, src) {
@@ -290,13 +289,26 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             }
         }
 
-        function playAndResolve(elem, resolve, reject) {
-            var promise = elem.play();
-            if (promise && promise.then) {
-                // Chrome now returns a promise
-                promise.then(resolve, reject);
-            } else {
-                resolve();
+        function playWithPromise(elem) {
+
+            try {
+                var promise = elem.play();
+                if (promise && promise.then) {
+                    // Chrome now returns a promise
+                    return promise.catch(function (e) {
+
+                        if ((e.name || '').toLowerCase() === 'notallowederror') {
+                            // swallow this error because the user can still click the play button on the video element
+                            return Promise.resolve();
+                        }
+                        return Promise.reject();
+                    });
+                } else {
+                    return Promise.resolve();
+                }
+            } catch (err) {
+                console.log('error calling video.play: ' + err);
+                return Promise.reject();
             }
         }
 
@@ -661,7 +673,12 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             mediaElem.removeEventListener('loadedmetadata', onLoadedMetadata);
 
             if (!hlsPlayer) {
-                mediaElem.play();
+
+                try {
+                    mediaElem.play();
+                } catch (err) {
+                    console.log('error calling mediaElement.play: ' + err);
+                }
             }
         }
 
