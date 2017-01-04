@@ -433,7 +433,11 @@
         });
 
         view.querySelector('.btnFullscreen').addEventListener('click', function () {
-            fullscreenManager.toggleFullscreen();
+            if (fullscreenManager.isFullScreen()) {
+                fullscreenManager.exitFullscreen();
+            } else {
+                fullscreenManager.requestFullscreen();
+            }
         });
 
         view.querySelector('.btnSettings').addEventListener('click', onSettingsButtonClick);
