@@ -1,4 +1,4 @@
-﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'scrollStyles', 'emby-slider'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost) {
+﻿define(['playbackManager', 'dom', 'inputmanager', 'datetime', 'itemHelper', 'mediaInfo', 'focusManager', 'imageLoader', 'scrollHelper', 'events', 'connectionManager', 'browser', 'globalize', 'apphost', 'fullscreenManager', 'scrollStyles', 'emby-slider'], function (playbackManager, dom, inputManager, datetime, itemHelper, mediaInfo, focusManager, imageLoader, scrollHelper, events, connectionManager, browser, globalize, appHost, fullscreenManager) {
     'use strict';
 
     function seriesImageUrl(item, options) {
@@ -378,6 +378,14 @@
             }
         }
 
+        function updateFullscreenIcon() {
+            if (fullscreenManager.isFullScreen()) {
+                view.querySelector('.btnFullscreen i').innerHTML = '&#xE5D1;';
+            } else {
+                view.querySelector('.btnFullscreen i').innerHTML = '&#xE5D0;';
+            }
+        }
+
         view.addEventListener('viewbeforeshow', function (e) {
 
             getHeaderElement().classList.add('osdHeader');
@@ -395,6 +403,7 @@
             showOsd();
 
             inputManager.on(window, onInputCommand);
+            updateFullscreenIcon();
         });
 
         view.addEventListener('viewbeforehide', function () {
@@ -412,11 +421,19 @@
             view.querySelector('.btnCast').classList.remove('hide');
         }
 
+        if (appHost.supports('fullscreenchange')) {
+            view.querySelector('.btnFullscreen').classList.remove('hide');
+        }
+
         view.querySelector('.btnCast').addEventListener('click', function () {
             var btn = this;
             require(['playerSelectionMenu'], function (playerSelectionMenu) {
                 playerSelectionMenu.show(btn);
             });
+        });
+
+        view.querySelector('.btnFullscreen').addEventListener('click', function () {
+            fullscreenManager.toggleFullscreen();
         });
 
         view.querySelector('.btnSettings').addEventListener('click', onSettingsButtonClick);

@@ -38,5 +38,14 @@ define([], function () {
         return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
     };
 
+    fullscreenManager.prototype.toggleFullscreen = function () {
+
+        if (this.isFullScreen()) {
+            this.exitFullscreen();
+        } else {
+            this.requestFullscreen();
+        }
+    };
+
     return new fullscreenManager();
 });
