@@ -87,9 +87,7 @@
         var currentPlayerSupportedCommands = [];
         var currentRuntimeTicks = 0;
         var lastUpdateTime = 0;
-        var lastPlayerState = {};
         var isEnabled;
-        var currentItem;
 
         var nowPlayingVolumeSlider = view.querySelector('.osdVolumeSlider');
         var nowPlayingVolumeSliderContainer = view.querySelector('.osdVolumeSliderContainer');
@@ -486,6 +484,8 @@
 
         function onPlaybackStopped(e, state) {
 
+            currentRuntimeTicks = null;
+
             console.log('nowplaying event: ' + e.type);
             var player = this;
 
@@ -559,8 +559,6 @@
             lastUpdateTime = now;
 
             var player = this;
-            var state = lastPlayerState;
-            var nowPlayingItem = state.NowPlayingItem || {};
             currentRuntimeTicks = playbackManager.duration(player);
             updateTimeDisplay(playbackManager.currentTime(player), currentRuntimeTicks);
         }
@@ -575,8 +573,6 @@
         }
 
         function updatePlayerStateInternal(event, state) {
-
-            lastPlayerState = state;
 
             var playerInfo = playbackManager.getPlayerInfo();
 
@@ -619,7 +615,7 @@
 
             updateNowPlayingInfo(state);
 
-            if (state.MediaSource && state.MediaSource.SupportsTranscoding) {
+            if (state.MediaSource && state.MediaSource.SupportsTranscoding && supportedCommands.indexOf('SetMaxStreamingBitrate') !== -1) {
                 view.querySelector('.btnSettings').classList.remove('hide');
             } else {
                 view.querySelector('.btnSettings').classList.add('hide');
@@ -750,12 +746,12 @@
                 //var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
                 //var isStatic = currentSrc.indexOf('static=true') != -1;
 
-                var videoStream = lastPlayerState.MediaSource.MediaStreams.filter(function (stream) {
-                    return stream.Type == "Video";
+                var videoStream = playbackManager.currentMediaSource(currentPlayer).MediaStreams.filter(function (stream) {
+                    return stream.Type === "Video";
                 })[0];
                 var videoWidth = videoStream ? videoStream.Width : null;
 
-                var options = qualityoptions.getVideoQualityOptions(lastPlayerState.MaxStreamingBitrate, videoWidth);
+                var options = qualityoptions.getVideoQualityOptions(playbackManager.getMaxStreamingBitrate(currentPlayer), videoWidth);
 
                 //if (isStatic) {
                 //    options[0].name = "Direct";
@@ -781,14 +777,12 @@
                 selectedId = selectedId.length ? selectedId[0].bitrate : null;
                 actionsheet.show({
                     items: menuItems,
-                    // history.back() will cause the video player to stop
-                    enableHistory: false,
                     positionTo: btn,
                     callback: function (id) {
 
                         var bitrate = parseInt(id);
-                        if (bitrate != selectedId) {
-                            //self.onQualityOptionSelected(bitrate);
+                        if (bitrate !== selectedId) {
+                            playbackManager.setMaxStreamingBitrate(bitrate, currentPlayer);
                         }
                     }
                 });
@@ -930,9 +924,7 @@
 
         nowPlayingPositionSlider.getBubbleText = function (value) {
 
-            var state = lastPlayerState;
-
-            if (!state || !state.NowPlayingItem || !currentRuntimeTicks) {
+            if (!currentRuntimeTicks) {
                 return '--:--';
             }
 
@@ -1007,7 +999,7 @@
         function renderScenePicker(progressPct) {
 
             chapterPcts = [];
-            var item = currentItem;
+            var item = playbackManager.currentItem(currentPlayer);
             if (!item) {
                 return;
             }

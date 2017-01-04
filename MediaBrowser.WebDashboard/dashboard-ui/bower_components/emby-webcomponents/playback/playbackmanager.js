@@ -191,6 +191,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     "SetVolume",
                     "SetAudioStreamIndex",
                     "SetSubtitleStreamIndex",
+                    "SetMaxStreamingBitrate",
                     "DisplayContent",
                     "GoToSearch",
                     "DisplayMessage",
@@ -375,6 +376,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     break;
                 case 'SetSubtitleStreamIndex':
                     self.setSubtitleStreamIndex(parseInt(cmd.Arguments.Index), player);
+                    break;
+                case 'SetMaxStreamingBitrate':
+                    self.setMaxStreamingBitrate(parseInt(cmd.Arguments.Bitrate), player);
                     break;
                 case 'ToggleFullscreen':
                     self.toggleFullscreen(player);
@@ -639,6 +643,36 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
             }
         };
 
+        self.getMaxStreamingBitrate = function (player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.getMaxStreamingBitrate();
+            }
+
+            return getPlayerData(player).maxStreamingBitrate || appSettings.maxStreamingBitrate();
+        };
+
+        self.setMaxStreamingBitrate = function (bitrate, player) {
+
+            player = player || currentPlayer;
+            if (player && !enableLocalPlaylistManagement(player)) {
+                return player.setMaxStreamingBitrate(bitrate);
+            }
+
+            if (bitrate) {
+                appSettings.enableAutomaticBitrateDetection(false);
+            } else {
+                appSettings.enableAutomaticBitrateDetection(true);
+            }
+
+            appSettings.maxStreamingBitrate(bitrate);
+
+            changeStream(player, getCurrentTicks(player), {
+                MaxStreamingBitrate: bitrate
+            });
+        };
+
         self.getSubtitleStreamIndex = function (player) {
 
             player = player || currentPlayer;
@@ -893,8 +927,6 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
             params = params || {};
 
-            var currentSrc = player.currentSrc();
-
             var liveStreamId = getPlayerData(player).streamInfo.liveStreamId;
             var playSessionId = getPlayerData(player).streamInfo.playSessionId;
 
@@ -913,7 +945,9 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                     ticks = parseInt(ticks);
                 }
 
-                getPlaybackInfo(apiClient, currentItem.Id, deviceProfile, appSettings.maxStreamingBitrate(), ticks, currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
+                var maxBitrate = params.MaxStreamingBitrate || self.getMaxStreamingBitrate(player);
+
+                getPlaybackInfo(apiClient, currentItem.Id, deviceProfile, maxBitrate, ticks, currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).then(function (result) {
 
                     if (validatePlaybackInfoResult(result)) {
 
@@ -930,6 +964,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
 
                             getPlayerData(player).subtitleStreamIndex = subtitleStreamIndex;
                             getPlayerData(player).audioStreamIndex = audioStreamIndex;
+                            getPlayerData(player).maxStreamingBitrate = maxBitrate;
 
                             changeStreamToUrl(apiClient, player, playSessionId, streamInfo);
                         });
@@ -1536,6 +1571,7 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                         streamInfo.fullscreen = playOptions.fullscreen;
 
                         getPlayerData(player).isChangingStream = false;
+                        getPlayerData(player).maxStreamingBitrate = maxBitrate;
 
                         return player.play(streamInfo).then(function () {
                             onPlaybackStarted(player, streamInfo, mediaSource);

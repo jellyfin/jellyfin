@@ -36,7 +36,7 @@
             options.push({ name: '720p - 6Mbps', maxHeight: 720, bitrate: 6000000 });
             options.push({ name: '720p - 5Mbps', maxHeight: 720, bitrate: 5000000 });
 
-        } else if (maxAllowedWidth >= 700) {
+        } else if (maxAllowedWidth >= 620) {
             options.push({ name: '480p - 4Mbps', maxHeight: 480, bitrate: 4000001 });
             options.push({ name: '480p - 3Mbps', maxHeight: 480, bitrate: 3000001 });
             options.push({ name: '480p - 2.5Mbps', maxHeight: 480, bitrate: 2500000 });
