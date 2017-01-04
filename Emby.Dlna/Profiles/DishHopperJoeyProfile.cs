@@ -23,7 +23,7 @@ namespace Emby.Dlna.Profiles
                     {
                          Match = HeaderMatchType.Substring,
                          Name = "User-Agent",
-                         Value ="XiP"
+                         Value ="Zip_"
                     }
                 }
             };
