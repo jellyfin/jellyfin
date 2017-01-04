@@ -146,7 +146,7 @@ define(['appStorage', 'browser'], function (appStorage, browser) {
         }
 
         if (supportsFullscreen()) {
-            features.push('fullscreen');
+            features.push('fullscreenchange');
         }
 
         if (browser.chrome || (browser.edge && !browser.slow)) {

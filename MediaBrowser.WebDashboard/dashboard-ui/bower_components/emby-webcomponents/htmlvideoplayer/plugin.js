@@ -698,7 +698,9 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
                 // simple playback should use the native support
                 if (mediaSource.RunTimeTicks) {
-                    return false;
+                    //if (!browser.edge) {
+                        return false;
+                    //}
                 }
 
                 //return false;

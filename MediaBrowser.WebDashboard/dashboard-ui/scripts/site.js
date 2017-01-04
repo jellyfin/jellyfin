@@ -2745,7 +2745,7 @@ var AppInfo = {};
 
             postInitDependencies.push('playerSelectionMenu');
 
-            //if (appHost.supports('fullscreen')) {
+            //if (appHost.supports('fullscreenchange')) {
                 require(['fullscreen-doubleclick']);
             //}
 

@@ -5,7 +5,7 @@
     <Manufacturer>Echostar Technologies LLC</Manufacturer>
     <ManufacturerUrl>http://www.echostar.com</ManufacturerUrl>
     <Headers>
-      <HttpHeaderInfo name="User-Agent" value="XiP" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="Zip_" match="Substring" />
     </Headers>
   </Identification>
   <Manufacturer>Emby</Manufacturer>

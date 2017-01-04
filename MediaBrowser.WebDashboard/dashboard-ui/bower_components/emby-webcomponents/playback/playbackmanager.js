@@ -461,6 +461,14 @@ define(['events', 'datetime', 'appSettings', 'pluginManager', 'userSettings', 'g
                 lastLocalPlayer = player;
             }
 
+            if (previousPlayer) {
+                self.endPlayerUpdates(previousPlayer);
+            }
+
+            if (player) {
+                self.beginPlayerUpdates(player);
+            }
+
             triggerPlayerChange(player, targetInfo, previousPlayer, previousTargetInfo);
         }
 

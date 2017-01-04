@@ -460,7 +460,6 @@
             console.log('remotecontrol event: ' + e.type);
 
             var player = this;
-            playbackManager.beginPlayerUpdates(player);
             onStateChanged.call(player, e, state);
 
             loadPlaylist(dlg);
@@ -469,9 +468,6 @@
         function onPlaybackStopped(e, state) {
 
             console.log('remotecontrol event: ' + e.type);
-            var player = this;
-
-            playbackManager.endPlayerUpdates(player);
 
             loadPlaylist(dlg);
         }
@@ -527,7 +523,6 @@
                 events.off(player, 'playing', onPlayPauseStateChanged);
                 events.off(player, 'timeupdate', onTimeUpdate);
 
-                playbackManager.endPlayerUpdates(player);
                 currentPlayer = null;
             }
         }
@@ -543,10 +538,6 @@
             }
 
             playbackManager.getPlayerState(player).then(function (state) {
-
-                if (state.NowPlayingItem) {
-                    playbackManager.beginPlayerUpdates(player);
-                }
 
                 onStateChanged.call(player, { type: 'init' }, state);
             });

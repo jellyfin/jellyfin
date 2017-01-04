@@ -447,8 +447,6 @@
             updatePlayerStateInternal(event, state);
             updatePlaylist();
 
-            playbackManager.beginPlayerUpdates(player);
-
             enableStopOnBack(true);
         }
 
@@ -487,9 +485,6 @@
             currentRuntimeTicks = null;
 
             console.log('nowplaying event: ' + e.type);
-            var player = this;
-
-            playbackManager.endPlayerUpdates(player);
 
             if (state.nextMediaType !== 'Video') {
 
@@ -539,7 +534,6 @@
                 events.off(player, 'playing', onPlayPauseStateChanged);
                 events.off(player, 'timeupdate', onTimeUpdate);
 
-                playbackManager.endPlayerUpdates(player);
                 currentPlayer = null;
             }
         }

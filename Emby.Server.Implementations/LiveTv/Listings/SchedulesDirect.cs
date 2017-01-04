@@ -182,7 +182,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                         programsInfo.Add(GetProgram(channelNumber, schedule, programDict[schedule.programID]));
                     }
-                    _logger.Info("Finished with EPGData");
                 }
             }
 
@@ -322,8 +321,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using (var response = await Get(httpOptions, true, info).ConfigureAwait(false))
             {
                 var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
-                _logger.Info("Found " + root.map.Count + " channels on the lineup on ScheduleDirect");
-                _logger.Info("Mapping Stations to Channel");
+
                 foreach (ScheduleDirect.Map map in root.map)
                 {
                     var channelNumber = map.logicalChannelNumber;
@@ -353,7 +351,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                         });
                     }
                 }
-                _logger.Info("Added " + GetChannelPairCacheCount(listingsId) + " channels to the dictionary");
 
                 foreach (ChannelInfo channel in channels)
                 {

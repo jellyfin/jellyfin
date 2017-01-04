@@ -642,8 +642,6 @@
         console.log('nowplaying event: ' + e.type);
         var player = this;
 
-        playbackManager.endPlayerUpdates(player);
-
         hideNowPlayingBar();
     }
 
@@ -673,7 +671,6 @@
         }
 
         isEnabled = true;
-        playbackManager.beginPlayerUpdates(player);
 
         if (nowPlayingBarElement) {
             updatePlayerStateInternal(event, state);
@@ -718,7 +715,6 @@
             events.off(player, 'playing', onPlayPauseStateChanged);
             events.off(player, 'timeupdate', onTimeUpdate);
 
-            playbackManager.endPlayerUpdates(player);
             currentPlayer = null;
             hideNowPlayingBar();
         }
