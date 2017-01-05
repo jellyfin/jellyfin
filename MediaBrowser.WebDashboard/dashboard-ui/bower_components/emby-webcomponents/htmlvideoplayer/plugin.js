@@ -24,8 +24,12 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         var subtitleTrackIndexToSetOnPlaying;
 
+        var currentSubtitlesElement;
+        var currentTrackEvents;
+        var lastCustomTrackMs = 0;
         var currentClock;
         var currentAssRenderer;
+        var customTrackIndex = -1;
 
         self.canPlayMediaType = function (mediaType) {
 
@@ -46,8 +50,13 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
             var disableHlsVideoAudioCodecs = [];
             if (!canPlayNativeHls() || (browser.edge && !item.RunTimeTicks)) {
-                // hls.js does not support these
-                disableHlsVideoAudioCodecs.push('mp3');
+
+                // this does not work with hls.js + edge, but seems to be fine in other browsers
+                if (browser.edge) {
+                    disableHlsVideoAudioCodecs.push('mp3');
+                }
+
+                // hls.js does not support this
                 disableHlsVideoAudioCodecs.push('ac3');
             }
 
@@ -775,8 +784,15 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function enableNativeTrackSupport(track) {
 
-            // TODO:
-            // Custom display for firefox & ps4
+            if (browser.firefox) {
+                if ((currentSrc || '').toLowerCase().indexOf('.m3u8') !== -1) {
+                    return false;
+                }
+            }
+
+            if (browser.ps4) {
+                return false;
+            }
 
             if (track) {
                 var format = (track.Codec || '').toLowerCase();
@@ -813,6 +829,8 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             }
 
             customTrackIndex = -1;
+            currentSubtitlesElement = null;
+            currentTrackEvents = null;
             currentClock = null;
 
             var renderer = currentAssRenderer;
@@ -836,8 +854,6 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             });
         }
 
-        var customTrackIndex = -1;
-
         function setTrackForCustomDisplay(videoElement, track) {
 
             if (!track) {
@@ -855,6 +871,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             destroyCustomTrack(videoElement, true);
             customTrackIndex = track.Index;
             renderTracksEvents(videoElement, track, serverId);
+            lastCustomTrackMs = 0;
         }
 
         function renderWithLibjass(videoElement, track, serverId) {
@@ -907,6 +924,45 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
                 renderWithLibjass(videoElement, track, serverId);
                 return;
             }
+
+            var trackElement = null;
+            var expectedId = 'manualTrack' + track.Index;
+
+            var allTracks = videoElement.textTracks; // get list of tracks
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var currentTrack = allTracks[i];
+
+                if (currentTrack.label === expectedId) {
+                    trackElement = currentTrack;
+                    break;
+                } else {
+                    currentTrack.mode = 'disabled';
+                }
+            }
+
+            if (!trackElement) {
+                trackElement = videoElement.addTextTrack('subtitles', 'manualTrack' + track.Index, track.Language || 'und');
+
+                // download the track json
+                fetchSubtitles(track, serverId).then(function (data) {
+
+                    // show in ui
+                    console.log('downloaded ' + data.TrackEvents.length + ' track events');
+                    // add some cues to show the text
+                    // in safari, the cues need to be added before setting the track mode to showing
+                    data.TrackEvents.forEach(function (trackEvent) {
+
+                        var trackCueObject = window.VTTCue || window.TextTrackCue;
+                        var cue = new trackCueObject(trackEvent.StartPositionTicks / 10000000, trackEvent.EndPositionTicks / 10000000, trackEvent.Text.replace(/\\N/gi, '\n'));
+
+                        trackElement.addCue(cue);
+                    });
+                    trackElement.mode = 'showing';
+                });
+            } else {
+                trackElement.mode = 'showing';
+            }
         }
 
         function updateSubtitleText(timeMs) {
@@ -915,6 +971,44 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
             if (clock) {
                 clock.seek(timeMs / 1000);
             }
+
+            var trackEvents = currentTrackEvents;
+            if (!trackEvents) {
+                return;
+            }
+
+            if (!currentSubtitlesElement) {
+                var videoSubtitlesElem = document.querySelector('.videoSubtitles');
+                if (!videoSubtitlesElem) {
+                    videoSubtitlesElem = document.createElement('div');
+                    videoSubtitlesElem.classList.add('videoSubtitles');
+                    videoSubtitlesElem.innerHTML = '<div class="videoSubtitlesInner"></div>';
+                    videoDialog.appendChild(videoSubtitlesElem);
+                }
+                currentSubtitlesElement = videoSubtitlesElem.querySelector('.videoSubtitlesInner');
+            }
+
+            if (lastCustomTrackMs > 0) {
+                if (Math.abs(lastCustomTrackMs - timeMs) < 500) {
+                    return;
+                }
+            }
+
+            lastCustomTrackMs = new Date().getTime();
+
+            var positionTicks = timeMs * 10000;
+            for (var i = 0, length = trackEvents.length; i < length; i++) {
+
+                var caption = trackEvents[i];
+                if (positionTicks >= caption.StartPositionTicks && positionTicks <= caption.EndPositionTicks) {
+                    currentSubtitlesElement.innerHTML = caption.Text;
+                    currentSubtitlesElement.classList.remove('hide');
+                    return;
+                }
+            }
+
+            currentSubtitlesElement.innerHTML = '';
+            currentSubtitlesElement.classList.add('hide');
         }
 
         function getMediaStreamAudioTracks(mediaSource) {
@@ -1051,7 +1145,7 @@ define(['browser', 'pluginManager', 'events', 'apphost', 'loading', 'playbackMan
 
         function createMediaElement(options) {
 
-            if (browser.operaTv || browser.web0s) {
+            if (browser.operaTv || browser.web0s || browser.ps4) {
                 // too slow
                 options.backdropUrl = null;
             }
